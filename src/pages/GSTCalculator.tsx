@@ -159,7 +159,7 @@ export default function GSTCalculator() {
                 </div>
 
                 <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-4 mb-5">
-                    <NumberInput label="Principal Amount" value={amount} onChange={setAmount} prefix="₹" />
+                    <NumberInput label="Principal Amount" value={amount} onChange={setAmount} prefix="₹" min={0} max={999999999} />
 
                     <div>
                         <label className="text-xs text-slate-400 mb-2 block">GST Rate (%)</label>
@@ -237,7 +237,11 @@ export default function GSTCalculator() {
                     <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
                         📄 Download PDF {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
                     </button>
-                    <button onClick={() => canAccessAll ? exportToExcel(['Component', 'Value'], [['Base', result?.preGst], ['GST', result?.gstAmount], ['Total', result?.postGst]], 'GST_Report') : setShowPremiumModal(true)}
+                    <button onClick={() => canAccessAll ? exportToExcel(['Component', 'Value'], [
+                        ['Base', result?.preGst ?? 0],
+                        ['GST', result?.gstAmount ?? 0],
+                        ['Total', result?.postGst ?? 0]
+                    ], 'GST_Report') : setShowPremiumModal(true)}
                         className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
                         📊 Download Excel {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
                     </button>
