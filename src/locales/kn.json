@@ -1,0 +1,421 @@
+{
+    "nav": {
+        "home": "ಮುಖಪುಟ",
+        "calculate": "ಲೆಕ್ಕಾಚಾರ",
+        "schemes": "ಯೋಜನೆಗಳು",
+        "expenses": "ವೆಚ್ಚಗಳು",
+        "profile": "ಪ್ರೊಫೈಲ್"
+    },
+    "home": {
+        "welcome": "ಮರಳಿ ಸ್ವಾಗತ",
+        "title": "FinCalix",
+        "quickCalculate": "ತ್ವರಿತ ಲೆಕ್ಕಾಚಾರ",
+        "recentlyUsed": "ಇತ್ತೀಚಿನ ಬಳಕೆ",
+        "viewAll": "ಎಲ್ಲಾ ನೋಡಿ",
+        "seeAll": "ಎಲ್ಲಾ ನೋಡಿ",
+        "recentCalculators": "ಇತ್ತೀಚಿನ ಕ್ಯಾಲ್ಕುಲೇಟರ್‌ಗಳು",
+        "govSchemes": "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
+        "explore": "500+ ಕೇಂದ್ರ & ರಾಜ್ಯ ಯೋಜನೆಗಳು",
+        "new2026": "ಹೊಸ 2026 ಯೋಜನೆಗಳು",
+        "stateWise": "ರಾಜ್ಯ ಪ್ರಕಾರ",
+        "marketSnapshot": "ಮಾರುಕಟ್ಟೆ ಸ್ನಾಪ್‌ಶಾಟ್",
+        "viewExpenses": "ವೆಚ್ಚಗಳು ನೋಡಿ",
+        "popularCalcs": "ಜನಪ್ರಿಯ ಕ್ಯಾಲ್ಕುಲೇಟರ್‌ಗಳು",
+        "expenseOverview": "ವೆಚ್ಚ ಅವಲೋಕನ"
+    },
+    "calculators": {
+        "title": "ಎಲ್ಲಾ ಕ್ಯಾಲ್ಕುಲೇಟರ್‌ಗಳು",
+        "subtitle": "25+ ಹಣಕಾಸು ಕ್ಯಾಲ್ಕುಲೇಟರ್‌ಗಳು",
+        "search": "ಕ್ಯಾಲ್ಕುಲೇಟರ್‌ಗಳನ್ನು ಹುಡುಕಿ...",
+        "premiumBanner": "PDF ಮತ್ತು Excel ರಫ್ತು ಪ್ರೀಮಿಯಂ ಯೋಜನೆಯಲ್ಲಿ ಲಭ್ಯ",
+        "categories": {
+            "taxSalary": "ತೆರಿಗೆ & ಸಂಬಳ",
+            "banking": "ಬ್ಯಾಂಕಿಂಗ್",
+            "investments": "ಹೂಡಿಕೆಗಳು",
+            "retirement": "ನಿವೃತ್ತಿ",
+            "postOffice": "ಅಂಚೆ ಕಚೇರಿ",
+            "property": "ಆಸ್ತಿ",
+            "business": "ವ್ಯಾಪಾರ",
+            "others": "ಇತರ"
+        },
+        "emi": {
+            "name": "ಸಾಲ EMI",
+            "desc": "ಮನೆ, ಕಾರು, ವೈಯಕ್ತಿಕ ಸಾಲ"
+        },
+        "sip": {
+            "name": "SIP ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ಮ್ಯೂಚುಯಲ್ ಫಂಡ್ SIP"
+        },
+        "fd": {
+            "name": "ಸ್ಥಿರ ಠೇವಣಿ",
+            "desc": "FD ಪಕ್ವತೆ ಕ್ಯಾಲ್ಕುಲೇಟರ್"
+        },
+        "rd": {
+            "name": "ಪುನರಾವರ್ತಿತ ಠೇವಣಿ",
+            "desc": "RD ಆದಾಯ ಕ್ಯಾಲ್ಕುಲೇಟರ್"
+        },
+        "compound": {
+            "name": "ಸಂಯುಕ್ತ ಬಡ್ಡಿ",
+            "desc": "ಬಡ್ಡಿ ಕ್ಯಾಲ್ಕುಲೇಟರ್"
+        },
+        "simple": {
+            "name": "ಸರಳ ಬಡ್ಡಿ",
+            "desc": "ಮೂಲ ಬಡ್ಡಿ ಕ್ಯಾಲ್ಕುಲೇಟರ್"
+        },
+        "incomeTax": {
+            "name": "ಆದಾಯ ತೆರಿಗೆ ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "FY 2025-26 ತೆರಿಗೆ ಲೆಕ್ಕಾಚಾರ"
+        },
+        "salaryHike": {
+            "name": "ಸಂಬಳ ಹೆಚ್ಚಳ ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ನಿಮ್ಮ ಹೆಚ್ಚಳವನ್ನು ಯೋಜಿಸಿ"
+        },
+        "hra": {
+            "name": "HRA ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ಮನೆ ಬಾಡಿಗೆ ಭತ್ಯೆ"
+        },
+        "lumpsum": {
+            "name": "ಒಟ್ಟು ಮೊತ್ತ ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ಒಂದು ಬಾರಿ ಹೂಡಿಕೆ"
+        },
+        "swp": {
+            "name": "SWP ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ವ್ಯವಸ್ಥಿತ ಹಿಂಪಡೆಯುವಿಕೆ"
+        },
+        "cagr": {
+            "name": "CAGR ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ಬೆಳವಣಿಗೆ ದರ"
+        },
+        "stepUpSip": {
+            "name": "ಸ್ಟೆಪ್ ಅಪ್ SIP",
+            "desc": "ಹೆಚ್ಚುತ್ತಿರುವ SIP ಮೊತ್ತ"
+        },
+        "goalSip": {
+            "name": "ಗೋಲ್ SIP",
+            "desc": "ಗುರಿ ಆಧಾರಿತ ಯೋಜನೆ"
+        },
+        "ppf": {
+            "name": "PPF ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ಸಾರ್ವಜನಿಕ ಭವಿಷ್ಯ ನಿಧಿ"
+        },
+        "nps": {
+            "name": "NPS ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ರಾಷ್ಟ್ರೀಯ ಪಿಂಚಣಿ ಯೋಜನೆ"
+        },
+        "epf": {
+            "name": "EPF ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ಉದ್ಯೋಗಿ ಭವಿಷ್ಯ ನಿಧಿ"
+        },
+        "gratuity": {
+            "name": "ಗ್ರಾಚ್ಯುಟಿ ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ಸೇವಾ ಪ್ರಯೋಜನ"
+        },
+        "ssy": {
+            "name": "ಸುಕನ್ಯಾ ಸಮೃದ್ಧಿ",
+            "desc": "ಹೆಣ್ಣು ಮಕ್ಕಳ ಉಳಿತಾಯ"
+        },
+        "nsc": {
+            "name": "NSC ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ರಾಷ್ಟ್ರೀಯ ಉಳಿತಾಯ ಪ್ರಮಾಣಪತ್ರ"
+        },
+        "kvp": {
+            "name": "KVP ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ಕಿಸಾನ್ ವಿಕಾಸ್ ಪತ್ರ"
+        },
+        "pomis": {
+            "name": "ಅಂಚೆ ಕಚೇರಿ MIS",
+            "desc": "ಮಾಸಿಕ ಆದಾಯ ಯೋಜನೆ"
+        },
+        "scss": {
+            "name": "ಹಿರಿಯ ನಾಗರಿಕರ ಉಳಿತಾಯ",
+            "desc": "SCSS"
+        },
+        "potd": {
+            "name": "ಅಂಚೆ ಕಚೇರಿ TD",
+            "desc": "ಅವಧಿ ಠೇವಣಿ"
+        },
+        "breakEven": {
+            "name": "ಬ್ರೇಕ್ ಈವನ್",
+            "desc": "ವ್ಯಾಪಾರ ಯೋಜನೆ"
+        },
+        "property": {
+            "name": "ಆಸ್ತಿ ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ಭೂಮಿ & ಫ್ಲ್ಯಾಟ್ ಮೌಲ್ಯಮಾಪನ",
+            "land": "ಭೂಮಿ",
+            "flat": "ಫ್ಲ್ಯಾಟ್",
+            "area": "ವಿಸ್ತೀರ್ಣ",
+            "unit": "ಘಟಕ",
+            "pricePerUnit": "ಘಟಕಕ್ಕೆ ಬೆಲೆ",
+            "builtUpArea": "ನಿರ್ಮಿತ ವಿಸ್ತೀರ್ಣ",
+            "carpetArea": "ಕಾರ್ಪೆಟ್ ವಿಸ್ತೀರ್ಣ",
+            "pricePerSqft": "ಚ.ಅ.ಗೆ ಬೆಲೆ",
+            "parking": "ಪಾರ್ಕಿಂಗ್ ಶುಲ್ಕ",
+            "clubMembership": "ಕ್ಲಬ್ ಶುಲ್ಕ",
+            "maintenance": "ನಿರ್ವಹಣಾ ಠೇವಣಿ",
+            "gstPercent": "GST %",
+            "basePrice": "ಮೂಲ ಬೆಲೆ",
+            "gstAmount": "GST ಮೊತ್ತ",
+            "additionalCharges": "ಹೆಚ್ಚುವರಿ ಶುಲ್ಕ",
+            "grandTotal": "ಒಟ್ಟು",
+            "registration": "ನೋಂದಣಿ (8%)",
+            "stampDuty": "ಸ್ಟ್ಯಾಂಪ್ ಡ್ಯೂಟಿ (6%)",
+            "totalValue": "ಒಟ್ಟು ಮೌಲ್ಯ",
+            "totalCost": "ಒಟ್ಟು ವೆಚ್ಚ",
+            "convert": "ಪರಿವರ್ತಿಸಿ",
+            "unitConverter": "ಭೂಮಿ ಘಟಕ ಪರಿವರ್ತನೆ",
+            "enterValue": "ಮೌಲ್ಯ ನಮೂದಿಸಿ",
+            "from": "ಇಂದ",
+            "to": "ಗೆ",
+            "quickReference": "ತ್ವರಿತ ಉಲ್ಲೇಖ",
+            "inSqFt": "ಚ.ಅ.ನಲ್ಲಿ"
+        },
+        "advancedSip": {
+            "name": "ಮುಂದುವರಿದ SIP",
+            "desc": "ವಿವರವಾದ SIP ವಿಶ್ಲೇಷಣೆ",
+            "input": "ಇನ್‌ಪುಟ್",
+            "report": "ವರದಿ",
+            "graph": "ಗ್ರಾಫ್",
+            "monthlyInvestment": "ಮಾಸಿಕ ಹೂಡಿಕೆ",
+            "expectedReturn": "ನಿರೀಕ್ಷಿತ ಆದಾಯ ದರ",
+            "timePeriod": "ಅವಧಿ",
+            "investedAmount": "ಹೂಡಿಕೆ ಮೊತ್ತ",
+            "estimatedReturns": "ಅಂದಾಜು ಆದಾಯ",
+            "totalValue": "ಒಟ್ಟು ಮೌಲ್ಯ"
+        },
+        "gst": {
+            "name": "GST ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "CGST/SGST/IGST ವಿಭಜನೆ",
+            "amount": "ಮೊತ್ತ",
+            "gstRate": "GST ದರ",
+            "addGst": "GST ಸೇರಿಸಿ",
+            "removeGst": "GST ತೆಗೆಯಿರಿ",
+            "cgst": "CGST",
+            "sgst": "SGST",
+            "igst": "IGST",
+            "totalGst": "ಒಟ್ಟು GST",
+            "preGst": "GST ಮುಂಚಿನ ಮೊತ್ತ",
+            "postGst": "GST ನಂತರದ ಮೊತ್ತ"
+        },
+        "carLoan": {
+            "name": "ಕಾರ್ ಸಾಲ ಕ್ಯಾಲ್ಕುಲೇಟರ್",
+            "desc": "ರಿಯಾಯಿತಿ & ಡೌನ್ ಪೇಮೆಂಟ್",
+            "carPrice": "ಕಾರ್ ಬೆಲೆ",
+            "discount": "ರಿಯಾಯಿತಿ",
+            "downPayment": "ಡೌನ್ ಪೇಮೆಂಟ್",
+            "interestRate": "ಬಡ್ಡಿ ದರ",
+            "tenure": "ಸಾಲ ಅವಧಿ",
+            "loanAmount": "ಸಾಲ ಮೊತ್ತ",
+            "monthlyEmi": "ಮಾಸಿಕ EMI",
+            "totalInterest": "ಒಟ್ಟು ಬಡ್ಡಿ",
+            "totalPayment": "ಒಟ್ಟು ಪಾವತಿ"
+        }
+    },
+    "expenses": {
+        "title": "ವೆಚ್ಚ ಟ್ರ್ಯಾಕರ್",
+        "dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+        "budget": "ಬಜೆಟ್",
+        "daily": "ದೈನಂದಿನ",
+        "reports": "ವರದಿಗಳು",
+        "thisMonth": "ಈ ತಿಂಗಳು",
+        "spent": "ಖರ್ಚು ಮಾಡಿದ್ದು",
+        "income": "ಆದಾಯ",
+        "savings": "ಉಳಿತಾಯ",
+        "breakdown": "ವಿವರ",
+        "categoryWise": "ವರ್ಗ ಪ್ರಕಾರ ವೆಚ್ಚ",
+        "monthlyIncome": "ಮಾಸಿಕ ಆದಾಯ",
+        "fixedExpenses": "ಸ್ಥಿರ ವೆಚ್ಚಗಳು",
+        "rent": "ಬಾಡಿಗೆ / EMI",
+        "emiPayment": "ಸಾಲ EMI",
+        "utilities": "ಸೌಲಭ್ಯಗಳು",
+        "mobile": "ಮೊಬೈಲ್ & ಇಂಟರ್ನೆಟ್",
+        "insurance": "ವಿಮಾ ಪ್ರೀಮಿಯಂ",
+        "otherFixed": "ಇತರ ಸ್ಥಿರ ವೆಚ್ಚ",
+        "totalFixed": "ಒಟ್ಟು ಸ್ಥಿರ ವೆಚ್ಚ",
+        "available": "ಖರ್ಚಿಗೆ ಲಭ್ಯ",
+        "addNew": "ಹೊಸ ವೆಚ್ಚ ಸೇರಿಸಿ",
+        "date": "ದಿನಾಂಕ",
+        "category": "ವರ್ಗ",
+        "amount": "ಮೊತ್ತ",
+        "description": "ವಿವರಣೆ",
+        "selectCategory": "ವರ್ಗ ಆಯ್ಕೆಮಾಡಿ",
+        "addExpense": "ವೆಚ್ಚ ಸೇರಿಸಿ",
+        "recentExpenses": "ಇತ್ತೀಚಿನ ವೆಚ್ಚಗಳು",
+        "noExpenses": "ಇನ್ನೂ ವೆಚ್ಚಗಳು ದಾಖಲಾಗಿಲ್ಲ",
+        "fixed": "ಸ್ಥಿರ",
+        "variable": "ಬದಲಾಗುವ",
+        "categories": {
+            "food": "ಆಹಾರ & ಊಟ",
+            "transport": "ಸಾರಿಗೆ",
+            "shopping": "ಶಾಪಿಂಗ್",
+            "entertainment": "ಮನೋರಂಜನೆ",
+            "healthcare": "ಆರೋಗ್ಯ ಸೇವೆ",
+            "education": "ಶಿಕ್ಷಣ",
+            "groceries": "ದಿನಸಿ",
+            "personalCare": "ವೈಯಕ್ತಿಕ ಆರೈಕೆ",
+            "others": "ಇತರ"
+        },
+        "budgetSaved": "ಬಜೆಟ್ ಯಶಸ್ವಿಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ!",
+        "expenseAdded": "ವೆಚ್ಚ ಸೇರಿಸಲಾಗಿದೆ!",
+        "noBudget": "ಮೊದಲು ನಿಮ್ಮ ಬಜೆಟ್ ಹೊಂದಿಸಿ",
+        "monthlyReport": "ಮಾಸಿಕ ವರದಿ",
+        "weeklyAverage": "ವಾರದ ಸರಾಸರಿ",
+        "dailyAverage": "ದೈನಿಕ ಸರಾಸರಿ",
+        "topCategory": "ಮೇಲಿನ ವರ್ಗ",
+        "deleteConfirm": "ಈ ವೆಚ್ಚವನ್ನು ಅಳಿಸುವುದೇ?",
+        "projectedMonthEnd": "ತಿಂಗಳ ಕೊನೆಯ ಅಂದಾಜು",
+        "basedOnDays": "{{days}} ದಿನಗಳ ಸರಾಸರಿ ಖರ್ಚಿನ ಆಧಾರದ ಮೇಲೆ",
+        "mayExceedBudget": "ಈ ತಿಂಗಳು ನಿಮ್ಮ ಬಜೆಟ್ ಮೀರಬಹುದು",
+        "withinBudget": "ನೀವು ಬಜೆಟ್‌ನಲ್ಲಿ ಇದ್ದೀರಿ"
+    },
+    "schemes": {
+        "title": "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
+        "subtitle": "ಕೇಂದ್ರ & ರಾಜ್ಯ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
+        "search": "ಹೆಸರು, ವರ್ಗ ಅಥವಾ ರಾಜ್ಯದಿಂದ ಹುಡುಕಿ...",
+        "central": "ಕೇಂದ್ರ",
+        "state": "ರಾಜ್ಯ",
+        "all": "ಎಲ್ಲಾ",
+        "verified": "ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
+        "popular": "ಜನಪ್ರಿಯ",
+        "showing": "ತೋರಿಸುತ್ತಿದೆ",
+        "schemesCount": "ಯೋಜನೆಗಳು",
+        "unlockState": "ರಾಜ್ಯ ಯೋಜನೆಗಳನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ",
+        "selectState": "ರಾಜ್ಯ / ಕೇಂದ್ರಾಡಳಿತ ಪ್ರದೇಶ ಆಯ್ಕೆಮಾಡಿ",
+        "allStates": "ಎಲ್ಲಾ ರಾಜ್ಯಗಳು",
+        "states": "ರಾಜ್ಯಗಳು",
+        "unionTerritories": "ಕೇಂದ್ರಾಡಳಿತ ಪ್ರದೇಶಗಳು",
+        "statePremium": "ರಾಜ್ಯ ಯೋಜನೆಗಳು — ಪ್ರೀಮಿಯಂ",
+        "statePremiumDesc": "28 ರಾಜ್ಯಗಳ 400+ ಯೋಜನೆಗಳನ್ನು ಪ್ರವೇಶಿಸಿ.",
+        "unlockFor": "₹75ಕ್ಕೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ"
+    },
+    "profile": {
+        "title": "ಪ್ರೊಫೈಲ್",
+        "saved": "ಉಳಿಸಿದವು",
+        "bookmarks": "ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು",
+        "history": "ಇತಿಹಾಸ",
+        "savedCalc": "ಉಳಿಸಿದ ಲೆಕ್ಕಾಚಾರಗಳು",
+        "bookmarkedSchemes": "ಬುಕ್‌ಮಾರ್ಕ್ ಯೋಜನೆಗಳು",
+        "calcHistory": "ಲೆಕ್ಕಾಚಾರ ಇತಿಹಾಸ",
+        "notifications": "ಅಧಿಸೂಚನೆಗಳು",
+        "settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+        "adminPanel": "ನಿರ್ವಾಹಕ ಫಲಕ"
+    },
+    "settings": {
+        "title": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+        "appearance": "ನೋಟ",
+        "darkMode": "ಡಾರ್ಕ್ ಮೋಡ್",
+        "language": "ಭಾಷೆ",
+        "selectLanguage": "ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ",
+        "legal": "ಕಾನೂನು",
+        "privacyPolicy": "ಗೌಪ್ಯತೆ ನೀತಿ",
+        "termsOfService": "ಸೇವಾ ನಿಯಮಗಳು",
+        "about": "ಬಗ್ಗೆ",
+        "notifications": "ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+        "rateApp": "ಅಪ್ಲಿಕೇಶನ್ ರೇಟ್ ಮಾಡಿ",
+        "shareApp": "ಅಪ್ಲಿಕೇಶನ್ ಹಂಚಿ",
+        "logout": "ಲಾಗ್‌ಔಟ್",
+        "confirmLogout": "ಲಾಗ್‌ಔಟ್ ದೃಢೀಕರಿಸಿ",
+        "logoutMessage": "ನೀವು ಲಾಗ್‌ಔಟ್ ಆಗಲು ಬಯಸುವಿರಾ?",
+        "priceAlerts": "ಬೆಲೆ ಎಚ್ಚರಿಕೆ",
+        "newSchemes": "ಹೊಸ ಯೋಜನೆ",
+        "calcReminders": "ಲೆಕ್ಕಾಚಾರ ಜ್ಞಾಪನೆ",
+        "appUpdates": "ಅಪ್‌ಡೇಟ್‌ಗಳು"
+    },
+    "common": {
+        "back": "ಹಿಂದೆ",
+        "save": "ಉಳಿಸಿ",
+        "saved": "ಉಳಿಸಲಾಗಿದೆ",
+        "share": "ಹಂಚಿ",
+        "download": "ಡೌನ್‌ಲೋಡ್",
+        "downloadPdf": "PDF ಡೌನ್‌ಲೋಡ್",
+        "downloadExcel": "Excel ಡೌನ್‌ಲೋಡ್",
+        "premium": "ಪ್ರೀಮಿಯಂ",
+        "close": "ಮುಚ್ಚಿ",
+        "cancel": "ರದ್ದು",
+        "confirm": "ದೃಢೀಕರಿಸಿ",
+        "reset": "ರೀಸೆಟ್",
+        "calculate": "ಲೆಕ್ಕಾಚಾರ ಮಾಡಿ",
+        "result": "ಫಲಿತಾಂಶ",
+        "total": "ಒಟ್ಟು",
+        "saveCalculation": "ಲೆಕ್ಕಾಚಾರ ಉಳಿಸಿ",
+        "optional": "ಐಚ್ಛಿಕ",
+        "delete": "ಅಳಿಸಿ",
+        "edit": "ಸಂಪಾದಿಸಿ",
+        "years": "ವರ್ಷಗಳು",
+        "months": "ತಿಂಗಳುಗಳು",
+        "perAnnum": "% ವಾರ್ಷಿಕ",
+        "loanAmount": "ಸಾಲ ಮೊತ್ತ",
+        "interestRate": "ಬಡ್ಡಿ ದರ",
+        "tenure": "ಅವಧಿ",
+        "monthlyEmi": "ಮಾಸಿಕ EMI",
+        "totalInterest": "ಒಟ್ಟು ಬಡ್ಡಿ",
+        "totalAmount": "ಒಟ್ಟು ಮೊತ್ತ",
+        "principalAmount": "ಅಸಲು ಮೊತ್ತ",
+        "maturityAmount": "ಪಕ್ವತೆ ಮೊತ್ತ",
+        "investmentAmount": "ಹೂಡಿಕೆ ಮೊತ್ತ",
+        "all": "ಎಲ್ಲಾ",
+        "next": "ಮುಂದೆ",
+        "done": "ಮುಗಿಯಿತು"
+    },
+    "premium": {
+        "title": "ಪ್ರೀಮಿಯಂ ವೈಶಿಷ್ಟ್ಯ",
+        "subtitle": "ಎಲ್ಲಾ ರಾಜ್ಯ ಯೋಜನೆಗಳನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ",
+        "oneTimePayment": "ಒಂದು ಬಾರಿ ಪಾವತಿ",
+        "lifetimeAccess": "ಆಜೀವನ ಪ್ರವೇಶ • ಚಂದಾ ಇಲ್ಲ",
+        "feature1": "ಎಲ್ಲಾ ರಾಜ್ಯ ಯೋಜನೆಗಳು (28 ರಾಜ್ಯ + 8 ಕೇಪ್ರಾ)",
+        "feature2": "400+ ರಾಜ್ಯ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
+        "feature3": "ಹೊಸ ಯೋಜನೆ ಅಪ್‌ಡೇಟ್ & ಎಚ್ಚರಿಕೆ",
+        "feature4": "ರಾಜ್ಯ ಪೋರ್ಟಲ್ ಲಿಂಕ್‌ಗಳು",
+        "feature5": "PDF & Excel ಡೌನ್‌ಲೋಡ್‌ಗಳು",
+        "unlockFor": "₹75ಕ್ಕೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ",
+        "maybeLater": "ನಂತರ",
+        "securePayment": "Razorpay ಮೂಲಕ ಸುರಕ್ಷಿತ ಪಾವತಿ • 100% ಹಿಂತಿರುಗಿಸುವಿಕೆ",
+        "unlockStateSchemes": "ರಾಜ್ಯ ಯೋಜನೆಗಳನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ",
+        "stateSchemesBanner": "₹75 ಒಂದು ಬಾರಿ ಪಾವತಿ • 28 ರಾಜ್ಯ + 8 ಕೇಪ್ರಾ"
+    },
+    "units": {
+        "squareMeter": "ಚದರ ಮೀಟರ್",
+        "squareFeet": "ಚದರ ಅಡಿ",
+        "hectare": "ಹೆಕ್ಟೇರ್",
+        "acre": "ಎಕರೆ",
+        "cent": "ಸೆಂಟ್",
+        "gunta": "ಗುಂಟಾ",
+        "ankanam": "ಅಂಕಣಮ್",
+        "gajam": "ಗಜಮ್",
+        "ground": "ಗ್ರೌಂಡ್",
+        "bigha": "ಬೀಘಾ"
+    },
+    "budgetTracker": {
+        "title": "ಬಜೆಟ್ ಟ್ರ್ಯಾಕರ್",
+        "subtitle": "ಮಾಸಿಕ ಬಜೆಟ್ & ಗುರಿಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ",
+        "monthlyBudget": "ಮಾಸಿಕ ಬಜೆಟ್",
+        "setBudget": "ಬಜೆಟ್ ಸೆಟ್ ಮಾಡಿ",
+        "totalBudget": "ಒಟ್ಟು ಬಜೆಟ್",
+        "totalSpent": "ಒಟ್ಟು ಖರ್ಚು",
+        "remaining": "ಉಳಿದಿದೆ",
+        "addCategory": "ವರ್ಗ ಸೇರಿಸಿ",
+        "categoryName": "ವರ್ಗ ಹೆಸರು",
+        "budgetAmount": "ಬಜೆಟ್ ಮೊತ್ತ",
+        "spent": "ಖರ್ಚು",
+        "overBudget": "ಬಜೆಟ್ ಮೀರಿದೆ!",
+        "onTrack": "ಸರಿಯಾದ ದಾರಿಯಲ್ಲಿ",
+        "warning": "ಎಚ್ಚರಿಕೆ",
+        "progress": "ಪ್ರಗತಿ",
+        "noBudgetSet": "ಇನ್ನೂ ಬಜೆಟ್ ಸೆಟ್ ಮಾಡಿಲ್ಲ. ಮಾಸಿಕ ಬಜೆಟ್ ಸೆಟ್ ಮಾಡಿ.",
+        "budgetSaved": "ಬಜೆಟ್ ಉಳಿಸಲಾಗಿದೆ!",
+        "deleteCategory": "ಈ ವರ್ಗವನ್ನು ಅಳಿಸಬೇಕೇ?",
+        "overview": "ಅವಲೋಕನ",
+        "categories": "ವರ್ಗಗಳು",
+        "insights": "ಒಳನೋಟಗಳು",
+        "savingsGoal": "ಉಳಿತಾಯ ಗುರಿ",
+        "actualSavings": "ಮೂಲ ಉಳಿತಾಯ",
+        "addExpense": "ಖರ್ಚು ಸೇರಿಸಿ",
+        "amount": "ಮೊತ್ತ",
+        "description": "ವಿವರಣೆ",
+        "noCategories": "ಇನ್ನೂ ವರ್ಗಗಳನ್ನು ಸೇರಿಸಿಲ್ಲ",
+        "budgetUsed": "ಬಜೆಟ್ ಬಳಕೆ",
+        "underspent": "ಬಜೆಟ್ ಒಳಗೆ",
+        "daysLeft": "ಈ ತಿಂಗಳಲ್ಲಿ ಉಳಿದ ದಿನಗಳು",
+        "dailyAllowance": "ದೈನಂದಿನ ಭತ್ಯೆ",
+        "spendingTrend": "ಖರ್ಚಿನ ಒಲವು"
+    }
+}

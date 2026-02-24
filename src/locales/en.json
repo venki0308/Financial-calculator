@@ -1,0 +1,423 @@
+{
+    "nav": {
+        "home": "Home",
+        "calculate": "Calculate",
+        "schemes": "Schemes",
+        "expenses": "Expenses",
+        "profile": "Profile"
+    },
+    "home": {
+        "welcome": "Welcome back",
+        "title": "FinCalix",
+        "quickCalculate": "Quick Calculate",
+        "recentlyUsed": "Recently Used",
+        "viewAll": "View All",
+        "seeAll": "See All",
+        "recentCalculators": "Recent Calculators",
+        "govSchemes": "Government Schemes",
+        "explore": "Explore 500+ Central & State schemes",
+        "new2026": "New 2026 Schemes",
+        "stateWise": "State-wise",
+        "myBudget": "My Budget",
+        "viewExpenses": "View Expenses",
+        "popularCalcs": "Popular Calculators",
+        "currentBalance": "Current Balance",
+        "monthlyIncome": "Monthly Income"
+    },
+    "calculators": {
+        "title": "All Calculators",
+        "subtitle": "25+ financial calculators",
+        "search": "Search calculators...",
+        "premiumBanner": "PDF & Excel export available under Premium plan (paid)",
+        "categories": {
+            "taxSalary": "Tax & Salary",
+            "banking": "Banking",
+            "investments": "Investments",
+            "retirement": "Retirement",
+            "postOffice": "Post Office",
+            "property": "Property",
+            "business": "Business",
+            "others": "Others"
+        },
+        "emi": {
+            "name": "Loan EMI",
+            "desc": "Home, Car, Personal loans"
+        },
+        "sip": {
+            "name": "SIP Calculator",
+            "desc": "Mutual fund SIP"
+        },
+        "fd": {
+            "name": "Fixed Deposit",
+            "desc": "FD maturity calculator"
+        },
+        "rd": {
+            "name": "Recurring Deposit",
+            "desc": "RD returns calculator"
+        },
+        "compound": {
+            "name": "Compound Interest",
+            "desc": "Interest calculator"
+        },
+        "simple": {
+            "name": "Simple Interest",
+            "desc": "Basic interest calculator"
+        },
+        "incomeTax": {
+            "name": "Income Tax Calculator",
+            "desc": "Calculate tax for FY 2025-26"
+        },
+        "salaryHike": {
+            "name": "Salary Hike Calculator",
+            "desc": "Plan your increment"
+        },
+        "hra": {
+            "name": "HRA Calculator",
+            "desc": "House rent allowance"
+        },
+        "lumpsum": {
+            "name": "Lumpsum Calculator",
+            "desc": "One-time investment"
+        },
+        "swp": {
+            "name": "SWP Calculator",
+            "desc": "Systematic withdrawal"
+        },
+        "cagr": {
+            "name": "CAGR Calculator",
+            "desc": "Growth rate calculator"
+        },
+        "stepUpSip": {
+            "name": "Step Up SIP",
+            "desc": "Increasing SIP amount"
+        },
+        "goalSip": {
+            "name": "Goal SIP",
+            "desc": "Target-based planning"
+        },
+        "ppf": {
+            "name": "PPF Calculator",
+            "desc": "Public Provident Fund"
+        },
+        "nps": {
+            "name": "NPS Calculator",
+            "desc": "National Pension Scheme"
+        },
+        "epf": {
+            "name": "EPF Calculator",
+            "desc": "Employee Provident Fund"
+        },
+        "gratuity": {
+            "name": "Gratuity Calculator",
+            "desc": "Service benefits"
+        },
+        "ssy": {
+            "name": "Sukanya Samriddhi",
+            "desc": "Girl child savings"
+        },
+        "nsc": {
+            "name": "NSC Calculator",
+            "desc": "National Savings Certificate"
+        },
+        "kvp": {
+            "name": "KVP Calculator",
+            "desc": "Kisan Vikas Patra"
+        },
+        "pomis": {
+            "name": "Post Office MIS",
+            "desc": "Monthly Income Scheme"
+        },
+        "scss": {
+            "name": "Senior Citizen Savings",
+            "desc": "SCSS calculator"
+        },
+        "potd": {
+            "name": "Post Office TD",
+            "desc": "Time Deposit"
+        },
+        "breakEven": {
+            "name": "Break Even Calculator",
+            "desc": "Business planning"
+        },
+        "property": {
+            "name": "Property Calculator",
+            "desc": "Land & flat valuation",
+            "land": "Land",
+            "flat": "Flat/Apartment",
+            "area": "Area",
+            "unit": "Unit",
+            "pricePerUnit": "Price per unit",
+            "builtUpArea": "Built-up Area (sq.ft)",
+            "carpetArea": "Carpet Area (sq.ft)",
+            "pricePerSqft": "Price per sq.ft",
+            "parking": "Parking Charges",
+            "clubMembership": "Club/Amenity Charges",
+            "maintenance": "Maintenance Deposit",
+            "gstPercent": "GST %",
+            "basePrice": "Base Price",
+            "gstAmount": "GST Amount",
+            "additionalCharges": "Additional Charges",
+            "grandTotal": "Grand Total",
+            "registration": "Registration (8%)",
+            "stampDuty": "Stamp Duty (6%)",
+            "totalValue": "Total Value",
+            "totalCost": "Total Cost",
+            "convert": "Convert",
+            "unitConverter": "Land Unit Converter",
+            "enterValue": "Enter Value",
+            "from": "From",
+            "to": "To",
+            "quickReference": "Quick Reference",
+            "inSqFt": "In sq.ft"
+        },
+        "advancedSip": {
+            "name": "Advanced SIP",
+            "desc": "Detailed SIP analysis",
+            "input": "Input",
+            "report": "Report",
+            "graph": "Graph",
+            "monthlyInvestment": "Monthly Investment",
+            "expectedReturn": "Expected Return Rate",
+            "timePeriod": "Time Period",
+            "investedAmount": "Invested Amount",
+            "estimatedReturns": "Estimated Returns",
+            "totalValue": "Total Value"
+        },
+        "gst": {
+            "name": "GST Calculator",
+            "desc": "CGST/SGST/IGST split",
+            "amount": "Amount",
+            "gstRate": "GST Rate",
+            "addGst": "Add GST",
+            "removeGst": "Remove GST",
+            "cgst": "CGST",
+            "sgst": "SGST",
+            "igst": "IGST",
+            "totalGst": "Total GST",
+            "preGst": "Pre-GST Amount",
+            "postGst": "Post-GST Amount"
+        },
+        "carLoan": {
+            "name": "Car Loan Calculator",
+            "desc": "With discount & down payment",
+            "carPrice": "Car Price (On-Road)",
+            "discount": "Discount",
+            "downPayment": "Down Payment",
+            "interestRate": "Interest Rate",
+            "tenure": "Loan Tenure",
+            "loanAmount": "Loan Amount",
+            "monthlyEmi": "Monthly EMI",
+            "totalInterest": "Total Interest",
+            "totalPayment": "Total Payment"
+        }
+    },
+    "expenses": {
+        "title": "Expense Tracker",
+        "dashboard": "Dashboard",
+        "budget": "Budget",
+        "daily": "Daily",
+        "reports": "Reports",
+        "thisMonth": "This Month",
+        "spent": "Spent",
+        "income": "Income",
+        "savings": "Savings",
+        "breakdown": "Breakdown",
+        "categoryWise": "Category-wise Spending",
+        "monthlyIncome": "Monthly Income",
+        "fixedExpenses": "Fixed Expenses",
+        "rent": "Rent / EMI",
+        "emiPayment": "Loan EMI",
+        "utilities": "Utilities (Electricity, Water, Gas)",
+        "mobile": "Mobile & Internet",
+        "insurance": "Insurance Premiums",
+        "otherFixed": "Other Fixed Expenses",
+        "totalFixed": "Total Fixed Expenses",
+        "available": "Available for Spending",
+        "addNew": "Add New Expense",
+        "date": "Date",
+        "category": "Category",
+        "amount": "Amount",
+        "description": "Description",
+        "selectCategory": "Select Category",
+        "addExpense": "Add Expense",
+        "recentExpenses": "Recent Expenses",
+        "noExpenses": "No expenses recorded yet",
+        "fixed": "Fixed",
+        "variable": "Variable",
+        "categories": {
+            "food": "Food & Dining",
+            "transport": "Transportation",
+            "shopping": "Shopping",
+            "entertainment": "Entertainment",
+            "healthcare": "Healthcare",
+            "education": "Education",
+            "groceries": "Groceries",
+            "personalCare": "Personal Care",
+            "others": "Others"
+        },
+        "budgetSaved": "Budget saved successfully!",
+        "expenseAdded": "Expense added!",
+        "noBudget": "Set up your budget first",
+        "monthlyReport": "Monthly Report",
+        "weeklyAverage": "Weekly Average",
+        "dailyAverage": "Daily Average",
+        "topCategory": "Top Category",
+        "deleteConfirm": "Delete this expense?",
+        "projectedMonthEnd": "Projected Month End",
+        "basedOnDays": "Based on {{days}} days avg spending",
+        "mayExceedBudget": "You may exceed your budget this month",
+        "withinBudget": "You're within budget"
+    },
+    "schemes": {
+        "title": "Government Schemes",
+        "subtitle": "Central & State government schemes",
+        "search": "Search by name, category, or state...",
+        "central": "Central",
+        "state": "State",
+        "all": "All",
+        "verified": "Verified",
+        "popular": "Popular",
+        "showing": "Showing",
+        "schemesCount": "schemes",
+        "unlockState": "Unlock State Schemes",
+        "selectState": "Select State / UT",
+        "allStates": "All States",
+        "states": "States",
+        "unionTerritories": "Union Territories",
+        "statePremium": "State Schemes — Premium",
+        "statePremiumDesc": "Access 400+ state-level government schemes from 28 states and 8 union territories.",
+        "unlockFor": "Unlock for ₹75"
+    },
+    "profile": {
+        "title": "Profile",
+        "saved": "Saved",
+        "bookmarks": "Bookmarks",
+        "history": "History",
+        "savedCalc": "Saved Calculations",
+        "bookmarkedSchemes": "Bookmarked Schemes",
+        "calcHistory": "Calculation History",
+        "notifications": "Notifications",
+        "settings": "Settings",
+        "adminPanel": "Admin Panel",
+        "savedCalculations": "Saved Calculations"
+    },
+    "settings": {
+        "title": "Settings",
+        "appearance": "Appearance",
+        "darkMode": "Dark Mode",
+        "language": "Language",
+        "selectLanguage": "Select Language",
+        "legal": "Legal",
+        "privacyPolicy": "Privacy Policy",
+        "termsOfService": "Terms of Service",
+        "about": "About",
+        "notifications": "Notification Settings",
+        "rateApp": "Rate the App",
+        "shareApp": "Share App",
+        "logout": "Logout",
+        "confirmLogout": "Confirm Logout",
+        "logoutMessage": "Are you sure you want to logout? Your saved data will remain on this device.",
+        "priceAlerts": "Price Alerts",
+        "newSchemes": "New Schemes",
+        "calcReminders": "Calculation Reminders",
+        "appUpdates": "App Updates"
+    },
+    "common": {
+        "back": "Back",
+        "save": "Save",
+        "saved": "Saved",
+        "share": "Share",
+        "download": "Download",
+        "downloadPdf": "Download PDF",
+        "downloadExcel": "Download Excel",
+        "premium": "Premium",
+        "close": "Close",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "reset": "Reset",
+        "calculate": "Calculate",
+        "result": "Result",
+        "total": "Total",
+        "saveCalculation": "Save Calculation",
+        "optional": "optional",
+        "delete": "Delete",
+        "edit": "Edit",
+        "years": "years",
+        "months": "months",
+        "perAnnum": "% p.a.",
+        "loanAmount": "Loan Amount",
+        "interestRate": "Interest Rate",
+        "tenure": "Tenure",
+        "monthlyEmi": "Monthly EMI",
+        "totalInterest": "Total Interest",
+        "totalAmount": "Total Amount",
+        "principalAmount": "Principal Amount",
+        "maturityAmount": "Maturity Amount",
+        "investmentAmount": "Investment Amount",
+        "all": "All",
+        "next": "Next",
+        "done": "Done"
+    },
+    "premium": {
+        "title": "Premium Feature",
+        "subtitle": "Unlock access to all State Government Schemes",
+        "oneTimePayment": "One-time payment",
+        "lifetimeAccess": "Lifetime access • No subscription",
+        "feature1": "Access all state schemes (28 states + 8 UTs)",
+        "feature2": "400+ state government schemes",
+        "feature3": "Latest scheme updates & alerts",
+        "feature4": "Direct links to state portals",
+        "feature5": "PDF & Excel downloads",
+        "unlockFor": "Unlock for ₹75",
+        "maybeLater": "Maybe Later",
+        "securePayment": "Secure payment powered by Razorpay • 100% refund if unsatisfied",
+        "unlockStateSchemes": "Unlock State Schemes",
+        "stateSchemesBanner": "One-time payment of ₹75 • 28 States + 8 UTs"
+    },
+    "units": {
+        "squareMeter": "Square Meter",
+        "squareFeet": "Square Feet",
+        "hectare": "Hectare",
+        "acre": "Acre",
+        "cent": "Cent",
+        "gunta": "Gunta (గుంట)",
+        "ankanam": "Ankanam (అంకణం)",
+        "gajam": "Gajam (గజం)",
+        "ground": "Ground",
+        "bigha": "Bigha (बीघा)"
+    },
+    "budgetTracker": {
+        "title": "Budget Tracker",
+        "subtitle": "Track your monthly budget & goals",
+        "monthlyBudget": "Monthly Budget",
+        "setBudget": "Set Budget",
+        "totalBudget": "Total Budget",
+        "totalSpent": "Total Spent",
+        "remaining": "Remaining",
+        "addCategory": "Add Category",
+        "categoryName": "Category Name",
+        "budgetAmount": "Budget Amount",
+        "spent": "Spent",
+        "overBudget": "Over Budget!",
+        "onTrack": "On Track",
+        "warning": "Warning",
+        "progress": "Progress",
+        "noBudgetSet": "No budget set yet. Start by setting your monthly budget.",
+        "budgetSaved": "Budget saved!",
+        "deleteCategory": "Delete this category?",
+        "overview": "Overview",
+        "categories": "Categories",
+        "insights": "Insights",
+        "savingsGoal": "Savings Goal",
+        "actualSavings": "Actual Savings",
+        "addExpense": "Add Expense",
+        "amount": "Amount",
+        "description": "Description",
+        "noCategories": "No categories added yet",
+        "budgetUsed": "budget used",
+        "underspent": "Under Budget",
+        "daysLeft": "days left this month",
+        "dailyAllowance": "Daily Allowance",
+        "spendingTrend": "Spending Trend"
+    }
+}

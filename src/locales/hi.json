@@ -1,0 +1,422 @@
+{
+    "nav": {
+        "home": "होम",
+        "calculate": "गणना",
+        "schemes": "योजनाएं",
+        "expenses": "खर्च",
+        "profile": "प्रोफ़ाइल"
+    },
+    "home": {
+        "welcome": "वापसी पर स्वागत है",
+        "title": "फ़िनकैलिक्स",
+        "quickCalculate": "त्वरित गणना",
+        "recentlyUsed": "हाल ही में उपयोग किया",
+        "viewAll": "सभी देखें",
+        "seeAll": "सभी देखें",
+        "recentCalculators": "हाल के कैलकुलेटर",
+        "govSchemes": "सरकारी योजनाएं",
+        "explore": "500+ केंद्र और राज्य योजनाएं देखें",
+        "new2026": "नई 2026 योजनाएं",
+        "stateWise": "राज्य-वार",
+        "myBudget": "मेरा बजट",
+        "viewExpenses": "खर्च देखें",
+        "popularCalcs": "लोकप्रिय कैलकुलेटर",
+        "currentBalance": "वर्तमान शेष",
+        "monthlyIncome": "मासिक आय"
+    },
+    "calculators": {
+        "title": "सभी कैलकुलेटर",
+        "subtitle": "25+ वित्तीय कैलकुलेटर",
+        "search": "कैलकुलेटर खोजें...",
+        "premiumBanner": "PDF और Excel निर्यात प्रीमियम प्लान में उपलब्ध (सशुल्क)",
+        "categories": {
+            "taxSalary": "कर और वेतन",
+            "banking": "बैंकिंग",
+            "investments": "निवेश",
+            "retirement": "सेवानिवृत्ति",
+            "postOffice": "डाकघर",
+            "property": "संपत्ति",
+            "business": "व्यापार",
+            "others": "अन्य"
+        },
+        "emi": {
+            "name": "ऋण ईएमआई",
+            "desc": "होम, कार, पर्सनल लोन"
+        },
+        "sip": {
+            "name": "एसआईपी कैलकुलेटर",
+            "desc": "म्यूचुअल फंड SIP"
+        },
+        "fd": {
+            "name": "सावधि जमा",
+            "desc": "FD परिपक्वता कैलकुलेटर"
+        },
+        "rd": {
+            "name": "आवर्ती जमा",
+            "desc": "RD रिटर्न कैलकुलेटर"
+        },
+        "compound": {
+            "name": "चक्रवृद्धि ब्याज",
+            "desc": "ब्याज कैलकुलेटर"
+        },
+        "simple": {
+            "name": "साधारण ब्याज",
+            "desc": "बुनियादी ब्याज कैलकुलेटर"
+        },
+        "incomeTax": {
+            "name": "आयकर कैलकुलेटर",
+            "desc": "FY 2025-26 कर गणना"
+        },
+        "salaryHike": {
+            "name": "वेतन वृद्धि कैलकुलेटर",
+            "desc": "अपनी वृद्धि की योजना बनाएं"
+        },
+        "hra": {
+            "name": "HRA कैलकुलेटर",
+            "desc": "मकान किराया भत्ता"
+        },
+        "lumpsum": {
+            "name": "एकमुश्त कैलकुलेटर",
+            "desc": "एकमुश्त निवेश"
+        },
+        "swp": {
+            "name": "SWP कैलकुलेटर",
+            "desc": "व्यवस्थित निकासी"
+        },
+        "cagr": {
+            "name": "CAGR कैलकुलेटर",
+            "desc": "वृद्धि दर कैलकुलेटर"
+        },
+        "stepUpSip": {
+            "name": "स्टेप अप SIP",
+            "desc": "बढ़ती SIP राशि"
+        },
+        "goalSip": {
+            "name": "गोल SIP",
+            "desc": "लक्ष्य-आधारित योजना"
+        },
+        "ppf": {
+            "name": "PPF कैलकुलेटर",
+            "desc": "सार्वजनिक भविष्य निधि"
+        },
+        "nps": {
+            "name": "NPS कैलकुलेटर",
+            "desc": "राष्ट्रीय पेंशन योजना"
+        },
+        "epf": {
+            "name": "EPF कैलकुलेटर",
+            "desc": "कर्मचारी भविष्य निधि"
+        },
+        "gratuity": {
+            "name": "ग्रेच्युटी कैलकुलेटर",
+            "desc": "सेवा लाभ"
+        },
+        "ssy": {
+            "name": "सुकन्या समृद्धि",
+            "desc": "बालिका बचत"
+        },
+        "nsc": {
+            "name": "NSC कैलकुलेटर",
+            "desc": "राष्ट्रीय बचत प्रमाणपत्र"
+        },
+        "kvp": {
+            "name": "KVP कैलकुलेटर",
+            "desc": "किसान विकास पत्र"
+        },
+        "pomis": {
+            "name": "डाकघर MIS",
+            "desc": "मासिक आय योजना"
+        },
+        "scss": {
+            "name": "वरिष्ठ नागरिक बचत",
+            "desc": "SCSS कैलकुलेटर"
+        },
+        "potd": {
+            "name": "डाकघर TD",
+            "desc": "सावधि जमा"
+        },
+        "breakEven": {
+            "name": "ब्रेक ईवन कैलकुलेटर",
+            "desc": "व्यापार योजना"
+        },
+        "property": {
+            "name": "संपत्ति कैलकुलेटर",
+            "desc": "भूमि और फ्लैट मूल्यांकन",
+            "land": "भूमि",
+            "flat": "फ्लैट/अपार्टमेंट",
+            "area": "क्षेत्रफल",
+            "unit": "इकाई",
+            "pricePerUnit": "प्रति इकाई मूल्य",
+            "builtUpArea": "बिल्ट-अप क्षेत्र (वर्ग फुट)",
+            "carpetArea": "कार्पेट क्षेत्र (वर्ग फुट)",
+            "pricePerSqft": "प्रति वर्ग फुट मूल्य",
+            "parking": "पार्किंग शुल्क",
+            "clubMembership": "क्लब/सुविधा शुल्क",
+            "maintenance": "रखरखाव जमा",
+            "gstPercent": "GST %",
+            "basePrice": "आधार मूल्य",
+            "gstAmount": "GST राशि",
+            "additionalCharges": "अतिरिक्त शुल्क",
+            "grandTotal": "कुल योग",
+            "registration": "पंजीकरण (8%)",
+            "stampDuty": "स्टांप शुल्क (6%)",
+            "totalValue": "कुल मूल्य",
+            "totalCost": "कुल लागत",
+            "convert": "रूपांतरण",
+            "unitConverter": "भूमि इकाई परिवर्तक",
+            "enterValue": "मान दर्ज करें",
+            "from": "से",
+            "to": "में",
+            "quickReference": "त्वरित संदर्भ",
+            "inSqFt": "वर्ग फुट में"
+        },
+        "advancedSip": {
+            "name": "एडवांस्ड SIP",
+            "desc": "विस्तृत SIP विश्लेषण",
+            "input": "इनपुट",
+            "report": "रिपोर्ट",
+            "graph": "ग्राफ",
+            "monthlyInvestment": "मासिक निवेश",
+            "expectedReturn": "अपेक्षित रिटर्न दर",
+            "timePeriod": "समय अवधि",
+            "investedAmount": "निवेशित राशि",
+            "estimatedReturns": "अनुमानित रिटर्न",
+            "totalValue": "कुल मूल्य"
+        },
+        "gst": {
+            "name": "GST कैलकुलेटर",
+            "desc": "CGST/SGST/IGST विभाजन",
+            "amount": "राशि",
+            "gstRate": "GST दर",
+            "addGst": "GST जोड़ें",
+            "removeGst": "GST हटाएं",
+            "cgst": "CGST",
+            "sgst": "SGST",
+            "igst": "IGST",
+            "totalGst": "कुल GST",
+            "preGst": "GST पूर्व राशि",
+            "postGst": "GST पश्चात राशि"
+        },
+        "carLoan": {
+            "name": "कार लोन कैलकुलेटर",
+            "desc": "छूट और डाउन पेमेंट के साथ",
+            "carPrice": "कार मूल्य (ऑन-रोड)",
+            "discount": "छूट",
+            "downPayment": "डाउन पेमेंट",
+            "interestRate": "ब्याज दर",
+            "tenure": "ऋण अवधि",
+            "loanAmount": "ऋण राशि",
+            "monthlyEmi": "मासिक EMI",
+            "totalInterest": "कुल ब्याज",
+            "totalPayment": "कुल भुगतान"
+        }
+    },
+    "expenses": {
+        "title": "खर्च ट्रैकर",
+        "dashboard": "डैशबोर्ड",
+        "budget": "बजट",
+        "daily": "दैनिक",
+        "reports": "रिपोर्ट",
+        "thisMonth": "इस महीने",
+        "spent": "खर्च किया",
+        "income": "आय",
+        "savings": "बचत",
+        "breakdown": "विवरण",
+        "categoryWise": "श्रेणी-वार खर्च",
+        "monthlyIncome": "मासिक आय",
+        "fixedExpenses": "निश्चित खर्च",
+        "rent": "किराया / EMI",
+        "emiPayment": "ऋण EMI",
+        "utilities": "उपयोगिताएं (बिजली, पानी, गैस)",
+        "mobile": "मोबाइल और इंटरनेट",
+        "insurance": "बीमा प्रीमियम",
+        "otherFixed": "अन्य निश्चित खर्च",
+        "totalFixed": "कुल निश्चित खर्च",
+        "available": "खर्च के लिए उपलब्ध",
+        "addNew": "नया खर्च जोड़ें",
+        "date": "तारीख",
+        "category": "श्रेणी",
+        "amount": "राशि",
+        "description": "विवरण",
+        "selectCategory": "श्रेणी चुनें",
+        "addExpense": "खर्च जोड़ें",
+        "recentExpenses": "हाल के खर्च",
+        "noExpenses": "अभी तक कोई खर्च दर्ज नहीं",
+        "fixed": "निश्चित",
+        "variable": "परिवर्तनशील",
+        "categories": {
+            "food": "খ भोजन और भोजनालय",
+            "transport": "परिवहन",
+            "shopping": "खरीदारी",
+            "entertainment": "मनोरंजन",
+            "healthcare": "स्वास्थ्य सेवा",
+            "education": "शिक्षा",
+            "groceries": "किराना",
+            "personalCare": "व्यक्तिगत देखभाल",
+            "others": "अन्य"
+        },
+        "budgetSaved": "बजट सफलतापूर्वक सहेजा गया!",
+        "expenseAdded": "खर्च जोड़ा गया!",
+        "noBudget": "पहले अपना बजट सेट करें",
+        "monthlyReport": "मासिक रिपोर्ट",
+        "weeklyAverage": "साप्ताहिक औसत",
+        "dailyAverage": "दैनिक औसत",
+        "topCategory": "शीर्ष श्रेणी",
+        "deleteConfirm": "इस खर्च को हटाएं?",
+        "projectedMonthEnd": "महीने के अंत तक अनुमान",
+        "basedOnDays": "{{days}} दिनों के औसत खर्च पर आधारित",
+        "mayExceedBudget": "इस महीने आपका बजट पार हो सकता है",
+        "withinBudget": "आप बजट में हैं"
+    },
+    "schemes": {
+        "title": "सरकारी योजनाएं",
+        "subtitle": "केंद्र एवं राज्य सरकार की योजनाएं",
+        "search": "नाम, श्रेणी या राज्य से खोजें...",
+        "central": "केंद्र",
+        "state": "राज्य",
+        "all": "सभी",
+        "verified": "सत्यापित",
+        "popular": "लोकप्रिय",
+        "showing": "दिखा रहे हैं",
+        "schemesCount": "योजनाएं",
+        "unlockState": "राज्य योजनाएं अनलॉक करें",
+        "selectState": "राज्य / केंद्रशासित प्रदेश चुनें",
+        "allStates": "सभी राज्य",
+        "states": "राज्य",
+        "unionTerritories": "केंद्रशासित प्रदेश",
+        "statePremium": "राज्य योजनाएं — प्रीमियम",
+        "statePremiumDesc": "28 राज्यों और 8 केंद्रशासित प्रदेशों की 400+ राज्य-स्तरीय योजनाओं तक पहुंचें।",
+        "unlockFor": "₹75 में अनलॉक करें"
+    },
+    "profile": {
+        "title": "प्रोफ़ाइल",
+        "saved": "सहेजे गए",
+        "bookmarks": "बुकमार्क",
+        "history": "इतिहास",
+        "savedCalc": "सहेजी गई गणनाएं",
+        "bookmarkedSchemes": "बुकमार्क योजनाएं",
+        "calcHistory": "गणना इतिहास",
+        "notifications": "सूचनाएं",
+        "settings": "सेटिंग्स",
+        "adminPanel": "एडमिन पैनल"
+    },
+    "settings": {
+        "title": "सेटिंग्स",
+        "appearance": "दिखावट",
+        "darkMode": "डार्क मोड",
+        "language": "भाषा",
+        "selectLanguage": "भाषा चुनें",
+        "legal": "कानूनी",
+        "privacyPolicy": "गोपनीयता नीति",
+        "termsOfService": "सेवा की शर्तें",
+        "about": "के बारे में",
+        "notifications": "सूचना सेटिंग्स",
+        "rateApp": "ऐप रेट करें",
+        "shareApp": "ऐप शेयर करें",
+        "logout": "लॉगआउट",
+        "confirmLogout": "लॉगआउट की पुष्टि करें",
+        "logoutMessage": "क्या आप लॉगआउट करना चाहते हैं? आपका सहेजा डेटा इस डिवाइस पर रहेगा।",
+        "priceAlerts": "मूल्य अलर्ट",
+        "newSchemes": "नई योजनाएं",
+        "calcReminders": "गणना अनुस्मारक",
+        "appUpdates": "ऐप अपडेट"
+    },
+    "common": {
+        "back": "वापस",
+        "save": "सहेजें",
+        "saved": "सहेजा गया",
+        "share": "साझा करें",
+        "download": "डाउनलोड",
+        "downloadPdf": "PDF डाउनलोड करें",
+        "downloadExcel": "Excel डाउनलोड करें",
+        "premium": "प्रीमियम",
+        "close": "बंद करें",
+        "cancel": "रद्द करें",
+        "confirm": "पुष्टि करें",
+        "reset": "रीसेट",
+        "calculate": "गणना करें",
+        "result": "परिणाम",
+        "total": "कुल",
+        "saveCalculation": "गणना सहेजें",
+        "optional": "वैकल्पिक",
+        "delete": "हटाएं",
+        "edit": "संपादित करें",
+        "years": "वर्ष",
+        "months": "महीने",
+        "perAnnum": "% प्रति वर्ष",
+        "loanAmount": "ऋण राशि",
+        "interestRate": "ब्याज दर",
+        "tenure": "अवधि",
+        "monthlyEmi": "मासिक EMI",
+        "totalInterest": "कुल ब्याज",
+        "totalAmount": "कुल राशि",
+        "principalAmount": "मूल राशि",
+        "maturityAmount": "परिपक्वता राशि",
+        "investmentAmount": "निवेश राशि",
+        "all": "सभी",
+        "next": "अगला",
+        "done": "पूर्ण"
+    },
+    "premium": {
+        "title": "प्रीमियम सुविधा",
+        "subtitle": "सभी राज्य सरकार की योजनाओं तक पहुंच अनलॉक करें",
+        "oneTimePayment": "एकमुश्त भुगतान",
+        "lifetimeAccess": "आजीवन पहुंच • कोई सदस्यता नहीं",
+        "feature1": "सभी राज्य योजनाएं (28 राज्य + 8 केंद्रशासित)",
+        "feature2": "400+ राज्य सरकार की योजनाएं",
+        "feature3": "नवीनतम योजना अपडेट और अलर्ट",
+        "feature4": "राज्य पोर्टल के सीधे लिंक",
+        "feature5": "PDF और Excel डाउनलोड",
+        "unlockFor": "₹75 में अनलॉक करें",
+        "maybeLater": "बाद में",
+        "securePayment": "Razorpay द्वारा सुरक्षित भुगतान • असंतुष्ट होने पर 100% रिफंड",
+        "unlockStateSchemes": "राज्य योजनाएं अनलॉक करें",
+        "stateSchemesBanner": "₹75 एकमुश्त भुगतान • 28 राज्य + 8 केंद्रशासित"
+    },
+    "units": {
+        "squareMeter": "वर्ग मीटर",
+        "squareFeet": "वर्ग फुट",
+        "hectare": "हेक्टेयर",
+        "acre": "एकड़",
+        "cent": "सेंट",
+        "gunta": "गुंटा",
+        "ankanam": "अंकणम",
+        "gajam": "गजम",
+        "ground": "ग्राउंड",
+        "bigha": "बीघा"
+    },
+    "budgetTracker": {
+        "title": "बजट ट्रैकर",
+        "subtitle": "अपने मासिक बजट और लक्ष्यों को ट्रैक करें",
+        "monthlyBudget": "मासिक बजट",
+        "setBudget": "बजट सेट करें",
+        "totalBudget": "कुल बजट",
+        "totalSpent": "कुल खर्च",
+        "remaining": "शेष",
+        "addCategory": "श्रेणी जोड़ें",
+        "categoryName": "श्रेणी का नाम",
+        "budgetAmount": "बजट राशि",
+        "spent": "खर्च",
+        "overBudget": "बजट से अधिक!",
+        "onTrack": "सही रास्ते पर",
+        "warning": "चेतावनी",
+        "progress": "प्रगति",
+        "noBudgetSet": "अभी तक कोई बजट सेट नहीं है। अपना मासिक बजट सेट करें।",
+        "budgetSaved": "बजट सहेजा गया!",
+        "deleteCategory": "इस श्रेणी को हटाएं?",
+        "overview": "अवलोकन",
+        "categories": "श्रेणियां",
+        "insights": "अंतर्दृष्टि",
+        "savingsGoal": "बचत लक्ष्य",
+        "actualSavings": "वास्तविक बचत",
+        "addExpense": "खर्च जोड़ें",
+        "amount": "राशि",
+        "description": "विवरण",
+        "noCategories": "अभी तक कोई श्रेणी नहीं जोड़ी गई",
+        "budgetUsed": "बजट उपयोग",
+        "underspent": "बजट में",
+        "daysLeft": "इस महीने शेष दिन",
+        "dailyAllowance": "दैनिक भत्ता",
+        "spendingTrend": "खर्च प्रवृत्ति"
+    }
+}

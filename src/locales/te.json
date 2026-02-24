@@ -1,0 +1,421 @@
+{
+    "nav": {
+        "home": "హోమ్",
+        "calculate": "గణన",
+        "schemes": "పథకాలు",
+        "expenses": "ఖర్చులు",
+        "profile": "ప్రొఫైల్"
+    },
+    "home": {
+        "welcome": "తిరిగి స్వాగతం",
+        "title": "FinCalix",
+        "quickCalculate": "త్వరిత గణన",
+        "recentlyUsed": "ఇటీవల వాడినవి",
+        "viewAll": "అన్నీ చూడండి",
+        "seeAll": "అన్నీ చూడండి",
+        "recentCalculators": "ఇటీవలి కాలిక్యులేటర్లు",
+        "govSchemes": "ప్రభుత్వ పథకాలు",
+        "explore": "500+ కేంద్ర & రాష్ట్ర పథకాలు చూడండి",
+        "new2026": "కొత్త 2026 పథకాలు",
+        "stateWise": "రాష్ట్ర వారీ",
+        "marketSnapshot": "మార్కెట్ స్నాప్‌షాట్",
+        "viewExpenses": "ఖర్చులు చూడండి",
+        "popularCalcs": "ప్రజాదరణ పొందిన కాలిక్యులేటర్లు",
+        "expenseOverview": "ఖర్చుల అవలోకనం"
+    },
+    "calculators": {
+        "title": "అన్ని కాలిక్యులేటర్లు",
+        "subtitle": "25+ ఆర్థిక కాలిక్యులేటర్లు",
+        "search": "కాలిక్యులేటర్లు శోధించండి...",
+        "premiumBanner": "PDF మరియు Excel ఎగుమతి ప్రీమియం ప్లాన్‌లో అందుబాటులో ఉంది (చెల్లింపు)",
+        "categories": {
+            "taxSalary": "పన్ను & జీతం",
+            "banking": "బ్యాంకింగ్",
+            "investments": "పెట్టుబడులు",
+            "retirement": "రిటైర్‌మెంట్",
+            "postOffice": "తపాలా కార్యాలయం",
+            "property": "ఆస్తి",
+            "business": "వ్యాపారం",
+            "others": "ఇతరములు"
+        },
+        "emi": {
+            "name": "లోన్ EMI",
+            "desc": "హోమ్, కార్, పర్సనల్ లోన్లు"
+        },
+        "sip": {
+            "name": "SIP కాలిక్యులేటర్",
+            "desc": "మ్యూచువల్ ఫండ్ SIP"
+        },
+        "fd": {
+            "name": "ఫిక్స్‌డ్ డిపాజిట్",
+            "desc": "FD మెచ్యూరిటీ కాలిక్యులేటర్"
+        },
+        "rd": {
+            "name": "రికరింగ్ డిపాజిట్",
+            "desc": "RD రిటర్న్స్ కాలిక్యులేటర్"
+        },
+        "compound": {
+            "name": "చక్రవడ్డీ",
+            "desc": "వడ్డీ కాలిక్యులేటర్"
+        },
+        "simple": {
+            "name": "సాధారణ వడ్డీ",
+            "desc": "ప్రాథమిక వడ్డీ కాలిక్యులేటర్"
+        },
+        "incomeTax": {
+            "name": "ఆదాయపు పన్ను కాలిక్యులేటర్",
+            "desc": "FY 2025-26 పన్ను గణన"
+        },
+        "salaryHike": {
+            "name": "జీతం పెంపు కాలిక్యులేటర్",
+            "desc": "మీ పెంపును ప్లాన్ చేయండి"
+        },
+        "hra": {
+            "name": "HRA కాలిక్యులేటర్",
+            "desc": "ఇంటి అద్దె భత్యం"
+        },
+        "lumpsum": {
+            "name": "లంప్‌సమ్ కాలిక్యులేటర్",
+            "desc": "ఒకేసారి పెట్టుబడి"
+        },
+        "swp": {
+            "name": "SWP కాలిక్యులేటర్",
+            "desc": "క్రమబద్ధమైన ఉపసంహరణ"
+        },
+        "cagr": {
+            "name": "CAGR కాలిక్యులేటర్",
+            "desc": "వృద్ధి రేటు కాలిక్యులేటర్"
+        },
+        "stepUpSip": {
+            "name": "స్టెప్ అప్ SIP",
+            "desc": "పెరుగుతున్న SIP మొత్తం"
+        },
+        "goalSip": {
+            "name": "గోల్ SIP",
+            "desc": "లక్ష్య ఆధారిత ప్రణాళిక"
+        },
+        "ppf": {
+            "name": "PPF కాలిక్యులేటర్",
+            "desc": "పబ్లిక్ ప్రావిడెంట్ ఫండ్"
+        },
+        "nps": {
+            "name": "NPS కాలిక్యులేటర్",
+            "desc": "జాతీయ పెన్షన్ పథకం"
+        },
+        "epf": {
+            "name": "EPF కాలిక్యులేటర్",
+            "desc": "ఉద్యోగుల భవిష్య నిధి"
+        },
+        "gratuity": {
+            "name": "గ్రాట్యుటీ కాలిక్యులేటర్",
+            "desc": "సేవా ప్రయోజనాలు"
+        },
+        "ssy": {
+            "name": "సుకన్య సమృద్ధి",
+            "desc": "బాలికల పొదుపు"
+        },
+        "nsc": {
+            "name": "NSC కాలిక్యులేటర్",
+            "desc": "జాతీయ పొదుపు సర్టిఫికేట్"
+        },
+        "kvp": {
+            "name": "KVP కాలిక్యులేటర్",
+            "desc": "కిసాన్ వికాస్ పత్ర"
+        },
+        "pomis": {
+            "name": "పోస్ట్ ఆఫీస్ MIS",
+            "desc": "నెలవారీ ఆదాయ పథకం"
+        },
+        "scss": {
+            "name": "సీనియర్ సిటిజన్ సేవింగ్స్",
+            "desc": "SCSS కాలిక్యులేటర్"
+        },
+        "potd": {
+            "name": "పోస్ట్ ఆఫీస్ TD",
+            "desc": "టైమ్ డిపాజిట్"
+        },
+        "breakEven": {
+            "name": "బ్రేక్ ఈవెన్ కాలిక్యులేటర్",
+            "desc": "వ్యాపార ప్రణాళిక"
+        },
+        "property": {
+            "name": "ఆస్తి కాలిక్యులేటర్",
+            "desc": "భూమి & ఫ్లాట్ మూల్యాంకనం",
+            "land": "భూమి",
+            "flat": "ఫ్లాట్/అపార్ట్‌మెంట్",
+            "area": "విస్తీర్ణం",
+            "unit": "యూనిట్",
+            "pricePerUnit": "యూనిట్‌కు ధర",
+            "builtUpArea": "బిల్ట్-అప్ ఏరియా (చ.అ.)",
+            "carpetArea": "కార్పెట్ ఏరియా (చ.అ.)",
+            "pricePerSqft": "చ.అ.కు ధర",
+            "parking": "పార్కింగ్ ఛార్జీలు",
+            "clubMembership": "క్లబ్/సౌకర్య ఛార్జీలు",
+            "maintenance": "మెయింటెనెన్స్ డిపాజిట్",
+            "gstPercent": "GST %",
+            "basePrice": "బేస్ ధర",
+            "gstAmount": "GST మొత్తం",
+            "additionalCharges": "అదనపు ఛార్జీలు",
+            "grandTotal": "మొత్తం",
+            "registration": "రిజిస్ట్రేషన్ (8%)",
+            "stampDuty": "స్టాంప్ డ్యూటీ (6%)",
+            "totalValue": "మొత్తం విలువ",
+            "totalCost": "మొత్తం వ్యయం",
+            "convert": "మార్పిడి",
+            "unitConverter": "భూమి యూనిట్ మార్పిడి",
+            "enterValue": "విలువ నమోదు చేయండి",
+            "from": "నుండి",
+            "to": "కు",
+            "quickReference": "త్వరిత సూచన",
+            "inSqFt": "చ.అ. లో"
+        },
+        "advancedSip": {
+            "name": "అడ్వాన్స్‌డ్ SIP",
+            "desc": "వివరణాత్మక SIP విశ్లేషణ",
+            "input": "ఇన్‌పుట్",
+            "report": "రిపోర్ట్",
+            "graph": "గ్రాఫ్",
+            "monthlyInvestment": "నెలవారీ పెట్టుబడి",
+            "expectedReturn": "ఆశించిన రిటర్న్ రేటు",
+            "timePeriod": "కాల వ్యవధి",
+            "investedAmount": "పెట్టుబడి మొత్తం",
+            "estimatedReturns": "అంచనా రిటర్న్స్",
+            "totalValue": "మొత్తం విలువ"
+        },
+        "gst": {
+            "name": "GST కాలిక్యులేటర్",
+            "desc": "CGST/SGST/IGST విభజన",
+            "amount": "మొత్తం",
+            "gstRate": "GST రేటు",
+            "addGst": "GST జోడించు",
+            "removeGst": "GST తొలగించు",
+            "cgst": "CGST",
+            "sgst": "SGST",
+            "igst": "IGST",
+            "totalGst": "మొత్తం GST",
+            "preGst": "GST ముందు మొత్తం",
+            "postGst": "GST తర్వాత మొత్తం"
+        },
+        "carLoan": {
+            "name": "కార్ లోన్ కాలిక్యులేటర్",
+            "desc": "డిస్కౌంట్ & డౌన్ పేమెంట్",
+            "carPrice": "కారు ధర (ఆన్-రోడ్)",
+            "discount": "డిస్కౌంట్",
+            "downPayment": "డౌన్ పేమెంట్",
+            "interestRate": "వడ్డీ రేటు",
+            "tenure": "లోన్ కాలం",
+            "loanAmount": "లోన్ మొత్తం",
+            "monthlyEmi": "నెలవారీ EMI",
+            "totalInterest": "మొత్తం వడ్డీ",
+            "totalPayment": "మొత్తం చెల్లింపు"
+        }
+    },
+    "expenses": {
+        "title": "ఖర్చుల ట్రాకర్",
+        "dashboard": "డ్యాష్‌బోర్డ్",
+        "budget": "బడ్జెట్",
+        "daily": "రోజువారీ",
+        "reports": "నివేదికలు",
+        "thisMonth": "ఈ నెల",
+        "spent": "ఖర్చు చేశారు",
+        "income": "ఆదాయం",
+        "savings": "పొదుపు",
+        "breakdown": "వివరణ",
+        "categoryWise": "వర్గం ప్రకారం ఖర్చులు",
+        "monthlyIncome": "నెలవారీ ఆదాయం",
+        "fixedExpenses": "స్థిర ఖర్చులు",
+        "rent": "అద్దె / EMI",
+        "emiPayment": "లోన్ EMI",
+        "utilities": "యుటిలిటీలు (విద్యుత్, నీరు, గ్యాస్)",
+        "mobile": "మొబైల్ & ఇంటర్నెట్",
+        "insurance": "బీమా ప్రీమియంలు",
+        "otherFixed": "ఇతర స్థిర ఖర్చులు",
+        "totalFixed": "మొత్తం స్థిర ఖర్చులు",
+        "available": "ఖర్చుకు అందుబాటులో",
+        "addNew": "కొత్త ఖర్చు చేర్చండి",
+        "date": "తేదీ",
+        "category": "వర్గం",
+        "amount": "మొత్తం",
+        "description": "వివరణ",
+        "selectCategory": "వర్గం ఎంచుకోండి",
+        "addExpense": "ఖర్చు చేర్చండి",
+        "recentExpenses": "ఇటీవలి ఖర్చులు",
+        "noExpenses": "ఇంకా ఖర్చులు నమోదు కాలేదు",
+        "fixed": "స్థిరం",
+        "variable": "మారుతోన్న",
+        "categories": {
+            "food": "ఆహారం & భోజనం",
+            "transport": "రవాణా",
+            "shopping": "షాపింగ్",
+            "entertainment": "వినోదం",
+            "healthcare": "ఆరోగ్య సంరక్షణ",
+            "education": "విద్య",
+            "groceries": "కిరాణా",
+            "personalCare": "వ్యక్తిగత సంరక్షణ",
+            "others": "ఇతరములు"
+        },
+        "budgetSaved": "బడ్జెట్ విజయవంతంగా సేవ్ అయింది!",
+        "expenseAdded": "ఖర్చు జోడించబడింది!",
+        "noBudget": "ముందుగా మీ బడ్జెట్‌ను సెట్ చేయండి",
+        "monthlyReport": "నెలవారీ నివేదిక",
+        "weeklyAverage": "వారపు సగటు",
+        "dailyAverage": "రోజువారీ సగటు",
+        "topCategory": "అగ్ర వర్గం",
+        "deleteConfirm": "ఈ ఖర్చును తొలగించాలా?",
+        "projectedMonthEnd": "నెల చివరి అంచనా",
+        "basedOnDays": "{{days}} రోజుల సగటు ఖర్చు ఆధారంగా",
+        "mayExceedBudget": "ఈ నెలలో మీ బడ్జెట్ దాటవచ్చు",
+        "withinBudget": "మీరు బడ్జెట్‌లో ఉన్నారు"
+    },
+    "schemes": {
+        "title": "ప్రభుత్వ పథకాలు",
+        "subtitle": "కేంద్ర & రాష్ట్ర ప్రభుత్వ పథకాలు",
+        "search": "పేరు, వర్గం లేదా రాష్ట్రంతో శోధించండి...",
+        "central": "కేంద్రం",
+        "state": "రాష్ట్రం",
+        "all": "అన్నీ",
+        "verified": "ధృవీకరించబడింది",
+        "popular": "ప్రజాదరణ",
+        "showing": "చూపుతున్నది",
+        "schemesCount": "పథకాలు",
+        "unlockState": "రాష్ట్ర పథకాలను అన్‌లాక్ చేయండి",
+        "selectState": "రాష్ట్రం / కేంద్రపాలిత ప్రాంతం ఎంచుకోండి",
+        "allStates": "అన్ని రాష్ట్రాలు",
+        "states": "రాష్ట్రాలు",
+        "unionTerritories": "కేంద్ర పాలిత ప్రాంతాలు",
+        "statePremium": "రాష్ట్ర పథకాలు — ప్రీమియం",
+        "statePremiumDesc": "28 రాష్ట్రాలు మరియు 8 కేంద్రపాలిత ప్రాంతాల నుండి 400+ రాష్ట్ర-స్థాయి పథకాలను యాక్సెస్ చేయండి.",
+        "unlockFor": "₹75కు అన్‌లాక్ చేయండి"
+    },
+    "profile": {
+        "title": "ప్రొఫైల్",
+        "saved": "సేవ్ చేసినవి",
+        "bookmarks": "బుక్‌మార్క్‌లు",
+        "history": "చరిత్ర",
+        "savedCalc": "సేవ్ చేసిన గణనలు",
+        "bookmarkedSchemes": "బుక్‌మార్క్ చేసిన పథకాలు",
+        "calcHistory": "గణన చరిత్ర",
+        "notifications": "సూచనలు",
+        "settings": "సెట్టింగ్‌లు",
+        "adminPanel": "అడ్మిన్ ప్యానెల్"
+    },
+    "settings": {
+        "title": "సెట్టింగ్‌లు",
+        "appearance": "రూపం",
+        "darkMode": "డార్క్ మోడ్",
+        "language": "భాష",
+        "selectLanguage": "భాష ఎంచుకోండి",
+        "legal": "చట్టపరం",
+        "privacyPolicy": "గోప్యతా విధానం",
+        "termsOfService": "సేవా నిబంధనలు",
+        "about": "గురించి",
+        "notifications": "సూచన సెట్టింగ్‌లు",
+        "rateApp": "యాప్‌ను రేట్ చేయండి",
+        "shareApp": "యాప్ షేర్ చేయండి",
+        "logout": "లాగ్‌అవుట్",
+        "confirmLogout": "లాగ్‌అవుట్ నిర్ధారించండి",
+        "logoutMessage": "మీరు లాగ్‌అవుట్ చేయాలనుకుంటున్నారా? మీ సేవ్ చేసిన డేటా ఈ పరికరంలో ఉంటుంది.",
+        "priceAlerts": "ధర హెచ్చరికలు",
+        "newSchemes": "కొత్త పథకాలు",
+        "calcReminders": "గణన రిమైండర్లు",
+        "appUpdates": "యాప్ అప్‌డేట్లు"
+    },
+    "common": {
+        "back": "వెనుకకు",
+        "save": "సేవ్",
+        "saved": "సేవ్ అయింది",
+        "share": "షేర్",
+        "download": "డౌన్‌లోడ్",
+        "downloadPdf": "PDF డౌన్‌లోడ్",
+        "downloadExcel": "Excel డౌన్‌లోడ్",
+        "premium": "ప్రీమియం",
+        "close": "మూసివేయి",
+        "cancel": "రద్దు",
+        "confirm": "నిర్ధారించు",
+        "reset": "రీసెట్",
+        "calculate": "లెక్కించు",
+        "result": "ఫలితం",
+        "total": "మొత్తం",
+        "saveCalculation": "గణన సేవ్ చేయి",
+        "optional": "ఐచ్ఛికం",
+        "delete": "తొలగించు",
+        "edit": "సవరించు",
+        "years": "సంవత్సరాలు",
+        "months": "నెలలు",
+        "perAnnum": "% వార్షికం",
+        "loanAmount": "లోన్ మొత్తం",
+        "interestRate": "వడ్డీ రేటు",
+        "tenure": "కాల వ్యవధి",
+        "monthlyEmi": "నెలవారీ EMI",
+        "totalInterest": "మొత్తం వడ్డీ",
+        "totalAmount": "మొత్తం రాశి",
+        "principalAmount": "అసలు మొత్తం",
+        "maturityAmount": "మెచ్యూరిటీ మొత్తం",
+        "investmentAmount": "పెట్టుబడి మొత్తం",
+        "all": "అన్ని",
+        "next": "తదుపరి",
+        "done": "పూర్తి"
+    },
+    "premium": {
+        "title": "ప్రీమియం ఫీచర్",
+        "subtitle": "అన్ని రాష్ట్ర ప్రభుత్వ పథకాలను అన్‌లాక్ చేయండి",
+        "oneTimePayment": "ఒకేసారి చెల్లింపు",
+        "lifetimeAccess": "జీవితకాల యాక్సెస్ • సబ్‌స్క్రిప్షన్ లేదు",
+        "feature1": "అన్ని రాష్ట్ర పథకాలు (28 రాష్ట్రాలు + 8 కేప్రా)",
+        "feature2": "400+ రాష్ట్ర ప్రభుత్వ పథకాలు",
+        "feature3": "తాజా పథకం అప్‌డేట్లు & హెచ్చరికలు",
+        "feature4": "రాష్ట్ర పోర్టల్ లింక్‌లు",
+        "feature5": "PDF & Excel డౌన్‌లోడ్లు",
+        "unlockFor": "₹75కు అన్‌లాక్ చేయండి",
+        "maybeLater": "తర్వాత",
+        "securePayment": "Razorpay ద్వారా సురక్షిత చెల్లింపు • 100% రీఫండ్",
+        "unlockStateSchemes": "రాష్ట్ర పథకాలు అన్‌లాక్ చేయండి",
+        "stateSchemesBanner": "₹75 ఒకేసారి చెల్లింపు • 28 రాష్ట్రాలు + 8 కేప్రా"
+    },
+    "units": {
+        "squareMeter": "చదరపు మీటర్",
+        "squareFeet": "చదరపు అడుగులు",
+        "hectare": "హెక్టేర్",
+        "acre": "ఎకరం",
+        "cent": "సెంట్",
+        "gunta": "గుంట",
+        "ankanam": "అంకణం",
+        "gajam": "గజం",
+        "ground": "గ్రౌండ్",
+        "bigha": "బీఘా"
+    },
+    "budgetTracker": {
+        "title": "బడ్జెట్ ట్రాకర్",
+        "subtitle": "మీ నెలవారీ బడ్జెట్ & లక్ష్యాలను ట్రాక్ చేయండి",
+        "monthlyBudget": "నెలవారీ బడ్జెట్",
+        "setBudget": "బడ్జెట్ సెట్ చేయండి",
+        "totalBudget": "మొత్తం బడ్జెట్",
+        "totalSpent": "మొత్తం ఖర్చు",
+        "remaining": "మిగిలింది",
+        "addCategory": "వర్గం చేర్చండి",
+        "categoryName": "వర్గం పేరు",
+        "budgetAmount": "బడ్జెట్ మొత్తం",
+        "spent": "ఖర్చు",
+        "overBudget": "బడ్జెట్ మించింది!",
+        "onTrack": "సరైన మార్గంలో",
+        "warning": "హెచ్చరిక",
+        "progress": "పురోగతి",
+        "noBudgetSet": "ఇంకా బడ్జెట్ సెట్ చేయలేదు. మీ నెలవారీ బడ్జెట్ సెట్ చేయండి.",
+        "budgetSaved": "బడ్జెట్ సేవ్ చేయబడింది!",
+        "deleteCategory": "ఈ వర్గాన్ని తొలగించాలా?",
+        "overview": "అవలోకనం",
+        "categories": "వర్గాలు",
+        "insights": "అంతర్దృష్టులు",
+        "savingsGoal": "పొదుపు లక్ష్యం",
+        "actualSavings": "వాస్తవ పొదుపు",
+        "addExpense": "ఖర్చు చేర్చండి",
+        "amount": "మొత్తం",
+        "description": "వివరణ",
+        "noCategories": "ఇంకా వర్గాలు చేర్చలేదు",
+        "budgetUsed": "బడ్జెట్ ఉపయోగం",
+        "underspent": "బడ్జెట్ లోపల",
+        "daysLeft": "ఈ నెలలో మిగిలిన రోజులు",
+        "dailyAllowance": "రోజువారీ అలవెన్స్",
+        "spendingTrend": "ఖర్చు ధోరణి"
+    }
+}
