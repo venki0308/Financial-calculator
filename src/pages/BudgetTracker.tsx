@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, type BudgetCategory } from '../store/useBudgetTrackerStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { formatINR } from '../utils/calculations';
+import { exportToPDF } from '../utils/exportUtils';
 
 export default function BudgetTracker() {
     const { t } = useTranslation();
@@ -117,59 +118,29 @@ export default function BudgetTracker() {
     };
 
     const handleDownloadPDF = () => {
-        try {
-            const { jsPDF } = require('jspdf');
-            require('jspdf-autotable');
-            const doc = new jsPDF();
+        const headers = ['Field', 'Value'];
+        const summaryData: (string | number)[][] = [
+            ['Monthly Income', `Rs ${monthlyIncome.toLocaleString('en-IN')}`],
+            ['Total Spent (This Month)', `Rs ${totalSpent.toLocaleString('en-IN')}`],
+            ['Savings', `Rs ${savings.toLocaleString('en-IN')}`],
+            ['Current Balance', `Rs ${currentBalance.toLocaleString('en-IN')}`],
+            ['Total Balance', `Rs ${totalBalance.toLocaleString('en-IN')}`],
+            ['Savings Goal', `Rs ${savingsGoal.toLocaleString('en-IN')}`],
+        ];
 
-            doc.setFontSize(18);
-            doc.text('Budget Report', 14, 22);
-            doc.setFontSize(10);
-            doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, 14, 30);
-
-            // Summary
-            doc.setFontSize(12);
-            doc.text('Summary', 14, 42);
-            const summaryData = [
-                ['Monthly Income', `Rs ${monthlyIncome.toLocaleString('en-IN')}`],
-                ['Total Spent (This Month)', `Rs ${totalSpent.toLocaleString('en-IN')}`],
-                ['Savings', `Rs ${savings.toLocaleString('en-IN')}`],
-                ['Current Balance', `Rs ${currentBalance.toLocaleString('en-IN')}`],
-                ['Total Balance', `Rs ${totalBalance.toLocaleString('en-IN')}`],
-                ['Savings Goal', `Rs ${savingsGoal.toLocaleString('en-IN')}`],
-            ];
-            (doc as any).autoTable({
-                startY: 46,
-                head: [['Field', 'Value']],
-                body: summaryData,
-                theme: 'grid',
-                headStyles: { fillColor: [99, 102, 241] },
-            });
-
-            // Entries
-            if (monthEntries.length > 0) {
-                const entriesY = (doc as any).lastAutoTable.finalY + 10;
-                doc.setFontSize(12);
-                doc.text('This Month\'s Expenses', 14, entriesY);
-                const entryData = monthEntries.map(e => [
-                    new Date(e.date).toLocaleDateString('en-IN'),
-                    e.description,
-                    `Rs ${e.amount.toLocaleString('en-IN')}`,
+        // Add expense entries
+        if (monthEntries.length > 0) {
+            summaryData.push(['', '']); // spacer
+            summaryData.push(['--- This Month Expenses ---', '---']);
+            monthEntries.forEach(e => {
+                summaryData.push([
+                    `${new Date(e.date).toLocaleDateString('en-IN')} - ${e.description}`,
+                    `Rs ${e.amount.toLocaleString('en-IN')}`
                 ]);
-                (doc as any).autoTable({
-                    startY: entriesY + 4,
-                    head: [['Date', 'Description', 'Amount']],
-                    body: entryData,
-                    theme: 'grid',
-                    headStyles: { fillColor: [99, 102, 241] },
-                });
-            }
-
-            doc.save('Budget_Report.pdf');
-        } catch (err) {
-            console.error('PDF export error:', err);
-            alert('PDF export failed. Please try again.');
+            });
         }
+
+        exportToPDF('Budget Report', headers, summaryData, 'Budget_Report');
     };
 
     return (

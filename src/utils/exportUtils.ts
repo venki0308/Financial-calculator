@@ -44,20 +44,22 @@ export const exportToPDF = (
 
         // Add Chart if provided
         if (chartImage) {
-            const finalY = (doc as any).lastAutoTable.finalY + 15;
+            const finalY = (doc as any).lastAutoTable?.finalY ?? 45;
+            const chartY = finalY + 15;
 
             // Check if we need a new page
-            if (finalY > 200) {
+            if (chartY > 200) {
                 doc.addPage();
                 doc.setFontSize(14);
                 doc.setTextColor(15, 23, 42);
                 doc.text("Visual Analysis", 14, 22);
-                doc.addImage(chartImage, 'PNG', 14, 30, 180, 100);
+                // Center the chart: page width 210, chart 140 wide, left margin = (210-140)/2 = 35
+                doc.addImage(chartImage, 'PNG', 35, 30, 140, 90);
             } else {
                 doc.setFontSize(14);
                 doc.setTextColor(15, 23, 42);
-                doc.text("Visual Analysis", 14, finalY);
-                doc.addImage(chartImage, 'PNG', 14, finalY + 10, 180, 100);
+                doc.text("Visual Analysis", 14, chartY);
+                doc.addImage(chartImage, 'PNG', 35, chartY + 8, 140, 90);
             }
         }
 

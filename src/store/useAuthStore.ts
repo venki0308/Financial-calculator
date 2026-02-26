@@ -20,6 +20,7 @@ interface AuthState {
     logout: () => void;
     setPremium: (val: boolean) => void;
     registerUser: (email: string, password: string, name: string) => void;
+    changePassword: (email: string, oldPassword: string, newPassword: string) => { success: boolean; message: string };
     isAdmin: () => boolean;
 }
 
@@ -51,6 +52,31 @@ export const useAuthStore = create<AuthState>()(
                 set((state) => ({
                     registeredUsers: [...state.registeredUsers.filter(u => u.email !== email), { email, password, name }]
                 })),
+            changePassword: (email, oldPassword, newPassword) => {
+                const state = get();
+                const user = state.registeredUsers.find(u => u.email === email);
+                // Check admin credentials
+                if (email === ADMIN_EMAIL) {
+                    if (oldPassword !== ADMIN_PASSWORD) {
+                        return { success: false, message: 'Current password is incorrect' };
+                    }
+                    const validation = validatePassword(newPassword);
+                    if (!validation.valid) return { success: false, message: validation.message };
+                    // Admin password is env-based, can't change dynamically. Store in registeredUsers.
+                    set((s) => ({
+                        registeredUsers: [...s.registeredUsers.filter(u => u.email !== email), { email, password: newPassword, name: 'Admin' }]
+                    }));
+                    return { success: true, message: 'Password changed successfully' };
+                }
+                if (!user) return { success: false, message: 'User not found' };
+                if (user.password !== oldPassword) return { success: false, message: 'Current password is incorrect' };
+                const validation = validatePassword(newPassword);
+                if (!validation.valid) return { success: false, message: validation.message };
+                set((s) => ({
+                    registeredUsers: s.registeredUsers.map(u => u.email === email ? { ...u, password: newPassword } : u)
+                }));
+                return { success: true, message: 'Password changed successfully' };
+            },
             isAdmin: () => get().user?.role === 'admin',
         }),
         { name: 'auth-storage' }

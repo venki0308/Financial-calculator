@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Bell, Shield, FileText, Star, Share2, Info, LogOut, ChevronRight, Globe, Check } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Bell, Shield, FileText, Star, Share2, Info, LogOut, ChevronRight, Globe, Check, Lock, Key } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useSettingsStore } from '../store/useSettingsStore';
@@ -24,6 +24,14 @@ export default function Settings() {
     const [showNotif, setShowNotif] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [showLangPicker, setShowLangPicker] = useState(false);
+    const [showChangePassword, setShowChangePassword] = useState(false);
+    const [oldPassword, setOldPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [pwdMsg, setPwdMsg] = useState('');
+    const [pwdSuccess, setPwdSuccess] = useState(false);
+    const user = useAuthStore((s) => s.user);
+    const changePassword = useAuthStore((s) => s.changePassword);
 
     const handleLogout = () => { logout(); navigate('/login'); };
     const currentLang = languages.find(l => i18n.language.startsWith(l.code)) || languages[0];
@@ -66,6 +74,7 @@ export default function Settings() {
 
                     {/* Notification Settings */}
                     <MenuItem icon={Bell} label={t('settings.notifications')} color="#F59E0B" onClick={() => setShowNotif(true)} />
+                    <MenuItem icon={Key} label="Change Password" color="#EF4444" onClick={() => { setShowChangePassword(true); setPwdMsg(''); setPwdSuccess(false); setOldPassword(''); setNewPassword(''); setConfirmPassword(''); }} />
                     <MenuItem icon={Shield} label={t('settings.privacyPolicy')} color="#10B981" onClick={() => navigate('/privacy-policy')} />
                     <MenuItem icon={FileText} label={t('settings.termsOfService')} color="#3B82F6" onClick={() => navigate('/terms-of-service')} />
                     <MenuItem icon={Star} label={t('settings.rateApp')} color="#F59E0B" />
@@ -139,6 +148,49 @@ export default function Settings() {
                     </>
                 )}
             </AnimatePresence>
+
+            {/* Change Password Sheet */}
+            <BottomSheet isOpen={showChangePassword} onClose={() => setShowChangePassword(false)} title="Change Password">
+                <div className="space-y-3">
+                    <div>
+                        <label className="text-slate-400 text-xs mb-1 block">Current Password</label>
+                        <input type="password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} placeholder="Enter current password"
+                            className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-green" />
+                    </div>
+                    <div>
+                        <label className="text-slate-400 text-xs mb-1 block">New Password</label>
+                        <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Min 8 chars, uppercase, lowercase, digit, special"
+                            className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-green" />
+                    </div>
+                    <div>
+                        <label className="text-slate-400 text-xs mb-1 block">Confirm New Password</label>
+                        <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Re-enter new password"
+                            className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-green" />
+                    </div>
+                    {pwdMsg && (
+                        <p className={`text-xs font-medium ${pwdSuccess ? 'text-brand-green' : 'text-red-400'}`}>{pwdMsg}</p>
+                    )}
+                    <button
+                        onClick={() => {
+                            if (!oldPassword || !newPassword || !confirmPassword) {
+                                setPwdMsg('All fields are required'); setPwdSuccess(false); return;
+                            }
+                            if (newPassword !== confirmPassword) {
+                                setPwdMsg('Passwords do not match'); setPwdSuccess(false); return;
+                            }
+                            const result = changePassword(user?.email || '', oldPassword, newPassword);
+                            setPwdMsg(result.message);
+                            setPwdSuccess(result.success);
+                            if (result.success) {
+                                setTimeout(() => setShowChangePassword(false), 1500);
+                            }
+                        }}
+                        className="w-full py-3 rounded-xl bg-brand-green text-white font-bold text-sm"
+                    >
+                        Update Password
+                    </button>
+                </div>
+            </BottomSheet>
         </div>
     );
 }
