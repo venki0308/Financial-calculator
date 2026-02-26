@@ -23,9 +23,19 @@ interface AuthState {
     isAdmin: () => boolean;
 }
 
-// Admin credentials
-const ADMIN_EMAIL = 'admin@fincalc.in';
-const ADMIN_PASSWORD = 'Admin@123';
+// Admin credentials — loaded from environment variables for security
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@fincalix.com';
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Admin@Fincalix#2026';
+
+// Password validation — minimum 8 chars, at least 1 uppercase, 1 lowercase, 1 digit, 1 special char
+export function validatePassword(password: string): { valid: boolean; message: string } {
+    if (password.length < 8) return { valid: false, message: 'Password must be at least 8 characters' };
+    if (!/[A-Z]/.test(password)) return { valid: false, message: 'Must include an uppercase letter' };
+    if (!/[a-z]/.test(password)) return { valid: false, message: 'Must include a lowercase letter' };
+    if (!/[0-9]/.test(password)) return { valid: false, message: 'Must include a digit' };
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return { valid: false, message: 'Must include a special character' };
+    return { valid: true, message: 'Strong password' };
+}
 
 export const useAuthStore = create<AuthState>()(
     persist(

@@ -23,6 +23,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import PremiumModal from '../components/PremiumModal';
+import CalculatorInfoModal from '../components/CalculatorInfoModal';
 
 ChartJS.register(
     ArcElement,
@@ -44,6 +45,7 @@ export default function SIPCalculator() {
     const [years, setYears] = useState(10);
     const [isSaved, setIsSaved] = useState(false);
     const [showPremiumModal, setShowPremiumModal] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
 
     const hasPremium = useAuthStore(s => s.hasPremium);
     const isAdmin = useAuthStore(s => s.isAdmin());
@@ -136,14 +138,19 @@ export default function SIPCalculator() {
     return (
         <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
             <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-dark-border">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
-                    </button>
-                    <div>
-                        <h1 className="text-lg font-bold text-white">SIP Calculator</h1>
-                        <p className="text-slate-500 text-xs">Mutual Fund wealth planner</p>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
+                            <ArrowLeft size={18} className="text-slate-400" />
+                        </button>
+                        <div>
+                            <h1 className="text-lg font-bold text-white">SIP Calculator</h1>
+                            <p className="text-slate-500 text-xs">Mutual Fund wealth planner</p>
+                        </div>
                     </div>
+                    <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
+                        <Info size={16} className="text-slate-400" />
+                    </button>
                 </div>
             </div>
 
@@ -223,6 +230,12 @@ export default function SIPCalculator() {
                     isOpen={showPremiumModal}
                     onClose={() => setShowPremiumModal(false)}
                     onPurchase={() => { setShowPremiumModal(false); alert('Razorpay coming soon!'); }}
+                />
+
+                <CalculatorInfoModal
+                    isOpen={showInfo}
+                    onClose={() => setShowInfo(false)}
+                    calculatorTitle="SIP Calculator"
                 />
             </div>
         </div>

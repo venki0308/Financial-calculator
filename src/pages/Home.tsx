@@ -58,13 +58,13 @@ export default function Home() {
         <div className="px-5 pt-14 animate-fade-in pb-20">
             <div className="flex items-start justify-between mb-8">
                 <div className="flex items-center gap-3">
-                    <img src="/icons/fincalix-logo.png" alt="FinCalix" className="w-10 h-10 rounded-xl" />
+                    <img src="/icons/fincalix-logo.jpg" alt="FinCalix" className="w-10 h-10 rounded-xl" />
                     <div>
                         <p className="text-slate-400 text-sm">{t('home.welcome')}, {userName}</p>
-                        <h1 className="text-2xl font-bold text-white mt-0">{t('home.title')}</h1>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-0">{t('home.title')}</h1>
                     </div>
                 </div>
-                <button className="p-2.5 rounded-xl bg-dark-card border border-dark-border text-slate-400 shadow-lg">
+                <button onClick={() => navigate('/notifications')} className="p-2.5 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-400 shadow-lg">
                     <Bell size={20} />
                 </button>
             </div>
@@ -79,15 +79,15 @@ export default function Home() {
                             key={item.path}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => navigate(item.path)}
-                            className="flex items-center gap-3 p-4 rounded-2xl bg-dark-card border border-dark-border hover:border-slate-700 transition-all shadow-sm"
+                            className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.1 }}
                         >
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-800/50">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-slate-800/50">
                                 <item.icon size={22} style={{ color: item.color }} />
                             </div>
-                            <span className="text-white font-semibold text-sm truncate">{item.label}</span>
+                            <span className="text-slate-900 dark:text-white font-semibold text-sm truncate">{item.label}</span>
                         </motion.button>
                     ))}
                 </div>
@@ -96,28 +96,28 @@ export default function Home() {
             <section className="mb-8">
                 <div className="flex items-center justify-between mb-3 px-1">
                     <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('home.myBudget')}</h2>
-                    <button onClick={() => navigate('/expense-tracker')} className="text-brand-purple text-xs font-bold">{t('home.viewAll')}</button>
+                    <button onClick={() => navigate('/expenses')} className="text-brand-purple text-xs font-bold">{t('home.viewAll')}</button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                    <div className="p-4 rounded-2xl bg-dark-card border border-dark-border group active:scale-95 transition-transform" onClick={() => navigate('/expense-tracker')}>
+                    <div className="p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border group active:scale-95 transition-transform cursor-pointer" onClick={() => navigate('/expenses')}>
                         <div className="flex items-center justify-between mb-2">
-                            <div className="w-7 h-7 rounded-lg bg-brand-purple/10 flex items-center justify-center text-brand-purple">
+                            <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-brand-purple/10 flex items-center justify-center text-brand-purple">
                                 <Wallet size={14} />
                             </div>
                             <ChevronRight size={14} className="text-slate-600" />
                         </div>
                         <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">{t('home.currentBalance')}</p>
-                        <p className="text-lg font-bold text-white mt-0.5">{formatINR(currentBalance)}</p>
+                        <p className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">{formatINR(currentBalance)}</p>
                     </div>
-                    <div className="p-4 rounded-2xl bg-dark-card border border-dark-border group active:scale-95 transition-transform" onClick={() => navigate('/expense-tracker')}>
+                    <div className="p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border group active:scale-95 transition-transform cursor-pointer" onClick={() => navigate('/expenses')}>
                         <div className="flex items-center justify-between mb-2">
-                            <div className="w-7 h-7 rounded-lg bg-brand-green/10 flex items-center justify-center text-brand-green">
+                            <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-brand-green/10 flex items-center justify-center text-brand-green">
                                 <TrendingUp size={14} />
                             </div>
                             <ChevronRight size={14} className="text-slate-600" />
                         </div>
                         <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">{t('home.monthlyIncome')}</p>
-                        <p className="text-lg font-bold text-white mt-0.5">{formatINR(monthlyIncome)}</p>
+                        <p className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">{formatINR(monthlyIncome)}</p>
                     </div>
                 </div>
             </section>
@@ -126,20 +126,20 @@ export default function Home() {
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => navigate('/schemes')}
-                    className="w-full p-6 rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-900 dark:from-indigo-600/20 dark:via-slate-800 dark:to-slate-900 border border-indigo-500/30 shadow-xl overflow-hidden relative group"
+                    className="w-full p-6 rounded-3xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 border border-indigo-400/40 shadow-xl overflow-hidden relative group"
                 >
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white/20 dark:bg-indigo-500/20 flex items-center justify-center text-white dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                        <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                             <HistoryIcon size={24} />
                         </div>
                         <div className="text-left">
                             <h3 className="text-white font-bold">{t('home.govSchemes')}</h3>
-                            <p className="text-indigo-100 dark:text-slate-400 text-xs mt-0.5">{t('home.explore')}</p>
+                            <p className="text-indigo-100 text-xs mt-0.5">{t('home.explore')}</p>
                         </div>
                     </div>
                     <div className="mt-4 flex gap-2">
-                        <span className="px-3 py-1.5 rounded-lg bg-white/20 dark:bg-indigo-600/30 text-white dark:text-indigo-400 text-[10px] font-bold uppercase tracking-wider">{t('home.new2026')}</span>
-                        <span className="px-3 py-1.5 rounded-lg bg-black/20 dark:bg-slate-700/50 text-slate-100 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider">{t('home.stateWise')}</span>
+                        <span className="px-3 py-1.5 rounded-lg bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">{t('home.new2026')}</span>
+                        <span className="px-3 py-1.5 rounded-lg bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">Central Govt</span>
                     </div>
                 </motion.button>
             </section>
@@ -154,10 +154,10 @@ export default function Home() {
                         <button
                             key={c.name}
                             onClick={() => navigate(c.path)}
-                            className="w-full flex items-center justify-between p-4 rounded-2xl bg-dark-card border border-dark-border hover:bg-slate-800/20 transition-all"
+                            className="w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-all"
                         >
                             <div className="text-left">
-                                <h4 className="text-slate-200 font-bold text-sm">{c.name}</h4>
+                                <h4 className="text-slate-800 dark:text-slate-200 font-bold text-sm">{c.name}</h4>
                                 <p className="text-slate-500 text-[11px] mt-0.5">{c.desc}</p>
                             </div>
                             <ChevronRight size={18} className="text-slate-600" />

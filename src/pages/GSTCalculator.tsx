@@ -11,6 +11,7 @@ import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 import AuthorizationTable from '../components/AuthorizationTable';
 import PremiumModal from '../components/PremiumModal';
+import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import {
     Chart as ChartJS,
     ArcElement,
@@ -51,6 +52,7 @@ export default function GSTCalculator() {
     const [isIGST, setIsIGST] = useState(false);
     const [saved, setSaved] = useState(false);
     const [showPremiumModal, setShowPremiumModal] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
 
     const chartRef = useRef<any>(null);
 
@@ -148,6 +150,9 @@ export default function GSTCalculator() {
                         <h1 className="text-lg font-bold text-white">GST Calculator</h1>
                         <p className="text-slate-500 text-xs text-lowercase">Tax calculations made simple</p>
                     </div>
+                    <button onClick={() => setShowInfo(true)} className="ml-auto p-2 rounded-xl bg-dark-card border border-dark-border">
+                        <Info size={16} className="text-slate-400" />
+                    </button>
                 </div>
 
                 <DisclaimerBanner type="calculator" />
@@ -253,6 +258,12 @@ export default function GSTCalculator() {
                     isOpen={showPremiumModal}
                     onClose={() => setShowPremiumModal(false)}
                     onPurchase={() => alert('Razorpay coming soon!')}
+                />
+
+                <CalculatorInfoModal
+                    isOpen={showInfo}
+                    onClose={() => setShowInfo(false)}
+                    calculatorTitle="GST Calculator"
                 />
             </div>
         </div>

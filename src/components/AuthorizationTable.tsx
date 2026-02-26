@@ -5,7 +5,6 @@ const rows = [
     { feature: 'Save Calculations', free: true, premium: true },
     { feature: 'View History', free: true, premium: true },
     { feature: 'Central Govt Schemes', free: true, premium: true },
-    { feature: 'Live Metal Prices', free: true, premium: true },
     { feature: 'State Govt Schemes', free: false, premium: true },
     { feature: 'Export as PDF', free: false, premium: true },
     { feature: 'Export as Excel', free: false, premium: true },

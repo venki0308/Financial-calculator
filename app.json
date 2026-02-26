@@ -4,6 +4,9 @@
       "eas": {
         "projectId": "db016bda-b725-4755-a88b-742fa4cf0e75"
       }
+    },
+    "android": {
+      "package": "com.venki0308.fincalix"
     }
   }
 }

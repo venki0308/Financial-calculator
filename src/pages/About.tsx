@@ -17,7 +17,7 @@ export default function About() {
 
             <div className="px-4 mt-6 space-y-6 w-full">
                 <div className="p-6 rounded-3xl bg-dark-card border border-dark-border text-center">
-                    <img src="/icons/fincalix-logo.png" alt="FinCalix" className="w-20 h-20 rounded-3xl mx-auto mb-4" />
+                    <img src="/icons/fincalix-logo.jpg" alt="FinCalix" className="w-20 h-20 rounded-3xl mx-auto mb-4" />
                     <h2 className="text-xl font-bold text-white">FinCalix</h2>
                     <p className="text-slate-500 text-xs mt-1">Version 2.0.26 (Beta)</p>
                 </div>

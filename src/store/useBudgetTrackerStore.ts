@@ -34,6 +34,7 @@ interface BudgetTrackerState {
     deleteCategory: (id: string) => void;
     addEntry: (entry: Omit<BudgetEntry, 'id'>) => void;
     deleteEntry: (id: string) => void;
+    updateEntry: (id: string, data: Partial<Omit<BudgetEntry, 'id'>>) => void;
     getTotalSpent: () => number;
 }
 
@@ -68,6 +69,10 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
             deleteEntry: (id) =>
                 set((s) => ({
                     entries: s.entries.filter((e) => e.id !== id),
+                })),
+            updateEntry: (id, data) =>
+                set((s) => ({
+                    entries: s.entries.map((e) => e.id === id ? { ...e, ...data } : e),
                 })),
             getTotalSpent: () => {
                 const now = new Date();

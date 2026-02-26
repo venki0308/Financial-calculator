@@ -9,13 +9,13 @@
     "orientation": "portrait-primary",
     "icons": [
         {
-            "src": "/icons/fincalix-logo.png",
+            "src": "/icons/fincalix-logo.jpg",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "/icons/fincalix-logo.png",
+            "src": "/icons/fincalix-logo.jpg",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"

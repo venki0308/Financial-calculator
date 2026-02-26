@@ -24,6 +24,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import PremiumModal from '../components/PremiumModal';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import CalculatorInfoModal from '../components/CalculatorInfoModal';
 
 ChartJS.register(
     ArcElement,
@@ -55,6 +56,7 @@ export default function EMICalculator() {
     const isAdmin = useAuthStore((s) => s.isAdmin());
     const canAccessAll = hasPremium || isAdmin;
     const [showPremiumModal, setShowPremiumModal] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
 
     const chartRef = useRef<any>(null);
 
@@ -158,10 +160,15 @@ export default function EMICalculator() {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button className="p-2 rounded-xl bg-dark-card border border-dark-border">
+                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
                             <Info size={16} className="text-slate-400" />
                         </button>
-                        <button className="p-2 rounded-xl bg-dark-card border border-dark-border">
+                        <button
+                            className="p-2 rounded-xl bg-dark-card border border-dark-border"
+                            onClick={() => {
+                                if (navigator.share) navigator.share({ title: 'EMI Calculator', text: 'Calculate your EMI', url: window.location.href });
+                            }}
+                        >
                             <Share2 size={16} className="text-slate-400" />
                         </button>
                     </div>
@@ -404,6 +411,12 @@ export default function EMICalculator() {
                     isOpen={showPremiumModal}
                     onClose={() => setShowPremiumModal(false)}
                     onPurchase={() => { setShowPremiumModal(false); alert('Razorpay integration required. Contact support.'); }}
+                />
+
+                <CalculatorInfoModal
+                    isOpen={showInfo}
+                    onClose={() => setShowInfo(false)}
+                    calculatorTitle="EMI Calculator"
                 />
             </div>
         </div>

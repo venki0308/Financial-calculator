@@ -199,162 +199,98 @@ export const schemes: Scheme[] = [
         lastVerified: '2026-02-22', launchYear: 2015
     }),
 
-    // === KARNATAKA ===
-    s('ka-gl', 'Gruha Lakshmi', 'state', 'Women', 'Monthly financial assistance to the woman head of every household in Karnataka.', 'Govt of Karnataka', {
-        state: 'Karnataka', officialWebsite: 'https://sevasindhu.karnataka.gov.in/', popular: true, benefitAmount: '₹2,000/month',
-        eligibility: ['Woman head of household', 'APL/BPL/Antyodaya ration card holder'],
-        benefits: ['₹2,000 direct benefit transfer monthly'],
-        lastVerified: '2026-02-22', launchYear: 2023
+    // === NEW 2025-2026 CENTRAL SCHEMES ===
+    s('c-pmvbry', 'PM Viksit Bharat Rozgar Yojana', 'central', 'Employment', 'Incentivizing creation of 3.5 crore jobs through EPF-linked benefits for new hires.', 'Ministry of Labour', {
+        officialWebsite: 'https://www.india.gov.in/', popular: true, tags: ['New 2025', 'Popular'], benefitAmount: '₹99,446 Cr outlay',
+        eligibility: ['New employees registered under EPF', 'Employers hiring fresh workforce'],
+        benefits: ['EPF-linked employment incentives', '3.5 crore new jobs targeted', 'Subsidy for first-time formal sector employees'],
+        lastVerified: '2026-02-25', launchYear: 2025
     }),
-    s('ka-gj', 'Gruha Jyoti', 'state', 'Social Welfare', 'Free electricity up to 200 units for every domestic household in Karnataka.', 'Govt of Karnataka', {
-        state: 'Karnataka', officialWebsite: 'https://bescom.karnataka.gov.in/', popular: true,
-        benefits: ['Zero bill up to 200 units per month'],
-        lastVerified: '2026-02-22', launchYear: 2023
+    s('c-gigworkers', 'Gig Workers Welfare Scheme', 'central', 'Employment', 'Identity cards and healthcare coverage for online platform gig workers via e-Shram portal.', 'Ministry of Labour', {
+        officialWebsite: 'https://eshram.gov.in/', tags: ['New 2025'], benefitAmount: 'Healthcare Coverage',
+        eligibility: ['Online platform gig workers', 'Registration on e-Shram portal'],
+        benefits: ['Identity cards for gig workers', 'Healthcare under PM Jan Arogya Yojana', 'Social security benefits'],
+        lastVerified: '2026-02-25', launchYear: 2025
     }),
-    s('ka-sk', 'Shakti Scheme', 'state', 'Women', 'Free bus travel for women and girl students within Karnataka in non-premium buses.', 'Govt of Karnataka', {
-        state: 'Karnataka', officialWebsite: 'https://ksrtc.in/',
-        benefits: ['Free travel in KSRTC/BMTC/NWKRTC/KKRTC buses'],
-        lastVerified: '2026-02-22', launchYear: 2023
+    s('c-pmddky', 'PM Dhan-Dhaanya Krishi Yojana', 'central', 'Farmers', 'Six-year scheme covering 100 low-productivity districts to support 1.7 crore farmers on pulses and millets.', 'Ministry of Agriculture', {
+        officialWebsite: 'https://www.india.gov.in/', tags: ['New 2025'], popular: true,
+        eligibility: ['Farmers in 100 identified low-productivity districts'],
+        benefits: ['Support for pulses and millet cultivation', 'Convergence of existing agricultural schemes', '1.7 crore farmers covered'],
+        lastVerified: '2026-02-25', launchYear: 2025
     }),
-    s('ka-ab', 'Anna Bhagya', 'state', 'Social Welfare', 'Providing additional rice or cash in lieu of rice to BPL families.', 'Govt of Karnataka', {
-        state: 'Karnataka', officialWebsite: 'https://ahara.kar.nic.in/', benefitAmount: '10kg Rice',
-        benefits: ['10kg free rice per person per month'],
-        lastVerified: '2026-02-22', launchYear: 2023
+    s('c-mecc', 'Micro-Enterprise Credit Cards', 'central', 'MSME', '₹5 lakh credit cards for Udyam-registered micro-enterprises to boost small business growth.', 'Ministry of Finance', {
+        officialWebsite: 'https://udyamregistration.gov.in/', tags: ['New 2025'], benefitAmount: '₹5 Lakh Credit',
+        eligibility: ['Udyam-registered micro-enterprises'],
+        benefits: ['₹5 lakh credit card facility', 'Easy access to working capital', '10 lakh enterprises in first year'],
+        lastVerified: '2026-02-25', launchYear: 2025
     }),
-    s('ka-yn', 'Yuva Nidhi', 'state', 'Employment', 'Financial assistance to unemployed graduates and diploma holders.', 'Govt of Karnataka', {
-        state: 'Karnataka', officialWebsite: 'https://kaushalkar.com/', benefitAmount: '₹3,000/month',
-        eligibility: ['Graduates/Diploma holders unemployed for 6 months'],
-        benefits: ['₹3,000 for graduates', '₹1,500 for diploma holders monthly'],
-        lastVerified: '2026-02-22', launchYear: 2023
+    s('c-fte', 'First-Time Entrepreneurs Scheme', 'central', 'MSME', 'Term loans up to ₹2 crore for women, SC, and ST first-time entrepreneurs.', 'Ministry of Finance', {
+        officialWebsite: 'https://www.india.gov.in/', tags: ['New 2025'], benefitAmount: 'Up to ₹2 Crore',
+        eligibility: ['First-time entrepreneurs', 'Women, Scheduled Castes, and Scheduled Tribes'],
+        benefits: ['Term loans up to ₹2 crore over 5 years', '5 lakh entrepreneurs targeted'],
+        lastVerified: '2026-02-25', launchYear: 2025
     }),
-
-    // === TELANGANA - Congress Government (2023-2026) ===
-    s('ts-ml', 'Mahalakshmi Scheme', 'state', 'Women', 'Free bus travel for women in TSRTC buses across Telangana.', 'Govt of Telangana', {
-        state: 'Telangana', officialWebsite: 'https://tsrtc.telangana.gov.in/', popular: true,
-        benefits: ['Free travel in all TSRTC bus services for women'],
-        lastVerified: '2026-02-22', launchYear: 2023
+    s('c-smegf', 'SME Growth Fund', 'central', 'MSME', 'Dedicated ₹10,000 crore fund to create Champion SMEs and boost manufacturing.', 'DPIIT', {
+        officialWebsite: 'https://www.investindia.gov.in/', tags: ['New 2026'], benefitAmount: '₹10,000 Cr Fund',
+        eligibility: ['Small and Medium Enterprises with growth potential'],
+        benefits: ['Equity and growth capital', 'Champion SME development', 'Manufacturing and export boost'],
+        lastVerified: '2026-02-25', launchYear: 2026
     }),
-    s('ts-rb', 'Rythu Bharosa', 'state', 'Farmers', 'Enhanced investment support scheme for farmers to cover cultivation costs.', 'Govt of Telangana', {
-        state: 'Telangana', officialWebsite: 'https://rythubharosa.telangana.gov.in/', popular: true, benefitAmount: '₹15,000/acre/year',
-        benefits: ['₹7,500 per acre per season (Kharif + Rabi)'],
-        lastVerified: '2026-02-22', launchYear: 2024
+    s('c-bvistaar', 'Bharat-VISTAAR', 'central', 'Farmers', 'Multilingual AI-based platform integrating agricultural resources and providing customized advisory to farmers.', 'Ministry of Agriculture', {
+        officialWebsite: 'https://www.india.gov.in/', tags: ['New 2026'],
+        eligibility: ['All Indian farmers'],
+        benefits: ['AI-powered crop advisory', 'Multilingual support', 'Integrated agricultural resources'],
+        lastVerified: '2026-02-25', launchYear: 2026
     }),
-    s('ts-gj', 'Gruha Jyoti (Indiramma Indlu)', 'state', 'Housing', 'Free housing for poor families under the Indiramma housing initiative.', 'Govt of Telangana', {
-        state: 'Telangana', officialWebsite: 'https://webtgplanning.cgg.gov.in/',
-        benefits: ['Free pucca house for eligible BPL families'],
-        lastVerified: '2026-02-22', launchYear: 2024
+    s('c-caregiver', 'Caregiver Training Scheme', 'central', 'Health', 'Training 1.5 lakh caregivers with blended health and allied skills for elderly and patient care.', 'Ministry of Health', {
+        officialWebsite: 'https://www.india.gov.in/', tags: ['New 2026'],
+        eligibility: ['Indian citizens interested in healthcare caregiving'],
+        benefits: ['Professional caregiver certification', 'Blended health skills training', '1.5 lakh trained caregivers'],
+        lastVerified: '2026-02-25', launchYear: 2026
     }),
-    s('ts-iab', 'Indiramma Atmiya Bharosa', 'state', 'Women', '₹12,000 per year for LPG cylinders to women from BPL families.', 'Govt of Telangana', {
-        state: 'Telangana', officialWebsite: 'https://www.telangana.gov.in/', benefitAmount: '₹12,000/year',
-        eligibility: ['Women from BPL families', 'Resident of Telangana'],
-        benefits: ['₹12,000 annual support for LPG cylinder purchases'],
-        lastVerified: '2026-02-22', launchYear: 2024
+    s('c-saksham', 'Saksham Anganwadi & Poshan 2.0', 'central', 'Health', 'Nutritional support to 8 crore children, 1 crore lactating mothers, and 20 lakh adolescent girls.', 'Ministry of WCD', {
+        officialWebsite: 'https://www.india.gov.in/', tags: ['Updated 2025'], popular: true,
+        eligibility: ['Children 0-6 years', 'Pregnant/lactating women', 'Adolescent girls in targeted regions'],
+        benefits: ['Nutritional supplementation', 'Growth monitoring', 'Early childhood care and education'],
+        lastVerified: '2026-02-25', launchYear: 2025
     }),
-    s('ts-ch2', 'Cheyutha 2.0', 'state', 'Women', '₹2,500 per month financial support to women SHG members.', 'Govt of Telangana', {
-        state: 'Telangana', officialWebsite: 'https://www.telangana.gov.in/', benefitAmount: '₹2,500/month',
-        eligibility: ['Women members of Self Help Groups'],
-        benefits: ['Monthly financial assistance of ₹2,500'],
-        lastVerified: '2026-02-22', launchYear: 2024
-    }),
-    s('ts-ihc', 'Indiramma Health Card', 'state', 'Health', '₹10 lakh health coverage for all Telangana families.', 'Govt of Telangana', {
-        state: 'Telangana', officialWebsite: 'https://webportal.telangana.gov.in/', benefitAmount: '₹10 Lakh',
-        benefits: ['₹10 lakh cashless treatment in empaneled hospitals'],
-        lastVerified: '2026-02-22', launchYear: 2024
-    }),
-
-    // === ANDHRA PRADESH - NDA Government (2024-2026) ===
-    s('ap-ntb', 'NTR Bharosa (Pension Scheme)', 'state', 'Pension', 'Enhanced pension scheme for senior citizens, widows, and disabled persons.', 'Govt of AP', {
-        state: 'Andhra Pradesh', officialWebsite: 'https://navasakam.ap.gov.in/', popular: true, benefitAmount: '₹4,000/month',
-        eligibility: ['Senior citizens aged 60+', 'Widows', 'Persons with disabilities'],
-        benefits: ['₹4,000 monthly pension (increased from ₹3,000)'],
-        lastVerified: '2026-02-22', launchYear: 2024
-    }),
-    s('ap-ac', 'Anna Canteen', 'state', 'Social Welfare', 'Subsidized meals for the public at affordable prices across AP.', 'Govt of AP', {
-        state: 'Andhra Pradesh', officialWebsite: 'https://www.ap.gov.in/', benefitAmount: '₹5 meals',
-        benefits: ['Nutritious meals at ₹5 per plate'],
-        lastVerified: '2026-02-22', launchYear: 2024
-    }),
-    s('ap-fgc', 'Free Gas Cylinder Scheme', 'state', 'Women', '3 free LPG cylinders per year for women from BPL families.', 'Govt of AP', {
-        state: 'Andhra Pradesh', officialWebsite: 'https://www.ap.gov.in/', benefitAmount: '3 free cylinders/year',
-        eligibility: ['Women from BPL families', 'Domestic LPG connection holder'],
-        benefits: ['3 free LPG cylinders annually'],
-        lastVerified: '2026-02-22', launchYear: 2024
-    }),
-    s('ap-tv', 'Talliki Vandanam', 'state', 'Education', '₹15,000 per year for parents of school-going children.', 'Govt of AP', {
-        state: 'Andhra Pradesh', officialWebsite: 'https://navasakam.ap.gov.in/', benefitAmount: '₹15,000/year',
-        eligibility: ['Parents of children studying in government schools'],
-        benefits: ['₹15,000 annual education support'],
-        lastVerified: '2026-02-22', launchYear: 2024
-    }),
-    s('ap-as', 'Aarogya Sri', 'state', 'Health', 'Health insurance scheme covering up to ₹25 lakh for medical treatment.', 'Govt of AP', {
-        state: 'Andhra Pradesh', officialWebsite: 'https://aarogyasri.ap.gov.in/', popular: true, benefitAmount: '₹25 Lakh',
-        benefits: ['₹25 lakh cashless treatment in empaneled hospitals'],
-        lastVerified: '2026-02-22', launchYear: 2024
+    s('c-textile', 'Integrated Textile Programme', 'central', 'MSME', 'Five-component programme: National Fibre, Textile Expansion, Handloom/Handicraft, Tex-Eco, and Samarth 2.0.', 'Ministry of Textiles', {
+        officialWebsite: 'https://www.investindia.gov.in/', tags: ['New 2026'],
+        eligibility: ['Textile industry stakeholders', 'Handloom and handicraft artisans'],
+        benefits: ['National Fibre Scheme', 'Employment generation in textiles', 'Handloom and handicraft promotion', 'Sustainable textile initiatives'],
+        lastVerified: '2026-02-25', launchYear: 2026
     }),
 
-    // === TAMIL NADU ===
-    s('tn-kmut', 'Kalaignar Magalir Urimai Thogai', 'state', 'Women', 'Monthly honorarium to women heads of families.', 'Govt of Tamil Nadu', {
-        state: 'Tamil Nadu', officialWebsite: 'https://www.tn.gov.in/', popular: true, benefitAmount: '₹1,000/month',
-        benefits: ['Monthly direct transfer of ₹1,000'],
-        lastVerified: '2026-02-22', launchYear: 2023
-    }),
-    s('tn-bs', 'Chief Minister\'s Breakfast Scheme', 'state', 'Education', 'Providing nutritious breakfast to government school students.', 'Govt of Tamil Nadu', {
-        state: 'Tamil Nadu', officialWebsite: 'https://schooleducation.tn.gov.in/',
-        benefits: ['Daily free breakfast for students in Classes 1-5'],
-        lastVerified: '2026-02-22', launchYear: 2022
+
+    // === PM MUDRA Yojana (Free for all users) ===
+    s('c-mudra', 'Pradhan Mantri MUDRA Yojana', 'central', 'MSME', 'Micro Units Development and Refinance Agency provides loans up to ₹10 Lakh to non-corporate, non-farm small/micro enterprises.', 'Ministry of Finance', {
+        officialWebsite: 'https://www.mudra.org.in/', popular: true, tags: ['Popular', 'Free'],
+        benefitAmount: '₹50,000 - ₹10 Lakh',
+        interestRate: '7.3% - 12%',
+        eligibility: ['Any Indian citizen with a business plan', 'Non-corporate small businesses', 'Manufacturing, trading, services, agri-allied activities'],
+        benefits: ['Shishu: Loans up to ₹50,000', 'Kishore: Loans ₹50,001 to ₹5 Lakh', 'Tarun: Loans ₹5,00,001 to ₹10 Lakh', 'No collateral required', 'No processing fee'],
+        documents: ['Aadhaar Card', 'PAN Card', 'Business plan/proposal', 'Address proof', 'Passport size photos', 'Caste certificate (if applicable)'],
+        howToApply: ['Visit any bank/NBFC/MFI', 'Submit MUDRA loan application', 'Provide business plan', 'Bank evaluates and sanctions'],
+        lastVerified: '2026-02-26', launchYear: 2015
     }),
 
-    // === MAHARASHTRA ===
-    s('mh-lby', 'Ladki Bahin Yojana', 'state', 'Women', 'Direct cash transfer to women for financial independence and health.', 'Govt of Maharashtra', {
-        state: 'Maharashtra', officialWebsite: 'https://womenchild.maharashtra.gov.in/', popular: true, benefitAmount: '₹1,500/month',
-        eligibility: ['Women aged 21-65', 'Annual income below ₹2.5 lakh'],
-        benefits: ['₹1,500 monthly benefit'],
-        lastVerified: '2026-02-22', launchYear: 2024
-    }),
-    s('mh-nsy', 'Namo Shetkari Yojana', 'state', 'Farmers', 'Supplementing PM-KISAN to provide additional income to farmers.', 'Govt of Maharashtra', {
-        state: 'Maharashtra', officialWebsite: 'https://mahakrishidoot.maharashtra.gov.in/', benefitAmount: '₹6,000/year',
-        benefits: ['₹6,000 additional annual support for farmers'],
-        lastVerified: '2026-02-22', launchYear: 2023
-    }),
-
-    // === GUJARAT ===
-    s('gj-vdy2', 'Vahali Dikri Yojana 2.0', 'state', 'Women', 'Improving the life style of the girl child and promoting education.', 'Govt of Gujarat', {
-        state: 'Gujarat', officialWebsite: 'https://esamajkalyan.gujarat.gov.in/', benefitAmount: '₹1.1 Lakh',
-        benefits: ['₹4,000 (Class 1)', '₹6,000 (Class 9)', '₹1 Lakh (Age 18)'],
-        lastVerified: '2026-02-22', launchYear: 2019
-    }),
-
-    // === UTTAR PRADESH ===
-    s('up-ksy', 'Mukhyamantri Kanya Sumangala Yojana', 'state', 'Women', 'Financial assistance to girl child at various developmental stages.', 'Govt of UP', {
-        state: 'Uttar Pradesh', officialWebsite: 'https://mksy.up.gov.in/', popular: true, benefitAmount: '₹25,000',
-        benefits: ['Fixed amount at birth, vaccination, and education milestones'],
-        lastVerified: '2026-02-22', launchYear: 2019
-    }),
-    s('up-bs', 'UP BC Sakhi Yojana', 'state', 'Employment', 'Empowering women as Banking Correspondent Sakhis in rural areas.', 'Govt of UP', {
-        state: 'Uttar Pradesh', officialWebsite: 'https://upbcsakhi.upsrlm.org/',
-        benefits: ['Digital banking training', 'Monthly stipend during initial months'],
-        lastVerified: '2026-02-22', launchYear: 2020
-    }),
-
-    // === WEST BENGAL ===
-    s('wb-lb2', 'Lakshmir Bhandar 2.0', 'state', 'Women', 'Providing financial support specifically to women heads of the household.', 'Govt of West Bengal', {
-        state: 'West Bengal', officialWebsite: 'https://wb.gov.in/', popular: true, benefitAmount: '₹1,200/month',
-        benefits: ['₹1,200 (SC/ST)', '₹1,000 (General) monthly'],
-        lastVerified: '2026-02-22', launchYear: 2021
-    }),
-
-    // === RAJASTHAN ===
-    s('rj-ch', 'Chiranjeevi Health Insurance', 'state', 'Health', 'Universal health insurance scheme covering almost all families.', 'Govt of Rajasthan', {
-        state: 'Rajasthan', officialWebsite: 'https://chiranjeevi.rajasthan.gov.in/', popular: true, benefitAmount: 'Free Healthcare',
-        benefits: ['Cashless treatment in govt/private hospitals'],
-        lastVerified: '2026-02-22', launchYear: 2021
-    }),
-
-    // === DELHI ===
-    s('dl-mmsy', 'Mukhyamantri Mahila Samman Yojana', 'state', 'Women', 'Providing monthly support to every woman aged 18 and above.', 'Govt of Delhi', {
-        state: 'Delhi', officialWebsite: 'https://delhigovt.nic.in/', benefitAmount: '₹1,000/month',
-        eligibility: ['Women aged 18+', 'Voter in Delhi', 'Not a taxpayer'],
-        benefits: ['Monthly allowance of ₹1,000'],
-        lastVerified: '2026-02-22', launchYear: 2024
+    // === Sukanya Samriddhi Yojana (Free for all users) ===
+    s('c-ssy', 'Sukanya Samriddhi Yojana', 'central', 'Women', 'A small deposit scheme for the girl child under Beti Bachao Beti Padhao campaign offering attractive interest rates and tax benefits.', 'Ministry of Finance', {
+        officialWebsite: 'https://www.nsiindia.gov.in/', popular: true, tags: ['Popular', 'Free'],
+        benefitAmount: '₹250 - ₹1.5 Lakh/year',
+        interestRate: '8.2% p.a.',
+        tenure: '21 years (deposits for 15 years)',
+        minAmount: '₹250',
+        maxAmount: '₹1,50,000/year',
+        taxBenefit: 'EEE — Exempt under 80C, Interest exempt, Maturity exempt',
+        eligibility: ['Girl child below 10 years of age', 'Only 2 accounts per family (exception for twins)', 'Indian resident'],
+        benefits: ['High interest rate (8.2% p.a.)', 'Tax deduction under Section 80C', 'Partial withdrawal at age 18 for education', 'Full maturity at age 21', 'Transferable across India'],
+        documents: ['Birth certificate of girl child', 'Parents\' Aadhaar Card', 'Address proof', 'Passport photos'],
+        howToApply: ['Visit any post office or authorized bank', 'Fill SSY account opening form', 'Submit documents', 'Make initial deposit of ₹250+'],
+        lastVerified: '2026-02-26', launchYear: 2015
     }),
 ];
+
+// Free schemes available to all users (non-premium)
+export const FREE_SCHEME_IDS = ['c-mudra', 'c-ssy'];
+

@@ -9,6 +9,7 @@ import { calculateCompoundInterest, formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import PremiumModal from '../components/PremiumModal';
+import CalculatorInfoModal from '../components/CalculatorInfoModal';
 
 export default function CompoundInterestCalculator() {
     const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function CompoundInterestCalculator() {
     const [years, setYears] = useState(10);
     const [freq, setFreq] = useState(4);
     const [showPremiumModal, setShowPremiumModal] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
     const hasPremium = useAuthStore(s => s.hasPremium);
     const isAdmin = useAuthStore(s => s.isAdmin());
     const canAccessAll = hasPremium || isAdmin;
@@ -69,14 +71,19 @@ export default function CompoundInterestCalculator() {
     return (
         <div className="min-h-dvh bg-[#0F172A] animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
             <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
-                    </button>
-                    <div>
-                        <h1 className="text-lg font-bold text-white">Compound Interest</h1>
-                        <p className="text-slate-500 text-xs">Calculate compound growth</p>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
+                            <ArrowLeft size={18} className="text-slate-400" />
+                        </button>
+                        <div>
+                            <h1 className="text-lg font-bold text-white">Compound Interest</h1>
+                            <p className="text-slate-500 text-xs">Calculate compound growth</p>
+                        </div>
                     </div>
+                    <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
+                        <Info size={16} className="text-slate-400" />
+                    </button>
                 </div>
             </div>
 
@@ -132,6 +139,23 @@ export default function CompoundInterestCalculator() {
                         <span className="text-slate-500 text-[10px]">Principal ({(100 - interestPct).toFixed(0)}%)</span>
                         <span className="text-slate-500 text-[10px]">Interest ({interestPct.toFixed(0)}%)</span>
                     </div>
+
+                    {/* Village-style Interest Breakdown */}
+                    <div className="mt-4 pt-3 border-t border-dark-border space-y-2">
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2">Village / Monthly Breakdown</p>
+                        <div className="flex justify-between">
+                            <span className="text-slate-500 text-xs">Monthly Interest Payable</span>
+                            <span className="text-brand-blue font-semibold text-sm">{formatINR(result.interest / (years * 12))}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-slate-500 text-xs">Village Rate (per ₹100/month)</span>
+                            <span className="text-amber-400 font-semibold text-sm">₹{(rate / 12).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-slate-500 text-xs">Interest per ₹1 Lakh/month</span>
+                            <span className="text-brand-purple font-semibold text-sm">{formatINR((100000 * rate) / (100 * 12))}</span>
+                        </div>
+                    </div>
                 </motion.div>
 
                 <div className="flex items-start gap-2 p-3 rounded-xl bg-brand-purple/5 border border-brand-purple/15">
@@ -160,6 +184,12 @@ export default function CompoundInterestCalculator() {
                     isOpen={showPremiumModal}
                     onClose={() => setShowPremiumModal(false)}
                     onPurchase={() => { setShowPremiumModal(false); alert('Razorpay integration required. Contact support.'); }}
+                />
+
+                <CalculatorInfoModal
+                    isOpen={showInfo}
+                    onClose={() => setShowInfo(false)}
+                    calculatorTitle="Compound Interest"
                 />
             </div>
         </div>

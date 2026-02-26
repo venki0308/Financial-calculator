@@ -9,6 +9,9 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@capacitor/android": "^8.1.0",
+        "@capacitor/core": "^8.1.0",
+        "@supabase/supabase-js": "^2.97.0",
         "chart.js": "^4.4.7",
         "firebase": "^11.4.0",
         "framer-motion": "^12.4.7",
@@ -25,6 +28,7 @@
         "zustand": "^5.0.3"
     },
     "devDependencies": {
+        "@capacitor/cli": "^8.1.0",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
         "@vitejs/plugin-react": "^4.3.4",

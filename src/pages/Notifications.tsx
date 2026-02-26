@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bell, TrendingUp, FileText, Calculator, Zap, Calendar } from 'lucide-react';
+import { ArrowLeft, Bell, FileText, Calculator, Zap, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 
@@ -13,7 +13,6 @@ interface NotificationSetting {
 }
 
 const defaultSettings: NotificationSetting[] = [
-    { id: 'metalPriceAlerts', label: 'Metal Price Alerts', description: 'Get notified when Gold/Silver prices change significantly', icon: TrendingUp, color: '#F59E0B', enabled: true },
     { id: 'newSchemes', label: 'New Government Schemes', description: 'Notification when new schemes are added', icon: FileText, color: '#10B981', enabled: true },
     { id: 'calculationReminders', label: 'Calculation Reminders', description: 'Remind to review your saved calculations', icon: Calculator, color: '#3B82F6', enabled: false },
     { id: 'appUpdates', label: 'App Updates', description: 'New features and calculator additions', icon: Zap, color: '#8B5CF6', enabled: true },
@@ -50,14 +49,14 @@ export default function Notifications() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A]">
+        <div className="min-h-dvh bg-white dark:bg-[#0F172A]">
             <div className="px-4 pt-14 pb-8">
                 <div className="flex items-center gap-3 mb-6">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
                         <ArrowLeft size={18} className="text-slate-400" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-white">Notifications</h1>
+                        <h1 className="text-lg font-bold text-slate-900 dark:text-white">Notifications</h1>
                         <p className="text-slate-500 text-xs">Manage your alerts</p>
                     </div>
                 </div>
@@ -70,18 +69,18 @@ export default function Notifications() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.05 }}
-                            className="flex items-center gap-4 p-4 rounded-2xl bg-dark-card border border-dark-border"
+                            className="flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border"
                         >
                             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}15` }}>
                                 <Icon size={20} style={{ color }} />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-white font-medium text-sm">{label}</p>
+                                <p className="text-slate-900 dark:text-white font-medium text-sm">{label}</p>
                                 <p className="text-slate-500 text-[11px] mt-0.5 leading-relaxed">{description}</p>
                             </div>
                             <button
                                 onClick={() => toggleSetting(id)}
-                                className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${enabled ? 'bg-brand-green' : 'bg-slate-700'}`}
+                                className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${enabled ? 'bg-brand-green' : 'bg-slate-300 dark:bg-slate-700'}`}
                             >
                                 <motion.div
                                     layout

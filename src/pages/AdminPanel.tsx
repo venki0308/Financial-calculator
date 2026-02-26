@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, FileText, Calculator, Zap, Plus, Pencil, Trash2, Search, ToggleLeft, ToggleRight } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, FileText, Calculator, Zap, Plus, Pencil, Trash2, Search, ToggleLeft, ToggleRight, X, Check, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
-import { schemes } from '../data/schemes';
+import { useFeatureFlagStore } from '../store/useFeatureFlagStore';
+import { schemes as schemeData, type Scheme } from '../data/schemes';
 
 type Tab = 'schemes' | 'calculators' | 'features';
 
@@ -13,33 +14,59 @@ const calcList = [
     'Gratuity', 'Sukanya Samriddhi', 'NSC', 'KVP', 'Post Office MIS', 'Senior Citizen Savings', 'Post Office TD', 'Break Even'
 ];
 
-const features = [
-    { id: 'pdfExport', name: 'PDF Export', description: 'Export calculations as PDF', enabled: true, tier: 'Premium' },
-    { id: 'excelExport', name: 'Excel Export', description: 'Export calculations as Excel', enabled: true, tier: 'Premium' },
-    { id: 'stateSchemes', name: 'State Government Schemes', description: 'Access to 400+ state schemes', enabled: true, tier: 'Premium' },
-    { id: 'metalPrices', name: 'Live Metal Prices', description: 'Gold, Silver, Platinum prices', enabled: true, tier: 'Free' },
-    { id: 'calcHistory', name: 'Calculation History', description: 'Track calculation history', enabled: true, tier: 'Free' },
-    { id: 'savedCalcs', name: 'Saved Calculations', description: 'Save and revisit calculations', enabled: true, tier: 'Free' },
-    { id: 'centralSchemes', name: 'Central Government Schemes', description: 'Access to central schemes', enabled: true, tier: 'Free' },
-    { id: 'darkMode', name: 'Dark Mode', description: 'Toggle dark/light theme', enabled: true, tier: 'Free' },
-];
-
 export default function AdminPanel() {
     const navigate = useNavigate();
     const user = useAuthStore((s) => s.user);
     const [tab, setTab] = useState<Tab>('schemes');
     const [search, setSearch] = useState('');
 
+    // Editable schemes state
+    const [localSchemes, setLocalSchemes] = useState(schemeData);
+    const [editingSchemeId, setEditingSchemeId] = useState<string | null>(null);
+    const [editName, setEditName] = useState('');
+    const [editCategory, setEditCategory] = useState('');
+
+    // Features & Calculator states from persistent store
+    const { features, calculatorStates, toggleFeature, toggleCalculator } = useFeatureFlagStore();
+    const calcStates = calculatorStates;
+
     if (user?.role !== 'admin') {
         navigate('/', { replace: true });
         return null;
     }
 
-    const filteredSchemes = schemes.filter(s =>
+    const filteredSchemes = localSchemes.filter(s =>
         s.name.toLowerCase().includes(search.toLowerCase()) ||
         s.category.toLowerCase().includes(search.toLowerCase()) ||
         (s.state || '').toLowerCase().includes(search.toLowerCase())
     );
+
+    const startEdit = (scheme: Scheme) => {
+        setEditingSchemeId(scheme.id);
+        setEditName(scheme.name);
+        setEditCategory(scheme.category);
+    };
+
+    const cancelEdit = () => {
+        setEditingSchemeId(null);
+        setEditName('');
+        setEditCategory('');
+    };
+
+    const saveEdit = (id: string) => {
+        setLocalSchemes(prev => prev.map(s =>
+            s.id === id ? { ...s, name: editName, category: editCategory } : s
+        ));
+        setEditingSchemeId(null);
+    };
+
+    const deleteScheme = (id: string) => {
+        setLocalSchemes(prev => prev.filter(s => s.id !== id));
+    };
+
+    const toggleCalc = (name: string) => {
+        toggleCalculator(name);
+    };
 
     return (
         <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
@@ -81,33 +108,76 @@ export default function AdminPanel() {
                                 <input type="text" placeholder="Search schemes..." value={search} onChange={e => setSearch(e.target.value)}
                                     className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-dark-card border border-dark-border text-white placeholder-slate-500 text-sm focus:outline-none focus:border-brand-green/50" />
                             </div>
-                            <button className="p-2.5 rounded-xl bg-brand-green text-white shrink-0" onClick={() => alert('Add Scheme form coming soon')}>
-                                <Plus size={18} />
-                            </button>
                         </div>
 
                         <p className="text-slate-500 text-xs mb-3">{filteredSchemes.length} schemes found</p>
 
                         <div className="space-y-2">
-                            {filteredSchemes.map((scheme) => (
-                                <div key={scheme.id} className="flex items-center gap-3 p-3 rounded-xl bg-dark-card border border-dark-border">
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="text-white text-sm font-medium truncate">{scheme.name}</h3>
-                                        <div className="flex gap-1.5 mt-1">
-                                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${scheme.governmentLevel === 'central' ? 'bg-blue-500/15 text-blue-400' : 'bg-purple-500/15 text-purple-400'}`}>
-                                                {scheme.governmentLevel === 'central' ? 'Central' : scheme.state}
-                                            </span>
-                                            <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-slate-700 text-slate-400">{scheme.category}</span>
-                                        </div>
-                                    </div>
-                                    <button className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-500 hover:text-blue-400 transition-colors" onClick={() => alert(`Edit: ${scheme.name}`)}>
-                                        <Pencil size={14} />
-                                    </button>
-                                    <button className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-500 hover:text-red-400 transition-colors" onClick={() => alert(`Delete: ${scheme.name}`)}>
-                                        <Trash2 size={14} />
-                                    </button>
-                                </div>
-                            ))}
+                            <AnimatePresence>
+                                {filteredSchemes.map((scheme) => (
+                                    <motion.div
+                                        key={scheme.id}
+                                        layout
+                                        initial={{ opacity: 0, y: 5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, x: -100 }}
+                                        className="rounded-xl bg-dark-card border border-dark-border overflow-hidden"
+                                    >
+                                        {editingSchemeId === scheme.id ? (
+                                            /* Edit Mode */
+                                            <div className="p-3 space-y-2">
+                                                <input
+                                                    type="text"
+                                                    value={editName}
+                                                    onChange={e => setEditName(e.target.value)}
+                                                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-green"
+                                                    placeholder="Scheme name"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={editCategory}
+                                                    onChange={e => setEditCategory(e.target.value)}
+                                                    className="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-green"
+                                                    placeholder="Category"
+                                                />
+                                                <div className="flex gap-2 justify-end">
+                                                    <button onClick={cancelEdit} className="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 text-xs flex items-center gap-1">
+                                                        <X size={12} /> Cancel
+                                                    </button>
+                                                    <button onClick={() => saveEdit(scheme.id)} className="px-3 py-1.5 rounded-lg bg-brand-green text-white text-xs flex items-center gap-1">
+                                                        <Check size={12} /> Save
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            /* View Mode */
+                                            <div className="flex items-center gap-3 p-3">
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-white text-sm font-medium truncate">{scheme.name}</h3>
+                                                    <div className="flex gap-1.5 mt-1">
+                                                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${scheme.governmentLevel === 'central' ? 'bg-blue-500/15 text-blue-400' : 'bg-purple-500/15 text-purple-400'}`}>
+                                                            {scheme.governmentLevel === 'central' ? 'Central' : scheme.state}
+                                                        </span>
+                                                        <span className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-slate-700 text-slate-400">{scheme.category}</span>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-500 hover:text-blue-400 transition-colors"
+                                                    onClick={() => startEdit(scheme)}
+                                                >
+                                                    <Pencil size={14} />
+                                                </button>
+                                                <button
+                                                    className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-500 hover:text-red-400 transition-colors"
+                                                    onClick={() => deleteScheme(scheme.id)}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
                         </div>
                     </div>
                 )}
@@ -120,9 +190,17 @@ export default function AdminPanel() {
                             <div key={name} className="flex items-center gap-3 p-3 rounded-xl bg-dark-card border border-dark-border">
                                 <span className="w-7 h-7 rounded-lg bg-brand-green/10 text-brand-green text-xs font-bold flex items-center justify-center">{i + 1}</span>
                                 <span className="text-white text-sm font-medium flex-1">{name} Calculator</span>
-                                <span className="px-2 py-0.5 rounded-lg bg-green-500/15 text-green-400 text-[10px] font-medium">Active</span>
-                                <button className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-500 hover:text-blue-400 transition-colors" onClick={() => alert(`Edit: ${name}`)}>
-                                    <Pencil size={14} />
+                                <span className={`px-2 py-0.5 rounded-lg text-[10px] font-medium ${calcStates[name] ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400'}`}>
+                                    {calcStates[name] ? 'Active' : 'Disabled'}
+                                </span>
+                                <button
+                                    className="text-slate-400"
+                                    onClick={() => toggleCalc(name)}
+                                >
+                                    {calcStates[name]
+                                        ? <ToggleRight size={22} className="text-brand-green" />
+                                        : <ToggleLeft size={22} className="text-slate-600" />
+                                    }
                                 </button>
                             </div>
                         ))}
@@ -142,9 +220,12 @@ export default function AdminPanel() {
                                     </div>
                                     <p className="text-slate-500 text-xs mt-0.5">{f.description}</p>
                                 </div>
-                                <div className="text-brand-green">
-                                    {f.enabled ? <ToggleRight size={24} /> : <ToggleLeft size={24} className="text-slate-600" />}
-                                </div>
+                                <button onClick={() => toggleFeature(f.id)} className="shrink-0">
+                                    {f.enabled
+                                        ? <ToggleRight size={24} className="text-brand-green" />
+                                        : <ToggleLeft size={24} className="text-slate-600" />
+                                    }
+                                </button>
                             </div>
                         ))}
                     </div>

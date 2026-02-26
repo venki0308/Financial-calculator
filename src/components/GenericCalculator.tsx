@@ -23,6 +23,8 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import PremiumModal from './PremiumModal';
+import { Share2, Info } from 'lucide-react';
+import CalculatorInfoModal from './CalculatorInfoModal';
 
 ChartJS.register(
     ArcElement,
@@ -76,6 +78,7 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
     );
     const [saved, setSaved] = useState(false);
     const [showPremiumModal, setShowPremiumModal] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
     const hasPremium = useAuthStore(s => s.hasPremium);
     const isAdmin = useAuthStore(s => s.isAdmin());
     const canAccessAll = hasPremium || isAdmin;
@@ -193,6 +196,19 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
                             <p className="text-slate-500 text-xs">{config.subtitle}</p>
                         </div>
                     </div>
+                    <div className="flex gap-2">
+                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
+                            <Info size={16} className="text-slate-400" />
+                        </button>
+                        <button
+                            className="p-2 rounded-xl bg-dark-card border border-dark-border"
+                            onClick={() => {
+                                if (navigator.share) navigator.share({ title: config.title, text: `Check out this ${config.title} calculation!`, url: window.location.href });
+                            }}
+                        >
+                            <Share2 size={16} className="text-slate-400" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -294,6 +310,12 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
                     isOpen={showPremiumModal}
                     onClose={() => setShowPremiumModal(false)}
                     onPurchase={() => { setShowPremiumModal(false); alert('Razorpay integration required. Contact support.'); }}
+                />
+
+                <CalculatorInfoModal
+                    isOpen={showInfo}
+                    onClose={() => setShowInfo(false)}
+                    calculatorTitle={config.title}
                 />
             </div>
         </div>
