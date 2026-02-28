@@ -216,7 +216,6 @@ export default function AdminPanel() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-white text-sm font-medium">{f.name}</h3>
-                                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${f.tier === 'Premium' ? 'bg-amber-500/15 text-amber-400' : 'bg-green-500/15 text-green-400'}`}>{f.tier}</span>
                                     </div>
                                     <p className="text-slate-500 text-xs mt-0.5">{f.description}</p>
                                 </div>

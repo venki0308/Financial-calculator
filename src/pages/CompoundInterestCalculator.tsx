@@ -4,11 +4,9 @@ import { ArrowLeft, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
-import AuthorizationTable from '../components/AuthorizationTable';
 import { calculateCompoundInterest, formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
-import PremiumModal from '../components/PremiumModal';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 
 export default function CompoundInterestCalculator() {
@@ -16,21 +14,11 @@ export default function CompoundInterestCalculator() {
     const [principal, setPrincipal] = useState(100000);
     const [rate, setRate] = useState(8);
     const [years, setYears] = useState(10);
-    const [freq, setFreq] = useState(4);
-    const [showPremiumModal, setShowPremiumModal] = useState(false);
-    const [showInfo, setShowInfo] = useState(false);
-    const hasPremium = useAuthStore(s => s.hasPremium);
-    const isAdmin = useAuthStore(s => s.isAdmin());
-    const canAccessAll = hasPremium || isAdmin;
-
+    const [freq, setFreq] = useState(4); const [showInfo, setShowInfo] = useState(false);
     const result = useMemo(() => calculateCompoundInterest(principal, rate, years, freq), [principal, rate, years, freq]);
     const interestPct = result.amount > 0 ? (result.interest / result.amount) * 100 : 0;
 
     const handleDownloadPDF = () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
         const headers = ['Metric', 'Value'];
         const data = [
             ['Principal', formatINR(principal)],
@@ -45,10 +33,6 @@ export default function CompoundInterestCalculator() {
     };
 
     const handleDownloadExcel = () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
         const headers = ['Metric', 'Value'];
         const data = [
             ['Principal', principal],
@@ -168,23 +152,16 @@ export default function CompoundInterestCalculator() {
                         onClick={handleDownloadPDF}
                         className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs"
                     >
-                        📄 Download PDF {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                        📄 Download PDF
                     </button>
                     <button
                         onClick={handleDownloadExcel}
                         className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs"
                     >
-                        📊 Download Excel {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                        📊 Download Excel
                     </button>
                 </div>
 
-                <AuthorizationTable />
-
-                <PremiumModal
-                    isOpen={showPremiumModal}
-                    onClose={() => setShowPremiumModal(false)}
-                    onPurchase={() => { setShowPremiumModal(false); alert('Razorpay integration required. Contact support.'); }}
-                />
 
                 <CalculatorInfoModal
                     isOpen={showInfo}

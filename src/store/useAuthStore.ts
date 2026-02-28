@@ -14,11 +14,9 @@ export interface User {
 interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
-    hasPremium: boolean;
     registeredUsers: { email: string; password: string; name: string }[];
     login: (user: User) => void;
     logout: () => void;
-    setPremium: (val: boolean) => void;
     registerUser: (email: string, password: string, name: string) => void;
     changePassword: (email: string, oldPassword: string, newPassword: string) => { success: boolean; message: string };
     isAdmin: () => boolean;
@@ -26,7 +24,7 @@ interface AuthState {
 
 // Admin credentials — loaded from environment variables for security
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@fincalix.com';
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Admin@Fincalix#2026';
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Moksha!81421';
 
 // Password validation — minimum 8 chars, at least 1 uppercase, 1 lowercase, 1 digit, 1 special char
 export function validatePassword(password: string): { valid: boolean; message: string } {
@@ -43,11 +41,9 @@ export const useAuthStore = create<AuthState>()(
         (set, get) => ({
             user: null,
             isAuthenticated: false,
-            hasPremium: false,
             registeredUsers: [],
             login: (user) => set({ user, isAuthenticated: true }),
-            logout: () => set({ user: null, isAuthenticated: false, hasPremium: false }),
-            setPremium: (val) => set({ hasPremium: val }),
+            logout: () => set({ user: null, isAuthenticated: false }),
             registerUser: (email, password, name) =>
                 set((state) => ({
                     registeredUsers: [...state.registeredUsers.filter(u => u.email !== email), { email, password, name }]

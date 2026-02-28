@@ -17,12 +17,10 @@ import {
 import { Pie } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
-import AuthorizationTable from '../components/AuthorizationTable';
 import { formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
-import PremiumModal from './PremiumModal';
 import { Share2, Info } from 'lucide-react';
 import CalculatorInfoModal from './CalculatorInfoModal';
 
@@ -77,11 +75,7 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
         Object.fromEntries(config.fields.map((f) => [f.key, f.defaultVal]))
     );
     const [saved, setSaved] = useState(false);
-    const [showPremiumModal, setShowPremiumModal] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
-    const hasPremium = useAuthStore(s => s.hasPremium);
-    const isAdmin = useAuthStore(s => s.isAdmin());
-    const canAccessAll = hasPremium || isAdmin;
 
     const setVal = (key: string, v: number) => {
         setVals((prev) => ({ ...prev, [key]: v }));
@@ -149,10 +143,6 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
     }, [result.rows]);
 
     const handleDownloadPDF = async () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
 
         let chartImage = undefined;
         if (chartRef.current) {
@@ -170,10 +160,6 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
     };
 
     const handleDownloadExcel = () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
         const headers = ['Field', 'Value'];
         const data = [
             ...config.fields.map(f => [f.label, vals[f.key]]),
@@ -294,23 +280,18 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
                         onClick={handleDownloadPDF}
                         className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs"
                     >
-                        📄 Download PDF {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                        📄 Download PDF
                     </button>
                     <button
                         onClick={handleDownloadExcel}
                         className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs"
                     >
-                        📊 Download Excel {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                        📊 Download Excel
                     </button>
                 </div>
 
-                <AuthorizationTable />
 
-                <PremiumModal
-                    isOpen={showPremiumModal}
-                    onClose={() => setShowPremiumModal(false)}
-                    onPurchase={() => { setShowPremiumModal(false); alert('Razorpay integration required. Contact support.'); }}
-                />
+
 
                 <CalculatorInfoModal
                     isOpen={showInfo}

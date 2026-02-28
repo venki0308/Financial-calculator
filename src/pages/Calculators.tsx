@@ -123,11 +123,7 @@ export default function Calculators() {
                 </div>
             </div>
 
-            {/* Premium info banner */}
-            <div className="mb-5 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15 flex items-center gap-2">
-                <span className="text-amber-500 text-sm">👑</span>
-                <p className="text-slate-400 text-[11px]">{t('calculators.premiumBanner')}</p>
-            </div>
+
 
             {/* Count */}
             <p className="text-slate-500 text-xs mb-3 px-1">{filtered.length} {t('calculators.subtitle').toLowerCase().includes('calc') ? 'calculators' : t('calculators.subtitle')}</p>

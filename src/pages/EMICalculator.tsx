@@ -17,11 +17,9 @@ import {
 import { Pie } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
-import AuthorizationTable from '../components/AuthorizationTable';
 import BottomSheet from '../components/BottomSheet';
 import { calculateReducingEMI, calculateFlatEMI, formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import PremiumModal from '../components/PremiumModal';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
@@ -52,10 +50,6 @@ export default function EMICalculator() {
     const [showAmortization, setShowAmortization] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
-    const hasPremium = useAuthStore((s) => s.hasPremium);
-    const isAdmin = useAuthStore((s) => s.isAdmin());
-    const canAccessAll = hasPremium || isAdmin;
-    const [showPremiumModal, setShowPremiumModal] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
 
     const chartRef = useRef<any>(null);
@@ -108,10 +102,6 @@ export default function EMICalculator() {
     }, [savedCalculations, principal, rate, months, method]);
 
     const handleDownloadPDF = () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
 
         let chartImage = undefined;
         if (chartRef.current) {
@@ -131,10 +121,6 @@ export default function EMICalculator() {
     };
 
     const handleDownloadExcel = () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
         const headers = ['Month', 'Principal Repayment', 'Interest Repayment', 'Balance'];
         const data = (result.schedule || []).map(row => [
             row.month,
@@ -394,24 +380,19 @@ export default function EMICalculator() {
                             onClick={handleDownloadPDF}
                             className="flex-1 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs flex items-center justify-center gap-2"
                         >
-                            📄 Download PDF {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                            📄 Download PDF
                         </button>
                         <button
                             onClick={handleDownloadExcel}
                             className="flex-1 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs flex items-center justify-center gap-2"
                         >
-                            📊 Download Excel {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                            📊 Download Excel
                         </button>
                     </div>
                 </BottomSheet>
 
-                <AuthorizationTable />
 
-                <PremiumModal
-                    isOpen={showPremiumModal}
-                    onClose={() => setShowPremiumModal(false)}
-                    onPurchase={() => { setShowPremiumModal(false); alert('Razorpay integration required. Contact support.'); }}
-                />
+
 
                 <CalculatorInfoModal
                     isOpen={showInfo}

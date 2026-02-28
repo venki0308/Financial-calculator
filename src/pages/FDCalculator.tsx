@@ -17,12 +17,10 @@ import {
 import { Pie } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
-import AuthorizationTable from '../components/AuthorizationTable';
 import { calculateFD, formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
-import PremiumModal from '../components/PremiumModal';
 
 ChartJS.register(
     ArcElement,
@@ -42,13 +40,7 @@ export default function FDCalculator() {
     const [principal, setPrincipal] = useState(100000);
     const [rate, setRate] = useState(7);
     const [years, setYears] = useState(5);
-    const [compounding, setCompounding] = useState<number>(4);
-    const [showPremiumModal, setShowPremiumModal] = useState(false);
-    const [saved, setSaved] = useState(false);
-
-    const hasPremium = useAuthStore(s => s.hasPremium);
-    const isAdmin = useAuthStore(s => s.isAdmin());
-    const canAccessAll = hasPremium || isAdmin;
+    const [compounding, setCompounding] = useState<number>(4); const [saved, setSaved] = useState(false);
 
     const chartRef = useRef<any>(null);
 
@@ -80,10 +72,6 @@ export default function FDCalculator() {
     }, [savedCalculations, principal, rate, years, compounding]);
 
     const handleDownloadPDF = () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
 
         let chartImage = undefined;
         if (chartRef.current) {
@@ -105,10 +93,6 @@ export default function FDCalculator() {
     };
 
     const handleDownloadExcel = () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
         const headers = ['Metric', 'Value'];
         const data = [
             ['Deposit Amount', principal],
@@ -209,20 +193,13 @@ export default function FDCalculator() {
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
-                        📄 Download PDF {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                        📄 Download PDF
                     </button>
                     <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
-                        📊 Download Excel {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                        📊 Download Excel
                     </button>
                 </div>
 
-                <AuthorizationTable />
-
-                <PremiumModal
-                    isOpen={showPremiumModal}
-                    onClose={() => setShowPremiumModal(false)}
-                    onPurchase={() => { setShowPremiumModal(false); alert('Razorpay coming soon!'); }}
-                />
             </div>
         </div>
     );

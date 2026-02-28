@@ -6,7 +6,6 @@ export interface FeatureFlag {
     name: string;
     description: string;
     enabled: boolean;
-    tier: 'Free' | 'Premium';
 }
 
 interface FeatureFlagState {
@@ -20,14 +19,14 @@ interface FeatureFlagState {
 }
 
 const defaultFeatures: FeatureFlag[] = [
-    { id: 'pdfExport', name: 'PDF Export', description: 'Export calculations as PDF', enabled: true, tier: 'Premium' },
-    { id: 'excelExport', name: 'Excel Export', description: 'Export calculations as Excel', enabled: true, tier: 'Premium' },
-    { id: 'centralSchemes', name: 'Central Government Schemes', description: 'Access to central schemes', enabled: true, tier: 'Free' },
-    { id: 'calcHistory', name: 'Calculation History', description: 'Track calculation history', enabled: true, tier: 'Free' },
-    { id: 'savedCalcs', name: 'Saved Calculations', description: 'Save and revisit calculations', enabled: true, tier: 'Free' },
-    { id: 'budgetTracker', name: 'Budget Tracker', description: 'Monthly budget tracking', enabled: true, tier: 'Free' },
-    { id: 'darkMode', name: 'Dark Mode', description: 'Toggle dark/light theme', enabled: true, tier: 'Free' },
-    { id: 'villageInterest', name: 'Village Interest Mode', description: 'Flat ₹/₹100 interest calculator', enabled: true, tier: 'Free' },
+    { id: 'pdfExport', name: 'PDF Export', description: 'Export calculations as PDF', enabled: true },
+    { id: 'excelExport', name: 'Excel Export', description: 'Export calculations as Excel', enabled: true },
+    { id: 'centralSchemes', name: 'Central Government Schemes', description: 'Access to central schemes', enabled: true },
+    { id: 'calcHistory', name: 'Calculation History', description: 'Track calculation history', enabled: true },
+    { id: 'savedCalcs', name: 'Saved Calculations', description: 'Save and revisit calculations', enabled: true },
+    { id: 'budgetTracker', name: 'Budget Tracker', description: 'Monthly budget tracking', enabled: true },
+    { id: 'darkMode', name: 'Dark Mode', description: 'Toggle dark/light theme', enabled: true },
+    { id: 'villageInterest', name: 'Village Interest Mode', description: 'Flat ₹/₹100 interest calculator', enabled: true },
 ];
 
 const defaultCalcList = [

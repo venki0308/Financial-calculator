@@ -20,9 +20,7 @@ import {
     ArcElement
 } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
-import AuthorizationTable from '../components/AuthorizationTable';
 import DisclaimerBanner from '../components/DisclaimerBanner';
-import PremiumModal from '../components/PremiumModal';
 
 ChartJS.register(
     CategoryScale,
@@ -40,17 +38,11 @@ export default function AdvancedSIPCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
-    const hasPremium = useAuthStore(s => s.hasPremium);
-    const isAdmin = useAuthStore(s => s.isAdmin());
-    const canAccessAll = hasPremium || isAdmin;
-
     const [activeTab, setActiveTab] = useState<'input' | 'report' | 'graph'>('input');
     const [monthly, setMonthly] = useState('5000');
     const [rate, setRate] = useState('12');
     const [years, setYears] = useState('10');
     const [saved, setSaved] = useState(false);
-    const [showPremiumModal, setShowPremiumModal] = useState(false);
-
     const chartRef = useRef<any>(null);
 
     const result = useMemo(() => {
@@ -91,10 +83,6 @@ export default function AdvancedSIPCalculator() {
     }, [savedCalculations, monthly, rate, years]);
 
     const handleDownloadPDF = () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
         if (!result) return;
 
         let chartImage = undefined;
@@ -200,11 +188,11 @@ export default function AdvancedSIPCalculator() {
 
                         <div className="grid grid-cols-2 gap-3">
                             <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
-                                📄 Download PDF {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                                📄 Download PDF
                             </button>
-                            <button onClick={() => canAccessAll ? exportToExcel(['Year', 'Invested', 'Returns', 'Value'], result?.yearlyData.map(d => [d.year, d.invested, d.returns, d.value]) || [], 'Adv_SIP') : setShowPremiumModal(true)}
+                            <button onClick={() => exportToExcel(['Year', 'Invested', 'Returns', 'Value'], result?.yearlyData.map(d => [d.year, d.invested, d.returns, d.value]) || [], 'Adv_SIP')}
                                 className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
-                                📊 Download Excel {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                                📊 Download Excel
                             </button>
                         </div>
                     </div>
@@ -268,14 +256,7 @@ export default function AdvancedSIPCalculator() {
                 )}
 
                 <div className="mt-6">
-                    <AuthorizationTable />
                 </div>
-
-                <PremiumModal
-                    isOpen={showPremiumModal}
-                    onClose={() => setShowPremiumModal(false)}
-                    onPurchase={() => alert('Razorpay integration coming soon!')}
-                />
             </div>
         </div>
     );

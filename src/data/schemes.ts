@@ -135,13 +135,7 @@ export const schemes: Scheme[] = [
         benefits: ['Guaranteed pension of ₹1,000 to ₹5,000/month after age 60'],
         lastVerified: '2026-02-22', launchYear: 2015
     }),
-    // SSY
-    s('c-ssy', 'Sukanya Samriddhi Yojana', 'central', 'Women', 'Government savings scheme for girl child education and marriage with high interest rate.', 'Ministry of Finance', {
-        officialWebsite: 'https://www.indiapost.gov.in/', popular: true, interestRate: '8.2% p.a.', benefitAmount: 'Up to ₹1.5 Lakh/yr',
-        eligibility: ['Parents/legal guardian of girl child below 10 years'],
-        benefits: ['8.2% interest (highest among small savings)', 'Tax-free maturity', 'Section 80C deduction'],
-        lastVerified: '2026-02-22', launchYear: 2015
-    }),
+
     // Ujjwala
     s('c-ujjwala', 'PM Ujjwala Yojana 2.0', 'central', 'Social Welfare', 'Free LPG connections to women from BPL families and migrant workers.', 'Ministry of Petroleum', {
         officialWebsite: 'https://www.pmuy.gov.in/', popular: true,
@@ -177,13 +171,7 @@ export const schemes: Scheme[] = [
         benefits: ['Zero-balance bank account', 'RuPay debit card', '₹2 lakh accident cover', '₹30,000 life cover'],
         lastVerified: '2026-02-22', launchYear: 2014
     }),
-    // Mudra
-    s('c-mudra', 'PM Mudra Yojana', 'central', 'MSME', 'Collateral-free loans up to ₹10 lakh for micro and small enterprises.', 'Ministry of Finance', {
-        officialWebsite: 'https://www.mudra.org.in/', popular: true, benefitAmount: 'Up to ₹10 Lakh',
-        eligibility: ['Non-corporate, non-farm small/micro enterprises'],
-        benefits: ['Shishu: Up to ₹50,000', 'Kishore: ₹50K–₹5L', 'Tarun: ₹5L–₹10L', 'No collateral required'],
-        lastVerified: '2026-02-22', launchYear: 2015
-    }),
+
     // NPS
     s('c-nps', 'National Pension System', 'central', 'Pension', 'Voluntary retirement savings scheme with market-linked returns and tax benefits.', 'PFRDA', {
         officialWebsite: 'https://www.npscra.nsdl.co.in/', popular: true,

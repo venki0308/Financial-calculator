@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { schemes } from '../data/schemes';
 import { useSchemeStore } from '../store/useSchemeStore';
-import { useAuthStore } from '../store/useAuthStore';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
 export default function SchemeDetail() {
@@ -12,18 +11,9 @@ export default function SchemeDetail() {
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { bookmarkedSchemes, addBookmark, removeBookmark } = useSchemeStore();
-    const hasPremium = useAuthStore((s) => s.hasPremium);
-    const isAdmin = useAuthStore((s) => s.isAdmin());
-    const canAccessAll = hasPremium || isAdmin;
     const scheme = schemes.find((s) => s.id === id);
 
     if (!scheme) return <div className="flex items-center justify-center min-h-dvh bg-white dark:bg-[#0F172A] text-slate-900 dark:text-white"><p>{t('schemes.schemeNotFound')}</p></div>;
-
-    // Guard: state schemes require premium (unless admin)
-    if (scheme.governmentLevel === 'state' && !canAccessAll) {
-        navigate('/schemes', { replace: true });
-        return null;
-    }
 
     const isBookmarked = bookmarkedSchemes.includes(scheme.id);
 

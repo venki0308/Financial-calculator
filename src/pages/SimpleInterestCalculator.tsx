@@ -4,11 +4,9 @@ import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
-import AuthorizationTable from '../components/AuthorizationTable';
 import { formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
-import PremiumModal from '../components/PremiumModal';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 
 type Mode = 'flat' | 'simple' | 'compound';
@@ -21,12 +19,7 @@ export default function SimpleInterestCalculator() {
     const [annualRate, setAnnualRate] = useState(12);
     const [tenure, setTenure] = useState(12); // months
     const [compoundFreq, setCompoundFreq] = useState(12); // monthly
-    const [showPremiumModal, setShowPremiumModal] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
-    const hasPremium = useAuthStore(s => s.hasPremium);
-    const isAdmin = useAuthStore(s => s.isAdmin());
-    const canAccessAll = hasPremium || isAdmin;
-
     const result = useMemo(() => {
         if (mode === 'flat') {
             // Flat ₹ per ₹100 per month model
@@ -80,7 +73,6 @@ export default function SimpleInterestCalculator() {
     }, [mode, principal, flatRate, annualRate, tenure, compoundFreq]);
 
     const handleDownloadPDF = () => {
-        if (!canAccessAll) { setShowPremiumModal(true); return; }
         const headers = ['Field', 'Value'];
         const data: (string | number)[][] = [];
         data.push(['Mode', mode === 'flat' ? 'Flat ₹ Interest' : mode === 'simple' ? 'Simple Interest' : 'Compound Interest']);
@@ -112,7 +104,6 @@ export default function SimpleInterestCalculator() {
     };
 
     const handleDownloadExcel = () => {
-        if (!canAccessAll) { setShowPremiumModal(true); return; }
         const headers = ['Field', 'Value'];
         const data: (string | number)[][] = [['Mode', mode], ['Principal', principal]];
         if (mode === 'flat') {
@@ -426,23 +417,16 @@ export default function SimpleInterestCalculator() {
                         onClick={handleDownloadPDF}
                         className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 font-medium text-xs"
                     >
-                        📄 Download PDF {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                        📄 Download PDF
                     </button>
                     <button
                         onClick={handleDownloadExcel}
                         className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 font-medium text-xs"
                     >
-                        📊 Download Excel {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                        📊 Download Excel
                     </button>
                 </div>
 
-                <AuthorizationTable />
-
-                <PremiumModal
-                    isOpen={showPremiumModal}
-                    onClose={() => setShowPremiumModal(false)}
-                    onPurchase={() => { setShowPremiumModal(false); }}
-                />
 
                 <CalculatorInfoModal
                     isOpen={showInfo}

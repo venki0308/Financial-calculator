@@ -9,8 +9,6 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
-import AuthorizationTable from '../components/AuthorizationTable';
-import PremiumModal from '../components/PremiumModal';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import {
     Chart as ChartJS,
@@ -42,17 +40,11 @@ export default function GSTCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved, savedCalculations } = useCalculatorStore();
-    const hasPremium = useAuthStore(s => s.hasPremium);
-    const isAdmin = useAuthStore(s => s.isAdmin());
-    const canAccessAll = hasPremium || isAdmin;
-
     const [mode, setMode] = useState<'add' | 'remove'>('add');
     const [amount, setAmount] = useState(1000);
     const [gstRate, setGstRate] = useState(18);
     const [isIGST, setIsIGST] = useState(false);
-    const [saved, setSaved] = useState(false);
-    const [showPremiumModal, setShowPremiumModal] = useState(false);
-    const [showInfo, setShowInfo] = useState(false);
+    const [saved, setSaved] = useState(false); const [showInfo, setShowInfo] = useState(false);
 
     const chartRef = useRef<any>(null);
 
@@ -105,10 +97,6 @@ export default function GSTCalculator() {
     }, [savedCalculations, amount, gstRate, mode, isIGST]);
 
     const handleDownloadPDF = () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
         if (!result) return;
 
         let chartImage = undefined;
@@ -240,25 +228,18 @@ export default function GSTCalculator() {
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
-                        📄 Download PDF {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                        📄 Download PDF
                     </button>
-                    <button onClick={() => canAccessAll ? exportToExcel(['Component', 'Value'], [
+                    <button onClick={() => exportToExcel(['Component', 'Value'], [
                         ['Base', result?.preGst ?? 0],
                         ['GST', result?.gstAmount ?? 0],
                         ['Total', result?.postGst ?? 0]
-                    ], 'GST_Report') : setShowPremiumModal(true)}
+                    ], 'GST_Report')}
                         className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
-                        📊 Download Excel {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                        📊 Download Excel
                     </button>
                 </div>
 
-                <AuthorizationTable />
-
-                <PremiumModal
-                    isOpen={showPremiumModal}
-                    onClose={() => setShowPremiumModal(false)}
-                    onPurchase={() => alert('Razorpay coming soon!')}
-                />
 
                 <CalculatorInfoModal
                     isOpen={showInfo}

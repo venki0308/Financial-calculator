@@ -4,13 +4,11 @@ import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
-import AuthorizationTable from '../components/AuthorizationTable';
 import BottomSheet from '../components/BottomSheet';
 import { formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { Save, Check, Lock } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
-import PremiumModal from '../components/PremiumModal';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 
@@ -28,12 +26,7 @@ export default function SalaryHikeCalculator() {
     const [periodUnit, setPeriodUnit] = useState<'months' | 'years'>('years');
     const [showProjection, setShowProjection] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
-    const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
-    const hasPremium = useAuthStore((s) => s.hasPremium);
-    const isAdmin = useAuthStore((s) => s.isAdmin());
-    const canAccessAll = hasPremium || isAdmin;
-    const [showPremiumModal, setShowPremiumModal] = useState(false);
-    const [showInfo, setShowInfo] = useState(false);
+    const { addHistory, addSaved, savedCalculations } = useCalculatorStore();    const [showInfo, setShowInfo] = useState(false);
 
     const totalMonths = periodUnit === 'years' ? period * 12 : period;
 
@@ -94,10 +87,6 @@ export default function SalaryHikeCalculator() {
     }, [currentSalary, newSalaryInput, hikePct, period, periodUnit, mode]);
 
     const handleDownloadPDF = () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
         const headers = ['Month', 'Monthly Salary', 'Cumulative Earnings'];
         const data = result.projection.map(row => [
             row.month,
@@ -108,10 +97,6 @@ export default function SalaryHikeCalculator() {
     };
 
     const handleDownloadExcel = () => {
-        if (!canAccessAll) {
-            setShowPremiumModal(true);
-            return;
-        }
         const headers = ['Month', 'Monthly Salary', 'Cumulative Earnings'];
         const data = result.projection.map(row => [
             row.month,
@@ -421,24 +406,17 @@ export default function SalaryHikeCalculator() {
                             onClick={handleDownloadPDF}
                             className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 font-medium text-xs flex items-center justify-center gap-2"
                         >
-                            📄 Download PDF {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                            📄 Download PDF
                         </button>
                         <button
                             onClick={handleDownloadExcel}
                             className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 font-medium text-xs flex items-center justify-center gap-2"
                         >
-                            📊 Download Excel {!canAccessAll && <span className="text-brand-gold text-[10px]">Premium</span>}
+                            📊 Download Excel
                         </button>
                     </div>
                 </BottomSheet>
 
-                <AuthorizationTable />
-
-                <PremiumModal
-                    isOpen={showPremiumModal}
-                    onClose={() => setShowPremiumModal(false)}
-                    onPurchase={() => { setShowPremiumModal(false); alert('Razorpay integration required. Contact support.'); }}
-                />
 
                 <CalculatorInfoModal
                     isOpen={showInfo}

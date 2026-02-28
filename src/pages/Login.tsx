@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore, ADMIN_EMAIL, ADMIN_PASSWORD } from '../store/useAuthStore';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { auth, googleProvider } from '../lib/firebase';
+import { signInWithPopup } from 'firebase/auth';
 
 type Mode = 'login' | 'signup';
 
@@ -22,23 +23,26 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
 
-    // Google Sign In
+    // Google Sign In via Firebase
     const handleGoogleLogin = async () => {
         setGoogleLoading(true);
         setError('');
         try {
-            const { error } = await supabase.auth.signInWithOAuth({
+            const result = await signInWithPopup(auth, googleProvider);
+            const firebaseUser = result.user;
+            login({
+                uid: firebaseUser.uid,
+                name: firebaseUser.displayName || 'Google User',
+                email: firebaseUser.email || '',
+                photoURL: firebaseUser.photoURL || '',
                 provider: 'google',
-                options: {
-                    redirectTo: window.location.origin
-                }
+                role: firebaseUser.email === ADMIN_EMAIL ? 'admin' : 'user',
+                createdAt: Date.now(),
             });
-            if (error) {
-                setError('Google sign-in failed. Please try again.');
-                setGoogleLoading(false);
-            }
-        } catch (err) {
-            setError('Google sign-in failed. Please try again.');
+            navigate('/');
+        } catch (err: any) {
+            setError(err?.message || 'Google sign-in failed. Please try again.');
+        } finally {
             setGoogleLoading(false);
         }
     };
