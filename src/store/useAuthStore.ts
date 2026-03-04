@@ -5,6 +5,8 @@ import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     signOut,
     updatePassword,
     updateProfile,
@@ -13,6 +15,7 @@ import {
     User as FirebaseUser,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
+import { Capacitor } from '@capacitor/core';
 
 export interface User {
     uid: string;
@@ -31,6 +34,7 @@ interface AuthState {
     login: (user: User) => void;
     logout: () => Promise<void>;
     isAdmin: () => boolean;
+    isNativeApp: () => boolean;
     signInWithEmail: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
     signUpWithEmail: (email: string, password: string, name: string) => Promise<{ success: boolean; message: string }>;
     signInWithGoogle: () => Promise<{ success: boolean; message: string }>;
@@ -94,12 +98,13 @@ export const useAuthStore = create<AuthState>()(
 
             isAdmin: () => get().user?.role === 'admin',
 
+            isNativeApp: () => Capacitor.isNativePlatform(),
+
             signInWithEmail: async (email, password) => {
                 try {
                     const result = await signInWithEmailAndPassword(auth, email, password);
                     const user = firebaseUserToUser(result.user, 'email');
                     set({ user, isAuthenticated: true, isLoading: false });
-                    // Non-blocking Firestore sync
                     syncProfileToFirestore(user);
                     return { success: true, message: 'Signed in successfully' };
                 } catch (err: any) {
@@ -126,7 +131,6 @@ export const useAuthStore = create<AuthState>()(
                     await updateProfile(result.user, { displayName: name });
                     const user = firebaseUserToUser({ ...result.user, displayName: name }, 'email');
                     set({ user, isAuthenticated: true, isLoading: false });
-                    // Non-blocking Firestore sync
                     syncProfileToFirestore(user);
                     return { success: true, message: 'Account created successfully' };
                 } catch (err: any) {
@@ -145,10 +149,17 @@ export const useAuthStore = create<AuthState>()(
 
             signInWithGoogle: async () => {
                 try {
+                    // In native Capacitor, use signInWithRedirect (popup doesn't work in WebView)
+                    if (Capacitor.isNativePlatform()) {
+                        await signInWithRedirect(auth, googleProvider);
+                        // Redirect result will be handled by initAuthListener/getRedirectResult
+                        return { success: true, message: 'Redirecting to Google...' };
+                    }
+
+                    // On web, use popup (works well in normal browsers)
                     const result = await signInWithPopup(auth, googleProvider);
                     const user = firebaseUserToUser(result.user, 'google');
                     set({ user, isAuthenticated: true, isLoading: false });
-                    // Non-blocking Firestore sync
                     syncProfileToFirestore(user);
                     return { success: true, message: 'Signed in with Google' };
                 } catch (err: any) {
@@ -159,6 +170,7 @@ export const useAuthStore = create<AuthState>()(
                     else if (err.code === 'auth/popup-blocked') msg = 'Popup was blocked by your browser. Please allow popups and try again.';
                     else if (err.code === 'auth/network-request-failed') msg = 'Network error. Check your internet connection.';
                     else if (err.code === 'auth/internal-error') msg = 'Sign-in service error. Please use Email login.';
+                    else if (err.code === 'auth/web-storage-unsupported') msg = 'Google Sign-In is not supported in this environment. Please use Email login.';
                     return { success: false, message: msg };
                 }
             },
@@ -182,12 +194,22 @@ export const useAuthStore = create<AuthState>()(
             },
 
             initAuthListener: () => {
+                // Handle redirect result (for native Capacitor Google Sign-In)
+                getRedirectResult(auth).then((result) => {
+                    if (result?.user) {
+                        const user = firebaseUserToUser(result.user, 'google');
+                        set({ user, isAuthenticated: true, isLoading: false });
+                        syncProfileToFirestore(user);
+                    }
+                }).catch((err) => {
+                    console.warn('[FinCalix] Redirect result error (non-blocking):', err.code || err.message);
+                });
+
                 const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
                     if (fbUser) {
                         const provider = fbUser.providerData[0]?.providerId === 'google.com' ? 'google' : 'email';
                         const user = firebaseUserToUser(fbUser, provider);
                         set({ user, isAuthenticated: true, isLoading: false });
-                        // Non-blocking Firestore sync — do NOT await
                         syncProfileToFirestore(user);
                     } else {
                         set({ user: null, isAuthenticated: false, isLoading: false });
