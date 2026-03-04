@@ -82,7 +82,7 @@ export default function AdvancedSIPCalculator() {
         return savedCalculations.some(s => s.type === 'Advanced SIP Calculator' && JSON.stringify(s.inputs) === JSON.stringify({ monthly, rate, years }));
     }, [savedCalculations, monthly, rate, years]);
 
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = async () => {
         if (!result) return;
 
         let chartImage = undefined;
@@ -98,7 +98,12 @@ export default function AdvancedSIPCalculator() {
             formatINR(d.value)
         ]);
 
-        exportToPDF('Advanced SIP Report', headers, data, 'Advanced_SIP_Report', chartImage);
+        await exportToPDF('Advanced SIP Report', headers, data, 'Advanced_SIP_Report', chartImage);
+    };
+
+    const handleDownloadExcel = async () => {
+        if (!result) return;
+        await exportToExcel(['Year', 'Invested', 'Returns', 'Value'], result.yearlyData.map(d => [d.year, d.invested, d.returns, d.value]), 'Adv_SIP');
     };
 
     const barChartData = {
@@ -186,12 +191,12 @@ export default function AdvancedSIPCalculator() {
                             {saved || isAlreadySaved ? <><Check size={18} /> Saved</> : <><Save size={18} /> Save Calculation</>}
                         </motion.button>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
+                        <div className="grid grid-cols-2 gap-3 mb-8">
+                            <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm">
                                 📄 Download PDF
                             </button>
-                            <button onClick={() => exportToExcel(['Year', 'Invested', 'Returns', 'Value'], result?.yearlyData.map(d => [d.year, d.invested, d.returns, d.value]) || [], 'Adv_SIP')}
-                                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
+                            <button onClick={handleDownloadExcel}
+                                className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-green/10 border-2 border-brand-green/40 text-brand-green font-bold text-sm">
                                 📊 Download Excel
                             </button>
                         </div>

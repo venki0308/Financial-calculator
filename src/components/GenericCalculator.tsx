@@ -198,7 +198,7 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
 
             <DisclaimerBanner type="calculator" />
 
-            <div className="px-4 pb-28 pt-4">
+            <div className="px-4 pt-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 7rem)' }}>
                 <div className="space-y-3 mb-5">
                     {config.fields.map((f) => (
                         <NumberInput
@@ -273,16 +273,16 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
                     </motion.div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="grid grid-cols-2 gap-3 mb-6">
                     <button
                         onClick={handleDownloadPDF}
-                        className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs"
+                        className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm"
                     >
                         📄 Download PDF
                     </button>
                     <button
                         onClick={handleDownloadExcel}
-                        className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs"
+                        className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-green/10 border-2 border-brand-green/40 text-brand-green font-bold text-sm"
                     >
                         📊 Download Excel
                     </button>

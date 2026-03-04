@@ -371,16 +371,16 @@ export default function EMICalculator() {
                     </div>
 
                     {/* Download buttons */}
-                    <div className="flex gap-3 mt-4 pt-4 border-t border-dark-border">
+                    <div className="flex gap-3 mt-4 pt-4 border-t border-dark-border mb-2">
                         <button
                             onClick={handleDownloadPDF}
-                            className="flex-1 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs flex items-center justify-center gap-2"
+                            className="flex-1 py-4 rounded-2xl bg-brand-purple/10 border border-brand-purple/30 text-brand-purple font-bold text-sm flex items-center justify-center gap-2"
                         >
                             📄 Download PDF
                         </button>
                         <button
                             onClick={handleDownloadExcel}
-                            className="flex-1 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs flex items-center justify-center gap-2"
+                            className="flex-1 py-4 rounded-2xl bg-brand-green/10 border border-brand-green/30 text-brand-green font-bold text-sm flex items-center justify-center gap-2"
                         >
                             📊 Download Excel
                         </button>

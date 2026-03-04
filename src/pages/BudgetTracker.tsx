@@ -117,7 +117,7 @@ export default function BudgetTracker() {
         setEditEntryDesc('');
     };
 
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = async () => {
         const headers = ['Field', 'Value'];
         const summaryData: (string | number)[][] = [
             ['Monthly Income', `Rs ${monthlyIncome.toLocaleString('en-IN')}`],
@@ -140,7 +140,7 @@ export default function BudgetTracker() {
             });
         }
 
-        exportToPDF('Budget Report', headers, summaryData, 'Budget_Report');
+        await exportToPDF('Budget Report', headers, summaryData, 'Budget_Report');
     };
 
     return (
@@ -417,9 +417,9 @@ export default function BudgetTracker() {
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={handleDownloadPDF}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 mt-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-medium text-sm"
+                    className="w-full flex items-center justify-center gap-2 py-4 mt-6 mb-10 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm"
                 >
-                    <Download size={16} /> Download PDF Report
+                    <Download size={18} /> Download PDF Report
                 </motion.button>
             </div>
 

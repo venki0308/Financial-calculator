@@ -96,7 +96,7 @@ export default function GSTCalculator() {
         return savedCalculations.some(s => s.type === 'GST Calculator' && JSON.stringify(s.inputs) === JSON.stringify({ amount, gstRate, mode, isIGST }));
     }, [savedCalculations, amount, gstRate, mode, isIGST]);
 
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = async () => {
         if (!result) return;
 
         let chartImage = undefined;
@@ -122,7 +122,16 @@ export default function GSTCalculator() {
         data.push(['Total GST', formatINR(result.gstAmount)]);
         data.push(['Final Amount', formatINR(result.postGst)]);
 
-        exportToPDF('GST Report', headers, data, 'GST_Report', chartImage);
+        await exportToPDF('GST Report', headers, data, 'GST_Report', chartImage);
+    };
+
+    const handleDownloadExcel = async () => {
+        if (!result) return;
+        await exportToExcel(['Component', 'Value'], [
+            ['Base', result.preGst],
+            ['GST', result.gstAmount],
+            ['Total', result.postGst]
+        ], 'GST_Report');
     };
 
     const rates = [5, 12, 18, 28];
@@ -226,16 +235,12 @@ export default function GSTCalculator() {
                     </motion.div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                    <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
+                <div className="grid grid-cols-2 gap-3 mb-8">
+                    <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm">
                         📄 Download PDF
                     </button>
-                    <button onClick={() => exportToExcel(['Component', 'Value'], [
-                        ['Base', result?.preGst ?? 0],
-                        ['GST', result?.gstAmount ?? 0],
-                        ['Total', result?.postGst ?? 0]
-                    ], 'GST_Report')}
-                        className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
+                    <button onClick={handleDownloadExcel}
+                        className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-green/10 border-2 border-brand-green/40 text-brand-green font-bold text-sm">
                         📊 Download Excel
                     </button>
                 </div>

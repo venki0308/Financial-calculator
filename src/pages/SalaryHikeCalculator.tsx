@@ -26,7 +26,7 @@ export default function SalaryHikeCalculator() {
     const [periodUnit, setPeriodUnit] = useState<'months' | 'years'>('years');
     const [showProjection, setShowProjection] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
-    const { addHistory, addSaved, savedCalculations } = useCalculatorStore();    const [showInfo, setShowInfo] = useState(false);
+    const { addHistory, addSaved, savedCalculations } = useCalculatorStore(); const [showInfo, setShowInfo] = useState(false);
 
     const totalMonths = periodUnit === 'years' ? period * 12 : period;
 
@@ -86,24 +86,24 @@ export default function SalaryHikeCalculator() {
         };
     }, [currentSalary, newSalaryInput, hikePct, period, periodUnit, mode]);
 
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = async () => {
         const headers = ['Month', 'Monthly Salary', 'Cumulative Earnings'];
         const data = result.projection.map(row => [
             row.month,
             formatINR(row.salary),
             formatINR(row.cumulative)
         ]);
-        exportToPDF('Salary Hike Projection', headers, data, 'Salary_Hike_Projection');
+        await exportToPDF('Salary Hike Projection', headers, data, 'Salary_Hike_Projection');
     };
 
-    const handleDownloadExcel = () => {
+    const handleDownloadExcel = async () => {
         const headers = ['Month', 'Monthly Salary', 'Cumulative Earnings'];
         const data = result.projection.map(row => [
             row.month,
             Math.round(row.salary),
             Math.round(row.cumulative)
         ]);
-        exportToExcel(headers, data, 'Salary_Hike_Projection');
+        await exportToExcel(headers, data, 'Salary_Hike_Projection');
     };
 
     // History tracking
@@ -401,18 +401,18 @@ export default function SalaryHikeCalculator() {
                     </div>
 
                     {/* Download buttons */}
-                    <div className="flex gap-3 mt-4 pt-4 border-t border-slate-200 dark:border-dark-border">
+                    <div className="flex gap-3 mt-4 pt-4 border-t border-slate-200 dark:border-dark-border mb-6">
                         <button
                             onClick={handleDownloadPDF}
-                            className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 font-medium text-xs flex items-center justify-center gap-2"
+                            className="flex-1 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm flex items-center justify-center gap-2"
                         >
-                            📄 Download PDF
+                            📄 PDF report
                         </button>
                         <button
                             onClick={handleDownloadExcel}
-                            className="flex-1 py-3 rounded-2xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 font-medium text-xs flex items-center justify-center gap-2"
+                            className="flex-1 py-4 rounded-2xl bg-brand-green/10 border-2 border-brand-green/40 text-brand-green font-bold text-sm flex items-center justify-center gap-2"
                         >
-                            📊 Download Excel
+                            📊 Excel report
                         </button>
                     </div>
                 </BottomSheet>

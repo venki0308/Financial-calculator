@@ -49,7 +49,7 @@ export default function BottomSheet({ isOpen, onClose, title, children }: Bottom
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto px-5 py-4 hide-scrollbar">
+                        <div className="flex-1 overflow-y-auto px-5 pt-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] hide-scrollbar">
                             {children}
                         </div>
                     </motion.div>

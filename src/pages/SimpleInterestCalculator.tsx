@@ -72,7 +72,7 @@ export default function SimpleInterestCalculator() {
         }
     }, [mode, principal, flatRate, annualRate, tenure, compoundFreq]);
 
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = async () => {
         const headers = ['Field', 'Value'];
         const data: (string | number)[][] = [];
         data.push(['Mode', mode === 'flat' ? 'Flat ₹ Interest' : mode === 'simple' ? 'Simple Interest' : 'Compound Interest']);
@@ -100,10 +100,10 @@ export default function SimpleInterestCalculator() {
             data.push(['Total Payable', formatINR(r.totalPayable)]);
             data.push(['Monthly EMI', formatINR(r.monthlyEMI)]);
         }
-        exportToPDF('Interest Calculator Report', headers, data, 'Interest_Report');
+        await exportToPDF('Interest Calculator Report', headers, data, 'Interest_Report');
     };
 
-    const handleDownloadExcel = () => {
+    const handleDownloadExcel = async () => {
         const headers = ['Field', 'Value'];
         const data: (string | number)[][] = [['Mode', mode], ['Principal', principal]];
         if (mode === 'flat') {
@@ -116,7 +116,7 @@ export default function SimpleInterestCalculator() {
             const r = result as { compoundInterest: number; totalPayable: number; monthlyEMI: number };
             data.push(['Rate (%)', annualRate], ['Tenure (months)', tenure], ['CI', r.compoundInterest], ['Total Payable', r.totalPayable], ['Monthly EMI', r.monthlyEMI]);
         }
-        exportToExcel(headers, data, 'Interest_Report');
+        await exportToExcel(headers, data, 'Interest_Report');
     };
 
     const modes: { key: Mode; label: string; color: string }[] = [
@@ -412,16 +412,16 @@ export default function SimpleInterestCalculator() {
                 </motion.div>
 
                 {/* Download buttons */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="grid grid-cols-2 gap-3 mb-8">
                     <button
                         onClick={handleDownloadPDF}
-                        className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 font-medium text-xs"
+                        className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm"
                     >
                         📄 Download PDF
                     </button>
                     <button
                         onClick={handleDownloadExcel}
-                        className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 font-medium text-xs"
+                        className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-green/10 border-2 border-brand-green/40 text-brand-green font-bold text-sm"
                     >
                         📊 Download Excel
                     </button>
