@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
-import { Mail, Lock, User, Eye, EyeOff, AlertCircle, WifiOff, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle, WifiOff } from 'lucide-react';
 import { isConfigured } from '../lib/firebase';
 
 type Mode = 'login' | 'signup';
@@ -17,7 +17,7 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    // Separate error states — Google error should NOT pollute the email form
+    // Separate error states
     const [googleError, setGoogleError] = useState('');
     const [formError, setFormError] = useState('');
 
@@ -26,44 +26,20 @@ export default function Login() {
 
     const handleGoogleLogin = async () => {
         if (!isConfigured) {
-            setGoogleError('Firebase is not configured. Please use email login below.');
+            setGoogleError('Firebase is not configured. Please use Email login.');
             return;
         }
         setGoogleLoading(true);
         setGoogleError('');
         setFormError('');
 
-        try {
-            const result = await signInWithGoogle();
-            if (result.success) {
-                navigate('/', { replace: true });
-            } else {
-                setGoogleError(result.message);
-            }
-        } catch (err: any) {
-            setGoogleError('Google Sign-In failed. Please try Email login.');
-        } finally {
-            setGoogleLoading(false);
-        }
-    };
-
-    const handleDemoLogin = async () => {
-        setLoading(true);
-        setFormError('');
-        // Standard "Demo" credentials as requested by user ("local credentials")
-        const result = await signInWithEmail('test@fincalix.com', 'Fincalix@123');
+        const result = await signInWithGoogle();
         if (result.success) {
             navigate('/', { replace: true });
         } else {
-            // If the account doesn't exist, try to sign it up first (Architectural fallback)
-            const signup = await signUpWithEmail('test@fincalix.com', 'Fincalix@123', 'Demo User');
-            if (signup.success) {
-                navigate('/', { replace: true });
-            } else {
-                setFormError('Demo account could not be initialized. Please use your own email.');
-            }
+            setGoogleError(result.message);
         }
-        setLoading(false);
+        setGoogleLoading(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -71,9 +47,9 @@ export default function Login() {
         setFormError('');
         setGoogleError('');
 
-        if (!email.trim()) { setFormError('Please enter your email address.'); return; }
+        if (!email.trim()) { setFormError('Please enter your email.'); return; }
         if (!password.trim()) { setFormError('Please enter your password.'); return; }
-        if (mode === 'signup' && !name.trim()) { setFormError('Please enter your full name.'); return; }
+        if (mode === 'signup' && !name.trim()) { setFormError('Please enter your name.'); return; }
 
         setLoading(true);
         const result = mode === 'signup'
@@ -99,15 +75,15 @@ export default function Login() {
                 {/* Logo */}
                 <img src="/icons/fincalix-logo.jpg" alt="FinCalix" className="w-20 h-20 rounded-3xl mb-3 shadow-lg shadow-black/50" />
                 <h1 className="text-2xl font-bold text-white mb-1">FinCalix</h1>
-                <p className="text-slate-400 text-sm mb-7">India's #1 Financial Planning App</p>
+                <p className="text-slate-500 text-sm mb-7">India's #1 Financial Planning App</p>
 
-                {/* Firebase not configured warning */}
+                {/* Config Warning */}
                 {!isConfigured && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                         className="w-full flex items-start gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-4">
                         <WifiOff size={14} className="text-amber-400 shrink-0 mt-0.5" />
                         <p className="text-amber-400 text-xs leading-relaxed">
-                            Firebase configuration missing. <strong>Vercel Env Vars</strong> need to be set.
+                            Firebase configuration missing. Email login may be limited.
                         </p>
                     </motion.div>
                 )}
@@ -125,7 +101,7 @@ export default function Login() {
                     ))}
                 </div>
 
-                {/* Google Sign In Button */}
+                {/* Google Sign In */}
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={handleGoogleLogin}
@@ -133,7 +109,7 @@ export default function Login() {
                     className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl bg-white text-gray-800 font-semibold text-sm mb-2 hover:bg-gray-100 transition-colors disabled:opacity-60 shadow-md"
                 >
                     {googleLoading ? (
-                        <span className="text-gray-600 animate-pulse">Connecting...</span>
+                        <span className="text-gray-600">Connecting...</span>
                     ) : (
                         <>
                             <svg width="18" height="18" viewBox="0 0 48 48">
@@ -147,22 +123,16 @@ export default function Login() {
                     )}
                 </motion.button>
 
-                {/* Google-specific error — separate from email form */}
                 <AnimatePresence>
                     {googleError && (
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="w-full flex items-start gap-2 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 mb-3"
+                            className="w-full flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 mb-3"
                         >
-                            <AlertCircle size={14} className="text-orange-400 shrink-0 mt-0.5" />
-                            <div className="flex-1">
-                                <p className="text-orange-400 text-xs leading-relaxed mb-2">{googleError}</p>
-                                <button onClick={handleDemoLogin} className="flex items-center gap-1.5 text-[10px] font-bold text-white uppercase tracking-wider bg-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-700 transition-colors">
-                                    <ShieldCheck size={12} /> Use Demo Credentials
-                                </button>
-                            </div>
+                            <AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
+                            <p className="text-red-400 text-xs leading-relaxed">{googleError}</p>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -174,14 +144,10 @@ export default function Login() {
                     <div className="flex-1 h-px bg-dark-border" />
                 </div>
 
-                {/* Email / Password Form */}
+                {/* Forms */}
                 <form onSubmit={handleSubmit} className="w-full space-y-3">
                     {mode === 'signup' && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="relative"
-                        >
+                        <div className="relative">
                             <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
                             <input
                                 type="text"
@@ -190,7 +156,7 @@ export default function Login() {
                                 onChange={(e) => setName(e.target.value)}
                                 className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-dark-card border border-dark-border text-white placeholder-slate-500 text-sm focus:outline-none focus:border-brand-green/50 transition-colors"
                             />
-                        </motion.div>
+                        </div>
                     )}
 
                     <div className="relative">
@@ -199,7 +165,7 @@ export default function Login() {
                             type="email"
                             placeholder="Email address"
                             value={email}
-                            onChange={(e) => { setEmail(e.target.value); setFormError(''); }}
+                            onChange={(e) => setEmail(e.target.value)}
                             autoComplete="email"
                             className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-dark-card border border-dark-border text-white placeholder-slate-500 text-sm focus:outline-none focus:border-brand-green/50 transition-colors"
                         />
@@ -209,9 +175,9 @@ export default function Login() {
                         <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
                         <input
                             type={showPassword ? 'text' : 'password'}
-                            placeholder={mode === 'signup' ? 'Password (min 8 chars, A-Z, 0-9)' : 'Password'}
+                            placeholder="Password"
                             value={password}
-                            onChange={(e) => { setPassword(e.target.value); setFormError(''); }}
+                            onChange={(e) => setPassword(e.target.value)}
                             autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                             className="w-full pl-11 pr-12 py-3.5 rounded-xl bg-dark-card border border-dark-border text-white placeholder-slate-500 text-sm focus:outline-none focus:border-brand-green/50 transition-colors"
                         />
@@ -221,7 +187,6 @@ export default function Login() {
                         </button>
                     </div>
 
-                    {/* Form-specific error — only shown for email/password issues */}
                     <AnimatePresence>
                         {formError && (
                             <motion.div
@@ -236,27 +201,16 @@ export default function Login() {
                         )}
                     </AnimatePresence>
 
-                    <motion.button
-                        whileTap={{ scale: 0.97 }}
+                    <button
                         type="submit"
                         disabled={loading}
                         className="w-full py-3.5 rounded-xl bg-brand-green text-black font-bold text-sm transition-opacity disabled:opacity-60 shadow-lg shadow-brand-green/20"
                     >
                         {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
-                    </motion.button>
+                    </button>
                 </form>
 
-                {/* Local Credentials Fallback Note */}
-                <div className="mt-8 pt-6 border-t border-dark-border w-full">
-                    <p className="text-slate-500 text-[10px] uppercase tracking-widest text-center font-bold mb-3">Architectural Fallback</p>
-                    <div className="grid grid-cols-1 gap-2">
-                        <button onClick={handleDemoLogin} className="w-full py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 text-xs font-semibold hover:bg-slate-700 transition-colors">
-                            Sign in with Test Credentials
-                        </button>
-                    </div>
-                </div>
-
-                <p className="text-slate-500 text-xs text-center leading-relaxed mt-6">
+                <p className="text-slate-500 text-xs text-center leading-relaxed mt-8">
                     By continuing, you agree to our{' '}
                     <Link to="/terms-of-service" className="text-slate-400 underline">Terms of Service</Link>{' '}
                     &amp;{' '}
