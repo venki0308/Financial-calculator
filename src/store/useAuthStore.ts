@@ -38,7 +38,7 @@ interface AuthState {
     initAuthListener: () => () => void;
 }
 
-const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@fincalix.com';
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'fincalix@gmail.com';
 
 function firebaseUserToUser(fbUser: FirebaseUser, provider: 'google' | 'email' | 'local'): User {
     return {
