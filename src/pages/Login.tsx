@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
-import { Mail, Lock, User, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle, WifiOff } from 'lucide-react';
+import { isConfigured } from '../lib/firebase';
 
 type Mode = 'login' | 'signup';
 
@@ -15,48 +16,56 @@ export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
+
+    // Separate error states — Google error should NOT pollute the email form
+    const [googleError, setGoogleError] = useState('');
+    const [formError, setFormError] = useState('');
+
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
 
     const handleGoogleLogin = async () => {
+        if (!isConfigured) {
+            setGoogleError('Firebase is not configured. Please use email login below.');
+            return;
+        }
         setGoogleLoading(true);
-        setError('');
+        setGoogleError('');
+        setFormError('');
         const result = await signInWithGoogle();
         if (result.success) {
             navigate('/', { replace: true });
         } else {
-            setError(result.message);
+            // Provide environment-specific guidance
+            if (result.message.toLowerCase().includes('domain') || result.message.toLowerCase().includes('unauthorized')) {
+                setGoogleError('Google Sign-In is not enabled for this domain. Please use Email login below.');
+            } else if (result.message.toLowerCase().includes('cancelled') || result.message.toLowerCase().includes('closed')) {
+                setGoogleError('Sign-in was cancelled. Try again or use email login.');
+            } else {
+                setGoogleError(result.message);
+            }
         }
         setGoogleLoading(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        setFormError('');
+        setGoogleError('');
 
-        if (!email.trim() || !password.trim()) {
-            setError('Please enter your email and password.');
-            return;
-        }
-        if (mode === 'signup' && !name.trim()) {
-            setError('Please enter your full name.');
-            return;
-        }
+        if (!email.trim()) { setFormError('Please enter your email address.'); return; }
+        if (!password.trim()) { setFormError('Please enter your password.'); return; }
+        if (mode === 'signup' && !name.trim()) { setFormError('Please enter your full name.'); return; }
 
         setLoading(true);
-        let result: { success: boolean; message: string };
-
-        if (mode === 'signup') {
-            result = await signUpWithEmail(email.trim(), password, name.trim());
-        } else {
-            result = await signInWithEmail(email.trim(), password);
-        }
+        const result = mode === 'signup'
+            ? await signUpWithEmail(email.trim(), password, name.trim())
+            : await signInWithEmail(email.trim(), password);
 
         if (result.success) {
             navigate('/', { replace: true });
         } else {
-            setError(result.message);
+            setFormError(result.message);
         }
         setLoading(false);
     };
@@ -74,12 +83,23 @@ export default function Login() {
                 <h1 className="text-2xl font-bold text-white mb-1">FinCalix</h1>
                 <p className="text-slate-400 text-sm mb-7">India's #1 Financial Planning App</p>
 
+                {/* Firebase not configured warning */}
+                {!isConfigured && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                        className="w-full flex items-start gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-4">
+                        <WifiOff size={14} className="text-amber-400 shrink-0 mt-0.5" />
+                        <p className="text-amber-400 text-xs leading-relaxed">
+                            Firebase not configured. <strong>Email login still works</strong> — check that environment variables are set in your hosting platform.
+                        </p>
+                    </motion.div>
+                )}
+
                 {/* Mode Toggle */}
                 <div className="w-full flex rounded-2xl bg-dark-card border border-dark-border p-1 mb-5">
                     {(['login', 'signup'] as Mode[]).map((m) => (
                         <button
                             key={m}
-                            onClick={() => { setMode(m); setError(''); }}
+                            onClick={() => { setMode(m); setFormError(''); setGoogleError(''); }}
                             className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${mode === m ? 'bg-brand-green text-black' : 'text-slate-500'}`}
                         >
                             {m === 'login' ? 'Sign In' : 'Sign Up'}
@@ -92,7 +112,7 @@ export default function Login() {
                     whileTap={{ scale: 0.97 }}
                     onClick={handleGoogleLogin}
                     disabled={googleLoading}
-                    className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl bg-white text-gray-800 font-semibold text-sm mb-4 hover:bg-gray-100 transition-colors disabled:opacity-60 shadow-md"
+                    className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl bg-white text-gray-800 font-semibold text-sm mb-2 hover:bg-gray-100 transition-colors disabled:opacity-60 shadow-md"
                 >
                     {googleLoading ? (
                         <span className="text-gray-600">Connecting...</span>
@@ -109,8 +129,23 @@ export default function Login() {
                     )}
                 </motion.button>
 
+                {/* Google-specific error — separate from email form */}
+                <AnimatePresence>
+                    {googleError && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="w-full flex items-start gap-2 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 mb-3"
+                        >
+                            <AlertCircle size={14} className="text-orange-400 shrink-0 mt-0.5" />
+                            <p className="text-orange-400 text-xs leading-relaxed">{googleError}</p>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 {/* Divider */}
-                <div className="w-full flex items-center gap-3 mb-4">
+                <div className="w-full flex items-center gap-3 mb-4 mt-1">
                     <div className="flex-1 h-px bg-dark-border" />
                     <span className="text-slate-500 text-xs">or continue with email</span>
                     <div className="flex-1 h-px bg-dark-border" />
@@ -141,7 +176,7 @@ export default function Login() {
                             type="email"
                             placeholder="Email address"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => { setEmail(e.target.value); setFormError(''); }}
                             autoComplete="email"
                             className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-dark-card border border-dark-border text-white placeholder-slate-500 text-sm focus:outline-none focus:border-brand-green/50 transition-colors"
                         />
@@ -153,7 +188,7 @@ export default function Login() {
                             type={showPassword ? 'text' : 'password'}
                             placeholder={mode === 'signup' ? 'Password (min 8 chars, A-Z, 0-9)' : 'Password'}
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => { setPassword(e.target.value); setFormError(''); }}
                             autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                             className="w-full pl-11 pr-12 py-3.5 rounded-xl bg-dark-card border border-dark-border text-white placeholder-slate-500 text-sm focus:outline-none focus:border-brand-green/50 transition-colors"
                         />
@@ -163,16 +198,20 @@ export default function Login() {
                         </button>
                     </div>
 
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20"
-                        >
-                            <AlertCircle size={14} className="text-red-400 shrink-0" />
-                            <p className="text-red-400 text-xs">{error}</p>
-                        </motion.div>
-                    )}
+                    {/* Form-specific error — only shown for email/password issues */}
+                    <AnimatePresence>
+                        {formError && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20"
+                            >
+                                <AlertCircle size={14} className="text-red-400 shrink-0 mt-0.5" />
+                                <p className="text-red-400 text-xs leading-relaxed">{formError}</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <motion.button
                         whileTap={{ scale: 0.97 }}
