@@ -390,7 +390,12 @@ input[type="number"]::-webkit-inner-spin-button {
     backdrop-filter: blur(4px);
 }
 
-/* Safe area for notched phones (iPhone X+) */
+/* Safe area for notched phones (iPhone X+) and Android nav bar */
 .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* Main content area with bottom nav + Android nav bar safe inset */
+.pb-safe-nav {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }

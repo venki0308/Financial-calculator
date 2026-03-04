@@ -1,13 +1,68 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { Capacitor } from '@capacitor/core';
 
-export const exportToPDF = (
+/**
+ * Save a blob as a file — works in both browser and Capacitor WebView.
+ * On native Android, uses the Filesystem + Share API to trigger download.
+ */
+async function saveBlobOnNative(blob: Blob, filename: string, mimeType: string) {
+    try {
+        // Convert blob to base64
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve, reject) => {
+            reader.onload = () => {
+                const result = reader.result as string;
+                // Strip data URL prefix to get pure base64
+                resolve(result.split(',')[1]);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+
+        const { Filesystem, Directory } = await import('@capacitor/filesystem');
+        const { Share } = await import('@capacitor/share');
+
+        // Write to cache directory
+        const writeResult = await Filesystem.writeFile({
+            path: filename,
+            data: base64,
+            directory: Directory.Cache,
+        });
+
+        // Open share sheet so user can save/open the file
+        await Share.share({
+            title: filename,
+            url: writeResult.uri,
+            dialogTitle: 'Save or open your file',
+        });
+    } catch (err) {
+        console.error('[FinCalix] Native file save failed, falling back:', err);
+        // Fallback: try blob URL download
+        triggerBrowserDownload(blob, filename, mimeType);
+    }
+}
+
+function triggerBrowserDownload(blob: Blob, filename: string, _mimeType: string) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, 300);
+}
+
+export const exportToPDF = async (
     title: string,
     headers: string[],
     data: (string | number)[][],
     filename: string,
-    chartImage?: string // Data URL from Chart.js
+    chartImage?: string
 ) => {
     try {
         const doc = new jsPDF();
@@ -46,19 +101,16 @@ export const exportToPDF = (
         if (chartImage) {
             const finalY = (doc as any).lastAutoTable?.finalY ?? 45;
             const chartY = finalY + 15;
-
-            // Check if we need a new page
             if (chartY > 200) {
                 doc.addPage();
                 doc.setFontSize(14);
                 doc.setTextColor(15, 23, 42);
-                doc.text("Visual Analysis", 14, 22);
-                // Center the chart: page width 210, chart 140 wide, left margin = (210-140)/2 = 35
+                doc.text('Visual Analysis', 14, 22);
                 doc.addImage(chartImage, 'PNG', 35, 30, 140, 90);
             } else {
                 doc.setFontSize(14);
                 doc.setTextColor(15, 23, 42);
-                doc.text("Visual Analysis", 14, chartY);
+                doc.text('Visual Analysis', 14, chartY);
                 doc.addImage(chartImage, 'PNG', 35, chartY + 8, 140, 90);
             }
         }
@@ -69,32 +121,52 @@ export const exportToPDF = (
             doc.setPage(i);
             doc.setFontSize(8);
             doc.setTextColor(150);
-            doc.text("FinCalix - Your Financial Companion", 14, 285);
+            doc.text('FinCalix - Your Financial Companion', 14, 285);
             doc.text(`Page ${i} of ${pageCount}`, 196, 285, { align: 'right' });
         }
 
-        doc.save(`${filename}.pdf`);
+        const pdfFilename = `${filename}.pdf`;
+
+        if (Capacitor.isNativePlatform()) {
+            // On Android, use filesystem + share
+            const pdfBlob = doc.output('blob');
+            await saveBlobOnNative(pdfBlob, pdfFilename, 'application/pdf');
+        } else {
+            // On web, use jsPDF .save() directly
+            doc.save(pdfFilename);
+        }
     } catch (error: any) {
         console.error('PDF Export Error:', error);
         alert('PDF Generation failed: ' + error.message);
     }
 };
 
-export const exportToExcel = (
+export const exportToExcel = async (
     headers: string[],
     data: (string | number)[][],
     filename: string
 ) => {
-    // Combine headers and data
-    const worksheetData = [headers, ...data];
+    try {
+        const worksheetData = [headers, ...data];
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+        XLSX.utils.book_append_sheet(wb, ws, 'Results');
 
-    // Create workbook and worksheet
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+        const xlsxFilename = `${filename}.xlsx`;
 
-    // Add worksheet to workbook
-    XLSX.utils.book_append_sheet(wb, ws, 'Results');
-
-    // Save file
-    XLSX.writeFile(wb, `${filename}.xlsx`);
+        if (Capacitor.isNativePlatform()) {
+            // Write to array buffer then convert to blob for native share
+            const wbArrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbArrayBuffer], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            });
+            await saveBlobOnNative(blob, xlsxFilename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        } else {
+            // On web, use XLSX writeFile directly
+            XLSX.writeFile(wb, xlsxFilename);
+        }
+    } catch (error: any) {
+        console.error('Excel Export Error:', error);
+        alert('Excel export failed: ' + error.message);
+    }
 };

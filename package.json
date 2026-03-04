@@ -11,6 +11,8 @@
     "dependencies": {
         "@capacitor/android": "^8.1.0",
         "@capacitor/core": "^8.1.0",
+        "@capacitor/filesystem": "^8.1.2",
+        "@capacitor/share": "^8.0.1",
         "chart.js": "^4.4.7",
         "firebase": "^11.4.0",
         "framer-motion": "^12.4.7",

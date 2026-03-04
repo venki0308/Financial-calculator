@@ -19,7 +19,7 @@ export default function Layout() {
 
     return (
         <div className="flex flex-col min-h-dvh app-container">
-            <main className="flex-1 pb-20 overflow-y-auto">
+            <main className="flex-1 pb-safe-nav overflow-y-auto">
                 <Outlet />
             </main>
 
