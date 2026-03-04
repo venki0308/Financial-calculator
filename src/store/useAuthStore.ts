@@ -126,9 +126,12 @@ export const useAuthStore = create<AuthState>()(
                     set({ user, isAuthenticated: true, isLoading: false });
                     return { success: true, message: 'Signed in with Google' };
                 } catch (err: any) {
-                    const msg = err.code === 'auth/popup-closed-by-user'
-                        ? 'Sign-in cancelled'
-                        : 'Google sign-in failed. Please try again';
+                    let msg = 'Google sign-in failed. Please try again';
+                    if (err.code === 'auth/popup-closed-by-user') msg = 'Sign-in cancelled';
+                    else if (err.code === 'auth/unauthorized-domain') msg = 'This domain is not authorized in Firebase. Please add it to your authorized domains list.';
+                    else if (err.code === 'auth/popup-blocked') msg = 'The sign-in popup was blocked by your browser. Please enable popups for this site.';
+                    else if (err.message) msg = err.message;
+
                     return { success: false, message: msg };
                 }
             },

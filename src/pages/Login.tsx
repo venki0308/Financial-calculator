@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
-import { Mail, Lock, User, Eye, EyeOff, AlertCircle, WifiOff } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle, WifiOff, ShieldCheck } from 'lucide-react';
 import { isConfigured } from '../lib/firebase';
 
 type Mode = 'login' | 'signup';
@@ -32,20 +32,38 @@ export default function Login() {
         setGoogleLoading(true);
         setGoogleError('');
         setFormError('');
-        const result = await signInWithGoogle();
-        if (result.success) {
-            navigate('/', { replace: true });
-        } else {
-            // Provide environment-specific guidance
-            if (result.message.toLowerCase().includes('domain') || result.message.toLowerCase().includes('unauthorized')) {
-                setGoogleError('Google Sign-In is not enabled for this domain. Please use Email login below.');
-            } else if (result.message.toLowerCase().includes('cancelled') || result.message.toLowerCase().includes('closed')) {
-                setGoogleError('Sign-in was cancelled. Try again or use email login.');
+
+        try {
+            const result = await signInWithGoogle();
+            if (result.success) {
+                navigate('/', { replace: true });
             } else {
                 setGoogleError(result.message);
             }
+        } catch (err: any) {
+            setGoogleError('Google Sign-In failed. Please try Email login.');
+        } finally {
+            setGoogleLoading(false);
         }
-        setGoogleLoading(false);
+    };
+
+    const handleDemoLogin = async () => {
+        setLoading(true);
+        setFormError('');
+        // Standard "Demo" credentials as requested by user ("local credentials")
+        const result = await signInWithEmail('test@fincalix.com', 'Fincalix@123');
+        if (result.success) {
+            navigate('/', { replace: true });
+        } else {
+            // If the account doesn't exist, try to sign it up first (Architectural fallback)
+            const signup = await signUpWithEmail('test@fincalix.com', 'Fincalix@123', 'Demo User');
+            if (signup.success) {
+                navigate('/', { replace: true });
+            } else {
+                setFormError('Demo account could not be initialized. Please use your own email.');
+            }
+        }
+        setLoading(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -89,7 +107,7 @@ export default function Login() {
                         className="w-full flex items-start gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-4">
                         <WifiOff size={14} className="text-amber-400 shrink-0 mt-0.5" />
                         <p className="text-amber-400 text-xs leading-relaxed">
-                            Firebase not configured. <strong>Email login still works</strong> — check that environment variables are set in your hosting platform.
+                            Firebase configuration missing. <strong>Vercel Env Vars</strong> need to be set.
                         </p>
                     </motion.div>
                 )}
@@ -115,7 +133,7 @@ export default function Login() {
                     className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl bg-white text-gray-800 font-semibold text-sm mb-2 hover:bg-gray-100 transition-colors disabled:opacity-60 shadow-md"
                 >
                     {googleLoading ? (
-                        <span className="text-gray-600">Connecting...</span>
+                        <span className="text-gray-600 animate-pulse">Connecting...</span>
                     ) : (
                         <>
                             <svg width="18" height="18" viewBox="0 0 48 48">
@@ -139,7 +157,12 @@ export default function Login() {
                             className="w-full flex items-start gap-2 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 mb-3"
                         >
                             <AlertCircle size={14} className="text-orange-400 shrink-0 mt-0.5" />
-                            <p className="text-orange-400 text-xs leading-relaxed">{googleError}</p>
+                            <div className="flex-1">
+                                <p className="text-orange-400 text-xs leading-relaxed mb-2">{googleError}</p>
+                                <button onClick={handleDemoLogin} className="flex items-center gap-1.5 text-[10px] font-bold text-white uppercase tracking-wider bg-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-700 transition-colors">
+                                    <ShieldCheck size={12} /> Use Demo Credentials
+                                </button>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -222,6 +245,16 @@ export default function Login() {
                         {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
                     </motion.button>
                 </form>
+
+                {/* Local Credentials Fallback Note */}
+                <div className="mt-8 pt-6 border-t border-dark-border w-full">
+                    <p className="text-slate-500 text-[10px] uppercase tracking-widest text-center font-bold mb-3">Architectural Fallback</p>
+                    <div className="grid grid-cols-1 gap-2">
+                        <button onClick={handleDemoLogin} className="w-full py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 text-xs font-semibold hover:bg-slate-700 transition-colors">
+                            Sign in with Test Credentials
+                        </button>
+                    </div>
+                </div>
 
                 <p className="text-slate-500 text-xs text-center leading-relaxed mt-6">
                     By continuing, you agree to our{' '}
