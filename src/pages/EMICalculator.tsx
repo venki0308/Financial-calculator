@@ -101,13 +101,11 @@ export default function EMICalculator() {
         return savedCalculations.some(s => s.type === 'Loan EMI Calculator' && JSON.stringify(s.inputs) === JSON.stringify({ principal, rate, months, method }));
     }, [savedCalculations, principal, rate, months, method]);
 
-    const handleDownloadPDF = () => {
-
+    const handleDownloadPDF = async () => {
         let chartImage = undefined;
         if (chartRef.current) {
             chartImage = chartRef.current.toBase64Image();
         }
-
         const headers = ['Month', 'Principal Repayment', 'Interest Repayment', 'Balance'];
         const data = (result.schedule || []).map(row => [
             row.month.toString(),
@@ -115,12 +113,10 @@ export default function EMICalculator() {
             formatINR(row.interest),
             formatINR(row.balance)
         ]);
-
-        // Add summary at the top of data if needed or just use chart
-        exportToPDF('EMI Payment Schedule', headers, data, 'EMI_Schedule', chartImage);
+        await exportToPDF('EMI Payment Schedule', headers, data, 'EMI_Schedule', chartImage);
     };
 
-    const handleDownloadExcel = () => {
+    const handleDownloadExcel = async () => {
         const headers = ['Month', 'Principal Repayment', 'Interest Repayment', 'Balance'];
         const data = (result.schedule || []).map(row => [
             row.month,
@@ -128,7 +124,7 @@ export default function EMICalculator() {
             Math.round(row.interest),
             Math.round(row.balance)
         ]);
-        exportToExcel(headers, data, 'EMI_Schedule');
+        await exportToExcel(headers, data, 'EMI_Schedule');
     };
 
     return (

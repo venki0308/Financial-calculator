@@ -143,12 +143,10 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
     }, [result.rows]);
 
     const handleDownloadPDF = async () => {
-
         let chartImage = undefined;
         if (chartRef.current) {
             chartImage = chartRef.current.toBase64Image();
         }
-
         const headers = ['Field', 'Value'];
         const data = [
             ...config.fields.map(f => [f.label, `${vals[f.key]}${f.suffix || ''}`]),
@@ -156,17 +154,17 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
             [result.label, typeof result.primary === 'number' ? formatINR(result.primary) : result.primary],
             ...result.rows.map(r => [r.label, r.value.toString()])
         ];
-        exportToPDF(`${config.title} Report`, headers, data, config.title.replace(/\s+/g, '_'), chartImage);
+        await exportToPDF(`${config.title} Report`, headers, data, config.title.replace(/\s+/g, '_'), chartImage);
     };
 
-    const handleDownloadExcel = () => {
+    const handleDownloadExcel = async () => {
         const headers = ['Field', 'Value'];
         const data = [
             ...config.fields.map(f => [f.label, vals[f.key]]),
             [result.label, result.primary],
             ...result.rows.map(r => [r.label, r.value])
         ];
-        exportToExcel(headers, data, config.title.replace(/\s+/g, '_'));
+        await exportToExcel(headers, data, config.title.replace(/\s+/g, '_'));
     };
 
     return (
