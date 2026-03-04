@@ -91,11 +91,11 @@ export default function Settings() {
                 <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden mb-6">
                     <MenuItem icon={Info} label={t('settings.about')} color="#10B981" onClick={() => navigate('/about')} />
                     <div className="h-px bg-dark-border mx-4" />
-                    <MenuItem icon={FileText} label={t('settings.privacy')} color="#3B82F6" onClick={() => navigate('/privacy-policy')} />
+                    <MenuItem icon={FileText} label={t('settings.privacyPolicy')} color="#3B82F6" onClick={() => navigate('/privacy-policy')} />
                     <div className="h-px bg-dark-border mx-4" />
-                    <MenuItem icon={FileText} label={t('settings.terms')} color="#8B5CF6" onClick={() => navigate('/terms-of-service')} />
+                    <MenuItem icon={FileText} label={t('settings.termsOfService')} color="#8B5CF6" onClick={() => navigate('/terms-of-service')} />
                     <div className="h-px bg-dark-border mx-4" />
-                    <MenuItem icon={Star} label={t('settings.rateUs')} color="#F59E0B" onClick={() => window.open('https://play.google.com/store', '_blank')} />
+                    <MenuItem icon={Star} label={t('settings.rateApp')} color="#F59E0B" onClick={() => window.open('https://play.google.com/store', '_blank')} />
                     <div className="h-px bg-dark-border mx-4" />
                     <MenuItem icon={Share2} label={t('settings.shareApp')} color="#EC4899" onClick={() => {
                         if (navigator.share) {

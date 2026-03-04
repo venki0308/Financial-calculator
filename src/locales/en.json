@@ -314,7 +314,10 @@
         "catBanking": "Banking",
         "catPension": "Pension",
         "catEmployment": "Employment",
-        "catSocialWelfare": "Social Welfare"
+        "catSocialWelfare": "Social Welfare",
+        "catDigital": "Digital",
+        "catEnergy": "Energy",
+        "catYouth": "Youth"
     },
     "profile": {
         "title": "Profile",
