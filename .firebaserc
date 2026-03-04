@@ -1,5 +1,7 @@
 {
-  "projects": {},
+  "projects": {
+    "default": "fincalix-56882"
+  },
   "targets": {},
   "etags": {}
 }
