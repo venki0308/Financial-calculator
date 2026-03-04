@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bookmark, Clock, Bell, Settings, ChevronRight, User, ShieldCheck, Globe } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Bookmark, Clock, Bell, Settings, ChevronRight, User, Globe, Pencil, Check } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useSchemeStore } from '../store/useSchemeStore';
@@ -13,12 +14,20 @@ const languages: Record<string, string> = {
 export default function Profile() {
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
-    const user = useAuthStore((s) => s.user);
+    const { user, updateName } = useAuthStore();
     const savedCount = useCalculatorStore((s) => s.savedCalculations.length);
     const historyCount = useCalculatorStore((s) => s.history.length);
     const bookmarkCount = useSchemeStore((s) => s.bookmarkedSchemes.length);
 
+    const [editingName, setEditingName] = useState(false);
+    const [nameInput, setNameInput] = useState(user.name);
+
     const currentLangName = languages[i18n.language] || languages[i18n.language?.split('-')[0]] || 'English';
+
+    const handleSaveName = () => {
+        updateName(nameInput);
+        setEditingName(false);
+    };
 
     const menuItems = [
         { icon: Bookmark, label: t('profile.saved'), color: '#10B981', key: 'saved', path: '/profile/saved' },
@@ -26,7 +35,6 @@ export default function Profile() {
         { icon: Bookmark, label: t('profile.bookmarks'), color: '#F59E0B', key: 'bookmarks', path: '/profile/bookmarks' },
         { icon: Bell, label: t('settings.notifications'), color: '#8B5CF6', key: 'notif', path: '/notifications' },
         { icon: Settings, label: t('settings.title'), color: '#6B7280', key: 'settings', path: '/settings' },
-        ...(user?.role === 'admin' ? [{ icon: ShieldCheck, label: 'Admin Panel', color: '#F59E0B', key: 'admin', path: '/admin' }] : []),
     ];
 
     const getBadge = (key: string) => {
@@ -36,22 +44,63 @@ export default function Profile() {
         return 0;
     };
 
+    const initials = (user.name || 'U').slice(0, 2).toUpperCase();
+
     return (
         <div className="px-4 pt-14 animate-fade-in">
             <h1 className="text-2xl font-bold text-white mb-6">{t('profile.title')}</h1>
 
             {/* User Card */}
             <div className="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-brand-green/10 to-brand-blue/10 border border-dark-border mb-6">
-                {user?.photoURL ? (
-                    <img src={user.photoURL} alt="" className="w-14 h-14 rounded-full object-cover" />
-                ) : (
-                    <div className="w-14 h-14 rounded-full bg-brand-green/15 flex items-center justify-center">
-                        <User size={28} className="text-brand-green" />
-                    </div>
-                )}
+                {/* Avatar */}
+                <div className="w-14 h-14 rounded-full bg-brand-green/20 flex items-center justify-center shrink-0">
+                    <span className="text-brand-green font-bold text-xl">{initials}</span>
+                </div>
+
                 <div className="flex-1 min-w-0">
-                    <h2 className="text-white font-semibold text-lg truncate">{user?.name || 'User'}</h2>
-                    <p className="text-slate-400 text-sm truncate">{user?.email || ''}</p>
+                    <AnimatePresence mode="wait">
+                        {editingName ? (
+                            <motion.div
+                                key="edit"
+                                initial={{ opacity: 0, y: -4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                className="flex items-center gap-2"
+                            >
+                                <input
+                                    autoFocus
+                                    value={nameInput}
+                                    onChange={(e) => setNameInput(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                                    className="flex-1 bg-dark-card border border-brand-green/40 rounded-lg px-3 py-1.5 text-white text-sm outline-none"
+                                    maxLength={30}
+                                />
+                                <button onClick={handleSaveName} className="p-1.5 rounded-lg bg-brand-green/15 text-brand-green">
+                                    <Check size={16} />
+                                </button>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="show"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="flex items-center gap-2"
+                            >
+                                <h2 className="text-white font-semibold text-lg truncate">{user.name}</h2>
+                                <button
+                                    onClick={() => { setNameInput(user.name); setEditingName(true); }}
+                                    className="p-1 rounded-lg text-slate-500 hover:text-slate-300 transition-colors"
+                                >
+                                    <Pencil size={14} />
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    <p className="text-slate-500 text-xs mt-0.5 flex items-center gap-1">
+                        <User size={11} />
+                        <span>All data stored on this device</span>
+                    </p>
                 </div>
             </div>
 
@@ -105,7 +154,7 @@ export default function Profile() {
 
             <div className="text-center py-6 border-t border-dark-border">
                 <p className="text-slate-400 text-sm font-medium">FinCalix</p>
-                <p className="text-slate-600 text-xs mt-1">Version 2.0.26</p>
+                <p className="text-slate-600 text-xs mt-1">Version 2.1.0 — Offline Edition</p>
                 <p className="text-slate-600 text-xs mt-0.5">Made with ❤️ in India</p>
             </div>
         </div>

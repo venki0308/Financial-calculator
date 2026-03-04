@@ -1,9 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { useAuthStore } from './store/useAuthStore';
 import { useSettingsStore } from './store/useSettingsStore';
 import Layout from './components/Layout';
-import Login from './pages/Login';
 import Home from './pages/Home';
 import Calculators from './pages/Calculators';
 import Schemes from './pages/Schemes';
@@ -54,42 +52,24 @@ import SavedCalculations from './pages/SavedCalculations';
 import CalculationHistory from './pages/CalculationHistory';
 import BookmarkedSchemes from './pages/BookmarkedSchemes';
 import Notifications from './pages/Notifications';
-import AdminPanel from './pages/AdminPanel';
-
-function AuthGuard({ children }: { children: React.ReactNode }) {
-    const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-    const isLoading = useAuthStore((s) => s.isLoading);
-    if (isLoading) return (
-        <div className="min-h-dvh bg-[#0F172A] flex items-center justify-center">
-            <div className="w-8 h-8 rounded-full border-2 border-brand-green border-t-transparent animate-spin" />
-        </div>
-    );
-    if (!isAuthenticated) return <Navigate to="/login" replace />;
-    return <>{children}</>;
-}
 
 export default function App() {
     const darkMode = useSettingsStore((s) => s.darkMode);
-    const initAuthListener = useAuthStore((s) => s.initAuthListener);
 
     useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
         document.documentElement.classList.toggle('light', !darkMode);
     }, [darkMode]);
 
-    useEffect(() => {
-        // Start listening to Firebase auth state changes
-        const unsubscribe = initAuthListener();
-        return () => unsubscribe();
-    }, [initAuthListener]);
-
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/login" element={<Login />} />
+                {/* Support pages (no nav bar) */}
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
-                <Route element={<AuthGuard><Layout /></AuthGuard>}>
+
+                {/* Main app — all routes public, no auth required */}
+                <Route element={<Layout />}>
                     <Route path="/" element={<Home />} />
                     <Route path="/calculators" element={<Calculators />} />
                     <Route path="/schemes" element={<Schemes />} />
@@ -101,7 +81,6 @@ export default function App() {
                     <Route path="/profile/bookmarks" element={<BookmarkedSchemes />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/notifications" element={<Notifications />} />
-                    <Route path="/admin" element={<AdminPanel />} />
                     <Route path="/about" element={<About />} />
 
                     {/* Calculators */}
@@ -138,6 +117,7 @@ export default function App() {
                     <Route path="/calculator/car-loan" element={<CarLoanCalculator />} />
                     <Route path="/budget-tracker" element={<BudgetTracker />} />
                 </Route>
+
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </BrowserRouter>
