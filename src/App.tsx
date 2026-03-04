@@ -58,17 +58,30 @@ import AdminPanel from './pages/AdminPanel';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
     const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+    const isLoading = useAuthStore((s) => s.isLoading);
+    if (isLoading) return (
+        <div className="min-h-dvh bg-[#0F172A] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full border-2 border-brand-green border-t-transparent animate-spin" />
+        </div>
+    );
     if (!isAuthenticated) return <Navigate to="/login" replace />;
     return <>{children}</>;
 }
 
 export default function App() {
     const darkMode = useSettingsStore((s) => s.darkMode);
+    const initAuthListener = useAuthStore((s) => s.initAuthListener);
 
     useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
         document.documentElement.classList.toggle('light', !darkMode);
     }, [darkMode]);
+
+    useEffect(() => {
+        // Start listening to Firebase auth state changes
+        const unsubscribe = initAuthListener();
+        return () => unsubscribe();
+    }, [initAuthListener]);
 
     return (
         <BrowserRouter>

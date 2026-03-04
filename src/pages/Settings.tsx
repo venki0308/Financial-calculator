@@ -33,7 +33,7 @@ export default function Settings() {
     const user = useAuthStore((s) => s.user);
     const changePassword = useAuthStore((s) => s.changePassword);
 
-    const handleLogout = () => { logout(); navigate('/login'); };
+    const handleLogout = async () => { await logout(); navigate('/login'); };
     const currentLang = languages.find(l => i18n.language.startsWith(l.code)) || languages[0];
 
     const changeLanguage = (code: string) => {
@@ -171,14 +171,14 @@ export default function Settings() {
                         <p className={`text-xs font-medium ${pwdSuccess ? 'text-brand-green' : 'text-red-400'}`}>{pwdMsg}</p>
                     )}
                     <button
-                        onClick={() => {
+                        onClick={async () => {
                             if (!oldPassword || !newPassword || !confirmPassword) {
                                 setPwdMsg('All fields are required'); setPwdSuccess(false); return;
                             }
                             if (newPassword !== confirmPassword) {
                                 setPwdMsg('Passwords do not match'); setPwdSuccess(false); return;
                             }
-                            const result = changePassword(user?.email || '', oldPassword, newPassword);
+                            const result = await changePassword(oldPassword, newPassword);
                             setPwdMsg(result.message);
                             setPwdSuccess(result.success);
                             if (result.success) {

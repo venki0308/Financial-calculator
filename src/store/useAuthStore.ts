@@ -1,12 +1,26 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import {
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signInWithPopup,
+    signOut,
+    updatePassword,
+    updateProfile,
+    EmailAuthProvider,
+    reauthenticateWithCredential,
+    User as FirebaseUser,
+} from 'firebase/auth';
+import { auth, googleProvider } from '../lib/firebase';
+import { createOrUpdateUserProfile } from '../lib/firestore';
 
 export interface User {
     uid: string;
     name: string;
     email: string;
     photoURL: string;
-    provider: 'google' | 'facebook' | 'local';
+    provider: 'google' | 'email' | 'local';
     role: 'admin' | 'user';
     createdAt: number;
 }
@@ -14,25 +28,36 @@ export interface User {
 interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
-    registeredUsers: { email: string; password: string; name: string }[];
+    isLoading: boolean;
     login: (user: User) => void;
-    logout: () => void;
-    registerUser: (email: string, password: string, name: string) => void;
-    changePassword: (email: string, oldPassword: string, newPassword: string) => { success: boolean; message: string };
+    logout: () => Promise<void>;
     isAdmin: () => boolean;
+    signInWithEmail: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
+    signUpWithEmail: (email: string, password: string, name: string) => Promise<{ success: boolean; message: string }>;
+    signInWithGoogle: () => Promise<{ success: boolean; message: string }>;
+    changePassword: (oldPassword: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
+    initAuthListener: () => () => void;
 }
 
-// Admin credentials — loaded from environment variables for security
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@fincalix.com';
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Moksha!81421';
 
-// Password validation — minimum 8 chars, at least 1 uppercase, 1 lowercase, 1 digit, 1 special char
+function firebaseUserToUser(fbUser: FirebaseUser, provider: 'google' | 'email' | 'local'): User {
+    return {
+        uid: fbUser.uid,
+        name: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
+        email: fbUser.email || '',
+        photoURL: fbUser.photoURL || '',
+        provider,
+        role: fbUser.email === ADMIN_EMAIL ? 'admin' : 'user',
+        createdAt: Date.now(),
+    };
+}
+
 export function validatePassword(password: string): { valid: boolean; message: string } {
     if (password.length < 8) return { valid: false, message: 'Password must be at least 8 characters' };
     if (!/[A-Z]/.test(password)) return { valid: false, message: 'Must include an uppercase letter' };
     if (!/[a-z]/.test(password)) return { valid: false, message: 'Must include a lowercase letter' };
     if (!/[0-9]/.test(password)) return { valid: false, message: 'Must include a digit' };
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return { valid: false, message: 'Must include a special character' };
     return { valid: true, message: 'Strong password' };
 }
 
@@ -41,42 +66,109 @@ export const useAuthStore = create<AuthState>()(
         (set, get) => ({
             user: null,
             isAuthenticated: false,
-            registeredUsers: [],
-            login: (user) => set({ user, isAuthenticated: true }),
-            logout: () => set({ user: null, isAuthenticated: false }),
-            registerUser: (email, password, name) =>
-                set((state) => ({
-                    registeredUsers: [...state.registeredUsers.filter(u => u.email !== email), { email, password, name }]
-                })),
-            changePassword: (email, oldPassword, newPassword) => {
-                const state = get();
-                const user = state.registeredUsers.find(u => u.email === email);
-                // Check admin credentials
-                if (email === ADMIN_EMAIL) {
-                    if (oldPassword !== ADMIN_PASSWORD) {
-                        return { success: false, message: 'Current password is incorrect' };
-                    }
-                    const validation = validatePassword(newPassword);
-                    if (!validation.valid) return { success: false, message: validation.message };
-                    // Admin password is env-based, can't change dynamically. Store in registeredUsers.
-                    set((s) => ({
-                        registeredUsers: [...s.registeredUsers.filter(u => u.email !== email), { email, password: newPassword, name: 'Admin' }]
-                    }));
-                    return { success: true, message: 'Password changed successfully' };
+            isLoading: true,
+
+            login: (user) => set({ user, isAuthenticated: true, isLoading: false }),
+
+            logout: async () => {
+                await signOut(auth);
+                set({ user: null, isAuthenticated: false, isLoading: false });
+            },
+
+            isAdmin: () => get().user?.role === 'admin',
+
+            signInWithEmail: async (email, password) => {
+                try {
+                    const result = await signInWithEmailAndPassword(auth, email, password);
+                    const user = firebaseUserToUser(result.user, 'email');
+                    await createOrUpdateUserProfile({ uid: user.uid, name: user.name, email: user.email, photoURL: user.photoURL });
+                    set({ user, isAuthenticated: true, isLoading: false });
+                    return { success: true, message: 'Signed in successfully' };
+                } catch (err: any) {
+                    const msg = err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'
+                        ? 'Incorrect email or password'
+                        : err.code === 'auth/user-not-found'
+                            ? 'No account found with this email'
+                            : err.code === 'auth/too-many-requests'
+                                ? 'Too many attempts. Try again later'
+                                : 'Sign in failed. Please try again';
+                    return { success: false, message: msg };
                 }
-                if (!user) return { success: false, message: 'User not found' };
-                if (user.password !== oldPassword) return { success: false, message: 'Current password is incorrect' };
+            },
+
+            signUpWithEmail: async (email, password, name) => {
+                const validation = validatePassword(password);
+                if (!validation.valid) return { success: false, message: validation.message };
+                try {
+                    const result = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(result.user, { displayName: name });
+                    const user = firebaseUserToUser({ ...result.user, displayName: name }, 'email');
+                    await createOrUpdateUserProfile({ uid: user.uid, name: user.name, email: user.email, photoURL: user.photoURL });
+                    set({ user, isAuthenticated: true, isLoading: false });
+                    return { success: true, message: 'Account created successfully' };
+                } catch (err: any) {
+                    const msg = err.code === 'auth/email-already-in-use'
+                        ? 'An account with this email already exists'
+                        : err.code === 'auth/weak-password'
+                            ? 'Password is too weak'
+                            : err.code === 'auth/invalid-email'
+                                ? 'Invalid email address'
+                                : 'Registration failed. Please try again';
+                    return { success: false, message: msg };
+                }
+            },
+
+            signInWithGoogle: async () => {
+                try {
+                    const result = await signInWithPopup(auth, googleProvider);
+                    const user = firebaseUserToUser(result.user, 'google');
+                    await createOrUpdateUserProfile({ uid: user.uid, name: user.name, email: user.email, photoURL: user.photoURL });
+                    set({ user, isAuthenticated: true, isLoading: false });
+                    return { success: true, message: 'Signed in with Google' };
+                } catch (err: any) {
+                    const msg = err.code === 'auth/popup-closed-by-user'
+                        ? 'Sign-in cancelled'
+                        : 'Google sign-in failed. Please try again';
+                    return { success: false, message: msg };
+                }
+            },
+
+            changePassword: async (oldPassword, newPassword) => {
+                const firebaseUser = auth.currentUser;
+                if (!firebaseUser || !firebaseUser.email) return { success: false, message: 'Not signed in' };
                 const validation = validatePassword(newPassword);
                 if (!validation.valid) return { success: false, message: validation.message };
-                set((s) => ({
-                    registeredUsers: s.registeredUsers.map(u => u.email === email ? { ...u, password: newPassword } : u)
-                }));
-                return { success: true, message: 'Password changed successfully' };
+                try {
+                    const credential = EmailAuthProvider.credential(firebaseUser.email, oldPassword);
+                    await reauthenticateWithCredential(firebaseUser, credential);
+                    await updatePassword(firebaseUser, newPassword);
+                    return { success: true, message: 'Password changed successfully' };
+                } catch (err: any) {
+                    const msg = err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential'
+                        ? 'Current password is incorrect'
+                        : 'Failed to change password';
+                    return { success: false, message: msg };
+                }
             },
-            isAdmin: () => get().user?.role === 'admin',
+
+            initAuthListener: () => {
+                const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+                    if (fbUser) {
+                        const provider = fbUser.providerData[0]?.providerId === 'google.com' ? 'google' : 'email';
+                        const user = firebaseUserToUser(fbUser, provider);
+                        set({ user, isAuthenticated: true, isLoading: false });
+                    } else {
+                        set({ user: null, isAuthenticated: false, isLoading: false });
+                    }
+                });
+                return unsubscribe;
+            },
         }),
-        { name: 'auth-storage' }
+        {
+            name: 'auth-storage',
+            partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+        }
     )
 );
 
-export { ADMIN_EMAIL, ADMIN_PASSWORD };
+export { ADMIN_EMAIL };
