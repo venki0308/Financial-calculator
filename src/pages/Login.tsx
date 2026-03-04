@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
-import { Mail, Lock, User, Eye, EyeOff, AlertCircle, WifiOff } from 'lucide-react';
-import { isConfigured } from '../lib/firebase';
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 type Mode = 'login' | 'signup';
 
@@ -25,21 +24,22 @@ export default function Login() {
     const [googleLoading, setGoogleLoading] = useState(false);
 
     const handleGoogleLogin = async () => {
-        if (!isConfigured) {
-            setGoogleError('Firebase is not configured. Please use Email login.');
-            return;
-        }
         setGoogleLoading(true);
         setGoogleError('');
         setFormError('');
 
-        const result = await signInWithGoogle();
-        if (result.success) {
-            navigate('/', { replace: true });
-        } else {
-            setGoogleError(result.message);
+        try {
+            const result = await signInWithGoogle();
+            if (result.success) {
+                navigate('/', { replace: true });
+            } else {
+                setGoogleError(result.message);
+            }
+        } catch {
+            setGoogleError('Google sign-in failed unexpectedly. Please use Email login.');
+        } finally {
+            setGoogleLoading(false);
         }
-        setGoogleLoading(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -52,16 +52,21 @@ export default function Login() {
         if (mode === 'signup' && !name.trim()) { setFormError('Please enter your name.'); return; }
 
         setLoading(true);
-        const result = mode === 'signup'
-            ? await signUpWithEmail(email.trim(), password, name.trim())
-            : await signInWithEmail(email.trim(), password);
+        try {
+            const result = mode === 'signup'
+                ? await signUpWithEmail(email.trim(), password, name.trim())
+                : await signInWithEmail(email.trim(), password);
 
-        if (result.success) {
-            navigate('/', { replace: true });
-        } else {
-            setFormError(result.message);
+            if (result.success) {
+                navigate('/', { replace: true });
+            } else {
+                setFormError(result.message);
+            }
+        } catch {
+            setFormError('Something went wrong. Please try again.');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     return (
@@ -76,17 +81,6 @@ export default function Login() {
                 <img src="/icons/fincalix-logo.jpg" alt="FinCalix" className="w-20 h-20 rounded-3xl mb-3 shadow-lg shadow-black/50" />
                 <h1 className="text-2xl font-bold text-white mb-1">FinCalix</h1>
                 <p className="text-slate-500 text-sm mb-7">India's #1 Financial Planning App</p>
-
-                {/* Config Warning */}
-                {!isConfigured && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className="w-full flex items-start gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-4">
-                        <WifiOff size={14} className="text-amber-400 shrink-0 mt-0.5" />
-                        <p className="text-amber-400 text-xs leading-relaxed">
-                            Firebase configuration missing. Email login may be limited.
-                        </p>
-                    </motion.div>
-                )}
 
                 {/* Mode Toggle */}
                 <div className="w-full flex rounded-2xl bg-dark-card border border-dark-border p-1 mb-5">
@@ -109,7 +103,10 @@ export default function Login() {
                     className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl bg-white text-gray-800 font-semibold text-sm mb-2 hover:bg-gray-100 transition-colors disabled:opacity-60 shadow-md"
                 >
                     {googleLoading ? (
-                        <span className="text-gray-600">Connecting...</span>
+                        <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
+                            <span className="text-gray-600">Connecting...</span>
+                        </div>
                     ) : (
                         <>
                             <svg width="18" height="18" viewBox="0 0 48 48">

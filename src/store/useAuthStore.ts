@@ -13,7 +13,6 @@ import {
     User as FirebaseUser,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
-import { createOrUpdateUserProfile } from '../lib/firestore';
 
 export interface User {
     uid: string;
@@ -53,6 +52,24 @@ function firebaseUserToUser(fbUser: FirebaseUser, provider: 'google' | 'email' |
     };
 }
 
+/**
+ * Fire-and-forget Firestore profile write.
+ * Auth should NEVER be blocked by a Firestore failure.
+ */
+async function syncProfileToFirestore(user: User) {
+    try {
+        const { createOrUpdateUserProfile } = await import('../lib/firestore');
+        await createOrUpdateUserProfile({
+            uid: user.uid,
+            name: user.name,
+            email: user.email,
+            photoURL: user.photoURL,
+        });
+    } catch (err) {
+        console.warn('[FinCalix] Firestore profile sync failed (non-blocking):', err);
+    }
+}
+
 export function validatePassword(password: string): { valid: boolean; message: string } {
     if (password.length < 8) return { valid: false, message: 'Password must be at least 8 characters' };
     if (!/[A-Z]/.test(password)) return { valid: false, message: 'Must include an uppercase letter' };
@@ -71,7 +88,7 @@ export const useAuthStore = create<AuthState>()(
             login: (user) => set({ user, isAuthenticated: true, isLoading: false }),
 
             logout: async () => {
-                await signOut(auth);
+                try { await signOut(auth); } catch { /* ignore */ }
                 set({ user: null, isAuthenticated: false, isLoading: false });
             },
 
@@ -81,8 +98,9 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     const result = await signInWithEmailAndPassword(auth, email, password);
                     const user = firebaseUserToUser(result.user, 'email');
-                    await createOrUpdateUserProfile({ uid: user.uid, name: user.name, email: user.email, photoURL: user.photoURL });
                     set({ user, isAuthenticated: true, isLoading: false });
+                    // Non-blocking Firestore sync
+                    syncProfileToFirestore(user);
                     return { success: true, message: 'Signed in successfully' };
                 } catch (err: any) {
                     const msg = err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'
@@ -91,7 +109,11 @@ export const useAuthStore = create<AuthState>()(
                             ? 'No account found with this email'
                             : err.code === 'auth/too-many-requests'
                                 ? 'Too many attempts. Try again later'
-                                : 'Sign in failed. Please try again';
+                                : err.code === 'auth/invalid-email'
+                                    ? 'Invalid email address'
+                                    : err.code === 'auth/network-request-failed'
+                                        ? 'Network error. Check your internet connection'
+                                        : 'Sign in failed. Please try again';
                     return { success: false, message: msg };
                 }
             },
@@ -103,8 +125,9 @@ export const useAuthStore = create<AuthState>()(
                     const result = await createUserWithEmailAndPassword(auth, email, password);
                     await updateProfile(result.user, { displayName: name });
                     const user = firebaseUserToUser({ ...result.user, displayName: name }, 'email');
-                    await createOrUpdateUserProfile({ uid: user.uid, name: user.name, email: user.email, photoURL: user.photoURL });
                     set({ user, isAuthenticated: true, isLoading: false });
+                    // Non-blocking Firestore sync
+                    syncProfileToFirestore(user);
                     return { success: true, message: 'Account created successfully' };
                 } catch (err: any) {
                     const msg = err.code === 'auth/email-already-in-use'
@@ -113,7 +136,9 @@ export const useAuthStore = create<AuthState>()(
                             ? 'Password is too weak'
                             : err.code === 'auth/invalid-email'
                                 ? 'Invalid email address'
-                                : 'Registration failed. Please try again';
+                                : err.code === 'auth/network-request-failed'
+                                    ? 'Network error. Check your internet connection'
+                                    : 'Registration failed. Please try again';
                     return { success: false, message: msg };
                 }
             },
@@ -122,16 +147,18 @@ export const useAuthStore = create<AuthState>()(
                 try {
                     const result = await signInWithPopup(auth, googleProvider);
                     const user = firebaseUserToUser(result.user, 'google');
-                    await createOrUpdateUserProfile({ uid: user.uid, name: user.name, email: user.email, photoURL: user.photoURL });
                     set({ user, isAuthenticated: true, isLoading: false });
+                    // Non-blocking Firestore sync
+                    syncProfileToFirestore(user);
                     return { success: true, message: 'Signed in with Google' };
                 } catch (err: any) {
                     let msg = 'Google sign-in failed. Please try again';
-                    if (err.code === 'auth/popup-closed-by-user') msg = 'Sign-in cancelled';
-                    else if (err.code === 'auth/unauthorized-domain') msg = 'This domain is not authorized in Firebase. Please add it to your authorized domains list.';
-                    else if (err.code === 'auth/popup-blocked') msg = 'The sign-in popup was blocked by your browser. Please enable popups for this site.';
-                    else if (err.message) msg = err.message;
-
+                    if (err.code === 'auth/popup-closed-by-user') msg = 'Sign-in popup was closed. Please try again.';
+                    else if (err.code === 'auth/cancelled-popup-request') msg = 'Sign-in cancelled. Please try again.';
+                    else if (err.code === 'auth/unauthorized-domain') msg = 'This domain is not authorized for Google Sign-In. Please use Email login instead.';
+                    else if (err.code === 'auth/popup-blocked') msg = 'Popup was blocked by your browser. Please allow popups and try again.';
+                    else if (err.code === 'auth/network-request-failed') msg = 'Network error. Check your internet connection.';
+                    else if (err.code === 'auth/internal-error') msg = 'Sign-in service error. Please use Email login.';
                     return { success: false, message: msg };
                 }
             },
@@ -155,11 +182,13 @@ export const useAuthStore = create<AuthState>()(
             },
 
             initAuthListener: () => {
-                const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+                const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
                     if (fbUser) {
                         const provider = fbUser.providerData[0]?.providerId === 'google.com' ? 'google' : 'email';
                         const user = firebaseUserToUser(fbUser, provider);
                         set({ user, isAuthenticated: true, isLoading: false });
+                        // Non-blocking Firestore sync — do NOT await
+                        syncProfileToFirestore(user);
                     } else {
                         set({ user: null, isAuthenticated: false, isLoading: false });
                     }
