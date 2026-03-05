@@ -173,18 +173,18 @@ export default function ReportsTab() {
                 </select>
             )}
 
-            {/* Empty state for month with no data */}
-            {period === 'month' && activeEntries.length === 0 ? (
+            {/* Empty state — only when income=0 AND no expenses at all */}
+            {period === 'month' && totalExpenses === 0 && income === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-4">
                     <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
                         <span className="text-4xl">📭</span>
                     </div>
                     <h3 className="text-slate-800 dark:text-white font-bold text-base mb-2">
-                        No expenses recorded
+                        No data yet
                     </h3>
                     <p className="text-slate-500 text-sm text-center leading-relaxed">
-                        No expenses recorded for <span className="font-semibold text-brand-purple">{MONTHS[selectedMonth - 1]} {selectedYear}</span>.
-                        <br />Start adding expenses in the Daily tab to see your report here.
+                        Set your income and fixed expenses in the <span className="font-semibold text-brand-purple">Budget tab</span>,
+                        <br />then add daily expenses in the <span className="font-semibold text-brand-purple">Daily tab</span>.
                     </p>
                 </div>
             ) : (
@@ -209,7 +209,24 @@ export default function ReportsTab() {
                         ))}
                     </div>
 
-                    {/* Spending by Category - Pie */}
+                    {/* Notice: fixed expenses present but no daily entries this month */}
+                    {totalFixed > 0 && activeEntries.length === 0 && period === 'month' && (
+                        <div className="flex items-start gap-3 p-4 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-400/20">
+                            <span className="text-xl">ℹ️</span>
+                            <div>
+                                <p className="text-blue-800 dark:text-blue-300 font-semibold text-xs mb-0.5">
+                                    Fixed expenses included
+                                </p>
+                                <p className="text-blue-600 dark:text-blue-400 text-xs leading-relaxed">
+                                    Your ₹{totalFixed.toLocaleString('en-IN')} budget is shown above.
+                                    No daily expense entries for <strong>{MONTHS[selectedMonth - 1]} {selectedYear}</strong> yet —
+                                    add daily spends in the <strong>Daily tab</strong> to see spending charts.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+
                     {categoryData.length > 0 && (
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
                             <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.spendingByCategory')}</h3>
