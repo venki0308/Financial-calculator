@@ -1,0 +1,287 @@
+import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { Download, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
+import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
+import {
+    Chart as ChartJS, ArcElement, Tooltip, Legend,
+    CategoryScale, LinearScale, PointElement, LineElement,
+    BarElement, Title,
+} from 'chart.js';
+import { Pie, Line, Bar } from 'react-chartjs-2';
+import { exportToPDF } from '../../utils/exportUtils';
+
+ChartJS.register(
+    ArcElement, Tooltip, Legend,
+    CategoryScale, LinearScale, PointElement, LineElement,
+    BarElement, Title
+);
+
+const COLORS = [
+    '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444',
+    '#3b82f6', '#ec4899', '#84cc16', '#f97316',
+];
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export default function ReportsTab() {
+    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets } = useBudgetTrackerStore();
+
+    const now = new Date();
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
+    const [period, setPeriod] = useState<'month' | 'year'>('month');
+
+    const monthEntries = useMemo(
+        () => getEntriesByMonth(selectedYear, selectedMonth),
+        [entries, selectedYear, selectedMonth]
+    );
+
+    const yearEntries = useMemo(
+        () => entries.filter((e) => new Date(e.date).getFullYear() === selectedYear),
+        [entries, selectedYear]
+    );
+
+    const activeEntries = period === 'month' ? monthEntries : yearEntries;
+    const totalFixed = period === 'month' ? getTotalFixed() : getTotalFixed() * 12;
+    const totalDaily = activeEntries.reduce((s, e) => s + e.amount, 0);
+    const totalExpenses = totalFixed + totalDaily;
+    const income = period === 'month' ? monthlyIncome : monthlyIncome * 12;
+    const savings = income - totalExpenses;
+    const savingsRate = income > 0 ? (savings / income) * 100 : 0;
+
+    // Category breakdown
+    const categoryData = useMemo(() => {
+        const map: Record<string, number> = {};
+        activeEntries.forEach((e) => { map[e.categoryId] = (map[e.categoryId] || 0) + e.amount; });
+        return Object.entries(map)
+            .map(([id, total]) => {
+                const cat = EXPENSE_CATEGORIES.find((c) => c.id === id);
+                return { id, name: cat?.name || id, icon: cat?.icon || '📌', total };
+            })
+            .sort((a, b) => b.total - a.total);
+    }, [activeEntries]);
+
+    // Daily Trend
+    const dailyTrend = useMemo(() => {
+        const map: Record<string, number> = {};
+        monthEntries.forEach((e) => {
+            const day = new Date(e.date).getDate().toString().padStart(2, '0');
+            map[day] = (map[day] || 0) + e.amount;
+        });
+        const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
+        return Array.from({ length: daysInMonth }, (_, i) => {
+            const day = (i + 1).toString().padStart(2, '0');
+            return { day, amount: map[day] || 0 };
+        });
+    }, [monthEntries, selectedYear, selectedMonth]);
+
+    // Budget vs Actual
+    const budgetVsActual = useMemo(() => {
+        return EXPENSE_CATEGORIES.map((cat) => {
+            const budget = (categoryBudgets as unknown as Record<string, number>)[cat.id] || 0;
+            const actual = activeEntries.filter((e) => e.categoryId === cat.id).reduce((s, e) => s + e.amount, 0);
+            return { category: cat.icon + ' ' + cat.name.split(' ')[0], budget, actual };
+        }).filter((row) => row.budget > 0 || row.actual > 0);
+    }, [activeEntries, categoryBudgets]);
+
+    const handleDownloadPDF = async () => {
+        const headers = ['Category', 'Amount (₹)', '%'];
+        const pdfData = [
+            ['Income', income.toLocaleString('en-IN'), '-'],
+            ['Total Expenses', totalExpenses.toLocaleString('en-IN'), '-'],
+            ['Savings', savings.toLocaleString('en-IN'), `${savingsRate.toFixed(1)}%`],
+            ['---', '---', '---'],
+            ...categoryData.map((c) => [
+                `${c.icon} ${c.name}`,
+                c.total.toLocaleString('en-IN'),
+                totalDaily > 0 ? `${((c.total / totalDaily) * 100).toFixed(1)}%` : '0%',
+            ]),
+        ];
+        await exportToPDF('FinCalix Expense Report', headers, pdfData, `Expense_Report_${selectedYear}_${selectedMonth}`);
+    };
+
+    return (
+        <div className="space-y-5 pb-6">
+            {/* Period Toggle */}
+            <div className="flex gap-1 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-1">
+                {(['month', 'year'] as const).map((p) => (
+                    <button
+                        key={p}
+                        onClick={() => setPeriod(p)}
+                        className={`flex-1 py-2.5 text-xs font-bold rounded-lg capitalize transition-all ${period === p ? 'bg-brand-purple text-white shadow' : 'text-slate-400'}`}
+                    >
+                        {p === 'month' ? `${MONTHS[selectedMonth - 1]} ${selectedYear}` : `Year ${selectedYear}`}
+                    </button>
+                ))}
+            </div>
+
+            {/* Month / Year Selectors */}
+            {period === 'month' ? (
+                <div className="flex gap-2">
+                    <select
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                        className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white outline-none"
+                    >
+                        {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+                    </select>
+                    <select
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(Number(e.target.value))}
+                        className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white outline-none"
+                    >
+                        {[2024, 2025, 2026].map((y) => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                </div>
+            ) : (
+                <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(Number(e.target.value))}
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white outline-none"
+                >
+                    {[2024, 2025, 2026].map((y) => <option key={y} value={y}>{y}</option>)}
+                </select>
+            )}
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-2 gap-3">
+                {[
+                    { label: 'Income', value: income, icon: TrendingUp, color: 'text-brand-green', bg: 'bg-brand-green/10' },
+                    { label: 'Expenses', value: totalExpenses, icon: TrendingDown, color: 'text-red-400', bg: 'bg-red-500/10' },
+                    { label: 'Savings', value: savings, icon: PiggyBank, color: savings < 0 ? 'text-red-400' : 'text-blue-400', bg: 'bg-blue-500/10' },
+                    { label: 'Savings Rate', value: null, icon: TrendingUp, color: savingsRate < 0 ? 'text-red-400' : 'text-brand-purple', bg: 'bg-brand-purple/10', label2: `${savingsRate.toFixed(1)}%` },
+                ].map((card) => (
+                    <div key={card.label} className={`${card.bg} rounded-2xl p-4`}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <card.icon size={14} className={card.color} />
+                            <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">{card.label}</span>
+                        </div>
+                        <p className={`font-extrabold text-lg ${card.color}`}>
+                            {card.label2 || `₹${Math.abs(card.value!).toLocaleString('en-IN')}`}
+                        </p>
+                    </div>
+                ))}
+            </div>
+
+            {/* Spending by Category - Pie */}
+            {categoryData.length > 0 && (
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Spending by Category</h3>
+                    <div className="flex flex-col items-center gap-4">
+                        <div style={{ width: 220, height: 220 }}>
+                            <Pie
+                                data={{
+                                    labels: categoryData.map((c) => `${c.icon} ${c.name}`),
+                                    datasets: [{ data: categoryData.map((c) => c.total), backgroundColor: COLORS, borderWidth: 0 }],
+                                }}
+                                options={{
+                                    responsive: true,
+                                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${ctx.parsed.toLocaleString('en-IN')}` } } },
+                                }}
+                            />
+                        </div>
+                        <div className="w-full space-y-2">
+                            {categoryData.map((cat, i) => (
+                                <div key={cat.id} className="flex items-center gap-3">
+                                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                                    <span className="text-slate-600 dark:text-slate-400 text-xs flex-1">{cat.icon} {cat.name}</span>
+                                    <span className="text-slate-800 dark:text-white text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</span>
+                                    <span className="text-slate-400 text-[10px] w-10 text-right">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(0) : 0}%</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Daily Spending Trend - Line Chart */}
+            {period === 'month' && monthEntries.length > 0 && (
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Daily Spending Trend</h3>
+                    <Line
+                        data={{
+                            labels: dailyTrend.filter(d => d.amount > 0).map(d => d.day),
+                            datasets: [{
+                                label: 'Amount',
+                                data: dailyTrend.filter(d => d.amount > 0).map(d => d.amount),
+                                borderColor: '#8b5cf6',
+                                backgroundColor: 'rgba(139,92,246,0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#8b5cf6',
+                                pointRadius: 4,
+                            }],
+                        }}
+                        options={{
+                            responsive: true,
+                            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
+                            scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(148,163,184,0.1)' } } },
+                        }}
+                    />
+                </div>
+            )}
+
+            {/* Budget vs Actual - Bar Chart */}
+            {budgetVsActual.length > 0 && (
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Budget vs Actual</h3>
+                    <Bar
+                        data={{
+                            labels: budgetVsActual.map((r) => r.category),
+                            datasets: [
+                                { label: 'Budget', data: budgetVsActual.map((r) => r.budget), backgroundColor: 'rgba(139,92,246,0.6)', borderRadius: 6 },
+                                { label: 'Spent', data: budgetVsActual.map((r) => r.actual), backgroundColor: 'rgba(239,68,68,0.6)', borderRadius: 6 },
+                            ],
+                        }}
+                        options={{
+                            responsive: true,
+                            plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
+                            scales: { y: { grid: { color: 'rgba(148,163,184,0.1)' } } },
+                        }}
+                    />
+                </div>
+            )}
+
+            {/* Top 5 Categories */}
+            {categoryData.length > 0 && (
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Top Expense Categories</h3>
+                    <div className="space-y-3">
+                        {categoryData.slice(0, 5).map((cat, i) => (
+                            <div key={cat.id} className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: COLORS[i] }}>
+                                    {i + 1}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-slate-800 dark:text-white text-xs font-semibold truncate">{cat.icon} {cat.name}</p>
+                                    <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full mt-1 overflow-hidden">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${totalDaily > 0 ? (cat.total / totalDaily) * 100 : 0}%` }}
+                                            transition={{ duration: 0.6 }}
+                                            className="h-full rounded-full"
+                                            style={{ backgroundColor: COLORS[i] }}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-slate-800 dark:text-white text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</p>
+                                    <p className="text-slate-400 text-[10px]">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(1) : 0}%</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Download PDF Button */}
+            <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={handleDownloadPDF}
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm"
+            >
+                <Download size={18} /> Download PDF Report
+            </motion.button>
+        </div>
+    );
+}
