@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect} from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -144,10 +144,7 @@ export default function CompoundInterestCalculator() {
                     </div>
                 </motion.div>
 
-                <div className="flex items-start gap-2 p-3 rounded-xl bg-brand-purple/5 border border-brand-purple/15">
-                    <Info size={14} className="text-brand-purple mt-0.5 flex-shrink-0" />
-                    <p className="text-slate-500 text-xs">A = P(1 + r/n)^(n×t)</p>
-                </div>
+
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
                     <button

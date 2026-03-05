@@ -173,147 +173,165 @@ export default function ReportsTab() {
                 </select>
             )}
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-2 gap-3">
-                {[
-                    { label: t('expenses.income'), value: income, icon: TrendingUp, color: 'text-brand-green', bg: 'bg-brand-green/10' },
-                    { label: t('expenses.expenses'), value: totalExpenses, icon: TrendingDown, color: 'text-red-400', bg: 'bg-red-500/10' },
-                    { label: t('expenses.savings'), value: savings, icon: PiggyBank, color: savings < 0 ? 'text-red-400' : 'text-blue-400', bg: 'bg-blue-500/10' },
-                    { label: t('expenses.rate'), value: null, icon: TrendingUp, color: savingsRate < 0 ? 'text-red-400' : 'text-brand-purple', bg: 'bg-brand-purple/10', label2: `${savingsRate.toFixed(1)}%` },
-                ].map((card) => (
-                    <div key={card.label} className={`${card.bg} rounded-2xl p-4`}>
-                        <div className="flex items-center gap-2 mb-2">
-                            <card.icon size={14} className={card.color} />
-                            <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">{card.label}</span>
-                        </div>
-                        <p className={`font-extrabold text-lg ${card.color}`}>
-                            {card.label2 || `₹${Math.abs(card.value!).toLocaleString('en-IN')}`}
-                        </p>
+            {/* Empty state for month with no data */}
+            {period === 'month' && activeEntries.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 px-4">
+                    <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                        <span className="text-4xl">📭</span>
                     </div>
-                ))}
-            </div>
-
-            {/* Spending by Category - Pie */}
-            {categoryData.length > 0 && (
-                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.spendingByCategory')}</h3>
-                    <div className="flex flex-col items-center gap-4">
-                        <div style={{ width: 220, height: 220 }}>
-                            <Pie
-                                ref={pieChartRef}
-                                data={{
-                                    labels: categoryData.map((c) => `${c.icon} ${c.name}`),
-                                    datasets: [{ data: categoryData.map((c) => c.total), backgroundColor: COLORS, borderWidth: 0 }],
-                                }}
-                                options={{
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${ctx.parsed.toLocaleString('en-IN')}` } } },
-                                }}
-                            />
-                        </div>
-                        <div className="w-full space-y-2">
-                            {categoryData.map((cat, i) => (
-                                <div key={cat.id} className="flex items-center gap-3">
-                                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                    <span className="text-slate-600 dark:text-slate-400 text-xs flex-1">{cat.icon} {cat.name}</span>
-                                    <span className="text-slate-800 dark:text-white text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</span>
-                                    <span className="text-slate-400 text-[10px] w-10 text-right">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(0) : 0}%</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    <h3 className="text-slate-800 dark:text-white font-bold text-base mb-2">
+                        No expenses recorded
+                    </h3>
+                    <p className="text-slate-500 text-sm text-center leading-relaxed">
+                        No expenses recorded for <span className="font-semibold text-brand-purple">{MONTHS[selectedMonth - 1]} {selectedYear}</span>.
+                        <br />Start adding expenses in the Daily tab to see your report here.
+                    </p>
                 </div>
-            )}
-
-            {/* Daily Spending Trend - Line Chart */}
-            {period === 'month' && monthEntries.length > 0 && (
-                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.dailyTrend')}</h3>
-                    <Line
-                        data={{
-                            labels: dailyTrend.filter(d => d.amount > 0).map(d => d.day),
-                            datasets: [{
-                                label: 'Amount',
-                                data: dailyTrend.filter(d => d.amount > 0).map(d => d.amount),
-                                borderColor: '#8b5cf6',
-                                backgroundColor: 'rgba(139,92,246,0.1)',
-                                fill: true,
-                                tension: 0.4,
-                                pointBackgroundColor: '#8b5cf6',
-                                pointRadius: 4,
-                            }],
-                        }}
-                        options={{
-                            responsive: true,
-                            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
-                            scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(148,163,184,0.1)' } } },
-                        }}
-                    />
-                </div>
-            )}
-
-            {/* Budget vs Actual - Bar Chart */}
-            {budgetVsActual.length > 0 && (
-                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.budgetVsActual')}</h3>
-                    <Bar
-                        data={{
-                            labels: budgetVsActual.map((r) => r.category),
-                            datasets: [
-                                { label: 'Budget', data: budgetVsActual.map((r) => r.budget), backgroundColor: 'rgba(139,92,246,0.6)', borderRadius: 6 },
-                                { label: 'Spent', data: budgetVsActual.map((r) => r.actual), backgroundColor: 'rgba(239,68,68,0.6)', borderRadius: 6 },
-                            ],
-                        }}
-                        options={{
-                            responsive: true,
-                            plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
-                            scales: { y: { grid: { color: 'rgba(148,163,184,0.1)' } } },
-                        }}
-                    />
-                </div>
-            )}
-
-            {/* Top 5 Categories */}
-            {categoryData.length > 0 && (
-                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.topCategories')}</h3>
-                    <div className="space-y-3">
-                        {categoryData.slice(0, 5).map((cat, i) => (
-                            <div key={cat.id} className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: COLORS[i] }}>
-                                    {i + 1}
+            ) : (
+                <>
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-2 gap-3">
+                        {[
+                            { label: t('expenses.income'), value: income, icon: TrendingUp, color: 'text-brand-green', bg: 'bg-brand-green/10' },
+                            { label: t('expenses.expenses'), value: totalExpenses, icon: TrendingDown, color: 'text-red-400', bg: 'bg-red-500/10' },
+                            { label: t('expenses.savings'), value: savings, icon: PiggyBank, color: savings < 0 ? 'text-red-400' : 'text-blue-400', bg: 'bg-blue-500/10' },
+                            { label: t('expenses.rate'), value: null, icon: TrendingUp, color: savingsRate < 0 ? 'text-red-400' : 'text-brand-purple', bg: 'bg-brand-purple/10', label2: `${savingsRate.toFixed(1)}%` },
+                        ].map((card) => (
+                            <div key={card.label} className={`${card.bg} rounded-2xl p-4`}>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <card.icon size={14} className={card.color} />
+                                    <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">{card.label}</span>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-slate-800 dark:text-white text-xs font-semibold truncate">{cat.icon} {cat.name}</p>
-                                    <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full mt-1 overflow-hidden">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${totalDaily > 0 ? (cat.total / totalDaily) * 100 : 0}%` }}
-                                            transition={{ duration: 0.6 }}
-                                            className="h-full rounded-full"
-                                            style={{ backgroundColor: COLORS[i] }}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-slate-800 dark:text-white text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</p>
-                                    <p className="text-slate-400 text-[10px]">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(1) : 0}%</p>
-                                </div>
+                                <p className={`font-extrabold text-lg ${card.color}`}>
+                                    {card.label2 || `₹${Math.abs(card.value!).toLocaleString('en-IN')}`}
+                                </p>
                             </div>
                         ))}
                     </div>
-                </div>
-            )}
 
-            {/* Download PDF Button */}
-            <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={handleDownloadPDF}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm"
-            >
-                <Download size={18} /> {t('expenses.downloadReport')}
-            </motion.button>
+                    {/* Spending by Category - Pie */}
+                    {categoryData.length > 0 && (
+                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.spendingByCategory')}</h3>
+                            <div className="flex flex-col items-center gap-4">
+                                <div style={{ width: 220, height: 220 }}>
+                                    <Pie
+                                        ref={pieChartRef}
+                                        data={{
+                                            labels: categoryData.map((c) => `${c.icon} ${c.name}`),
+                                            datasets: [{ data: categoryData.map((c) => c.total), backgroundColor: COLORS, borderWidth: 0 }],
+                                        }}
+                                        options={{
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${ctx.parsed.toLocaleString('en-IN')}` } } },
+                                        }}
+                                    />
+                                </div>
+                                <div className="w-full space-y-2">
+                                    {categoryData.map((cat, i) => (
+                                        <div key={cat.id} className="flex items-center gap-3">
+                                            <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                                            <span className="text-slate-600 dark:text-slate-400 text-xs flex-1">{cat.icon} {cat.name}</span>
+                                            <span className="text-slate-800 dark:text-white text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</span>
+                                            <span className="text-slate-400 text-[10px] w-10 text-right">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(0) : 0}%</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Daily Spending Trend - Line Chart */}
+                    {period === 'month' && monthEntries.length > 0 && (
+                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.dailyTrend')}</h3>
+                            <Line
+                                data={{
+                                    labels: dailyTrend.filter(d => d.amount > 0).map(d => d.day),
+                                    datasets: [{
+                                        label: 'Amount',
+                                        data: dailyTrend.filter(d => d.amount > 0).map(d => d.amount),
+                                        borderColor: '#8b5cf6',
+                                        backgroundColor: 'rgba(139,92,246,0.1)',
+                                        fill: true,
+                                        tension: 0.4,
+                                        pointBackgroundColor: '#8b5cf6',
+                                        pointRadius: 4,
+                                    }],
+                                }}
+                                options={{
+                                    responsive: true,
+                                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
+                                    scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(148,163,184,0.1)' } } },
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    {/* Budget vs Actual - Bar Chart */}
+                    {budgetVsActual.length > 0 && (
+                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.budgetVsActual')}</h3>
+                            <Bar
+                                data={{
+                                    labels: budgetVsActual.map((r) => r.category),
+                                    datasets: [
+                                        { label: 'Budget', data: budgetVsActual.map((r) => r.budget), backgroundColor: 'rgba(139,92,246,0.6)', borderRadius: 6 },
+                                        { label: 'Spent', data: budgetVsActual.map((r) => r.actual), backgroundColor: 'rgba(239,68,68,0.6)', borderRadius: 6 },
+                                    ],
+                                }}
+                                options={{
+                                    responsive: true,
+                                    plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
+                                    scales: { y: { grid: { color: 'rgba(148,163,184,0.1)' } } },
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    {/* Top 5 Categories */}
+                    {categoryData.length > 0 && (
+                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.topCategories')}</h3>
+                            <div className="space-y-3">
+                                {categoryData.slice(0, 5).map((cat, i) => (
+                                    <div key={cat.id} className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: COLORS[i] }}>
+                                            {i + 1}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-slate-800 dark:text-white text-xs font-semibold truncate">{cat.icon} {cat.name}</p>
+                                            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full mt-1 overflow-hidden">
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${totalDaily > 0 ? (cat.total / totalDaily) * 100 : 0}%` }}
+                                                    transition={{ duration: 0.6 }}
+                                                    className="h-full rounded-full"
+                                                    style={{ backgroundColor: COLORS[i] }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-slate-800 dark:text-white text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</p>
+                                            <p className="text-slate-400 text-[10px]">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(1) : 0}%</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Download PDF Button */}
+                    <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={handleDownloadPDF}
+                        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm"
+                    >
+                        <Download size={18} /> {t('expenses.downloadReport')}
+                    </motion.button>
+                </>
+            )}
         </div>
     );
 }
