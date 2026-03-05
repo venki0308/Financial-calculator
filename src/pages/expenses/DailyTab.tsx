@@ -1,7 +1,14 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit3, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
+import { Plus, Trash2, Edit3, Check, X, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
+import { useBudgetTrackerStore, EXPENSE_CATEGORIES, type PaymentMethod } from '../../store/useBudgetTrackerStore';
+
+const PAYMENT_METHODS: { id: PaymentMethod; icon: string }[] = [
+    { id: 'Cash', icon: '💵' },
+    { id: 'UPI', icon: '📲' },
+    { id: 'Debit Card', icon: '💳' },
+    { id: 'Credit Card', icon: '💳' },
+];
 
 const QUICK_ADD = [
     { emoji: '☕', label: 'Coffee', amount: 50, categoryId: 'food' },
@@ -32,6 +39,7 @@ export default function DailyTab() {
     const [fCategory, setFCategory] = useState('food');
     const [fAmount, setFAmount] = useState('');
     const [fDesc, setFDesc] = useState('');
+    const [fPayment, setFPayment] = useState<PaymentMethod>('UPI');
 
     // Edit form state
     const [editAmount, setEditAmount] = useState('');
@@ -65,10 +73,12 @@ export default function DailyTab() {
             amount: parseFloat(fAmount),
             description: fDesc || EXPENSE_CATEGORIES.find(c => c.id === fCategory)?.name || 'Expense',
             date: new Date(`${selectedDate}T${new Date().toTimeString().slice(0, 8)}`).toISOString(),
+            paymentMethod: fPayment,
         });
         setFCategory('food');
         setFAmount('');
         setFDesc('');
+        setFPayment('UPI');
         setShowAddForm(false);
     };
 
@@ -200,7 +210,12 @@ export default function DailyTab() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-slate-800 dark:text-white text-sm font-semibold truncate">{exp.description}</p>
-                                            <p className="text-slate-400 text-[10px]">{cat?.name} · {formatDate(exp.date)}</p>
+                                            <p className="text-slate-400 text-[10px]">
+                                                {cat?.name} · {formatDate(exp.date)}
+                                                {exp.paymentMethod && (
+                                                    <span className="ml-1 px-1.5 py-0.5 bg-brand-purple/10 text-brand-purple rounded text-[9px] font-bold">{exp.paymentMethod}</span>
+                                                )}
+                                            </p>
                                         </div>
                                         <p className="text-red-400 font-bold text-sm mr-2">-₹{exp.amount.toLocaleString('en-IN')}</p>
                                         <button onClick={() => startEdit(exp.id)} className="text-slate-400 hover:text-brand-purple p-1">
@@ -281,6 +296,28 @@ export default function DailyTab() {
                                         placeholder="e.g. Lunch at restaurant"
                                         className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-purple"
                                     />
+                                </div>
+
+                                {/* Payment Method */}
+                                <div>
+                                    <label className="text-slate-400 text-xs mb-2 flex items-center gap-1.5 block">
+                                        <CreditCard size={12} /> Payment Method
+                                    </label>
+                                    <div className="grid grid-cols-4 gap-1.5">
+                                        {PAYMENT_METHODS.map((pm) => (
+                                            <button
+                                                key={pm.id}
+                                                onClick={() => setFPayment(pm.id)}
+                                                className={`p-2 rounded-xl text-center transition-all ${fPayment === pm.id
+                                                    ? 'bg-brand-purple text-white'
+                                                    : 'bg-slate-800 text-slate-300'
+                                                    }`}
+                                            >
+                                                <span className="text-base block">{pm.icon}</span>
+                                                <span className="text-[9px] font-semibold leading-tight block mt-0.5">{pm.id.split(' ')[0]}</span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex gap-3 mt-5">

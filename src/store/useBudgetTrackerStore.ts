@@ -9,13 +9,17 @@ export interface BudgetCategory {
     spent: number;
 }
 
+export type PaymentMethod = 'Cash' | 'UPI' | 'Debit Card' | 'Credit Card';
+
 export interface BudgetEntry {
     id: string;
     categoryId: string;     // Built-in category key OR custom category id
     amount: number;
     description: string;
     date: string;           // ISO string (e.g. "2026-03-05T10:00:00.000Z")
+    paymentMethod?: PaymentMethod;
 }
+
 
 export interface FixedExpenses {
     rent: number;

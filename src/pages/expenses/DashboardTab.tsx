@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff } from 'lucide-react';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
+
 
 const COLORS = [
     '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444',
@@ -15,7 +16,7 @@ const COLORS = [
 
 export default function DashboardTab({ onAddExpense }: { onAddExpense: () => void }) {
     const navigate = useNavigate();
-    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth } = useBudgetTrackerStore();
+    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets } = useBudgetTrackerStore();
 
     const now = new Date();
     const monthEntries = useMemo(
@@ -31,6 +32,42 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
     const savingsRate = monthlyIncome > 0 ? (savings / monthlyIncome) * 100 : 0;
     const available = monthlyIncome - totalSpent;
     const budgetUsePct = monthlyIncome > 0 ? (totalSpent / monthlyIncome) * 100 : 0;
+
+    // ── Smart Per-Category Alerts ─────────────────────────────────────────────
+    const smartAlerts = useMemo(() => {
+        const alerts: { type: 'warn' | 'danger' | 'success'; message: string }[] = [];
+        const budgetMap = categoryBudgets as unknown as Record<string, number>;
+
+        EXPENSE_CATEGORIES.forEach((cat) => {
+            const limit = budgetMap[cat.id] || 0;
+            if (limit <= 0) return;
+            const spent = monthEntries
+                .filter((e) => e.categoryId === cat.id)
+                .reduce((s, e) => s + e.amount, 0);
+            const pct = (spent / limit) * 100;
+            if (pct > 100) {
+                alerts.push({
+                    type: 'danger',
+                    message: `🚨 You exceeded your ${cat.name} budget by ₹${(spent - limit).toLocaleString('en-IN')}.`,
+                });
+            } else if (pct >= 80) {
+                alerts.push({
+                    type: 'warn',
+                    message: `⚠️ You have used ${pct.toFixed(0)}% of your ${cat.name} budget.`,
+                });
+            }
+        });
+
+        if (savingsRate >= 20 && savings > 0) {
+            alerts.push({
+                type: 'success',
+                message: `🎉 Great job! You saved ₹${savings.toLocaleString('en-IN')} this month (${savingsRate.toFixed(0)}% savings rate).`,
+            });
+        }
+
+        return alerts;
+    }, [monthEntries, categoryBudgets, savings, savingsRate]);
+
 
     // Category breakdown for pie chart
     const categoryTotals = useMemo(() => {
@@ -128,7 +165,7 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
                 ))}
             </div>
 
-            {/* Budget Alert */}
+            {/* General Budget Alert */}
             {budgetUsePct >= 90 && monthlyIncome > 0 && (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -145,6 +182,38 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
                     </div>
                 </motion.div>
             )}
+
+            {/* Smart Per-Category Alerts */}
+            {smartAlerts.length > 0 && (
+                <div className="space-y-2">
+                    {smartAlerts.map((alert, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            className={`rounded-2xl p-3 flex items-start gap-3 border ${alert.type === 'danger'
+                                    ? 'bg-red-500/10 border-red-500/30'
+                                    : alert.type === 'warn'
+                                        ? 'bg-yellow-500/10 border-yellow-500/30'
+                                        : 'bg-green-500/10 border-green-500/30'
+                                }`}
+                        >
+                            {alert.type === 'success'
+                                ? <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                                : alert.type === 'danger'
+                                    ? <ZapOff className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                                    : <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+                            }
+                            <p className={`text-xs font-medium ${alert.type === 'danger' ? 'text-red-300'
+                                    : alert.type === 'warn' ? 'text-yellow-300'
+                                        : 'text-green-300'
+                                }`}>{alert.message}</p>
+                        </motion.div>
+                    ))}
+                </div>
+            )}
+
 
             {/* Spending Breakdown Pie Chart */}
             {categoryTotals.length > 0 && (
