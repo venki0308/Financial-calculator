@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect} from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Info, Save, Check, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -74,12 +74,10 @@ export default function FDCalculator() {
     }, [savedCalculations, principal, rate, years, compounding]);
 
     const handleDownloadPDF = () => {
-
         let chartImage = undefined;
         if (chartRef.current) {
             chartImage = chartRef.current.toBase64Image();
         }
-
         const headers = ['Metric', 'Value'];
         const data = [
             ['Deposit Amount', formatINR(principal)],
@@ -91,7 +89,12 @@ export default function FDCalculator() {
             ['Interest Earned', formatINR(result.interest)],
             ['Maturity Amount', formatINR(result.amount)]
         ];
-        exportToPDF('FD Maturity Report', headers, data, 'FD_Report', chartImage);
+        const chartSummary = [
+            { label: 'Invested', value: formatINR(principal), color: [79, 70, 229] as [number, number, number] },
+            { label: 'Interest', value: formatINR(result.interest), color: [16, 185, 129] as [number, number, number] },
+            { label: 'Maturity', value: formatINR(result.amount), color: [245, 158, 11] as [number, number, number] },
+        ];
+        exportToPDF('FD Maturity Report', headers, data, 'FD_Report', chartImage, chartSummary);
     };
 
     const handleDownloadExcel = () => {

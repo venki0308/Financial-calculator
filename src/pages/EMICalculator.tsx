@@ -115,7 +115,12 @@ export default function EMICalculator() {
             formatINR(row.interest),
             formatINR(row.balance)
         ]);
-        await exportToPDF('EMI Payment Schedule', headers, data, 'EMI_Schedule', chartImage);
+        const chartSummary = [
+            { label: 'Principal', value: formatINR(principal), color: [16, 185, 129] as [number, number, number] },
+            { label: 'Interest', value: formatINR(result.totalInterest), color: [245, 158, 11] as [number, number, number] },
+            { label: 'Total Payment', value: formatINR(result.totalPayment), color: [79, 70, 229] as [number, number, number] },
+        ];
+        await exportToPDF('EMI Payment Schedule', headers, data, 'EMI_Schedule', chartImage, chartSummary);
     };
 
     const handleDownloadExcel = async () => {

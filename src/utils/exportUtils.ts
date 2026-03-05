@@ -83,7 +83,8 @@ export const exportToPDF = async (
     headers: string[],
     data: (string | number)[][],
     filename: string,
-    chartImage?: string
+    chartImage?: string,
+    chartSummary?: { label: string; value: string; color?: [number, number, number] }[]
 ): Promise<void> => {
     try {
         const doc = new jsPDF();
@@ -151,7 +152,6 @@ export const exportToPDF = async (
                     styles: { fontSize: 9, cellPadding: 3 },
                     bodyStyles: { fontStyle: 'bold' },
                     margin: { left: 14, right: 14 },
-                    // Highlight the last row (usually the main result)
                     didParseCell: (d: any) => {
                         if (d.row.index === resultRows.length - 1) {
                             d.cell.styles.fillColor = [16, 185, 129];
@@ -165,13 +165,41 @@ export const exportToPDF = async (
 
         if (chartImage) {
             const finalY: number = (doc as any).lastAutoTable?.finalY ?? 40;
-            const needsNewPage = finalY + 115 > 285;
+            const needsNewPage = finalY + 135 > 285;
             if (needsNewPage) doc.addPage();
             const y = needsNewPage ? 20 : finalY + 15;
+
             doc.setFontSize(12);
             doc.setTextColor(15, 23, 42);
             doc.text('Visual Summary', 14, y);
+
+            // Chart image — centred
             doc.addImage(chartImage, 'PNG', 35, y + 8, 140, 90);
+
+            // ─── Chart legend/summary labels ──────────────────────────────
+            if (chartSummary && chartSummary.length > 0) {
+                const legendY = y + 103;
+                const colWidth = 182 / chartSummary.length;
+                chartSummary.forEach((item, i) => {
+                    const colX = 14 + i * colWidth;
+                    const rgb = item.color ?? [100, 100, 100];
+
+                    // Coloured dot
+                    doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+                    doc.circle(colX + 3, legendY - 1.5, 2, 'F');
+
+                    // Label (small grey)
+                    doc.setFontSize(7);
+                    doc.setTextColor(130, 130, 130);
+                    doc.text(item.label.toUpperCase(), colX + 7, legendY);
+
+                    // Value (bold, coloured)
+                    doc.setFontSize(10);
+                    doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+                    const sanitisedVal = item.value.replace(/₹\s*/g, 'INR ');
+                    doc.text(sanitisedVal, colX + 1, legendY + 7);
+                });
+            }
         }
 
         // Footer on each page
