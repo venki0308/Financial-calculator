@@ -99,22 +99,68 @@ export const exportToPDF = async (
         doc.setDrawColor(226, 232, 240);
         doc.line(14, 33, 196, 33);
 
-        // Replace ₹ (jsPDF default font doesn't support it)
-        const sanitised = data.map(row =>
-            row.map(cell => typeof cell === 'string' ? cell.replace(/₹/g, 'Rs.') : cell)
-        );
+        // ─── Sanitise data ────────────────────────────────────────────────
+        // 1. Detect separator rows ('---') and split table into sections
+        // 2. Replace ₹ with INR (jsPDF Latin font can't render the Rupee symbol)
+        const sanitise = (cell: string | number) =>
+            typeof cell === 'string'
+                ? cell.replace(/₹\s*/g, 'INR ').replace(/Rs\.\s*/g, 'INR ')
+                : cell;
+
+        // Split at separator rows — first section = inputs, second = results
+        const separatorIdx = data.findIndex(r => String(r[0]).startsWith('---'));
+        const inputRows = (separatorIdx >= 0 ? data.slice(0, separatorIdx) : data)
+            .map(r => r.map(sanitise));
+        const resultRows = separatorIdx >= 0
+            ? data.slice(separatorIdx + 1).map(r => r.map(sanitise))
+            : [];
+
+        let currentY = 40;
 
         if (typeof autoTable === 'function') {
-            autoTable(doc, {
-                startY: 40,
-                head: [headers],
-                body: sanitised,
-                theme: 'grid',
-                headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold' },
-                alternateRowStyles: { fillColor: [248, 250, 252] },
-                styles: { fontSize: 9, cellPadding: 3 },
-                margin: { left: 14, right: 14 },
-            });
+            // Input parameters table
+            if (inputRows.length > 0) {
+                autoTable(doc, {
+                    startY: currentY,
+                    head: [headers],
+                    body: inputRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold' },
+                    alternateRowStyles: { fillColor: [248, 250, 252] },
+                    styles: { fontSize: 9, cellPadding: 3 },
+                    margin: { left: 14, right: 14 },
+                });
+                currentY = (doc as any).lastAutoTable?.finalY ?? currentY;
+            }
+
+            // Results table (after divider)
+            if (resultRows.length > 0) {
+                currentY += 6;
+                doc.setFontSize(9);
+                doc.setTextColor(100);
+                doc.text('Results', 14, currentY);
+                currentY += 3;
+
+                autoTable(doc, {
+                    startY: currentY,
+                    head: [],
+                    body: resultRows,
+                    theme: 'grid',
+                    headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold' },
+                    alternateRowStyles: { fillColor: [240, 253, 244] },
+                    styles: { fontSize: 9, cellPadding: 3 },
+                    bodyStyles: { fontStyle: 'bold' },
+                    margin: { left: 14, right: 14 },
+                    // Highlight the last row (usually the main result)
+                    didParseCell: (d: any) => {
+                        if (d.row.index === resultRows.length - 1) {
+                            d.cell.styles.fillColor = [16, 185, 129];
+                            d.cell.styles.textColor = [255, 255, 255];
+                            d.cell.styles.fontStyle = 'bold';
+                        }
+                    },
+                });
+            }
         }
 
         if (chartImage) {
