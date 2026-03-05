@@ -127,6 +127,15 @@ export const CrashlyticsService = {
             await FirebaseCrashlytics.setCustomKey({ key, value, type: 'string' });
         } catch { /* silent */ }
     },
+
+    /** Trigger a fatal crash for testing (native only) */
+    async crash() {
+        if (!isNative) {
+            console.error('[FinCalix] Crash attempted on non-native platform');
+            return;
+        }
+        await FirebaseCrashlytics.crash({ message: 'Test Crash from FinCalix' });
+    },
 };
 
 // ─────────────────────────────────────────────────────────

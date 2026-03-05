@@ -105,10 +105,14 @@ export const exportToPDF = async (
         // ─── Sanitise data ────────────────────────────────────────────────
         // 1. Detect separator rows ('---') and split table into sections
         // 2. Replace ₹ with INR (jsPDF Latin font can't render the Rupee symbol)
-        const sanitise = (cell: string | number) =>
-            typeof cell === 'string'
-                ? cell.replace(/₹\s*/g, 'INR ').replace(/Rs\.\s*/g, 'INR ')
-                : cell;
+        const sanitise = (cell: string | number) => {
+            if (typeof cell !== 'string') return cell;
+            // 1. Replace Rupee symbol with INR
+            let text = cell.replace(/₹\s*/g, 'INR ').replace(/Rs\.\s*/g, 'INR ');
+            // 2. Strip emojis/special characters that jspdf can't render
+            // This preserves Latin-1 chars, numbers, and basic punctuation
+            return text.replace(/[^\x00-\x7F]/g, '').trim();
+        };
 
         // Split at separator rows — first section = inputs, second = results
         const separatorIdx = data.findIndex(r => String(r[0]).startsWith('---'));

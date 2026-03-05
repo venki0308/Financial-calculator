@@ -26,7 +26,10 @@ function formatDate(dateStr: string) {
 }
 
 function toDateInput(d: Date) {
-    return d.toISOString().split('T')[0];
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
 }
 
 export default function DailyTab() {
@@ -60,21 +63,25 @@ export default function DailyTab() {
     const overBudget = selectedCatBudget > 0 && remaining < 0;
 
     const handleQuickAdd = (qa: typeof QUICK_ADD[0]) => {
-        addEntry({
-            categoryId: qa.categoryId,
-            amount: qa.amount,
-            description: t(`expenses.quickAdd.${qa.label.toLowerCase()}`),
-            date: new Date().toISOString(),
-        });
+        setFCategory(qa.categoryId);
+        setFAmount(qa.amount.toString());
+        setFDesc(t(`expenses.quickAdd.${qa.label.toLowerCase()}`));
+        setShowAddForm(true);
     };
 
     const handleSaveEntry = () => {
         if (!fAmount) return;
+
+        // Build a local date string based on selectedDate and current time
+        const now = new Date();
+        const timeStr = now.toTimeString().split(' ')[0]; // HH:mm:ss
+        const localIso = `${selectedDate}T${timeStr}`;
+
         addEntry({
             categoryId: fCategory,
             amount: parseFloat(fAmount),
             description: fDesc || t(`expenses.categories.${fCategory}`),
-            date: new Date(`${selectedDate}T${new Date().toTimeString().slice(0, 8)}`).toISOString(),
+            date: localIso,
             paymentMethod: fPayment,
         });
         setFCategory('food');

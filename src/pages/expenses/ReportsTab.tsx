@@ -54,11 +54,14 @@ export default function ReportsTab() {
     // For months with zero daily entries that aren't the current month → treat as no data.
     const isCurrentMonth = selectedMonth === currentMonth && selectedYear === currentYear;
     const activeEntries = period === 'month' ? monthEntries : yearEntries;
-    const hasMonthData = isCurrentMonth || monthEntries.length > 0;
+
+    // Strict logic: 
+    // - If current month, show data if income or fixed budget is set.
+    // - If NOT current month, show ONLY if there are ACTUAL daily entries.
+    const hasMonthData = (isCurrentMonth && (monthlyIncome > 0 || getTotalFixed() > 0)) || monthEntries.length > 0;
     const hasYearData = yearEntries.length > 0;
     const hasData = period === 'month' ? hasMonthData : hasYearData;
 
-    // Only include fixed expenses if this month has actual data or is current month
     const effectiveFixed = period === 'month'
         ? (hasMonthData ? getTotalFixed() : 0)
         : (hasYearData ? getTotalFixed() * 12 : 0);
@@ -67,7 +70,7 @@ export default function ReportsTab() {
     const totalExpenses = totalFixed + totalDaily;
     const income = (period === 'month' ? (hasMonthData ? monthlyIncome : 0) : (hasYearData ? monthlyIncome * 12 : 0));
     const savings = income - totalExpenses;
-    const savingsRate = income > 0 ? (savings / income) * 100 : 0;
+    const savingsRate = income > 1 ? (savings / income) * 100 : 0;
 
     // Category breakdown
     const categoryData = useMemo(() => {

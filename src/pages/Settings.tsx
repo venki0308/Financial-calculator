@@ -7,7 +7,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import BottomSheet from '../components/BottomSheet';
-import { AnalyticsService } from '../lib/analytics';
+import { AnalyticsService, CrashlyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
 
 
@@ -155,13 +155,32 @@ export default function Settings() {
                 {/* Data Management */}
                 <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-3">Data</p>
                 <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden mb-6">
-                    <button onClick={() => setShowClearConfirm(true)} className="w-full flex items-center gap-4 p-4">
+                    <button onClick={() => setShowClearConfirm(true)} className="w-full flex items-center gap-4 p-4 border-b border-dark-border">
                         <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
                             <Trash2 size={20} className="text-red-400" />
                         </div>
                         <div className="flex-1 text-left">
                             <p className="text-red-400 font-medium text-sm">Clear All Data</p>
                             <p className="text-slate-600 text-xs">Remove history and reset app</p>
+                        </div>
+                        <ChevronRight size={16} className="text-slate-600" />
+                    </button>
+
+                    {/* Developer / Verify Section */}
+                    <button
+                        onClick={() => {
+                            if (window.confirm("This will intentionally crash the app to test Firebase Crashlytics. Are you sure?")) {
+                                CrashlyticsService.crash();
+                            }
+                        }}
+                        className="w-full flex items-center gap-4 p-4"
+                    >
+                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                            <Bell size={20} className="text-amber-400" />
+                        </div>
+                        <div className="flex-1 text-left">
+                            <p className="text-amber-400 font-medium text-sm">Test Firebase Crashlytics</p>
+                            <p className="text-slate-600 text-xs">App will close to verify logs</p>
                         </div>
                         <ChevronRight size={16} className="text-slate-600" />
                     </button>
