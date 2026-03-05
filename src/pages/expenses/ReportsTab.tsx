@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Download, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 import {
     Chart as ChartJS, ArcElement, Tooltip, Legend,
@@ -24,7 +25,10 @@ const COLORS = [
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function ReportsTab() {
+    const { t } = useTranslation();
     const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets } = useBudgetTrackerStore();
+
+    const pieChartRef = useRef<any>(null);
 
     const now = new Date();
     const [selectedYear, setSelectedYear] = useState(now.getFullYear());
@@ -56,10 +60,10 @@ export default function ReportsTab() {
         return Object.entries(map)
             .map(([id, total]) => {
                 const cat = EXPENSE_CATEGORIES.find((c) => c.id === id);
-                return { id, name: cat?.name || id, icon: cat?.icon || '📌', total };
+                return { id, name: t(`expenses.categories.${id}`), icon: cat?.icon || '📌', total };
             })
             .sort((a, b) => b.total - a.total);
-    }, [activeEntries]);
+    }, [activeEntries, t]);
 
     // Daily Trend
     const dailyTrend = useMemo(() => {
@@ -80,16 +84,16 @@ export default function ReportsTab() {
         return EXPENSE_CATEGORIES.map((cat) => {
             const budget = (categoryBudgets as unknown as Record<string, number>)[cat.id] || 0;
             const actual = activeEntries.filter((e) => e.categoryId === cat.id).reduce((s, e) => s + e.amount, 0);
-            return { category: cat.icon + ' ' + cat.name.split(' ')[0], budget, actual };
+            return { category: cat.icon + ' ' + t(`expenses.categories.${cat.id}`).split(' ')[0], budget, actual };
         }).filter((row) => row.budget > 0 || row.actual > 0);
-    }, [activeEntries, categoryBudgets]);
+    }, [activeEntries, categoryBudgets, t]);
 
     const handleDownloadPDF = async () => {
-        const headers = ['Category', 'Amount (₹)', '%'];
+        const headers = [t('expenses.category'), t('expenses.spent'), '%'];
         const pdfData = [
-            ['Income', income.toLocaleString('en-IN'), '-'],
-            ['Total Expenses', totalExpenses.toLocaleString('en-IN'), '-'],
-            ['Savings', savings.toLocaleString('en-IN'), `${savingsRate.toFixed(1)}%`],
+            [t('expenses.income'), income.toLocaleString('en-IN'), '-'],
+            [t('expenses.expenses'), totalExpenses.toLocaleString('en-IN'), '-'],
+            [t('expenses.savings'), savings.toLocaleString('en-IN'), `${savingsRate.toFixed(1)}%`],
             ['---', '---', '---'],
             ...categoryData.map((c) => [
                 `${c.icon} ${c.name}`,
@@ -97,7 +101,33 @@ export default function ReportsTab() {
                 totalDaily > 0 ? `${((c.total / totalDaily) * 100).toFixed(1)}%` : '0%',
             ]),
         ];
-        await exportToPDF('FinCalix Expense Report', headers, pdfData, `Expense_Report_${selectedYear}_${selectedMonth}`);
+
+        let chartImage: string | undefined;
+        if (pieChartRef.current) {
+            chartImage = pieChartRef.current.toBase64Image();
+        }
+
+        const chartSummary = categoryData.slice(0, 4).map((c, i) => ({
+            label: c.name,
+            value: `₹${c.total.toLocaleString('en-IN')}`,
+            color: hexToRgb(COLORS[i % COLORS.length])
+        }));
+
+        await exportToPDF(
+            `${t('expenses.title')} - ${period === 'month' ? MONTHS[selectedMonth - 1] : ''} ${selectedYear}`,
+            headers,
+            pdfData,
+            `Expense_Report_${selectedYear}_${selectedMonth}`,
+            chartImage,
+            chartSummary
+        );
+    };
+
+    const hexToRgb = (hex: string): [number, number, number] => {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return [r, g, b];
     };
 
     return (
@@ -110,7 +140,7 @@ export default function ReportsTab() {
                         onClick={() => setPeriod(p)}
                         className={`flex-1 py-2.5 text-xs font-bold rounded-lg capitalize transition-all ${period === p ? 'bg-brand-purple text-white shadow' : 'text-slate-400'}`}
                     >
-                        {p === 'month' ? `${MONTHS[selectedMonth - 1]} ${selectedYear}` : `Year ${selectedYear}`}
+                        {p === 'month' ? `${t(`expenses.periodMonth`)}: ${MONTHS[selectedMonth - 1]} ${selectedYear}` : `${t(`expenses.periodYear`)}: ${selectedYear}`}
                     </button>
                 ))}
             </div>
@@ -146,10 +176,10 @@ export default function ReportsTab() {
             {/* Summary Cards */}
             <div className="grid grid-cols-2 gap-3">
                 {[
-                    { label: 'Income', value: income, icon: TrendingUp, color: 'text-brand-green', bg: 'bg-brand-green/10' },
-                    { label: 'Expenses', value: totalExpenses, icon: TrendingDown, color: 'text-red-400', bg: 'bg-red-500/10' },
-                    { label: 'Savings', value: savings, icon: PiggyBank, color: savings < 0 ? 'text-red-400' : 'text-blue-400', bg: 'bg-blue-500/10' },
-                    { label: 'Savings Rate', value: null, icon: TrendingUp, color: savingsRate < 0 ? 'text-red-400' : 'text-brand-purple', bg: 'bg-brand-purple/10', label2: `${savingsRate.toFixed(1)}%` },
+                    { label: t('expenses.income'), value: income, icon: TrendingUp, color: 'text-brand-green', bg: 'bg-brand-green/10' },
+                    { label: t('expenses.expenses'), value: totalExpenses, icon: TrendingDown, color: 'text-red-400', bg: 'bg-red-500/10' },
+                    { label: t('expenses.savings'), value: savings, icon: PiggyBank, color: savings < 0 ? 'text-red-400' : 'text-blue-400', bg: 'bg-blue-500/10' },
+                    { label: t('expenses.rate'), value: null, icon: TrendingUp, color: savingsRate < 0 ? 'text-red-400' : 'text-brand-purple', bg: 'bg-brand-purple/10', label2: `${savingsRate.toFixed(1)}%` },
                 ].map((card) => (
                     <div key={card.label} className={`${card.bg} rounded-2xl p-4`}>
                         <div className="flex items-center gap-2 mb-2">
@@ -166,16 +196,18 @@ export default function ReportsTab() {
             {/* Spending by Category - Pie */}
             {categoryData.length > 0 && (
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Spending by Category</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.spendingByCategory')}</h3>
                     <div className="flex flex-col items-center gap-4">
                         <div style={{ width: 220, height: 220 }}>
                             <Pie
+                                ref={pieChartRef}
                                 data={{
                                     labels: categoryData.map((c) => `${c.icon} ${c.name}`),
                                     datasets: [{ data: categoryData.map((c) => c.total), backgroundColor: COLORS, borderWidth: 0 }],
                                 }}
                                 options={{
                                     responsive: true,
+                                    maintainAspectRatio: false,
                                     plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${ctx.parsed.toLocaleString('en-IN')}` } } },
                                 }}
                             />
@@ -197,7 +229,7 @@ export default function ReportsTab() {
             {/* Daily Spending Trend - Line Chart */}
             {period === 'month' && monthEntries.length > 0 && (
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Daily Spending Trend</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.dailyTrend')}</h3>
                     <Line
                         data={{
                             labels: dailyTrend.filter(d => d.amount > 0).map(d => d.day),
@@ -224,7 +256,7 @@ export default function ReportsTab() {
             {/* Budget vs Actual - Bar Chart */}
             {budgetVsActual.length > 0 && (
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Budget vs Actual</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.budgetVsActual')}</h3>
                     <Bar
                         data={{
                             labels: budgetVsActual.map((r) => r.category),
@@ -245,7 +277,7 @@ export default function ReportsTab() {
             {/* Top 5 Categories */}
             {categoryData.length > 0 && (
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Top Expense Categories</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.topCategories')}</h3>
                     <div className="space-y-3">
                         {categoryData.slice(0, 5).map((cat, i) => (
                             <div key={cat.id} className="flex items-center gap-3">
@@ -280,7 +312,7 @@ export default function ReportsTab() {
                 onClick={handleDownloadPDF}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm"
             >
-                <Download size={18} /> Download PDF Report
+                <Download size={18} /> {t('expenses.downloadReport')}
             </motion.button>
         </div>
     );

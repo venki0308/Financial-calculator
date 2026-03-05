@@ -25,7 +25,6 @@ const config = {
             ],
         };
     },
-    formulaText: 'Break Even Point (Units) = Fixed Costs / (Selling Price - Variable Cost).',
 };
 
 export default function BreakEvenCalculator() {

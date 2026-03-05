@@ -26,8 +26,8 @@ const config = {
             ],
         };
     },
-    formulaText: 'PPF uses annual compounding. Deposits made before 5th earn interest for that month.',
 };
 
 export default function PPFCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('PPF_Calculator'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('PPF_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

@@ -29,8 +29,8 @@ const config = {
             ],
         };
     },
-    formulaText: 'RD maturity value is based on quarterly compounding of interest.',
 };
 
 export default function RDCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('RD_Calculator'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('RD_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

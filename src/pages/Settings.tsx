@@ -8,6 +8,8 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import BottomSheet from '../components/BottomSheet';
 import { AnalyticsService } from '../lib/analytics';
+import { Capacitor } from '@capacitor/core';
+
 
 const languages = [
     { code: 'en', name: 'English', nativeName: 'English' },
@@ -101,9 +103,51 @@ export default function Settings() {
                     <div className="h-px bg-dark-border mx-4" />
                     <MenuItem icon={Star} label={t('settings.rateApp')} color="#F59E0B" onClick={() => window.open('https://play.google.com/store', '_blank')} />
                     <div className="h-px bg-dark-border mx-4" />
-                    <MenuItem icon={Share2} label={t('settings.shareApp')} color="#EC4899" onClick={() => {
-                        if (navigator.share) {
-                            navigator.share({ title: 'FinCalix', text: "India's #1 Financial Planning App!", url: 'https://financial-calculator-bay.vercel.app' });
+                    <MenuItem icon={Share2} label={t('settings.shareApp')} color="#EC4899" onClick={async () => {
+                        const shareData = {
+                            title: 'FinCalix – Financial Calculator App',
+                            text: "India's #1 Financial Planning App! Calculate FD, SIP, EMI, GST, Taxes & more. Download free on Play Store!",
+                            url: 'https://play.google.com/store/apps/details?id=com.fincalix.app',
+                        };
+
+                        try {
+                            let shared = false;
+
+                            // 1. Try Capacitor Share (Native)
+                            if (Capacitor.isNativePlatform()) {
+                                try {
+                                    const { Share } = await import('@capacitor/share');
+                                    const can = await Share.canShare();
+                                    if (can.value) {
+                                        await Share.share({
+                                            title: shareData.title,
+                                            text: shareData.text + '\n' + shareData.url,
+                                            dialogTitle: 'Share FinCalix'
+                                        });
+                                        shared = true;
+                                    }
+                                } catch (e) {
+                                    console.error('Capacitor share failed:', e);
+                                }
+                            }
+
+                            // 2. Try Web Share API (Mobile Browsers / Modern Desktop)
+                            if (!shared && navigator.share) {
+                                try {
+                                    await navigator.share(shareData);
+                                    shared = true;
+                                } catch (e) {
+                                    console.error('Web share failed:', e);
+                                }
+                            }
+
+                            // 3. Fallback to Clipboard
+                            if (!shared) {
+                                await navigator.clipboard.writeText(shareData.url);
+                                alert('App link copied to clipboard!');
+                            }
+                        } catch (err) {
+                            console.error('Share operation failed:', err);
                         }
                     }} />
                 </div>

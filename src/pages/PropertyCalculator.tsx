@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Building2, MapPin, ArrowRightLeft, Copy, Check, Home, FileText, Calculator } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, ArrowRightLeft, Copy, Check, Home, FileText, Calculator, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -228,10 +228,10 @@ export default function PropertyCalculator() {
                 </div>
 
                 {/* Disclaimer */}
-                <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl flex gap-2 items-start">
-                    <span className="text-amber-400 mt-0.5 shrink-0 text-xs font-bold">⚠️</span>
-                    <p className="text-amber-300/80 text-[11px] leading-relaxed">
-                        <strong>Disclaimer:</strong> All calculations are for reference only. Property values, stamp duty, and registration charges vary by state, property type, and government notifications. Consult a registered property advisor or sub-registrar office before any financial decision.
+                <div className="mb-4 p-3 bg-amber-100/40 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/25 rounded-xl flex gap-2 items-start">
+                    <Info size={16} className="text-amber-700 dark:text-amber-500/80 mt-0.5 flex-shrink-0" />
+                    <p className="text-amber-900 dark:text-amber-300/90 text-[11px] leading-relaxed font-medium">
+                        Disclaimer: This calculation is an estimate. Government rates, stamp duties, and registration charges vary by state, location, and owner category. Please verify with local authorities.
                     </p>
                 </div>
 
@@ -592,9 +592,9 @@ function StampDutySection({
             </div>
 
             {/* Disclaimer note */}
-            <div className="p-2.5 bg-amber-500/10 border border-amber-400/20 rounded-lg">
-                <p className="text-amber-300/80 text-[10px] leading-relaxed">
-                    ⚠️ Stamp duty rates are set by each state and may change. Pre-filled rates are indicative. Edit Stamp %, Registration %, and Transfer % below to match current official rates before calculating.
+            <div className="p-2.5 bg-amber-100/40 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-400/20 rounded-lg">
+                <p className="text-amber-900 dark:text-amber-300/80 text-[10px] leading-relaxed font-medium">
+                    Disclaimer: Rates vary by state and category. Verify with local sub-registrar office.
                 </p>
             </div>
 

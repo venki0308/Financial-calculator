@@ -32,8 +32,8 @@ const config = {
             ],
         };
     },
-    formulaText: 'HRA Exemption is min of: 1. Actual HRA, 2. 50% (Metro) or 40% (Non-metro) of Basic, 3. Rent paid - 10% of Basic.',
 };
 
 export default function HRACalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('HRA_Calculator'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('HRA_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

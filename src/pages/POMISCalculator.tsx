@@ -21,8 +21,8 @@ const config = {
             ],
         };
     },
-    formulaText: 'PO MIS pays monthly interest. Principal is returned after 5 years.',
 };
 
 export default function POMISCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('POMIS_Calculator'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('POMIS_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

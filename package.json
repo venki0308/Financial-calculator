@@ -9,6 +9,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@capacitor-firebase/crashlytics": "^8.1.0",
         "@capacitor/android": "^8.1.0",
         "@capacitor/app": "^8.0.1",
         "@capacitor/core": "^8.1.0",

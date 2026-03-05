@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 
 const FIXED_FIELDS: { key: 'rent' | 'utilities' | 'mobile' | 'insurance' | 'emi'; label: string; icon: string }[] = [
@@ -12,6 +13,7 @@ const FIXED_FIELDS: { key: 'rent' | 'utilities' | 'mobile' | 'insurance' | 'emi'
 ];
 
 export default function BudgetTab() {
+    const { t } = useTranslation();
     const {
         monthlyIncome, setMonthlyIncome,
         fixedExpenses, setFixedExpenses, addCustomFixed, removeCustomFixed,
@@ -43,7 +45,7 @@ export default function BudgetTab() {
             {/* Monthly Income */}
             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
                 <label className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
-                    💰 Monthly Income
+                    💰 {t('expenses.monthlyIncome')}
                 </label>
                 <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 focus-within:border-brand-purple transition-colors">
                     <span className="text-brand-purple font-bold text-lg">₹</span>
@@ -64,8 +66,8 @@ export default function BudgetTab() {
                     className="w-full flex items-center justify-between p-4"
                 >
                     <div>
-                        <p className="font-bold text-slate-900 dark:text-white text-sm text-left">Fixed Monthly Expenses</p>
-                        <p className="text-slate-400 text-xs mt-0.5 text-left">Rent, bills & EMIs</p>
+                        <p className="font-bold text-slate-900 dark:text-white text-sm text-left">{t('expenses.fixedExpenses')}</p>
+                        <p className="text-slate-400 text-xs mt-0.5 text-left">{t('expenses.fixedExpensesSubtitle')}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-brand-purple font-bold text-sm">₹{totalFixed.toLocaleString('en-IN')}</span>
@@ -83,10 +85,10 @@ export default function BudgetTab() {
                         >
                             <div className="px-4 pb-4 space-y-3 border-t border-slate-100 dark:border-white/10 pt-3">
                                 {FIXED_FIELDS.map((field) => (
-                                    <div key={field.key} className="flex items-center gap-3">
-                                        <span className="text-xl w-8">{field.icon}</span>
+                                    <div key={field.key} className="flex items-center gap-1.5">
+                                        <span className="text-xl w-8 text-center">{field.icon}</span>
                                         <div className="flex-1">
-                                            <p className="text-slate-700 dark:text-slate-300 text-xs font-medium mb-1">{field.label}</p>
+                                            <p className="text-slate-700 dark:text-slate-300 text-xs font-medium mb-1">{t(`expenses.${field.key}`)}</p>
                                             <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2">
                                                 <span className="text-slate-400 text-sm">₹</span>
                                                 <input
@@ -133,11 +135,11 @@ export default function BudgetTab() {
                                             className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none text-slate-900 dark:text-white"
                                         />
                                         <div className="flex gap-2">
-                                            <button onClick={() => setShowAddFixed(false)} className="flex-1 py-2 rounded-lg text-slate-500 text-sm font-medium bg-slate-100 dark:bg-slate-700">Cancel</button>
+                                            <button onClick={() => setShowAddFixed(false)} className="flex-1 py-2 rounded-lg text-slate-500 text-sm font-medium bg-slate-100 dark:bg-slate-700">{t('common.cancel')}</button>
                                             <button
                                                 onClick={() => { if (newFixedLabel && newFixedAmount) { addCustomFixed(newFixedLabel, Number(newFixedAmount)); setNewFixedLabel(''); setNewFixedAmount(''); setShowAddFixed(false); } }}
                                                 className="flex-1 py-2 rounded-lg bg-brand-purple text-white text-sm font-bold"
-                                            >Add</button>
+                                            >{t('common.confirm')}</button>
                                         </div>
                                     </div>
                                 ) : (
@@ -145,7 +147,7 @@ export default function BudgetTab() {
                                         onClick={() => setShowAddFixed(true)}
                                         className="flex items-center gap-2 text-brand-purple text-xs font-semibold pt-1"
                                     >
-                                        <Plus size={14} /> Add Other Fixed Expense
+                                        <Plus size={14} /> {t('expenses.addOtherFixed')}
                                     </button>
                                 )}
                             </div>
@@ -161,8 +163,8 @@ export default function BudgetTab() {
                     className="w-full flex items-center justify-between p-4"
                 >
                     <div>
-                        <p className="font-bold text-slate-900 dark:text-white text-sm text-left">Category Budget Limits</p>
-                        <p className="text-slate-400 text-xs mt-0.5 text-left">Daily spending limits per category</p>
+                        <p className="font-bold text-slate-900 dark:text-white text-sm text-left">{t('expenses.categoryBudgetLimits')}</p>
+                        <p className="text-slate-400 text-xs mt-0.5 text-left">{t('expenses.categoryBudgetSubtitle')}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-brand-green font-bold text-sm">₹{totalCategoryBudgets.toLocaleString('en-IN')}</span>
@@ -183,9 +185,9 @@ export default function BudgetTab() {
                                     const key = cat.id as keyof typeof categoryBudgets;
                                     return (
                                         <div key={cat.id} className="flex items-center gap-3">
-                                            <span className="text-xl w-8">{cat.icon}</span>
+                                            <span className="text-xl w-8 text-center">{cat.icon}</span>
                                             <div className="flex-1">
-                                                <p className="text-slate-700 dark:text-slate-300 text-xs font-medium mb-1">{cat.name}</p>
+                                                <p className="text-slate-700 dark:text-slate-300 text-xs font-medium mb-1">{t(`expenses.categories.${cat.id}`)}</p>
                                                 <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2">
                                                     <span className="text-slate-400 text-sm">₹</span>
                                                     <input
@@ -208,11 +210,11 @@ export default function BudgetTab() {
 
             {/* Summary */}
             <div className="bg-gradient-to-br from-brand-purple/10 to-blue-600/10 border border-brand-purple/20 rounded-2xl p-4 space-y-2">
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">Monthly Summary</h3>
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">{t('expenses.monthlySummary')}</h3>
                 {[
-                    { label: 'Monthly Income', value: monthlyIncome, color: 'text-brand-green', sign: '+' },
-                    { label: 'Fixed Expenses', value: totalFixed, color: 'text-red-400', sign: '-' },
-                    { label: 'Category Budgets', value: totalCategoryBudgets, color: 'text-orange-400', sign: '-' },
+                    { label: t('expenses.monthlyIncome'), value: monthlyIncome, color: 'text-brand-green', sign: '+' },
+                    { label: t('expenses.totalFixed'), value: totalFixed, color: 'text-red-400', sign: '-' },
+                    { label: t('expenses.categoryBudgetsLabel'), value: totalCategoryBudgets, color: 'text-orange-400', sign: '-' },
                 ].map((row) => (
                     <div key={row.label} className="flex justify-between items-center">
                         <span className="text-slate-500 dark:text-slate-400 text-sm">{row.label}</span>
@@ -220,7 +222,7 @@ export default function BudgetTab() {
                     </div>
                 ))}
                 <div className="border-t border-brand-purple/20 pt-2 flex justify-between items-center">
-                    <span className="font-bold text-slate-900 dark:text-white text-sm">Est. Savings</span>
+                    <span className="font-bold text-slate-900 dark:text-white text-sm">{t('expenses.estSavings')}</span>
                     <span className={`font-extrabold text-lg ${availableForSavings < 0 ? 'text-red-400' : 'text-brand-green'}`}>
                         ₹{availableForSavings.toLocaleString('en-IN')}
                     </span>
@@ -233,7 +235,7 @@ export default function BudgetTab() {
                 onClick={handleSave}
                 className={`w-full py-4 rounded-2xl font-bold text-sm transition-all ${saved ? 'bg-brand-green text-white' : 'bg-brand-purple text-white shadow-lg shadow-brand-purple/30'}`}
             >
-                {saved ? '✓ Budget Saved!' : 'Save Budget'}
+                {saved ? `✓ ${t('expenses.budgetSaved')}` : t('expenses.saveBudget')}
             </motion.button>
         </div>
     );

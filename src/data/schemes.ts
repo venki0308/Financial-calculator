@@ -4,11 +4,7 @@ export type ApplicationType =
     | 'CSC / Offline Application'
     | 'Through Government Agency'
     | 'Service Access'
-    | 'No Individual Application'
-    | 'Ration Card Based'
-    | 'Through Self Help Groups'
-    | 'LIC Application'
-    | 'Institutional Program';
+    | 'No Individual';
 
 export interface Scheme {
     id: string;
@@ -241,7 +237,7 @@ export const schemes: Scheme[] = [
         description: 'Pension scheme providing guaranteed regular income (pension) to senior citizens for 10 years through LIC of India.',
         ministry: 'Ministry of Finance / LIC of India',
         officialWebsite: 'https://licindia.in',
-        applicationType: 'LIC Application',
+        applicationType: 'Through Government Agency',
         benefitAmount: 'Guaranteed pension for 10 years',
         maxAmount: '₹15 lakh purchase price',
         eligibility: ['Senior citizens aged 60 and above', 'No upper age limit'],
@@ -479,7 +475,7 @@ export const schemes: Scheme[] = [
         description: 'National campaign to address declining child sex ratio and promote girl child education and welfare. Not a direct benefit scheme.',
         ministry: 'Ministry of Women and Child Development',
         officialWebsite: 'https://wcd.nic.in',
-        applicationType: 'No Individual Application' as ApplicationType,
+        applicationType: 'No Individual',
         eligibility: ['National campaign — no individual eligibility'],
         benefits: ['Awareness programs on gender equality', 'Girl child education promotion', 'Convergence with SSY and Ujjwala'],
         documents: [],
@@ -493,7 +489,7 @@ export const schemes: Scheme[] = [
         description: 'Mission to provide functional household tap connections (FHTCs) with piped clean water to every rural household.',
         ministry: 'Ministry of Jal Shakti',
         officialWebsite: 'https://jaljeevanmission.gov.in',
-        applicationType: 'No Individual Application' as ApplicationType,
+        applicationType: 'No Individual',
         eligibility: ['Rural households — implemented by state and local governments'],
         benefits: ['Functional household tap water connection', 'Safe piped drinking water', 'Village water quality testing'],
         documents: [],
@@ -507,7 +503,7 @@ export const schemes: Scheme[] = [
         description: 'National mission to transform India into a digitally empowered society through digital infrastructure, governance, and services.',
         ministry: 'Ministry of Electronics and Information Technology',
         officialWebsite: 'https://digitalindia.gov.in',
-        applicationType: 'No Individual Application' as ApplicationType,
+        applicationType: 'No Individual' as ApplicationType,
         eligibility: ['National programme — no individual application'],
         benefits: ['Digital infrastructure development', 'e-Governance and digital services', 'CSC network across India'],
         documents: [],
@@ -518,7 +514,7 @@ export const schemes: Scheme[] = [
     // ── EMPLOYMENT / SOCIAL SECURITY ─────────────────────────────────────────
     {
         id: 'c-mgnrega', name: 'MGNREGA', governmentLevel: 'central',
-        category: 'Employment', schemeCategory: 'Direct Benefit Transfer',
+        category: 'Employment', schemeCategory: 'Employment Scheme',
         tags: ['Popular', 'Verified'], popular: true,
         description: 'Legal guarantee of 100 days of wage employment per year to rural households for unskilled manual work.',
         ministry: 'Ministry of Rural Development',
@@ -653,7 +649,7 @@ export const schemes: Scheme[] = [
     // ── WOMEN / CHILDREN ─────────────────────────────────────────────────────
     {
         id: 'c-ssy', name: 'Sukanya Samriddhi Yojana', governmentLevel: 'central',
-        category: 'Women', schemeCategory: 'Savings Scheme',
+        category: 'Women', schemeCategory: 'Government Mission / Initiative',
         tags: ['Popular', 'Verified'], popular: true,
         description: 'Long-term tax-saving savings scheme for girl children supporting education and marriage at the highest government scheme interest rate.',
         ministry: 'Ministry of Finance',
@@ -675,7 +671,7 @@ export const schemes: Scheme[] = [
         description: 'Empowers rural SHG women to earn ₹1 lakh+ annually through skill training, technology, and entrepreneurship under DAY-NRLM.',
         ministry: 'Ministry of Rural Development',
         officialWebsite: 'https://aajeevika.gov.in',
-        applicationType: 'Through Self Help Groups' as ApplicationType,
+        applicationType: 'Through Government Agency' as ApplicationType,
         benefitAmount: 'Target ₹1 lakh+ annual income',
         eligibility: ['Rural women in SHGs under DAY-NRLM'],
         benefits: ['Skill training in agri/tech/handicrafts', 'Drone didi training', 'Bank credit access through SHGs', 'Market linkage support'],
@@ -716,7 +712,7 @@ export const schemes: Scheme[] = [
     // ── SENIOR CITIZENS / SAVINGS ─────────────────────────────────────────────
     {
         id: 'c-scss', name: 'Senior Citizen Savings Scheme', governmentLevel: 'central',
-        category: 'Senior Citizens', schemeCategory: 'Savings Scheme',
+        category: 'Senior Citizens', schemeCategory: 'Pension Scheme',
         tags: ['Popular', 'Verified'], popular: true,
         description: 'Government-backed quarterly-income savings scheme for senior citizens at 8.2% p.a. with max deposit ₹30 lakh.',
         ministry: 'Ministry of Finance',
@@ -772,7 +768,7 @@ export const schemes: Scheme[] = [
         description: '5 kg free food grains per person per month to all NFSA ration card holders (~81 crore beneficiaries) via PDS.',
         ministry: 'Ministry of Consumer Affairs, Food and Public Distribution',
         officialWebsite: 'https://dfpd.gov.in',
-        applicationType: 'Ration Card Based' as ApplicationType,
+        applicationType: 'Service Access' as ApplicationType,
         eligibility: ['NFSA ration card holders (AAY and PHH cards)'],
         benefits: ['5 kg free food grains (wheat/rice) per person/month', 'Distributed at Fair Price Shops', 'Continued from Jan 2023 indefinitely'],
         documents: ['Ration Card'],
@@ -783,7 +779,7 @@ export const schemes: Scheme[] = [
     // ── DIGITAL HEALTH ────────────────────────────────────────────────────────
     {
         id: 'c-gig', name: 'Gig Workers — e-Shram Registration', governmentLevel: 'central',
-        category: 'Employment', schemeCategory: 'Skill Development Scheme',
+        category: 'Employment', schemeCategory: 'Employment Scheme',
         tags: ['Verified'], popular: false,
         description: 'e-Shram portal provides gig, platform, and unorganized workers a unique identification card with ₹2 lakh accidental insurance.',
         ministry: 'Ministry of Labour and Employment',
@@ -812,12 +808,12 @@ export const schemes: Scheme[] = [
     },
     {
         id: 'c-daynrlm', name: 'DAY-National Rural Livelihoods Mission', governmentLevel: 'central',
-        category: 'Employment', schemeCategory: 'Skill Development Scheme',
+        category: 'Employment', schemeCategory: 'Employment Scheme',
         tags: ['Verified'], popular: false,
         description: 'Mobilises rural poor into SHGs with credit linkage, skill training and livelihood support to reduce poverty.',
         ministry: 'Ministry of Rural Development',
         officialWebsite: 'https://aajeevika.gov.in',
-        applicationType: 'Through Self Help Groups' as ApplicationType,
+        applicationType: 'Through Government Agency',
         eligibility: ['Rural poor households, priority to SC/ST, women-headed, BPL families'],
         benefits: ['SHG formation and revolving fund', 'Bank credit linkage', 'Skill training and placement'],
         documents: ['Aadhaar Card', 'SHG membership'],

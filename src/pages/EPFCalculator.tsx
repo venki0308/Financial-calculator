@@ -39,8 +39,8 @@ const config = {
             ],
         };
     },
-    formulaText: 'EPF: Employee 12% + Employer 3.67% (EPF) + 8.33% (EPS). Interest compounded monthly.',
 };
 
 export default function EPFCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('EPF_Calculator'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('EPF_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

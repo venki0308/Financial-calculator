@@ -22,8 +22,8 @@ const config = {
             ],
         };
     },
-    formulaText: 'Gratuity Formula = (Basic Salary + DA) × (15/26) × Years of Service.',
 };
 
 export default function GratuityCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('Gratuity'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('Gratuity'); }, []); return <GenericCalculator config={config} />;
+}

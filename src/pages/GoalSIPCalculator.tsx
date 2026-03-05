@@ -15,8 +15,6 @@ const config = {
     compute: (v: Record<string, number>) => {
         const r = v.rate / 12 / 100;
         const n = v.years * 12;
-        // SIP Formula: FV = P * [((1+r)^n - 1) / r] * (1+r)
-        // => P = FV / ([((1+r)^n - 1) / r] * (1+r))
         const denominator = ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
         const monthlyNeeded = v.target / denominator;
 
@@ -32,4 +30,5 @@ const config = {
 };
 
 export default function GoalSIPCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('Goal_SIP'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('Goal_SIP'); }, []); return <GenericCalculator config={config} />;
+}

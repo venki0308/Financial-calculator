@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -15,6 +16,7 @@ const COLORS = [
 ];
 
 export default function DashboardTab({ onAddExpense }: { onAddExpense: () => void }) {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets } = useBudgetTrackerStore();
 
@@ -48,12 +50,12 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
             if (pct > 100) {
                 alerts.push({
                     type: 'danger',
-                    message: `🚨 You exceeded your ${cat.name} budget by ₹${(spent - limit).toLocaleString('en-IN')}.`,
+                    message: t('expenses.alerts.exceeded', { category: t(`expenses.categories.${cat.id}`), amount: (spent - limit).toLocaleString('en-IN') }),
                 });
             } else if (pct >= 80) {
                 alerts.push({
                     type: 'warn',
-                    message: `⚠️ You have used ${pct.toFixed(0)}% of your ${cat.name} budget.`,
+                    message: t('expenses.alerts.usedPct', { pct: pct.toFixed(0), category: t(`expenses.categories.${cat.id}`) }),
                 });
             }
         });
@@ -61,7 +63,7 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
         if (savingsRate >= 20 && savings > 0) {
             alerts.push({
                 type: 'success',
-                message: `🎉 Great job! You saved ₹${savings.toLocaleString('en-IN')} this month (${savingsRate.toFixed(0)}% savings rate).`,
+                message: t('expenses.alerts.savedWell', { amount: savings.toLocaleString('en-IN'), rate: savingsRate.toFixed(0) }),
             });
         }
 
@@ -105,15 +107,15 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
                 className="bg-gradient-to-br from-brand-purple via-purple-600 to-blue-600 rounded-3xl p-6 text-white shadow-xl shadow-purple-800/30"
             >
                 <p className="text-purple-100 text-xs font-semibold uppercase tracking-wider mb-1">
-                    {now.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                    {now.toLocaleString(undefined, { month: 'long', year: 'numeric' })}
                 </p>
                 <h2 className="text-4xl font-extrabold mb-0.5">₹{totalSpent.toLocaleString('en-IN')}</h2>
-                <p className="text-purple-200 text-sm">Total Spent This Month</p>
+                <p className="text-purple-200 text-sm">{t('expenses.totalSpentMonth')}</p>
 
                 {/* Budget progress bar */}
                 <div className="mt-4 mb-2">
                     <div className="flex justify-between text-xs text-purple-200 mb-1">
-                        <span>Budget used</span>
+                        <span>{t('expenses.budgetUsedLabel')}</span>
                         <span>{budgetUsePct.toFixed(0)}%</span>
                     </div>
                     <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
@@ -128,17 +130,17 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
 
                 <div className="grid grid-cols-3 gap-3 mt-4">
                     <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center">
-                        <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">Income</p>
+                        <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">{t('expenses.income')}</p>
                         <p className="text-white font-bold text-sm mt-0.5">₹{monthlyIncome.toLocaleString('en-IN')}</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center">
-                        <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">Savings</p>
+                        <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">{t('expenses.savings')}</p>
                         <p className={`font-bold text-sm mt-0.5 ${savings < 0 ? 'text-red-300' : 'text-green-300'}`}>
                             ₹{Math.abs(savings).toLocaleString('en-IN')}
                         </p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center">
-                        <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">Rate</p>
+                        <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">{t('expenses.rate')}</p>
                         <p className={`font-bold text-sm mt-0.5 ${savingsRate < 0 ? 'text-red-300' : 'text-green-300'}`}>
                             {savingsRate.toFixed(0)}%
                         </p>
@@ -149,9 +151,9 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-3">
                 {[
-                    { label: 'Fixed', value: totalFixed, icon: Wallet, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' },
-                    { label: 'Daily', value: totalDaily, icon: TrendingDown, color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
-                    { label: 'Available', value: available, icon: TrendingUp, color: available < 0 ? 'text-red-400' : 'text-green-400', bg: available < 0 ? 'bg-red-500/10' : 'bg-green-500/10', border: available < 0 ? 'border-red-500/20' : 'border-green-500/20' },
+                    { label: t('expenses.fixed'), value: totalFixed, icon: Wallet, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' },
+                    { label: t('expenses.daily'), value: totalDaily, icon: TrendingDown, color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
+                    { label: t('expenses.available'), value: available, icon: TrendingUp, color: available < 0 ? 'text-red-400' : 'text-green-400', bg: available < 0 ? 'bg-red-500/10' : 'bg-green-500/10', border: available < 0 ? 'border-red-500/20' : 'border-green-500/20' },
                 ].map((stat) => (
                     <motion.div
                         key={stat.label}
@@ -174,10 +176,10 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
                 >
                     <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                     <div>
-                        <p className="font-bold text-red-400 text-sm">Budget Alert!</p>
+                        <p className="font-bold text-red-400 text-sm">{t('expenses.budgetAlertTitle')}</p>
                         <p className="text-xs text-red-300/80 mt-0.5">
-                            You've used {budgetUsePct.toFixed(0)}% of your monthly budget.
-                            {budgetUsePct >= 100 ? ' You are overspending!' : ' Slow down your spending.'}
+                            {t('expenses.budgetAlertMsg', { pct: budgetUsePct.toFixed(0) })}
+                            {budgetUsePct >= 100 ? ` ${t('expenses.overspending')}` : ` ${t('expenses.slowDown')}`}
                         </p>
                     </div>
                 </motion.div>
@@ -193,10 +195,10 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.05 }}
                             className={`rounded-2xl p-3 flex items-start gap-3 border ${alert.type === 'danger'
-                                    ? 'bg-red-500/10 border-red-500/30'
-                                    : alert.type === 'warn'
-                                        ? 'bg-yellow-500/10 border-yellow-500/30'
-                                        : 'bg-green-500/10 border-green-500/30'
+                                ? 'bg-red-500/10 border-red-500/30'
+                                : alert.type === 'warn'
+                                    ? 'bg-yellow-500/10 border-yellow-500/30'
+                                    : 'bg-green-500/10 border-green-500/30'
                                 }`}
                         >
                             {alert.type === 'success'
@@ -206,8 +208,8 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
                                     : <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
                             }
                             <p className={`text-xs font-medium ${alert.type === 'danger' ? 'text-red-300'
-                                    : alert.type === 'warn' ? 'text-yellow-300'
-                                        : 'text-green-300'
+                                : alert.type === 'warn' ? 'text-yellow-300'
+                                    : 'text-green-300'
                                 }`}>{alert.message}</p>
                         </motion.div>
                     ))}
@@ -218,7 +220,7 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
             {/* Spending Breakdown Pie Chart */}
             {categoryTotals.length > 0 && (
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Spending Breakdown</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.spendingBreakdown')}</h3>
                     <div className="flex flex-col items-center gap-4">
                         <div style={{ width: 200, height: 200 }}>
                             <Pie
@@ -240,7 +242,7 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
                             {categoryTotals.map((cat, i) => (
                                 <div key={cat.id} className="flex items-center gap-2">
                                     <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                    <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{cat.icon} {cat.name}</span>
+                                    <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{cat.icon} {t(`expenses.categories.${cat.id}`)}</span>
                                     <span className="text-[10px] font-bold text-slate-700 dark:text-white ml-auto">₹{cat.total.toLocaleString('en-IN')}</span>
                                 </div>
                             ))}
@@ -252,18 +254,18 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
             {/* Recent Transactions */}
             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">Recent Expenses</h3>
-                    <button onClick={() => navigate('/expenses')} className="text-brand-purple text-xs font-semibold">View All</button>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">{t('expenses.recentExpenses')}</h3>
+                    <button onClick={() => navigate('/expenses')} className="text-brand-purple text-xs font-semibold">{t('home.viewAll')}</button>
                 </div>
                 {recentExpenses.length === 0 ? (
                     <div className="text-center py-6">
                         <Wallet className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                        <p className="text-slate-400 text-sm">No expenses yet this month</p>
+                        <p className="text-slate-400 text-sm">{t('expenses.noExpensesMonth')}</p>
                         <button
                             onClick={onAddExpense}
                             className="mt-3 flex items-center gap-1 text-brand-purple text-xs font-semibold mx-auto"
                         >
-                            <Plus size={12} /> Add Your First Expense
+                            <Plus size={12} /> {t('expenses.addFirst')}
                         </button>
                     </div>
                 ) : (
@@ -276,9 +278,9 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
                                         {cat?.icon || '📌'}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-slate-800 dark:text-white text-xs font-semibold truncate">{exp.description || cat?.name || 'Expense'}</p>
+                                        <p className="text-slate-800 dark:text-white text-xs font-semibold truncate">{exp.description || t(`expenses.categories.${cat?.id || 'others'}`)}</p>
                                         <p className="text-slate-400 text-[10px]">
-                                            {new Date(exp.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                                            {new Date(exp.date).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
                                         </p>
                                     </div>
                                     <p className="text-red-400 font-bold text-sm">-₹{exp.amount.toLocaleString('en-IN')}</p>

@@ -19,10 +19,10 @@ const TABS = [
 type TabId = typeof TABS[number]['id'];
 
 const TAB_SUBTITLES: Record<TabId, string> = {
-    dashboard: 'Overview & insights',
-    budget: 'Budget setup & limits',
-    daily: 'Track daily expenses',
-    reports: 'Analytics & PDF export',
+    dashboard: 'expenses.dashboardSubtitle',
+    budget: 'expenses.budgetSubtitle',
+    daily: 'expenses.dailySubtitle',
+    reports: 'expenses.reportsSubtitle',
 };
 
 export default function ExpenseTracker() {
@@ -53,9 +53,9 @@ export default function ExpenseTracker() {
                     </button>
                     <div className="flex-1">
                         <h1 className="text-slate-900 dark:text-white font-bold text-base">
-                            {t('expenses.title', 'Expense Tracker')}
+                            {t('expenses.title')}
                         </h1>
-                        <p className="text-slate-400 text-[11px]">{TAB_SUBTITLES[activeTab]}</p>
+                        <p className="text-slate-400 text-[11px]">{t(TAB_SUBTITLES[activeTab])}</p>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-brand-purple/10 flex items-center justify-center text-xl">💰</div>
                 </div>
@@ -70,12 +70,12 @@ export default function ExpenseTracker() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl transition-all text-center ${isActive
-                                        ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/30'
-                                        : 'text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-white/5'
+                                    ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/30'
+                                    : 'text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-white/5'
                                     }`}
                             >
                                 <Icon size={16} />
-                                <span className="text-[9px] font-bold uppercase tracking-wide">{tab.label}</span>
+                                <span className="text-[9px] font-bold uppercase tracking-wide">{t(`expenses.${tab.id}`)}</span>
                             </button>
                         );
                     })}

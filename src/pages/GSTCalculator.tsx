@@ -126,9 +126,13 @@ export default function GSTCalculator() {
         data.push(['Total GST', formatINR(result.gstAmount)]);
         data.push(['Final Amount (with GST)', formatINR(result.postGst)]);
 
+        const total = result.preGst + result.gstAmount;
+        const basePct = ((result.preGst / total) * 100).toFixed(1);
+        const gstPct = ((result.gstAmount / total) * 100).toFixed(1);
+
         const chartSummary = [
-            { label: 'Base Amount', value: formatINR(result.preGst), color: [79, 70, 229] as [number, number, number] },
-            { label: 'GST Amount', value: formatINR(result.gstAmount), color: [16, 185, 129] as [number, number, number] },
+            { label: `Base Amount (${basePct}%)`, value: formatINR(result.preGst), color: [79, 70, 229] as [number, number, number] },
+            { label: `GST Amount (${gstPct}%)`, value: formatINR(result.gstAmount), color: [16, 185, 129] as [number, number, number] },
             { label: `Total (${gstRate}% GST)`, value: formatINR(result.postGst), color: [245, 158, 11] as [number, number, number] },
         ];
 

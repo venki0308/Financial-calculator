@@ -90,10 +90,14 @@ export default function FDCalculator() {
             ['Interest Earned', formatINR(result.interest)],
             ['Maturity Amount', formatINR(result.amount)]
         ];
+        const total = principal + result.interest;
+        const investedPct = ((principal / total) * 100).toFixed(1);
+        const interestPct = ((result.interest / total) * 100).toFixed(1);
+
         const chartSummary = [
-            { label: 'Invested', value: formatINR(principal), color: [79, 70, 229] as [number, number, number] },
-            { label: 'Interest', value: formatINR(result.interest), color: [16, 185, 129] as [number, number, number] },
-            { label: 'Maturity', value: formatINR(result.amount), color: [245, 158, 11] as [number, number, number] },
+            { label: `Invested (${investedPct}%)`, value: formatINR(principal), color: [79, 70, 229] as [number, number, number] },
+            { label: `Interest (${interestPct}%)`, value: formatINR(result.interest), color: [16, 185, 129] as [number, number, number] },
+            { label: 'Maturity Value', value: formatINR(result.amount), color: [245, 158, 11] as [number, number, number] },
         ];
         exportToPDF('FD Maturity Report', headers, data, 'FD_Report', chartImage, chartSummary);
     };

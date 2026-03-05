@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Edit3, Check, X, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES, type PaymentMethod } from '../../store/useBudgetTrackerStore';
 
 const PAYMENT_METHODS: { id: PaymentMethod; icon: string }[] = [
@@ -29,6 +30,7 @@ function toDateInput(d: Date) {
 }
 
 export default function DailyTab() {
+    const { t } = useTranslation();
     const { entries, addEntry, deleteEntry, updateEntry, categoryBudgets, getEntriesByDate, getMonthlySpentByCategory } = useBudgetTrackerStore();
 
     const [selectedDate, setSelectedDate] = useState(toDateInput(new Date()));
@@ -61,7 +63,7 @@ export default function DailyTab() {
         addEntry({
             categoryId: qa.categoryId,
             amount: qa.amount,
-            description: qa.label,
+            description: t(`expenses.quickAdd.${qa.label.toLowerCase()}`),
             date: new Date().toISOString(),
         });
     };
@@ -71,7 +73,7 @@ export default function DailyTab() {
         addEntry({
             categoryId: fCategory,
             amount: parseFloat(fAmount),
-            description: fDesc || EXPENSE_CATEGORIES.find(c => c.id === fCategory)?.name || 'Expense',
+            description: fDesc || t(`expenses.categories.${fCategory}`),
             date: new Date(`${selectedDate}T${new Date().toTimeString().slice(0, 8)}`).toISOString(),
             paymentMethod: fPayment,
         });
@@ -114,12 +116,12 @@ export default function DailyTab() {
                 onClick={() => setShowAddForm(true)}
                 className="w-full bg-gradient-to-r from-brand-purple to-purple-700 hover:from-purple-700 hover:to-brand-purple text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/30"
             >
-                <Plus size={20} /> Add New Expense
+                <Plus size={20} /> {t('expenses.addNewExpense')}
             </motion.button>
 
             {/* Quick Add Shortcuts */}
             <div>
-                <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">Quick Add</p>
+                <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">{t('expenses.quickAddLabel')}</p>
                 <div className="grid grid-cols-3 gap-2">
                     {QUICK_ADD.map((qa) => (
                         <motion.button
@@ -129,7 +131,7 @@ export default function DailyTab() {
                             className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-center"
                         >
                             <span className="text-2xl">{qa.emoji}</span>
-                            <span className="text-slate-700 dark:text-slate-200 text-xs font-semibold">{qa.label}</span>
+                            <span className="text-slate-700 dark:text-slate-200 text-xs font-semibold">{t(`expenses.quickAdd.${qa.label.toLowerCase()}`)}</span>
                             <span className="text-brand-purple text-xs font-bold">₹{qa.amount}</span>
                         </motion.button>
                     ))}
@@ -157,22 +159,22 @@ export default function DailyTab() {
             <div className="bg-gradient-to-r from-brand-purple/10 to-blue-600/10 border border-brand-purple/20 rounded-2xl p-4 flex justify-between items-center">
                 <div>
                     <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">
-                        {isToday ? "Today's" : 'Selected Day'} Spending
+                        {isToday ? t('expenses.todaySpending') : t('expenses.selectedDaySpending')}
                     </p>
                     <p className="text-2xl font-extrabold text-brand-purple mt-0.5">₹{todayTotal.toLocaleString('en-IN')}</p>
-                    <p className="text-slate-400 text-xs mt-0.5">{dayEntries.length} transaction{dayEntries.length !== 1 ? 's' : ''}</p>
+                    <p className="text-slate-400 text-xs mt-0.5">{dayEntries.length} {dayEntries.length === 1 ? t('expenses.transaction') : t('expenses.transactions')}</p>
                 </div>
                 <div className="text-4xl">💸</div>
             </div>
 
             {/* Expenses List */}
             <div>
-                <h3 className="text-slate-900 dark:text-white font-bold text-sm mb-3">Expenses</h3>
+                <h3 className="text-slate-900 dark:text-white font-bold text-sm mb-3">{t('expenses.expenses')}</h3>
                 {dayEntries.length === 0 && (
                     <div className="text-center py-10 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
                         <p className="text-4xl mb-2">🌿</p>
-                        <p className="text-slate-400 text-sm">No expenses for this day</p>
-                        <button onClick={() => setShowAddForm(true)} className="mt-3 text-brand-purple text-xs font-semibold">+ Add Expense</button>
+                        <p className="text-slate-400 text-sm">{t('expenses.noExpensesDay')}</p>
+                        <button onClick={() => setShowAddForm(true)} className="mt-3 text-brand-purple text-xs font-semibold">+ {t('expenses.addExpense')}</button>
                     </div>
                 )}
                 <div className="space-y-2">
@@ -196,10 +198,10 @@ export default function DailyTab() {
                                         />
                                         <div className="flex gap-2">
                                             <button onClick={() => setEditingId(null)} className="flex-1 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 text-sm">
-                                                <X size={14} className="inline mr-1" />Cancel
+                                                <X size={14} className="inline mr-1" />{t('common.cancel')}
                                             </button>
                                             <button onClick={handleSaveEdit} className="flex-1 py-2 rounded-lg bg-brand-green text-white text-sm font-bold">
-                                                <Check size={14} className="inline mr-1" />Save
+                                                <Check size={14} className="inline mr-1" />{t('common.save')}
                                             </button>
                                         </div>
                                     </div>
@@ -211,9 +213,9 @@ export default function DailyTab() {
                                         <div className="flex-1 min-w-0">
                                             <p className="text-slate-800 dark:text-white text-sm font-semibold truncate">{exp.description}</p>
                                             <p className="text-slate-400 text-[10px]">
-                                                {cat?.name} · {formatDate(exp.date)}
+                                                {t(`expenses.categories.${cat?.id || 'others'}`)} · {formatDate(exp.date)}
                                                 {exp.paymentMethod && (
-                                                    <span className="ml-1 px-1.5 py-0.5 bg-brand-purple/10 text-brand-purple rounded text-[9px] font-bold">{exp.paymentMethod}</span>
+                                                    <span className="ml-1 px-1.5 py-0.5 bg-brand-purple/10 text-brand-purple rounded text-[9px] font-bold">{t(`expenses.paymentMethods.${exp.paymentMethod}`)}</span>
                                                 )}
                                             </p>
                                         </div>
@@ -247,11 +249,11 @@ export default function DailyTab() {
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5" />
-                            <h3 className="text-white font-bold text-lg mb-4">Add Expense</h3>
+                            <h3 className="text-white font-bold text-lg mb-4">{t('expenses.addExpenseTitle')}</h3>
                             <div className="space-y-3">
                                 {/* Category */}
                                 <div>
-                                    <label className="text-slate-400 text-xs mb-1 block">Category</label>
+                                    <label className="text-slate-400 text-xs mb-1 block">{t('expenses.category')}</label>
                                     <div className="grid grid-cols-3 gap-2">
                                         {EXPENSE_CATEGORIES.map((cat) => (
                                             <button
@@ -259,7 +261,7 @@ export default function DailyTab() {
                                                 onClick={() => setFCategory(cat.id)}
                                                 className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fCategory === cat.id ? 'bg-brand-purple text-white' : 'bg-slate-800 text-slate-300'}`}
                                             >
-                                                {cat.icon}<br />{cat.name.split(' ')[0]}
+                                                {cat.icon}<br />{t(`expenses.categories.${cat.id}`).split(' ')[0]}
                                             </button>
                                         ))}
                                     </div>
@@ -268,14 +270,14 @@ export default function DailyTab() {
                                 {/* Budget warning */}
                                 {selectedCatBudget > 0 && (
                                     <div className={`p-3 rounded-xl text-xs font-medium ${overBudget ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
-                                        Budget: ₹{selectedCatBudget.toLocaleString('en-IN')} · Spent: ₹{selectedCatSpent.toLocaleString('en-IN')} · Remaining: ₹{(selectedCatBudget - selectedCatSpent).toLocaleString('en-IN')}
-                                        {overBudget && ' ⚠️ Over budget!'}
+                                        {t('expenses.budget')}: ₹{selectedCatBudget.toLocaleString('en-IN')} · {t('expenses.spent')}: ₹{selectedCatSpent.toLocaleString('en-IN')} · {t('expenses.remaining')}: ₹{(selectedCatBudget - selectedCatSpent).toLocaleString('en-IN')}
+                                        {overBudget && ` ⚠️ ${t('expenses.overBudget')}`}
                                     </div>
                                 )}
 
                                 {/* Amount */}
                                 <div>
-                                    <label className="text-slate-400 text-xs mb-1 block">Amount (₹) *</label>
+                                    <label className="text-slate-400 text-xs mb-1 block">{t('expenses.amountLabel')} *</label>
                                     <input
                                         type="number"
                                         value={fAmount}
@@ -288,12 +290,12 @@ export default function DailyTab() {
 
                                 {/* Description */}
                                 <div>
-                                    <label className="text-slate-400 text-xs mb-1 block">Description (optional)</label>
+                                    <label className="text-slate-400 text-xs mb-1 block">{t('expenses.descriptionLabel')}</label>
                                     <input
                                         type="text"
                                         value={fDesc}
                                         onChange={(e) => setFDesc(e.target.value)}
-                                        placeholder="e.g. Lunch at restaurant"
+                                        placeholder={t('expenses.descriptionPlaceholder')}
                                         className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-purple"
                                     />
                                 </div>
@@ -301,7 +303,7 @@ export default function DailyTab() {
                                 {/* Payment Method */}
                                 <div>
                                     <label className="text-slate-400 text-xs mb-2 flex items-center gap-1.5 block">
-                                        <CreditCard size={12} /> Payment Method
+                                        <CreditCard size={12} /> {t('expenses.paymentMethodLabel')}
                                     </label>
                                     <div className="grid grid-cols-4 gap-1.5">
                                         {PAYMENT_METHODS.map((pm) => (
@@ -314,21 +316,21 @@ export default function DailyTab() {
                                                     }`}
                                             >
                                                 <span className="text-base block">{pm.icon}</span>
-                                                <span className="text-[9px] font-semibold leading-tight block mt-0.5">{pm.id.split(' ')[0]}</span>
+                                                <span className="text-[9px] font-semibold leading-tight block mt-0.5">{t(`expenses.paymentMethods.${pm.id}`).split(' ')[0]}</span>
                                             </button>
                                         ))}
                                     </div>
                                 </div>
                             </div>
                             <div className="flex gap-3 mt-5">
-                                <button onClick={() => setShowAddForm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-slate-300 font-medium text-sm">Cancel</button>
+                                <button onClick={() => setShowAddForm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-slate-300 font-medium text-sm">{t('common.cancel')}</button>
                                 <motion.button
                                     whileTap={{ scale: 0.97 }}
                                     onClick={handleSaveEntry}
                                     disabled={!fAmount}
                                     className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm disabled:opacity-40"
                                 >
-                                    Save Expense
+                                    {t('expenses.saveExpense')}
                                 </motion.button>
                             </div>
                         </motion.div>

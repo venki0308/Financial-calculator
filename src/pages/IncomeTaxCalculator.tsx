@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect} from 'react';
+import { useState, useMemo, useEffect, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Info, TrendingDown, TrendingUp, Download, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -42,6 +42,33 @@ const fmt = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
 
 type Inputs = Record<string, string>;
 
+const InputRow = memo(({ label, k, value, onChange, prefix = '₹', hint }: {
+    label: string;
+    k: string;
+    value: string;
+    onChange: (k: string, v: string) => void;
+    prefix?: string;
+    hint?: string;
+}) => {
+    return (
+        <div className="space-y-1">
+            <label className="text-slate-500 dark:text-slate-400 text-xs font-semibold">{label}</label>
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 focus-within:border-brand-purple transition-colors">
+                {prefix && <span className="text-brand-purple font-bold text-sm flex-shrink-0">{prefix}</span>}
+                <input
+                    type="number"
+                    inputMode="numeric"
+                    value={value}
+                    onChange={(e) => onChange(k, e.target.value)}
+                    placeholder="0"
+                    className="flex-1 bg-transparent text-slate-900 dark:text-white text-sm font-semibold outline-none"
+                />
+            </div>
+            {hint && <p className="text-slate-400 text-[10px]">{hint}</p>}
+        </div>
+    );
+});
+
 export default function IncomeTaxCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Income_Tax'); }, []);
     const navigate = useNavigate();
@@ -62,7 +89,7 @@ export default function IncomeTaxCalculator() {
         isMetro: 'false',
     });
 
-    const set = (k: string, v: string) => setInputs((p) => ({ ...p, [k]: v }));
+    const set = useCallback((k: string, v: string) => setInputs((p) => ({ ...p, [k]: v })), []);
     const num = (k: string) => parseFloat(inputs[k] || '0') || 0;
 
     const grossSalary = num('basicSalary') + num('hra') + num('special') + num('bonus') + num('otherIncome');
@@ -137,22 +164,7 @@ export default function IncomeTaxCalculator() {
         await exportToPDF(`Income Tax Report — ${regime === 'old' ? 'Old' : 'New'} Regime`, headers, rows, `Income_Tax_Report_FY2025-26`);
     };
 
-    const InputRow = ({ label, k, prefix = '₹', hint }: { label: string; k: string; prefix?: string; hint?: string }) => (
-        <div className="space-y-1">
-            <label className="text-slate-500 dark:text-slate-400 text-xs font-semibold">{label}</label>
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 focus-within:border-brand-purple transition-colors">
-                {prefix && <span className="text-brand-purple font-bold text-sm flex-shrink-0">{prefix}</span>}
-                <input
-                    type="number"
-                    value={inputs[k]}
-                    onChange={(e) => set(k, e.target.value)}
-                    placeholder="0"
-                    className="flex-1 bg-transparent text-slate-900 dark:text-white text-sm font-semibold outline-none"
-                />
-            </div>
-            {hint && <p className="text-slate-400 text-[10px]">{hint}</p>}
-        </div>
-    );
+
 
     return (
         <div className="min-h-dvh bg-slate-50 dark:bg-[#0F172A]">
@@ -189,11 +201,11 @@ export default function IncomeTaxCalculator() {
                 {/* Income Inputs */}
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
                     <h3 className="font-bold text-slate-900 dark:text-white text-sm">Annual Income Details</h3>
-                    <InputRow label="💰 Basic Salary" k="basicSalary" />
-                    <InputRow label="🏠 HRA (House Rent Allowance)" k="hra" />
-                    <InputRow label="💵 Special Allowance" k="special" />
-                    <InputRow label="🎁 Bonus & Other Allowances" k="bonus" />
-                    <InputRow label="📊 Other Income (FD interest, etc.)" k="otherIncome" />
+                    <InputRow label="💰 Basic Salary" k="basicSalary" value={inputs.basicSalary} onChange={set} />
+                    <InputRow label="🏠 HRA (House Rent Allowance)" k="hra" value={inputs.hra} onChange={set} />
+                    <InputRow label="💵 Special Allowance" k="special" value={inputs.special} onChange={set} />
+                    <InputRow label="🎁 Bonus & Other Allowances" k="bonus" value={inputs.bonus} onChange={set} />
+                    <InputRow label="📊 Other Income (FD interest, etc.)" k="otherIncome" value={inputs.otherIncome} onChange={set} />
                     <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex justify-between items-center">
                         <span className="text-slate-600 dark:text-slate-400 text-sm font-medium">Gross Annual Income</span>
                         <span className="font-extrabold text-slate-900 dark:text-white text-base">{fmt(grossSalary)}</span>
@@ -206,8 +218,8 @@ export default function IncomeTaxCalculator() {
                         {/* HRA Exemption Calc */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
                             <h3 className="font-bold text-slate-900 dark:text-white text-sm">🏠 HRA Exemption Calculator</h3>
-                            <InputRow label="HRA Received (Annual)" k="hraReceived" />
-                            <InputRow label="Rent Paid (Annual)" k="rentPaid" />
+                            <InputRow label="HRA Received (Annual)" k="hraReceived" value={inputs.hraReceived} onChange={set} />
+                            <InputRow label="Rent Paid (Annual)" k="rentPaid" value={inputs.rentPaid} onChange={set} />
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="checkbox"
@@ -226,11 +238,11 @@ export default function IncomeTaxCalculator() {
                         {/* Section Deductions */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
                             <h3 className="font-bold text-slate-900 dark:text-white text-sm">Deductions (Old Regime)</h3>
-                            <InputRow label="📋 Standard Deduction" k="standardDeduction" hint="Fixed Rs 50,000 for Old Regime" />
-                            <InputRow label="💰 Section 80C (PPF, ELSS, LIC)" k="section80C" hint="Max Rs 1,50,000" />
-                            <InputRow label="🏥 Section 80D (Health Insurance)" k="section80D" hint="Max Rs 25,000 (Rs 50,000 for senior citizens)" />
-                            <InputRow label="💼 Section 80CCD(1B) — NPS" k="section80CCD" hint="Max Rs 50,000" />
-                            <InputRow label="🏠 Home Loan Interest (Sec 24)" k="homeLoan" hint="Max Rs 2,00,000" />
+                            <InputRow label="📋 Standard Deduction" k="standardDeduction" value={inputs.standardDeduction} onChange={set} hint="Fixed Rs 50,000 for Old Regime" />
+                            <InputRow label="💰 Section 80C (PPF, ELSS, LIC)" k="section80C" value={inputs.section80C} onChange={set} hint="Max Rs 1,50,000" />
+                            <InputRow label="🏥 Section 80D (Health Insurance)" k="section80D" value={inputs.section80D} onChange={set} hint="Max Rs 25,000 (Rs 50,000 for senior citizens)" />
+                            <InputRow label="💼 Section 80CCD(1B) — NPS" k="section80CCD" value={inputs.section80CCD} onChange={set} hint="Max Rs 50,000" />
+                            <InputRow label="🏠 Home Loan Interest (Sec 24)" k="homeLoan" value={inputs.homeLoan} onChange={set} hint="Max Rs 2,00,000" />
                             <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex justify-between items-center">
                                 <span className="text-slate-600 dark:text-slate-400 text-sm font-medium">Total Deductions</span>
                                 <span className="font-extrabold text-brand-green text-base">-{fmt(totalDeductions)}</span>

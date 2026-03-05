@@ -24,8 +24,8 @@ const config = {
             ],
         };
     },
-    formulaText: 'NSC interest is compounded annually and paid at maturity after 5 years.',
 };
 
 export default function NSCCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('NSC_Calculator'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('NSC_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

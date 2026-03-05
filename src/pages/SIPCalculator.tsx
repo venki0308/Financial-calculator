@@ -88,12 +88,23 @@ export default function SIPCalculator() {
         return savedCalculations.some(s => s.type === 'SIP Calculator' && JSON.stringify(s.inputs) === JSON.stringify({ monthly, rate, years }));
     }, [savedCalculations, monthly, rate, years]);
 
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = async () => {
+        // Give chart canvas time to render fully before capture
+        await new Promise(r => setTimeout(r, 150));
 
-        let chartImage = undefined;
+        let chartImage: string | undefined = undefined;
         if (chartRef.current) {
-            chartImage = chartRef.current.toBase64Image();
+            chartImage = chartRef.current.toBase64Image('image/png', 1.0);
         }
+
+        const total = result.invested + result.wealthGained;
+        const investedPct = ((result.invested / total) * 100).toFixed(1);
+        const returnsPct = ((result.wealthGained / total) * 100).toFixed(1);
+
+        const chartSummary: { label: string; value: string; color: [number, number, number] }[] = [
+            { label: `Invested (${investedPct}%)`, value: formatINR(result.invested), color: [79, 70, 229] },
+            { label: `Est. Returns (${returnsPct}%)`, value: formatINR(result.wealthGained), color: [16, 185, 129] },
+        ];
 
         const headers = ['Metric', 'Value'];
         const data = [
@@ -103,9 +114,9 @@ export default function SIPCalculator() {
             ['---', '---'],
             ['Total Invested', formatINR(result.invested)],
             ['Wealth Gained', formatINR(result.wealthGained)],
-            ['Future Value', formatINR(result.futureValue)]
+            ['Future Value', formatINR(result.futureValue)],
         ];
-        exportToPDF('SIP Investment Report', headers, data, 'SIP_Report', chartImage);
+        exportToPDF('SIP Investment Report', headers, data, 'SIP_Report', chartImage, chartSummary);
     };
 
     const handleDownloadExcel = () => {
@@ -193,13 +204,6 @@ export default function SIPCalculator() {
                         {isSaved || isAlreadySaved ? <><Check size={18} /> Saved</> : <><Save size={18} /> Save Investment</>}
                     </motion.button>
                 </motion.div>
-
-                <div className="flex items-start gap-2 p-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/15 mb-6">
-                    <Info size={14} className="text-brand-blue mt-0.5 flex-shrink-0" />
-                    <p className="text-slate-400 text-xs leading-relaxed">
-                        SIP formula used: <span className="text-brand-blue font-mono">FV = P × [((1+r)^n - 1) / r] × (1+r)</span>, where P is monthly amount, r is monthly rate, and n is total months.
-                    </p>
-                </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">

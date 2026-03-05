@@ -24,8 +24,8 @@ const config = {
             ],
         };
     },
-    formulaText: 'KVP doubles your money in 115 months at the current 7.5% interest rate.',
 };
 
 export default function KVPCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('KVP_Calculator'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('KVP_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

@@ -46,7 +46,6 @@ interface CalcConfig {
         label: string;
         rows: ResultRow[]
     };
-    formulaText?: string;
 }
 
 interface ResultRow {

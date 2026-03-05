@@ -31,7 +31,6 @@ const config = {
             ],
         };
     },
-    formulaText: 'SWP reduces balance monthly by withdrawal amount and increases by monthly interest.',
 };
 
 export default function SWPCalculator() {

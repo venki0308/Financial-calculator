@@ -22,8 +22,8 @@ const config = {
             ],
         };
     },
-    formulaText: 'SCSS pays interest quarterly on 31st March, 30th June, 30th Sep and 31st Dec.',
 };
 
 export default function SCSSCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('SCSS_Calculator'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('SCSS_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

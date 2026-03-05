@@ -2,7 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import { useEffect } from 'react';
 import { App as CapApp } from '@capacitor/app';
 import { useSettingsStore } from './store/useSettingsStore';
-import { AnalyticsService } from './lib/analytics';
+import { AnalyticsService, CrashlyticsService } from './lib/analytics';
+import { setupErrorHandling } from './utils/errorHandler';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { FeatureFlagService } from './services/featureFlags.service';
 import { UpdateChecker } from './components/UpdateChecker';
 import { APP_VERSION } from './config/app';
@@ -70,9 +72,18 @@ function AppContent() {
         document.documentElement.classList.toggle('light', !darkMode);
     }, [darkMode]);
 
-    // Analytics + Feature Flags init
+    // Analytics + Crashlytics + Feature Flags init
     useEffect(() => {
         const initAnalytics = async () => {
+            // Setup global error/rejection handlers first
+            setupErrorHandling();
+
+            // Init Crashlytics (native only, no-op on web)
+            await CrashlyticsService.initialize();
+            await CrashlyticsService.setCustomKey('app_version', APP_VERSION);
+            await CrashlyticsService.setCustomKey('platform', Capacitor.getPlatform());
+
+            // Analytics
             await FeatureFlagService.load();
             await AnalyticsService.trackAppOpened();
             await AnalyticsService.setUserProperties({
@@ -163,8 +174,10 @@ function AppContent() {
 
 export default function App() {
     return (
-        <BrowserRouter>
-            <AppContent />
-        </BrowserRouter>
+        <ErrorBoundary>
+            <BrowserRouter>
+                <AppContent />
+            </BrowserRouter>
+        </ErrorBoundary>
     );
 }

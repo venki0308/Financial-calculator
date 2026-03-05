@@ -25,13 +25,12 @@ export default function SchemeDetail() {
 
     const isBookmarked = bookmarkedSchemes.includes(scheme.id);
 
-    const noIndividualApp = scheme.applicationType === 'No Individual Application';
+    const noIndividualApp = scheme.applicationType === 'No Individual';
     const isServiceAccess = scheme.applicationType === 'Service Access';
-    const isBankApp = scheme.applicationType === 'Bank Application' || scheme.applicationType === 'LIC Application';
+    const isBankApp = scheme.applicationType === 'Bank Application';
     const isOnlineApp = scheme.applicationType === 'Online Application';
-    const isRationCardBased = scheme.applicationType === 'Ration Card Based';
-    const isSHGBased = scheme.applicationType === 'Through Self Help Groups';
     const isGovtAgency = scheme.applicationType === 'Through Government Agency';
+    const isCSCOffline = scheme.applicationType === 'CSC / Offline Application';
 
     // Application type label color
     const appTypeColor = noIndividualApp
@@ -78,7 +77,7 @@ export default function SchemeDetail() {
                     {isOnlineApp && <Globe size={14} />}
                     {isBankApp && <Building2 size={14} />}
                     {isServiceAccess && <Phone size={14} />}
-                    {(noIndividualApp || isGovtAgency || isSHGBased || isRationCardBased) && <Building2 size={14} />}
+                    {(noIndividualApp || isGovtAgency || isCSCOffline) && <Building2 size={14} />}
                     {scheme.applicationType}
                 </div>
 
@@ -177,10 +176,10 @@ export default function SchemeDetail() {
                             </Section>
                         )}
                         <Section title={t('schemes.howToApply')}>
-                            {(isGovtAgency || isSHGBased) && (
+                            {isGovtAgency && (
                                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 text-sm mb-3 flex items-center gap-2">
                                     <Building2 size={16} className="flex-shrink-0" />
-                                    {isSHGBased ? 'Implemented through Self Help Groups (SHGs)' : 'Implemented through government agencies'}
+                                    Implemented through government agencies
                                 </div>
                             )}
                             {scheme.howToApply.map((h, i) => (

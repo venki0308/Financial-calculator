@@ -35,8 +35,8 @@ const config = {
             ],
         };
     },
-    formulaText: 'NPS corpus = SIP FV formula. Min 40% annuity purchase mandatory at retirement.',
 };
 
 export default function NPSCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('NPS_Calculator'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('NPS_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

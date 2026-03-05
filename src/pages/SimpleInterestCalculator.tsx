@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect} from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -403,14 +403,7 @@ export default function SimpleInterestCalculator() {
                         );
                     })()}
 
-                    {/* Formula */}
-                    <div className="mt-4 p-3 rounded-xl bg-brand-blue/5 border border-brand-blue/15">
-                        <p className="text-slate-500 dark:text-slate-400 text-[11px]">
-                            {mode === 'flat' && 'Monthly Interest = (Loan ÷ 100) × Rate per ₹100'}
-                            {mode === 'simple' && 'SI = (P × R × T) / 100'}
-                            {mode === 'compound' && 'A = P × (1 + r/n)^(n×t)'}
-                        </p>
-                    </div>
+                    {/* Removed Formula */}
                 </motion.div>
 
                 {/* Download buttons */}

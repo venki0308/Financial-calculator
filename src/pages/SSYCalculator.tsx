@@ -34,8 +34,8 @@ const config = {
             ],
         };
     },
-    formulaText: 'SSY interest is compounded annually. Maturity is 21 years from account opening or marriage.',
 };
 
 export default function SSYCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('SSY_Calculator'); }, []); return <GenericCalculator config={config} />; }
+    useEffect(() => { AnalyticsService.trackScreen('SSY_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

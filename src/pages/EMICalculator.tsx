@@ -48,7 +48,6 @@ export default function EMICalculator() {
     const [rate, setRate] = useState(8.5);
     const [tenure, setTenure] = useState(60);
     const [tenureUnit, setTenureUnit] = useState<'months' | 'years'>('months');
-    const [showFormula, setShowFormula] = useState(false);
     const [showAmortization, setShowAmortization] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
@@ -301,32 +300,6 @@ export default function EMICalculator() {
                     </div>
                 </motion.div>
 
-                {/* Formula Card */}
-                <button
-                    onClick={() => setShowFormula(!showFormula)}
-                    className="w-full flex items-center justify-between p-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/15 mb-4"
-                >
-                    <div className="flex items-center gap-2">
-                        <Info size={16} className="text-brand-blue" />
-                        <span className="text-slate-300 text-sm font-medium">EMI Formula</span>
-                    </div>
-                    {showFormula ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
-                </button>
-                <AnimatePresence>
-                    {showFormula && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden mb-4"
-                        >
-                            <div className="p-4 rounded-2xl bg-dark-card border border-dark-border">
-                                <p className="text-brand-green font-mono text-sm mb-2 text-center">EMI = [P × r × (1+r)ⁿ] / [(1+r)ⁿ - 1]</p>
-                                <p className="text-slate-500 text-[10px] text-center">P = Principal, r = Monthly rate, n = Total months</p>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
 
                 {/* Action Buttons */}
                 <div className="space-y-3 mb-6">

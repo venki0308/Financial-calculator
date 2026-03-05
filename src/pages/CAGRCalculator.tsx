@@ -22,7 +22,6 @@ const config = {
             ],
         };
     },
-    formulaText: 'CAGR = [(Final / Initial)^(1/Years) - 1] × 100.',
 };
 
 export default function CAGRCalculator() {
