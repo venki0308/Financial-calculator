@@ -31,40 +31,42 @@ function blobToBase64(blob: Blob): Promise<string> {
     });
 }
 
-// ─── Native save — writes to Documents, toasts, then asks to share ─────────
+// ─── Native save — writes to Cache (always writable), then shares ───────────
 async function saveOnNative(blob: Blob, filename: string): Promise<void> {
     const { Filesystem, Directory } = await import('@capacitor/filesystem');
     const { Share } = await import('@capacitor/share');
 
     const base64 = await blobToBase64(blob);
 
-    // Save to device Documents folder (visible in Files app)
+    // Cache dir is always writable on Android without external storage permission
     const writeResult = await Filesystem.writeFile({
         path: filename,
         data: base64,
-        directory: Directory.Documents,
+        directory: Directory.Cache,
         recursive: true,
     });
 
     // Show success toast first
-    showToast(`✅ Saved to Documents: ${filename}`);
+    showToast(`✅ File ready — opening share sheet…`);
 
-    // After a short delay, offer the share sheet (user can dismiss it)
-    setTimeout(async () => {
-        try {
-            const canShare = await Share.canShare();
-            if (canShare.value) {
-                await Share.share({
-                    title: `FinCalix – ${filename}`,
-                    url: writeResult.uri,
-                    dialogTitle: 'Open or Share File',
-                });
-            }
-        } catch {
-            // User dismissed share sheet — that's fine
+    // Immediately offer the share sheet so user can open in Drive/WhatsApp/etc
+    try {
+        const canShare = await Share.canShare();
+        if (canShare.value) {
+            await Share.share({
+                title: `FinCalix – ${filename}`,
+                url: writeResult.uri,
+                dialogTitle: 'Open or Share File',
+            });
+        } else {
+            showToast(`✅ Saved: ${filename}`);
         }
-    }, 1500);
+    } catch {
+        // User dismissed share sheet — that's fine
+        showToast(`✅ File saved successfully`);
+    }
 }
+
 
 // ─── Web browser download ─────────────────────────────────────────────────
 function browserDownload(blob: Blob, filename: string) {

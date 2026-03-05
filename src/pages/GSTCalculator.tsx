@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect} from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Check, Download, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -101,16 +101,18 @@ export default function GSTCalculator() {
     const handleDownloadPDF = async () => {
         if (!result) return;
 
-        let chartImage = undefined;
+        // Small delay to ensure chart canvas is rendered before capture
+        let chartImage: string | undefined = undefined;
         if (chartRef.current) {
-            chartImage = chartRef.current.toBase64Image();
+            await new Promise(r => setTimeout(r, 100));
+            try { chartImage = chartRef.current.toBase64Image('image/png', 1.0); } catch { /* ignore */ }
         }
 
         const headers = ['Component', 'Value'];
-        const data = [
+        const data: [string, string][] = [
             ['Principal Amount', formatINR(result.preGst)],
             ['GST Rate', `${gstRate}%`],
-            ['GST Mode', mode === 'add' ? 'Added' : 'Slashed'],
+            ['GST Mode', mode === 'add' ? 'Added (exclusive)' : 'Removed (inclusive)'],
             ['---', '---'],
         ];
 
@@ -122,10 +124,17 @@ export default function GSTCalculator() {
         }
 
         data.push(['Total GST', formatINR(result.gstAmount)]);
-        data.push(['Final Amount', formatINR(result.postGst)]);
+        data.push(['Final Amount (with GST)', formatINR(result.postGst)]);
 
-        await exportToPDF('GST Report', headers, data, 'GST_Report', chartImage);
+        const chartSummary = [
+            { label: 'Base Amount', value: formatINR(result.preGst), color: [79, 70, 229] as [number, number, number] },
+            { label: 'GST Amount', value: formatINR(result.gstAmount), color: [16, 185, 129] as [number, number, number] },
+            { label: `Total (${gstRate}% GST)`, value: formatINR(result.postGst), color: [245, 158, 11] as [number, number, number] },
+        ];
+
+        await exportToPDF('GST Calculation Report', headers, data, 'GST_Report', chartImage, chartSummary);
     };
+
 
     const handleDownloadExcel = async () => {
         if (!result) return;

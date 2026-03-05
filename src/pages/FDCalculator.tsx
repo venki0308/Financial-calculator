@@ -73,10 +73,11 @@ export default function FDCalculator() {
         return savedCalculations.some(s => s.type === 'FD Calculator' && JSON.stringify(s.inputs) === JSON.stringify({ principal, rate, years, compounding }));
     }, [savedCalculations, principal, rate, years, compounding]);
 
-    const handleDownloadPDF = () => {
-        let chartImage = undefined;
+    const handleDownloadPDF = async () => {
+        let chartImage: string | undefined = undefined;
         if (chartRef.current) {
-            chartImage = chartRef.current.toBase64Image();
+            await new Promise(r => setTimeout(r, 100));
+            try { chartImage = chartRef.current.toBase64Image('image/png', 1.0); } catch { /* ignore */ }
         }
         const headers = ['Metric', 'Value'];
         const data = [
