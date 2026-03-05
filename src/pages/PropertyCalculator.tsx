@@ -104,6 +104,9 @@ export default function PropertyCalculator() {
     // ── Stamp Duty ────────────────────────────────────────────────────────────
     const [sdValue, setSdValue] = useState('');
     const [sdState, setSdState] = useState('telangana');
+    const [sdStampPct, setSdStampPct] = useState(STATE_RATES.telangana.stamp.toString());
+    const [sdRegPct, setSdRegPct] = useState(STATE_RATES.telangana.reg.toString());
+    const [sdTransferPct, setSdTransferPct] = useState(STATE_RATES.telangana.transfer.toString());
     const [sdResult, setSdResult] = useState<{
         stamp: number; reg: number; transfer: number; total: number;
     } | null>(null);
@@ -162,10 +165,12 @@ export default function PropertyCalculator() {
     const calculateSD = () => {
         const val = Number(sdValue);
         if (!val) return;
-        const rates = STATE_RATES[sdState];
-        const stamp = val * (rates.stamp / 100);
-        const reg = val * (rates.reg / 100);
-        const transfer = val * (rates.transfer / 100);
+        const s = Number(sdStampPct) || 0;
+        const r = Number(sdRegPct) || 0;
+        const t = Number(sdTransferPct) || 0;
+        const stamp = val * (s / 100);
+        const reg = val * (r / 100);
+        const transfer = val * (t / 100);
         setSdResult({ stamp, reg, transfer, total: stamp + reg + transfer });
     };
 
@@ -212,7 +217,7 @@ export default function PropertyCalculator() {
         <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
             <div className="px-4 pt-14 pb-8">
                 {/* Header */}
-                <div className="flex items-center gap-3 mb-5">
+                <div className="flex items-center gap-3 mb-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
                         <ArrowLeft size={18} className="text-slate-400" />
                     </button>
@@ -220,6 +225,14 @@ export default function PropertyCalculator() {
                         <h1 className="text-lg font-bold text-white">Property Calculator</h1>
                         <p className="text-slate-500 text-xs">Real Estate Financial Toolkit</p>
                     </div>
+                </div>
+
+                {/* Disclaimer */}
+                <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl flex gap-2 items-start">
+                    <span className="text-amber-400 mt-0.5 shrink-0 text-xs font-bold">⚠️</span>
+                    <p className="text-amber-300/80 text-[11px] leading-relaxed">
+                        <strong>Disclaimer:</strong> All calculations are for reference only. Property values, stamp duty, and registration charges vary by state, property type, and government notifications. Consult a registered property advisor or sub-registrar office before any financial decision.
+                    </p>
                 </div>
 
                 {/* Mode Tabs */}
@@ -233,8 +246,8 @@ export default function PropertyCalculator() {
                             key={key}
                             onClick={() => { setMode(key); }}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-semibold transition-all whitespace-nowrap min-w-[80px] ${mode === key
-                                    ? 'bg-brand-green text-black shadow-lg shadow-brand-green/20'
-                                    : 'bg-dark-card border border-dark-border text-slate-400'
+                                ? 'bg-brand-green text-black shadow-lg shadow-brand-green/20'
+                                : 'bg-dark-card border border-dark-border text-slate-400'
                                 }`}
                         >
                             <Icon size={13} />
@@ -269,8 +282,8 @@ export default function PropertyCalculator() {
                                                     key={u}
                                                     onClick={() => setLandUnit(u)}
                                                     className={`py-2 rounded-lg text-[10px] font-semibold transition-all ${landUnit === u
-                                                            ? 'bg-brand-green text-black'
-                                                            : 'bg-dark-bg border border-dark-border text-slate-400'
+                                                        ? 'bg-brand-green text-black'
+                                                        : 'bg-dark-bg border border-dark-border text-slate-400'
                                                         }`}
                                                 >
                                                     {UNIT_LABELS[u].split(' ')[0]}
@@ -339,6 +352,9 @@ export default function PropertyCalculator() {
                                 <StampDutySection
                                     sdValue={sdValue} setSdValue={setSdValue}
                                     sdState={sdState} setSdState={setSdState}
+                                    sdStampPct={sdStampPct} setSdStampPct={setSdStampPct}
+                                    sdRegPct={sdRegPct} setSdRegPct={setSdRegPct}
+                                    sdTransferPct={sdTransferPct} setSdTransferPct={setSdTransferPct}
                                     sdResult={sdResult} calculateSD={calculateSD}
                                 />
 
@@ -436,7 +452,7 @@ export default function PropertyCalculator() {
                                 )}
 
                                 {/* Stamp Duty + EMI on flat tab too */}
-                                <StampDutySection sdValue={sdValue} setSdValue={setSdValue} sdState={sdState} setSdState={setSdState} sdResult={sdResult} calculateSD={calculateSD} />
+                                <StampDutySection sdValue={sdValue} setSdValue={setSdValue} sdState={sdState} setSdState={setSdState} sdStampPct={sdStampPct} setSdStampPct={setSdStampPct} sdRegPct={sdRegPct} setSdRegPct={setSdRegPct} sdTransferPct={sdTransferPct} setSdTransferPct={setSdTransferPct} sdResult={sdResult} calculateSD={calculateSD} />
                                 <HomeLoanSection loanAmt={loanAmt} setLoanAmt={setLoanAmt} loanRate={loanRate} setLoanRate={setLoanRate} loanTenure={loanTenure} setLoanTenure={setLoanTenure} emiResult={emiResult} calculateEMI={calculateEMI} />
                             </div>
                         )}
@@ -542,44 +558,97 @@ export default function PropertyCalculator() {
 
 // ─── Stamp Duty Section ───────────────────────────────────────────────────────
 function StampDutySection({
-    sdValue, setSdValue, sdState, setSdState, sdResult, calculateSD
+    sdValue, setSdValue,
+    sdState, setSdState,
+    sdStampPct, setSdStampPct,
+    sdRegPct, setSdRegPct,
+    sdTransferPct, setSdTransferPct,
+    sdResult, calculateSD
 }: {
     sdValue: string; setSdValue: (v: string) => void;
     sdState: string; setSdState: (v: string) => void;
+    sdStampPct: string; setSdStampPct: (v: string) => void;
+    sdRegPct: string; setSdRegPct: (v: string) => void;
+    sdTransferPct: string; setSdTransferPct: (v: string) => void;
     sdResult: { stamp: number; reg: number; transfer: number; total: number } | null;
     calculateSD: () => void;
 }) {
-    const rates = STATE_RATES[sdState];
+    // When state changes, pre-fill the editable rate fields
+    const handleStateChange = (key: string) => {
+        setSdState(key);
+        const r = STATE_RATES[key];
+        setSdStampPct(r.stamp.toString());
+        setSdRegPct(r.reg.toString());
+        setSdTransferPct(r.transfer.toString());
+    };
+
     return (
         <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
-            <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-                <FileText size={15} className="text-yellow-400" /> Stamp Duty Calculator
-            </h3>
+            <div className="flex items-center justify-between">
+                <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                    <FileText size={15} className="text-yellow-400" /> Stamp Duty Calculator
+                </h3>
+                <span className="text-[10px] text-yellow-400/70 bg-yellow-400/10 rounded px-1.5 py-0.5">Rates Editable</span>
+            </div>
+
+            {/* Disclaimer note */}
+            <div className="p-2.5 bg-amber-500/10 border border-amber-400/20 rounded-lg">
+                <p className="text-amber-300/80 text-[10px] leading-relaxed">
+                    ⚠️ Stamp duty rates are set by each state and may change. Pre-filled rates are indicative. Edit Stamp %, Registration %, and Transfer % below to match current official rates before calculating.
+                </p>
+            </div>
+
             <Field label="Property Value (₹)" value={sdValue} onChange={setSdValue} type="number" prefix="₹" placeholder="e.g. 5000000" />
+
+            {/* State selector */}
             <div>
-                <label className="text-xs text-slate-400 mb-1 block">State</label>
-                <select value={sdState} onChange={e => setSdState(e.target.value)}
+                <label className="text-xs text-slate-400 mb-1 block">State (pre-fills standard rates)</label>
+                <select value={sdState} onChange={e => handleStateChange(e.target.value)}
                     className="w-full bg-dark-bg border border-dark-border rounded-xl py-3 px-3 text-white text-sm focus:outline-none focus:border-brand-green">
                     {Object.entries(STATE_RATES).map(([k, v]) => (
                         <option key={k} value={k}>{v.name}</option>
                     ))}
                 </select>
             </div>
-            {/* Rate preview */}
-            <div className="flex gap-2 text-[10px] text-slate-500">
-                <span className="bg-dark-bg rounded px-2 py-1">Stamp {rates.stamp}%</span>
-                <span className="bg-dark-bg rounded px-2 py-1">Reg {rates.reg}%</span>
-                {rates.transfer > 0 && <span className="bg-dark-bg rounded px-2 py-1">Transfer {rates.transfer}%</span>}
+
+            {/* Editable rate fields */}
+            <div className="grid grid-cols-3 gap-2">
+                <div>
+                    <label className="text-[10px] text-slate-400 mb-1 block">Stamp Duty %</label>
+                    <div className="relative">
+                        <input type="number" value={sdStampPct} onChange={e => setSdStampPct(e.target.value)}
+                            className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-white text-sm focus:outline-none focus:border-yellow-400" />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs">%</span>
+                    </div>
+                </div>
+                <div>
+                    <label className="text-[10px] text-slate-400 mb-1 block">Reg. Charges %</label>
+                    <div className="relative">
+                        <input type="number" value={sdRegPct} onChange={e => setSdRegPct(e.target.value)}
+                            className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-white text-sm focus:outline-none focus:border-yellow-400" />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs">%</span>
+                    </div>
+                </div>
+                <div>
+                    <label className="text-[10px] text-slate-400 mb-1 block">Transfer Duty %</label>
+                    <div className="relative">
+                        <input type="number" value={sdTransferPct} onChange={e => setSdTransferPct(e.target.value)}
+                            className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-white text-sm focus:outline-none focus:border-yellow-400" />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs">%</span>
+                    </div>
+                </div>
             </div>
+
             <motion.button whileTap={{ scale: 0.97 }} onClick={calculateSD}
                 className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-black font-bold rounded-xl text-sm">
                 Calculate Registration Cost
             </motion.button>
+
             {sdResult && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 pt-1">
-                    <CostRow label={`Stamp Duty (${rates.stamp}%)`} value={sdResult.stamp} />
-                    <CostRow label={`Registration (${rates.reg}%)`} value={sdResult.reg} />
-                    {sdResult.transfer > 0 && <CostRow label={`Transfer Duty (${rates.transfer}%)`} value={sdResult.transfer} />}
+                    <CostRow label={`Stamp Duty (${sdStampPct}%)`} value={sdResult.stamp} />
+                    <CostRow label={`Registration Charges (${sdRegPct}%)`} value={sdResult.reg} />
+                    {sdResult.transfer > 0 && <CostRow label={`Transfer Duty (${sdTransferPct}%)`} value={sdResult.transfer} />}
                     <div className="border-t border-yellow-400/30 pt-2 flex justify-between items-center">
                         <span className="text-white text-sm font-bold">Total Registration Cost</span>
                         <span className="text-yellow-400 text-lg font-extrabold">₹{Math.round(sdResult.total).toLocaleString('en-IN')}</span>
