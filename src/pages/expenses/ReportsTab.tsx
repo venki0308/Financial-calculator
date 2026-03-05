@@ -31,8 +31,11 @@ export default function ReportsTab() {
     const pieChartRef = useRef<any>(null);
 
     const now = new Date();
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    const [selectedYear, setSelectedYear] = useState(currentYear);
+    const [selectedMonth, setSelectedMonth] = useState(currentMonth);
     const [period, setPeriod] = useState<'month' | 'year'>('month');
 
     const monthEntries = useMemo(
@@ -45,11 +48,24 @@ export default function ReportsTab() {
         [entries, selectedYear]
     );
 
+    // Architect fix: fixed expenses are a recurring monthly BUDGET.
+    // They should only apply to the CURRENT month, or to past/future months
+    // that have actual daily entries (confirming activity happened).
+    // For months with zero daily entries that aren't the current month → treat as no data.
+    const isCurrentMonth = selectedMonth === currentMonth && selectedYear === currentYear;
     const activeEntries = period === 'month' ? monthEntries : yearEntries;
-    const totalFixed = period === 'month' ? getTotalFixed() : getTotalFixed() * 12;
+    const hasMonthData = isCurrentMonth || monthEntries.length > 0;
+    const hasYearData = yearEntries.length > 0;
+    const hasData = period === 'month' ? hasMonthData : hasYearData;
+
+    // Only include fixed expenses if this month has actual data or is current month
+    const effectiveFixed = period === 'month'
+        ? (hasMonthData ? getTotalFixed() : 0)
+        : (hasYearData ? getTotalFixed() * 12 : 0);
+    const totalFixed = effectiveFixed;
     const totalDaily = activeEntries.reduce((s, e) => s + e.amount, 0);
     const totalExpenses = totalFixed + totalDaily;
-    const income = period === 'month' ? monthlyIncome : monthlyIncome * 12;
+    const income = (period === 'month' ? (hasMonthData ? monthlyIncome : 0) : (hasYearData ? monthlyIncome * 12 : 0));
     const savings = income - totalExpenses;
     const savingsRate = income > 0 ? (savings / income) * 100 : 0;
 
@@ -173,18 +189,18 @@ export default function ReportsTab() {
                 </select>
             )}
 
-            {/* Empty state — only when income=0 AND no expenses at all */}
-            {period === 'month' && totalExpenses === 0 && income === 0 ? (
+            {/* Empty state: month with no activity and not current month */}
+            {!hasData ? (
                 <div className="flex flex-col items-center justify-center py-16 px-4">
                     <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
                         <span className="text-4xl">📭</span>
                     </div>
                     <h3 className="text-slate-800 dark:text-white font-bold text-base mb-2">
-                        No data yet
+                        No data for {MONTHS[selectedMonth - 1]} {selectedYear}
                     </h3>
                     <p className="text-slate-500 text-sm text-center leading-relaxed">
-                        Set your income and fixed expenses in the <span className="font-semibold text-brand-purple">Budget tab</span>,
-                        <br />then add daily expenses in the <span className="font-semibold text-brand-purple">Daily tab</span>.
+                        No expenses were recorded for this month.<br />
+                        Go to the <span className="font-semibold text-brand-purple">Daily tab</span> to add expenses.
                     </p>
                 </div>
             ) : (
