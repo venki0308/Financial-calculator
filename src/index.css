@@ -399,3 +399,8 @@ input[type="number"]::-webkit-inner-spin-button {
 .pb-safe-nav {
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
+
+/* Safe area top — accounts for camera notch, punch-hole, status bar on all phones */
+.safe-area-top {
+    padding-top: calc(env(safe-area-inset-top, 24px) + 0.75rem);
+}

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect} from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Plus, Trash2, TrendingUp, TrendingDown, Wallet, PieChart, Calendar as CalendarIcon, DollarSign, Tag, ChevronRight, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -31,21 +31,26 @@ export default function ExpenseTracker() {
 
     return (
         <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
-            <div className="px-4 pt-14 pb-8">
-                <div className="flex items-center gap-3 mb-5">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border"><ArrowLeft size={18} className="text-slate-400" /></button>
-                    <h1 className="text-xl font-bold text-white">{t('expenses.title')}</h1>
+            {/* ── Sticky Header with safe-area-inset-top to avoid status bar/notch overlap ── */}
+            <div className="sticky top-0 z-30 bg-[#0F172A]/98 backdrop-blur-lg border-b border-dark-border"
+                style={{ paddingTop: 'calc(env(safe-area-inset-top, 24px) + 0px)' }}>
+                <div className="px-4 pt-3 pb-2">
+                    <div className="flex items-center gap-3 mb-3">
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border"><ArrowLeft size={18} className="text-slate-400" /></button>
+                        <h1 className="text-xl font-bold text-white">{t('expenses.title')}</h1>
+                    </div>
+                    {/* Tab Bar */}
+                    <div className="flex gap-1 bg-dark-card border border-dark-border rounded-xl p-1">
+                        {tabs.map(tab => (
+                            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+                                className={`flex-1 py-2.5 text-xs font-semibold rounded-lg transition-all ${activeTab === tab.key ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20' : 'text-slate-400'}`}>
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-
-                {/* Tab Bar */}
-                <div className="flex gap-1 bg-dark-card border border-dark-border rounded-xl p-1 mb-5">
-                    {tabs.map(tab => (
-                        <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                            className={`flex-1 py-2.5 text-xs font-semibold rounded-lg transition-all ${activeTab === tab.key ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20' : 'text-slate-400'}`}>
-                            {tab.label}
-                        </button>
-                    ))}
-                </div>
+            </div>
+            <div className="px-4 pt-4 pb-8">
 
                 {/* Budget Tracker Banner */}
                 <motion.button whileTap={{ scale: 0.97 }} onClick={() => navigate('/budget-tracker')}
