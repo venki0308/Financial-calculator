@@ -154,7 +154,7 @@ export default function Profile() {
 
             <div className="text-center py-6 border-t border-dark-border">
                 <p className="text-slate-400 text-sm font-medium">FinCalix</p>
-                <p className="text-slate-600 text-xs mt-1">Version 2.1.0 — Offline Edition</p>
+                <p className="text-slate-600 text-xs mt-1">Version 1.0.0</p>
                 <p className="text-slate-600 text-xs mt-0.5">Made with ❤️ in India</p>
             </div>
         </div>

@@ -31,29 +31,39 @@ function blobToBase64(blob: Blob): Promise<string> {
     });
 }
 
-// ─── Native save via Share sheet ──────────────────────────────────────────
+// ─── Native save — writes to Documents, toasts, then asks to share ─────────
 async function saveOnNative(blob: Blob, filename: string): Promise<void> {
     const { Filesystem, Directory } = await import('@capacitor/filesystem');
     const { Share } = await import('@capacitor/share');
 
     const base64 = await blobToBase64(blob);
+
+    // Save to device Documents folder (visible in Files app)
     const writeResult = await Filesystem.writeFile({
         path: filename,
         data: base64,
-        directory: Directory.Cache,
+        directory: Directory.Documents,
         recursive: true,
     });
 
-    const canShare = await Share.canShare();
-    if (canShare.value) {
-        await Share.share({
-            title: `FinCalix – ${filename}`,
-            url: writeResult.uri,
-            dialogTitle: 'Save or Open File',
-        });
-    } else {
-        showToast(`✅ Saved: ${filename}`);
-    }
+    // Show success toast first
+    showToast(`✅ Saved to Documents: ${filename}`);
+
+    // After a short delay, offer the share sheet (user can dismiss it)
+    setTimeout(async () => {
+        try {
+            const canShare = await Share.canShare();
+            if (canShare.value) {
+                await Share.share({
+                    title: `FinCalix – ${filename}`,
+                    url: writeResult.uri,
+                    dialogTitle: 'Open or Share File',
+                });
+            }
+        } catch {
+            // User dismissed share sheet — that's fine
+        }
+    }, 1500);
 }
 
 // ─── Web browser download ─────────────────────────────────────────────────

@@ -60,8 +60,8 @@ export default function Home() {
                 <div className="flex items-center gap-3">
                     <img src="/icons/fincalix-logo.jpg" alt="FinCalix" className="w-10 h-10 rounded-xl" />
                     <div>
-                        <p className="text-slate-400 text-sm">{t('home.welcome')}, {userName}</p>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-0">{t('home.title')}</h1>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('home.welcome')}</h1>
+                        <p className="text-slate-400 text-sm mt-0">{t('home.tagline')}</p>
                     </div>
                 </div>
                 <button onClick={() => navigate('/notifications')} className="p-2.5 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-400 shadow-lg">

@@ -120,7 +120,7 @@ export default function Settings() {
                 </div>
 
                 <div className="text-center py-4">
-                    <p className="text-slate-600 text-xs">FinCalix v2.1.0 — Offline Edition</p>
+                    <p className="text-slate-600 text-xs">FinCalix v1.0.0</p>
                     <p className="text-slate-700 text-xs mt-1">All your data is stored locally on this device</p>
                 </div>
             </div>
