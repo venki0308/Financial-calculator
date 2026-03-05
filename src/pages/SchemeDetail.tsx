@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bookmark, Share2, CheckCircle2, ExternalLink, Calculator } from 'lucide-react';
+import { ArrowLeft, Bookmark, Share2, CheckCircle2, ExternalLink, Phone, Building2, Globe, BadgeCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { schemes } from '../data/schemes';
@@ -25,6 +25,23 @@ export default function SchemeDetail() {
 
     const isBookmarked = bookmarkedSchemes.includes(scheme.id);
 
+    const noIndividualApp = scheme.applicationType === 'No Individual Application';
+    const isServiceAccess = scheme.applicationType === 'Service Access';
+    const isBankApp = scheme.applicationType === 'Bank Application' || scheme.applicationType === 'LIC Application';
+    const isOnlineApp = scheme.applicationType === 'Online Application';
+    const isRationCardBased = scheme.applicationType === 'Ration Card Based';
+    const isSHGBased = scheme.applicationType === 'Through Self Help Groups';
+    const isGovtAgency = scheme.applicationType === 'Through Government Agency';
+
+    // Application type label color
+    const appTypeColor = noIndividualApp
+        ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+        : isServiceAccess
+            ? 'bg-brand-blue/15 text-brand-blue'
+            : isOnlineApp
+                ? 'bg-brand-green/15 text-brand-green'
+                : 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400';
+
     return (
         <div className="min-h-dvh bg-white dark:bg-[#0F172A] pb-28 animate-fade-in">
             <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg border-b border-slate-200 dark:border-dark-border px-4 pt-14 pb-4">
@@ -37,10 +54,13 @@ export default function SchemeDetail() {
                         <button className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border"><Share2 size={18} className="text-slate-400" /></button>
                     </div>
                 </div>
-                <div className="flex gap-1.5 mb-2">
+                <div className="flex gap-1.5 flex-wrap mb-2">
                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-medium ${scheme.governmentLevel === 'central' ? 'bg-brand-blue/15 text-brand-blue' : 'bg-brand-purple/15 text-brand-purple'}`}>
                         {scheme.governmentLevel === 'central' ? t('schemes.centralGovt') : `${t('schemes.state')}: ${scheme.state}`}
                     </span>
+                    {scheme.schemeCategory && (
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-brand-purple/15 text-brand-purple">{scheme.schemeCategory}</span>
+                    )}
                     {scheme.tags.map((tag) => {
                         const tagMap: Record<string, string> = { 'New': 'schemes.new', 'Popular': 'schemes.popular', 'Verified': 'schemes.verified' };
                         return <span key={tag} className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-brand-green/15 text-brand-green">{tagMap[tag] ? t(tagMap[tag]) : tag}</span>;
@@ -52,10 +72,20 @@ export default function SchemeDetail() {
             <DisclaimerBanner type="scheme" />
 
             <div className="px-4 mt-5">
-                {/* Key Info */}
+
+                {/* Application Type Badge */}
+                <div className={`mb-4 px-3 py-2 rounded-xl flex items-center gap-2 text-sm font-medium ${appTypeColor}`}>
+                    {isOnlineApp && <Globe size={14} />}
+                    {isBankApp && <Building2 size={14} />}
+                    {isServiceAccess && <Phone size={14} />}
+                    {(noIndividualApp || isGovtAgency || isSHGBased || isRationCardBased) && <Building2 size={14} />}
+                    {scheme.applicationType}
+                </div>
+
+                {/* Key Info Cards */}
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     {scheme.interestRate && <div className="p-4 rounded-2xl bg-brand-green/10 border border-brand-green/20"><p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('schemes.interestRate')}</p><p className="text-xl font-bold text-brand-green mt-1">{scheme.interestRate}</p></div>}
-                    {scheme.benefitAmount && <div className="p-4 rounded-2xl bg-brand-green/10 border border-brand-green/20"><p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('schemes.benefit')}</p><p className="text-xl font-bold text-brand-green mt-1">{scheme.benefitAmount}</p></div>}
+                    {scheme.benefitAmount && <div className="p-4 rounded-2xl bg-brand-green/10 border border-brand-green/20"><p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('schemes.benefit')}</p><p className="text-base font-bold text-brand-green mt-1">{scheme.benefitAmount}</p></div>}
                     {scheme.tenure && <div className="p-4 rounded-2xl bg-brand-blue/10 border border-brand-blue/20"><p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('schemes.tenure')}</p><p className="text-xl font-bold text-brand-blue mt-1">{scheme.tenure}</p></div>}
                     {scheme.minAmount && <div className="p-4 rounded-2xl bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border"><p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('schemes.minAmount')}</p><p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{scheme.minAmount}</p></div>}
                     {scheme.maxAmount && <div className="p-4 rounded-2xl bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border"><p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('schemes.maxAmount')}</p><p className="text-lg font-bold text-slate-900 dark:text-white mt-1">{scheme.maxAmount}</p></div>}
@@ -65,7 +95,8 @@ export default function SchemeDetail() {
                 <Section title={t('schemes.aboutScheme')}>
                     <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{scheme.description}</p>
                     <div className="mt-3 space-y-1.5">
-                        <Row label={t('schemes.ministry')} value={scheme.ministry} />
+                        <Row label="Ministry" value={scheme.ministry} />
+                        {scheme.launchYear && <Row label="Launched" value={String(scheme.launchYear)} />}
                         {scheme.taxBenefit && <Row label={t('schemes.taxBenefit')} value={scheme.taxBenefit} green />}
                     </div>
                 </Section>
@@ -78,24 +109,98 @@ export default function SchemeDetail() {
                     {scheme.benefits.map((b, i) => <CheckItem key={i} text={b} />)}
                 </Section>
 
-                <Section title={t('schemes.documentsRequired')}>
-                    {scheme.documents.map((d, i) => (
-                        <div key={i} className="flex items-start gap-3 mb-2">
-                            <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border flex items-center justify-center flex-shrink-0"><span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{i + 1}</span></span>
-                            <span className="text-slate-700 dark:text-slate-300 text-sm">{d}</span>
+                {/* Conditional sections based on application type */}
+                {noIndividualApp ? (
+                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border mb-6">
+                        <div className="flex items-start gap-3">
+                            <Building2 size={20} className="text-slate-400 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-slate-700 dark:text-slate-300 text-sm font-medium mb-1">Government Mission — No Individual Application</p>
+                                <p className="text-slate-500 dark:text-slate-400 text-sm">This program is implemented by government agencies and does not require individual application. Citizens benefit through government-delivered services and infrastructure.</p>
+                            </div>
                         </div>
-                    ))}
-                </Section>
+                    </div>
+                ) : isServiceAccess ? (
+                    <>
+                        <Section title="Access Service">
+                            {scheme.howToApply.map((h, i) => (
+                                <div key={i} className="flex items-start gap-3 mb-2.5">
+                                    <span className="w-6 h-6 rounded-full bg-brand-blue/15 flex items-center justify-center flex-shrink-0"><span className="text-xs text-brand-blue font-bold">{i + 1}</span></span>
+                                    <span className="text-slate-700 dark:text-slate-300 text-sm">{h}</span>
+                                </div>
+                            ))}
+                        </Section>
+                        {scheme.documents.length > 0 && (
+                            <Section title={t('schemes.documentsRequired')}>
+                                {scheme.documents.map((d, i) => (
+                                    <div key={i} className="flex items-start gap-3 mb-2">
+                                        <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border flex items-center justify-center flex-shrink-0"><span className="text-xs text-slate-500 font-medium">{i + 1}</span></span>
+                                        <span className="text-slate-700 dark:text-slate-300 text-sm">{d}</span>
+                                    </div>
+                                ))}
+                            </Section>
+                        )}
+                    </>
+                ) : isBankApp ? (
+                    <>
+                        <Section title={t('schemes.documentsRequired')}>
+                            {scheme.documents.map((d, i) => (
+                                <div key={i} className="flex items-start gap-3 mb-2">
+                                    <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border flex items-center justify-center flex-shrink-0"><span className="text-xs text-slate-500 font-medium">{i + 1}</span></span>
+                                    <span className="text-slate-700 dark:text-slate-300 text-sm">{d}</span>
+                                </div>
+                            ))}
+                        </Section>
+                        <Section title={t('schemes.howToApply')}>
+                            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-200 text-sm mb-3 flex items-center gap-2">
+                                <Building2 size={16} className="flex-shrink-0" />
+                                Apply through your bank or financial institution
+                            </div>
+                            {scheme.howToApply.map((h, i) => (
+                                <div key={i} className="flex items-start gap-3 mb-2.5">
+                                    <span className="w-6 h-6 rounded-full bg-brand-green/15 flex items-center justify-center flex-shrink-0"><span className="text-xs text-brand-green font-bold">{i + 1}</span></span>
+                                    <span className="text-slate-700 dark:text-slate-300 text-sm">{h}</span>
+                                </div>
+                            ))}
+                        </Section>
+                    </>
+                ) : (
+                    <>
+                        {scheme.documents.length > 0 && (
+                            <Section title={t('schemes.documentsRequired')}>
+                                {scheme.documents.map((d, i) => (
+                                    <div key={i} className="flex items-start gap-3 mb-2">
+                                        <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border flex items-center justify-center flex-shrink-0"><span className="text-xs text-slate-500 font-medium">{i + 1}</span></span>
+                                        <span className="text-slate-700 dark:text-slate-300 text-sm">{d}</span>
+                                    </div>
+                                ))}
+                            </Section>
+                        )}
+                        <Section title={t('schemes.howToApply')}>
+                            {(isGovtAgency || isSHGBased) && (
+                                <div className="p-3 rounded-xl bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 text-sm mb-3 flex items-center gap-2">
+                                    <Building2 size={16} className="flex-shrink-0" />
+                                    {isSHGBased ? 'Implemented through Self Help Groups (SHGs)' : 'Implemented through government agencies'}
+                                </div>
+                            )}
+                            {scheme.howToApply.map((h, i) => (
+                                <div key={i} className="flex items-start gap-3 mb-2.5">
+                                    <span className="w-6 h-6 rounded-full bg-brand-green/15 flex items-center justify-center flex-shrink-0"><span className="text-xs text-brand-green font-bold">{i + 1}</span></span>
+                                    <span className="text-slate-700 dark:text-slate-300 text-sm">{h}</span>
+                                </div>
+                            ))}
+                        </Section>
+                    </>
+                )}
 
-                <Section title={t('schemes.howToApply')}>
-                    {scheme.howToApply.map((h, i) => (
-                        <div key={i} className="flex items-start gap-3 mb-2.5">
-                            <span className="w-6 h-6 rounded-full bg-brand-green/15 flex items-center justify-center flex-shrink-0"><span className="text-xs text-brand-green font-bold">{i + 1}</span></span>
-                            <span className="text-slate-700 dark:text-slate-300 text-sm">{h}</span>
-                        </div>
-                    ))}
-                </Section>
+                {/* Notes */}
+                {scheme.notes && (
+                    <div className="p-3 rounded-xl bg-brand-blue/5 border border-brand-blue/15 text-slate-600 dark:text-slate-400 text-[12px] mb-4 italic">
+                        📌 {scheme.notes}
+                    </div>
+                )}
 
+                {/* Disclaimer */}
                 <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-200 text-[11px] leading-relaxed mb-4 italic">
                     ⚠️ {t('schemes.disclaimerNote')}
                 </div>
@@ -103,37 +208,48 @@ export default function SchemeDetail() {
                 {/* Verification Badge */}
                 {scheme.lastVerified && (
                     <div className="p-3 rounded-xl bg-green-50 dark:bg-brand-green/5 border border-green-200 dark:border-brand-green/15 mb-8">
-                        <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed">
-                            ✓ <span className="text-brand-green font-medium">{t('schemes.verifiedOn')}:</span>{' '}
-                            {new Date(scheme.lastVerified).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            {scheme.officialWebsite && <> &middot; <a href={scheme.officialWebsite} target="_blank" rel="noopener noreferrer" className="text-brand-blue underline">{new URL(scheme.officialWebsite).hostname}</a></>}
+                        <div className="flex items-center gap-2 mb-1">
+                            <BadgeCheck size={16} className="text-brand-green flex-shrink-0" />
+                            <span className="text-brand-green font-semibold text-[12px]">Verified from official Government of India sources</span>
+                        </div>
+                        <p className="text-slate-500 dark:text-slate-400 text-[11px] leading-relaxed pl-6">
+                            Last verified: {new Date(scheme.lastVerified).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {scheme.verifiedSource && <> · Source: <a href={`https://${scheme.verifiedSource}`} target="_blank" rel="noopener noreferrer" className="text-brand-blue underline">{scheme.verifiedSource}</a></>}
                         </p>
-                        <p className="text-slate-400 dark:text-slate-600 text-[10px] mt-1 italic">{t('schemes.alwaysCheck')}</p>
+                        <p className="text-slate-400 dark:text-slate-600 text-[10px] mt-1 pl-6 italic">{t('schemes.alwaysCheck')}</p>
                     </div>
                 )}
             </div>
 
-            {/* Sticky buttons */}
+            {/* Sticky bottom buttons */}
             <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[428px] bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg border-t border-slate-200 dark:border-dark-border p-4 flex gap-3">
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => {
                         if (navigator.share) {
-                            navigator.share({
-                                title: scheme.name,
-                                text: `Check out the ${scheme.name} on FinCalix`,
-                                url: window.location.href
-                            });
+                            navigator.share({ title: scheme.name, text: `Check out the ${scheme.name} on FinCalix`, url: window.location.href });
                         }
                     }}
                     className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 font-semibold text-sm"
                 >
                     <Share2 size={18} /> {t('schemes.share')}
                 </motion.button>
-                <motion.a whileTap={{ scale: 0.97 }} href={scheme.officialWebsite} target="_blank" rel="noopener noreferrer"
-                    className="flex-[2] flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-brand-green text-white font-semibold text-sm shadow-lg shadow-brand-green/20">
-                    {t('schemes.verifyOfficial')} <ExternalLink size={18} />
-                </motion.a>
+
+                {noIndividualApp ? (
+                    <div className="flex-[2] flex items-center justify-center py-3.5 rounded-2xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-400 text-sm font-medium">
+                        No Application Required
+                    </div>
+                ) : isServiceAccess ? (
+                    <motion.a whileTap={{ scale: 0.97 }} href={scheme.officialWebsite} target="_blank" rel="noopener noreferrer"
+                        className="flex-[2] flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-brand-blue text-white font-semibold text-sm shadow-lg shadow-brand-blue/20">
+                        <Phone size={18} /> Access Service <ExternalLink size={14} />
+                    </motion.a>
+                ) : (
+                    <motion.a whileTap={{ scale: 0.97 }} href={scheme.officialWebsite} target="_blank" rel="noopener noreferrer"
+                        className="flex-[2] flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-brand-green text-white font-semibold text-sm shadow-lg shadow-brand-green/20">
+                        {isBankApp ? 'Apply at Bank' : 'Apply Now'} <ExternalLink size={18} />
+                    </motion.a>
+                )}
             </div>
         </div>
     );

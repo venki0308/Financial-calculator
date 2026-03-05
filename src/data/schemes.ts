@@ -1,9 +1,22 @@
+export type ApplicationType =
+    | 'Online Application'
+    | 'Bank Application'
+    | 'CSC / Offline Application'
+    | 'Through Government Agency'
+    | 'Service Access'
+    | 'No Individual Application'
+    | 'Ration Card Based'
+    | 'Through Self Help Groups'
+    | 'LIC Application'
+    | 'Institutional Program';
+
 export interface Scheme {
     id: string;
     name: string;
     governmentLevel: 'central' | 'state';
     state?: string;
     category: string;
+    schemeCategory: string;
     tags: string[];
     popular: boolean;
     interestRate?: string;
@@ -15,13 +28,16 @@ export interface Scheme {
     ministry: string;
     taxBenefit?: string;
     officialWebsite: string;
+    applicationType: ApplicationType;
     eligibility: string[];
     benefits: string[];
     documents: string[];
     howToApply: string[];
+    notes?: string;
     lastVerified?: string;
     launchYear?: number;
     isActive?: boolean;
+    verifiedSource?: string;
 }
 
 export const states = [
@@ -36,520 +52,776 @@ export const unionTerritories = [
 ];
 
 export const schemeCategories = [
-    { name: 'Women', color: '#EC4899', count: 6 },
+    { name: 'Women', color: '#EC4899', count: 5 },
     { name: 'Education', color: '#3B82F6', count: 5 },
-    { name: 'Farmers', color: '#10B981', count: 7 },
-    { name: 'MSME', color: '#F59E0B', count: 7 },
+    { name: 'Farmers', color: '#10B981', count: 6 },
+    { name: 'MSME', color: '#F59E0B', count: 5 },
     { name: 'Senior Citizens', color: '#8B5CF6', count: 4 },
     { name: 'Insurance', color: '#EF4444', count: 3 },
     { name: 'Housing', color: '#F97316', count: 2 },
     { name: 'Banking', color: '#3B82F6', count: 3 },
-    { name: 'Pension', color: '#6366F1', count: 3 },
-    { name: 'Health', color: '#EF4444', count: 5 },
+    { name: 'Pension', color: '#6366F1', count: 5 },
+    { name: 'Health', color: '#EF4444', count: 4 },
     { name: 'Employment', color: '#14B8A6', count: 5 },
-    { name: 'Social Welfare', color: '#06B6D4', count: 4 },
+    { name: 'Social Welfare', color: '#06B6D4', count: 5 },
     { name: 'Digital', color: '#818CF8', count: 2 },
     { name: 'Energy', color: '#FBBF24', count: 2 },
     { name: 'Youth', color: '#34D399', count: 3 },
+    { name: 'Skill Development', color: '#A78BFA', count: 5 },
+    { name: 'Infrastructure', color: '#64748B', count: 3 },
 ];
-
-const s = (id: string, name: string, gl: 'central' | 'state', cat: string, desc: string, ministry: string, opts: Partial<Scheme> = {}): Scheme => ({
-    id, name, governmentLevel: gl, category: cat, tags: [], popular: false, description: desc, ministry,
-    officialWebsite: 'https://www.india.gov.in', eligibility: ['Indian citizen'],
-    benefits: ['Financial assistance'], documents: ['Aadhaar Card', 'Bank passbook'],
-    howToApply: ['Visit official portal', 'Submit application', 'Upload documents'],
-    lastVerified: '2026-03-05', launchYear: 2024, isActive: true,
-    ...opts,
-});
 
 export const schemes: Scheme[] = [
 
-    // ── WOMEN & CHILDREN ─────────────────────────────────────────────────────
-    s('c-ld', 'Lakhpati Didi Scheme', 'central', 'Women',
-        'Empowering 3 crore rural women to become self-reliant and earn at least ₹1 lakh per annum through SHGs.',
-        'Ministry of Rural Development', {
-        tags: ['Popular', 'Updated 2025'], popular: true, benefitAmount: '₹1 Lakh+ income/year',
-        eligibility: ['Rural women', 'Members of Self Help Groups (SHGs)'],
-        benefits: ['Interest-free loans up to ₹5 lakh', 'Skill training in agri/tech', 'Market linkage support', 'Financial literacy programs'],
-        lastVerified: '2026-03-05', launchYear: 2023
-    }),
-    s('c-ssy', 'Sukanya Samriddhi Yojana', 'central', 'Women',
-        'High-interest savings scheme for girl child under Beti Bachao Beti Padhao, with full EEE tax exemption.',
-        'Ministry of Finance', {
-        officialWebsite: 'https://www.nsiindia.gov.in/', popular: true, tags: ['Popular'],
-        benefitAmount: '₹250 – ₹1.5 Lakh/year', interestRate: '8.2% p.a.', tenure: '21 years',
-        minAmount: '₹250', maxAmount: '₹1,50,000/yr', taxBenefit: 'EEE – Exempt-Exempt-Exempt under 80C',
-        eligibility: ['Girl child below 10 years', 'Max 2 accounts per family', 'Indian resident'],
-        benefits: ['8.2% interest p.a. (highest govt scheme)', 'Full tax exemption EEE', 'Partial withdrawal at 18 for education', 'Full maturity at 21'],
-        documents: ['Girl child birth certificate', "Parents' Aadhaar", 'Address proof', 'Passport photos'],
-        howToApply: ['Visit any post office or authorised bank', 'Fill SSY form', 'Submit documents + initial deposit ₹250+'],
-        lastVerified: '2026-03-05', launchYear: 2015
-    }),
-    s('c-bbbp', 'Beti Bachao Beti Padhao', 'central', 'Women',
-        'National campaign addressing declining child sex ratio and promoting girl child welfare, education, and empowerment.',
-        'Ministry of WCD', {
-        officialWebsite: 'https://wcd.nic.in/', popular: true, tags: ['Popular'],
-        eligibility: ['Families with girl children', 'Focus on districts with low sex ratio'],
-        benefits: ['School enrollment support for girls', 'Conditional cash transfers', 'Awareness campaigns', 'Convergence with SSY & Ujjwala'],
-        lastVerified: '2026-03-05', launchYear: 2015
-    }),
-    s('c-saksham', 'Saksham Anganwadi & Poshan 2.0', 'central', 'Women',
-        'Nutritional support and early childhood development for 8 crore children, lactating mothers, and adolescent girls.',
-        'Ministry of WCD', {
-        officialWebsite: 'https://www.india.gov.in/', tags: ['Updated 2025'], popular: true,
-        eligibility: ['Children 0-6 years', 'Pregnant/lactating women', 'Adolescent girls 14-18 years'],
-        benefits: ['Supplementary nutrition', 'Growth monitoring', 'Pre-school education', 'Health checkups', 'Immunization support'],
-        lastVerified: '2026-03-05', launchYear: 2025
-    }),
-    s('c-ujjwala', 'PM Ujjwala Yojana 2.0', 'central', 'Women',
-        'Free LPG connections to BPL/SC/ST women and migrant workers with first refill and hotplate free.',
-        'Ministry of Petroleum', {
-        officialWebsite: 'https://www.pmuy.gov.in/', popular: true, tags: ['Extended 2026'],
-        eligibility: ['Women from BPL/SC/ST families', 'No existing LPG connection', 'Migrant workers'],
-        benefits: ['Free LPG connection', 'First refill free', 'Hotplate/stove free', 'Refill subsidy via DBT'],
-        lastVerified: '2026-03-05', launchYear: 2016
-    }),
-    s('c-sv', 'PM SVANidhi 2.0', 'central', 'Women',
-        'Micro-credit for street vendors from ₹10,000 to ₹50,000 with 7% interest subsidy and digital cashback.',
-        'MoHUA', {
-        officialWebsite: 'https://pmsvanidhi.mohua.gov.in/', tags: ['Extended 2026'], benefitAmount: '₹10,000–₹50,000',
-        eligibility: ['Street vendors with Certificate of Vending', 'Urban/rural street vendors'],
-        benefits: ['Loan 1: ₹10,000', 'Loan 2: ₹20,000', 'Loan 3: ₹50,000', '7% interest subsidy', 'Digital payment cashback'],
-        lastVerified: '2026-03-05', launchYear: 2020
-    }),
-
-    // ── FARMERS ───────────────────────────────────────────────────────────────
-    s('c-pmkisan', 'PM-KISAN', 'central', 'Farmers',
-        'Direct income support of ₹6,000/year in 3 equal installments to all farmer families via direct bank transfer.',
-        'Ministry of Agriculture', {
-        officialWebsite: 'https://pmkisan.gov.in/', popular: true, tags: ['Popular'], benefitAmount: '₹6,000/year',
-        eligibility: ['All landholding farmer families', 'Excludes income-tax payers and govt employees'],
-        benefits: ['₹2,000 every 4 months via DBT', '3 installments/year', 'No middlemen – 100% direct transfer'],
-        lastVerified: '2026-03-05', launchYear: 2019
-    }),
-    s('c-pmfby', 'PM Fasal Bima Yojana', 'central', 'Farmers',
-        'Comprehensive crop insurance protecting against natural calamities, pests, and diseases at minimal farmer premium.',
-        'Ministry of Agriculture', {
-        officialWebsite: 'https://pmfby.gov.in/', popular: true, tags: ['Popular'],
-        eligibility: ['All farmers including sharecroppers and tenant farmers', 'Loanee farmers mandatorily covered'],
-        benefits: ['Premium: 2% Kharif, 1.5% Rabi, 5% horticulture', 'Govt pays remaining premium', 'Quick settlement via satellite imaging'],
-        lastVerified: '2026-03-05', launchYear: 2016
-    }),
-    s('c-kusum', 'PM-KUSUM', 'central', 'Farmers',
-        'Solar energy for agriculture — solarise pumps and earn extra income selling surplus power to the grid.',
-        'MNRE', {
-        officialWebsite: 'https://mnre.gov.in/pmkusum', tags: ['Active'],
-        eligibility: ['Farmers with existing diesel/grid pumps', 'Farmer groups, cooperatives, panchayats'],
-        benefits: ['60% subsidy on solar pumps', 'Extra income selling solar power', 'Reduces diesel costs', '₹30,800 Cr outlay'],
-        lastVerified: '2026-03-05', launchYear: 2019
-    }),
-    s('c-pmkcc', 'Kisan Credit Card', 'central', 'Farmers',
-        'Low-cost credit facility for farmers — crop, post-harvest, allied activities, and personal needs at concessional rates.',
-        'NABARD / MoA', {
-        officialWebsite: 'https://www.nabard.org/', popular: true, tags: ['Popular'], benefitAmount: 'Up to ₹3 Lakh @ 4%',
-        interestRate: '4% (after interest subvention)',
-        eligibility: ['All farmers, tenants, sharecroppers, SHG members', 'Allied fishery/livestock farmers'],
-        benefits: ['Credit up to ₹3 lakh at 4% p.a.', 'Crop + post-harvest storage credit', 'Personal accident insurance ₹2 lakh'],
-        lastVerified: '2026-03-05', launchYear: 1998
-    }),
-    s('c-pmddky', 'PM Dhan-Dhaanya Krishi Yojana', 'central', 'Farmers',
-        'Six-year scheme for 100 low-productivity districts boosting pulses, millets, and crop diversification for 1.7 crore farmers.',
-        'Ministry of Agriculture', {
-        officialWebsite: 'https://www.india.gov.in/', tags: ['New 2025'], popular: true,
-        eligibility: ['Farmers in 100 identified low-productivity districts'],
-        benefits: ['Pulse & millet cultivation support', 'Irrigation improvements', 'Credit access for 1.7 crore farmers', '11+ existing scheme convergence'],
-        lastVerified: '2026-03-05', launchYear: 2025
-    }),
-    s('c-bvistaar', 'Bharat-VISTAAR AI Farm Advisory', 'central', 'Farmers',
-        'Multilingual AI platform giving customised crop, weather, and market guidance to farmers in local languages.',
-        'Ministry of Agriculture', {
-        officialWebsite: 'https://www.india.gov.in/', tags: ['New 2026'],
-        eligibility: ['All Indian farmers with basic smartphone access'],
-        benefits: ['AI crop advisory in local language', 'Weather-linked alerts', 'Market price updates', 'Integrated with PM-KISAN & KCC data'],
-        lastVerified: '2026-03-05', launchYear: 2026
-    }),
-    s('c-pmgsy', 'PMGSY Phase IV', 'central', 'Farmers',
-        'All-weather road connectivity to 25,000 unconnected rural habitations benefiting farmers and villages.',
-        'Ministry of Rural Dev.', {
-        officialWebsite: 'https://pmgsy.nic.in/', tags: ['New 2025'], benefitAmount: '25,000 km new roads',
-        eligibility: ['Rural habitations 500+ population (plain) or 250+ (hilly/tribal)'],
-        benefits: ['25,000 km rural roads in 5 years', 'Better market access for farmers', 'Improved emergency services', '1.25 lakh rural residences benefited'],
-        lastVerified: '2026-03-05', launchYear: 2025
-    }),
-
-    // ── HEALTH ────────────────────────────────────────────────────────────────
-    s('c-ayushman', 'Ayushman Bharat PM-JAY', 'central', 'Health',
-        "World's largest health insurance — ₹5 lakh annual cover per family for secondary and tertiary hospitalisation at 23,000+ hospitals.",
-        'Ministry of Health', {
-        officialWebsite: 'https://pmjay.gov.in/', popular: true, tags: ['Popular', 'Expanded Sep 2024'], benefitAmount: '₹5 Lakh/family/year',
-        eligibility: ['SECC 2011 listed families', 'ALL senior citizens 70+ (from Sep 2024)', 'No cap on family size'],
-        benefits: ['₹5 lakh cashless treatment per family/year', 'Pre-existing diseases covered Day 1', '23,000+ empanelled hospitals', 'Portability across India'],
-        lastVerified: '2026-03-05', launchYear: 2018
-    }),
-    s('c-vvandana', 'Ayushman Bharat Vaya Vandana', 'central', 'Health',
-        'Healthcare security for ALL senior citizens aged 70+ regardless of income — ₹5 lakh/year cashless treatment.',
-        'Ministry of Health', {
-        officialWebsite: 'https://pmjay.gov.in/', popular: true, tags: ['New Oct 2024', 'Universal for 70+'], benefitAmount: '₹5 Lakh/year (70+)',
-        eligibility: ['ALL citizens 70 years and above', 'No income limit — universal', '4.5 crore families, 6 crore seniors covered'],
-        benefits: ['₹5 lakh annual cover', 'Cashless at 23,000+ hospitals', 'No SECC list requirement', 'Aadhaar-based auto-enrollment'],
-        lastVerified: '2026-03-05', launchYear: 2024
-    }),
-    s('c-jjm', 'Jal Jeevan Mission', 'central', 'Health',
-        '"Har Ghar Jal" — Safe piped drinking water connection to every rural household at 55 litres per person per day.',
-        'MoJSW', {
-        officialWebsite: 'https://jaljeevanmission.gov.in/', popular: true, tags: ['Active'],
-        eligibility: ['All rural households without Functional Household Tap Connection (FHTC)'],
-        benefits: ['55 LPCD safe tap water', 'Source sustainability & greywater management', 'Reduces waterborne diseases', 'Women & children time-saving'],
-        lastVerified: '2026-03-05', launchYear: 2019
-    }),
-    s('c-caregiver', 'National Caregiver Training Scheme', 'central', 'Health',
-        'Training 1.5 lakh certified caregivers with blended skills for professional elder and patient care.',
-        'Ministry of Health', {
-        officialWebsite: 'https://www.india.gov.in/', tags: ['New 2026'],
-        eligibility: ['Indian citizens interested in healthcare caregiving'],
-        benefits: ['Govt-certified caregiver qualification', 'Blended online + practical training', 'Job placement support', '1.5 lakh caregivers over 5 years'],
-        lastVerified: '2026-03-05', launchYear: 2026
-    }),
-    s('c-telemanas', 'Tele-MANAS Mental Health', 'central', 'Health',
-        'Free 24/7 tele-mental health helpline (14416) with professional counselling in multiple Indian languages.',
-        'Ministry of Health', {
-        officialWebsite: 'https://telemanas.mohfw.gov.in/', tags: ['Active'],
-        eligibility: ['All Indian citizens — free and anonymous'],
-        benefits: ['24/7 toll-free helpline: 14416', 'Professional counselling sessions', 'Multiple Indian languages', 'Referral to NIMHANS specialists'],
-        lastVerified: '2026-03-05', launchYear: 2022
-    }),
-
-    // ── INSURANCE ─────────────────────────────────────────────────────────────
-    s('c-pmjjby', 'PM Jeevan Jyoti Bima Yojana', 'central', 'Insurance',
-        'Life insurance at just ₹436/year — ₹2 lakh death benefit for anyone aged 18-50 with a bank account.',
-        'Ministry of Finance', {
-        officialWebsite: 'https://www.jansuraksha.gov.in/', benefitAmount: '₹2 Lakh on death',
-        eligibility: ['Age 18–50 years', 'Bank/Post-office account with auto-debit consent'],
-        benefits: ['₹2 lakh on death from ANY cause', 'Annual auto-renewing premium ₹436', 'Easy bank enrollment'],
-        lastVerified: '2026-03-05', launchYear: 2015
-    }),
-    s('c-pmsby', 'PM Suraksha Bima Yojana', 'central', 'Insurance',
-        'Accident insurance at just ₹20/year — ₹2 lakh for accidental death/disability for those aged 18-70.',
-        'Ministry of Finance', {
-        officialWebsite: 'https://www.jansuraksha.gov.in/', popular: true, benefitAmount: '₹2 Lakh accident cover',
-        eligibility: ['Age 18–70', 'Savings bank account with auto-debit'],
-        benefits: ['₹2 lakh on accidental death', '₹1 lakh on permanent partial disability', 'Premium: just ₹20/year'],
-        lastVerified: '2026-03-05', launchYear: 2015
-    }),
-    s('c-pmfby2', 'Restructured Weather-Based Crop Insurance', 'central', 'Insurance',
-        'Weather index-based crop insurance offering quick, transparent claims without individual crop-cutting experiments.',
-        'Ministry of Agriculture', {
-        tags: ['Active'],
-        eligibility: ['Farmers in notified areas', 'Loanee and non-loanee farmers'],
-        benefits: ['Weather-index linked claims', 'Quick payouts without field visits', 'Transparent settlement process', 'Complements PMFBY'],
-        lastVerified: '2026-03-05', launchYear: 2016
-    }),
-
-    // ── BANKING ───────────────────────────────────────────────────────────────
-    s('c-jandhan', 'PM Jan Dhan Yojana', 'central', 'Banking',
-        'Universal banking access — zero-balance accounts, RuPay card, accident insurance and life cover for all citizens.',
-        'Ministry of Finance', {
-        officialWebsite: 'https://pmjdy.gov.in/', popular: true, tags: ['Popular'],
-        eligibility: ['Any Indian citizen 10+', 'No minimum balance required'],
-        benefits: ['Zero-balance account', 'RuPay debit card', '₹2 lakh accident cover', '₹30,000 life cover', 'Overdraft up to ₹10,000'],
-        lastVerified: '2026-03-05', launchYear: 2014
-    }),
-    s('c-mudra', 'PM MUDRA Yojana', 'central', 'Banking',
-        'Collateral-free business loans from ₹50,000 to ₹20 lakh (enhanced 2024) for small businesses and entrepreneurs.',
-        'Ministry of Finance', {
-        officialWebsite: 'https://www.mudra.org.in/', popular: true, tags: ['Popular', 'Limit Enhanced 2024'],
-        benefitAmount: '₹50,000 – ₹20 Lakh', interestRate: '7.3% – 12%',
-        eligibility: ['Any citizen with a business plan', 'Non-corporate small businesses', 'Manufacturing/trading/services/agri-allied'],
-        benefits: ['Shishu: Up to ₹50,000', 'Kishore: ₹50K–₹5 Lakh', 'Tarun: ₹5 Lakh–₹20 Lakh (enhanced 2024)', 'No collateral, no processing fee'],
-        documents: ['Aadhaar', 'PAN', 'Business plan', 'Address proof', 'Photos'],
-        howToApply: ['Visit any bank/NBFC/MFI', 'Submit MUDRA application', 'Provide business plan', 'Bank evaluates and sanctions'],
-        lastVerified: '2026-03-05', launchYear: 2015
-    }),
-    s('c-standup', 'Stand Up India', 'central', 'Banking',
-        'Greenfield enterprise loans of ₹10 lakh to ₹1 crore for SC/ST and women first-time borrowers.',
-        'SIDBI / Ministry of Finance', {
-        officialWebsite: 'https://www.standupmitra.in/', tags: ['Active'], benefitAmount: '₹10 Lakh – ₹1 Crore',
-        eligibility: ['SC/ST entrepreneurs', 'Women entrepreneurs', 'First-time greenfield project borrowers'],
-        benefits: ['Composite loan for manufacturing/services/trade', '7-year repayment term', 'Credit guarantee cover', 'RuPay card facility'],
-        lastVerified: '2026-03-05', launchYear: 2016
-    }),
-
-    // ── MSME ──────────────────────────────────────────────────────────────────
-    s('c-pv', 'PM Vishwakarma Yojana', 'central', 'MSME',
-        'Comprehensive support for 18 artisan/craftspeople categories — toolkit, skill training, and collateral-free loans at 5%.',
-        'Ministry of MSME', {
-        officialWebsite: 'https://pmvishwakarma.gov.in/', popular: true, tags: ['Popular'], benefitAmount: '₹1–3 Lakh Loans',
-        eligibility: ['18 traditional artisan/craft categories (carpenter, weaver, potter, etc.)', 'One member per family', 'No prior PM Vishwakarma benefit'],
-        benefits: ['₹15,000 toolkit incentive', '₹1 lakh loan at 5% (collateral-free)', '₹2 lakh second tranche', 'Stipend ₹500/day during training'],
-        lastVerified: '2026-03-05', launchYear: 2023
-    }),
-    s('c-startup', 'Startup India', 'central', 'MSME',
-        'Tax holiday, compliance simplification, and ₹10,000 Cr Fund of Funds for DPIIT-recognized startups.',
-        'DPIIT', {
-        officialWebsite: 'https://www.startupindia.gov.in/', tags: ['Active'],
-        eligibility: ['Startup registered up to 10 years', 'Turnover < ₹100 crore', 'Innovation/scalable business model'],
-        benefits: ['3-year income tax holiday', 'Self-certification on labour laws', '₹10,000 Cr Fund of Funds', 'Fast patent examination', 'Free IPR services'],
-        lastVerified: '2026-03-05', launchYear: 2016
-    }),
-    s('c-mecc', 'Micro-Enterprise Credit Cards', 'central', 'MSME',
-        '₹5 lakh credit cards for Udyam-registered micro-enterprises for convenient working capital access.',
-        'Ministry of Finance', {
-        officialWebsite: 'https://udyamregistration.gov.in/', tags: ['New 2025'], benefitAmount: '₹5 Lakh Credit',
-        eligibility: ['Udyam-registered micro-enterprises', 'Good credit history'],
-        benefits: ['₹5 lakh revolving credit card', 'No collateral for micro units', '10 lakh enterprises in Year 1'],
-        lastVerified: '2026-03-05', launchYear: 2025
-    }),
-    s('c-fte', 'First-Time Entrepreneurs Scheme', 'central', 'MSME',
-        'Term loans up to ₹2 crore for first-time women, SC/ST entrepreneurs via govt credit guarantee.',
-        'Ministry of Finance', {
-        officialWebsite: 'https://www.india.gov.in/', tags: ['New 2025'], benefitAmount: 'Up to ₹2 Crore',
-        eligibility: ['First-time entrepreneurs', 'Women, SC/ST priority', 'No prior business loan history needed'],
-        benefits: ['Term loans up to ₹2 crore', '5-year repayment', 'Credit guarantee cover', '5 lakh entrepreneurs over 5 years'],
-        lastVerified: '2026-03-05', launchYear: 2025
-    }),
-    s('c-smegf', 'SME Growth Fund', 'central', 'MSME',
-        '₹10,000 crore dedicated fund to build Champion SMEs and boost Indian manufacturing and exports.',
-        'DPIIT', {
-        officialWebsite: 'https://www.investindia.gov.in/', tags: ['New 2026'], benefitAmount: '₹10,000 Cr Fund',
-        eligibility: ['Small and Medium Enterprises with growth potential', 'Manufacturing and export focus'],
-        benefits: ['Equity and growth capital investment', 'Market access support', 'Manufacturing capacity expansion'],
-        lastVerified: '2026-03-05', launchYear: 2026
-    }),
-    s('c-makein', 'Make in India', 'central', 'MSME',
-        'Flagship initiative to transform India into a global manufacturing hub, attract FDI, and create employment.',
-        'DPIIT', {
-        officialWebsite: 'https://www.makeinindia.com/', popular: true, tags: ['Active'],
-        eligibility: ['Indian and foreign companies in 27 focus sectors', 'Startups and SMEs', 'Global manufacturers'],
-        benefits: ['Investment facilitation', 'Single-window clearance', 'PLI schemes across 14 sectors', 'Ease of doing business improvements'],
-        lastVerified: '2026-03-05', launchYear: 2014
-    }),
-
-    // ── EDUCATION & YOUTH ─────────────────────────────────────────────────────
-    s('c-vidyalakshmi', 'PM Vidya Lakshmi', 'central', 'Education',
-        'Single digital portal for education loans up to ₹10 lakh with central credit guarantee for meritorious students.',
-        'Ministry of Education', {
-        officialWebsite: 'https://www.vidyalakshmi.co.in/', popular: true, tags: ['Launched Jan 2025'], benefitAmount: 'Up to ₹10 Lakh',
-        eligibility: ['60%+ marks in qualifying exam', 'Family income ≤ ₹8 lakh (for guarantee)', 'Admission in top 860 institutions'],
-        benefits: ['Education loan with govt credit guarantee', 'No collateral up to ₹7.5 lakh', '3% interest subvention during study', 'Apply to multiple banks from one portal'],
-        lastVerified: '2026-03-05', launchYear: 2025
-    }),
-    s('c-internship', 'PM Internship Scheme', 'central', 'Youth',
-        'Structured 12-month internship in top 500 Indian companies with ₹5,000/month stipend for 1 crore youth.',
-        'Ministry of Corporate Affairs', {
-        officialWebsite: 'https://pminternship.mca.gov.in/', popular: true, tags: ['Launched Oct 2024'], benefitAmount: '₹5,000/month + ₹6,000',
-        eligibility: ['Youth 21-24 years', 'Not in full-time employment or higher education', 'School/ITI/polytechnic/graduation passed'],
-        benefits: ['₹5,000/month for 12 months', '₹6,000 one-time incidental aid', 'Top 500 company internship', 'Accident insurance', '1 crore youth in 5 years'],
-        lastVerified: '2026-03-05', launchYear: 2024
-    }),
-    s('c-onos', 'One Nation One Subscription', 'central', 'Education',
-        'Free national access to 13,000+ international academic journals and research publications for all Indian institutions.',
-        'Ministry of Education', {
-        officialWebsite: 'https://onos.inflibnet.ac.in/', tags: ['Launched Jan 2025'],
-        eligibility: ['Students, researchers, faculty in participating institutions', 'Govt research labs'],
-        benefits: ['Access to 13,000+ international journals', 'All major publishers included', 'No individual subscription cost', 'Boosts Indian research and patents'],
-        lastVerified: '2026-03-05', launchYear: 2025
-    }),
-    s('c-skill', 'Skill India Mission 2.0', 'central', 'Youth',
-        'Free market-linked skill training across 40+ sectors — 1 crore youth trained annually with placement support.',
-        'MSDE', {
-        officialWebsite: 'https://www.skillindia.gov.in/', popular: true, tags: ['Expanded 2025'],
-        eligibility: ['Youth aged 15-45', 'Min 5th pass (varies by course)'],
-        benefits: ['Free training', 'NSQF-aligned industry certificates', 'Placement support', 'Monthly stipend during training', 'RPL certification for prior learning'],
-        lastVerified: '2026-03-05', launchYear: 2015
-    }),
-    s('c-nmmss', 'National Means-cum-Merit Scholarship', 'central', 'Education',
-        '₹12,000/year scholarship for meritorious economically weaker section students in Class IX-XII to prevent dropout.',
-        'Ministry of Education', {
-        officialWebsite: 'https://scholarships.gov.in/', benefitAmount: '₹12,000/year',
-        eligibility: ['Class IX students with 55%+ in Class VIII', 'Family income ≤ ₹3.5 lakh/year', 'Studying in govt/govt-aided schools'],
-        benefits: ['₹12,000/year (₹1,000/month)', 'Continues Class IX to XII', 'Direct DBT payment', '1 lakh scholarships annually'],
-        lastVerified: '2026-03-05', launchYear: 2008
-    }),
-    s('c-nai-roshni', 'Nai Roshni Scheme', 'central', 'Youth',
-        'Leadership development programme for minority women aged 18-65 to build confidence and connect with government systems.',
-        'Ministry of Minority Affairs', {
-        officialWebsite: 'https://minorityaffairs.gov.in/', tags: ['Active'],
-        eligibility: ['Minority women (Muslim, Christian, Sikh, Buddhist, Parsi, Jain) aged 18-65', 'BPL or near-BPL families'],
-        benefits: ['Leadership training', 'Government scheme awareness', 'Health, legal, digital literacy', 'Connects women to self-employment opportunities'],
-        lastVerified: '2026-03-05', launchYear: 2012
-    }),
-
-    // ── EMPLOYMENT ────────────────────────────────────────────────────────────
-    s('c-mgnrega', 'MGNREGA', 'central', 'Employment',
-        '100 days guaranteed wage employment per year for rural household adults at minimum wages, within 5 km radius.',
-        'Ministry of Rural Development', {
-        officialWebsite: 'https://nrega.nic.in/', popular: true, benefitAmount: '100 days work/year',
-        eligibility: ['Adult members of any rural household', 'Willing to do unskilled manual work'],
-        benefits: ['100 days guaranteed employment', 'State minimum wages', 'Unemployment allowance if work not provided', 'Work within 5 km', 'Overtime compensation'],
-        lastVerified: '2026-03-05', launchYear: 2006
-    }),
-    s('c-pmvbry', 'PM Viksit Bharat Rozgar Yojana', 'central', 'Employment',
-        'EPF-linked incentive scheme promoting 3.5 crore new formal jobs with subsidies to employers and employees.',
-        'Ministry of Labour', {
-        popular: true, tags: ['New 2025'], benefitAmount: '₹99,446 Cr outlay',
-        eligibility: ['New EPF employees salary < ₹1 lakh/month', 'First-time registered employers'],
-        benefits: ['EPF-linked subsidies for 24 months', '3.5 crore new jobs targeted', 'First-time formal sector focus', 'Benefits both employer and employee'],
-        lastVerified: '2026-03-05', launchYear: 2025
-    }),
-    s('c-gigworkers', 'Gig Workers Welfare Scheme', 'central', 'Employment',
-        'Social security, identity cards, and healthcare under PM-JAY for online platform gig workers via e-Shram.',
-        'Ministry of Labour', {
-        officialWebsite: 'https://eshram.gov.in/', tags: ['New 2025'],
-        eligibility: ['Online platform gig workers (cab, delivery, home services)', 'Self-registration on e-Shram portal'],
-        benefits: ['Official identity card', 'Healthcare under PM-JAY', 'Accident insurance', 'Social security benefits', 'Legal recognition of gig work'],
-        lastVerified: '2026-03-05', launchYear: 2025
-    }),
-    s('c-pd', 'PM-DAKSH', 'central', 'Employment',
-        'Free vocational training for SC/ST, OBC, safai karamcharis with monthly stipend and placement assistance.',
-        'Ministry of Social Justice', {
-        officialWebsite: 'https://pmdaksh.dosje.gov.in/', tags: ['Active'],
-        eligibility: ['SC/ST/OBC/backward classes aged 18-45', 'Safai Karamcharis and rag-pickers'],
-        benefits: ['Free up-skilling/re-skilling', 'Short and long-term vocational courses', 'Placement support', 'Monthly stipend during training'],
-        lastVerified: '2026-03-05', launchYear: 2021
-    }),
-    s('c-pmsy', 'Pradhan Mantri Shram Yogi Maandhan', 'central', 'Employment',
-        '₹3,000/month guaranteed pension at 60 for unorganised sector workers with tiny monthly contribution ₹55-200.',
-        'Ministry of Labour', {
-        officialWebsite: 'https://maandhan.in/', popular: true, tags: ['Popular'], benefitAmount: '₹3,000/month after 60',
-        eligibility: ['Unorganised workers aged 18-40', 'Monthly income ≤ ₹15,000', 'Not EPF/NPS/ESIC member'],
-        benefits: ['₹3,000/month pension after 60', 'Govt matches contribution', 'Spouse gets ₹1,500/month on worker death', 'Premium just ₹55–₹200/month'],
-        lastVerified: '2026-03-05', launchYear: 2019
-    }),
+    // ── AGRICULTURE ──────────────────────────────────────────────────────────
+    {
+        id: 'c-pmkisan', name: 'PM Kisan Samman Nidhi', governmentLevel: 'central',
+        category: 'Farmers', schemeCategory: 'Direct Benefit Transfer',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Provides income support of ₹6,000 per year to small and marginal farmer families with cultivable land, paid in three equal installments directly to bank accounts.',
+        ministry: 'Ministry of Agriculture and Farmers Welfare',
+        officialWebsite: 'https://pmkisan.gov.in',
+        applicationType: 'Online Application',
+        benefitAmount: '₹6,000/year (3 installments of ₹2,000)',
+        eligibility: ['Landholding farmer families with cultivable land records', 'Must link Aadhaar with bank account', 'Excludes income taxpayers and certain government employees'],
+        benefits: ['₹6,000 per year income support', 'Three installments of ₹2,000 each', 'Direct bank transfer (DBT)', 'Applies to small and marginal farmers'],
+        documents: ['Aadhaar Card', 'Land ownership records (Khasra/Khatauni)', 'Bank account passbook'],
+        howToApply: ['Visit pmkisan.gov.in', 'Click "New Farmer Registration"', 'Enter Aadhaar and land details', 'Verification done by state authorities'],
+        notes: 'Income taxpayers and government pensioners are not eligible.',
+        launchYear: 2019, lastVerified: '2026-03-05',
+        verifiedSource: 'pmkisan.gov.in', isActive: true,
+    },
+    {
+        id: 'c-pmfby', name: 'PM Fasal Bima Yojana', governmentLevel: 'central',
+        category: 'Farmers', schemeCategory: 'Agriculture Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Crop insurance scheme covering losses due to natural disasters, pests, and diseases. Government subsidizes the majority of the premium.',
+        ministry: 'Ministry of Agriculture and Farmers Welfare',
+        officialWebsite: 'https://pmfby.gov.in',
+        applicationType: 'Bank Application',
+        eligibility: ['Farmers growing notified crops', 'Both loanee and non-loanee farmers', 'Indian citizen with land records'],
+        benefits: ['Premium 2% for Kharif, 1.5% for Rabi crops', 'Government subsidizes remaining premium', 'Coverage for crop loss due to natural calamities', 'Post-harvest losses covered'],
+        documents: ['Aadhaar Card', 'Land records', 'Bank account passbook', 'Crop sowing declaration'],
+        howToApply: ['Apply through nearest bank or cooperative', 'Apply via pmfby.gov.in portal', 'Submit crop and land information before cutoff date'],
+        launchYear: 2016, lastVerified: '2026-03-05',
+        verifiedSource: 'pmfby.gov.in', isActive: true,
+    },
+    {
+        id: 'c-kcc', name: 'Kisan Credit Card', governmentLevel: 'central',
+        category: 'Farmers', schemeCategory: 'Agriculture Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Provides farmers with flexible, short-term credit for agricultural and allied activities at subsidized interest rates.',
+        ministry: 'Ministry of Agriculture and Farmers Welfare',
+        officialWebsite: 'https://www.nabard.org',
+        applicationType: 'Bank Application',
+        benefitAmount: 'Credit up to ₹3 lakh',
+        eligibility: ['Farmers, tenant farmers, sharecroppers', 'Livestock and fishery farmers', 'Self Help Groups of farmers'],
+        benefits: ['Credit up to ₹3 lakh for agriculture', 'Interest subvention – effective rate ~4%', 'Flexible repayment after harvest', 'Personal accident insurance cover'],
+        documents: ['Aadhaar Card', 'Land records or tenancy certificate', 'Bank account passbook', 'Passport photo'],
+        howToApply: ['Apply at nearest bank, cooperative bank, or PACS', 'Submit land and identity documents', 'Bank assesses credit limit based on landholding'],
+        launchYear: 1998, lastVerified: '2026-03-05',
+        verifiedSource: 'nabard.org', isActive: true,
+    },
+    {
+        id: 'c-pmkusum', name: 'PM KUSUM Scheme', governmentLevel: 'central',
+        category: 'Farmers', schemeCategory: 'Agriculture Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Promotes solar energy in agriculture through solar pumps and decentralized solar plants for farmers, reducing dependence on diesel.',
+        ministry: 'Ministry of New and Renewable Energy',
+        officialWebsite: 'https://mnre.gov.in',
+        applicationType: 'Through Government Agency',
+        benefitAmount: 'Up to 60% central subsidy on solar pumps',
+        eligibility: ['Farmers with irrigation pumps', 'Farmer groups, cooperatives, water user associations', 'Individual farmers, Panchayats'],
+        benefits: ['Up to 60% government subsidy for solar pumps', 'Farmers can sell excess solar power to grid', 'Reduces diesel irrigation cost significantly', 'Decentralized renewable energy for agriculture'],
+        documents: ['Aadhaar Card', 'Land ownership documents', 'Electricity connection details'],
+        howToApply: ['Apply through state renewable energy department portals', 'States implement component-wise — contact DISCOM or state nodal agency'],
+        launchYear: 2019, lastVerified: '2026-03-05',
+        verifiedSource: 'mnre.gov.in', isActive: true,
+    },
+    {
+        id: 'c-pmksy', name: 'PM Krishi Sinchai Yojana', governmentLevel: 'central',
+        category: 'Farmers', schemeCategory: 'Agriculture Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Promotes efficient irrigation and water conservation with the motto "Har Khet Ko Pani" and "More Crop Per Drop".',
+        ministry: 'Ministry of Agriculture and Farmers Welfare',
+        officialWebsite: 'https://pmksy.gov.in',
+        applicationType: 'Through Government Agency',
+        eligibility: ['Farmers and irrigation projects', 'State governments and agencies'],
+        benefits: ['Micro irrigation support (drip and sprinkler)', 'Water management and conservation', 'Irrigation infrastructure development', 'District irrigation plans'],
+        documents: ['Land records', 'Aadhaar Card'],
+        howToApply: ['Apply through state agriculture or irrigation departments', 'Implemented via district and state authorities'],
+        launchYear: 2015, lastVerified: '2026-03-05',
+        verifiedSource: 'pmksy.gov.in', isActive: true,
+    },
+    {
+        id: 'c-digital-agri', name: 'Digital Agriculture Mission', governmentLevel: 'central',
+        category: 'Farmers', schemeCategory: 'Agriculture Scheme',
+        tags: ['New 2024', 'Verified'], popular: false,
+        description: 'Promotes use of AI, remote sensing, and digital platforms to support farmers with crop advisory and farm data management.',
+        ministry: 'Ministry of Agriculture and Farmers Welfare',
+        officialWebsite: 'https://agriwelfare.gov.in',
+        applicationType: 'Service Access',
+        eligibility: ['Farmers using agricultural digital services', 'All Indian farmers'],
+        benefits: ['AI-based crop advisory services', 'Satellite-based crop monitoring', 'Farmer database (Agri Stack)', 'Digital crop surveys'],
+        documents: [],
+        howToApply: ['Access services through government agricultural platforms', 'Kisan e-Mitra chatbot available on PM Kisan portal'],
+        launchYear: 2024, lastVerified: '2026-03-05',
+        verifiedSource: 'agriwelfare.gov.in', isActive: true,
+    },
 
     // ── PENSION ───────────────────────────────────────────────────────────────
-    s('c-apy', 'Atal Pension Yojana', 'central', 'Pension',
-        'Guaranteed monthly pension ₹1,000–₹5,000 for unorganised sector workers after age 60 with govt co-contribution.',
-        'Ministry of Finance', {
-        officialWebsite: 'https://www.npscra.nsdl.co.in/', popular: true, benefitAmount: '₹1,000–₹5,000/month',
-        eligibility: ['Age 18–40', 'Savings bank account', 'Not income tax payer or govt employee in EPF/NPS'],
-        benefits: ['Guaranteed ₹1,000-₹5,000/month from age 60', 'Nominee gets lump sum on death', '80CCD tax benefit', 'Spouse pension on death'],
-        lastVerified: '2026-03-05', launchYear: 2015
-    }),
-    s('c-nps', 'National Pension System', 'central', 'Pension',
-        'Voluntary market-linked pension with multiple fund managers and extra ₹50,000 deduction under Section 80CCD(1B).',
-        'PFRDA', {
-        officialWebsite: 'https://www.npscra.nsdl.co.in/', popular: true,
-        eligibility: ['Indian citizens/NRI aged 18–70'],
-        benefits: ['Extra ₹50,000 under 80CCD(1B)', 'Choice of equity/debt allocation', 'Low cost fund management (0.01%)', 'Portable across employers and cities'],
-        lastVerified: '2026-03-05', launchYear: 2004
-    }),
-    s('c-npsvatsalya', 'NPS Vatsalya Yojana', 'central', 'Pension',
-        'Parents can open NPS accounts for minor children from birth — compounding pension corpus from childhood.',
-        'Ministry of Finance', {
-        officialWebsite: 'https://www.npscra.nsdl.co.in/', popular: true, tags: ['New Sep 2024'],
-        eligibility: ['Minor Indian citizens (below 18)', 'NRI children eligible', 'Parent/guardian opens and manages account'],
-        benefits: ['Start pension corpus from childhood', 'Converts to standard NPS at 18', '50+ years of compounding', 'Tax benefit for parent under 80C', 'Min contribution ₹1,000/year'],
-        lastVerified: '2026-03-05', launchYear: 2024
-    }),
+    {
+        id: 'c-apy', name: 'Atal Pension Yojana', governmentLevel: 'central',
+        category: 'Pension', schemeCategory: 'Pension Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Government-backed pension scheme for workers in the unorganized sector providing guaranteed monthly pension of ₹1,000–₹5,000 after age 60.',
+        ministry: 'Ministry of Finance (PFRDA)',
+        officialWebsite: 'https://www.npscra.nsdl.co.in',
+        applicationType: 'Bank Application',
+        benefitAmount: '₹1,000–₹5,000/month pension after 60',
+        eligibility: ['Indian citizens aged 18–40', 'Must have savings bank account', 'Not an income taxpayer (for govt co-contribution)'],
+        benefits: ['Guaranteed pension ₹1,000–₹5,000/month after 60', 'Spouse gets pension on subscriber death', 'Nominee gets corpus on death of spouse', 'Tax benefit under 80CCD'],
+        documents: ['Aadhaar Card', 'Bank account passbook', 'Mobile number linked to Aadhaar'],
+        howToApply: ['Visit any bank or post office', 'Fill APY form or apply via net banking', 'Choose monthly pension amount and contribution plan'],
+        launchYear: 2015, lastVerified: '2026-03-05',
+        verifiedSource: 'npscra.nsdl.co.in', isActive: true,
+    },
+    {
+        id: 'c-pmsym', name: 'PM Shram Yogi Maandhan', governmentLevel: 'central',
+        category: 'Pension', schemeCategory: 'Pension Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Voluntary pension scheme for unorganized sector workers providing ₹3,000 monthly pension after age 60, with equal government contribution.',
+        ministry: 'Ministry of Labour and Employment',
+        officialWebsite: 'https://maandhan.in',
+        applicationType: 'CSC / Offline Application',
+        benefitAmount: '₹3,000/month pension after age 60',
+        eligibility: ['Unorganized workers aged 18–40', 'Monthly income below ₹15,000', 'Not covered under EPFO/ESIC/NPS'],
+        benefits: ['₹3,000 monthly pension after age 60', 'Equal government contribution to premium', 'Spouse entitled to 50% pension on death'],
+        documents: ['Aadhaar Card', 'Savings bank account or Jan Dhan account', 'Mobile number'],
+        howToApply: ['Register through Common Service Centres (CSC)', 'Apply online at maandhan.in', 'Auto-debit of contribution from bank account'],
+        launchYear: 2019, lastVerified: '2026-03-05',
+        verifiedSource: 'maandhan.in', isActive: true,
+    },
+    {
+        id: 'c-nps', name: 'National Pension System', governmentLevel: 'central',
+        category: 'Pension', schemeCategory: 'Pension Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Voluntary long-term retirement savings scheme regulated by PFRDA with market-linked returns and tax benefits.',
+        ministry: 'Ministry of Finance (PFRDA)',
+        officialWebsite: 'https://www.npscra.nsdl.co.in',
+        applicationType: 'Online Application',
+        taxBenefit: 'Section 80CCD(1) & 80CCD(1B) – up to ₹2 lakh deduction',
+        eligibility: ['Indian citizens aged 18–70', 'NRIs also eligible', 'Both employed and self-employed'],
+        benefits: ['Tax deduction up to ₹2 lakh under 80CCD', 'Market-linked returns with flexible fund choice', 'Pension on retirement (minimum 40% annuity)', 'Tier I (retirement) and Tier II (savings) accounts'],
+        documents: ['Aadhaar Card', 'PAN Card', 'Bank account details'],
+        howToApply: ['Register at eNPS portal or through bank/post office', 'Choose pension fund manager and contribution amount'],
+        notes: 'Includes Tier I (retirement) and Tier II (voluntary savings) accounts.',
+        launchYear: 2004, lastVerified: '2026-03-05',
+        verifiedSource: 'npscra.nsdl.co.in', isActive: true,
+    },
+    {
+        id: 'c-nps-vatsalya', name: 'NPS Vatsalya', governmentLevel: 'central',
+        category: 'Pension', schemeCategory: 'Pension Scheme',
+        tags: ['New 2024', 'Verified'], popular: false,
+        description: 'New pension initiative allowing parents or guardians to open an NPS account for minors to build long-term retirement savings.',
+        ministry: 'Ministry of Finance (PFRDA)',
+        officialWebsite: 'https://www.npscra.nsdl.co.in',
+        applicationType: 'Online Application',
+        eligibility: ['Indian minors under 18 years', 'Account opened by parent or guardian'],
+        benefits: ['Long-term retirement savings started in childhood', 'Account converts to regular NPS at age 18', 'Market-linked returns from early age'],
+        documents: ['Birth certificate of minor', 'Aadhaar of guardian', 'Bank account details'],
+        howToApply: ['Open account through NPS portal or banks', 'Guardian manages account until minor turns 18'],
+        launchYear: 2024, lastVerified: '2026-03-05',
+        verifiedSource: 'npscra.nsdl.co.in', isActive: true,
+    },
+    {
+        id: 'c-pmvvy', name: 'PM Vaya Vandana Yojana', governmentLevel: 'central',
+        category: 'Senior Citizens', schemeCategory: 'Pension Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Pension scheme providing guaranteed regular income (pension) to senior citizens for 10 years through LIC of India.',
+        ministry: 'Ministry of Finance / LIC of India',
+        officialWebsite: 'https://licindia.in',
+        applicationType: 'LIC Application',
+        benefitAmount: 'Guaranteed pension for 10 years',
+        maxAmount: '₹15 lakh purchase price',
+        eligibility: ['Senior citizens aged 60 and above', 'No upper age limit'],
+        benefits: ['Guaranteed pension for 10 years', 'Choice of monthly/quarterly/half-yearly/annual pension', 'Return of purchase price on death of pensioner'],
+        documents: ['Aadhaar Card', 'Age proof', 'Bank account details'],
+        howToApply: ['Purchase policy through LIC branch or LIC online portal', 'Choose pension frequency and purchase amount'],
+        notes: 'Scheme closed for fresh subscriptions — verify current status on LIC website.',
+        launchYear: 2017, lastVerified: '2026-03-05',
+        verifiedSource: 'licindia.in', isActive: false,
+    },
+
+    // ── INSURANCE ────────────────────────────────────────────────────────────
+    {
+        id: 'c-pmjjby', name: 'PM Jeevan Jyoti Bima Yojana', governmentLevel: 'central',
+        category: 'Insurance', schemeCategory: 'Insurance Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Low-cost life insurance scheme for bank account holders providing ₹2 lakh life cover at just ₹436 per year.',
+        ministry: 'Ministry of Finance',
+        officialWebsite: 'https://jansuraksha.gov.in',
+        applicationType: 'Bank Application' as ApplicationType,
+        benefitAmount: '₹2 lakh life cover',
+        eligibility: ['Age 18–50 years', 'Active savings bank account holder', 'Consent to auto-debit premium'],
+        benefits: ['₹2 lakh life insurance cover', 'Premium ₹436 per year (auto-debited)', 'Renewed annually', 'Nominee receives amount on death'],
+        documents: ['Aadhaar Card', 'Bank account (auto-debit consent form)'],
+        howToApply: ['Contact bank where savings account is held', 'Fill PMJJBY consent-cum-declaration form', 'Premium auto-debited on 31 May annually'],
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'jansuraksha.gov.in', isActive: true,
+    },
+    {
+        id: 'c-pmsby', name: 'PM Suraksha Bima Yojana', governmentLevel: 'central',
+        category: 'Insurance', schemeCategory: 'Insurance Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Accidental insurance scheme providing ₹2 lakh accidental death/disability cover at only ₹20 per year.',
+        ministry: 'Ministry of Finance',
+        officialWebsite: 'https://jansuraksha.gov.in',
+        applicationType: 'Bank Application' as ApplicationType,
+        benefitAmount: '₹2 lakh accidental death cover',
+        eligibility: ['Age 18–70 years', 'Savings bank account holder'],
+        benefits: ['₹2 lakh accidental death/total disability cover', '₹1 lakh partial disability cover', 'Premium only ₹20 per year'],
+        documents: ['Aadhaar Card', 'Bank account (auto-debit consent)'],
+        howToApply: ['Contact bank where savings account is held', 'Fill PMSBY consent form', 'Premium ₹20 auto-debited annually'],
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'jansuraksha.gov.in', isActive: true,
+    },
 
     // ── HOUSING ───────────────────────────────────────────────────────────────
-    s('c-pmay2', 'PM Awas Yojana Urban 2.0', 'central', 'Housing',
-        'Housing for 1 crore urban poor/middle-class families via interest subsidy and financial assistance over 5 years.',
-        'MoHUA', {
-        officialWebsite: 'https://pmaymis.gov.in/', popular: true, tags: ['Approved Aug 2024'],
-        eligibility: ['EWS: Annual income ≤ ₹3 lakh', 'LIG: ₹3-6 lakh', 'MIG: ₹6-18 lakh', 'No pucca house owned'],
-        benefits: ['Interest subsidy 3-6.5%', 'Central assistance ₹1.5 lakh (EWS/LIG)', 'Women co-ownership', '1 crore houses 2024-2029'],
-        lastVerified: '2026-03-05', launchYear: 2024
-    }),
-    s('c-pmayg', 'PM Awas Yojana Gramin', 'central', 'Housing',
-        'Free pucca houses with basic amenities for rural houseless or kutcha-house dwellers in SECC list.',
-        'Ministry of Rural Dev.', {
-        officialWebsite: 'https://pmayg.nic.in/', popular: true, tags: ['3 Crore Target'],
-        eligibility: ['SECC-2011 listed families', 'SC/ST households', 'Landless labourers', 'No pucca house'],
-        benefits: ['₹1.2 lakh/house (plains), ₹1.3 lakh (hilly/north-east)', 'Toilet under SBM', 'MGNREGA work wages', '3 crore new houses 2024-2026'],
-        lastVerified: '2026-03-05', launchYear: 2016
-    }),
+    {
+        id: 'c-pmay-u', name: 'PM Awas Yojana Urban', governmentLevel: 'central',
+        category: 'Housing', schemeCategory: 'Housing Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Provides housing assistance through interest subsidies and financial grants to urban poor and middle-income groups.',
+        ministry: 'Ministry of Housing and Urban Affairs',
+        officialWebsite: 'https://pmaymis.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        eligibility: ['EWS: annual income up to ₹3 lakh', 'LIG: ₹3–6 lakh', 'Must not own pucca house anywhere in India'],
+        benefits: ['Interest subsidy on housing loans (CLSS)', 'Central assistance for construction', 'Slum redevelopment support'],
+        documents: ['Aadhaar Card', 'Income certificate', 'Property documents', 'Bank account passbook'],
+        howToApply: ['Apply at pmaymis.gov.in', 'Or visit CSC / Urban Local Body (ULB)', 'Submit documents for verification'],
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'pmaymis.gov.in', isActive: true,
+    },
+    {
+        id: 'c-pmay-g', name: 'PM Awas Yojana Gramin', governmentLevel: 'central',
+        category: 'Housing', schemeCategory: 'Housing Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Financial assistance for rural poor to construct pucca houses with toilet under SECC 2011 beneficiary identification.',
+        ministry: 'Ministry of Rural Development',
+        officialWebsite: 'https://pmayg.nic.in',
+        applicationType: 'Through Government Agency' as ApplicationType,
+        benefitAmount: '₹1.2–1.3 lakh per house',
+        eligibility: ['SECC 2011 identified households', 'No permanent house owned', 'Rural households only'],
+        benefits: ['₹1.2 lakh (plain) / ₹1.3 lakh (hilly) for construction', '₹12,000 additional for toilet', 'MGNREGA wages for unskilled work'],
+        documents: ['Aadhaar Card', 'Bank account passbook'],
+        howToApply: ['Beneficiaries selected by Gram Sabha from SECC list', 'Contact Gram Panchayat for inclusion/grievance'],
+        launchYear: 2016, lastVerified: '2026-03-05', verifiedSource: 'pmayg.nic.in', isActive: true,
+    },
 
-    // ── SOCIAL WELFARE ────────────────────────────────────────────────────────
-    s('c-ignoaps', 'IGNOAPS – Senior Citizen Pension', 'central', 'Social Welfare',
-        'Central monthly pension for BPL senior citizens aged 60+, 80+ receiving higher amounts under NSAP.',
-        'Ministry of Rural Dev.', {
-        officialWebsite: 'https://nsap.nic.in/', benefitAmount: '₹200–₹500 + state top-up',
-        eligibility: ['Senior citizens aged 60+ below poverty line', '80+ get higher amount under NSSOAPs component'],
-        benefits: ['₹200/month age 60-79 (centre contribution)', '₹500/month age 80+', 'State adds top-up (total varies ₹500-₹3,000)', 'Direct bank transfer'],
-        lastVerified: '2026-03-05', launchYear: 1995
-    }),
-    s('c-nfbs', 'National Family Benefit Scheme', 'central', 'Social Welfare',
-        'One-time grant of ₹20,000 to BPL families on death of breadwinner aged 18-59.',
-        'Ministry of Rural Dev.', {
-        officialWebsite: 'https://nsap.nic.in/', benefitAmount: '₹20,000 lump sum',
-        eligibility: ['BPL families', 'Death of primary breadwinner aged 18-59', 'Natural or accidental death'],
-        benefits: ['₹20,000 one-time payment within 4 weeks', 'Direct bank transfer to family member', 'No exclusion by religion, gender, or caste'],
-        lastVerified: '2026-03-05', launchYear: 2000
-    }),
-    s('c-rprs', 'Rural Prosperity & Resilience Programme', 'central', 'Social Welfare',
-        'Multi-sectoral programme addressing rural underemployment through agri-enterprise, technology, and skilling.',
-        'Ministry of Rural Dev.', {
-        officialWebsite: 'https://www.india.gov.in/', tags: ['New Budget 2025'],
-        eligibility: ['Young farmers, rural women, marginal/small farmers, landless families'],
-        benefits: ['Employment in rural areas', 'Technology skilling', 'Agri-enterprise development', 'Rural infrastructure investment'],
-        lastVerified: '2026-03-05', launchYear: 2025
-    }),
-    s('c-nsap', 'National Social Assistance Programme', 'central', 'Social Welfare',
-        'Social safety net providing pensions, scholarships, and maternity benefits to destitute persons below poverty line.',
-        'Ministry of Rural Dev.', {
-        officialWebsite: 'https://nsap.nic.in/', popular: true,
-        eligibility: ['BPL households', 'Widows, senior citizens, disabled persons', 'States implement individually'],
-        benefits: ['Monthly pension via IGNOAPS/IGNWPS/IGNDPS', 'Maternity benefit under IGMSY', 'Scholarships under NFBS children component'],
-        lastVerified: '2026-03-05', launchYear: 1995
-    }),
+    // ── HEALTH ────────────────────────────────────────────────────────────────
+    {
+        id: 'c-abpmjay', name: 'Ayushman Bharat PM Jan Arogya Yojana', governmentLevel: 'central',
+        category: 'Health', schemeCategory: 'Health Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'World\'s largest health insurance scheme providing ₹5 lakh per family per year for cashless hospitalization at empanelled hospitals.',
+        ministry: 'Ministry of Health and Family Welfare',
+        officialWebsite: 'https://pmjay.gov.in',
+        applicationType: 'Through Government Agency' as ApplicationType,
+        benefitAmount: '₹5 lakh health cover/family/year',
+        eligibility: ['SECC 2011 identified families', 'Senior citizens 70+ under AB-PMJAY 70', 'No cap on family size'],
+        benefits: ['₹5 lakh cashless hospitalization per family per year', 'Coverage at 25,000+ empanelled hospitals', 'No premium for beneficiaries', 'All pre-existing conditions covered from day one'],
+        documents: ['Aadhaar Card', 'Ration card or SECC identification'],
+        howToApply: ['Check eligibility at pmjay.gov.in or call 14555', 'Visit empanelled hospital for cashless treatment', 'Generate Ayushman Health Card at CSC or hospital'],
+        launchYear: 2018, lastVerified: '2026-03-05', verifiedSource: 'pmjay.gov.in', isActive: true,
+    },
+    {
+        id: 'c-telemanas', name: 'Tele-MANAS Helpline', governmentLevel: 'central',
+        category: 'Health', schemeCategory: 'Health Scheme',
+        tags: ['Verified'], popular: false,
+        description: '24/7 free tele-mental health counselling service providing multilingual support and specialist referral via toll-free number 14416.',
+        ministry: 'Ministry of Health and Family Welfare',
+        officialWebsite: 'https://telemanas.mohfw.gov.in',
+        applicationType: 'Service Access' as ApplicationType,
+        eligibility: ['All Indian citizens — no registration required'],
+        benefits: ['24/7 toll-free helpline (14416)', 'Multilingual mental health counselling', 'Referral to state mental health specialists', 'Free of cost'],
+        documents: [],
+        howToApply: ['Call toll-free helpline 14416', 'Or access via telemanas.mohfw.gov.in'],
+        launchYear: 2022, lastVerified: '2026-03-05', verifiedSource: 'mohfw.gov.in', isActive: true,
+    },
+    {
+        id: 'c-abdm', name: 'Ayushman Bharat Digital Mission', governmentLevel: 'central',
+        category: 'Health', schemeCategory: 'Health Scheme',
+        tags: ['New 2024', 'Verified'], popular: false,
+        description: 'Creates a digital health ecosystem with unique ABHA health IDs for storing and securely sharing health records.',
+        ministry: 'Ministry of Health and Family Welfare',
+        officialWebsite: 'https://abdm.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        eligibility: ['All Indian citizens'],
+        benefits: ['Unique 14-digit ABHA (Health ID)', 'Digital health records accessible anywhere', 'Consent-based sharing with doctors/hospitals'],
+        documents: ['Aadhaar Card', 'Mobile number'],
+        howToApply: ['Register at abdm.gov.in or ABHA app', 'Link Aadhaar for verification', 'Generate ABHA card'],
+        launchYear: 2021, lastVerified: '2026-03-05', verifiedSource: 'abdm.gov.in', isActive: true,
+    },
 
-    // ── SENIOR CITIZENS ───────────────────────────────────────────────────────
-    s('c-scss', 'Senior Citizen Savings Scheme', 'central', 'Senior Citizens',
-        "India's highest government-guaranteed interest rate of 8.2% p.a. for senior citizens with quarterly payouts.",
-        'Ministry of Finance', {
-        officialWebsite: 'https://www.indiapost.gov.in/', popular: true, tags: ['Popular'],
-        interestRate: '8.2% p.a. quarterly', tenure: '5 years (extendable 3 yrs)', maxAmount: '₹30 lakh',
-        taxBenefit: 'Section 80C deduction up to ₹1.5 lakh',
-        eligibility: ['Age 60+', 'Retired defence personnel age 50+', 'VRS/superannuation retiree within 1 month'],
-        benefits: ['8.2% p.a. guaranteed – highest in India', 'Quarterly interest payout', '80C tax deduction', 'Max deposit ₹30 lakh per person'],
-        howToApply: ['Visit any post office or authd bank', 'Fill SCSS account form', 'Submit age proof and retirement documents'],
-        lastVerified: '2026-03-05', launchYear: 2004
-    }),
-    s('c-pomoisfsc', 'Senior Citizens Ombudsman Scheme', 'central', 'Senior Citizens',
-        'Dedicated grievance redressal mechanism for senior citizens against banks, pension issues, and service denials.',
-        'Ministry of Finance', {
-        officialWebsite: 'https://www.india.gov.in/', tags: ['Active'],
-        eligibility: ['Any Indian senior citizen 60+', 'Facing issues with banks, pension, or govt services'],
-        benefits: ['Free complaint lodging', 'Grievance resolution within 30 days', 'Legal aid for senior citizens', 'Ombudsman in each district'],
-        lastVerified: '2026-03-05', launchYear: 2007
-    }),
-    s('c-vaatsalya', 'PM Vaya Vandana Yojana', 'central', 'Senior Citizens',
-        'LIC-managed pension scheme for senior citizens with 7.4% assured return and flexible payout options.',
-        'Ministry of Finance / LIC', {
-        officialWebsite: 'https://licindia.in/', benefitAmount: 'Up to ₹9,250/month', interestRate: '7.4% effective',
-        tenure: '10 years', maxAmount: '₹15 lakh',
-        eligibility: ['Senior citizens aged 60+', 'Purchase from LIC of India'],
-        benefits: ['7.4% guaranteed return', 'Monthly/qtrly/half-yearly/annual pension options', 'Death benefit: return of purchase price', 'Loan up to 75% after 3 years'],
-        lastVerified: '2026-03-05', launchYear: 2017
-    }),
+    // ── ENERGY ────────────────────────────────────────────────────────────────
+    {
+        id: 'c-pmuy', name: 'PM Ujjwala Yojana', governmentLevel: 'central',
+        category: 'Women', schemeCategory: 'Direct Benefit Transfer',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Provides free LPG connections to women from BPL/PMAY-G beneficiary households to replace polluting cooking fuels.',
+        ministry: 'Ministry of Petroleum and Natural Gas',
+        officialWebsite: 'https://pmuy.gov.in',
+        applicationType: 'CSC / Offline Application' as ApplicationType,
+        eligibility: ['Women from BPL/SECC/PMAY-G households', 'Adult woman as primary account holder', 'No existing LPG connection in household'],
+        benefits: ['Free LPG connection with first cylinder', 'Stove (chulha) support EMI option', 'Clean cooking fuel reducing indoor air pollution'],
+        documents: ['Aadhaar Card', 'BPL/SECC/PMAY-G identification', 'Bank account passbook'],
+        howToApply: ['Apply at nearest LPG distributor (HP/Bharat/Indane Gas)', 'Submit Aadhaar and BPL/SECC proof', 'Connection issued after document verification'],
+        launchYear: 2016, lastVerified: '2026-03-05', verifiedSource: 'pmuy.gov.in', isActive: true,
+    },
+    {
+        id: 'c-pmsgmby', name: 'PM Surya Ghar Muft Bijli Yojana', governmentLevel: 'central',
+        category: 'Digital', schemeCategory: 'Direct Benefit Transfer',
+        tags: ['New 2024', 'Popular', 'Verified'], popular: true,
+        description: 'Central subsidy for rooftop solar installation on residential households to get up to 300 units free electricity per month.',
+        ministry: 'Ministry of New and Renewable Energy',
+        officialWebsite: 'https://pmsuryaghar.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        benefitAmount: 'Subsidy: ~300 units free electricity/month',
+        eligibility: ['Residential households', 'Grid-connected electricity consumers', 'Valid electricity consumer number'],
+        benefits: ['Central subsidy for rooftop solar', 'Up to 300 free units/month', 'Sell excess power to DISCOM', 'Long-term savings on electricity bills'],
+        documents: ['Aadhaar Card', 'Recent electricity bill', 'Bank account passbook'],
+        howToApply: ['Register at pmsuryaghar.gov.in', 'Apply through your DISCOM', 'Select approved vendor', 'Apply for subsidy post-installation'],
+        launchYear: 2024, lastVerified: '2026-03-05', verifiedSource: 'pmsuryaghar.gov.in', isActive: true,
+    },
 
-    // ── DIGITAL / ENERGY ──────────────────────────────────────────────────────
-    s('c-suryaghar', 'PM Surya Ghar: Free Electricity', 'central', 'Energy',
-        'Rooftop solar subsidy of 40% for 1 crore households targeting 300 units of free electricity per month.',
-        'Ministry of New and Renewable Energy', {
-        officialWebsite: 'https://pmsuryaghar.gov.in/', popular: true, tags: ['New Feb 2024', 'Popular'], benefitAmount: '300 units free/month',
-        eligibility: ['Residential households', 'Grid-connected electricity connection', 'Suitable rooftop space'],
-        benefits: ['40% subsidy on 3 kW solar panel', '300 units free electricity/month', 'Saves ₹15,000–18,000/year', '1 crore households target', 'Net metering for surplus sale'],
-        lastVerified: '2026-03-05', launchYear: 2024
-    }),
-    s('c-edrive', 'PM e-Drive Scheme', 'central', 'Energy',
-        'Demand incentives for electric 2W, 3W, ambulances, and buses with ₹10,900 Cr outlay for EV adoption.',
-        'Ministry of Heavy Industries', {
-        officialWebsite: 'https://fame.heavyindustries.gov.in/', tags: ['Launched Oct 2024'], benefitAmount: '₹10,900 Cr outlay',
-        eligibility: ['Buyers of electric vehicles 2W/3W', 'Healthcare institutions for EV ambulances', 'State transport corporations for e-buses'],
-        benefits: ['Incentives on 24.79 lakh electric 2W', '3.16 lakh electric 3W', 'EV ambulances for health facilities', 'Charging infra expansion at govt buildings'],
-        lastVerified: '2026-03-05', launchYear: 2024
-    }),
-    s('c-digitalindia', 'Digital India Programme', 'central', 'Digital',
-        'Transforming India into a digitally empowered society via BharatNet, DigiLocker, UPI, UMANG, and 1 lakh+ CSCs.',
-        'MeitY', {
-        officialWebsite: 'https://www.digitalindia.gov.in/', popular: true, tags: ['Active'],
-        eligibility: ['All Indian citizens and businesses'],
-        benefits: ['BharatNet broadband to gram panchayats', 'DigiLocker: Digital document storage', 'UMANG: 1,200+ govt services on one app', 'eSign: Digital signing', 'CSC in every panchayat'],
-        lastVerified: '2026-03-05', launchYear: 2015
-    }),
+    // ── BANKING / FINANCIAL INCLUSION ─────────────────────────────────────────
+    {
+        id: 'c-pmjdy', name: 'PM Jan Dhan Yojana', governmentLevel: 'central',
+        category: 'Banking', schemeCategory: 'Direct Benefit Transfer',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'National financial inclusion mission providing every household with a zero-balance bank account, RuPay card, and access to insurance/pension.',
+        ministry: 'Ministry of Finance',
+        officialWebsite: 'https://pmjdy.gov.in',
+        applicationType: 'Bank Application' as ApplicationType,
+        eligibility: ['Any Indian citizen without a bank account', 'Minimum age 10 years'],
+        benefits: ['Zero balance savings account', 'RuPay Debit Card with ₹2 lakh accidental cover', 'Overdraft up to ₹10,000 after 6 months'],
+        documents: ['Aadhaar Card (or any official ID)', 'Passport photo'],
+        howToApply: ['Visit any scheduled bank or Business Correspondent', 'Fill Jan Dhan account opening form', 'Submit identity documents'],
+        launchYear: 2014, lastVerified: '2026-03-05', verifiedSource: 'pmjdy.gov.in', isActive: true,
+    },
+
+    // ── LOANS / MSME ──────────────────────────────────────────────────────────
+    {
+        id: 'c-mudra', name: 'PM MUDRA Yojana', governmentLevel: 'central',
+        category: 'MSME', schemeCategory: 'Loan Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Collateral-free loans to micro and small non-corporate businesses under three tiers: Shishu (up to ₹50k), Kishore (₹50k–5L), Tarun (₹5–20L).',
+        ministry: 'Ministry of Finance',
+        officialWebsite: 'https://www.mudra.org.in',
+        applicationType: 'Bank Application' as ApplicationType,
+        maxAmount: '₹20 lakh',
+        eligibility: ['Non-corporate small businesses', 'Manufacturing, trading, service sector', 'No CIBIL defaulter status'],
+        benefits: ['Shishu: up to ₹50,000', 'Kishore: ₹50,001–₹5 lakh', 'Tarun: ₹5–₹20 lakh', 'No collateral required'],
+        documents: ['Aadhaar Card', 'PAN Card', 'Business plan', 'Address proof of business'],
+        howToApply: ['Visit any scheduled bank, MFI, or NBFC', 'Submit application with business plan', 'Bank verifies and sanctions loan'],
+        notes: 'Interest rates vary by lending institution. No interest subsidy.',
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'mudra.org.in', isActive: true,
+    },
+    {
+        id: 'c-standup', name: 'Stand Up India', governmentLevel: 'central',
+        category: 'MSME', schemeCategory: 'Loan Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Bank loans of ₹10 lakh–₹1 crore for greenfield enterprises to at least one SC/ST and one woman borrower per bank branch.',
+        ministry: 'Ministry of Finance / SIDBI',
+        officialWebsite: 'https://www.standupmitra.in',
+        applicationType: 'Bank Application' as ApplicationType,
+        benefitAmount: '₹10 lakh – ₹1 crore loan',
+        eligibility: ['SC/ST or women entrepreneurs', 'First-time greenfield enterprise', 'Age 18+ years'],
+        benefits: ['Composite loan ₹10L–₹1 crore', 'Credit guarantee via NCGTC', '7-year repayment period'],
+        documents: ['Aadhaar Card', 'PAN', 'Business plan', 'SC/ST certificate if applicable'],
+        howToApply: ['Apply at standupmitra.in', 'Or any scheduled bank branch', 'Bank evaluates and sanctions'],
+        launchYear: 2016, lastVerified: '2026-03-05', verifiedSource: 'standupmitra.in', isActive: true,
+    },
+    {
+        id: 'c-pmvishwakarma', name: 'PM Vishwakarma Yojana', governmentLevel: 'central',
+        category: 'MSME', schemeCategory: 'Skill Development Scheme',
+        tags: ['New 2024', 'Popular', 'Verified'], popular: true,
+        description: 'Supports traditional artisans and craftspeople with PM Vishwakarma Certificate, ₹15,000 toolkit, skill training, and collateral-free loans.',
+        ministry: 'Ministry of Micro, Small and Medium Enterprises',
+        officialWebsite: 'https://pmvishwakarma.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        benefitAmount: '₹15,000 toolkit + ₹1–2 lakh loan',
+        eligibility: ['Traditional artisans (18 trades): carpenters, blacksmiths, potters, tailors, goldsmiths etc.', 'One beneficiary per family', 'Age 18+, self-employed'],
+        benefits: ['PM Vishwakarma Certificate and ID card', '₹15,000 toolkit support', 'Skill training with ₹500/day stipend', '₹1 lakh first loan at 5% interest', '₹2 lakh second loan at 5% interest'],
+        documents: ['Aadhaar Card', 'Bank account', 'Mobile number'],
+        howToApply: ['Register at pmvishwakarma.gov.in', 'Gram Panchayat/ULB verifies', 'Attend skill training', 'Receive toolkit and loan'],
+        launchYear: 2023, lastVerified: '2026-03-05', verifiedSource: 'pmvishwakarma.gov.in', isActive: true,
+    },
+    {
+        id: 'c-pmsvanidhi', name: 'PM SVANidhi Scheme', governmentLevel: 'central',
+        category: 'MSME', schemeCategory: 'Loan Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Working capital loans to urban street vendors with 7% interest subsidy and digital payment cashback in three progressive cycles.',
+        ministry: 'Ministry of Housing and Urban Affairs',
+        officialWebsite: 'https://pmsvanidhi.mohua.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        eligibility: ['Urban street vendors with Certificate of Vending or ULB recommendation', 'Vendors operational as of March 2020'],
+        benefits: ['₹10,000 first cycle loan', '₹20,000 second cycle', '₹50,000 third cycle', '7% interest subsidy', 'Cashback on digital transactions'],
+        documents: ['Aadhaar Card', 'Bank account', 'Vendor certificate / ULB letter'],
+        howToApply: ['Apply at pmsvanidhi.mohua.gov.in', 'Or through banks, MFIs, or CSCs'],
+        notes: 'Timely repayment qualifies for higher loan in next cycle.',
+        launchYear: 2020, lastVerified: '2026-03-05', verifiedSource: 'pmsvanidhi.mohua.gov.in', isActive: true,
+    },
+
+    // ── GOVERNMENT MISSIONS ───────────────────────────────────────────────────
+    {
+        id: 'c-bbbp', name: 'Beti Bachao Beti Padhao', governmentLevel: 'central',
+        category: 'Women', schemeCategory: 'Government Mission / Initiative',
+        tags: ['Verified'], popular: false,
+        description: 'National campaign to address declining child sex ratio and promote girl child education and welfare. Not a direct benefit scheme.',
+        ministry: 'Ministry of Women and Child Development',
+        officialWebsite: 'https://wcd.nic.in',
+        applicationType: 'No Individual Application' as ApplicationType,
+        eligibility: ['National campaign — no individual eligibility'],
+        benefits: ['Awareness programs on gender equality', 'Girl child education promotion', 'Convergence with SSY and Ujjwala'],
+        documents: [],
+        howToApply: ['This is a national campaign implemented by government agencies. No individual application required.'],
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'wcd.nic.in', isActive: true,
+    },
+    {
+        id: 'c-jjm', name: 'Jal Jeevan Mission', governmentLevel: 'central',
+        category: 'Infrastructure', schemeCategory: 'Infrastructure Programme',
+        tags: ['Verified'], popular: false,
+        description: 'Mission to provide functional household tap connections (FHTCs) with piped clean water to every rural household.',
+        ministry: 'Ministry of Jal Shakti',
+        officialWebsite: 'https://jaljeevanmission.gov.in',
+        applicationType: 'No Individual Application' as ApplicationType,
+        eligibility: ['Rural households — implemented by state and local governments'],
+        benefits: ['Functional household tap water connection', 'Safe piped drinking water', 'Village water quality testing'],
+        documents: [],
+        howToApply: ['Implemented through state water departments and Gram Panchayats. No individual application required.'],
+        launchYear: 2019, lastVerified: '2026-03-05', verifiedSource: 'jaljeevanmission.gov.in', isActive: true,
+    },
+    {
+        id: 'c-digital-india', name: 'Digital India Programme', governmentLevel: 'central',
+        category: 'Digital', schemeCategory: 'Government Mission / Initiative',
+        tags: ['Verified'], popular: false,
+        description: 'National mission to transform India into a digitally empowered society through digital infrastructure, governance, and services.',
+        ministry: 'Ministry of Electronics and Information Technology',
+        officialWebsite: 'https://digitalindia.gov.in',
+        applicationType: 'No Individual Application' as ApplicationType,
+        eligibility: ['National programme — no individual application'],
+        benefits: ['Digital infrastructure development', 'e-Governance and digital services', 'CSC network across India'],
+        documents: [],
+        howToApply: ['National mission implemented by government agencies. No individual application required.'],
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'digitalindia.gov.in', isActive: true,
+    },
+
+    // ── EMPLOYMENT / SOCIAL SECURITY ─────────────────────────────────────────
+    {
+        id: 'c-mgnrega', name: 'MGNREGA', governmentLevel: 'central',
+        category: 'Employment', schemeCategory: 'Direct Benefit Transfer',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Legal guarantee of 100 days of wage employment per year to rural households for unskilled manual work.',
+        ministry: 'Ministry of Rural Development',
+        officialWebsite: 'https://nrega.nic.in',
+        applicationType: 'Through Government Agency' as ApplicationType,
+        benefitAmount: '100 days guaranteed wage employment',
+        eligibility: ['Rural households', 'Adult members willing to do unskilled manual work', 'Must have Job Card from Gram Panchayat'],
+        benefits: ['100 days guaranteed wage employment per household per year', 'Unemployment allowance if work not provided within 15 days', 'Wages to bank account directly'],
+        documents: ['Job Card (issued by Gram Panchayat)'],
+        howToApply: ['Apply for Job Card at Gram Panchayat', 'Submit work application in writing', 'Work allocated within 15 days of application'],
+        launchYear: 2006, lastVerified: '2026-03-05', verifiedSource: 'nrega.nic.in', isActive: true,
+    },
+    {
+        id: 'c-nsap', name: 'National Social Assistance Programme', governmentLevel: 'central',
+        category: 'Social Welfare', schemeCategory: 'Pension Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Umbrella social security programme for BPL households providing old age, widow, disability pensions and family benefit.',
+        ministry: 'Ministry of Rural Development',
+        officialWebsite: 'https://nsap.nic.in',
+        applicationType: 'Through Government Agency' as ApplicationType,
+        eligibility: ['BPL household', 'Age 60+ for IGNOAPS', 'Widows under IGNWPS', 'Disabled (80%+) under IGNDPS'],
+        benefits: ['Old age pension ₹200–₹500/month + state top-up', 'Widow pension', 'Disability pension', 'Family benefit ₹20,000 on death of breadwinner'],
+        documents: ['Aadhaar Card', 'BPL/SECC card', 'Age/disability/death proof', 'Bank account'],
+        howToApply: ['Apply through Gram Panchayat, BDO, or district welfare office', 'State governments disburse pensions'],
+        launchYear: 1995, lastVerified: '2026-03-05', verifiedSource: 'nsap.nic.in', isActive: true,
+    },
+
+    // ── EDUCATION / SCHOLARSHIP ───────────────────────────────────────────────
+    {
+        id: 'c-nmms', name: 'National Means-cum-Merit Scholarship', governmentLevel: 'central',
+        category: 'Education', schemeCategory: 'Scholarship Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Scholarship of ₹12,000/year for meritorious students from Class IX–XII from families with income below ₹3.5 lakh.',
+        ministry: 'Ministry of Education',
+        officialWebsite: 'https://scholarships.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        benefitAmount: '₹12,000/year',
+        eligibility: ['Students who passed Class VIII with 55%+', 'Family income below ₹3.5 lakh/year', 'Enrolled in Class IX in government/aided school'],
+        benefits: ['₹12,000 per year until Class XII (4 years total)', 'Direct bank transfer'],
+        documents: ['Aadhaar Card', 'Income certificate', 'School enrollment proof', 'Bank account'],
+        howToApply: ['Apply through scholarships.gov.in', 'Qualify NMMS state examination', 'Submit documents via school'],
+        launchYear: 2008, lastVerified: '2026-03-05', verifiedSource: 'scholarships.gov.in', isActive: true,
+    },
+    {
+        id: 'c-vidyalakshmi', name: 'PM Vidya Lakshmi Portal', governmentLevel: 'central',
+        category: 'Education', schemeCategory: 'Loan Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Single portal to apply for education loans from multiple banks simultaneously for higher education.',
+        ministry: 'Ministry of Education / Ministry of Finance',
+        officialWebsite: 'https://vidyalakshmi.co.in',
+        applicationType: 'Online Application' as ApplicationType,
+        eligibility: ['Students seeking higher education loans', 'Admitted to recognized institutions in India or abroad'],
+        benefits: ['Apply to multiple banks in one form', 'Compare loan offers', 'Track application status online'],
+        documents: ['Aadhaar Card', 'Academic records', 'Admission letter', 'Income documents of co-applicant'],
+        howToApply: ['Register at vidyalakshmi.co.in', 'Fill common education loan application', 'Apply to multiple banks simultaneously'],
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'vidyalakshmi.co.in', isActive: true,
+    },
+
+    // ── SKILL DEVELOPMENT ─────────────────────────────────────────────────────
+    {
+        id: 'c-pmkvy', name: 'PM Kaushal Vikas Yojana', governmentLevel: 'central',
+        category: 'Skill Development', schemeCategory: 'Skill Development Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Free short-term skill training and NSQF-aligned certification for youth to secure wage or self-employment opportunities.',
+        ministry: 'Ministry of Skill Development and Entrepreneurship',
+        officialWebsite: 'https://pmkvyofficial.org',
+        applicationType: 'Through Government Agency' as ApplicationType,
+        eligibility: ['Indian youth aged 15–45', 'School/college dropout or passed out'],
+        benefits: ['Free certified skill training (3–6 months)', 'Industry-recognized certification', 'Placement assistance'],
+        documents: ['Aadhaar Card', 'Educational certificates'],
+        howToApply: ['Register at skillindia.gov.in', 'Locate nearest PMKVY training partner centre', 'Enrol in preferred training'],
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'pmkvyofficial.org', isActive: true,
+    },
+    {
+        id: 'c-pmdaksh', name: 'PM-DAKSH Scheme', governmentLevel: 'central',
+        category: 'Skill Development', schemeCategory: 'Skill Development Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Free vocational skill training with stipend and placement for SC/ST/OBC/EBC communities.',
+        ministry: 'Ministry of Social Justice and Empowerment',
+        officialWebsite: 'https://pmdaksh.dosje.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        eligibility: ['SC/ST/OBC/EBC community youth aged 18–45', 'Income below ₹1 lakh/year for long-term courses'],
+        benefits: ['Free vocational training', 'Stipend during training', 'Placement support and certification'],
+        documents: ['Aadhaar Card', 'Caste/community certificate', 'Bank account'],
+        howToApply: ['Register at pmdaksh.dosje.gov.in', 'Select training program and centre'],
+        launchYear: 2021, lastVerified: '2026-03-05', verifiedSource: 'dosje.gov.in', isActive: true,
+    },
+    {
+        id: 'c-naps', name: 'National Apprenticeship Promotion Scheme', governmentLevel: 'central',
+        category: 'Skill Development', schemeCategory: 'Skill Development Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Government reimburses 25% of stipend to employers to encourage apprenticeship training for youth.',
+        ministry: 'Ministry of Skill Development and Entrepreneurship',
+        officialWebsite: 'https://apprenticeshipindia.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        eligibility: ['Youth aged 14+ (ITI holders) and graduates', 'Job seekers seeking industry training'],
+        benefits: ['Stipend during apprenticeship', 'Industry-recognized certification', 'Direct industry experience'],
+        documents: ['Aadhaar Card', 'Educational/ITI certificates'],
+        howToApply: ['Register at apprenticeshipindia.gov.in', 'Apply to available opportunities', 'Employer provides training'],
+        launchYear: 2016, lastVerified: '2026-03-05', verifiedSource: 'apprenticeshipindia.gov.in', isActive: true,
+    },
+    {
+        id: 'c-ddugky', name: 'DDU Grameen Kaushalya Yojana', governmentLevel: 'central',
+        category: 'Skill Development', schemeCategory: 'Skill Development Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Market-demand-driven free skill training and guaranteed placement for rural poor youth from BPL families.',
+        ministry: 'Ministry of Rural Development',
+        officialWebsite: 'https://ddugky.gov.in',
+        applicationType: 'Through Government Agency' as ApplicationType,
+        eligibility: ['Rural youth aged 15–35 from BPL families', 'SC/ST, minorities, women prioritized'],
+        benefits: ['Free residential skill training', 'Placement guarantee >75%', 'Post-placement support 12 months'],
+        documents: ['Aadhaar Card', 'Age/education proof', 'BPL card'],
+        howToApply: ['Contact nearest DDU-GKY implementing agency', 'Register via district rural development office'],
+        launchYear: 2014, lastVerified: '2026-03-05', verifiedSource: 'ddugky.gov.in', isActive: true,
+    },
+    {
+        id: 'c-pmegp', name: 'PM Employment Generation Programme', governmentLevel: 'central',
+        category: 'MSME', schemeCategory: 'Loan Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Provides 15–35% capital subsidy and bank loan support to set up new micro enterprises in manufacturing and services.',
+        ministry: 'Ministry of Micro, Small and Medium Enterprises',
+        officialWebsite: 'https://www.kviconline.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        benefitAmount: 'Subsidy 15–35% of project cost',
+        eligibility: ['Individuals 18+ years', 'Min VIII pass for projects >₹10L', 'SHGs, charitable trusts, co-op societies'],
+        benefits: ['15–35% subsidy on project cost by location/category', 'Bank loan for remaining cost', 'No income ceiling'],
+        documents: ['Aadhaar Card', 'Project report', 'Bank account', 'Caste/education certificate if applicable'],
+        howToApply: ['Apply at kviconline.gov.in/pmegponline', 'KVIC/KVIB/DIC reviews and forwards to bank', 'Subsidy released after project completion'],
+        launchYear: 2008, lastVerified: '2026-03-05', verifiedSource: 'kviconline.gov.in', isActive: true,
+    },
+
+    // ── WOMEN / CHILDREN ─────────────────────────────────────────────────────
+    {
+        id: 'c-ssy', name: 'Sukanya Samriddhi Yojana', governmentLevel: 'central',
+        category: 'Women', schemeCategory: 'Savings Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Long-term tax-saving savings scheme for girl children supporting education and marriage at the highest government scheme interest rate.',
+        ministry: 'Ministry of Finance',
+        officialWebsite: 'https://www.nsiindia.gov.in',
+        applicationType: 'Bank Application' as ApplicationType,
+        benefitAmount: '₹250 – ₹1.5 lakh/year deposit',
+        interestRate: '8.2% p.a.',
+        taxBenefit: 'EEE – Fully exempt under Section 80C',
+        eligibility: ['Girl child below age 10', 'Max 2 accounts per family', 'Indian resident'],
+        benefits: ['8.2% p.a. interest (highest govt scheme)', 'Full EEE tax exemption', 'Partial withdrawal at 18 for education', 'Full maturity at 21'],
+        documents: ['Birth certificate of girl', 'Aadhaar of parent/guardian', 'Address proof'],
+        howToApply: ['Open account at post office or authorised bank', 'Fill SSY form', 'Min deposit ₹250/year'],
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'nsiindia.gov.in', isActive: true,
+    },
+    {
+        id: 'c-lakhpati', name: 'Lakhpati Didi Initiative', governmentLevel: 'central',
+        category: 'Women', schemeCategory: 'Skill Development Scheme',
+        tags: ['New 2024', 'Popular', 'Verified'], popular: true,
+        description: 'Empowers rural SHG women to earn ₹1 lakh+ annually through skill training, technology, and entrepreneurship under DAY-NRLM.',
+        ministry: 'Ministry of Rural Development',
+        officialWebsite: 'https://aajeevika.gov.in',
+        applicationType: 'Through Self Help Groups' as ApplicationType,
+        benefitAmount: 'Target ₹1 lakh+ annual income',
+        eligibility: ['Rural women in SHGs under DAY-NRLM'],
+        benefits: ['Skill training in agri/tech/handicrafts', 'Drone didi training', 'Bank credit access through SHGs', 'Market linkage support'],
+        documents: ['SHG membership card'],
+        howToApply: ['Join or form SHG under DAY-NRLM', 'Access training through DMMU of district'],
+        launchYear: 2023, lastVerified: '2026-03-05', verifiedSource: 'aajeevika.gov.in', isActive: true,
+    },
+    {
+        id: 'c-saksham', name: 'Saksham Anganwadi & Poshan 2.0', governmentLevel: 'central',
+        category: 'Women', schemeCategory: 'Health Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Supplementary nutrition, early childhood development and health checkups for children 0–6 years and pregnant/lactating mothers.',
+        ministry: 'Ministry of Women and Child Development',
+        officialWebsite: 'https://poshanabhiyaan.gov.in',
+        applicationType: 'Through Government Agency' as ApplicationType,
+        eligibility: ['Children aged 0–6 years', 'Pregnant women and lactating mothers', 'Adolescent girls 14–18 years'],
+        benefits: ['Supplementary nutrition', 'Growth monitoring and health checkups', 'Pre-school education at Anganwadi'],
+        documents: ['Aadhaar (optional)', 'Mother-child protection card'],
+        howToApply: ['Access services through nearest Anganwadi centre', 'Register with Anganwadi worker in your area'],
+        launchYear: 2021, lastVerified: '2026-03-05', verifiedSource: 'wcd.gov.in', isActive: true,
+    },
+    {
+        id: 'c-pmmvy', name: 'PM Matru Vandana Yojana', governmentLevel: 'central',
+        category: 'Women', schemeCategory: 'Direct Benefit Transfer',
+        tags: ['Verified'], popular: false,
+        description: 'Maternity benefit of ₹5,000 for pregnant and lactating mothers for first live birth to compensate wage loss.',
+        ministry: 'Ministry of Women and Child Development',
+        officialWebsite: 'https://pmmvy.wcd.gov.in',
+        applicationType: 'Through Government Agency' as ApplicationType,
+        benefitAmount: '₹5,000 maternity benefit',
+        eligibility: ['Pregnant women aged 19+', 'First live birth', 'Registered at Anganwadi'],
+        benefits: ['₹5,000 cash in two installments', 'Additional ₹6,000 under JSSK for institutional delivery'],
+        documents: ['Aadhaar Card', 'MCP (Mother-Child Protection) card', 'Bank account'],
+        howToApply: ['Register at nearest Anganwadi centre', 'Benefits transferred directly to bank account'],
+        launchYear: 2017, lastVerified: '2026-03-05', verifiedSource: 'wcd.gov.in', isActive: true,
+    },
+
+    // ── SENIOR CITIZENS / SAVINGS ─────────────────────────────────────────────
+    {
+        id: 'c-scss', name: 'Senior Citizen Savings Scheme', governmentLevel: 'central',
+        category: 'Senior Citizens', schemeCategory: 'Savings Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Government-backed quarterly-income savings scheme for senior citizens at 8.2% p.a. with max deposit ₹30 lakh.',
+        ministry: 'Ministry of Finance',
+        officialWebsite: 'https://www.nsiindia.gov.in',
+        applicationType: 'Bank Application' as ApplicationType,
+        interestRate: '8.2% p.a.',
+        maxAmount: '₹30 lakh',
+        taxBenefit: 'Section 80C; interest taxable',
+        eligibility: ['Age 60+', 'VRS/Superannuation retirees aged 55+', 'NRIs not eligible'],
+        benefits: ['Quarterly interest at 8.2% p.a.', 'Maximum deposit ₹30 lakh', '5-year tenure extendable by 3 years'],
+        documents: ['Aadhaar Card', 'Age proof', 'Bank account'],
+        howToApply: ['Visit post office or authorised bank', 'Fill SCSS opening form', 'Submit age proof and initial deposit'],
+        launchYear: 2004, lastVerified: '2026-03-05', verifiedSource: 'nsiindia.gov.in', isActive: true,
+    },
+
+    // ── YOUTH / STARTUP ───────────────────────────────────────────────────────
+    {
+        id: 'c-pmis', name: 'PM Internship Scheme', governmentLevel: 'central',
+        category: 'Youth', schemeCategory: 'Skill Development Scheme',
+        tags: ['New 2024', 'Verified'], popular: false,
+        description: 'Provides 12-month internships at top 500 companies to youth aged 21–24 with ₹5,000 monthly stipend from Government.',
+        ministry: 'Ministry of Corporate Affairs',
+        officialWebsite: 'https://pminternship.mca.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        benefitAmount: '₹5,000/month stipend',
+        eligibility: ['Youth aged 21–24', 'Not in full-time employment or full-time education'],
+        benefits: ['₹5,000 monthly government stipend', 'One-time ₹6,000 incidentals budget', '12-month internship at top companies', 'Certificate on completion'],
+        documents: ['Aadhaar Card', 'Educational certificates', 'Bank account'],
+        howToApply: ['Apply at pminternship.mca.gov.in', 'Select preferred companies and roles', 'Companies approve shortlisted candidates'],
+        launchYear: 2024, lastVerified: '2026-03-05', verifiedSource: 'mca.gov.in', isActive: true,
+    },
+    {
+        id: 'c-startup-india', name: 'Startup India', governmentLevel: 'central',
+        category: 'Youth', schemeCategory: 'Government Mission / Initiative',
+        tags: ['Popular', 'Verified'], popular: false,
+        description: 'Supports DPIIT-recognized startups with 3-year tax holiday, seed fund access, faster patents, and compliance self-certification.',
+        ministry: 'DPIIT, Ministry of Commerce and Industry',
+        officialWebsite: 'https://startupindia.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        eligibility: ['DPIIT-recognized startup incorporated <10 years', 'Annual turnover below ₹100 crore', 'Not formed by splitting existing business'],
+        benefits: ['3-year income tax holiday (Sec 80-IAC)', 'Startup India Seed Fund', '80% rebate on patent fees', 'Self-certification under 9 laws'],
+        documents: ['Certificate of incorporation', 'PAN', 'Brief about innovation/product'],
+        howToApply: ['Register at startupindia.gov.in', 'Apply for DPIIT recognition', 'Apply separately for tax/seed fund benefits'],
+        notes: 'Not a direct cash benefit. Benefits depend on DPIIT recognition status.',
+        launchYear: 2016, lastVerified: '2026-03-05', verifiedSource: 'startupindia.gov.in', isActive: true,
+    },
+
+    // ── FOOD SECURITY ─────────────────────────────────────────────────────────
+    {
+        id: 'c-pmgkay', name: 'PM Garib Kalyan Anna Yojana', governmentLevel: 'central',
+        category: 'Social Welfare', schemeCategory: 'Direct Benefit Transfer',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: '5 kg free food grains per person per month to all NFSA ration card holders (~81 crore beneficiaries) via PDS.',
+        ministry: 'Ministry of Consumer Affairs, Food and Public Distribution',
+        officialWebsite: 'https://dfpd.gov.in',
+        applicationType: 'Ration Card Based' as ApplicationType,
+        eligibility: ['NFSA ration card holders (AAY and PHH cards)'],
+        benefits: ['5 kg free food grains (wheat/rice) per person/month', 'Distributed at Fair Price Shops', 'Continued from Jan 2023 indefinitely'],
+        documents: ['Ration Card'],
+        howToApply: ['Collect monthly ration from designated Fair Price Shop', 'Present ration card and Aadhaar biometric (ePoS)'],
+        launchYear: 2020, lastVerified: '2026-03-05', verifiedSource: 'dfpd.gov.in', isActive: true,
+    },
+
+    // ── DIGITAL HEALTH ────────────────────────────────────────────────────────
+    {
+        id: 'c-gig', name: 'Gig Workers — e-Shram Registration', governmentLevel: 'central',
+        category: 'Employment', schemeCategory: 'Skill Development Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'e-Shram portal provides gig, platform, and unorganized workers a unique identification card with ₹2 lakh accidental insurance.',
+        ministry: 'Ministry of Labour and Employment',
+        officialWebsite: 'https://eshram.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        eligibility: ['Gig workers, platform workers, unorganized sector workers aged 16–59', 'Not a member of EPFO or ESIC'],
+        benefits: ['e-Shram Card with 12-digit UAN', '₹2 lakh accidental cover under PMSBY', 'Priority in government welfare schemes'],
+        documents: ['Aadhaar Card', 'Mobile number', 'Bank account'],
+        howToApply: ['Register at eshram.gov.in or CSC', 'Enter Aadhaar and OTP verification', 'Download e-Shram card'],
+        launchYear: 2021, lastVerified: '2026-03-05', verifiedSource: 'eshram.gov.in', isActive: true,
+    },
+    {
+        id: 'c-pmfme', name: 'PM Formalisation of Micro Food Processing Enterprises', governmentLevel: 'central',
+        category: 'MSME', schemeCategory: 'Loan Scheme',
+        tags: ['Verified'], popular: false,
+        description: '35% credit-linked capital subsidy to micro food processing enterprises for upgrading and formalizing with FSSAI compliance.',
+        ministry: 'Ministry of Food Processing Industries',
+        officialWebsite: 'https://pmfme.mofpi.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        benefitAmount: '35% subsidy (up to ₹10 lakh)',
+        eligibility: ['Existing micro food processing units', 'Individuals, SHGs, FPOs, cooperatives'],
+        benefits: ['35% capital subsidy on eligible project cost (max ₹10L)', 'Branding and marketing support for SHGs', 'FSSAI certification support'],
+        documents: ['Aadhaar Card', 'Business/FSSAI details', 'Project report', 'Bank account'],
+        howToApply: ['Apply at pmfme.mofpi.gov.in', 'State nodal agency verifies', 'Bank sanctions; subsidy released on asset creation'],
+        launchYear: 2020, lastVerified: '2026-03-05', verifiedSource: 'pmfme.mofpi.gov.in', isActive: true,
+    },
+    {
+        id: 'c-daynrlm', name: 'DAY-National Rural Livelihoods Mission', governmentLevel: 'central',
+        category: 'Employment', schemeCategory: 'Skill Development Scheme',
+        tags: ['Verified'], popular: false,
+        description: 'Mobilises rural poor into SHGs with credit linkage, skill training and livelihood support to reduce poverty.',
+        ministry: 'Ministry of Rural Development',
+        officialWebsite: 'https://aajeevika.gov.in',
+        applicationType: 'Through Self Help Groups' as ApplicationType,
+        eligibility: ['Rural poor households, priority to SC/ST, women-headed, BPL families'],
+        benefits: ['SHG formation and revolving fund', 'Bank credit linkage', 'Skill training and placement'],
+        documents: ['Aadhaar Card', 'SHG membership'],
+        howToApply: ['Join or form SHG in your village', 'Link with DAY-NRLM via Gram Panchayat or community mobilizer'],
+        launchYear: 2011, lastVerified: '2026-03-05', verifiedSource: 'aajeevika.gov.in', isActive: true,
+    },
 ];
-
-// Free schemes available to all users (non-premium)
-export const FREE_SCHEME_IDS = ['c-mudra', 'c-ssy', 'c-pmkisan', 'c-jandhan', 'c-mgnrega', 'c-apy', 'c-pmsby'];
