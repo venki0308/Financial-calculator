@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, TrendingUp, BarChart3, FileText, Save, Check, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -21,6 +21,7 @@ import {
 } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
 import DisclaimerBanner from '../components/DisclaimerBanner';
+import { AnalyticsService } from '../lib/analytics';
 
 ChartJS.register(
     CategoryScale,
@@ -35,6 +36,7 @@ ChartJS.register(
 );
 
 export default function AdvancedSIPCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('Advanced_SIP'); }, []);
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { addHistory, addSaved, savedCalculations } = useCalculatorStore();

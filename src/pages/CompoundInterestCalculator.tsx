@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -8,8 +8,10 @@ import { calculateCompoundInterest, formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
+import { AnalyticsService } from '../lib/analytics';
 
 export default function CompoundInterestCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('Compound_Interest'); }, []);
     const navigate = useNavigate();
     const [principal, setPrincipal] = useState(100000);
     const [rate, setRate] = useState(8);

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Building2, MapPin, ArrowRightLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { AnalyticsService } from '../lib/analytics';
 
 type Mode = 'land' | 'flat' | 'convert';
 
@@ -25,6 +26,7 @@ const unitConversions: Record<string, number> = {
 const unitKeys = Object.keys(unitConversions);
 
 export default function PropertyCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('Property'); }, []);
     const { t } = useTranslation();
     const navigate = useNavigate();
     const addSaved = useCalculatorStore((s) => s.addSaved);

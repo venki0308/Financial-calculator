@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChevronRight, Bookmark, Users, GraduationCap, Tractor, Building2, UserCheck, Shield, Home as HomeIcon, Landmark, Heart, Briefcase, HandHeart, Clock, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,10 +6,12 @@ import { useTranslation } from 'react-i18next';
 import { schemes, schemeCategories } from '../data/schemes';
 import { useSchemeStore } from '../store/useSchemeStore';
 import BottomSheet from '../components/BottomSheet';
+import { AnalyticsService } from '../lib/analytics';
 
 const catIcons: Record<string, React.ElementType> = { Women: Users, Education: GraduationCap, Farmers: Tractor, MSME: Building2, 'Senior Citizens': UserCheck, Insurance: Shield, Housing: HomeIcon, Banking: Landmark, Pension: Clock, Health: Heart, Employment: Briefcase, 'Social Welfare': HandHeart };
 
 export default function Schemes() {
+    useEffect(() => { AnalyticsService.trackScreen('Schemes_List'); }, []);
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { bookmarkedSchemes, addBookmark, removeBookmark } = useSchemeStore();

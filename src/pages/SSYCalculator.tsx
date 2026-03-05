@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'Sukanya Samriddhi Yojana',
@@ -35,4 +37,5 @@ const config = {
     formulaText: 'SSY interest is compounded annually. Maturity is 21 years from account opening or marriage.',
 };
 
-export default function SSYCalculator() { return <GenericCalculator config={config} />; }
+export default function SSYCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('SSY_Calculator'); }, []); return <GenericCalculator config={config} />; }

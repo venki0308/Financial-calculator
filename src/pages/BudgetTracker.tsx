@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, LayoutDashboard, Wallet, Calendar, BarChart3 } from 'lucide-react';
@@ -7,6 +7,7 @@ import DashboardTab from './expenses/DashboardTab';
 import BudgetTab from './expenses/BudgetTab';
 import DailyTab from './expenses/DailyTab';
 import ReportsTab from './expenses/ReportsTab';
+import { AnalyticsService } from '../lib/analytics';
 
 const TABS = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -18,6 +19,7 @@ const TABS = [
 type TabId = typeof TABS[number]['id'];
 
 export default function BudgetTracker() {
+    useEffect(() => { AnalyticsService.trackScreen('Budget_Tracker'); }, []);
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<TabId>('dashboard');

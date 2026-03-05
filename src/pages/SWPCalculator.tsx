@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'SWP Calculator',
@@ -32,4 +34,6 @@ const config = {
     formulaText: 'SWP reduces balance monthly by withdrawal amount and increases by monthly interest.',
 };
 
-export default function SWPCalculator() { return <GenericCalculator config={config} />; }
+export default function SWPCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('SWP_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

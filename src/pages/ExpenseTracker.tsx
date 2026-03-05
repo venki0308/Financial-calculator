@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Plus, Trash2, TrendingUp, TrendingDown, Wallet, PieChart, Calendar as CalendarIcon, DollarSign, Tag, ChevronRight, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useExpenseStore, type Budget, type Expense } from '../store/useExpenseStore';
+import { AnalyticsService } from '../lib/analytics';
 
 const CATEGORY_COLORS: Record<string, string> = {
     food: '#F59E0B', transport: '#3B82F6', shopping: '#EC4899', entertainment: '#8B5CF6',
@@ -16,6 +17,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 export default function ExpenseTracker() {
+    useEffect(() => { AnalyticsService.trackScreen('Expense_Tracker'); }, []);
     const { t } = useTranslation();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'dashboard' | 'budget' | 'daily' | 'reports'>('dashboard');

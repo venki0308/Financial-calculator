@@ -1,10 +1,12 @@
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bookmark, Share2, CheckCircle2, ExternalLink, AlertCircle, Calculator } from 'lucide-react';
+import { ArrowLeft, Bookmark, Share2, CheckCircle2, ExternalLink, Calculator } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { schemes } from '../data/schemes';
 import { useSchemeStore } from '../store/useSchemeStore';
 import DisclaimerBanner from '../components/DisclaimerBanner';
+import { AnalyticsService } from '../lib/analytics';
 
 export default function SchemeDetail() {
     const { id } = useParams();
@@ -12,6 +14,12 @@ export default function SchemeDetail() {
     const { t } = useTranslation();
     const { bookmarkedSchemes, addBookmark, removeBookmark } = useSchemeStore();
     const scheme = schemes.find((s) => s.id === id);
+
+    useEffect(() => {
+        if (scheme) {
+            AnalyticsService.trackSchemeViewed(scheme.name, scheme.governmentLevel);
+        }
+    }, [scheme]);
 
     if (!scheme) return <div className="flex items-center justify-center min-h-dvh bg-white dark:bg-[#0F172A] text-slate-900 dark:text-white"><p>{t('schemes.schemeNotFound')}</p></div>;
 

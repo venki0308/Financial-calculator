@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'NSC Calculator',
@@ -25,4 +27,5 @@ const config = {
     formulaText: 'NSC interest is compounded annually and paid at maturity after 5 years.',
 };
 
-export default function NSCCalculator() { return <GenericCalculator config={config} />; }
+export default function NSCCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('NSC_Calculator'); }, []); return <GenericCalculator config={config} />; }

@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'Recurring Deposit',
@@ -30,4 +32,5 @@ const config = {
     formulaText: 'RD maturity value is based on quarterly compounding of interest.',
 };
 
-export default function RDCalculator() { return <GenericCalculator config={config} />; }
+export default function RDCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('RD_Calculator'); }, []); return <GenericCalculator config={config} />; }

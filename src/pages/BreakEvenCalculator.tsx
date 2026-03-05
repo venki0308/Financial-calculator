@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'Break Even Calculator',
@@ -26,4 +28,6 @@ const config = {
     formulaText: 'Break Even Point (Units) = Fixed Costs / (Selling Price - Variable Cost).',
 };
 
-export default function BreakEvenCalculator() { return <GenericCalculator config={config} />; }
+export default function BreakEvenCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('BreakEven'); }, []); return <GenericCalculator config={config} />;
+}

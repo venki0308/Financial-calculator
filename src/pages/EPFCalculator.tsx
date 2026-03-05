@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'EPF Calculator',
@@ -40,4 +42,5 @@ const config = {
     formulaText: 'EPF: Employee 12% + Employer 3.67% (EPF) + 8.33% (EPS). Interest compounded monthly.',
 };
 
-export default function EPFCalculator() { return <GenericCalculator config={config} />; }
+export default function EPFCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('EPF_Calculator'); }, []); return <GenericCalculator config={config} />; }

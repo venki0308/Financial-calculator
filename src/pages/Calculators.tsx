@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChevronRight, Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { AnalyticsService } from '../lib/analytics';
 
 interface CalcItem { nameKey: string; descKey: string; icon: React.ElementType; color: string; path: string; category: string; }
 
@@ -60,6 +61,7 @@ const categoryEmojis: Record<string, string> = {
 };
 
 export default function Calculators() {
+    useEffect(() => { AnalyticsService.trackScreen('Calculators_List'); }, []);
     const navigate = useNavigate();
     const { t } = useTranslation();
     const [search, setSearch] = useState('');

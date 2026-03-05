@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'Gratuity Calculator',
@@ -23,4 +25,5 @@ const config = {
     formulaText: 'Gratuity Formula = (Basic Salary + DA) × (15/26) × Years of Service.',
 };
 
-export default function GratuityCalculator() { return <GenericCalculator config={config} />; }
+export default function GratuityCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('Gratuity'); }, []); return <GenericCalculator config={config} />; }

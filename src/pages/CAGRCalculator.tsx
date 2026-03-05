@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'CAGR Calculator',
@@ -23,4 +25,6 @@ const config = {
     formulaText: 'CAGR = [(Final / Initial)^(1/Years) - 1] × 100.',
 };
 
-export default function CAGRCalculator() { return <GenericCalculator config={config} />; }
+export default function CAGRCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('CAGR_Calculator'); }, []); return <GenericCalculator config={config} />;
+}

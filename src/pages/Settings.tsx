@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import BottomSheet from '../components/BottomSheet';
+import { AnalyticsService } from '../lib/analytics';
 
 const languages = [
     { code: 'en', name: 'English', nativeName: 'English' },
@@ -29,9 +30,12 @@ export default function Settings() {
 
     const currentLang = languages.find(l => i18n.language.startsWith(l.code)) || languages[0];
 
+    useEffect(() => { AnalyticsService.trackScreen('Settings'); }, []);
+
     const changeLanguage = (code: string) => {
         i18n.changeLanguage(code);
         localStorage.setItem('language', code);
+        AnalyticsService.trackLanguageChanged(code);
         setShowLangPicker(false);
     };
 

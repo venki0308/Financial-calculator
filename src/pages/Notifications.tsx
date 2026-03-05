@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bell, FileText, Calculator, Zap, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { AnalyticsService } from '../lib/analytics';
 
 interface NotificationSetting {
     id: string;
@@ -20,6 +21,7 @@ const defaultSettings: NotificationSetting[] = [
 ];
 
 export default function Notifications() {
+    useEffect(() => { AnalyticsService.trackScreen('Notifications'); }, []);
     const navigate = useNavigate();
     const [settings, setSettings] = useState<NotificationSetting[]>(() => {
         try {

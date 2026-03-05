@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 // Default items if history is empty
 const defaultItems = [
@@ -23,6 +24,10 @@ export default function Home() {
     const userName = user?.name?.split(' ')[0] || 'User';
 
     const [recentPaths, setRecentPaths] = useState<string[]>([]);
+
+    useEffect(() => {
+        AnalyticsService.trackScreen('Home');
+    }, []);
 
     useEffect(() => {
         try {

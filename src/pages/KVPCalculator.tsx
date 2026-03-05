@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'KVP Calculator',
@@ -25,4 +27,5 @@ const config = {
     formulaText: 'KVP doubles your money in 115 months at the current 7.5% interest rate.',
 };
 
-export default function KVPCalculator() { return <GenericCalculator config={config} />; }
+export default function KVPCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('KVP_Calculator'); }, []); return <GenericCalculator config={config} />; }

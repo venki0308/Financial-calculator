@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Info, TrendingDown, TrendingUp, Download, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportToPDF } from '../utils/exportUtils';
+import { AnalyticsService } from '../lib/analytics';
 
 // ─── Slab Tables ──────────────────────────────────────────────────────────────
 const OLD_REGIME = [
@@ -42,6 +43,7 @@ const fmt = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
 type Inputs = Record<string, string>;
 
 export default function IncomeTaxCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('Income_Tax'); }, []);
     const navigate = useNavigate();
     const [regime, setRegime] = useState<'old' | 'new'>('new');
     const [inputs, setInputs] = useState<Inputs>({

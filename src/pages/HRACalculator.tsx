@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'HRA Calculator',
@@ -33,4 +35,5 @@ const config = {
     formulaText: 'HRA Exemption is min of: 1. Actual HRA, 2. 50% (Metro) or 40% (Non-metro) of Basic, 3. Rent paid - 10% of Basic.',
 };
 
-export default function HRACalculator() { return <GenericCalculator config={config} />; }
+export default function HRACalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('HRA_Calculator'); }, []); return <GenericCalculator config={config} />; }

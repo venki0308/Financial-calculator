@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bookmark, Clock, Bell, Settings, ChevronRight, User, Globe, Pencil, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,12 +6,14 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useSchemeStore } from '../store/useSchemeStore';
 import { useTranslation } from 'react-i18next';
+import { AnalyticsService } from '../lib/analytics';
 
 const languages: Record<string, string> = {
     en: 'English', hi: 'हिंदी', te: 'తెలుగు', ta: 'தமிழ்', kn: 'ಕನ್ನಡ', ml: 'മലയാളം'
 };
 
 export default function Profile() {
+    useEffect(() => { AnalyticsService.trackScreen('Profile'); }, []);
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
     const { user, updateName } = useAuthStore();

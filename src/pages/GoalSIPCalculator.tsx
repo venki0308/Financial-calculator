@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'Goal SIP Calculator',
@@ -29,4 +31,5 @@ const config = {
     },
 };
 
-export default function GoalSIPCalculator() { return <GenericCalculator config={config} />; }
+export default function GoalSIPCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('Goal_SIP'); }, []); return <GenericCalculator config={config} />; }

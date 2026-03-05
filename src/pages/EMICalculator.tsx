@@ -23,6 +23,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
+import { AnalyticsService } from '../lib/analytics';
 
 ChartJS.register(
     ArcElement,
@@ -39,6 +40,7 @@ ChartJS.register(
 const loanTypes = ['Home Loan', 'Personal Loan', 'Car Loan', 'Education Loan'];
 
 export default function EMICalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('EMI_Calculator'); }, []);
     const navigate = useNavigate();
     const [loanType, setLoanType] = useState('Home Loan');
     const [method, setMethod] = useState<'reducing' | 'flat'>('reducing');

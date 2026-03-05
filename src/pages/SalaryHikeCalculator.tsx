@@ -11,8 +11,10 @@ import { Save, Check, Lock } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
+import { AnalyticsService } from '../lib/analytics';
 
 export default function SalaryHikeCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('Salary_Hike'); }, []);
     const navigate = useNavigate();
 
     // Mode: 'findHike' = Find Hike % by entering current & new salary

@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'SCSS Calculator',
@@ -23,4 +25,5 @@ const config = {
     formulaText: 'SCSS pays interest quarterly on 31st March, 30th June, 30th Sep and 31st Dec.',
 };
 
-export default function SCSSCalculator() { return <GenericCalculator config={config} />; }
+export default function SCSSCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('SCSS_Calculator'); }, []); return <GenericCalculator config={config} />; }

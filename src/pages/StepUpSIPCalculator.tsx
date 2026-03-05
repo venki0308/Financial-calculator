@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'Step Up SIP',
@@ -35,4 +37,5 @@ const config = {
     },
 };
 
-export default function StepUpSIPCalculator() { return <GenericCalculator config={config} />; }
+export default function StepUpSIPCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('StepUp_SIP'); }, []); return <GenericCalculator config={config} />; }

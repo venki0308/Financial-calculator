@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'PPF Calculator',
@@ -27,4 +29,5 @@ const config = {
     formulaText: 'PPF uses annual compounding. Deposits made before 5th earn interest for that month.',
 };
 
-export default function PPFCalculator() { return <GenericCalculator config={config} />; }
+export default function PPFCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('PPF_Calculator'); }, []); return <GenericCalculator config={config} />; }

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Check, Download, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -23,6 +23,7 @@ import {
     Title,
 } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
+import { AnalyticsService } from '../lib/analytics';
 
 ChartJS.register(
     ArcElement,
@@ -37,6 +38,7 @@ ChartJS.register(
 );
 
 export default function GSTCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('GST_Calculator'); }, []);
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved, savedCalculations } = useCalculatorStore();

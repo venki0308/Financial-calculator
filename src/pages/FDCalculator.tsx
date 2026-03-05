@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Info, Save, Check, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -21,6 +21,7 @@ import { calculateFD, formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { AnalyticsService } from '../lib/analytics';
 
 ChartJS.register(
     ArcElement,
@@ -35,6 +36,7 @@ ChartJS.register(
 );
 
 export default function FDCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('FD_Calculator'); }, []);
     const navigate = useNavigate();
     const { addSaved, savedCalculations } = useCalculatorStore();
     const [principal, setPrincipal] = useState(100000);

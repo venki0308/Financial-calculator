@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -8,10 +8,12 @@ import { formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
+import { AnalyticsService } from '../lib/analytics';
 
 type Mode = 'flat' | 'simple' | 'compound';
 
 export default function SimpleInterestCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('Simple_Interest'); }, []);
     const navigate = useNavigate();
     const [mode, setMode] = useState<Mode>('flat');
     const [principal, setPrincipal] = useState(100000);

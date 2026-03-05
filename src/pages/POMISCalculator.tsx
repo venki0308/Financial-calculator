@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'Post Office MIS',
@@ -22,4 +24,5 @@ const config = {
     formulaText: 'PO MIS pays monthly interest. Principal is returned after 5 years.',
 };
 
-export default function POMISCalculator() { return <GenericCalculator config={config} />; }
+export default function POMISCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('POMIS_Calculator'); }, []); return <GenericCalculator config={config} />; }

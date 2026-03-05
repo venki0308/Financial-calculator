@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'Lumpsum Calculator',
@@ -23,4 +25,5 @@ const config = {
     formulaText: 'FV = P(1 + r)^n where P is principal, r is annual rate and n is years.',
 };
 
-export default function LumpsumCalculator() { return <GenericCalculator config={config} />; }
+export default function LumpsumCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('Lumpsum'); }, []); return <GenericCalculator config={config} />; }

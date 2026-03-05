@@ -22,6 +22,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
+import { AnalyticsService } from '../lib/analytics';
 
 ChartJS.register(
     ArcElement,
@@ -36,6 +37,7 @@ ChartJS.register(
 );
 
 export default function SIPCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('SIP_Calculator'); }, []);
     const navigate = useNavigate();
     const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
     const [monthly, setMonthly] = useState(5000);

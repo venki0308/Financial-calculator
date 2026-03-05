@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
+import { AnalyticsService } from '../lib/analytics';
 
 const config = {
     title: 'Post Office TD',
@@ -25,4 +27,5 @@ const config = {
     formulaText: 'Post Office Time Deposit calculates interest quarterly and pays annually.',
 };
 
-export default function POTDCalculator() { return <GenericCalculator config={config} />; }
+export default function POTDCalculator() {
+    useEffect(() => { AnalyticsService.trackScreen('POTD_Calculator'); }, []); return <GenericCalculator config={config} />; }
