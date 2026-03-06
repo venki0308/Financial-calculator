@@ -294,7 +294,7 @@ export default function IncomeTaxCalculator() {
             ['Net Annual Income', fmt(netAnnual)],
             ['Effective Tax Rate', `${effectiveRate.toFixed(2)}%`],
         );
-        await exportToPDF(`Income Tax Report - ${regime === 'old' ? 'Old' : 'New'} Regime (FY 2025-26)`, headers, rows, `Income_Tax_Report_FY2025-26`);
+        await exportToPDF(`Income Tax Report - ${regime === 'old' ? 'Old' : 'New'} Regime (FY 2026-27)`, headers, rows, `Income_Tax_Report_FY2026-27`);
     };
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -309,7 +309,7 @@ export default function IncomeTaxCalculator() {
                 </button>
                 <div>
                     <h1 className="text-slate-900 dark:text-white font-bold text-base">Income Tax Calculator</h1>
-                    <p className="text-slate-400 text-[11px]">FY 2025-26 • Union Budget 2025</p>
+                    <p className="text-slate-400 text-[11px]">FY 2026-27 (AY 2027-28) • Union Budget 2026</p>
                 </div>
             </div>
 
@@ -324,7 +324,7 @@ export default function IncomeTaxCalculator() {
                         >
                             {r === 'new' ? 'New Regime' : 'Old Regime'}
                             <br />
-                            <span className="font-normal text-[9px] opacity-80">{r === 'new' ? 'Budget 2025-26' : 'With deductions'}</span>
+                            <span className="font-normal text-[9px] opacity-80">{r === 'new' ? 'Budget 2026-27' : 'With deductions'}</span>
                         </motion.button>
                     ))}
                 </div>
@@ -387,7 +387,7 @@ export default function IncomeTaxCalculator() {
                                 No income tax payable under the new regime.
                             </p>
                             <p className="text-emerald-600 dark:text-emerald-500 text-[10px] text-center mt-0.5">
-                                Taxable income is within Rs 12,00,000 exemption limit (Budget 2025-26)
+                                Taxable income is within Rs 12,00,000 exemption limit (Budget 2026-27)
                             </p>
                         </div>
                     )}
@@ -449,7 +449,7 @@ export default function IncomeTaxCalculator() {
                         <div className="flex gap-3">
                             <Info size={18} className="text-brand-purple flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-brand-purple font-semibold text-sm">New Regime — Budget 2025-26</p>
+                                <p className="text-brand-purple font-semibold text-sm">New Regime — Budget 2026-27</p>
                                 <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
                                     Standard deduction of Rs 75,000 applied automatically. No manual deductions (HRA, 80C, 80D, etc.) available in the new regime.
                                 </p>
@@ -664,7 +664,7 @@ export default function IncomeTaxCalculator() {
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                                 <div className="px-4 pb-4">
                                     <p className="text-amber-700 dark:text-amber-300 text-xs leading-relaxed">
-                                        This calculator provides estimates for FY 2025-26 based on the Union Budget 2025. Actual tax liability may vary depending on your complete financial profile, surcharges, or special circumstances. Please consult a <strong>Chartered Accountant</strong> for precise tax planning.
+                                        This calculator provides estimates for FY 2026-27 based on the Union Budget 2026. Actual tax liability may vary depending on your complete financial profile, surcharges, or special circumstances. Please consult a <strong>Chartered Accountant</strong> for precise tax planning.
                                     </p>
                                     <a href="https://www.incometax.gov.in" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-amber-700 dark:text-amber-400 text-xs font-semibold mt-2">
                                         <ExternalLink size={12} /> incometax.gov.in (Official Portal)
