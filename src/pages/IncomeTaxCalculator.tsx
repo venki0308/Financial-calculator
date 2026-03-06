@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Info, TrendingUp, Download, ExternalLink, ChevronDown, ChevronUp, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Info, TrendingUp, Download, ExternalLink, ChevronDown, ChevronUp, Lightbulb, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportToPDF } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
@@ -22,49 +22,71 @@ const NEW_REGIME = [
     { min: 1500000, max: Infinity, rate: 30 },
 ];
 
+// Deduction limits for validation
+const LIMITS = {
+    section80C: 150000,
+    section80D: 25000,
+    section80CCD: 50000,
+    homeLoan: 200000,
+} as Record<string, number>;
+
 function computeSlabTax(income: number, slabs: typeof OLD_REGIME): number {
     let tax = 0;
     for (const slab of slabs) {
         if (income > slab.min) {
-            tax += (Math.min(income, slab.max === Infinity ? income : slab.max) - slab.min) * (slab.rate / 100);
+            const upper = slab.max === Infinity ? income : slab.max;
+            tax += (Math.min(income, upper) - slab.min) * (slab.rate / 100);
         }
     }
     return tax;
 }
 
 function applyRebate87A(tax: number, taxableIncome: number, regime: 'old' | 'new'): number {
-    const limit = regime === 'new' ? 1200000 : 500000;
-    if (taxableIncome <= limit) return 0;
-    return Math.max(0, tax - (regime === 'new' ? 60000 : 12500));
+    if (regime === 'new') {
+        // New regime: full rebate if taxable income <= 12L (Section 87A)
+        if (taxableIncome <= 1200000) return 0;
+    } else {
+        // Old regime: rebate up to 12,500 if taxable income <= 5L
+        if (taxableIncome <= 500000) return 0;
+    }
+    return tax;
 }
 
 const fmt = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
 
 type Inputs = Record<string, string>;
 
-const InputRow = memo(({ label, k, value, onChange, prefix = '₹', hint }: {
+// ─── Input Row with Validation Warning ────────────────────────────────────────
+const InputRow = memo(({ label, k, value, onChange, prefix = '₹', hint, warning }: {
     label: string;
     k: string;
     value: string;
     onChange: (k: string, v: string) => void;
     prefix?: string;
     hint?: string;
+    warning?: string;
 }) => {
     return (
         <div className="space-y-1">
             <label className="text-slate-500 dark:text-slate-400 text-xs font-semibold">{label}</label>
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 focus-within:border-brand-purple transition-colors">
+            <div className={`flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border rounded-xl px-3 py-2.5 transition-colors ${warning ? 'border-amber-400 dark:border-amber-500' : 'border-slate-200 dark:border-slate-700 focus-within:border-brand-purple'}`}>
                 {prefix && <span className="text-brand-purple font-bold text-sm flex-shrink-0">{prefix}</span>}
                 <input
                     type="number"
-                    inputMode="numeric"
+                    inputMode="decimal"
                     value={value}
                     onChange={(e) => onChange(k, e.target.value)}
                     placeholder="0"
-                    className="flex-1 bg-transparent text-slate-900 dark:text-white text-sm font-semibold outline-none"
+                    className="flex-1 bg-transparent text-slate-900 dark:text-white text-sm font-semibold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
             </div>
-            {hint && <p className="text-slate-400 text-[10px]">{hint}</p>}
+            {warning && (
+                <div className="flex items-start gap-1.5 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40">
+                    <AlertTriangle size={12} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-amber-600 dark:text-amber-400 text-[10px] leading-tight">{warning}</p>
+                </div>
+            )}
+            {hint && !warning && <p className="text-slate-400 text-[10px]">{hint}</p>}
         </div>
     );
 });
@@ -95,6 +117,21 @@ function CollapsibleSection({ title, children, defaultOpen = true }: { title: st
     );
 }
 
+// ─── Validation ───────────────────────────────────────────────────────────────
+function getWarning(k: string, rawValue: string): string | undefined {
+    const val = parseFloat(rawValue || '0') || 0;
+    const limit = LIMITS[k];
+    if (!limit || val <= limit) return undefined;
+    const labels: Record<string, string> = {
+        section80C: 'Section 80C',
+        section80D: 'Section 80D',
+        section80CCD: 'Section 80CCD(1B)',
+        homeLoan: 'Home Loan Interest (Sec 24)',
+    };
+    return `You entered ${fmt(val)} in ${labels[k]}. Maximum allowed is ${fmt(limit)}. Only ${fmt(limit)} will be considered.`;
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 export default function IncomeTaxCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Income_Tax'); }, []);
     const navigate = useNavigate();
@@ -106,7 +143,7 @@ export default function IncomeTaxCalculator() {
         special: '',
         bonus: '',
         otherIncome: '',
-        standardDeduction: '75000',
+        // Old regime deductions
         section80C: '',
         section80D: '',
         section80CCD: '',
@@ -119,13 +156,13 @@ export default function IncomeTaxCalculator() {
     });
 
     const set = useCallback((k: string, v: string) => setInputs((p) => ({ ...p, [k]: v })), []);
-    const num = (k: string) => parseFloat(inputs[k] || '0') || 0;
+    const num = useCallback((k: string) => parseFloat(inputs[k] || '0') || 0, [inputs]);
 
+    // ─── Gross Income (always same for both regimes) ──────────────────────────
     const grossSalary = num('basicSalary') + num('hra') + num('special') + num('bonus') + num('otherIncome');
 
-    // HRA Exemption (Old Regime)
+    // ─── HRA Exemption ────────────────────────────────────────────────────────
     const hraExemption = useMemo(() => {
-        if (regime === 'new') return 0;
         const hraRcvd = num('hraReceived');
         const rentPaid = num('rentPaid');
         const basic = num('basicSalary');
@@ -139,83 +176,77 @@ export default function IncomeTaxCalculator() {
                 basic * (isMetro ? 0.5 : 0.4)
             )
         );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [inputs, regime]);
+    }, [inputs, num]);
 
-    const totalDeductions = useMemo(() => {
-        if (regime === 'new') return 75000; // Fixed standard deduction for new regime
-        return (
-            num('standardDeduction') +
-            Math.min(num('section80C'), 150000) +
-            Math.min(num('section80D'), 50000) +
-            Math.min(num('section80CCD'), 50000) +
-            num('section80E') + // No cap on 80E
-            Math.min(num('section80G'), num('section80G')) + // 80G varies, no fixed cap here
-            Math.min(num('homeLoan'), 200000) +
-            hraExemption
-        );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [inputs, regime, hraExemption]);
+    // ─── Compute Old Regime Deductions (always, for comparison) ───────────────
+    const oldDeductions = useMemo(() => {
+        const stdDed = 50000; // Fixed for old regime
+        const ded80C = Math.min(num('section80C'), 150000);
+        const ded80D = Math.min(num('section80D'), 25000);
+        const dedNPS = Math.min(num('section80CCD'), 50000);
+        const ded80E = num('section80E');
+        const ded80G = num('section80G');
+        const dedHL = Math.min(num('homeLoan'), 200000);
+        return stdDed + ded80C + ded80D + dedNPS + ded80E + ded80G + dedHL + hraExemption;
+    }, [inputs, num, hraExemption]);
 
-    const taxableIncome = Math.max(0, grossSalary - totalDeductions);
+    // ─── Compute Both Regimes (always, for comparison) ────────────────────────
+    // New regime computation
+    const newTaxableIncome = Math.max(0, grossSalary - 75000); // 75k standard deduction
+    const newRawTax = computeSlabTax(newTaxableIncome, NEW_REGIME);
+    const newAfterRebate = applyRebate87A(newRawTax, newTaxableIncome, 'new');
+    const newCess = newAfterRebate * 0.04;
+    const newTotalTax = newAfterRebate + newCess;
 
-    const slabs = regime === 'old' ? OLD_REGIME : NEW_REGIME;
-    const rawTax = computeSlabTax(taxableIncome, slabs);
-    const afterRebate = applyRebate87A(rawTax, taxableIncome, regime);
-    const cess = afterRebate * 0.04;
-    const totalTax = afterRebate + cess;
-    const monthlyTax = totalTax / 12;
-    const monthlyTakeHome = (grossSalary - totalTax) / 12;
-    const effectiveRate = grossSalary > 0 ? (totalTax / grossSalary) * 100 : 0;
+    // Old regime computation
+    const oldTaxableIncome = Math.max(0, grossSalary - oldDeductions);
+    const oldRawTax = computeSlabTax(oldTaxableIncome, OLD_REGIME);
+    const oldAfterRebate = applyRebate87A(oldRawTax, oldTaxableIncome, 'old');
+    const oldCess = oldAfterRebate * 0.04;
+    const oldTotalTax = oldAfterRebate + oldCess;
 
-    // ─── Cross-Regime Comparison ──────────────────────────────────────────────
-    // Always compute both regimes for comparison
-    const newTaxableIncome = Math.max(0, grossSalary - 75000);
-    const newRaw = computeSlabTax(newTaxableIncome, NEW_REGIME);
-    const newAfterRebate = applyRebate87A(newRaw, newTaxableIncome, 'new');
-    const newTotalTax = newAfterRebate + newAfterRebate * 0.04;
+    // Active regime's values
+    const activeDeductions = regime === 'new' ? 75000 : oldDeductions;
+    const activeTaxableIncome = regime === 'new' ? newTaxableIncome : oldTaxableIncome;
+    const activeRawTax = regime === 'new' ? newRawTax : oldRawTax;
+    const activeAfterRebate = regime === 'new' ? newAfterRebate : oldAfterRebate;
+    const activeCess = regime === 'new' ? newCess : oldCess;
+    const activeTotalTax = regime === 'new' ? newTotalTax : oldTotalTax;
+    const activeSlabs = regime === 'new' ? NEW_REGIME : OLD_REGIME;
 
-    const oldTotalDeductions = (
-        num('standardDeduction') +
-        Math.min(num('section80C'), 150000) +
-        Math.min(num('section80D'), 50000) +
-        Math.min(num('section80CCD'), 50000) +
-        num('section80E') +
-        num('section80G') +
-        Math.min(num('homeLoan'), 200000) +
-        hraExemption
-    );
-    const oldTaxableIncome = Math.max(0, grossSalary - (regime === 'old' ? totalDeductions : oldTotalDeductions));
-    const oldRaw = computeSlabTax(oldTaxableIncome, OLD_REGIME);
-    const oldAfterRebate = applyRebate87A(oldRaw, oldTaxableIncome, 'old');
-    const oldTotalTax = oldAfterRebate + oldAfterRebate * 0.04;
+    const monthlyTax = activeTotalTax / 12;
+    const monthlyTakeHome = (grossSalary - activeTotalTax) / 12;
+    const effectiveRate = grossSalary > 0 ? (activeTotalTax / grossSalary) * 100 : 0;
 
-    const displayOldTax = regime === 'old' ? totalTax : oldTotalTax;
-    const displayNewTax = regime === 'new' ? totalTax : newTotalTax;
-
-    const betterRegime = displayOldTax <= displayNewTax ? 'Old' : 'New';
-    const saving = Math.abs(displayOldTax - displayNewTax);
-    const maxTax = Math.max(displayOldTax, displayNewTax, 1);
+    // ─── Comparison ───────────────────────────────────────────────────────────
+    const betterRegime = oldTotalTax <= newTotalTax ? 'Old' : 'New';
+    const saving = Math.abs(oldTotalTax - newTotalTax);
+    const maxTax = Math.max(oldTotalTax, newTotalTax, 1);
+    const bothZero = oldTotalTax === 0 && newTotalTax === 0;
 
     // ─── Tax-Saving Tips ──────────────────────────────────────────────────────
-    const tips: string[] = [];
-    if (regime === 'old') {
+    const tips: string[] = useMemo(() => {
+        const t: string[] = [];
+        if (grossSalary === 0) return t;
+
+        // Show tips for old regime or when new regime has higher tax
         const used80C = Math.min(num('section80C'), 150000);
         if (used80C < 150000) {
             const gap = 150000 - used80C;
-            tips.push(`Invest ${fmt(gap)} more under Section 80C (PPF, ELSS, LIC) to reduce taxable income.`);
+            t.push(`You can invest ${fmt(gap)} more under Section 80C (PPF, ELSS, LIC) to reduce taxable income.`);
         }
-        const used80D = Math.min(num('section80D'), 50000);
+        const used80D = Math.min(num('section80D'), 25000);
         if (used80D < 25000) {
-            tips.push(`Health insurance under Section 80D can save up to ${fmt(25000 - used80D)} in tax deductions.`);
+            t.push(`You can claim health insurance deduction under Section 80D (up to ${fmt(25000 - used80D)} more).`);
         }
         if (!num('section80CCD')) {
-            tips.push(`NPS contribution under Section 80CCD(1B) offers an additional deduction of up to Rs 50,000.`);
+            t.push(`You may invest up to Rs 50,000 in NPS under Section 80CCD(1B) for additional deduction.`);
         }
         if (!num('section80E') && !num('homeLoan')) {
-            tips.push(`Education loan interest (80E) and home loan interest (Section 24) are powerful deductions.`);
+            t.push(`Education loan interest (80E) and home loan interest (Sec 24) are additional deductions available.`);
         }
-    }
+        return t;
+    }, [inputs, grossSalary, num]);
 
     // ─── PDF Handler ──────────────────────────────────────────────────────────
     const handleDownloadPDF = async () => {
@@ -234,15 +265,15 @@ export default function IncomeTaxCalculator() {
         if (regime === 'old') {
             rows.push(
                 ['--- DEDUCTION SUMMARY ---', ''],
-                ['Standard Deduction', fmt(num('standardDeduction'))],
+                ['Standard Deduction', fmt(50000)],
                 ['Section 80C', fmt(Math.min(num('section80C'), 150000))],
-                ['Section 80D', fmt(Math.min(num('section80D'), 50000))],
+                ['Section 80D', fmt(Math.min(num('section80D'), 25000))],
                 ['Section 80CCD(1B) NPS', fmt(Math.min(num('section80CCD'), 50000))],
                 ['Section 80E Education Loan', fmt(num('section80E'))],
                 ['Section 80G Donations', fmt(num('section80G'))],
                 ['Home Loan Interest (Sec 24)', fmt(Math.min(num('homeLoan'), 200000))],
                 ['HRA Exemption', fmt(hraExemption)],
-                ['Total Deductions', fmt(totalDeductions)],
+                ['Total Deductions', fmt(oldDeductions)],
                 ['---', ''],
             );
         } else {
@@ -253,39 +284,40 @@ export default function IncomeTaxCalculator() {
         }
 
         rows.push(
-            ['Taxable Income', fmt(taxableIncome)],
+            ['Taxable Income', fmt(activeTaxableIncome)],
             ['---', ''],
             ['--- TAX SLAB BREAKDOWN ---', ''],
         );
-        slabs.forEach((slab) => {
-            const slabAmount = Math.max(0, Math.min(taxableIncome, slab.max === Infinity ? taxableIncome : slab.max) - slab.min);
-            const slabTax = slabAmount * (slab.rate / 100);
-            if (taxableIncome > slab.min) {
+        activeSlabs.forEach((slab) => {
+            if (activeTaxableIncome > slab.min) {
+                const upper = slab.max === Infinity ? activeTaxableIncome : slab.max;
+                const slabAmount = Math.max(0, Math.min(activeTaxableIncome, upper) - slab.min);
+                const slabTax = slabAmount * (slab.rate / 100);
                 const label = slab.max === Infinity ? `Above ${fmt(slab.min)}` : `${fmt(slab.min)} - ${fmt(slab.max)}`;
                 rows.push([`${label} @ ${slab.rate}%`, slab.rate === 0 ? 'Nil' : fmt(slabTax)]);
             }
         });
         rows.push(
             ['---', ''],
-            ['Income Tax (Before Cess)', fmt(afterRebate)],
-            ['Health & Education Cess (4%)', fmt(cess)],
-            ['Total Tax Liability', fmt(totalTax)],
+            ['Income Tax (Before Cess)', fmt(activeAfterRebate)],
+            ['Health & Education Cess (4%)', fmt(activeCess)],
+            ['Total Tax Liability', fmt(activeTotalTax)],
             ['---', ''],
             ['--- REGIME COMPARISON ---', ''],
-            ['Old Regime Tax', fmt(displayOldTax)],
-            ['New Regime Tax', fmt(displayNewTax)],
-            [`Recommended: ${betterRegime} Regime`, `Save ${fmt(saving)}`],
+            ['Old Regime Tax', fmt(oldTotalTax)],
+            ['New Regime Tax', fmt(newTotalTax)],
+            [`Recommended: ${betterRegime} Regime`, saving > 0 ? `Save ${fmt(saving)}` : 'Equal'],
             ['---', ''],
             ['--- MONTHLY TAKE-HOME ---', ''],
             ['Monthly Salary (Gross)', fmt(grossSalary / 12)],
             ['Estimated Monthly Tax', fmt(monthlyTax)],
             ['Estimated Monthly Take-Home', fmt(monthlyTakeHome)],
-            ['Annual Take-Home', fmt(grossSalary - totalTax)],
+            ['Annual Take-Home', fmt(grossSalary - activeTotalTax)],
             ['Effective Tax Rate', `${effectiveRate.toFixed(2)}%`],
         );
 
         await exportToPDF(
-            `Income Tax Report — ${regime === 'old' ? 'Old' : 'New'} Regime (FY 2025-26)`,
+            `Income Tax Report - ${regime === 'old' ? 'Old' : 'New'} Regime (FY 2025-26)`,
             headers,
             rows,
             `Income_Tax_Report_FY2025-26`
@@ -311,10 +343,7 @@ export default function IncomeTaxCalculator() {
                     {(['new', 'old'] as const).map((r) => (
                         <motion.button
                             key={r}
-                            onClick={() => {
-                                setInputs((p) => ({ ...p, standardDeduction: r === 'new' ? '75000' : '50000' }));
-                                setRegime(r);
-                            }}
+                            onClick={() => setRegime(r)}
                             className={`flex-1 py-3 text-xs font-bold rounded-lg transition-all ${regime === r ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/30' : 'text-slate-400 dark:text-slate-500'}`}
                         >
                             {r === 'new' ? 'New Regime' : 'Old Regime'}
@@ -331,7 +360,7 @@ export default function IncomeTaxCalculator() {
                     <InputRow label="HRA (House Rent Allowance)" k="hra" value={inputs.hra} onChange={set} />
                     <InputRow label="Special Allowance" k="special" value={inputs.special} onChange={set} />
                     <InputRow label="Bonus & Other Allowances" k="bonus" value={inputs.bonus} onChange={set} />
-                    <InputRow label="Other Income (FD interest, etc.)" k="otherIncome" value={inputs.otherIncome} onChange={set} />
+                    <InputRow label="Other Income (FD interest, rental, etc.)" k="otherIncome" value={inputs.otherIncome} onChange={set} />
                     <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex justify-between items-center">
                         <span className="text-slate-600 dark:text-slate-400 text-sm font-medium">Gross Annual Income</span>
                         <span className="font-extrabold text-slate-900 dark:text-white text-base">{fmt(grossSalary)}</span>
@@ -341,7 +370,7 @@ export default function IncomeTaxCalculator() {
                 {/* Deductions */}
                 {regime === 'old' ? (
                     <>
-                        {/* HRA Exemption Calc */}
+                        {/* HRA Exemption */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
                             <CollapsibleSection title="Housing Benefits">
                                 <InputRow label="HRA Received (Annual)" k="hraReceived" value={inputs.hraReceived} onChange={set} />
@@ -359,7 +388,14 @@ export default function IncomeTaxCalculator() {
                                     <span className="text-brand-green text-xs font-semibold">HRA Exemption</span>
                                     <span className="text-brand-green font-bold text-sm">{fmt(hraExemption)}</span>
                                 </div>
-                                <InputRow label="Home Loan Interest (Sec 24)" k="homeLoan" value={inputs.homeLoan} onChange={set} hint="Max Rs 2,00,000" />
+                                <InputRow
+                                    label="Home Loan Interest (Section 24)"
+                                    k="homeLoan"
+                                    value={inputs.homeLoan}
+                                    onChange={set}
+                                    hint="Max Rs 2,00,000"
+                                    warning={getWarning('homeLoan', inputs.homeLoan)}
+                                />
                             </CollapsibleSection>
                         </div>
 
@@ -367,15 +403,39 @@ export default function IncomeTaxCalculator() {
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-1">
                             <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-2">Deductions (Old Regime)</h3>
 
-                            <InputRow label="Standard Deduction" k="standardDeduction" value={inputs.standardDeduction} onChange={set} hint="Fixed Rs 50,000 for Old Regime" />
+                            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 flex justify-between items-center">
+                                <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">Standard Deduction</span>
+                                <span className="font-bold text-brand-purple text-sm">{fmt(50000)}</span>
+                            </div>
 
                             <CollapsibleSection title="Investment Deductions">
-                                <InputRow label="Section 80C (PPF, ELSS, LIC)" k="section80C" value={inputs.section80C} onChange={set} hint="Max Rs 1,50,000" />
-                                <InputRow label="Section 80CCD(1B) — NPS" k="section80CCD" value={inputs.section80CCD} onChange={set} hint="Max Rs 50,000" />
+                                <InputRow
+                                    label="Section 80C (PPF, ELSS, LIC, etc.)"
+                                    k="section80C"
+                                    value={inputs.section80C}
+                                    onChange={set}
+                                    hint="Max Rs 1,50,000"
+                                    warning={getWarning('section80C', inputs.section80C)}
+                                />
+                                <InputRow
+                                    label="Section 80CCD(1B) — NPS"
+                                    k="section80CCD"
+                                    value={inputs.section80CCD}
+                                    onChange={set}
+                                    hint="Max Rs 50,000"
+                                    warning={getWarning('section80CCD', inputs.section80CCD)}
+                                />
                             </CollapsibleSection>
 
                             <CollapsibleSection title="Insurance & Medical">
-                                <InputRow label="Section 80D (Health Insurance)" k="section80D" value={inputs.section80D} onChange={set} hint="Max Rs 25,000 (Rs 50,000 for senior)" />
+                                <InputRow
+                                    label="Section 80D (Health Insurance)"
+                                    k="section80D"
+                                    value={inputs.section80D}
+                                    onChange={set}
+                                    hint="Max Rs 25,000 (self & family)"
+                                    warning={getWarning('section80D', inputs.section80D)}
+                                />
                             </CollapsibleSection>
 
                             <CollapsibleSection title="Additional Deductions">
@@ -385,7 +445,7 @@ export default function IncomeTaxCalculator() {
 
                             <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex justify-between items-center">
                                 <span className="text-slate-600 dark:text-slate-400 text-sm font-medium">Total Deductions</span>
-                                <span className="font-extrabold text-brand-green text-base">-{fmt(totalDeductions)}</span>
+                                <span className="font-extrabold text-brand-green text-base">-{fmt(oldDeductions)}</span>
                             </div>
                         </div>
                     </>
@@ -396,55 +456,63 @@ export default function IncomeTaxCalculator() {
                             <div>
                                 <p className="text-brand-purple font-semibold text-sm">New Regime — Standard Deduction: Rs 75,000</p>
                                 <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
-                                    Lower slab rates but no manual deductions (HRA, 80C, etc.) except the Rs 75,000 standard deduction.
+                                    Lower slab rates but no manual deductions (HRA, 80C, etc.) except the Rs 75,000 standard deduction applied automatically.
                                 </p>
                             </div>
                         </div>
                         <div className="flex justify-between items-center pt-2 border-t border-brand-purple/10">
                             <span className="text-slate-500 text-xs">Taxable Income</span>
-                            <span className="font-bold text-brand-purple text-sm">{fmt(Math.max(0, grossSalary - 75000))}</span>
+                            <span className="font-bold text-brand-purple text-sm">{fmt(newTaxableIncome)}</span>
                         </div>
                     </div>
                 )}
 
-                {/* ═══ Results ═══ */}
+                {/* ════════ Results (only when gross > 0) ════════ */}
                 {grossSalary > 0 && (
                     <>
-                        {/* Tax Breakdown Card */}
+                        {/* Tax Summary Hero Card */}
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-gradient-to-br from-red-500 to-orange-600 rounded-3xl p-6 text-white shadow-xl"
+                            className={`rounded-3xl p-6 text-white shadow-xl ${activeTotalTax === 0
+                                ? 'bg-gradient-to-br from-emerald-500 to-teal-600'
+                                : 'bg-gradient-to-br from-red-500 to-orange-600'
+                                }`}
                         >
-                            <p className="text-orange-100 text-xs font-semibold uppercase tracking-wider mb-1">
+                            <p className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-1">
                                 {regime === 'old' ? 'Old Regime' : 'New Regime'} — Total Tax
                             </p>
-                            <h2 className="text-4xl font-extrabold">{fmt(totalTax)}</h2>
-                            <p className="text-orange-200 text-sm mt-1">Annual Tax Liability</p>
+                            <h2 className="text-4xl font-extrabold">
+                                {activeTotalTax === 0 ? 'NIL' : fmt(activeTotalTax)}
+                            </h2>
+                            <p className="text-white/60 text-sm mt-1">
+                                {activeTotalTax === 0 ? 'No tax due — Income within exemption limit' : 'Annual Tax Liability'}
+                            </p>
                             <div className="grid grid-cols-3 gap-3 mt-4">
                                 {[
                                     { label: 'Monthly TDS', value: fmt(monthlyTax) },
                                     { label: 'Eff. Rate', value: `${effectiveRate.toFixed(1)}%` },
-                                    { label: 'Taxable', value: fmt(taxableIncome) },
+                                    { label: 'Taxable', value: fmt(activeTaxableIncome) },
                                 ].map((s) => (
                                     <div key={s.label} className="bg-white/10 rounded-xl p-2.5 text-center">
-                                        <p className="text-orange-200 text-[9px] uppercase font-bold tracking-wider mb-0.5">{s.label}</p>
+                                        <p className="text-white/60 text-[9px] uppercase font-bold tracking-wider mb-0.5">{s.label}</p>
                                         <p className="text-white font-bold text-xs">{s.value}</p>
                                     </div>
                                 ))}
                             </div>
                         </motion.div>
 
-                        {/* Step-by-step Breakdown */}
+                        {/* Step-by-Step Breakdown */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-2">
                             <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">Step-by-Step Breakdown</h3>
                             {[
                                 { label: 'Gross Annual Income', val: grossSalary, color: 'text-brand-green' },
-                                { label: 'Less: Deductions', val: -totalDeductions, color: 'text-blue-400' },
-                                { label: 'Taxable Income', val: taxableIncome, color: 'text-brand-purple', bold: true },
-                                { label: `Income Tax (${regime === 'old' ? 'Old' : 'New'} Regime)`, val: afterRebate, color: 'text-red-400' },
-                                { label: 'Health & Education Cess (4%)', val: cess, color: 'text-orange-400' },
-                                { label: 'Total Tax', val: totalTax, color: 'text-red-500', bold: true },
+                                { label: 'Less: Deductions', val: -activeDeductions, color: 'text-blue-400' },
+                                { label: 'Taxable Income', val: activeTaxableIncome, color: 'text-brand-purple', bold: true },
+                                { label: `Income Tax (before rebate)`, val: activeRawTax, color: 'text-slate-500' },
+                                { label: `Income Tax (after rebate)`, val: activeAfterRebate, color: 'text-red-400' },
+                                { label: 'Health & Education Cess (4%)', val: activeCess, color: 'text-orange-400' },
+                                { label: 'Final Tax Liability', val: activeTotalTax, color: 'text-red-500', bold: true },
                             ].map((row) => (
                                 <div key={row.label} className={`flex justify-between items-center py-2 ${row.bold ? 'border-t border-slate-100 dark:border-white/10 mt-1' : ''}`}>
                                     <span className={`text-slate-500 dark:text-slate-400 text-xs ${row.bold ? 'font-bold text-slate-700 dark:text-white' : ''}`}>{row.label}</span>
@@ -454,14 +522,15 @@ export default function IncomeTaxCalculator() {
                         </div>
 
                         {/* Slab Breakdown */}
-                        {taxableIncome > 0 && (
+                        {activeTaxableIncome > 0 && (
                             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
                                 <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">Tax Slab Computation</h3>
                                 <div className="space-y-2">
-                                    {slabs.map((slab, i) => {
-                                        const slabAmount = Math.max(0, Math.min(taxableIncome, slab.max === Infinity ? taxableIncome : slab.max) - slab.min);
+                                    {activeSlabs.map((slab, i) => {
+                                        if (activeTaxableIncome <= slab.min) return null;
+                                        const upper = slab.max === Infinity ? activeTaxableIncome : slab.max;
+                                        const slabAmount = Math.max(0, Math.min(activeTaxableIncome, upper) - slab.min);
                                         const slabTax = slabAmount * (slab.rate / 100);
-                                        if (taxableIncome <= slab.min) return null;
                                         return (
                                             <div key={i} className={`flex justify-between p-2 rounded-lg ${slab.rate === 0 ? 'bg-green-50 dark:bg-green-900/10' : slab.rate >= 30 ? 'bg-red-50 dark:bg-red-900/10' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
                                                 <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -485,64 +554,95 @@ export default function IncomeTaxCalculator() {
                                 </div>
                                 <TrendingUp className="w-12 h-12 text-brand-green opacity-30" />
                             </div>
-                            <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-brand-green/20">
-                                <div className="text-center">
-                                    <p className="text-brand-green/60 text-[9px] uppercase font-bold">Monthly Salary</p>
-                                    <p className="text-brand-green font-bold text-xs">{fmt(grossSalary / 12)}</p>
-                                </div>
-                                <div className="text-center">
-                                    <p className="text-brand-green/60 text-[9px] uppercase font-bold">Monthly Tax</p>
-                                    <p className="text-red-400 font-bold text-xs">{fmt(monthlyTax)}</p>
-                                </div>
-                                <div className="text-center">
-                                    <p className="text-brand-green/60 text-[9px] uppercase font-bold">Annual Take-Home</p>
-                                    <p className="text-brand-green font-bold text-xs">{fmt(grossSalary - totalTax)}</p>
-                                </div>
+                            <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-brand-green/20">
+                                {[
+                                    { label: 'Monthly Salary', value: fmt(grossSalary / 12), color: 'text-brand-green' },
+                                    { label: 'Monthly Tax', value: fmt(monthlyTax), color: 'text-red-400' },
+                                    { label: 'Annual Take-Home', value: fmt(grossSalary - activeTotalTax), color: 'text-brand-green' },
+                                    { label: 'Effective Tax Rate', value: `${effectiveRate.toFixed(1)}%`, color: 'text-brand-purple' },
+                                ].map((item) => (
+                                    <div key={item.label} className="text-center bg-white/50 dark:bg-white/5 rounded-xl p-2.5">
+                                        <p className="text-brand-green/60 text-[9px] uppercase font-bold">{item.label}</p>
+                                        <p className={`${item.color} font-bold text-xs mt-0.5`}>{item.value}</p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
-                        {/* Regime Comparison with Visual Bars */}
+                        {/* ═══ Regime Comparison ═══ */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
                             <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">Old vs New Regime</h3>
 
-                            {/* Bar Chart */}
-                            <div className="space-y-3 mb-4">
-                                <div>
-                                    <div className="flex justify-between text-xs mb-1">
-                                        <span className="text-slate-500 dark:text-slate-400">Old Regime</span>
-                                        <span className="font-bold text-slate-700 dark:text-white">{fmt(displayOldTax)}</span>
+                            {/* Summary Table */}
+                            <div className="space-y-2 mb-4">
+                                {/* Old Regime Row */}
+                                <div className={`flex items-center justify-between p-3 rounded-xl border-2 ${betterRegime === 'Old' && !bothZero ? 'border-brand-green bg-brand-green/5' : 'border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50'}`}>
+                                    <div className="flex items-center gap-2">
+                                        {betterRegime === 'Old' && !bothZero && (
+                                            <span className="w-5 h-5 rounded-full bg-brand-green flex items-center justify-center text-white text-[10px] font-bold">✓</span>
+                                        )}
+                                        <span className="text-slate-700 dark:text-slate-300 text-sm font-medium">Old Regime</span>
                                     </div>
-                                    <div className="h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${(displayOldTax / maxTax) * 100}%` }}
-                                            transition={{ duration: 0.5 }}
-                                            className={`h-full rounded-full ${betterRegime === 'Old' ? 'bg-brand-green' : 'bg-red-400'}`}
-                                        />
-                                    </div>
+                                    <span className={`font-extrabold text-sm ${betterRegime === 'Old' && !bothZero ? 'text-brand-green' : 'text-slate-700 dark:text-white'}`}>
+                                        {oldTotalTax === 0 ? 'NIL' : fmt(oldTotalTax)}
+                                    </span>
                                 </div>
-                                <div>
-                                    <div className="flex justify-between text-xs mb-1">
-                                        <span className="text-slate-500 dark:text-slate-400">New Regime</span>
-                                        <span className="font-bold text-slate-700 dark:text-white">{fmt(displayNewTax)}</span>
+
+                                {/* New Regime Row */}
+                                <div className={`flex items-center justify-between p-3 rounded-xl border-2 ${betterRegime === 'New' && !bothZero ? 'border-brand-green bg-brand-green/5' : 'border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50'}`}>
+                                    <div className="flex items-center gap-2">
+                                        {betterRegime === 'New' && !bothZero && (
+                                            <span className="w-5 h-5 rounded-full bg-brand-green flex items-center justify-center text-white text-[10px] font-bold">✓</span>
+                                        )}
+                                        <span className="text-slate-700 dark:text-slate-300 text-sm font-medium">New Regime</span>
                                     </div>
-                                    <div className="h-6 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${(displayNewTax / maxTax) * 100}%` }}
-                                            transition={{ duration: 0.5, delay: 0.1 }}
-                                            className={`h-full rounded-full ${betterRegime === 'New' ? 'bg-brand-green' : 'bg-red-400'}`}
-                                        />
-                                    </div>
+                                    <span className={`font-extrabold text-sm ${betterRegime === 'New' && !bothZero ? 'text-brand-green' : 'text-slate-700 dark:text-white'}`}>
+                                        {newTotalTax === 0 ? 'NIL' : fmt(newTotalTax)}
+                                    </span>
                                 </div>
                             </div>
 
+                            {/* Visual Bars */}
+                            {!bothZero && (
+                                <div className="space-y-2 mb-4">
+                                    <div>
+                                        <div className="h-5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${Math.max((oldTotalTax / maxTax) * 100, 2)}%` }}
+                                                transition={{ duration: 0.6 }}
+                                                className={`h-full rounded-full ${betterRegime === 'Old' ? 'bg-brand-green' : 'bg-red-400'}`}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="h-5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${Math.max((newTotalTax / maxTax) * 100, 2)}%` }}
+                                                transition={{ duration: 0.6, delay: 0.1 }}
+                                                className={`h-full rounded-full ${betterRegime === 'New' ? 'bg-brand-green' : 'bg-red-400'}`}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Recommendation */}
-                            <div className={`p-3 rounded-xl text-center ${saving > 0 ? 'bg-brand-green/10 border border-brand-green/20' : 'bg-slate-50 dark:bg-slate-800'}`}>
+                            <div className={`p-4 rounded-xl text-center ${bothZero ? 'bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-700/30' : 'bg-brand-green/10 border border-brand-green/20'}`}>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Recommended Regime</p>
-                                <p className="font-extrabold text-lg text-brand-green">{betterRegime.toUpperCase()} REGIME</p>
-                                {saving > 0 && (
-                                    <p className="text-brand-green text-xs mt-1">Potential Tax Saving: {fmt(saving)}</p>
+                                {bothZero ? (
+                                    <>
+                                        <p className="font-extrabold text-lg text-emerald-600 dark:text-emerald-400">NO TAX DUE</p>
+                                        <p className="text-emerald-600 dark:text-emerald-400 text-xs mt-1">
+                                            Your income is within the exemption limit under both regimes.
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="font-extrabold text-lg text-brand-green">{betterRegime.toUpperCase()} REGIME</p>
+                                        <p className="text-brand-green text-xs mt-1">Estimated Tax Saving: {fmt(saving)}</p>
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -586,7 +686,10 @@ export default function IncomeTaxCalculator() {
                             <Info size={16} className="text-amber-600" />
                             <span className="font-bold text-amber-800 dark:text-amber-400 text-sm">Important Disclaimer</span>
                         </div>
-                        {showDisclaimer ? <ChevronUp size={16} className="text-amber-500" /> : <ChevronDown size={16} className="text-amber-500" />}
+                        <div className="flex items-center gap-1">
+                            <span className="text-amber-500 text-[10px]">Tap to View</span>
+                            {showDisclaimer ? <ChevronUp size={14} className="text-amber-500" /> : <ChevronDown size={14} className="text-amber-500" />}
+                        </div>
                     </button>
                     <AnimatePresence>
                         {showDisclaimer && (
