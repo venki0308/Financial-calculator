@@ -60,6 +60,8 @@ export default function SalaryHikeCalculator() {
         const maxYears = Math.max(yearsToProject + 1, 2);
 
         for (let yr = 1; yr <= maxYears; yr++) {
+            // Reset cumulative at the start of each year
+            cumulative = 0;
             // For year 1 use current monthly, for subsequent years apply compounded hike
             const monthlySalary = yr === 1 ? currentMonthly : (currentSalary * Math.pow(1 + computedHikePct / 100, yr - 1)) / 12;
             for (let m = 1; m <= 12; m++) {
