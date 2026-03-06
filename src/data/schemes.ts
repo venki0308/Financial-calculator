@@ -116,7 +116,7 @@ export const schemes: Scheme[] = [
         documents: ['Aadhaar Card', 'Land records or tenancy certificate', 'Bank account passbook', 'Passport photo'],
         howToApply: ['Apply at nearest bank, cooperative bank, or PACS', 'Submit land and identity documents', 'Bank assesses credit limit based on landholding'],
         launchYear: 1998, lastVerified: '2026-03-05',
-        verifiedSource: 'nabard.org/Hindi', isActive: true,
+        verifiedSource: 'www.nabard.org', isActive: true,
     },
     {
         id: 'c-pmkusum', name: 'PM KUSUM Scheme', governmentLevel: 'central',
@@ -180,7 +180,7 @@ export const schemes: Scheme[] = [
         documents: ['Aadhaar Card', 'Bank account passbook', 'Mobile number linked to Aadhaar'],
         howToApply: ['Visit any bank or post office', 'Fill APY form or apply via net banking', 'Choose monthly pension amount and contribution plan'],
         launchYear: 2015, lastVerified: '2026-03-05',
-        verifiedSource: 'npscra.nsdl.co.in', isActive: true,
+        verifiedSource: 'www.npscra.proteantech.in', isActive: true,
     },
     {
         id: 'c-pmsym', name: 'PM Shram Yogi Maandhan', governmentLevel: 'central',
@@ -213,7 +213,7 @@ export const schemes: Scheme[] = [
         howToApply: ['Register at eNPS portal or through bank/post office', 'Choose pension fund manager and contribution amount'],
         notes: 'Includes Tier I (retirement) and Tier II (voluntary savings) accounts.',
         launchYear: 2004, lastVerified: '2026-03-05',
-        verifiedSource: 'npscra.nsdl.co.in', isActive: true,
+        verifiedSource: 'www.npscra.proteantech.in', isActive: true,
     },
     {
         id: 'c-nps-vatsalya', name: 'NPS Vatsalya', governmentLevel: 'central',
@@ -228,7 +228,7 @@ export const schemes: Scheme[] = [
         documents: ['Birth certificate of minor', 'Aadhaar of guardian', 'Bank account details'],
         howToApply: ['Open account through NPS portal or banks', 'Guardian manages account until minor turns 18'],
         launchYear: 2024, lastVerified: '2026-03-05',
-        verifiedSource: 'npscra.nsdl.co.in', isActive: true,
+        verifiedSource: 'www.npscra.proteantech.in', isActive: true,
     },
 
 
@@ -292,7 +292,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹1.2 lakh (plain) / ₹1.3 lakh (hilly) for construction', '₹12,000 additional for toilet', 'MGNREGA wages for unskilled work'],
         documents: [],
         howToApply: ['Beneficiaries selected by Gram Sabha from SECC list', 'Contact Gram Panchayat for inclusion/grievance'],
-        launchYear: 2016, lastVerified: '2026-03-05', verifiedSource: 'pmayg.nic.in', isActive: true,
+        launchYear: 2016, lastVerified: '2026-03-05', verifiedSource: 'pmayg.dord.gov.in', isActive: true,
     },
 
     // ── HEALTH ────────────────────────────────────────────────────────────────
@@ -449,7 +449,7 @@ export const schemes: Scheme[] = [
         benefits: ['Awareness programs on gender equality', 'Girl child education promotion', 'Convergence with SSY and Ujjwala'],
         documents: [],
         howToApply: ['This is a national campaign implemented by government agencies. No individual application required.'],
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'wcd.nic.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'wcd.gov.in', isActive: true,
     },
     {
         id: 'c-jjm', name: 'Jal Jeevan Mission', governmentLevel: 'central',
@@ -508,7 +508,7 @@ export const schemes: Scheme[] = [
         benefits: ['Indira Gandhi National Old Age Pension Scheme (IGNOAPS) – ₹200–₹500/month', 'Indira Gandhi National Widow Pension Scheme (IGNWPS)', 'Indira Gandhi National Disability Pension Scheme (IGNDPS)', 'National Family Benefit Scheme – ₹20,000 on death of breadwinner'],
         documents: ['Aadhaar Card', 'BPL/SECC card', 'Age/disability/death proof', 'Bank account'],
         howToApply: ['Apply through Gram Panchayat, BDO, or district welfare office', 'State governments disburse pensions'],
-        launchYear: 1995, lastVerified: '2026-03-05', verifiedSource: 'nsap.nic.in', isActive: true,
+        launchYear: 1995, lastVerified: '2026-03-05', verifiedSource: 'nsap.dord.gov.in', isActive: true,
     },
 
     // ── EDUCATION / SCHOLARSHIP ───────────────────────────────────────────────
@@ -539,7 +539,7 @@ export const schemes: Scheme[] = [
         benefits: ['Apply to multiple banks in one form', 'Compare loan offers', 'Track application status online'],
         documents: ['Aadhaar Card', 'Academic records', 'Admission letter', 'Income documents of co-applicant'],
         howToApply: ['Register at vidyalakshmi.co.in', 'Fill common education loan application', 'Apply to multiple banks simultaneously'],
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'vidyalakshmi.co.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'pmvidyalaxmi.co.in', isActive: true,
     },
 
     // ── SKILL DEVELOPMENT ─────────────────────────────────────────────────────
@@ -555,7 +555,7 @@ export const schemes: Scheme[] = [
         benefits: ['Free certified skill training (3–6 months)', 'Industry-recognized certification', 'Placement assistance'],
         documents: ['Aadhaar Card', 'Educational certificates'],
         howToApply: ['Register at skillindia.gov.in', 'Locate nearest PMKVY training partner centre', 'Enrol in preferred training'],
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'pmkvyofficial.org', isActive: true,
+        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'www.skillindiadigital.gov.in', isActive: true,
     },
     {
         id: 'c-pmdaksh', name: 'PM-DAKSH Scheme', governmentLevel: 'central',
@@ -597,7 +597,7 @@ export const schemes: Scheme[] = [
         benefits: ['Free residential skill training', 'Placement minimum target: 75% of trained candidates', 'Post-placement support 12 months'],
         documents: ['Aadhaar Card', 'Age/education proof', 'BPL card'],
         howToApply: ['Contact nearest DDU-GKY implementing agency', 'Register via district rural development office'],
-        launchYear: 2014, lastVerified: '2026-03-05', verifiedSource: 'ddugky.gov.in', isActive: true,
+        launchYear: 2014, lastVerified: '2026-03-05', verifiedSource: 'ddugky.info', isActive: true,
     },
     {
         id: 'c-pmegp', name: 'PM Employment Generation Programme', governmentLevel: 'central',
@@ -646,7 +646,7 @@ export const schemes: Scheme[] = [
         benefits: ['Skill training in agri/tech/handicrafts', 'Drone didi training', 'Bank credit access through SHGs', 'Market linkage support'],
         documents: [],
         howToApply: ['Join or form SHG under DAY-NRLM', 'Access training through DMMU of district'],
-        launchYear: 2023, lastVerified: '2026-03-05', verifiedSource: 'aajeevika.gov.in', isActive: true,
+        launchYear: 2023, lastVerified: '2026-03-05', verifiedSource: 'lakhpatididi.gov.in', isActive: true,
     },
     {
         id: 'c-saksham', name: 'Saksham Anganwadi & Poshan 2.0', governmentLevel: 'central',
@@ -773,6 +773,6 @@ export const schemes: Scheme[] = [
         benefits: ['SHG formation and revolving fund', 'Bank credit linkage', 'Skill training and placement'],
         documents: [],
         howToApply: ['Implemented through SHGs — not individual online application', 'Join or form SHG in your village', 'Link with DAY-NRLM via Gram Panchayat or community mobilizer'],
-        launchYear: 2011, lastVerified: '2026-03-05', verifiedSource: 'aajeevika.gov.in', isActive: true,
+        launchYear: 2011, lastVerified: '2026-03-05', verifiedSource: 'nrlm.gov.in', isActive: true,
     },
 ];
