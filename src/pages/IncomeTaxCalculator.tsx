@@ -13,7 +13,7 @@ const OLD_REGIME = [
     { min: 1000000, max: Infinity, rate: 30 },
 ];
 
-// Union Budget 2025-26 — Updated New Regime Slabs
+// Union Budget 2026-27 — Updated New Regime Slabs
 const NEW_REGIME = [
     { min: 0, max: 400000, rate: 0 },
     { min: 400000, max: 800000, rate: 5 },
@@ -45,7 +45,7 @@ function computeSlabTax(income: number, slabs: typeof OLD_REGIME): number {
 
 function applyRebate87A(tax: number, taxableIncome: number, regime: 'old' | 'new'): number {
     if (regime === 'new') {
-        // Budget 2025-26: No tax if taxable income ≤ 12,00,000
+        // Budget 2026-27: No tax if taxable income ≤ 12,00,000
         if (taxableIncome <= 1200000) return 0;
     } else {
         // Old regime: rebate up to 12,500 if taxable income ≤ 5L
