@@ -7,7 +7,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import BottomSheet from '../components/BottomSheet';
-import { AnalyticsService, CrashlyticsService } from '../lib/analytics';
+import { AnalyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
 
 
@@ -42,9 +42,20 @@ export default function Settings() {
     };
 
     const handleClearData = () => {
-        clearHistory();
-        clearAllData();
+        // Wipe ALL persisted Zustand stores for a true fresh-install reset
+        const storeKeys = [
+            'local-user-storage',
+            'calculator-storage',
+            'budget-tracker-storage',
+            'fincalix-expenses',
+            'scheme-storage',
+            'settings-storage',
+            'language',
+        ];
+        storeKeys.forEach((key) => localStorage.removeItem(key));
         setShowClearConfirm(false);
+        // Reload the page to reset all in-memory state
+        window.location.reload();
     };
 
     return (
@@ -155,32 +166,13 @@ export default function Settings() {
                 {/* Data Management */}
                 <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-3">Data</p>
                 <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden mb-6">
-                    <button onClick={() => setShowClearConfirm(true)} className="w-full flex items-center gap-4 p-4 border-b border-dark-border">
+                    <button onClick={() => setShowClearConfirm(true)} className="w-full flex items-center gap-4 p-4">
                         <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
                             <Trash2 size={20} className="text-red-400" />
                         </div>
                         <div className="flex-1 text-left">
                             <p className="text-red-400 font-medium text-sm">Clear All Data</p>
-                            <p className="text-slate-600 text-xs">Remove history and reset app</p>
-                        </div>
-                        <ChevronRight size={16} className="text-slate-600" />
-                    </button>
-
-                    {/* Developer / Verify Section */}
-                    <button
-                        onClick={() => {
-                            if (window.confirm("This will intentionally crash the app to test Firebase Crashlytics. Are you sure?")) {
-                                CrashlyticsService.crash();
-                            }
-                        }}
-                        className="w-full flex items-center gap-4 p-4"
-                    >
-                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                            <Bell size={20} className="text-amber-400" />
-                        </div>
-                        <div className="flex-1 text-left">
-                            <p className="text-amber-400 font-medium text-sm">Test Firebase Crashlytics</p>
-                            <p className="text-slate-600 text-xs">App will close to verify logs</p>
+                            <p className="text-slate-600 text-xs">Reset app to fresh install state</p>
                         </div>
                         <ChevronRight size={16} className="text-slate-600" />
                     </button>
@@ -233,7 +225,7 @@ export default function Settings() {
                                     <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center"><Trash2 size={32} className="text-red-500" /></div>
                                 </div>
                                 <h3 className="text-xl font-bold text-white text-center mb-2">Clear All Data?</h3>
-                                <p className="text-slate-300 text-center text-sm mb-6">This will clear your calculation history and reset your profile. Your saved calculations in the app will remain.</p>
+                                <p className="text-slate-300 text-center text-sm mb-6">This will erase ALL data — bookmarks, saved calculations, expense entries, budgets, and settings. The app will restart like a fresh installation.</p>
                                 <div className="flex gap-3">
                                     <button onClick={() => setShowClearConfirm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-white font-semibold text-sm border-2 border-slate-500">Cancel</button>
                                     <button onClick={handleClearData} className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold text-sm border-2 border-red-500">Clear</button>
