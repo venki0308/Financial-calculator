@@ -10,6 +10,7 @@ import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
+import WhatIfSimulator from '../components/WhatIfSimulator';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
@@ -174,6 +175,21 @@ export default function NPSCalculator() {
                         }} />
                     </div>
                 </div>
+
+                {/* What-If Simulator */}
+                <WhatIfSimulator
+                    sliders={[
+                        { key: 'monthly', label: 'Monthly Contribution', min: 500, max: 100000, step: 500, prefix: '₹' },
+                        { key: 'rate', label: 'Expected Return', min: 6, max: 14, step: 0.5, suffix: '%' },
+                    ]}
+                    currentInputs={{ monthly, rate, years: result.years }}
+                    calculateResult={(inputs) => {
+                        const r = inputs.rate / 12 / 100;
+                        const n = inputs.years * 12;
+                        return r === 0 ? inputs.monthly * n : Math.round(inputs.monthly * (((Math.pow(1 + r, n) - 1) / r) * (1 + r)));
+                    }}
+                    resultLabel="Total Corpus"
+                />
 
                 <SmartInsight calculatorType="nps" inputs={{ monthly, rate, years: result.years }} results={{ corpus: result.corpus, invested: result.invested }} />
 

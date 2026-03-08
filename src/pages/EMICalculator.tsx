@@ -26,6 +26,7 @@ import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
+import WhatIfSimulator from '../components/WhatIfSimulator';
 
 ChartJS.register(
     ArcElement,
@@ -302,13 +303,26 @@ export default function EMICalculator() {
                     </div>
                 </motion.div>
 
-                {/* Smart Insights */}
                 <SmartInsight
                     calculatorType="emi"
                     inputs={{ principal, rate, months }}
                     results={{ emi: result.emi, totalInterest: result.totalInterest, totalPayment: result.totalPayment }}
                 />
 
+                {/* What-If Simulator */}
+                <WhatIfSimulator
+                    sliders={[
+                        { key: 'principal', label: 'Loan Amount', min: 100000, max: 20000000, step: 100000, prefix: '₹' },
+                        { key: 'rate', label: 'Interest Rate', min: 5, max: 18, step: 0.25, suffix: '%' },
+                    ]}
+                    currentInputs={{ principal, rate, months }}
+                    calculateResult={(inputs) => {
+                        const r = inputs.rate / 12 / 100;
+                        const n = inputs.months;
+                        return r === 0 ? Math.round(inputs.principal / n) : Math.round(inputs.principal * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1));
+                    }}
+                    resultLabel="Monthly EMI"
+                />
 
                 {/* Action Buttons */}
                 <div className="space-y-3 mb-6">

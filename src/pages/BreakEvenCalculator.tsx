@@ -9,6 +9,7 @@ import { Bar, Line } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 import ShareableCard from '../components/ShareableCard';
+import WhatIfSimulator from '../components/WhatIfSimulator';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
@@ -187,6 +188,22 @@ export default function BreakEvenCalculator() {
                     <button onClick={handleExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium"><Download size={16} /> Excel</button>
                     <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 text-white text-[10px] font-bold"><Share2 size={16} /> Share</button>
                 </div>
+
+                {/* What-If Simulator */}
+                <WhatIfSimulator
+                    sliders={[
+                        { key: 'price', label: 'Selling Price/Unit', min: 10, max: 10000, step: 10, prefix: '₹' },
+                        { key: 'variable', label: 'Variable Cost/Unit', min: 0, max: 10000, step: 10, prefix: '₹' },
+                        { key: 'fixed', label: 'Fixed Costs', min: 10000, max: 1000000, step: 5000, prefix: '₹' },
+                    ]}
+                    currentInputs={{ price, variable, fixed }}
+                    calculateResult={(inputs) => {
+                        const c = inputs.price - inputs.variable;
+                        return c > 0 ? Math.ceil(inputs.fixed / c) : 0;
+                    }}
+                    resultLabel="Break-even Units"
+                    resultPrefix=""
+                />
 
                 <ShareableCard
                     title="Break-even Analysis"

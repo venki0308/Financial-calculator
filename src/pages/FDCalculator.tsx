@@ -10,6 +10,7 @@ import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
+import WhatIfSimulator from '../components/WhatIfSimulator';
 import { calculateFD, formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
@@ -236,6 +237,18 @@ export default function FDCalculator() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                {/* What-If Simulator */}
+                <WhatIfSimulator
+                    sliders={[
+                        { key: 'principal', label: 'Deposit Amount', min: 10000, max: 5000000, step: 10000, prefix: '₹' },
+                        { key: 'rate', label: 'Interest Rate', min: 3, max: 12, step: 0.25, suffix: '%' },
+                        { key: 'years', label: 'Tenure', min: 1, max: 20, step: 1, suffix: ' yrs' },
+                    ]}
+                    currentInputs={{ principal, rate, years }}
+                    calculateResult={(inputs) => Math.round(inputs.principal * Math.pow(1 + inputs.rate / (100 * compounding), inputs.years * compounding))}
+                    resultLabel="Maturity Amount"
+                />
 
                 <SmartInsight calculatorType="fd" inputs={{ principal, rate, years }} results={{ amount: result.amount, interest: result.interest }} />
 

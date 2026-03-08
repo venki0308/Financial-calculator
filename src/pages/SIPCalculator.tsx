@@ -25,6 +25,7 @@ import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
+import WhatIfSimulator from '../components/WhatIfSimulator';
 
 ChartJS.register(
     ArcElement,
@@ -366,6 +367,23 @@ export default function SIPCalculator() {
                     inputs={activeTab === 'basic' ? { monthly, rate, years } : activeTab === 'stepup' ? { monthly: suInitial, rate: suRate, years: suYears } : { monthly: goalResult.monthlyNeeded, rate: goalRate, years: goalYears }}
                     results={{ futureValue: displayValues.primary, invested: displayValues.invested, wealthGained: displayValues.returns }}
                 />
+
+                {/* What-If Simulator */}
+                {activeTab === 'basic' && (
+                    <WhatIfSimulator
+                        sliders={[
+                            { key: 'monthly', label: 'Monthly SIP', min: 500, max: 100000, step: 500, prefix: '₹' },
+                            { key: 'rate', label: 'Expected Return', min: 4, max: 20, step: 0.5, suffix: '%' },
+                        ]}
+                        currentInputs={{ monthly, rate, years }}
+                        calculateResult={(inputs) => {
+                            const r = inputs.rate / 12 / 100;
+                            const n = inputs.years * 12;
+                            return r === 0 ? inputs.monthly * n : Math.round(inputs.monthly * (((Math.pow(1 + r, n) - 1) / r) * (1 + r)));
+                        }}
+                        resultLabel="Future Value"
+                    />
+                )}
 
                 <div className="grid grid-cols-3 gap-3 mb-5 mt-4">
                     <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium">
