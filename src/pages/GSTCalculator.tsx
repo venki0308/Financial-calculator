@@ -203,7 +203,7 @@ export default function GSTCalculator() {
     const handleDownloadPDF = async () => {
         let title = 'GST Calculation Report';
         let headers = ['Component', 'Value'];
-        let data: [string, string][] = [];
+        let data: (string | number)[][] = [];
         let chartImage: string | undefined;
 
         if (chartRef.current) {
