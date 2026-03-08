@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Building2, MapPin, ArrowRightLeft, Copy, Check, Home, FileText, Calculator, Info } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, ArrowRightLeft, Copy, Check, Home, FileText, Calculator, Info, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -252,6 +252,62 @@ export default function PropertyCalculator() {
         }
     };
 
+    const handleStampDutyPDF = async () => {
+        if (!sdResult) return;
+        const stateName = STATE_RATES[sdState]?.name || sdState;
+        await exportToPDF('Stamp Duty & Registration Report', ['Component', 'Amount'], [
+            ['State', stateName],
+            ['Property Value', fmt(Number(sdValue))],
+            ['---', '---'],
+            [`Stamp Duty (${sdStampPct}%)`, fmt(sdResult.stamp)],
+            [`Registration Charges (${sdRegPct}%)`, fmt(sdResult.reg)],
+            ...(sdResult.transfer > 0 ? [[`Transfer Duty (${sdTransferPct}%)`, fmt(sdResult.transfer)] as [string, string]] : []),
+            ['---', '---'],
+            ['Total Registration Cost', fmt(sdResult.total)],
+            ['Grand Total (Property + Reg.)', fmt(Number(sdValue) + sdResult.total)],
+        ], 'Stamp_Duty_Report');
+    };
+
+    const handleRentalYieldPDF = async () => {
+        if (!ryResult) return;
+        await exportToPDF('Rental Yield Analysis Report', ['Metric', 'Value'], [
+            ['Property Value', fmt(Number(ryPropertyValue))],
+            ['Monthly Rent', fmt(Number(ryMonthlyRent))],
+            ['Monthly Maintenance', fmt(Number(ryMaintenance || '0'))],
+            ['Vacant Months/Year', `${ryVacancy} months`],
+            ['---', '---'],
+            ['Annual Rent Income', fmt(ryResult.annualRent)],
+            ['Gross Yield', `${ryResult.grossYield.toFixed(2)}%`],
+            ['Net Yield', `${ryResult.netYield.toFixed(2)}%`],
+            ['Payback Period', `${ryResult.paybackYears.toFixed(1)} years`],
+        ], 'Rental_Yield_Report');
+    };
+
+    const handleAppreciationPDF = async () => {
+        if (!apResult) return;
+        await exportToPDF('Property Appreciation Forecast', ['Metric', 'Value'], [
+            ['Current Property Value', fmt(Number(apCurrentValue))],
+            ['Annual Appreciation Rate', `${apRate}%`],
+            ['---', '---'],
+            ...apResult.projections.map(p => [
+                `After ${p.years} Years`, `${fmt(p.value)} (Gain: ${fmt(p.gain)})`
+            ] as [string, string]),
+        ], 'Appreciation_Forecast');
+    };
+
+    const handleHomeLoanPDF = async () => {
+        if (!emiResult) return;
+        await exportToPDF('Home Loan EMI Report', ['Component', 'Amount'], [
+            ['Loan Amount', fmt(Number(loanAmt))],
+            ['Interest Rate', `${loanRate}% p.a.`],
+            ['Tenure', `${loanTenure} years`],
+            ['---', '---'],
+            ['Monthly EMI', fmt(emiResult.emi)],
+            ['Total Interest', fmt(emiResult.totalInterest)],
+            ['Total Payment', fmt(emiResult.totalPayment)],
+        ], 'Home_Loan_EMI_Report');
+    };
+
     return (
         <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
             <div className="px-4 pt-14 pb-8">
@@ -395,6 +451,7 @@ export default function PropertyCalculator() {
                                     sdRegPct={sdRegPct} setSdRegPct={setSdRegPct}
                                     sdTransferPct={sdTransferPct} setSdTransferPct={setSdTransferPct}
                                     sdResult={sdResult} calculateSD={calculateSD}
+                                    onDownloadPDF={handleStampDutyPDF}
                                 />
 
                                 {/* Home Loan EMI */}
@@ -403,6 +460,7 @@ export default function PropertyCalculator() {
                                     loanRate={loanRate} setLoanRate={setLoanRate}
                                     loanTenure={loanTenure} setLoanTenure={setLoanTenure}
                                     emiResult={emiResult} calculateEMI={calculateEMI}
+                                    onDownloadPDF={handleHomeLoanPDF}
                                 />
                             </div>
                         )}
@@ -491,8 +549,8 @@ export default function PropertyCalculator() {
                                 )}
 
                                 {/* Stamp Duty + EMI on flat tab too */}
-                                <StampDutySection sdValue={sdValue} setSdValue={setSdValue} sdState={sdState} setSdState={setSdState} sdStampPct={sdStampPct} setSdStampPct={setSdStampPct} sdRegPct={sdRegPct} setSdRegPct={setSdRegPct} sdTransferPct={sdTransferPct} setSdTransferPct={setSdTransferPct} sdResult={sdResult} calculateSD={calculateSD} />
-                                <HomeLoanSection loanAmt={loanAmt} setLoanAmt={setLoanAmt} loanRate={loanRate} setLoanRate={setLoanRate} loanTenure={loanTenure} setLoanTenure={setLoanTenure} emiResult={emiResult} calculateEMI={calculateEMI} />
+                                <StampDutySection sdValue={sdValue} setSdValue={setSdValue} sdState={sdState} setSdState={setSdState} sdStampPct={sdStampPct} setSdStampPct={setSdStampPct} sdRegPct={sdRegPct} setSdRegPct={setSdRegPct} sdTransferPct={sdTransferPct} setSdTransferPct={setSdTransferPct} sdResult={sdResult} calculateSD={calculateSD} onDownloadPDF={handleStampDutyPDF} />
+                                <HomeLoanSection loanAmt={loanAmt} setLoanAmt={setLoanAmt} loanRate={loanRate} setLoanRate={setLoanRate} loanTenure={loanTenure} setLoanTenure={setLoanTenure} emiResult={emiResult} calculateEMI={calculateEMI} onDownloadPDF={handleHomeLoanPDF} />
                             </div>
                         )}
 
@@ -605,18 +663,24 @@ export default function PropertyCalculator() {
                         Calculate Yield
                     </motion.button>
                     {ryResult && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-2 gap-3 mt-2">
-                            {[
-                                { label: 'Annual Rent Income', value: fmt(ryResult.annualRent), color: 'text-brand-green' },
-                                { label: 'Gross Yield', value: `${ryResult.grossYield.toFixed(2)}%`, color: 'text-blue-400' },
-                                { label: 'Net Yield', value: `${ryResult.netYield.toFixed(2)}%`, color: 'text-brand-gold' },
-                                { label: 'Payback Period', value: `${ryResult.paybackYears.toFixed(1)} yrs`, color: 'text-brand-purple' },
-                            ].map(s => (
-                                <div key={s.label} className="text-center p-3 rounded-xl bg-slate-800/30">
-                                    <p className="text-slate-500 text-[9px] uppercase font-bold">{s.label}</p>
-                                    <p className={`font-bold text-sm mt-1 ${s.color}`}>{s.value}</p>
-                                </div>
-                            ))}
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 mt-2">
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { label: 'Annual Rent Income', value: fmt(ryResult.annualRent), color: 'text-brand-green' },
+                                    { label: 'Gross Yield', value: `${ryResult.grossYield.toFixed(2)}%`, color: 'text-blue-400' },
+                                    { label: 'Net Yield', value: `${ryResult.netYield.toFixed(2)}%`, color: 'text-brand-gold' },
+                                    { label: 'Payback Period', value: `${ryResult.paybackYears.toFixed(1)} yrs`, color: 'text-brand-purple' },
+                                ].map(s => (
+                                    <div key={s.label} className="text-center p-3 rounded-xl bg-slate-800/30">
+                                        <p className="text-slate-500 text-[9px] uppercase font-bold">{s.label}</p>
+                                        <p className={`font-bold text-sm mt-1 ${s.color}`}>{s.value}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <button onClick={handleRentalYieldPDF}
+                                className="w-full py-3 rounded-xl bg-brand-green/10 border border-brand-green/30 text-brand-green text-xs font-bold flex items-center justify-center gap-2">
+                                <Download size={14} /> Download Rental Yield Report
+                            </button>
                         </motion.div>
                     )}
                 </div>
@@ -643,6 +707,10 @@ export default function PropertyCalculator() {
                                     <p className="text-brand-green font-extrabold text-sm">{fmt(p.value)}</p>
                                 </div>
                             ))}
+                            <button onClick={handleAppreciationPDF}
+                                className="w-full py-3 rounded-xl bg-indigo-600/10 border border-indigo-600/30 text-indigo-400 text-xs font-bold flex items-center justify-center gap-2 mt-2">
+                                <Download size={14} /> Download Appreciation Report
+                            </button>
                         </motion.div>
                     )}
                 </div>
@@ -658,7 +726,7 @@ function StampDutySection({
     sdStampPct, setSdStampPct,
     sdRegPct, setSdRegPct,
     sdTransferPct, setSdTransferPct,
-    sdResult, calculateSD
+    sdResult, calculateSD, onDownloadPDF
 }: {
     sdValue: string; setSdValue: (v: string) => void;
     sdState: string; setSdState: (v: string) => void;
@@ -667,6 +735,7 @@ function StampDutySection({
     sdTransferPct: string; setSdTransferPct: (v: string) => void;
     sdResult: { stamp: number; reg: number; transfer: number; total: number } | null;
     calculateSD: () => void;
+    onDownloadPDF: () => void;
 }) {
     // When state changes, pre-fill the editable rate fields
     const handleStateChange = (key: string) => {
@@ -748,6 +817,10 @@ function StampDutySection({
                         <span className="text-white text-sm font-bold">Total Registration Cost</span>
                         <span className="text-yellow-400 text-lg font-extrabold">₹{Math.round(sdResult.total).toLocaleString('en-IN')}</span>
                     </div>
+                    <button onClick={onDownloadPDF}
+                        className="w-full py-3 rounded-xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs font-bold flex items-center justify-center gap-2 mt-3">
+                        📄 Download Stamp Duty Report
+                    </button>
                 </motion.div>
             )}
         </div>
@@ -756,13 +829,14 @@ function StampDutySection({
 
 // ─── Home Loan EMI Section ────────────────────────────────────────────────────
 function HomeLoanSection({
-    loanAmt, setLoanAmt, loanRate, setLoanRate, loanTenure, setLoanTenure, emiResult, calculateEMI
+    loanAmt, setLoanAmt, loanRate, setLoanRate, loanTenure, setLoanTenure, emiResult, calculateEMI, onDownloadPDF
 }: {
     loanAmt: string; setLoanAmt: (v: string) => void;
     loanRate: string; setLoanRate: (v: string) => void;
     loanTenure: string; setLoanTenure: (v: string) => void;
     emiResult: { emi: number; totalInterest: number; totalPayment: number } | null;
     calculateEMI: () => void;
+    onDownloadPDF: () => void;
 }) {
     return (
         <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
@@ -791,6 +865,10 @@ function HomeLoanSection({
                             <CostRow label="Total Payment" value={emiResult.totalPayment} />
                         </div>
                     </div>
+                    <button onClick={onDownloadPDF}
+                        className="w-full py-3 rounded-xl bg-brand-purple/10 border border-brand-purple/30 text-brand-purple text-xs font-bold flex items-center justify-center gap-2 mt-3">
+                        📄 Download EMI Report
+                    </button>
                 </motion.div>
             )}
         </div>

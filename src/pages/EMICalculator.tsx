@@ -258,7 +258,7 @@ export default function EMICalculator() {
                         min={1}
                         max={30}
                         suffix="%"
-                        step={0.1}
+                        step={0.05}
                         helperText="1% - 30%"
                     />
                     <div>
