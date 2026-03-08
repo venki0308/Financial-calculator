@@ -1,17 +1,40 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Home, GraduationCap, Car, Umbrella, Briefcase, TrendingUp, PiggyBank, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Sparkles, Home, GraduationCap, Car, Umbrella, Briefcase, TrendingUp, PiggyBank, Shield, AlertTriangle, CheckCircle, Check, Share2, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 import { formatINR } from '../utils/calculations';
+import { exportToPDF } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
+
+interface GoalPlan {
+    goalId: string;
+    goalLabel: string;
+    icon: React.ElementType;
+    gradient: string;
+    recommendations: { icon: React.ElementType; title: string; value: string; detail: string; color: string }[];
+    timeline: string;
+    monthlySIP: number;
+    targetCorpus: number;
+}
 
 interface FinancialPlan {
     score: number;
-    recommendations: { icon: React.ElementType; title: string; value: string; detail: string; color: string }[];
+    goalPlans: GoalPlan[];
     alerts: { type: 'warning' | 'positive'; text: string }[];
+    totalMonthlySIP: number;
+    monthlyBudget: { savings: number; investments: number; emi: number; expenses: number };
 }
+
+const goals = [
+    { id: 'house', label: 'Buy House', icon: Home, gradient: 'from-emerald-500 to-teal-600' },
+    { id: 'education', label: 'Child Education', icon: GraduationCap, gradient: 'from-blue-500 to-indigo-600' },
+    { id: 'retirement', label: 'Retirement', icon: Umbrella, gradient: 'from-purple-500 to-violet-600' },
+    { id: 'car', label: 'Buy Car', icon: Car, gradient: 'from-amber-500 to-orange-600' },
+    { id: 'wealth', label: 'Wealth Growth', icon: TrendingUp, gradient: 'from-sky-500 to-blue-600' },
+    { id: 'business', label: 'Start Business', icon: Briefcase, gradient: 'from-rose-500 to-pink-600' },
+];
 
 export default function AIFinancialAssistant() {
     useEffect(() => { AnalyticsService.trackScreen('Financial_Advisor'); }, []);
@@ -22,20 +45,18 @@ export default function AIFinancialAssistant() {
     const [expenses, setExpenses] = useState(25000);
     const [savings, setSavings] = useState(100000);
     const [emi, setEmi] = useState(0);
-    const [goal, setGoal] = useState('');
+    const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
     const [showResults, setShowResults] = useState(false);
+    const [expandedGoal, setExpandedGoal] = useState<string | null>(null);
 
-    const goals = [
-        { id: 'house', label: 'Buy House', icon: Home, gradient: 'from-emerald-500 to-teal-600' },
-        { id: 'education', label: 'Child Education', icon: GraduationCap, gradient: 'from-blue-500 to-indigo-600' },
-        { id: 'retirement', label: 'Retirement', icon: Umbrella, gradient: 'from-purple-500 to-violet-600' },
-        { id: 'car', label: 'Buy Car', icon: Car, gradient: 'from-amber-500 to-orange-600' },
-        { id: 'wealth', label: 'Wealth Growth', icon: TrendingUp, gradient: 'from-sky-500 to-blue-600' },
-        { id: 'business', label: 'Start Business', icon: Briefcase, gradient: 'from-rose-500 to-pink-600' },
-    ];
+    const toggleGoal = (id: string) => {
+        setSelectedGoals(prev =>
+            prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]
+        );
+    };
 
     const plan = useMemo((): FinancialPlan | null => {
-        if (!showResults) return null;
+        if (!showResults || selectedGoals.length === 0) return null;
 
         const monthlySavings = salary - expenses - emi;
         const savingsRatio = monthlySavings / salary * 100;
@@ -43,109 +64,176 @@ export default function AIFinancialAssistant() {
         const emergencyMonths = savings / expenses;
         const annualIncome = salary * 12;
 
-        const recommendations: FinancialPlan['recommendations'] = [];
-        const alerts: FinancialPlan['alerts'] = [];
-
-        // Savings Score
+        // Compute health score
         let score = 0;
-        if (savingsRatio >= 30) score += 30;
-        else if (savingsRatio >= 20) score += 22;
-        else if (savingsRatio >= 10) score += 12;
-        else score += 5;
-
-        // EMI Score
-        if (emiRatio <= 20) score += 25;
-        else if (emiRatio <= 30) score += 18;
-        else if (emiRatio <= 40) score += 10;
-        else score += 3;
-
-        // Emergency Fund Score
-        if (emergencyMonths >= 6) score += 25;
-        else if (emergencyMonths >= 3) score += 15;
-        else score += 5;
-
-        // Age-based investment score
+        if (savingsRatio >= 30) score += 30; else if (savingsRatio >= 20) score += 22; else if (savingsRatio >= 10) score += 12; else score += 5;
+        if (emiRatio <= 20) score += 25; else if (emiRatio <= 30) score += 18; else if (emiRatio <= 40) score += 10; else score += 3;
+        if (emergencyMonths >= 6) score += 25; else if (emergencyMonths >= 3) score += 15; else score += 5;
         const idealInvestPct = Math.min(100 - age, 80);
         score += Math.min(20, Math.round(savingsRatio / idealInvestPct * 20));
-
         score = Math.min(100, score);
 
-        // Goal-specific recommendations
-        switch (goal) {
-            case 'house': {
-                const affordability = Math.round(annualIncome * 5);
-                const recommendedEMI = Math.round(salary * 0.28);
-                recommendations.push(
-                    { icon: Home, title: 'Home Loan Affordability', value: formatINR(affordability), detail: `Based on 5x annual income`, color: '#10B981' },
-                    { icon: PiggyBank, title: 'Recommended EMI', value: formatINR(recommendedEMI) + '/mo', detail: '28% of monthly income', color: '#3B82F6' },
-                );
-                const downPayment = Math.round(affordability * 0.2);
-                recommendations.push(
-                    { icon: Shield, title: 'Down Payment Target', value: formatINR(downPayment), detail: '20% of property value', color: '#8B5CF6' },
-                );
-                break;
-            }
-            case 'retirement': {
-                const retirementAge = 60;
-                const yearsToRetire = retirementAge - age;
-                const monthlyCorpus = expenses * 1.5;
-                const corpusNeeded = monthlyCorpus * 12 * 25;
-                const r = 12 / 12 / 100;
-                const n = yearsToRetire * 12;
-                const sipFactor = (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
-                const requiredSIP = corpusNeeded / sipFactor;
-                recommendations.push(
-                    { icon: TrendingUp, title: 'Start Monthly SIP', value: formatINR(requiredSIP) + '/mo', detail: `${yearsToRetire} years to retirement`, color: '#10B981' },
-                    { icon: Umbrella, title: 'Target Corpus', value: formatINR(corpusNeeded), detail: `At age ${retirementAge}`, color: '#8B5CF6' },
-                );
-                break;
-            }
-            case 'car': {
-                const carBudget = Math.round(salary * 15); // ~15 months salary
-                const carEMI = Math.round(carBudget * 0.8 / 60); // 80% financed, 5 years
-                recommendations.push(
-                    { icon: Car, title: 'Affordable Car Budget', value: formatINR(carBudget), detail: 'Based on your income', color: '#F59E0B' },
-                    { icon: PiggyBank, title: 'Estimated EMI', value: formatINR(carEMI) + '/mo', detail: '80% financed, 5 years', color: '#3B82F6' },
-                );
-                break;
-            }
-            default: {
-                const idealSIP = Math.round(monthlySavings * 0.6);
-                const r = 12 / 12 / 100;
-                const n = 10 * 12;
-                const futureValue = idealSIP * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
-                recommendations.push(
-                    { icon: TrendingUp, title: 'Suggested SIP', value: formatINR(idealSIP) + '/mo', detail: '60% of monthly surplus', color: '#10B981' },
-                    { icon: PiggyBank, title: '10-Year Projection', value: formatINR(futureValue), detail: 'At 12% annual return', color: '#3B82F6' },
-                );
-            }
-        }
+        // Helper to compute SIP future value
+        const sipFV = (sip: number, years: number, rate: number = 12) => {
+            const r = rate / 12 / 100;
+            const n = years * 12;
+            return sip * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
+        };
 
-        // Emergency fund recommendation
+        const sipForCorpus = (corpus: number, years: number, rate: number = 12) => {
+            const r = rate / 12 / 100;
+            const n = years * 12;
+            const factor = (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
+            return corpus / factor;
+        };
+
+        // Build goal-specific plans
+        const goalPlans: GoalPlan[] = selectedGoals.map(gId => {
+            const goalData = goals.find(g => g.id === gId)!;
+            const recs: GoalPlan['recommendations'] = [];
+            let timeline = '';
+            let monthlySIP = 0;
+            let targetCorpus = 0;
+
+            switch (gId) {
+                case 'house': {
+                    const affordability = Math.round(annualIncome * 5);
+                    const recommendedEMI = Math.round(salary * 0.28);
+                    const downPayment = Math.round(affordability * 0.2);
+                    const downPaymentYears = downPayment > savings ? Math.ceil((downPayment - savings) / (monthlySavings * 0.4) / 12) : 0;
+                    monthlySIP = Math.round((downPayment - savings) > 0 ? (downPayment - savings) / (downPaymentYears * 12) : 0);
+                    targetCorpus = downPayment;
+                    timeline = downPaymentYears > 0 ? `${downPaymentYears} years to save down payment` : 'Down payment ready!';
+                    recs.push(
+                        { icon: Home, title: 'Home Loan Affordability', value: formatINR(affordability), detail: 'Based on 5x annual income', color: '#10B981' },
+                        { icon: PiggyBank, title: 'Recommended Max EMI', value: formatINR(recommendedEMI) + '/mo', detail: '28% of monthly income', color: '#3B82F6' },
+                        { icon: Shield, title: 'Down Payment Target', value: formatINR(downPayment), detail: `20% of property value • ${timeline}`, color: '#8B5CF6' },
+                    );
+                    break;
+                }
+                case 'education': {
+                    const yearsToEducation = Math.max(5, 18 - (age > 30 ? age - 28 : 0));
+                    const educationCost = 2500000;
+                    monthlySIP = Math.round(sipForCorpus(educationCost, yearsToEducation));
+                    targetCorpus = educationCost;
+                    timeline = `${yearsToEducation} years`;
+                    recs.push(
+                        { icon: GraduationCap, title: 'Education Corpus Target', value: formatINR(educationCost), detail: `In ${yearsToEducation} years at current costs`, color: '#3B82F6' },
+                        { icon: TrendingUp, title: 'Required Monthly SIP', value: formatINR(monthlySIP) + '/mo', detail: `Invest in equity mutual funds for ${yearsToEducation} years`, color: '#10B981' },
+                        { icon: PiggyBank, title: 'Projected Growth', value: formatINR(sipFV(monthlySIP, yearsToEducation)), detail: 'At 12% annual return', color: '#8B5CF6' },
+                    );
+                    break;
+                }
+                case 'retirement': {
+                    const retireAge = 60;
+                    const yearsToRetire = retireAge - age;
+                    const monthlyCorpus = expenses * 1.5;
+                    const corpusNeeded = monthlyCorpus * 12 * 25;
+                    monthlySIP = Math.round(sipForCorpus(corpusNeeded, yearsToRetire));
+                    targetCorpus = corpusNeeded;
+                    timeline = `${yearsToRetire} years to retirement`;
+                    recs.push(
+                        { icon: Umbrella, title: 'Retirement Corpus', value: formatINR(corpusNeeded), detail: `For comfortable life after age ${retireAge}`, color: '#8B5CF6' },
+                        { icon: TrendingUp, title: 'Monthly SIP Required', value: formatINR(monthlySIP) + '/mo', detail: `${yearsToRetire} years of investing`, color: '#10B981' },
+                        { icon: Shield, title: 'Monthly Pension (est.)', value: formatINR(monthlyCorpus) + '/mo', detail: '4% withdrawal rate', color: '#F59E0B' },
+                    );
+                    break;
+                }
+                case 'car': {
+                    const carBudget = Math.round(salary * 15);
+                    const carEMI = Math.round(carBudget * 0.8 / 60);
+                    const downPay = Math.round(carBudget * 0.2);
+                    const saveMonths = Math.ceil(downPay / (monthlySavings * 0.3));
+                    monthlySIP = Math.round(downPay / Math.max(saveMonths, 1));
+                    targetCorpus = carBudget;
+                    timeline = `${Math.ceil(saveMonths / 12)} years to save down payment`;
+                    recs.push(
+                        { icon: Car, title: 'Affordable Car Budget', value: formatINR(carBudget), detail: '~15 months salary', color: '#F59E0B' },
+                        { icon: PiggyBank, title: 'Down Payment (20%)', value: formatINR(downPay), detail: `Save ~${formatINR(monthlySIP)}/mo for ${saveMonths} months`, color: '#3B82F6' },
+                        { icon: Shield, title: 'Estimated Car EMI', value: formatINR(carEMI) + '/mo', detail: '80% financed over 5 years', color: '#10B981' },
+                    );
+                    break;
+                }
+                case 'wealth': {
+                    const idealSIP = Math.round(monthlySavings * 0.5);
+                    const fv5 = sipFV(idealSIP, 5);
+                    const fv10 = sipFV(idealSIP, 10);
+                    const fv20 = sipFV(idealSIP, 20);
+                    monthlySIP = idealSIP;
+                    targetCorpus = fv10;
+                    timeline = '10+ years growth plan';
+                    recs.push(
+                        { icon: TrendingUp, title: 'Monthly SIP', value: formatINR(idealSIP) + '/mo', detail: '50% of monthly surplus', color: '#10B981' },
+                        { icon: PiggyBank, title: '5-Year Value', value: formatINR(fv5), detail: 'At 12% annual return', color: '#3B82F6' },
+                        { icon: Shield, title: '10-Year Value', value: formatINR(fv10), detail: 'Power of compounding', color: '#8B5CF6' },
+                        { icon: Sparkles, title: '20-Year Value', value: formatINR(fv20), detail: 'Long-term wealth creation', color: '#F59E0B' },
+                    );
+                    break;
+                }
+                case 'business': {
+                    const businessFund = Math.round(annualIncome * 1.5);
+                    const saveYears = 3;
+                    monthlySIP = Math.round(sipForCorpus(businessFund, saveYears, 10));
+                    targetCorpus = businessFund;
+                    timeline = `${saveYears} years to build fund`;
+                    recs.push(
+                        { icon: Briefcase, title: 'Business Fund Target', value: formatINR(businessFund), detail: '1.5x annual income recommended', color: '#EC4899' },
+                        { icon: TrendingUp, title: 'Monthly Savings Needed', value: formatINR(monthlySIP) + '/mo', detail: `Save over ${saveYears} years`, color: '#10B981' },
+                        { icon: Shield, title: 'Emergency Buffer', value: formatINR(expenses * 12), detail: '12 months expenses before starting', color: '#F59E0B' },
+                    );
+                    break;
+                }
+            }
+
+            return { goalId: gId, goalLabel: goalData.label, icon: goalData.icon, gradient: goalData.gradient, recommendations: recs, timeline, monthlySIP, targetCorpus };
+        });
+
+        const totalMonthlySIP = goalPlans.reduce((sum, gp) => sum + gp.monthlySIP, 0);
+
+        // Emergency fund recommendation is always added
         const emergencyTarget = expenses * 6;
-        recommendations.push(
-            { icon: Shield, title: 'Emergency Fund', value: formatINR(emergencyTarget), detail: `6 months expenses (you have ${emergencyMonths.toFixed(1)} months)`, color: '#F59E0B' },
-        );
 
         // Alerts
-        if (emiRatio > 35) {
-            alerts.push({ type: 'warning', text: `Your EMI is ${emiRatio.toFixed(0)}% of income — dangerously high. Recommended: below 30%.` });
-        }
-        if (savingsRatio < 15) {
-            alerts.push({ type: 'warning', text: `You're saving only ${savingsRatio.toFixed(0)}% of income. Target: 20%+ for financial security.` });
-        }
-        if (emergencyMonths < 3) {
-            alerts.push({ type: 'warning', text: `Emergency fund covers only ${emergencyMonths.toFixed(1)} months. Build 6-month buffer first.` });
-        }
-        if (savingsRatio >= 25) {
-            alerts.push({ type: 'positive', text: `Great savings rate of ${savingsRatio.toFixed(0)}%! You're building wealth faster than most.` });
-        }
-        if (emiRatio <= 15 && emi > 0) {
-            alerts.push({ type: 'positive', text: `Your debt is well-managed at ${emiRatio.toFixed(0)}% of income. Keep it up!` });
-        }
+        const alerts: FinancialPlan['alerts'] = [];
+        if (emiRatio > 35) alerts.push({ type: 'warning', text: `Your EMI is ${emiRatio.toFixed(0)}% of income — dangerously high. Recommended: below 30%.` });
+        if (savingsRatio < 15) alerts.push({ type: 'warning', text: `You're saving only ${savingsRatio.toFixed(0)}% of income. Target: 20%+ for financial security.` });
+        if (emergencyMonths < 3) alerts.push({ type: 'warning', text: `Emergency fund covers only ${emergencyMonths.toFixed(1)} months. Build 6-month buffer first.` });
+        if (totalMonthlySIP > monthlySavings * 0.9) alerts.push({ type: 'warning', text: `Total SIP needed (${formatINR(totalMonthlySIP)}/mo) exceeds 90% of your surplus. Consider prioritizing goals.` });
+        if (savingsRatio >= 25) alerts.push({ type: 'positive', text: `Great savings rate of ${savingsRatio.toFixed(0)}%! You're building wealth faster than most.` });
+        if (emiRatio <= 15 && emi > 0) alerts.push({ type: 'positive', text: `Your debt is well-managed at ${emiRatio.toFixed(0)}% of income. Keep it up!` });
+        if (emergencyMonths >= 6) alerts.push({ type: 'positive', text: `You have a solid emergency fund covering ${emergencyMonths.toFixed(1)} months. Well done!` });
 
-        return { score, recommendations, alerts };
-    }, [showResults, salary, age, expenses, savings, emi, goal]);
+        const monthlyBudget = {
+            savings: monthlySavings,
+            investments: Math.min(totalMonthlySIP, monthlySavings * 0.8),
+            emi: emi,
+            expenses: expenses,
+        };
+
+        return { score, goalPlans, alerts, totalMonthlySIP, monthlyBudget };
+    }, [showResults, salary, age, expenses, savings, emi, selectedGoals]);
+
+    const handleDownloadPDF = async () => {
+        if (!plan) return;
+        const headers = ['Category', 'Details'];
+        const data: (string | number)[][] = [
+            ['Monthly Salary', formatINR(salary)],
+            ['Monthly Expenses', formatINR(expenses)],
+            ['Monthly Surplus', formatINR(salary - expenses - emi)],
+            ['Financial Health Score', `${plan.score}/100`],
+            ['---', '---'],
+            ['SELECTED GOALS', selectedGoals.map(g => goals.find(gl => gl.id === g)?.label).join(', ')],
+            ['Total Monthly SIP Needed', formatINR(plan.totalMonthlySIP)],
+            ['---', '---'],
+        ];
+        plan.goalPlans.forEach(gp => {
+            data.push([`Goal: ${gp.goalLabel}`, `SIP: ${formatINR(gp.monthlySIP)}/mo | Target: ${formatINR(gp.targetCorpus)}`]);
+            gp.recommendations.forEach(r => { data.push([r.title, `${r.value} - ${r.detail}`]); });
+            data.push(['---', '---']);
+        });
+        plan.alerts.forEach(a => { data.push([a.type === 'warning' ? '⚠ Alert' : '✓ Positive', a.text]); });
+        await exportToPDF('Financial Plan Report', headers, data, 'FinCalix_Financial_Plan');
+    };
 
     return (
         <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
@@ -186,40 +274,51 @@ export default function AIFinancialAssistant() {
                                 </div>
                             </div>
 
-                            {/* Goal Selection */}
+                            {/* Multi-Goal Selection */}
                             <div className="mb-5">
-                                <h2 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                                <h2 className="text-sm font-bold text-white mb-1 flex items-center gap-2">
                                     <span className="w-6 h-6 rounded-lg bg-brand-purple/10 flex items-center justify-center text-brand-purple text-xs font-bold">2</span>
-                                    Your Financial Goal
+                                    Your Financial Goals
                                 </h2>
+                                <p className="text-slate-500 text-[11px] mb-3 ml-8">Select one or more goals</p>
                                 <div className="grid grid-cols-2 gap-2.5">
                                     {goals.map((g) => {
                                         const Icon = g.icon;
-                                        const isSelected = goal === g.id;
+                                        const isSelected = selectedGoals.includes(g.id);
                                         return (
                                             <motion.button
                                                 key={g.id}
                                                 whileTap={{ scale: 0.95 }}
-                                                onClick={() => setGoal(g.id)}
-                                                className={`p-3.5 rounded-xl border text-left transition-all ${isSelected
+                                                onClick={() => toggleGoal(g.id)}
+                                                className={`p-3.5 rounded-xl border text-left transition-all relative ${isSelected
                                                     ? `bg-gradient-to-br ${g.gradient} border-white/20 shadow-lg`
                                                     : 'bg-dark-card border-dark-border hover:border-slate-600'
                                                     }`}
                                             >
+                                                {isSelected && (
+                                                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                                                        <Check size={12} className="text-white" />
+                                                    </motion.div>
+                                                )}
                                                 <Icon size={20} className={isSelected ? 'text-white' : 'text-slate-400'} />
                                                 <p className={`text-xs font-bold mt-2 ${isSelected ? 'text-white' : 'text-slate-300'}`}>{g.label}</p>
                                             </motion.button>
                                         );
                                     })}
                                 </div>
+                                {selectedGoals.length > 0 && (
+                                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-brand-purple font-bold mt-3 text-center">
+                                        {selectedGoals.length} goal{selectedGoals.length > 1 ? 's' : ''} selected
+                                    </motion.p>
+                                )}
                             </div>
 
                             {/* Generate Button */}
                             <motion.button
                                 whileTap={{ scale: 0.97 }}
                                 onClick={() => setShowResults(true)}
-                                disabled={!goal}
-                                className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${goal
+                                disabled={selectedGoals.length === 0}
+                                className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${selectedGoals.length > 0
                                     ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20'
                                     : 'bg-dark-card border border-dark-border text-slate-500'
                                     }`}
@@ -249,12 +348,7 @@ export default function AIFinancialAssistant() {
                                     </svg>
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <div>
-                                            <motion.p
-                                                className="text-3xl font-bold text-white"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ delay: 0.5 }}
-                                            >
+                                            <motion.p className="text-3xl font-bold text-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
                                                 {plan.score}
                                             </motion.p>
                                             <p className="text-[10px] text-slate-500 font-bold">/100</p>
@@ -264,6 +358,25 @@ export default function AIFinancialAssistant() {
                                 <p className={`text-sm font-bold ${plan.score >= 70 ? 'text-brand-green' : plan.score >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
                                     {plan.score >= 80 ? 'Excellent!' : plan.score >= 60 ? 'Good' : plan.score >= 40 ? 'Needs Improvement' : 'At Risk'}
                                 </p>
+                            </div>
+
+                            {/* Monthly Budget Overview */}
+                            <div className="p-4 rounded-2xl bg-dark-card border border-dark-border mb-5">
+                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Monthly Budget Breakdown</h3>
+                                <div className="grid grid-cols-2 gap-2.5">
+                                    <BudgetCard label="Income" value={formatINR(salary)} color="#10B981" />
+                                    <BudgetCard label="Expenses" value={formatINR(expenses)} color="#EF4444" />
+                                    <BudgetCard label="EMI" value={formatINR(emi)} color="#F59E0B" />
+                                    <BudgetCard label="Surplus" value={formatINR(salary - expenses - emi)} color="#3B82F6" />
+                                </div>
+                                <div className="mt-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs text-slate-400">Total SIP needed for all goals</span>
+                                        <span className={`text-sm font-bold ${plan.totalMonthlySIP > (salary - expenses - emi) * 0.9 ? 'text-red-400' : 'text-brand-green'}`}>
+                                            {formatINR(plan.totalMonthlySIP)}/mo
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Alerts */}
@@ -290,41 +403,97 @@ export default function AIFinancialAssistant() {
                                 </div>
                             )}
 
-                            {/* Recommendations */}
+                            {/* Goal-wise Plans */}
                             <div className="mb-5">
                                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                                     <Sparkles size={13} className="text-amber-400" />
-                                    Suggested Plan
+                                    Goal-wise Financial Plan
                                 </h3>
                                 <div className="space-y-3">
-                                    {plan.recommendations.map((rec, i) => {
-                                        const Icon = rec.icon;
+                                    {plan.goalPlans.map((gp, gi) => {
+                                        const Icon = gp.icon;
+                                        const isExpanded = expandedGoal === gp.goalId;
                                         return (
                                             <motion.div
-                                                key={i}
+                                                key={gp.goalId}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: 0.5 + i * 0.12 }}
-                                                className="p-4 rounded-xl bg-dark-card border border-dark-border"
+                                                transition={{ delay: 0.4 + gi * 0.12 }}
+                                                className="rounded-2xl bg-dark-card border border-dark-border overflow-hidden"
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${rec.color}15` }}>
-                                                        <Icon size={20} style={{ color: rec.color }} />
+                                                {/* Goal Header */}
+                                                <button
+                                                    onClick={() => setExpandedGoal(isExpanded ? null : gp.goalId)}
+                                                    className={`w-full p-4 flex items-center gap-3 bg-gradient-to-r ${gp.gradient}`}
+                                                >
+                                                    <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+                                                        <Icon size={20} className="text-white" />
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">{rec.title}</p>
-                                                        <p className="text-white font-bold text-lg">{rec.value}</p>
-                                                        <p className="text-slate-500 text-xs mt-0.5">{rec.detail}</p>
+                                                    <div className="flex-1 text-left">
+                                                        <p className="text-white font-bold text-sm">{gp.goalLabel}</p>
+                                                        <p className="text-white/70 text-[11px]">{gp.timeline}</p>
                                                     </div>
-                                                </div>
+                                                    <div className="text-right mr-2">
+                                                        <p className="text-white font-bold text-sm">{formatINR(gp.monthlySIP)}/mo</p>
+                                                        <p className="text-white/50 text-[10px]">SIP needed</p>
+                                                    </div>
+                                                    {isExpanded ? <ChevronUp size={16} className="text-white/60" /> : <ChevronDown size={16} className="text-white/60" />}
+                                                </button>
+
+                                                {/* Expanded Details */}
+                                                <AnimatePresence>
+                                                    {isExpanded && (
+                                                        <motion.div
+                                                            initial={{ height: 0, opacity: 0 }}
+                                                            animate={{ height: 'auto', opacity: 1 }}
+                                                            exit={{ height: 0, opacity: 0 }}
+                                                            className="overflow-hidden"
+                                                        >
+                                                            <div className="p-4 space-y-3">
+                                                                <div className="flex items-center gap-2 pb-2 border-b border-dark-border/40">
+                                                                    <Shield size={14} className="text-amber-400" />
+                                                                    <span className="text-xs text-slate-400">Target Corpus:</span>
+                                                                    <span className="text-sm font-bold text-white">{formatINR(gp.targetCorpus)}</span>
+                                                                </div>
+                                                                {gp.recommendations.map((rec, i) => {
+                                                                    const RecIcon = rec.icon;
+                                                                    return (
+                                                                        <div key={i} className="flex items-center gap-3">
+                                                                            <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${rec.color}15` }}>
+                                                                                <RecIcon size={16} style={{ color: rec.color }} />
+                                                                            </div>
+                                                                            <div className="flex-1">
+                                                                                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">{rec.title}</p>
+                                                                                <p className="text-white font-bold text-sm">{rec.value}</p>
+                                                                                <p className="text-slate-500 text-[11px]">{rec.detail}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
                                             </motion.div>
                                         );
                                     })}
                                 </div>
                             </div>
 
-                            {/* Modify / Restart */}
-                            <div className="flex gap-3">
+                            {/* Emergency Fund */}
+                            <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 mb-5">
+                                <div className="flex items-center gap-3">
+                                    <Shield size={20} className="text-amber-400" />
+                                    <div>
+                                        <p className="text-xs text-slate-400 uppercase font-bold">Emergency Fund</p>
+                                        <p className="text-white font-bold">{formatINR(expenses * 6)}</p>
+                                        <p className="text-xs text-slate-500">6 months of expenses • You have {(savings / expenses).toFixed(1)} months saved</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 mb-3">
                                 <button
                                     onClick={() => setShowResults(false)}
                                     className="flex-1 py-4 rounded-2xl bg-dark-card border border-dark-border text-slate-300 font-bold text-sm"
@@ -334,22 +503,39 @@ export default function AIFinancialAssistant() {
                                 <button
                                     onClick={() => {
                                         if (navigator.share) {
+                                            const goalSummary = plan.goalPlans.map(gp => `${gp.goalLabel}: SIP ${formatINR(gp.monthlySIP)}/mo → ${formatINR(gp.targetCorpus)}`).join('\n');
                                             navigator.share({
                                                 title: 'My Financial Plan - FinCalix',
-                                                text: `My Financial Health Score: ${plan.score}/100\n${plan.recommendations.map(r => `${r.title}: ${r.value}`).join('\n')}\n\nGenerated with FinCalix`,
+                                                text: `My Financial Health Score: ${plan.score}/100\n\n${goalSummary}\n\nTotal SIP: ${formatINR(plan.totalMonthlySIP)}/mo\n\nGenerated with FinCalix`,
                                                 url: window.location.href,
                                             });
                                         }
                                     }}
-                                    className="flex-1 py-4 rounded-2xl bg-brand-purple text-white font-bold text-sm shadow-lg shadow-brand-purple/20"
+                                    className="flex-1 py-4 rounded-2xl bg-brand-purple text-white font-bold text-sm shadow-lg shadow-brand-purple/20 flex items-center justify-center gap-2"
                                 >
-                                    Share Plan
+                                    <Share2 size={16} /> Share Plan
                                 </button>
                             </div>
+                            <button
+                                onClick={handleDownloadPDF}
+                                className="w-full py-4 rounded-2xl bg-brand-green/10 border border-brand-green/30 text-brand-green font-bold text-sm flex items-center justify-center gap-2"
+                            >
+                                <Download size={16} /> Download PDF Report
+                            </button>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
+        </div>
+    );
+}
+
+function BudgetCard({ label, value, color }: { label: string; value: string; color: string }) {
+    return (
+        <div className="p-3 rounded-xl bg-slate-800/30 text-center">
+            <div className="w-2 h-2 rounded-full mx-auto mb-1.5" style={{ backgroundColor: color }} />
+            <p className="text-[10px] text-slate-500 uppercase font-bold">{label}</p>
+            <p className="text-white font-bold text-sm">{value}</p>
         </div>
     );
 }
