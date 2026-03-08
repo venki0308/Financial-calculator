@@ -23,6 +23,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
+import SmartInsight from '../components/SmartInsight';
 
 ChartJS.register(
     ArcElement,
@@ -205,7 +206,14 @@ export default function SIPCalculator() {
                     </motion.button>
                 </motion.div>
 
-                <div className="grid grid-cols-2 gap-3 mb-6">
+                {/* Smart Insights */}
+                <SmartInsight
+                    calculatorType="sip"
+                    inputs={{ monthly, rate, years }}
+                    results={{ futureValue: result.futureValue, invested: result.invested, wealthGained: result.wealthGained }}
+                />
+
+                <div className="grid grid-cols-2 gap-3 mb-6 mt-4">
                     <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
                         📄 Download PDF
                     </button>

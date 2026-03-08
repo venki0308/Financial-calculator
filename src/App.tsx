@@ -51,6 +51,8 @@ import AdvancedSIPCalculator from './pages/AdvancedSIPCalculator';
 import GSTCalculator from './pages/GSTCalculator';
 import CarLoanCalculator from './pages/CarLoanCalculator';
 import BudgetTracker from './pages/BudgetTracker';
+import GoalPlanner from './pages/GoalPlanner';
+import AIFinancialAssistant from './pages/AIFinancialAssistant';
 
 // Support Pages
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -164,6 +166,8 @@ function AppContent() {
                     <Route path="/calculator/gst" element={<GSTCalculator />} />
                     <Route path="/calculator/car-loan" element={<CarLoanCalculator />} />
                     <Route path="/budget-tracker" element={<BudgetTracker />} />
+                    <Route path="/goal-planner" element={<GoalPlanner />} />
+                    <Route path="/ai-advisor" element={<AIFinancialAssistant />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/" replace />} />

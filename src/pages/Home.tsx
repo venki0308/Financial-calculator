@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt } from 'lucide-react';
+import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useTranslation } from 'react-i18next';
@@ -191,6 +191,38 @@ export default function Home() {
                         <span className="px-3 py-1.5 rounded-lg bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">{t('home.new2026')}</span>
                         <span className="px-3 py-1.5 rounded-lg bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">Central Govt</span>
                     </div>
+                </motion.button>
+            </section>
+
+            {/* AI Advisor & Goal Planner */}
+            <section className="mb-8 grid grid-cols-2 gap-3">
+                <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate('/ai-advisor')}
+                    className="p-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 border border-amber-400/30 shadow-lg text-left"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                >
+                    <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
+                        <Sparkles size={18} className="text-white" />
+                    </div>
+                    <h3 className="text-white font-bold text-sm">AI Advisor</h3>
+                    <p className="text-white/60 text-[10px] mt-0.5">Personal financial plan</p>
+                </motion.button>
+                <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate('/goal-planner')}
+                    className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 border border-emerald-400/30 shadow-lg text-left"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                >
+                    <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
+                        <Target size={18} className="text-white" />
+                    </div>
+                    <h3 className="text-white font-bold text-sm">Goal Planner</h3>
+                    <p className="text-white/60 text-[10px] mt-0.5">Plan your milestones</p>
                 </motion.button>
             </section>
 

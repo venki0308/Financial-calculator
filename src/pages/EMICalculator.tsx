@@ -24,6 +24,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
+import SmartInsight from '../components/SmartInsight';
 
 ChartJS.register(
     ArcElement,
@@ -299,6 +300,13 @@ export default function EMICalculator() {
                         <p className="text-xl font-bold text-white">{formatINR(result.totalPayment)}</p>
                     </div>
                 </motion.div>
+
+                {/* Smart Insights */}
+                <SmartInsight
+                    calculatorType="emi"
+                    inputs={{ principal, rate, months }}
+                    results={{ emi: result.emi, totalInterest: result.totalInterest, totalPayment: result.totalPayment }}
+                />
 
 
                 {/* Action Buttons */}
