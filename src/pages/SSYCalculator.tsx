@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Heart, Info, Download, Share2, ChevronDown, ChevronUp, BookOpen, AlertCircle, GraduationCap, Shield, Calendar, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -21,6 +22,7 @@ interface YearWise { year: number; age: number; deposit: number; interest: numbe
 
 export default function SSYCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('SSY_Calculator_Advanced'); }, []);
+    useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
     const chartRef = useRef<any>(null);

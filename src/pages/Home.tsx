@@ -198,7 +198,7 @@ export default function Home() {
             <section className="mb-8 grid grid-cols-2 gap-3">
                 <motion.button
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate('/ai-advisor')}
+                    onClick={() => navigate('/financial-advisor')}
                     className="p-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 border border-amber-400/30 shadow-lg text-left"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -207,7 +207,7 @@ export default function Home() {
                     <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
                         <Sparkles size={18} className="text-white" />
                     </div>
-                    <h3 className="text-white font-bold text-sm">AI Advisor</h3>
+                    <h3 className="text-white font-bold text-sm">Financial Advisor</h3>
                     <p className="text-white/60 text-[10px] mt-0.5">Personal financial plan</p>
                 </motion.button>
                 <motion.button

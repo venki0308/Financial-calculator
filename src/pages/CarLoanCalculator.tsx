@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Car } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +9,7 @@ import { AnalyticsService } from '../lib/analytics';
 
 export default function CarLoanCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Car_Loan'); }, []);
+    useTrackCalculator();
     const { t } = useTranslation();
     const navigate = useNavigate();
     const addSaved = useCalculatorStore((s) => s.addSaved);

@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Share2, ChevronDown, ChevronUp, Save, Check, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -44,6 +45,7 @@ const loanTypes = ['Home Loan', 'Personal Loan', 'Car Loan', 'Education Loan'];
 
 export default function EMICalculator() {
     useEffect(() => { AnalyticsService.trackScreen('EMI_Calculator'); }, []);
+    useTrackCalculator();
     const navigate = useNavigate();
     const [loanType, setLoanType] = useState('Home Loan');
     const [method, setMethod] = useState<'reducing' | 'flat'>('reducing');

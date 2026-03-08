@@ -20,8 +20,6 @@ const allCalcs: CalcItem[] = [
 
     // Investments
     { nameKey: 'calculators.sip.name', descKey: 'calculators.sip.desc', icon: TrendingUp, color: '#3B82F6', path: '/calculator/sip', category: 'investments' },
-    { nameKey: 'calculators.stepUpSip.name', descKey: 'calculators.stepUpSip.desc', icon: ArrowUpRight, color: '#10B981', path: '/calculator/step-up-sip', category: 'investments' },
-    { nameKey: 'calculators.goalSip.name', descKey: 'calculators.goalSip.desc', icon: Target, color: '#EF4444', path: '/calculator/goal-sip', category: 'investments' },
     { nameKey: 'calculators.lumpsum.name', descKey: 'calculators.lumpsum.desc', icon: Wallet, color: '#10B981', path: '/calculator/lumpsum', category: 'investments' },
     { nameKey: 'calculators.swp.name', descKey: 'calculators.swp.desc', icon: TrendingUp, color: '#F59E0B', path: '/calculator/swp', category: 'investments' },
     { nameKey: 'calculators.cagr.name', descKey: 'calculators.cagr.desc', icon: BarChart3, color: '#8B5CF6', path: '/calculator/cagr', category: 'investments' },

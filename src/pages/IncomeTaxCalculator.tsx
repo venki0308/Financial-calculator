@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect, useCallback, memo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, TrendingUp, Download, ExternalLink, ChevronDown, ChevronUp, Lightbulb, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportToPDF } from '../utils/exportUtils';
@@ -130,6 +131,7 @@ function getWarning(k: string, rawValue: string): string | undefined {
 // ══════════════════════════════════════════════════════════════════════════════
 export default function IncomeTaxCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Income_Tax'); }, []);
+    useTrackCalculator();
     const navigate = useNavigate();
     const [regime, setRegime] = useState<'old' | 'new'>('new');
     const [inputMode, setInputMode] = useState<'monthly' | 'annual'>('monthly');

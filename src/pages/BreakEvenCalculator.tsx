@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Download, Share2, Save, TrendingUp, ChevronDown, ChevronUp, DollarSign, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -19,6 +20,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 
 export default function BreakEvenCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('BreakEven'); }, []);
+    useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
     const chartRef = useRef<any>(null);

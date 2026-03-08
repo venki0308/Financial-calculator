@@ -1,5 +1,6 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Save, Check, Download, Share2, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,6 +21,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 
 export default function FDCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('FD_Calculator'); }, []);
+    useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved, savedCalculations } = useCalculatorStore();
     const [principal, setPrincipal] = useState(100000);

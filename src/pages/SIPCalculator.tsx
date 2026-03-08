@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Info, Save, Check, Download, TrendingUp, Target, ArrowUpRight, Share2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useTrackCalculator } from '../hooks/useTrackCalculator'
+import { ArrowLeft, Info, Save, Check, Download, TrendingUp, Target, ArrowUpRight, Share2 } from 'lucide-react'
+import { motion } from 'framer-motion'
 import {
     Chart as ChartJS,
     ArcElement,
@@ -49,6 +50,7 @@ const tabConfig: { key: SIPTab; label: string; icon: React.ElementType }[] = [
 
 export default function SIPCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('SIP_Calculator'); }, []);
+    useTrackCalculator();
     const navigate = useNavigate();
     const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
     const [activeTab, setActiveTab] = useState<SIPTab>('basic');

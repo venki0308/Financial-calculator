@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
@@ -14,6 +15,7 @@ type Mode = 'flat' | 'simple' | 'compound';
 
 export default function SimpleInterestCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Simple_Interest'); }, []);
+    useTrackCalculator();
     const navigate = useNavigate();
     const [mode, setMode] = useState<Mode>('flat');
     const [principal, setPrincipal] = useState(100000);

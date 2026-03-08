@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Building2, MapPin, ArrowRightLeft, Copy, Check, Home, FileText, Calculator, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -74,6 +75,7 @@ function calcEMI(principal: number, ratePA: number, tenureYears: number) {
 
 export default function PropertyCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Property'); }, []);
+    useTrackCalculator();
     const { t } = useTranslation();
     const navigate = useNavigate();
     const addSaved = useCalculatorStore((s) => s.addSaved);

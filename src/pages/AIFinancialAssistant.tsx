@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Home, GraduationCap, Car, Umbrella, Briefcase, TrendingUp, PiggyBank, Shield, AlertTriangle, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
+import DisclaimerBanner from '../components/DisclaimerBanner';
 import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
 
@@ -13,7 +14,7 @@ interface FinancialPlan {
 }
 
 export default function AIFinancialAssistant() {
-    useEffect(() => { AnalyticsService.trackScreen('AI_Financial_Assistant'); }, []);
+    useEffect(() => { AnalyticsService.trackScreen('Financial_Advisor'); }, []);
     const navigate = useNavigate();
 
     const [salary, setSalary] = useState(50000);
@@ -157,12 +158,14 @@ export default function AIFinancialAssistant() {
                     <div className="flex items-center gap-2">
                         <Sparkles size={18} className="text-amber-400" />
                         <div>
-                            <h1 className="text-lg font-bold text-white">AI Financial Advisor</h1>
+                            <h1 className="text-lg font-bold text-white">Financial Advisor</h1>
                             <p className="text-slate-500 text-xs">Personalized financial insights</p>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <DisclaimerBanner type="calculator" />
 
             <div className="px-4 pb-28 pt-4">
                 <AnimatePresence mode="wait">

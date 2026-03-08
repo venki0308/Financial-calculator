@@ -167,7 +167,8 @@ function AppContent() {
                     <Route path="/calculator/car-loan" element={<CarLoanCalculator />} />
                     <Route path="/budget-tracker" element={<BudgetTracker />} />
                     <Route path="/goal-planner" element={<GoalPlanner />} />
-                    <Route path="/ai-advisor" element={<AIFinancialAssistant />} />
+                    <Route path="/financial-advisor" element={<AIFinancialAssistant />} />
+                    <Route path="/ai-advisor" element={<Navigate to="/financial-advisor" replace />} />
                     <Route path="/compare" element={<CompareCalculator />} />
                 </Route>
 

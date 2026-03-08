@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
@@ -12,6 +13,7 @@ import { AnalyticsService } from '../lib/analytics';
 
 export default function CompoundInterestCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Compound_Interest'); }, []);
+    useTrackCalculator();
     const navigate = useNavigate();
     const [principal, setPrincipal] = useState(100000);
     const [rate, setRate] = useState(8);

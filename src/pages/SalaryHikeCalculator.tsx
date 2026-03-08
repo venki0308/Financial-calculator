@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
@@ -15,6 +16,7 @@ import { AnalyticsService } from '../lib/analytics';
 
 export default function SalaryHikeCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Salary_Hike'); }, []);
+    useTrackCalculator();
     const navigate = useNavigate();
 
     // Mode: 'findHike' = Find Hike % by entering current & new salary

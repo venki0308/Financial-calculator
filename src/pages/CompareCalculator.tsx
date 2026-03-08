@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, GitCompare, TrendingUp, Calculator, PiggyBank, Download, Share2, FileText, Lightbulb } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -51,6 +52,7 @@ function calcFD(principal: number, rate: number, tenure: number) {
 
 export default function CompareCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Compare_Calculator'); }, []);
+    useTrackCalculator();
     const navigate = useNavigate();
     const [selectedType, setSelectedType] = useState<CompareType>('emi');
     const chartRef = useRef<any>(null);

@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Download, Share2, Shield, Calendar, TrendingUp, IndianRupee, ChevronDown, ChevronUp, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -22,6 +23,7 @@ interface YearEntry { year: number; age: number; contrib: number; corpus: number
 
 export default function NPSCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('NPS_Calculator_Advanced'); }, []);
+    useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
     const chartRef = useRef<any>(null);

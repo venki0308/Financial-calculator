@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, GraduationCap, Car, Umbrella, Target, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
+import DisclaimerBanner from '../components/DisclaimerBanner';
 import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
 
@@ -83,6 +84,8 @@ export default function GoalPlanner() {
                     </div>
                 </div>
             </div>
+
+            <DisclaimerBanner type="calculator" />
 
             <div className="px-4 pb-28 pt-4">
                 {!selectedGoal ? (
