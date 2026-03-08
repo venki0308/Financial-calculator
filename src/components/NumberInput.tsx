@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface NumberInputProps {
     label: string;
@@ -17,6 +17,13 @@ export default function NumberInput({ label, value, onChange, min, max, prefix, 
     const [rawValue, setRawValue] = useState(value.toString());
     const inputRef = useRef<HTMLInputElement>(null);
 
+    // Sync rawValue when value prop changes externally (e.g., slider or reset)
+    useEffect(() => {
+        if (!focused) {
+            setRawValue(value.toString());
+        }
+    }, [value, focused]);
+
     const handleFocus = () => {
         setFocused(true);
         setRawValue(value.toString());
@@ -31,7 +38,14 @@ export default function NumberInput({ label, value, onChange, min, max, prefix, 
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setRawValue(e.target.value);
+        const newRaw = e.target.value;
+        setRawValue(newRaw);
+
+        // Real-time update: parse and send to parent on every keystroke
+        const parsed = parseFloat(newRaw);
+        if (!isNaN(parsed) && parsed >= min && parsed <= max) {
+            onChange(parsed);
+        }
     };
 
     const displayValue = focused ? rawValue : formatDisplay(value);

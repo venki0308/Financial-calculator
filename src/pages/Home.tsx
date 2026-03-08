@@ -1,12 +1,45 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp } from 'lucide-react';
+import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
 import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
+
+// Full calculator catalog for icon/color resolution
+const calcCatalog: Record<string, { icon: React.ElementType; color: string; label: string }> = {
+    '/calculator/loan-emi': { icon: Calculator, color: '#10B981', label: 'EMI Calculator' },
+    '/calculator/sip': { icon: Percent, color: '#3B82F6', label: 'SIP Calculator' },
+    '/calculator/fixed-deposit': { icon: PiggyBank, color: '#F59E0B', label: 'FD Calculator' },
+    '/calculator/income-tax': { icon: FileText, color: '#F59E0B', label: 'Income Tax' },
+    '/calculator/salary-hike': { icon: ArrowUpRight, color: '#10B981', label: 'Salary Hike' },
+    '/calculator/hra': { icon: GraduationCap, color: '#F59E0B', label: 'HRA Calculator' },
+    '/calculator/recurring-deposit': { icon: Clock, color: '#3B82F6', label: 'RD Calculator' },
+    '/calculator/compound-interest': { icon: Percent, color: '#8B5CF6', label: 'Compound Interest' },
+    '/calculator/simple-interest': { icon: Minus, color: '#6B7280', label: 'Simple Interest' },
+    '/calculator/advanced-sip': { icon: BarChart3, color: '#06B6D4', label: 'Advanced SIP' },
+    '/calculator/lumpsum': { icon: Wallet, color: '#10B981', label: 'Lumpsum' },
+    '/calculator/swp': { icon: TrendingUp, color: '#F59E0B', label: 'SWP Calculator' },
+    '/calculator/cagr': { icon: BarChart3, color: '#8B5CF6', label: 'CAGR Calculator' },
+    '/calculator/step-up-sip': { icon: ArrowUpRight, color: '#10B981', label: 'Step-Up SIP' },
+    '/calculator/goal-sip': { icon: Target, color: '#EF4444', label: 'Goal SIP' },
+    '/calculator/ppf': { icon: Landmark, color: '#10B981', label: 'PPF Calculator' },
+    '/calculator/nps': { icon: LayoutGrid, color: '#3B82F6', label: 'NPS Calculator' },
+    '/calculator/epf': { icon: Wallet, color: '#F59E0B', label: 'EPF Calculator' },
+    '/calculator/gratuity': { icon: DollarSign, color: '#8B5CF6', label: 'Gratuity' },
+    '/calculator/sukanya-samriddhi': { icon: Heart, color: '#EF4444', label: 'SSY Calculator' },
+    '/calculator/nsc': { icon: RefreshCcw, color: '#3B82F6', label: 'NSC Calculator' },
+    '/calculator/kvp': { icon: Clock, color: '#F59E0B', label: 'KVP Calculator' },
+    '/calculator/post-office-mis': { icon: DollarSign, color: '#10B981', label: 'PO MIS' },
+    '/calculator/senior-citizen-savings': { icon: Landmark, color: '#8B5CF6', label: 'SCSS Calculator' },
+    '/calculator/post-office-td': { icon: PiggyBank, color: '#3B82F6', label: 'PO TD' },
+    '/calculator/property': { icon: Building2, color: '#F97316', label: 'Property' },
+    '/calculator/gst': { icon: Receipt, color: '#06B6D4', label: 'GST Calculator' },
+    '/calculator/break-even': { icon: BarChart3, color: '#10B981', label: 'Break Even' },
+    '/calculator/car-loan': { icon: Car, color: '#3B82F6', label: 'Car Loan' },
+};
 
 // Default items if history is empty
 const defaultItems = [
@@ -20,8 +53,7 @@ export default function Home() {
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { user } = useAuthStore();
-    const { currentBalance, monthlyIncome } = useBudgetTrackerStore();
-    const userName = user?.name?.split(' ')[0] || 'User';
+    const { currentBalance, monthlyIncome, getTotalFixed, getTotalSpent } = useBudgetTrackerStore();
 
     const [recentPaths, setRecentPaths] = useState<string[]>([]);
 
@@ -36,22 +68,35 @@ export default function Home() {
         } catch { }
     }, []);
 
+    // Compute effective current balance: if user hasn't set one, derive from income - expenses
+    const effectiveBalance = useMemo(() => {
+        if (currentBalance > 0) return currentBalance;
+        if (monthlyIncome > 0) {
+            const fixed = getTotalFixed();
+            const spent = getTotalSpent();
+            return Math.max(0, monthlyIncome - fixed - spent);
+        }
+        return 0;
+    }, [currentBalance, monthlyIncome, getTotalFixed, getTotalSpent]);
+
     const quickCalcItems = useMemo(() => {
         if (recentPaths.length === 0) return defaultItems;
 
-        // Map paths to labels/icons (simplified for now)
-        return recentPaths.map(path => {
-            const parts = path.split('/');
-            const slug = parts[parts.length - 1];
-            const label = slug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ').replace('Emi', 'EMI').replace('Sip', 'SIP').replace('Fd', 'FD');
-            return {
-                label,
-                path,
-                icon: Calculator,
-                color: '#10B981' // Dynamic color logic could be added
-            };
-        }).slice(0, 4);
+        return recentPaths
+            .filter(path => calcCatalog[path]) // Only include known paths
+            .map(path => {
+                const info = calcCatalog[path];
+                return {
+                    label: info.label,
+                    path,
+                    icon: info.icon,
+                    color: info.color,
+                };
+            }).slice(0, 4);
     }, [recentPaths]);
+
+    // If no valid recent items after filtering, fall back to defaults
+    const displayItems = quickCalcItems.length > 0 ? quickCalcItems : defaultItems;
 
     const popularCalcs = [
         { name: t('calculators.incomeTax.name'), desc: t('calculators.incomeTax.desc'), path: '/calculator/income-tax' },
@@ -79,7 +124,7 @@ export default function Home() {
                     {recentPaths.length > 0 ? t('home.recentlyUsed') : t('home.quickCalculate')}
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
-                    {quickCalcItems.map((item, i) => (
+                    {displayItems.map((item, i) => (
                         <motion.button
                             key={item.path}
                             whileTap={{ scale: 0.95 }}
@@ -89,7 +134,7 @@ export default function Home() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.1 }}
                         >
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-slate-800/50">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${item.color}15` }}>
                                 <item.icon size={22} style={{ color: item.color }} />
                             </div>
                             <span className="text-slate-900 dark:text-white font-semibold text-sm truncate">{item.label}</span>
@@ -112,7 +157,7 @@ export default function Home() {
                             <ChevronRight size={14} className="text-slate-600" />
                         </div>
                         <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">{t('home.currentBalance')}</p>
-                        <p className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">{formatINR(currentBalance)}</p>
+                        <p className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">{formatINR(effectiveBalance)}</p>
                     </div>
                     <div className="p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border group active:scale-95 transition-transform cursor-pointer" onClick={() => navigate('/expenses')}>
                         <div className="flex items-center justify-between mb-2">
@@ -173,3 +218,4 @@ export default function Home() {
         </div>
     );
 }
+
