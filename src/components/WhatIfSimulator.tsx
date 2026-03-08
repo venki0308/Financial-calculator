@@ -113,7 +113,7 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
 
             {!hasChanges && (
                 <div className="p-3 rounded-xl bg-slate-800/30 text-center">
-                    <p className="text-slate-500 text-xs">Adjust sliders to see how changes affect your result</p>
+                    <p className="text-slate-300 text-xs">Adjust sliders to see how changes affect your result</p>
                 </div>
             )}
         </div>

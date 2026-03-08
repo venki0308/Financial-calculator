@@ -4,6 +4,7 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Delete, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
+import DisclaimerBanner from '../components/DisclaimerBanner';
 
 type CalcMode = 'standard' | 'scientific' | 'programmer';
 
@@ -110,6 +111,8 @@ export default function ScientificCalculator() {
                     <p className="text-slate-400 text-[11px]">Standard • Scientific • Programmer</p>
                 </div>
             </div>
+
+            <DisclaimerBanner type="calculator" />
 
             <div className="px-4 pt-4 pb-28 space-y-4">
                 {/* Mode Toggle */}

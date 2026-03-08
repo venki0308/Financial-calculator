@@ -507,7 +507,7 @@ export default function EMICalculator() {
                         { label: 'Loan Amount', value: formatINR(principal) },
                         { label: 'Total Interest', value: formatINR(result.totalInterest) },
                         { label: 'Total Payment', value: formatINR(result.totalPayment) },
-                        { label: 'Interest %', value: `${((result.totalInterest / principal) * 100).toFixed(1)}%` },
+                        { label: 'Interest Rate', value: `${rate}% p.a.` },
                     ]}
                     gradient="from-violet-600 via-purple-500 to-indigo-600"
                 />
