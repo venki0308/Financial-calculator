@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Home, GraduationCap, Car, Umbrella, Briefcase, TrendingUp, PiggyBank, Shield, AlertTriangle, CheckCircle, Check, Share2, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,18 +28,22 @@ interface FinancialPlan {
     monthlyBudget: { savings: number; investments: number; emi: number; expenses: number };
 }
 
-const goals = [
-    { id: 'house', label: 'Buy House', icon: Home, gradient: 'from-emerald-500 to-teal-600' },
-    { id: 'education', label: 'Child Education', icon: GraduationCap, gradient: 'from-blue-500 to-indigo-600' },
-    { id: 'retirement', label: 'Retirement', icon: Umbrella, gradient: 'from-purple-500 to-violet-600' },
-    { id: 'car', label: 'Buy Car', icon: Car, gradient: 'from-amber-500 to-orange-600' },
-    { id: 'wealth', label: 'Wealth Growth', icon: TrendingUp, gradient: 'from-sky-500 to-blue-600' },
-    { id: 'business', label: 'Start Business', icon: Briefcase, gradient: 'from-rose-500 to-pink-600' },
+const goalsMeta = [
+    { id: 'house', icon: Home, gradient: 'from-emerald-500 to-teal-600' },
+    { id: 'education', icon: GraduationCap, gradient: 'from-blue-500 to-indigo-600' },
+    { id: 'retirement', icon: Umbrella, gradient: 'from-purple-500 to-violet-600' },
+    { id: 'car', icon: Car, gradient: 'from-amber-500 to-orange-600' },
+    { id: 'wealth', icon: TrendingUp, gradient: 'from-sky-500 to-blue-600' },
+    { id: 'business', icon: Briefcase, gradient: 'from-rose-500 to-pink-600' },
 ];
 
 export default function AIFinancialAssistant() {
     useEffect(() => { AnalyticsService.trackScreen('Financial_Advisor'); }, []);
     const navigate = useNavigate();
+    const { t } = useTranslation();
+
+    // Build goals with translated labels
+    const goals = goalsMeta.map(g => ({ ...g, label: t(`advisor.goals.${g.id}`) }));
 
     const [salary, setSalary] = useState(50000);
     const [age, setAge] = useState(28);
@@ -246,8 +251,8 @@ export default function AIFinancialAssistant() {
                     <div className="flex items-center gap-2">
                         <Sparkles size={18} className="text-amber-400" />
                         <div>
-                            <h1 className="text-lg font-bold text-white">Financial Advisor</h1>
-                            <p className="text-slate-500 text-xs">Personalized financial insights</p>
+                            <h1 className="text-lg font-bold text-white">{t('advisor.title')}</h1>
+                            <p className="text-slate-500 text-xs">{t('advisor.subtitle')}</p>
                         </div>
                     </div>
                 </div>
@@ -263,14 +268,14 @@ export default function AIFinancialAssistant() {
                             <div className="mb-5">
                                 <h2 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
                                     <span className="w-6 h-6 rounded-lg bg-brand-green/10 flex items-center justify-center text-brand-green text-xs font-bold">1</span>
-                                    Your Details
+                                    {t('advisor.step1')}
                                 </h2>
                                 <div className="space-y-3">
-                                    <NumberInput label="Monthly Salary" value={salary} onChange={setSalary} min={5000} max={10000000} prefix="₹" />
+                                    <NumberInput label={t('advisor.monthlyIncome')} value={salary} onChange={setSalary} min={5000} max={10000000} prefix="₹" />
                                     <NumberInput label="Age" value={age} onChange={setAge} min={18} max={70} suffix=" years" />
-                                    <NumberInput label="Monthly Expenses" value={expenses} onChange={setExpenses} min={0} max={salary} prefix="₹" />
-                                    <NumberInput label="Current Savings" value={savings} onChange={setSavings} min={0} max={100000000} prefix="₹" />
-                                    <NumberInput label="Existing EMI (if any)" value={emi} onChange={setEmi} min={0} max={salary} prefix="₹" />
+                                    <NumberInput label={t('advisor.monthlyExpenses')} value={expenses} onChange={setExpenses} min={0} max={salary} prefix="₹" />
+                                    <NumberInput label={t('advisor.existingSavings')} value={savings} onChange={setSavings} min={0} max={100000000} prefix="₹" />
+                                    <NumberInput label={t('advisor.existingEMI')} value={emi} onChange={setEmi} min={0} max={salary} prefix="₹" />
                                 </div>
                             </div>
 
@@ -278,9 +283,9 @@ export default function AIFinancialAssistant() {
                             <div className="mb-5">
                                 <h2 className="text-sm font-bold text-white mb-1 flex items-center gap-2">
                                     <span className="w-6 h-6 rounded-lg bg-brand-purple/10 flex items-center justify-center text-brand-purple text-xs font-bold">2</span>
-                                    Your Financial Goals
+                                    {t('advisor.step2')}
                                 </h2>
-                                <p className="text-slate-500 text-[11px] mb-3 ml-8">Select one or more goals</p>
+                                <p className="text-slate-500 text-[11px] mb-3 ml-8">{t('advisor.selectGoals')}</p>
                                 <div className="grid grid-cols-2 gap-2.5">
                                     {goals.map((g) => {
                                         const Icon = g.icon;
@@ -324,14 +329,14 @@ export default function AIFinancialAssistant() {
                                     }`}
                             >
                                 <Sparkles size={18} />
-                                Generate Financial Plan
+                                {t('advisor.generatePlan')}
                             </motion.button>
                         </motion.div>
                     ) : plan && (
                         <motion.div key="results" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}>
                             {/* Financial Health Score */}
                             <div className="p-6 rounded-2xl bg-dark-card border border-dark-border mb-5 text-center">
-                                <p className="text-slate-400 text-sm mb-2">Financial Health Score</p>
+                                <p className="text-slate-400 text-sm mb-2">{t('advisor.financialScore')}</p>
                                 <div className="relative w-32 h-32 mx-auto mb-3">
                                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
                                         <circle cx="60" cy="60" r="50" stroke="#1E293B" strokeWidth="10" fill="none" />
@@ -362,12 +367,12 @@ export default function AIFinancialAssistant() {
 
                             {/* Monthly Budget Overview */}
                             <div className="p-4 rounded-2xl bg-dark-card border border-dark-border mb-5">
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Monthly Budget Breakdown</h3>
+                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t('advisor.monthlyBudget')}</h3>
                                 <div className="grid grid-cols-2 gap-2.5">
-                                    <BudgetCard label="Income" value={formatINR(salary)} color="#10B981" />
-                                    <BudgetCard label="Expenses" value={formatINR(expenses)} color="#EF4444" />
-                                    <BudgetCard label="EMI" value={formatINR(emi)} color="#F59E0B" />
-                                    <BudgetCard label="Surplus" value={formatINR(salary - expenses - emi)} color="#3B82F6" />
+                                    <BudgetCard label={t('advisor.monthlyIncome')} value={formatINR(salary)} color="#10B981" />
+                                    <BudgetCard label={t('advisor.expenses')} value={formatINR(expenses)} color="#EF4444" />
+                                    <BudgetCard label={t('advisor.emi')} value={formatINR(emi)} color="#F59E0B" />
+                                    <BudgetCard label={t('advisor.savings')} value={formatINR(salary - expenses - emi)} color="#3B82F6" />
                                 </div>
                                 <div className="mt-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
                                     <div className="flex justify-between items-center">
@@ -435,7 +440,7 @@ export default function AIFinancialAssistant() {
                                                     </div>
                                                     <div className="text-right mr-2">
                                                         <p className="text-white font-bold text-sm">{formatINR(gp.monthlySIP)}/mo</p>
-                                                        <p className="text-white/50 text-[10px]">SIP needed</p>
+                                                        <p className="text-white/50 text-[10px]">{t('advisor.monthlySIP')}</p>
                                                     </div>
                                                     {isExpanded ? <ChevronUp size={16} className="text-white/60" /> : <ChevronDown size={16} className="text-white/60" />}
                                                 </button>
@@ -498,7 +503,7 @@ export default function AIFinancialAssistant() {
                                     onClick={() => setShowResults(false)}
                                     className="flex-1 py-4 rounded-2xl bg-dark-card border border-dark-border text-slate-300 font-bold text-sm"
                                 >
-                                    Modify Inputs
+                                    {t('advisor.restart')}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -513,14 +518,14 @@ export default function AIFinancialAssistant() {
                                     }}
                                     className="flex-1 py-4 rounded-2xl bg-brand-purple text-white font-bold text-sm shadow-lg shadow-brand-purple/20 flex items-center justify-center gap-2"
                                 >
-                                    <Share2 size={16} /> Share Plan
+                                    <Share2 size={16} /> {t('advisor.sharePlan')}
                                 </button>
                             </div>
                             <button
                                 onClick={handleDownloadPDF}
                                 className="w-full py-4 rounded-2xl bg-brand-green/10 border border-brand-green/30 text-brand-green font-bold text-sm flex items-center justify-center gap-2"
                             >
-                                <Download size={16} /> Download PDF Report
+                                <Download size={16} /> {t('advisor.downloadPlan')}
                             </button>
                         </motion.div>
                     )}

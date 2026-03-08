@@ -49,6 +49,9 @@ const allCalcs: CalcItem[] = [
 
     // Property
     { nameKey: 'calculators.property.name', descKey: 'calculators.property.desc', icon: Building2, color: '#F97316', path: '/calculator/property', category: 'property' },
+
+    // Tools
+    { nameKey: 'Scientific Calculator', descKey: 'Trig, log, binary, hex', icon: Sparkles, color: '#EC4899', path: '/calculator/scientific', category: 'tools' },
 ];
 
 // Most Used calculators (featured)

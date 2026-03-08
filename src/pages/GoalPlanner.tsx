@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, GraduationCap, Car, Umbrella, Target, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -27,6 +28,7 @@ const goalPresets: GoalPreset[] = [
 export default function GoalPlanner() {
     useEffect(() => { AnalyticsService.trackScreen('Goal_Planner'); }, []);
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [selectedGoal, setSelectedGoal] = useState<GoalPreset | null>(null);
     const [targetAmount, setTargetAmount] = useState(5000000);
     const [targetYears, setTargetYears] = useState(10);
@@ -79,8 +81,8 @@ export default function GoalPlanner() {
                         <ArrowLeft size={18} className="text-slate-400" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-white">Financial Goal Planner</h1>
-                        <p className="text-slate-500 text-xs">Plan your financial milestones</p>
+                        <h1 className="text-lg font-bold text-white">{t('goalPlanner.title')}</h1>
+                        <p className="text-slate-500 text-xs">{t('goalPlanner.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -93,7 +95,7 @@ export default function GoalPlanner() {
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 mb-2">
                             <Target size={16} className="text-amber-400" />
-                            <h2 className="text-sm font-bold text-white">Choose Your Goal</h2>
+                            <h2 className="text-sm font-bold text-white">{t('goalPlanner.addGoal')}</h2>
                         </div>
                         {goalPresets.map((goal, i) => {
                             const Icon = goal.icon;
@@ -143,8 +145,8 @@ export default function GoalPlanner() {
 
                         {/* Inputs */}
                         <div className="space-y-3 mb-5">
-                            <NumberInput label="Target Amount" value={targetAmount} onChange={setTargetAmount} min={10000} max={100000000} prefix="₹" helperText="Your financial goal amount" />
-                            <NumberInput label="Current Savings" value={currentSavings} onChange={setCurrentSavings} min={0} max={targetAmount} prefix="₹" helperText="Amount already saved" />
+                            <NumberInput label={t('goalPlanner.targetAmount')} value={targetAmount} onChange={setTargetAmount} min={10000} max={100000000} prefix="₹" helperText="Your financial goal amount" />
+                            <NumberInput label={t('goalPlanner.currentSaving')} value={currentSavings} onChange={setCurrentSavings} min={0} max={targetAmount} prefix="₹" helperText="Amount already saved" />
                             <NumberInput label="Target Years" value={targetYears} onChange={setTargetYears} min={1} max={40} suffix=" years" />
                             <NumberInput label="Expected Return (p.a.)" value={expectedReturn} onChange={setExpectedReturn} min={1} max={30} suffix="%" step={0.5} />
                         </div>
@@ -152,7 +154,7 @@ export default function GoalPlanner() {
                         {/* Result */}
                         <motion.div layout className="p-5 rounded-2xl bg-dark-card border border-dark-border mb-5">
                             <div className="text-center mb-5">
-                                <p className="text-slate-400 text-sm mb-1">Required Monthly SIP</p>
+                                <p className="text-slate-400 text-sm mb-1">{t('goalPlanner.monthlySIP')}</p>
                                 <motion.p
                                     key={result.monthlySIP}
                                     initial={{ scale: 0.9, opacity: 0 }}

@@ -134,7 +134,7 @@ export default function IncomeTaxCalculator() {
     useTrackCalculator();
     const navigate = useNavigate();
     const [regime, setRegime] = useState<'old' | 'new'>('new');
-    const [inputMode, setInputMode] = useState<'monthly' | 'annual'>('monthly');
+    const [inputMode, setInputMode] = useState<'monthly' | 'annual' | 'ctc' | 'payslip'>('monthly');
     const [showDisclaimer, setShowDisclaimer] = useState(false);
     const [inputs, setInputs] = useState<Inputs>({
         basicSalary: '',
@@ -143,6 +143,19 @@ export default function IncomeTaxCalculator() {
         lta: '',
         bonus: '',
         otherIncome: '',
+        // New allowance fields
+        transportAllowance: '',
+        medicalAllowance: '',
+        foodAllowance: '',
+        // Payroll deductions
+        employeePF: '',
+        professionalTax: '',
+        esi: '',
+        npsEmployee: '',
+        // CTC fields
+        ctcAmount: '',
+        employerPF: '',
+        gratuity: '',
         // Old regime deductions
         section80C: '',
         section80D: '',
@@ -159,10 +172,32 @@ export default function IncomeTaxCalculator() {
     const num = useCallback((k: string) => parseFloat(inputs[k] || '0') || 0, [inputs]);
 
     // ─── Multiplier for monthly→annual conversion ─────────────────────────────
-    const multiplier = inputMode === 'monthly' ? 12 : 1;
+    const multiplier = (inputMode === 'monthly' || inputMode === 'payslip') ? 12 : 1;
+
+    // ─── CTC Auto-compute ─────────────────────────────────────────────────────
+    const ctcGross = useMemo(() => {
+        if (inputMode !== 'ctc') return 0;
+        const ctc = num('ctcAmount');
+        const basic = ctc * 0.4; // 40% of CTC
+        const empPF = Math.min(basic * 0.12, 21600); // 12% of basic, max ₹1800/month
+        const grat = basic * 0.0481;
+        return ctc - empPF - grat;
+    }, [inputMode, inputs, num]);
 
     // ─── Gross Income (always annual internally) ──────────────────────────────
-    const grossSalary = (num('basicSalary') + num('hra') + num('special') + num('lta') + num('bonus') + num('otherIncome')) * multiplier;
+    const allEarnings = num('basicSalary') + num('hra') + num('special') + num('lta') + num('bonus') + num('otherIncome') + num('transportAllowance') + num('medicalAllowance') + num('foodAllowance');
+    const grossSalary = inputMode === 'ctc' ? ctcGross : allEarnings * multiplier;
+
+    // ─── Payroll Deductions ───────────────────────────────────────────────────
+    const payrollDeductions = useMemo(() => {
+        const pf = num('employeePF') * multiplier;
+        const pt = num('professionalTax') * multiplier;
+        const esiVal = num('esi') * multiplier;
+        const nps = num('npsEmployee') * multiplier;
+        return { pf, pt, esi: esiVal, nps, total: pf + pt + esiVal + nps };
+    }, [inputs, num, multiplier]);
+
+    const netSalaryAfterPayroll = grossSalary - payrollDeductions.total;
 
     // ─── HRA Exemption (Old regime only) ──────────────────────────────────────
     const hraExemption = useMemo(() => {
@@ -224,6 +259,16 @@ export default function IncomeTaxCalculator() {
     const maxTax = Math.max(oldTotalTax, newTotalTax, 1);
     const bothZero = oldTotalTax === 0 && newTotalTax === 0;
 
+    // ─── Regime Explanation ───────────────────────────────────────────────────
+    const regimeExplanation = useMemo(() => {
+        if (bothZero || grossSalary === 0) return '';
+        if (betterRegime === 'Old') {
+            const totalDedUsed = oldDeductions - 50000; // exclude std deduction
+            return `Old Regime saves ${fmt(saving)} because your deductions (80C, 80D, HRA, etc.) total ${fmt(totalDedUsed)}, which reduces your taxable income significantly. With deductions exceeding ${fmt(75000 - 50000)} (difference between new std deduction and old), the old regime is more beneficial.`;
+        }
+        return `New Regime saves ${fmt(saving)} because the higher standard deduction of ${fmt(75000)} and revised tax slabs offset your old regime deductions of ${fmt(oldDeductions - 50000)}. The new regime offers simpler filing with lower rates.`;
+    }, [bothZero, grossSalary, betterRegime, saving, oldDeductions]);
+
     // ─── Tax-Saving Suggestions ───────────────────────────────────────────────
     const tips: string[] = useMemo(() => {
         const t: string[] = [];
@@ -239,18 +284,46 @@ export default function IncomeTaxCalculator() {
     // ─── PDF Handler ──────────────────────────────────────────────────────────
     const handleDownloadPDF = async () => {
         const headers = ['Particulars', 'Amount'];
+        const modeLabel = inputMode === 'monthly' ? 'Monthly' : inputMode === 'annual' ? 'Annual' : inputMode === 'ctc' ? 'CTC' : 'Payslip';
         const rows: (string | number)[][] = [
             ['--- INCOME SUMMARY ---', ''],
-            ['Input Mode', inputMode === 'monthly' ? 'Monthly' : 'Annual'],
-            ['Basic Salary', fmt(num('basicSalary') * multiplier)],
-            ['HRA', fmt(num('hra') * multiplier)],
-            ['Special Allowance', fmt(num('special') * multiplier)],
-            ['LTA', fmt(num('lta') * multiplier)],
-            ['Bonus / Other Allowances', fmt(num('bonus') * multiplier)],
-            ['Other Income', fmt(num('otherIncome') * multiplier)],
-            ['Gross Annual Income', fmt(grossSalary)],
-            ['---', ''],
+            ['Input Mode', modeLabel],
         ];
+        if (inputMode === 'ctc') {
+            rows.push(
+                ['Annual CTC', fmt(num('ctcAmount'))],
+                ['Basic (40%)', fmt(num('ctcAmount') * 0.4)],
+                ['Employer PF', fmt(Math.min(num('ctcAmount') * 0.4 * 0.12, 21600))],
+                ['Gratuity', fmt(num('ctcAmount') * 0.4 * 0.0481)],
+                ['Gross Salary (In-hand)', fmt(ctcGross)],
+            );
+        } else {
+            rows.push(
+                ['Basic Salary', fmt(num('basicSalary') * multiplier)],
+                ['HRA', fmt(num('hra') * multiplier)],
+                ['Special Allowance', fmt(num('special') * multiplier)],
+                ['Transport Allowance', fmt(num('transportAllowance') * multiplier)],
+                ['Medical Allowance', fmt(num('medicalAllowance') * multiplier)],
+                ['Food Allowance', fmt(num('foodAllowance') * multiplier)],
+                ['LTA', fmt(num('lta') * multiplier)],
+                ['Bonus / Other Allowances', fmt(num('bonus') * multiplier)],
+                ['Other Income', fmt(num('otherIncome') * multiplier)],
+            );
+        }
+        rows.push(['Gross Annual Income', fmt(grossSalary)], ['---', '']);
+        // Payroll deductions
+        if (payrollDeductions.total > 0) {
+            rows.push(
+                ['--- PAYROLL DEDUCTIONS ---', ''],
+                ['Employee PF', fmt(payrollDeductions.pf)],
+                ['Professional Tax', fmt(payrollDeductions.pt)],
+                ['ESI', fmt(payrollDeductions.esi)],
+                ['NPS (Employee)', fmt(payrollDeductions.nps)],
+                ['Total Payroll Deductions', fmt(payrollDeductions.total)],
+                ['Net Salary after Payroll', fmt(netSalaryAfterPayroll)],
+                ['---', ''],
+            );
+        }
         if (regime === 'old') {
             rows.push(
                 ['--- DEDUCTION SUMMARY ---', ''],
@@ -331,38 +404,88 @@ export default function IncomeTaxCalculator() {
                     ))}
                 </div>
 
-                {/* Monthly / Annual Toggle */}
+                {/* Salary Input Mode Toggle */}
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
                     <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mb-2">Input Mode</p>
-                    <div className="flex gap-2">
-                        {(['monthly', 'annual'] as const).map((m) => (
+                    <div className="grid grid-cols-2 gap-2">
+                        {([
+                            { key: 'monthly' as const, label: 'Monthly Salary' },
+                            { key: 'annual' as const, label: 'Annual Salary' },
+                            { key: 'ctc' as const, label: 'CTC Mode' },
+                            { key: 'payslip' as const, label: 'Payslip Mode' },
+                        ]).map((m) => (
                             <button
-                                key={m}
-                                onClick={() => setInputMode(m)}
-                                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${inputMode === m ? 'bg-brand-purple/10 text-brand-purple border-2 border-brand-purple' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 border-2 border-transparent'}`}
+                                key={m.key}
+                                onClick={() => setInputMode(m.key)}
+                                className={`py-2.5 rounded-xl text-xs font-bold transition-all ${inputMode === m.key ? 'bg-brand-purple/10 text-brand-purple border-2 border-brand-purple' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 border-2 border-transparent'}`}
                             >
-                                <span className={`inline-block w-3 h-3 rounded-full mr-1.5 align-middle ${inputMode === m ? 'bg-brand-purple' : 'bg-slate-300 dark:bg-slate-600'}`} />
-                                {m === 'monthly' ? 'Monthly Salary' : 'Annual Salary'}
+                                <span className={`inline-block w-3 h-3 rounded-full mr-1.5 align-middle ${inputMode === m.key ? 'bg-brand-purple' : 'bg-slate-300 dark:bg-slate-600'}`} />
+                                {m.label}
                             </button>
                         ))}
                     </div>
                     <p className="text-slate-400 text-[10px] mt-2">
-                        {inputMode === 'monthly' ? 'Enter monthly values. Annual = Monthly × 12' : 'Enter annual (yearly) values directly.'}
+                        {inputMode === 'monthly' ? 'Enter monthly values. Annual = Monthly × 12' : inputMode === 'annual' ? 'Enter annual (yearly) values directly.' : inputMode === 'ctc' ? 'Enter total CTC. Auto-computes employer PF, gratuity, and in-hand salary.' : 'Enter exact payslip values (monthly earnings & deductions).'}
                     </p>
                 </div>
 
                 {/* Income Inputs */}
-                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">
-                        {inputMode === 'monthly' ? 'Monthly' : 'Annual'} Income Details
-                    </h3>
-                    <InputRow label="Basic Salary" k="basicSalary" value={inputs.basicSalary} onChange={set} />
-                    <InputRow label="HRA (House Rent Allowance)" k="hra" value={inputs.hra} onChange={set} />
-                    <InputRow label="Special Allowance" k="special" value={inputs.special} onChange={set} />
-                    <InputRow label="LTA (Leave Travel Allowance)" k="lta" value={inputs.lta} onChange={set} />
-                    <InputRow label="Bonus & Other Allowances" k="bonus" value={inputs.bonus} onChange={set} />
-                    <InputRow label="Other Income (FD interest, rental, etc.)" k="otherIncome" value={inputs.otherIncome} onChange={set} />
-                </div>
+                {inputMode === 'ctc' ? (
+                    <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
+                        <h3 className="font-bold text-slate-900 dark:text-white text-sm">CTC Details</h3>
+                        <InputRow label="Annual CTC" k="ctcAmount" value={inputs.ctcAmount} onChange={set} />
+                        {num('ctcAmount') > 0 && (
+                            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 space-y-2">
+                                <p className="text-slate-500 text-xs font-semibold">Auto-computed Breakdown</p>
+                                {[
+                                    { label: 'Basic (40%)', val: num('ctcAmount') * 0.4 },
+                                    { label: 'Employer PF (12%)', val: Math.min(num('ctcAmount') * 0.4 * 0.12, 21600) },
+                                    { label: 'Gratuity (4.81%)', val: num('ctcAmount') * 0.4 * 0.0481 },
+                                    { label: 'Gross Salary (In-hand)', val: ctcGross },
+                                ].map(r => (
+                                    <div key={r.label} className={`flex justify-between ${r.label.includes('Gross') ? 'border-t border-slate-200 dark:border-white/10 pt-2 font-bold' : ''}`}>
+                                        <span className="text-slate-500 dark:text-slate-400 text-xs">{r.label}</span>
+                                        <span className={`text-xs font-semibold ${r.label.includes('Gross') ? 'text-brand-purple' : 'text-slate-700 dark:text-white'}`}>{fmt(r.val)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <InputRow label="Other Income (FD interest, rental, etc.)" k="otherIncome" value={inputs.otherIncome} onChange={set} />
+                    </div>
+                ) : (
+                    <>
+                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
+                            <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                                {inputMode === 'monthly' ? 'Monthly' : inputMode === 'payslip' ? 'Payslip' : 'Annual'} Income Details
+                            </h3>
+                            <InputRow label="Basic Salary" k="basicSalary" value={inputs.basicSalary} onChange={set} />
+                            <InputRow label="HRA (House Rent Allowance)" k="hra" value={inputs.hra} onChange={set} />
+                            <InputRow label="Special Allowance" k="special" value={inputs.special} onChange={set} />
+                            <InputRow label="Transport Allowance" k="transportAllowance" value={inputs.transportAllowance} onChange={set} />
+                            <InputRow label="Medical Allowance" k="medicalAllowance" value={inputs.medicalAllowance} onChange={set} />
+                            <InputRow label="Food Allowance" k="foodAllowance" value={inputs.foodAllowance} onChange={set} />
+                            <InputRow label="LTA (Leave Travel Allowance)" k="lta" value={inputs.lta} onChange={set} />
+                            <InputRow label="Bonus & Other Allowances" k="bonus" value={inputs.bonus} onChange={set} />
+                            <InputRow label="Other Income (FD interest, rental, etc.)" k="otherIncome" value={inputs.otherIncome} onChange={set} />
+                        </div>
+
+                        {/* Payroll Deductions */}
+                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-1">
+                            <CollapsibleSection title="Payroll Deductions" defaultOpen={inputMode === 'payslip'}>
+                                <InputRow label="Employee PF (Provident Fund)" k="employeePF" value={inputs.employeePF} onChange={set} hint={inputMode === 'payslip' ? 'From payslip' : '12% of Basic typically'} />
+                                <InputRow label="Professional Tax" k="professionalTax" value={inputs.professionalTax} onChange={set} hint="Usually ₹200/month (₹2,400/year)" />
+                                <InputRow label="ESI (Employee State Insurance)" k="esi" value={inputs.esi} onChange={set} hint="1.75% of gross if salary < ₹21,000/month" />
+                                <InputRow label="NPS (Employee Contribution)" k="npsEmployee" value={inputs.npsEmployee} onChange={set} hint="Voluntary NPS contribution" />
+                                {payrollDeductions.total > 0 && (
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-xl p-3 flex justify-between">
+                                        <span className="text-blue-600 dark:text-blue-400 text-xs font-semibold">Total Payroll Deductions</span>
+                                        <span className="text-blue-600 dark:text-blue-400 font-bold text-sm">-{fmt(payrollDeductions.total)}</span>
+                                    </div>
+                                )}
+                            </CollapsibleSection>
+                        </div>
+                    </>
+                )}
 
                 {/* Salary Summary Card */}
                 <div className="bg-gradient-to-br from-brand-purple/5 to-blue-500/5 border border-brand-purple/20 rounded-2xl p-4">
@@ -620,6 +743,9 @@ export default function IncomeTaxCalculator() {
                                     <>
                                         <p className="font-extrabold text-lg text-brand-green">{betterRegime.toUpperCase()} REGIME</p>
                                         <p className="text-brand-green text-xs mt-1">Estimated Tax Saving: {fmt(saving)}</p>
+                                        {regimeExplanation && (
+                                            <p className="text-slate-500 dark:text-slate-400 text-[10px] mt-2 leading-relaxed text-left">{regimeExplanation}</p>
+                                        )}
                                     </>
                                 )}
                             </div>

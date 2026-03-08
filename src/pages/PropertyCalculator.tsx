@@ -126,6 +126,22 @@ export default function PropertyCalculator() {
     const [fromUnit, setFromUnit] = useState('sqft');
     const [toUnit, setToUnit] = useState('gunta');
 
+    // ── Rental Yield ──────────────────────────────────────────────────────────
+    const [ryPropertyValue, setRyPropertyValue] = useState('');
+    const [ryMonthlyRent, setRyMonthlyRent] = useState('');
+    const [ryMaintenance, setRyMaintenance] = useState('');
+    const [ryVacancy, setRyVacancy] = useState('1'); // months vacant per year
+    const [ryResult, setRyResult] = useState<{
+        annualRent: number; grossYield: number; netYield: number; paybackYears: number;
+    } | null>(null);
+
+    // ── Appreciation Forecast ─────────────────────────────────────────────────
+    const [apCurrentValue, setApCurrentValue] = useState('');
+    const [apRate, setApRate] = useState('8');
+    const [apResult, setApResult] = useState<{
+        projections: { years: number; value: number; gain: number }[];
+    } | null>(null);
+
     // ── Copy toast ────────────────────────────────────────────────────────────
     const [copied, setCopied] = useState<string | null>(null);
     const copyText = (text: string, key: string) => {
@@ -181,6 +197,27 @@ export default function PropertyCalculator() {
         if (!amt || !rate || !tenure) return;
         const r = calcEMI(amt, rate, tenure);
         setEmiResult(r);
+    };
+
+    const calculateRentalYield = () => {
+        const pv = Number(ryPropertyValue), mr = Number(ryMonthlyRent);
+        if (!pv || !mr) return;
+        const annualRent = mr * (12 - Number(ryVacancy || 0));
+        const annualMaint = Number(ryMaintenance || 0) * 12;
+        const grossYield = (mr * 12 / pv) * 100;
+        const netYield = ((annualRent - annualMaint) / pv) * 100;
+        const paybackYears = pv / (annualRent - annualMaint);
+        setRyResult({ annualRent, grossYield, netYield, paybackYears: Math.max(0, paybackYears) });
+    };
+
+    const calculateAppreciation = () => {
+        const cv = Number(apCurrentValue), ar = Number(apRate);
+        if (!cv || !ar) return;
+        const projections = [5, 10, 15, 20].map(y => {
+            const value = cv * Math.pow(1 + ar / 100, y);
+            return { years: y, value, gain: value - cv };
+        });
+        setApResult({ projections });
     };
 
     const convertedVal = useCallback(() => {
@@ -553,6 +590,62 @@ export default function PropertyCalculator() {
                         )}
                     </motion.div>
                 </AnimatePresence>
+
+                {/* ── Rental Yield Estimation ──────────────────────────────────── */}
+                <div className="mt-6 bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
+                    <h3 className="font-bold text-white text-sm flex items-center gap-2">📊 Rental Yield Estimation</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        <Field label="Property Value" value={ryPropertyValue} onChange={setRyPropertyValue} prefix="₹" type="number" />
+                        <Field label="Monthly Rent" value={ryMonthlyRent} onChange={setRyMonthlyRent} prefix="₹" type="number" />
+                        <Field label="Monthly Maintenance" value={ryMaintenance} onChange={setRyMaintenance} prefix="₹" type="number" />
+                        <Field label="Vacant Months/Year" value={ryVacancy} onChange={setRyVacancy} type="number" />
+                    </div>
+                    <motion.button whileTap={{ scale: 0.97 }} onClick={calculateRentalYield}
+                        className="w-full py-3 bg-brand-green text-white font-bold rounded-xl text-sm shadow-lg shadow-brand-green/20">
+                        Calculate Yield
+                    </motion.button>
+                    {ryResult && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-2 gap-3 mt-2">
+                            {[
+                                { label: 'Annual Rent Income', value: fmt(ryResult.annualRent), color: 'text-brand-green' },
+                                { label: 'Gross Yield', value: `${ryResult.grossYield.toFixed(2)}%`, color: 'text-blue-400' },
+                                { label: 'Net Yield', value: `${ryResult.netYield.toFixed(2)}%`, color: 'text-brand-gold' },
+                                { label: 'Payback Period', value: `${ryResult.paybackYears.toFixed(1)} yrs`, color: 'text-brand-purple' },
+                            ].map(s => (
+                                <div key={s.label} className="text-center p-3 rounded-xl bg-slate-800/30">
+                                    <p className="text-slate-500 text-[9px] uppercase font-bold">{s.label}</p>
+                                    <p className={`font-bold text-sm mt-1 ${s.color}`}>{s.value}</p>
+                                </div>
+                            ))}
+                        </motion.div>
+                    )}
+                </div>
+
+                {/* ── Property Appreciation Forecast ───────────────────────────── */}
+                <div className="mt-4 bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3 mb-10">
+                    <h3 className="font-bold text-white text-sm flex items-center gap-2">📈 Appreciation Forecast</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        <Field label="Current Property Value" value={apCurrentValue} onChange={setApCurrentValue} prefix="₹" type="number" />
+                        <Field label="Annual Appreciation %" value={apRate} onChange={setApRate} suffix="%" type="number" />
+                    </div>
+                    <motion.button whileTap={{ scale: 0.97 }} onClick={calculateAppreciation}
+                        className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-600/20">
+                        Forecast Value
+                    </motion.button>
+                    {apResult && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-2">
+                            {apResult.projections.map((p: { years: number; value: number; gain: number }) => (
+                                <div key={p.years} className="flex justify-between items-center p-3 rounded-xl bg-slate-800/30">
+                                    <div>
+                                        <p className="text-white font-bold text-sm">{p.years} Years</p>
+                                        <p className="text-slate-500 text-[10px]">Gain: {fmt(p.gain)}</p>
+                                    </div>
+                                    <p className="text-brand-green font-extrabold text-sm">{fmt(p.value)}</p>
+                                </div>
+                            ))}
+                        </motion.div>
+                    )}
+                </div>
             </div>
         </div>
     );

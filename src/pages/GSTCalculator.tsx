@@ -194,7 +194,7 @@ export default function GSTCalculator() {
         else if (mode === 'reverse' && reverseResult) { inputs = { stdAmount, stdRate, isIGST }; result = { primary: reverseResult.base, ...reverseResult }; }
         else if (mode === 'profit' && profitResult) { inputs = { costPrice, sellingPrice, profitGstRate }; result = { primary: profitResult.totalWithGst, ...profitResult }; }
         else if (mode === 'itc' && itcResult) { inputs = { purchaseGst, salesGst }; result = { primary: itcResult.netPayable, ...itcResult }; }
-        else if (mode === 'invoice') { inputs = { items: invoiceItems, invoiceIsIGST }; result = { primary: invoiceTotals.total, ...invoiceTotals }; }
+        else if (mode === 'invoice') { inputs = { items: invoiceItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, rate: i.rate })), invoiceIsIGST }; result = { primary: invoiceTotals.total, ...invoiceTotals }; }
 
         addSaved({ id: `GST-${mode}-${Date.now()}`, type: `GST Calculator (${mode})`, inputs, result, timestamp: Date.now() });
         setSaved(true);

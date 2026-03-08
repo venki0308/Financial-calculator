@@ -73,7 +73,7 @@ export default function NPSCalculator() {
     }), [result.timeline]);
 
     const handleSave = () => {
-        addSaved({ id: `nps-${Date.now()}`, type: 'nps', inputs: { monthly, rate, age, retireAge, annuityPct }, result: { primary: result.corpus }, timestamp: Date.now() });
+        addSaved({ id: `nps-${Date.now()}`, type: 'NPS Calculator', inputs: { monthly, rate, age, retireAge, annuityPct }, result: { primary: result.corpus }, timestamp: Date.now() });
         setSaved(true); setTimeout(() => setSaved(false), 2000);
     };
 

@@ -71,7 +71,7 @@ export default function BreakEvenCalculator() {
     }), [result.projection]);
 
     const handleSave = () => {
-        addSaved({ id: `be-${Date.now()}`, type: 'breakeven', inputs: { fixed, price, variable }, result: { primary: result.breakEvenUnits }, timestamp: Date.now() });
+        addSaved({ id: `be-${Date.now()}`, type: 'Break Even Calculator', inputs: { fixed, price, variable }, result: { primary: result.breakEvenUnits }, timestamp: Date.now() });
         setSaved(true); setTimeout(() => setSaved(false), 2000);
     };
 

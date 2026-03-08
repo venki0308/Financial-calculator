@@ -48,6 +48,7 @@ import BreakEvenCalculator from './pages/BreakEvenCalculator';
 // New Calculators
 import PropertyCalculator from './pages/PropertyCalculator';
 import GSTCalculator from './pages/GSTCalculator';
+import ScientificCalculator from './pages/ScientificCalculator';
 import CarLoanCalculator from './pages/CarLoanCalculator';
 import BudgetTracker from './pages/BudgetTracker';
 import GoalPlanner from './pages/GoalPlanner';
@@ -170,6 +171,7 @@ function AppContent() {
                     <Route path="/financial-advisor" element={<AIFinancialAssistant />} />
                     <Route path="/ai-advisor" element={<Navigate to="/financial-advisor" replace />} />
                     <Route path="/compare" element={<CompareCalculator />} />
+                    <Route path="/calculator/scientific" element={<ScientificCalculator />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/" replace />} />

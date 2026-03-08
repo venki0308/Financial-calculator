@@ -57,10 +57,51 @@ export default function EMICalculator() {
     const [isSaved, setIsSaved] = useState(false);
     const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
     const [showInfo, setShowInfo] = useState(false);
-
-    const chartRef = useRef<any>(null);
+    const [prepayAmount, setPrepayAmount] = useState(0);
+    const [prepayMonth, setPrepayMonth] = useState(12);
+    const [showBankCompare, setShowBankCompare] = useState(false);
 
     const months = tenureUnit === 'years' ? tenure * 12 : tenure;
+
+    const bankRates = useMemo(() => [
+        { name: 'SBI', rate: loanType === 'Home Loan' ? 8.50 : loanType === 'Car Loan' ? 8.65 : 11.15 },
+        { name: 'HDFC', rate: loanType === 'Home Loan' ? 8.75 : loanType === 'Car Loan' ? 8.75 : 10.75 },
+        { name: 'ICICI', rate: loanType === 'Home Loan' ? 8.80 : loanType === 'Car Loan' ? 8.80 : 10.99 },
+        { name: 'Axis', rate: loanType === 'Home Loan' ? 8.75 : loanType === 'Car Loan' ? 8.90 : 10.49 },
+        { name: 'Kotak', rate: loanType === 'Home Loan' ? 8.70 : loanType === 'Car Loan' ? 8.50 : 10.99 },
+        { name: 'BOB', rate: loanType === 'Home Loan' ? 8.40 : loanType === 'Car Loan' ? 8.45 : 10.60 },
+    ], [loanType]);
+
+    // Prepayment calculation
+    const prepayResult = useMemo(() => {
+        if (prepayAmount <= 0 || method !== 'reducing') return null;
+        const r = rate / 12 / 100;
+        const n = months;
+        const emi = r === 0 ? principal / n : principal * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+        // Simulate without prepayment
+        const totalWithout = emi * n;
+        // Simulate with prepayment at prepayMonth
+        let balance = principal;
+        let totalPaid = 0;
+        let month = 0;
+        while (balance > 0 && month < n * 2) {
+            month++;
+            const intPart = balance * r;
+            const prinPart = Math.min(emi - intPart, balance);
+            balance -= prinPart;
+            totalPaid += emi;
+            if (month === prepayMonth && balance > prepayAmount) {
+                balance -= prepayAmount;
+                totalPaid += prepayAmount;
+            }
+            if (balance <= 0) break;
+        }
+        const interestSaved = totalWithout - totalPaid;
+        const monthsSaved = n - month;
+        return { interestSaved: Math.max(0, interestSaved), monthsSaved: Math.max(0, monthsSaved), newTenure: month };
+    }, [prepayAmount, prepayMonth, principal, rate, months, method]);
+
+    const chartRef = useRef<any>(null);
 
     const result = useMemo(() => {
         if (method === 'reducing') return calculateReducingEMI(principal, rate, months);
@@ -310,6 +351,71 @@ export default function EMICalculator() {
                     inputs={{ principal, rate, months }}
                     results={{ emi: result.emi, totalInterest: result.totalInterest, totalPayment: result.totalPayment }}
                 />
+
+                {/* Prepayment Simulation */}
+                {method === 'reducing' && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-5 bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
+                        <h3 className="text-white font-bold text-sm flex items-center gap-2">💰 Prepayment Simulator</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            <NumberInput label="Lump-sum Amount" value={prepayAmount} onChange={setPrepayAmount} prefix="₹" min={0} max={principal} />
+                            <NumberInput label="At Month" value={prepayMonth} onChange={setPrepayMonth} min={1} max={months} />
+                        </div>
+                        {prepayResult && (
+                            <div className="grid grid-cols-3 gap-2 mt-2">
+                                {[
+                                    { label: 'Interest Saved', value: formatINR(prepayResult.interestSaved), color: 'text-brand-green' },
+                                    { label: 'Months Saved', value: `${prepayResult.monthsSaved}`, color: 'text-brand-gold' },
+                                    { label: 'New Tenure', value: `${prepayResult.newTenure} mo`, color: 'text-blue-400' },
+                                ].map(s => (
+                                    <div key={s.label} className="text-center p-2 rounded-xl bg-slate-800/30">
+                                        <p className="text-slate-500 text-[9px] uppercase font-bold">{s.label}</p>
+                                        <p className={`font-bold text-xs mt-1 ${s.color}`}>{s.value}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+
+                {/* Bank Comparison */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-5 bg-dark-card border border-dark-border rounded-2xl overflow-hidden">
+                    <button onClick={() => setShowBankCompare(p => !p)} className="w-full p-4 flex items-center justify-between">
+                        <h3 className="text-white font-bold text-sm flex items-center gap-2">🏦 Bank Comparison</h3>
+                        {showBankCompare ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                    </button>
+                    <AnimatePresence>
+                        {showBankCompare && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="px-4 pb-4 overflow-hidden">
+                                <table className="w-full text-xs">
+                                    <thead>
+                                        <tr className="text-slate-500 border-b border-dark-border">
+                                            <th className="py-2 text-left font-medium">Bank</th>
+                                            <th className="py-2 text-right font-medium">Rate</th>
+                                            <th className="py-2 text-right font-medium">EMI</th>
+                                            <th className="py-2 text-right font-medium">Total Int.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {bankRates.sort((a, b) => a.rate - b.rate).map(bank => {
+                                            const r = bank.rate / 12 / 100;
+                                            const emi = r === 0 ? Math.round(principal / months) : Math.round(principal * r * Math.pow(1 + r, months) / (Math.pow(1 + r, months) - 1));
+                                            const totalInt = emi * months - principal;
+                                            const isBest = bank.rate === Math.min(...bankRates.map(b => b.rate));
+                                            return (
+                                                <tr key={bank.name} className={`border-b border-dark-border/30 ${isBest ? 'bg-brand-green/5' : ''}`}>
+                                                    <td className="py-2.5 text-white font-medium">{bank.name} {isBest && <span className="text-brand-green text-[9px] ml-1">BEST</span>}</td>
+                                                    <td className="py-2.5 text-right text-slate-300">{bank.rate}%</td>
+                                                    <td className={`py-2.5 text-right font-medium ${isBest ? 'text-brand-green' : 'text-white'}`}>{formatINR(emi)}</td>
+                                                    <td className="py-2.5 text-right text-brand-gold">{formatINR(totalInt)}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
 
                 {/* What-If Simulator */}
                 <WhatIfSimulator

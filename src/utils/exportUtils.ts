@@ -241,9 +241,17 @@ export const exportToExcel = async (
     filename: string
 ): Promise<void> => {
     try {
-        const allRows: string[][] = [
+        const parseCell = (cell: string | number): string | number => {
+            if (typeof cell === 'number') return cell;
+            const s = String(cell);
+            const stripped = s.replace(/[₹,\s]/g, '');
+            if (stripped !== '' && !isNaN(Number(stripped))) return Number(stripped);
+            return s;
+        };
+
+        const allRows: (string | number)[][] = [
             headers,
-            ...data.map(row => row.map(cell => String(cell))),
+            ...data.map(row => row.map(parseCell)),
         ];
 
         const wb = XLSX.utils.book_new();
