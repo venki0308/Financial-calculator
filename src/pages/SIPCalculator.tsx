@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Info, Save, Check, Download, TrendingUp, Target, ArrowUpRight } from 'lucide-react';
+import { ArrowLeft, Info, Save, Check, Download, TrendingUp, Target, ArrowUpRight, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
     Chart as ChartJS,
@@ -24,6 +24,7 @@ import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import SmartInsight from '../components/SmartInsight';
+import ShareableCard from '../components/ShareableCard';
 
 ChartJS.register(
     ArcElement,
@@ -366,15 +367,48 @@ export default function SIPCalculator() {
                     results={{ futureValue: displayValues.primary, invested: displayValues.invested, wealthGained: displayValues.returns }}
                 />
 
-                <div className="grid grid-cols-2 gap-3 mb-6 mt-4">
-                    <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
-                        📄 Download PDF
+                <div className="grid grid-cols-3 gap-3 mb-5 mt-4">
+                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium">
+                        <Download size={16} /> PDF
                     </button>
-                    <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">
-                        📊 Download Excel
+                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium">
+                        <Download size={16} /> Excel
+                    </button>
+                    <button onClick={async () => {
+                        const text = `📈 My SIP Investment Plan\n\n💰 Monthly: ${formatINR(displayValues.invested / (activeTab === 'basic' ? years * 12 : activeTab === 'stepup' ? suYears * 12 : goalYears * 12))}\n📅 Duration: ${activeTab === 'basic' ? years : activeTab === 'stepup' ? suYears : goalYears} years\n\n✅ Future Value: ${formatINR(displayValues.primary)}\n💵 Invested: ${formatINR(displayValues.invested)}\n📊 Returns: ${formatINR(displayValues.returns)}\n\nCalculated with FinCalix 🧮`;
+                        try { if (navigator.share) await navigator.share({ title: 'SIP Plan – FinCalix', text }); else await navigator.clipboard.writeText(text); } catch {}
+                    }} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-[10px] font-bold">
+                        <Share2 size={16} /> Share
                     </button>
                 </div>
 
+                {/* Inflation-adjusted Insight */}
+                {activeTab !== 'goal' && (
+                    <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 mb-5">
+                        <div className="flex items-start gap-3">
+                            <TrendingUp size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <h3 className="text-white font-bold text-xs">Inflation-Adjusted Value</h3>
+                                <p className="text-slate-400 text-[11px] mt-1">Assuming ~6% inflation, your {formatINR(displayValues.primary)} will be worth approximately:</p>
+                                <p className="text-amber-400 font-bold text-sm mt-1">{formatINR(Math.round(displayValues.primary / Math.pow(1.06, activeTab === 'basic' ? years : suYears)))} in today's money</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Shareable Card */}
+                <ShareableCard
+                    title={activeTab === 'goal' ? 'My SIP Goal Plan' : 'My SIP Investment'}
+                    highlight={formatINR(displayValues.primary)}
+                    subtitle={`${activeTab === 'basic' ? years : activeTab === 'stepup' ? suYears : goalYears} year SIP plan`}
+                    details={[
+                        { label: 'Total Invested', value: formatINR(displayValues.invested) },
+                        { label: 'Returns', value: formatINR(displayValues.returns) },
+                        { label: 'Type', value: activeTab === 'basic' ? 'Basic SIP' : activeTab === 'stepup' ? 'Step-Up SIP' : 'Goal SIP' },
+                        { label: 'Multiplier', value: `${(displayValues.primary / displayValues.invested).toFixed(2)}x` },
+                    ]}
+                    gradient="from-blue-600 via-indigo-500 to-purple-600"
+                />
 
                 <CalculatorInfoModal
                     isOpen={showInfo}

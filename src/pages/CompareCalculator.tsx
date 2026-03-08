@@ -10,7 +10,7 @@ import NumberInput from '../components/NumberInput';
 import { formatINR, calculateSIP } from '../utils/calculations';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 import { AnalyticsService } from '../lib/analytics';
-import { exportComparisonPDF } from '../utils/exportUtils';
+import { exportComparisonPDF, exportSIPComparisonPDF, exportFDComparisonPDF } from '../utils/exportUtils';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
@@ -143,6 +143,20 @@ export default function CompareCalculator() {
                 type: 'emi',
                 scenarioA: { label: 'Scenario A', principal: emiA.principal, rate: emiA.rate, years: emiA.years, emi: emiResultA.emi, totalInterest: emiResultA.totalInterest, totalPayment: emiResultA.totalPayment, amortization: emiResultA.amortization },
                 scenarioB: { label: 'Scenario B', principal: emiB.principal, rate: emiB.rate, years: emiB.years, emi: emiResultB.emi, totalInterest: emiResultB.totalInterest, totalPayment: emiResultB.totalPayment, amortization: emiResultB.amortization },
+                insights: deltaInsights.map(i => i.text),
+                winner,
+            });
+        } else if (selectedType === 'sip') {
+            await exportSIPComparisonPDF({
+                scenarioA: { monthly: sipA.monthly, rate: sipA.rate, years: sipA.years, invested: sipResultA.invested, futureValue: sipResultA.futureValue, returns: sipResultA.wealthGained },
+                scenarioB: { monthly: sipB.monthly, rate: sipB.rate, years: sipB.years, invested: sipResultB.invested, futureValue: sipResultB.futureValue, returns: sipResultB.wealthGained },
+                insights: deltaInsights.map(i => i.text),
+                winner,
+            });
+        } else {
+            await exportFDComparisonPDF({
+                scenarioA: { principal: fdA.principal, rate: fdA.rate, years: fdA.years, maturity: fdResultA.maturity, interest: fdResultA.interest },
+                scenarioB: { principal: fdB.principal, rate: fdB.rate, years: fdB.years, maturity: fdResultB.maturity, interest: fdResultB.interest },
                 insights: deltaInsights.map(i => i.text),
                 winner,
             });
@@ -366,16 +380,14 @@ export default function CompareCalculator() {
                     {selectedType === 'fd' && <CompareBar labelA="A Maturity" labelB="B Maturity" valA={fdResultA.maturity} valB={fdResultB.maturity} />}
                 </div>
 
-                {/* Download PDF (EMI only for now with amortization) */}
-                {selectedType === 'emi' && (
-                    <button
-                        onClick={handleDownloadPDF}
-                        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-sm shadow-lg shadow-violet-500/20 mb-4"
-                    >
-                        <FileText size={18} />
-                        Download Comparison PDF Report
-                    </button>
-                )}
+                {/* Download PDF (all types) */}
+                <button
+                    onClick={handleDownloadPDF}
+                    className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-sm shadow-lg shadow-violet-500/20 mb-4"
+                >
+                    <FileText size={18} />
+                    Download {selectedType === 'emi' ? 'Loan' : selectedType === 'sip' ? 'SIP' : 'FD'} Comparison PDF
+                </button>
             </div>
         </div>
     );

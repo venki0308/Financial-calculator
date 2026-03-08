@@ -25,6 +25,7 @@ import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import SmartInsight from '../components/SmartInsight';
+import ShareableCard from '../components/ShareableCard';
 
 ChartJS.register(
     ArcElement,
@@ -375,8 +376,19 @@ export default function EMICalculator() {
                     </div>
                 </BottomSheet>
 
-
-
+                {/* Shareable Result Card */}
+                <ShareableCard
+                    title={`My ${loanType} EMI`}
+                    highlight={formatINR(result.emi)}
+                    subtitle={`${loanType} @ ${rate}% for ${tenureUnit === 'years' ? tenure + ' years' : months + ' months'}`}
+                    details={[
+                        { label: 'Loan Amount', value: formatINR(principal) },
+                        { label: 'Total Interest', value: formatINR(result.totalInterest) },
+                        { label: 'Total Payment', value: formatINR(result.totalPayment) },
+                        { label: 'Interest %', value: `${((result.totalInterest / principal) * 100).toFixed(1)}%` },
+                    ]}
+                    gradient="from-violet-600 via-purple-500 to-indigo-600"
+                />
 
                 <CalculatorInfoModal
                     isOpen={showInfo}
