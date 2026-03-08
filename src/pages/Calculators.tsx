@@ -72,9 +72,10 @@ const categoryMeta: Record<string, { icon: React.ElementType; color: string; bg:
     postOffice: { icon: Mail, color: '#F43F5E', bg: '#F43F5E15' },
     business: { icon: Briefcase, color: '#06B6D4', bg: '#06B6D415' },
     property: { icon: Building2, color: '#F97316', bg: '#F9731615' },
+    tools: { icon: Calculator, color: '#EC4899', bg: '#EC489915' },
 };
 
-const categoryOrder = ['all', 'taxSalary', 'loans', 'investments', 'banking', 'retirement', 'postOffice', 'business', 'property'];
+const categoryOrder = ['all', 'taxSalary', 'loans', 'investments', 'banking', 'retirement', 'postOffice', 'business', 'property', 'tools'];
 
 export default function Calculators() {
     useEffect(() => { AnalyticsService.trackScreen('Calculators_List'); }, []);

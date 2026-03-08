@@ -36,7 +36,8 @@
             "postOffice": "தபால் அலுவலகம்",
             "property": "சொத்து",
             "business": "வணிகம்",
-            "others": "பிற"
+            "others": "பிற",
+            "tools": "கருவிகள்"
         },
         "emi": {
             "name": "கடன் EMI",

@@ -38,7 +38,8 @@
             "postOffice": "Post Office",
             "property": "Property",
             "business": "Business",
-            "others": "Others"
+            "others": "Others",
+            "tools": "Tools"
         },
         "emi": {
             "name": "Loan EMI",

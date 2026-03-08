@@ -37,7 +37,8 @@
             "postOffice": "डाकघर",
             "property": "संपत्ति",
             "business": "व्यापार",
-            "others": "अन्य"
+            "others": "अन्य",
+            "tools": "टूल्स"
         },
         "emi": {
             "name": "ऋण ईएमआई",
