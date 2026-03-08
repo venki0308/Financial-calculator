@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronRight, Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt, Sparkles, History, Briefcase, Mail, CreditCard } from 'lucide-react';
+import { Search, ChevronRight, Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { AnalyticsService } from '../lib/analytics';
@@ -12,38 +12,45 @@ const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.incomeTax.name', descKey: 'calculators.incomeTax.desc', icon: FileText, color: '#F59E0B', path: '/calculator/income-tax', category: 'taxSalary' },
     { nameKey: 'calculators.salaryHike.name', descKey: 'calculators.salaryHike.desc', icon: ArrowUpRight, color: '#10B981', path: '/calculator/salary-hike', category: 'taxSalary' },
     { nameKey: 'calculators.hra.name', descKey: 'calculators.hra.desc', icon: GraduationCap, color: '#F59E0B', path: '/calculator/hra', category: 'taxSalary' },
+
+    // Loans
+    { nameKey: 'calculators.emi.name', descKey: 'calculators.emi.desc', icon: Calculator, color: '#10B981', path: '/calculator/loan-emi', category: 'loans' },
+    { nameKey: 'calculators.carLoan.name', descKey: 'calculators.carLoan.desc', icon: Car, color: '#3B82F6', path: '/calculator/car-loan', category: 'loans' },
+    { nameKey: 'calculators.compound.name', descKey: 'calculators.compound.desc', icon: Percent, color: '#8B5CF6', path: '/calculator/compound-interest', category: 'loans' },
+
+    // Investments
+    { nameKey: 'calculators.sip.name', descKey: 'calculators.sip.desc', icon: TrendingUp, color: '#3B82F6', path: '/calculator/sip', category: 'investments' },
+    { nameKey: 'calculators.stepUpSip.name', descKey: 'calculators.stepUpSip.desc', icon: ArrowUpRight, color: '#10B981', path: '/calculator/step-up-sip', category: 'investments' },
+    { nameKey: 'calculators.goalSip.name', descKey: 'calculators.goalSip.desc', icon: Target, color: '#EF4444', path: '/calculator/goal-sip', category: 'investments' },
+    { nameKey: 'calculators.lumpsum.name', descKey: 'calculators.lumpsum.desc', icon: Wallet, color: '#10B981', path: '/calculator/lumpsum', category: 'investments' },
+    { nameKey: 'calculators.swp.name', descKey: 'calculators.swp.desc', icon: TrendingUp, color: '#F59E0B', path: '/calculator/swp', category: 'investments' },
+    { nameKey: 'calculators.cagr.name', descKey: 'calculators.cagr.desc', icon: BarChart3, color: '#8B5CF6', path: '/calculator/cagr', category: 'investments' },
+
     // Banking
-    { nameKey: 'calculators.emi.name', descKey: 'calculators.emi.desc', icon: Calculator, color: '#10B981', path: '/calculator/loan-emi', category: 'banking' },
     { nameKey: 'calculators.fd.name', descKey: 'calculators.fd.desc', icon: PiggyBank, color: '#F59E0B', path: '/calculator/fixed-deposit', category: 'banking' },
     { nameKey: 'calculators.rd.name', descKey: 'calculators.rd.desc', icon: Clock, color: '#3B82F6', path: '/calculator/recurring-deposit', category: 'banking' },
     { nameKey: 'calculators.compound.name', descKey: 'calculators.compound.desc', icon: Percent, color: '#8B5CF6', path: '/calculator/compound-interest', category: 'banking' },
     { nameKey: 'calculators.simple.name', descKey: 'calculators.simple.desc', icon: Minus, color: '#6B7280', path: '/calculator/simple-interest', category: 'banking' },
-    // Investments
-    { nameKey: 'calculators.sip.name', descKey: 'calculators.sip.desc', icon: Percent, color: '#3B82F6', path: '/calculator/sip', category: 'investments' },
-    { nameKey: 'calculators.advancedSip.name', descKey: 'calculators.advancedSip.desc', icon: BarChart3, color: '#06B6D4', path: '/calculator/advanced-sip', category: 'investments' },
-    { nameKey: 'calculators.lumpsum.name', descKey: 'calculators.lumpsum.desc', icon: Wallet, color: '#10B981', path: '/calculator/lumpsum', category: 'investments' },
-    { nameKey: 'calculators.swp.name', descKey: 'calculators.swp.desc', icon: TrendingUp, color: '#F59E0B', path: '/calculator/swp', category: 'investments' },
-    { nameKey: 'calculators.cagr.name', descKey: 'calculators.cagr.desc', icon: BarChart3, color: '#8B5CF6', path: '/calculator/cagr', category: 'investments' },
-    { nameKey: 'calculators.stepUpSip.name', descKey: 'calculators.stepUpSip.desc', icon: ArrowUpRight, color: '#10B981', path: '/calculator/step-up-sip', category: 'investments' },
-    { nameKey: 'calculators.goalSip.name', descKey: 'calculators.goalSip.desc', icon: Target, color: '#EF4444', path: '/calculator/goal-sip', category: 'investments' },
+
     // Retirement
-    { nameKey: 'calculators.ppf.name', descKey: 'calculators.ppf.desc', icon: Landmark, color: '#10B981', path: '/calculator/ppf', category: 'retirement' },
-    { nameKey: 'calculators.nps.name', descKey: 'calculators.nps.desc', icon: LayoutGrid, color: '#3B82F6', path: '/calculator/nps', category: 'retirement' },
     { nameKey: 'calculators.epf.name', descKey: 'calculators.epf.desc', icon: Wallet, color: '#F59E0B', path: '/calculator/epf', category: 'retirement' },
+    { nameKey: 'calculators.nps.name', descKey: 'calculators.nps.desc', icon: LayoutGrid, color: '#3B82F6', path: '/calculator/nps', category: 'retirement' },
+    { nameKey: 'calculators.ppf.name', descKey: 'calculators.ppf.desc', icon: Landmark, color: '#10B981', path: '/calculator/ppf', category: 'retirement' },
     { nameKey: 'calculators.gratuity.name', descKey: 'calculators.gratuity.desc', icon: DollarSign, color: '#8B5CF6', path: '/calculator/gratuity', category: 'retirement' },
+
     // Post Office
     { nameKey: 'calculators.ssy.name', descKey: 'calculators.ssy.desc', icon: Heart, color: '#EF4444', path: '/calculator/sukanya-samriddhi', category: 'postOffice' },
     { nameKey: 'calculators.nsc.name', descKey: 'calculators.nsc.desc', icon: RefreshCcw, color: '#3B82F6', path: '/calculator/nsc', category: 'postOffice' },
     { nameKey: 'calculators.kvp.name', descKey: 'calculators.kvp.desc', icon: Clock, color: '#F59E0B', path: '/calculator/kvp', category: 'postOffice' },
     { nameKey: 'calculators.pomis.name', descKey: 'calculators.pomis.desc', icon: DollarSign, color: '#10B981', path: '/calculator/post-office-mis', category: 'postOffice' },
-    { nameKey: 'calculators.scss.name', descKey: 'calculators.scss.desc', icon: Landmark, color: '#8B5CF6', path: '/calculator/senior-citizen-savings', category: 'postOffice' },
     { nameKey: 'calculators.potd.name', descKey: 'calculators.potd.desc', icon: PiggyBank, color: '#3B82F6', path: '/calculator/post-office-td', category: 'postOffice' },
-    // Property
-    { nameKey: 'calculators.property.name', descKey: 'calculators.property.desc', icon: Building2, color: '#F97316', path: '/calculator/property', category: 'property' },
+
     // Business
     { nameKey: 'calculators.gst.name', descKey: 'calculators.gst.desc', icon: Receipt, color: '#06B6D4', path: '/calculator/gst', category: 'business' },
     { nameKey: 'calculators.breakEven.name', descKey: 'calculators.breakEven.desc', icon: BarChart3, color: '#10B981', path: '/calculator/break-even', category: 'business' },
-    { nameKey: 'calculators.carLoan.name', descKey: 'calculators.carLoan.desc', icon: Car, color: '#3B82F6', path: '/calculator/car-loan', category: 'loans' },
+
+    // Property
+    { nameKey: 'calculators.property.name', descKey: 'calculators.property.desc', icon: Building2, color: '#F97316', path: '/calculator/property', category: 'property' },
 ];
 
 // Most Used calculators (featured)
@@ -57,16 +64,16 @@ const mostUsed = [
 
 const categoryMeta: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
     taxSalary: { icon: FileText, color: '#F59E0B', bg: '#F59E0B15' },
-    banking: { icon: Landmark, color: '#3B82F6', bg: '#3B82F615' },
-    investments: { icon: TrendingUp, color: '#10B981', bg: '#10B98115' },
     loans: { icon: CreditCard, color: '#8B5CF6', bg: '#8B5CF615' },
+    investments: { icon: TrendingUp, color: '#10B981', bg: '#10B98115' },
+    banking: { icon: Landmark, color: '#3B82F6', bg: '#3B82F615' },
     retirement: { icon: Sparkles, color: '#6366F1', bg: '#6366F115' },
     postOffice: { icon: Mail, color: '#F43F5E', bg: '#F43F5E15' },
-    property: { icon: Building2, color: '#F97316', bg: '#F9731615' },
     business: { icon: Briefcase, color: '#06B6D4', bg: '#06B6D415' },
+    property: { icon: Building2, color: '#F97316', bg: '#F9731615' },
 };
 
-const categoryOrder = ['all', 'taxSalary', 'banking', 'investments', 'loans', 'retirement', 'postOffice', 'property', 'business'];
+const categoryOrder = ['all', 'taxSalary', 'loans', 'investments', 'banking', 'retirement', 'postOffice', 'business', 'property'];
 
 export default function Calculators() {
     useEffect(() => { AnalyticsService.trackScreen('Calculators_List'); }, []);
@@ -83,11 +90,18 @@ export default function Calculators() {
         } catch { }
     }, []);
 
+    // Deduplicate by path (compound interest appears in loans + banking)
+    const uniqueCalcs = allCalcs.filter((c, i, arr) =>
+        selectedCategory !== 'all'
+            ? c.category === selectedCategory
+            : arr.findIndex(x => x.path === c.path) === i
+    );
+
     const recentCalcs = recentPaths
         .map(path => allCalcs.find(c => c.path === path))
         .filter(Boolean) as CalcItem[];
 
-    const filtered = allCalcs.filter((c) => {
+    const filtered = uniqueCalcs.filter((c) => {
         const name = t(c.nameKey as any);
         const desc = t(c.descKey as any);
         const matchSearch = name.toLowerCase().includes(search.toLowerCase()) || desc.toLowerCase().includes(search.toLowerCase());
@@ -101,7 +115,6 @@ export default function Calculators() {
     }, {});
 
     const sortedCategories = categoryOrder.filter(cat => cat !== 'all' && grouped[cat]);
-
     const showHero = selectedCategory === 'all' && !search;
 
     return (
@@ -186,6 +199,28 @@ export default function Calculators() {
                 </section>
             )}
 
+            {/* Compare Banner */}
+            {showHero && (
+                <section className="mb-6">
+                    <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => navigate('/compare')}
+                        className="w-full p-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 border border-violet-400/30 shadow-lg flex items-center gap-4"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                            <GitCompare size={20} className="text-white" />
+                        </div>
+                        <div className="text-left flex-1">
+                            <h3 className="text-white font-bold text-sm">Compare Scenarios</h3>
+                            <p className="text-white/60 text-[10px] mt-0.5">Loan A vs B, SIP rates, FD tenures</p>
+                        </div>
+                        <ChevronRight size={18} className="text-white/40" />
+                    </motion.button>
+                </section>
+            )}
+
             {/* Category Filter Pills with Icons */}
             <div className="mb-5 -mx-4 px-4 overflow-x-auto hide-scrollbar">
                 <div className="flex gap-2 pb-1 min-w-max">
@@ -241,7 +276,7 @@ export default function Calculators() {
                             <div className="space-y-2.5">
                                 {items.map((item, i) => (
                                     <motion.button
-                                        key={item.nameKey}
+                                        key={item.nameKey + item.category}
                                         whileTap={{ scale: 0.97 }}
                                         onClick={() => navigate(item.path)}
                                         className="w-full flex items-center gap-4 p-4 rounded-2xl bg-dark-card border border-dark-border hover:border-slate-600 transition-colors animate-slide-up"

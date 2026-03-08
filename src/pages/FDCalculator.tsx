@@ -22,6 +22,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
+import SmartInsight from '../components/SmartInsight';
 
 ChartJS.register(
     ArcElement,
@@ -200,6 +201,13 @@ export default function FDCalculator() {
                         {saved || isAlreadySaved ? <><Check size={18} /> Saved</> : <><Save size={18} /> Save Calculation</>}
                     </motion.button>
                 </motion.div>
+
+                {/* Smart Insights */}
+                <SmartInsight
+                    calculatorType="fd"
+                    inputs={{ principal, rate, years }}
+                    results={{ amount: result.amount, interest: result.interest }}
+                />
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
                     <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-slate-400 font-medium text-xs">

@@ -47,12 +47,12 @@ import BreakEvenCalculator from './pages/BreakEvenCalculator';
 
 // New Calculators
 import PropertyCalculator from './pages/PropertyCalculator';
-import AdvancedSIPCalculator from './pages/AdvancedSIPCalculator';
 import GSTCalculator from './pages/GSTCalculator';
 import CarLoanCalculator from './pages/CarLoanCalculator';
 import BudgetTracker from './pages/BudgetTracker';
 import GoalPlanner from './pages/GoalPlanner';
 import AIFinancialAssistant from './pages/AIFinancialAssistant';
+import CompareCalculator from './pages/CompareCalculator';
 
 // Support Pages
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -146,8 +146,8 @@ function AppContent() {
                     <Route path="/calculator/lumpsum" element={<LumpsumCalculator />} />
                     <Route path="/calculator/swp" element={<SWPCalculator />} />
                     <Route path="/calculator/cagr" element={<CAGRCalculator />} />
-                    <Route path="/calculator/step-up-sip" element={<StepUpSIPCalculator />} />
-                    <Route path="/calculator/goal-sip" element={<GoalSIPCalculator />} />
+                    <Route path="/calculator/step-up-sip" element={<Navigate to="/calculator/sip" replace />} />
+                    <Route path="/calculator/goal-sip" element={<Navigate to="/calculator/sip" replace />} />
                     <Route path="/calculator/ppf" element={<PPFCalculator />} />
                     <Route path="/calculator/nps" element={<NPSCalculator />} />
                     <Route path="/calculator/epf" element={<EPFCalculator />} />
@@ -162,12 +162,13 @@ function AppContent() {
 
                     {/* New Calculators */}
                     <Route path="/calculator/property" element={<PropertyCalculator />} />
-                    <Route path="/calculator/advanced-sip" element={<AdvancedSIPCalculator />} />
+                    <Route path="/calculator/advanced-sip" element={<Navigate to="/calculator/sip" replace />} />
                     <Route path="/calculator/gst" element={<GSTCalculator />} />
                     <Route path="/calculator/car-loan" element={<CarLoanCalculator />} />
                     <Route path="/budget-tracker" element={<BudgetTracker />} />
                     <Route path="/goal-planner" element={<GoalPlanner />} />
                     <Route path="/ai-advisor" element={<AIFinancialAssistant />} />
+                    <Route path="/compare" element={<CompareCalculator />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/" replace />} />

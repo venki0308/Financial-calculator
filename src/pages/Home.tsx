@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles } from 'lucide-react';
+import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useTranslation } from 'react-i18next';
@@ -223,6 +223,27 @@ export default function Home() {
                     </div>
                     <h3 className="text-white font-bold text-sm">Goal Planner</h3>
                     <p className="text-white/60 text-[10px] mt-0.5">Plan your milestones</p>
+                </motion.button>
+            </section>
+
+            {/* Compare Scenarios */}
+            <section className="mb-8">
+                <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate('/compare')}
+                    className="w-full p-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 border border-violet-400/30 shadow-lg flex items-center gap-4"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35 }}
+                >
+                    <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                        <GitCompare size={18} className="text-white" />
+                    </div>
+                    <div className="text-left flex-1">
+                        <h3 className="text-white font-bold text-sm">Compare Scenarios</h3>
+                        <p className="text-white/60 text-[10px] mt-0.5">Loan A vs B, SIP rates, FD tenures</p>
+                    </div>
+                    <ChevronRight size={16} className="text-white/40" />
                 </motion.button>
             </section>
 

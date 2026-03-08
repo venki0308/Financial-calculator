@@ -37,7 +37,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             const income = inputs.monthlyIncome || 50000;
             const emiRatio = (emi / income) * 100;
             if (emiRatio > 30) {
-                insights.push({ type: 'warning', text: `Your EMI is ${emiRatio.toFixed(0)}% of estimated income. Keep it below 30% for financial safety.` });
+                insights.push({ type: 'warning', text: `Your EMI is ${emiRatio.toFixed(0)}% of estimated income. Recommended EMI limit is below 30%.` });
             } else {
                 insights.push({ type: 'positive', text: `Your EMI is ${emiRatio.toFixed(0)}% of estimated income — within the safe limit of 30%.` });
             }
@@ -47,6 +47,9 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 const interestRatio = (totalInterest / principal * 100).toFixed(0);
                 insights.push({ type: 'info', text: `You'll pay ${interestRatio}% of loan amount as interest. Consider prepayments to reduce this.` });
             }
+            if (principal > 5000000) {
+                insights.push({ type: 'tip', text: 'For loans above ₹50L, compare offers from at least 3 lenders — even 0.25% difference saves lakhs.' });
+            }
             break;
         }
         case 'sip': {
@@ -55,18 +58,19 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             const futureValue = results.futureValue || 0;
             const invested = results.invested || 0;
             if (monthly > 0 && years > 0) {
-                // Show impact of ₹2000 increase
                 const r = (inputs.rate || 12) / 12 / 100;
                 const n = years * 12;
                 const extra = 2000 * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
-                const diff = extra;
-                if (diff > 100000) {
-                    insights.push({ type: 'tip', text: `Increasing SIP by ₹2,000/mo adds ${formatINR(diff)} to your wealth over ${years} years.` });
+                if (extra > 100000) {
+                    insights.push({ type: 'tip', text: `Increasing SIP by ₹2,000/mo adds ${formatINR(extra)} to your wealth over ${years} years.` });
                 }
             }
             if (futureValue > 0 && invested > 0) {
                 const multiplier = (futureValue / invested).toFixed(1);
                 insights.push({ type: 'positive', text: `Your money grows ${multiplier}x — power of compounding!` });
+            }
+            if (years >= 15) {
+                insights.push({ type: 'info', text: 'Long-term SIP (15+ years) in equity funds has historically given 12-15% CAGR.' });
             }
             break;
         }
@@ -79,6 +83,10 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             } else {
                 insights.push({ type: 'info', text: `After ~6% inflation, your real return is ~${realReturn.toFixed(1)}%.` });
             }
+            const principal = inputs.principal || 0;
+            if (principal >= 1500000) {
+                insights.push({ type: 'tip', text: 'Consider Tax Saving FD (5-year lock-in) for Section 80C deduction up to ₹1.5L.' });
+            }
             break;
         }
         case 'tax': {
@@ -89,6 +97,66 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             if (taxable > 1500000) {
                 insights.push({ type: 'tip', text: 'Consider maximizing Section 80C (₹1.5L), NPS (₹50K), and health insurance (₹25K) to save tax.' });
             }
+            if (taxable > 2400000) {
+                insights.push({ type: 'info', text: 'At your income level, compare both old and new tax regimes to find the lower tax option.' });
+            }
+            break;
+        }
+        case 'loan': {
+            const principal = inputs.principal || 0;
+            const rate = inputs.rate || 0;
+            const years = inputs.years || 0;
+            if (rate > 10) {
+                insights.push({ type: 'warning', text: `Your interest rate (${rate}%) is above 10%. Negotiate with your lender or consider balance transfer.` });
+            }
+            if (years > 15 && principal > 2000000) {
+                insights.push({ type: 'tip', text: 'Making 1 extra EMI per year can reduce your loan tenure by 3-4 years.' });
+            }
+            break;
+        }
+        case 'ppf': {
+            const invested = inputs.annual || 0;
+            if (invested < 150000) {
+                insights.push({ type: 'tip', text: `You can invest up to ₹1.5L/year in PPF. Currently investing ${formatINR(invested)} — ${formatINR(150000 - invested)} more is eligible for 80C.` });
+            }
+            insights.push({ type: 'info', text: 'PPF has a 15-year lock-in (extendable by 5). Interest is fully tax-free.' });
+            break;
+        }
+        case 'nps': {
+            insights.push({ type: 'tip', text: 'NPS gives additional ₹50,000 tax deduction under Section 80CCD(1B) — over and above 80C limit.' });
+            insights.push({ type: 'info', text: '60% of NPS corpus is tax-free at retirement. 40% must be used for annuity.' });
+            break;
+        }
+        case 'lumpsum': {
+            const amount = inputs.amount || 0;
+            const years = inputs.years || 0;
+            const rate = inputs.rate || 12;
+            if (amount > 0 && years > 0) {
+                const r = rate / 12 / 100;
+                const n = years * 12;
+                const monthlySIP = amount / (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
+                insights.push({ type: 'info', text: `Alternatively, you could invest ${formatINR(Math.round(monthlySIP))}/month via SIP for ${years} years to reach the same goal.` });
+            }
+            break;
+        }
+        case 'stepup': {
+            const initial = inputs.monthly || 0;
+            const stepUp = inputs.stepUp || 10;
+            const years = inputs.years || 0;
+            const rate = inputs.rate || 12;
+            if (initial > 0 && years > 0) {
+                // Compare flat vs step-up
+                const r = rate / 12 / 100;
+                const n = years * 12;
+                const flatFV = initial * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
+                const wealthGained = results.wealthGained || 0;
+                const flatInvested = initial * n;
+                const diff = (wealthGained + (initial * n)) - flatFV;
+                if (diff > 0) {
+                    insights.push({ type: 'positive', text: `Step-up SIP adds ${formatINR(Math.round(diff))} more than a flat SIP of ${formatINR(initial)}/mo!` });
+                }
+            }
+            insights.push({ type: 'tip', text: `A ${inputs.stepUp || 10}% annual step-up follows your salary growth. Increase it with each raise.` });
             break;
         }
         default:
