@@ -41,6 +41,21 @@ const UNIT_LABELS: Record<string, string> = {
 
 const UNIT_KEYS = Object.keys(UNIT_CONV);
 
+// Short labels for compact unit selector buttons (must be distinct)
+const UNIT_SHORT_LABELS: Record<string, string> = {
+    sqft: 'Sq.ft',
+    sqm: 'Sq.m',
+    sqyard: 'Sq.yd',
+    cent: 'Cent',
+    gunta: 'Gunta',
+    ankanam: 'Ankanam',
+    gajam: 'Gajam',
+    acre: 'Acre',
+    ground: 'Ground',
+    bigha: 'Bigha',
+    hectare: 'Hectare',
+};
+
 // ─── Reference table rows ────────────────────────────────────────────────────
 const REF_UNITS = ['cent', 'gunta', 'ankanam', 'gajam', 'acre', 'ground', 'bigha', 'hectare'];
 
@@ -381,7 +396,7 @@ export default function PropertyCalculator() {
                                                         : 'bg-dark-bg border border-dark-border text-slate-400'
                                                         }`}
                                                 >
-                                                    {UNIT_LABELS[u].split(' ')[0]}
+                                                    {UNIT_SHORT_LABELS[u]}
                                                 </button>
                                             ))}
                                         </div>
