@@ -51,7 +51,7 @@ export default function SchemeDetail() {
                         <button onClick={() => isBookmarked ? removeBookmark(scheme.id) : addBookmark(scheme.id)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
                             <Bookmark size={18} className={isBookmarked ? 'text-brand-gold fill-brand-gold' : 'text-slate-400'} />
                         </button>
-                        <button className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border"><Share2 size={18} className="text-slate-400" /></button>
+                        <button onClick={() => nativeShare(scheme.name, `Check out the ${scheme.name} on FinCalix`, window.location.href)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border"><Share2 size={18} className="text-slate-400" /></button>
                     </div>
                 </div>
                 <div className="flex gap-1.5 flex-wrap mb-2">
