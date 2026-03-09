@@ -150,7 +150,7 @@ export default function SalaryHikeCalculator() {
 
     const isAlreadySaved = useMemo(() => {
         return savedCalculations.some(
-            (s) => s.type === 'Salary Hike Calculator' && JSON.stringify(s.inputs) === JSON.stringify({ currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit })
+            (s) => s.calculatorType === 'Salary Hike Calculator' && JSON.stringify(s.inputValues) === JSON.stringify({ currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit })
         );
     }, [savedCalculations, currentSalary, hikePct, period, periodUnit, mode, result.hikePctComputed]);
 

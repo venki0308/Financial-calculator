@@ -91,12 +91,12 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
                 id: `${config.title}-${Date.now()}`,
                 calculatorType: config.title,
                 inputValues: vals,
-                resultValues: resultValues: result,
+                resultValues: result,
                 timestamp: Date.now()
             });
         }, 1000);
         return () => clearTimeout(timer);
-    }, [vals, resultValues: result, config.title, addHistory]);
+    }, [vals, result, config.title, addHistory]);
 
     // Track recent calculator usage
     useEffect(() => {
@@ -113,14 +113,14 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
             id: `${config.title}-${Date.now()}`,
             calculatorType: config.title,
             inputValues: vals,
-            resultValues: resultValues: result,
+            resultValues: result,
             timestamp: Date.now()
         });
         setSaved(true);
     };
 
     const isAlreadySaved = useMemo(() => {
-        return savedCalculations.some(s => s.type === config.title && JSON.stringify(s.inputs) === JSON.stringify(vals));
+        return savedCalculations.some(s => s.calculatorType === config.title && JSON.stringify(s.inputValues) === JSON.stringify(vals));
     }, [savedCalculations, config.title, vals]);
 
     const chartRef = useRef<any>(null);

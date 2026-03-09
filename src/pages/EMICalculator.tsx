@@ -136,7 +136,7 @@ export default function EMICalculator() {
     };
 
     const isAlreadySaved = useMemo(() => {
-        return savedCalculations.some(s => s.type === 'Loan EMI Calculator' && JSON.stringify(s.inputs) === JSON.stringify({ principal, rate, months, method }));
+        return savedCalculations.some(s => s.calculatorType === 'Loan EMI Calculator' && JSON.stringify(s.inputValues) === JSON.stringify({ principal, rate, months, method }));
     }, [savedCalculations, principal, rate, months, method]);
 
     const handleDownloadPDF = async () => {

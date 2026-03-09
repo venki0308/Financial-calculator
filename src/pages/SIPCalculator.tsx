@@ -183,7 +183,7 @@ export default function SIPCalculator() {
 
     const isAlreadySaved = useMemo(() => {
         const inputs = activeTab === 'basic' ? { monthly, rate, years } : activeTab === 'stepup' ? { initial: suInitial, stepUp: suStepUp, rate: suRate, years: suYears } : { target: goalTarget, years: goalYears, rate: goalRate };
-        return savedCalculations.some(s => s.type === 'SIP Calculator' && JSON.stringify(s.inputs) === JSON.stringify(inputs));
+        return savedCalculations.some(s => s.calculatorType === 'SIP Calculator' && JSON.stringify(s.inputValues) === JSON.stringify(inputs));
     }, [savedCalculations, activeTab, monthly, rate, years, suInitial, suStepUp, suRate, suYears, goalTarget, goalYears, goalRate]);
 
     const handleDownloadPDF = async () => {

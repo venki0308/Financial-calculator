@@ -34,11 +34,11 @@ export default function CalculationHistory() {
                 ) : (
                     <div className="space-y-3">
                         {history.map((item) => {
-                            const primaryValue = typeof item.result === 'number' ? item.result : (item.result?.primary || 0);
+                            const primaryValue = typeof item.resultValues === 'number' ? item.resultValues : (item.resultValues?.primary || 0);
                             return (
                                 <div key={item.id} className="p-4 rounded-2xl bg-dark-card border border-dark-border">
                                     <div className="flex justify-between items-start mb-1">
-                                        <h3 className="text-white font-bold text-sm">{item.type}</h3>
+                                        <h3 className="text-white font-bold text-sm">{item.calculatorType}</h3>
                                         <span className="text-[10px] text-slate-500">{new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
                                     <p className="text-lg font-bold text-brand-blue">{formatINR(primaryValue)}</p>

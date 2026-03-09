@@ -81,7 +81,7 @@ export default function AdvancedSIPCalculator() {
     };
 
     const isAlreadySaved = useMemo(() => {
-        return savedCalculations.some(s => s.type === 'Advanced SIP Calculator' && JSON.stringify(s.inputs) === JSON.stringify({ monthly, rate, years }));
+        return savedCalculations.some(s => s.calculatorType === 'Advanced SIP Calculator' && JSON.stringify(s.inputValues) === JSON.stringify({ monthly, rate, years }));
     }, [savedCalculations, monthly, rate, years]);
 
     const handleDownloadPDF = async () => {
