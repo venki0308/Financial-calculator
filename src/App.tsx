@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { App as CapApp } from '@capacitor/app';
 import { useSettingsStore } from './store/useSettingsStore';
 import { AnalyticsService, CrashlyticsService } from './lib/analytics';
@@ -59,16 +59,32 @@ import CompareCalculator from './pages/CompareCalculator';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import About from './pages/About';
+import DataSafety from './pages/DataSafety';
 import SavedCalculations from './pages/SavedCalculations';
 import CalculationHistory from './pages/CalculationHistory';
 import BookmarkedSchemes from './pages/BookmarkedSchemes';
 import Notifications from './pages/Notifications';
 
 
+// Toast component for back-press notification
+function BackToast({ visible }: { visible: boolean }) {
+    if (!visible) return null;
+    return (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
+            <div className="px-5 py-2.5 rounded-full bg-slate-800 border border-slate-700 shadow-xl">
+                <p className="text-white text-xs font-medium whitespace-nowrap">Press back again to exit FinCalix</p>
+            </div>
+        </div>
+    );
+}
+
 function AppContent() {
     const darkMode = useSettingsStore((s) => s.darkMode);
     const navigate = useNavigate();
     const location = useLocation();
+    const lastBackPress = useRef<number>(0);
+    const [showBackToast, setShowBackToast] = useState(false);
+    const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
@@ -78,15 +94,10 @@ function AppContent() {
     // Analytics + Crashlytics + Feature Flags init
     useEffect(() => {
         const initAnalytics = async () => {
-            // Setup global error/rejection handlers first
             setupErrorHandling();
-
-            // Init Crashlytics (native only, no-op on web)
             await CrashlyticsService.initialize();
             await CrashlyticsService.setCustomKey('app_version', APP_VERSION);
             await CrashlyticsService.setCustomKey('platform', Capacitor.getPlatform());
-
-            // Analytics
             await FeatureFlagService.load();
             await AnalyticsService.trackAppOpened();
             await AnalyticsService.setUserProperties({
@@ -97,10 +108,23 @@ function AppContent() {
         initAnalytics();
     }, []);
 
+    // Android hardware back button — double-tap to exit on home, navigate back elsewhere
     useEffect(() => {
+        if (!Capacitor.isNativePlatform()) return;
+
         const backHandler = CapApp.addListener('backButton', () => {
             if (location.pathname === '/') {
-                CapApp.exitApp();
+                const now = Date.now();
+                if (now - lastBackPress.current < 2000) {
+                    // Second press within 2 seconds — exit app
+                    CapApp.exitApp();
+                } else {
+                    // First press — show toast
+                    lastBackPress.current = now;
+                    setShowBackToast(true);
+                    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+                    toastTimerRef.current = setTimeout(() => setShowBackToast(false), 2000);
+                }
             } else {
                 navigate(-1);
             }
@@ -108,16 +132,19 @@ function AppContent() {
 
         return () => {
             backHandler.then((h: { remove: () => void }) => h.remove());
+            if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
         };
     }, [location, navigate]);
 
     return (
         <>
+            <BackToast visible={showBackToast} />
             <UpdateChecker />
             <Routes>
                 {/* Support pages (no nav bar) */}
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/data-safety" element={<DataSafety />} />
 
                 {/* Main app — all routes public, no auth required */}
                 <Route element={<Layout />}>

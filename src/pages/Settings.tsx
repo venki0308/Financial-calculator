@@ -110,6 +110,8 @@ export default function Settings() {
                     <div className="h-px bg-dark-border mx-4" />
                     <MenuItem icon={FileText} label={t('settings.privacyPolicy')} color="#3B82F6" onClick={() => navigate('/privacy-policy')} />
                     <div className="h-px bg-dark-border mx-4" />
+                    <MenuItem icon={FileText} label="Data & Privacy" color="#10B981" onClick={() => navigate('/data-safety')} />
+                    <div className="h-px bg-dark-border mx-4" />
                     <MenuItem icon={FileText} label={t('settings.termsOfService')} color="#8B5CF6" onClick={() => navigate('/terms-of-service')} />
                     <div className="h-px bg-dark-border mx-4" />
                     <MenuItem icon={Star} label={t('settings.rateApp')} color="#F59E0B" onClick={() => {

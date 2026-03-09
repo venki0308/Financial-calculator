@@ -14,8 +14,19 @@ const OLD_REGIME = [
     { min: 1000000, max: Infinity, rate: 30 },
 ];
 
-// Union Budget 2026-27 — Updated New Regime Slabs
-const NEW_REGIME = [
+// Union Budget 2026-27 — New Regime Slabs (FY 2026-27)
+const NEW_REGIME_2026_27 = [
+    { min: 0, max: 400000, rate: 0 },
+    { min: 400000, max: 800000, rate: 5 },
+    { min: 800000, max: 1200000, rate: 10 },
+    { min: 1200000, max: 1600000, rate: 15 },
+    { min: 1600000, max: 2000000, rate: 20 },
+    { min: 2000000, max: 2400000, rate: 25 },
+    { min: 2400000, max: Infinity, rate: 30 },
+];
+
+// FY 2025-26 New Regime (same bracket structure, different 87A rebate)
+const NEW_REGIME_2025_26 = [
     { min: 0, max: 400000, rate: 0 },
     { min: 400000, max: 800000, rate: 5 },
     { min: 800000, max: 1200000, rate: 10 },
@@ -44,15 +55,29 @@ function computeSlabTax(income: number, slabs: typeof OLD_REGIME): number {
     return tax;
 }
 
-function applyRebate87A(tax: number, taxableIncome: number, regime: 'old' | 'new'): number {
+function applyRebate87A(tax: number, taxableIncome: number, regime: 'old' | 'new', fy: '2026-27' | '2025-26'): number {
     if (regime === 'new') {
-        // Budget 2026-27: No tax if taxable income ≤ 12,00,000
-        if (taxableIncome <= 1200000) return 0;
+        if (fy === '2026-27') {
+            // Budget 2026-27: Full rebate — zero tax if taxable income ≤ ₹12,00,000
+            if (taxableIncome <= 1200000) return 0;
+        } else {
+            // FY 2025-26: Rebate up to ₹12,500 if taxable income ≤ ₹7,00,000
+            if (taxableIncome <= 700000) return Math.max(0, tax - 12500);
+        }
     } else {
-        // Old regime: rebate up to 12,500 if taxable income ≤ 5L
+        // Old regime: rebate up to ₹12,500 if taxable income ≤ ₹5,00,000
         if (taxableIncome <= 500000) return 0;
     }
     return tax;
+}
+
+// Surcharge calculation (New Regime)
+function computeSurcharge(tax: number, taxableIncome: number, regime: 'old' | 'new'): number {
+    if (tax <= 0) return 0;
+    if (taxableIncome > 20000000) return tax * 0.25; // >₹2Cr: 25%
+    if (taxableIncome > 10000000) return tax * 0.15; // >₹1Cr: 15%
+    if (taxableIncome > 5000000)  return tax * 0.10; // >₹50L: 10%
+    return 0;
 }
 
 const fmt = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
@@ -134,6 +159,7 @@ export default function IncomeTaxCalculator() {
     useTrackCalculator();
     const navigate = useNavigate();
     const [regime, setRegime] = useState<'old' | 'new'>('new');
+    const [fy, setFy] = useState<'2026-27' | '2025-26'>('2026-27');
     const [inputMode, setInputMode] = useState<'monthly' | 'annual' | 'ctc' | 'payslip'>('monthly');
     const [showDisclaimer, setShowDisclaimer] = useState(false);
     const [inputs, setInputs] = useState<Inputs>({
@@ -224,26 +250,35 @@ export default function IncomeTaxCalculator() {
         );
     }, [inputs, num, hraExemption]);
 
+    // ─── Select correct slab table based on FY ─────────────────────────────────
+    const NEW_REGIME = fy === '2026-27' ? NEW_REGIME_2026_27 : NEW_REGIME_2025_26;
+    const newStdDed = 75000; // Same for both years
+    const oldStdDed = 50000;
+
     // ─── Compute Both Regimes ─────────────────────────────────────────────────
-    const newStdDed = 75000;
     const newTaxableIncome = Math.max(0, grossSalary - newStdDed);
     const newRawTax = computeSlabTax(newTaxableIncome, NEW_REGIME);
-    const newAfterRebate = applyRebate87A(newRawTax, newTaxableIncome, 'new');
-    const newCess = newAfterRebate * 0.04;
-    const newTotalTax = newAfterRebate + newCess;
-    const newNoTax = newTaxableIncome <= 1200000;
+    const newAfterRebate = applyRebate87A(newRawTax, newTaxableIncome, 'new', fy);
+    const newSurcharge = computeSurcharge(newAfterRebate, newTaxableIncome, 'new');
+    const newTaxAfterSurcharge = newAfterRebate + newSurcharge;
+    const newCess = newTaxAfterSurcharge * 0.04;
+    const newTotalTax = newTaxAfterSurcharge + newCess;
+    const newNoTax = fy === '2026-27' ? newTaxableIncome <= 1200000 : newTaxableIncome <= 700000;
 
     const oldTaxableIncome = Math.max(0, grossSalary - oldDeductions);
     const oldRawTax = computeSlabTax(oldTaxableIncome, OLD_REGIME);
-    const oldAfterRebate = applyRebate87A(oldRawTax, oldTaxableIncome, 'old');
-    const oldCess = oldAfterRebate * 0.04;
-    const oldTotalTax = oldAfterRebate + oldCess;
+    const oldAfterRebate = applyRebate87A(oldRawTax, oldTaxableIncome, 'old', fy);
+    const oldSurcharge = computeSurcharge(oldAfterRebate, oldTaxableIncome, 'old');
+    const oldTaxAfterSurcharge = oldAfterRebate + oldSurcharge;
+    const oldCess = oldTaxAfterSurcharge * 0.04;
+    const oldTotalTax = oldTaxAfterSurcharge + oldCess;
 
     // Active regime values
     const activeDeductions = regime === 'new' ? newStdDed : oldDeductions;
     const activeTaxableIncome = regime === 'new' ? newTaxableIncome : oldTaxableIncome;
     const activeRawTax = regime === 'new' ? newRawTax : oldRawTax;
     const activeAfterRebate = regime === 'new' ? newAfterRebate : oldAfterRebate;
+    const activeSurcharge = regime === 'new' ? newSurcharge : oldSurcharge;
     const activeCess = regime === 'new' ? newCess : oldCess;
     const activeTotalTax = regime === 'new' ? newTotalTax : oldTotalTax;
     const activeSlabs = regime === 'new' ? NEW_REGIME : OLD_REGIME;
@@ -353,7 +388,12 @@ export default function IncomeTaxCalculator() {
         });
         rows.push(
             ['---', ''],
-            ['Income Tax (Before Cess)', fmt(activeAfterRebate)],
+            ['Income Tax (After Rebate)', fmt(activeAfterRebate)],
+        );
+        if (activeSurcharge > 0) {
+            rows.push(['Surcharge', fmt(activeSurcharge)]);
+        }
+        rows.push(
             ['Health & Education Cess (4%)', fmt(activeCess)],
             ['Total Tax Liability', fmt(activeTotalTax)],
             ['---', ''],
@@ -369,7 +409,7 @@ export default function IncomeTaxCalculator() {
             ['Net Annual Income', fmt(netAnnual)],
             ['Effective Tax Rate', `${effectiveRate.toFixed(2)}%`],
         );
-        await exportToPDF(`Income Tax Report - ${regime === 'old' ? 'Old' : 'New'} Regime (FY 2026-27)`, headers, rows, `Income_Tax_Report_FY2026-27`);
+        await exportToPDF(`Income Tax Report - ${regime === 'old' ? 'Old' : 'New'} Regime (FY ${fy})`, headers, rows, `Income_Tax_Report_FY${fy}`);
     };
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -382,13 +422,41 @@ export default function IncomeTaxCalculator() {
                 <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10">
                     <ArrowLeft size={18} className="text-slate-700 dark:text-white" />
                 </button>
-                <div>
+                <div className="flex-1">
                     <h1 className="text-slate-900 dark:text-white font-bold text-base">Income Tax Calculator</h1>
-                    <p className="text-slate-400 text-[11px]">FY 2026-27 (AY 2027-28) • Union Budget 2026</p>
+                    <p className="text-slate-400 text-[11px]">FY {fy} (AY {fy === '2026-27' ? '2027-28' : '2026-27'}) {fy === '2026-27' ? '• Union Budget 2026' : ''}</p>
                 </div>
             </div>
 
             <div className="px-4 pt-4 pb-28 space-y-4">
+                {/* FY Year Selector */}
+                <div className="flex gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-1">
+                    {(['2026-27', '2025-26'] as const).map((y) => (
+                        <motion.button
+                            key={y}
+                            onClick={() => setFy(y)}
+                            className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all ${fy === y ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'text-slate-400 dark:text-slate-500'}`}
+                        >
+                            FY {y} {y === '2026-27' ? '(Current)' : ''}
+                        </motion.button>
+                    ))}
+                </div>
+
+                {/* Budget Info Banner */}
+                {fy === '2026-27' && (
+                    <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/15 to-teal-500/10 border border-emerald-500/25">
+                        <div className="flex items-start gap-2">
+                            <TrendingUp size={16} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-emerald-300 text-xs font-bold">Budget 2026-27 Update</p>
+                                <p className="text-emerald-400/80 text-[10px] mt-0.5 leading-relaxed">
+                                    Zero tax on income up to ₹12 Lakh under New Regime (after ₹75,000 standard deduction for salaried — effective ₹12.75L for salaried)
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* Regime Toggle */}
                 <div className="flex gap-1 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-1">
                     {(['new', 'old'] as const).map((r) => (
@@ -399,7 +467,7 @@ export default function IncomeTaxCalculator() {
                         >
                             {r === 'new' ? 'New Regime' : 'Old Regime'}
                             <br />
-                            <span className="font-normal text-[9px] opacity-80">{r === 'new' ? 'Budget 2026-27' : 'With deductions'}</span>
+                            <span className="font-normal text-[9px] opacity-80">{r === 'new' ? `FY ${fy}` : 'With deductions'}</span>
                         </motion.button>
                     ))}
                 </div>
@@ -574,12 +642,14 @@ export default function IncomeTaxCalculator() {
                         <div className="flex gap-3">
                             <Info size={18} className="text-brand-purple flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-brand-purple font-semibold text-sm">New Regime — Budget 2026-27</p>
+                                <p className="text-brand-purple font-semibold text-sm">New Regime — FY {fy}</p>
                                 <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
                                     Standard deduction of Rs 75,000 applied automatically. No manual deductions (HRA, 80C, 80D, etc.) available in the new regime.
                                 </p>
                                 <p className="text-brand-purple text-[10px] mt-1 font-semibold">
-                                    No tax if taxable income ≤ Rs 12,00,000
+                                    {fy === '2026-27'
+                                        ? 'No tax if taxable income ≤ Rs 12,00,000 (Section 87A rebate)'
+                                        : 'Rebate u/s 87A: Up to Rs 12,500 if taxable income ≤ Rs 7,00,000'}
                                 </p>
                             </div>
                         </div>
@@ -626,6 +696,7 @@ export default function IncomeTaxCalculator() {
                                 { label: 'Income Tax (slab-wise)', val: activeRawTax, color: 'text-slate-500' },
                                 ...(activeRawTax !== activeAfterRebate ? [{ label: 'Less: Rebate u/s 87A', val: -(activeRawTax - activeAfterRebate), color: 'text-emerald-500' }] : []),
                                 { label: 'Income Tax (after rebate)', val: activeAfterRebate, color: 'text-red-400' },
+                                ...(activeSurcharge > 0 ? [{ label: 'Surcharge', val: activeSurcharge, color: 'text-amber-500' }] : []),
                                 { label: 'Health & Education Cess (4%)', val: activeCess, color: 'text-orange-400' },
                                 { label: 'Final Tax Liability', val: activeTotalTax, color: 'text-red-500', bold: true },
                             ].map((row) => (
@@ -792,7 +863,7 @@ export default function IncomeTaxCalculator() {
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                                 <div className="px-4 pb-4">
                                     <p className="text-amber-700 dark:text-amber-300 text-xs leading-relaxed">
-                                        This calculator provides estimates for FY 2026-27 based on the Union Budget 2026. Actual tax liability may vary depending on your complete financial profile, surcharges, or special circumstances. Please consult a <strong>Chartered Accountant</strong> for precise tax planning.
+                                        <strong>⚠️ This calculator is for estimation purposes only.</strong> Actual tax liability may vary depending on your complete financial profile, surcharges, additional income sources, or special circumstances. Tax laws are subject to change. Please consult a <strong>Chartered Accountant (CA)</strong> or qualified tax professional for actual tax filing and planning. All calculations are based on FY {fy} tax rules as per publicly available budget documents.
                                     </p>
                                     <a href="https://www.incometax.gov.in" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-amber-700 dark:text-amber-400 text-xs font-semibold mt-2">
                                         <ExternalLink size={12} /> incometax.gov.in (Official Portal)
