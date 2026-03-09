@@ -188,15 +188,15 @@ export default function GSTCalculator() {
     }, [mode, stdResult, reverseResult, invoiceTotals, itcResult]);
 
     const handleSave = () => {
-        let inputs: any = {};
-        let result: any = {};
+        let inputValues: any = {};
+        let resultValues: any = {};
         if (mode === 'standard' && stdResult) { inputs = { stdAmount, stdRate, stdDirection, isIGST }; result = { primary: stdResult.total, ...stdResult }; }
         else if (mode === 'reverse' && reverseResult) { inputs = { stdAmount, stdRate, isIGST }; result = { primary: reverseResult.base, ...reverseResult }; }
         else if (mode === 'profit' && profitResult) { inputs = { costPrice, sellingPrice, profitGstRate }; result = { primary: profitResult.totalWithGst, ...profitResult }; }
         else if (mode === 'itc' && itcResult) { inputs = { purchaseGst, salesGst }; result = { primary: itcResult.netPayable, ...itcResult }; }
         else if (mode === 'invoice') { inputs = { items: invoiceItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, rate: i.rate })), invoiceIsIGST }; result = { primary: invoiceTotals.total, ...invoiceTotals }; }
 
-        addSaved({ id: `GST-${mode}-${Date.now()}`, type: `GST Calculator (${mode})`, inputs, result, timestamp: Date.now() });
+        addSaved({ id: `GST-${mode}-${Date.now()}`, calculatorType: `GST Calculator (${mode})`, inputValues: inputs, resultValues: result, timestamp: Date.now() });
         setSaved(true);
     };
 
@@ -647,8 +647,8 @@ function ToggleIGST({ value, onChange }: { value: boolean; onChange: (v: boolean
     );
 }
 
-function ResultCard({ result, rate, isIGST, chartData, chartRef, showBreakdown, setShowBreakdown }: {
-    result: { base: number; gst: number; cgst: number; sgst: number; igst: number; total: number };
+function ResultCard({ resultValues: result, rate, isIGST, chartData, chartRef, showBreakdown, setShowBreakdown }: {
+    resultValues: { base: number; gst: number; cgst: number; sgst: number; igst: number; total: number };
     rate: number; isIGST: boolean; chartData: any; chartRef: any;
     showBreakdown: boolean; setShowBreakdown: (v: boolean) => void;
 }) {

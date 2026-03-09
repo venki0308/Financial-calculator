@@ -115,9 +115,9 @@ export default function EMICalculator() {
         const timer = setTimeout(() => {
             addHistory({
                 id: `EMI-${Date.now()}`,
-                type: 'Loan EMI Calculator',
-                inputs: { principal, rate, months, method },
-                result: { primary: result.emi, ...result },
+                calculatorType: 'Loan EMI Calculator',
+                inputValues: { principal, rate, months, method },
+                resultValues: { primary: result.emi, ...result },
                 timestamp: Date.now()
             });
         }, 1000);
@@ -127,9 +127,9 @@ export default function EMICalculator() {
     const handleSave = () => {
         addSaved({
             id: `EMI-Save-${Date.now()}`,
-            type: 'Loan EMI Calculator',
-            inputs: { principal, rate, months, method },
-            result: { primary: result.emi, ...result },
+            calculatorType: 'Loan EMI Calculator',
+            inputValues: { principal, rate, months, method },
+            resultValues: { primary: result.emi, ...result },
             timestamp: Date.now()
         });
         setIsSaved(true);

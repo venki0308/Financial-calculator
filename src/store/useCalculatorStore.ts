@@ -3,9 +3,9 @@ import { persist } from 'zustand/middleware';
 
 export interface Calculation {
     id: string;
-    type: string;
-    inputs: Record<string, any>;
-    result: any;
+    calculatorType: string;
+    inputValues: Record<string, any>;
+    resultValues: any;
     timestamp: number;
 }
 

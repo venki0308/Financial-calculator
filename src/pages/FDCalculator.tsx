@@ -67,7 +67,7 @@ export default function FDCalculator() {
         const realReturn = nominalReturn - (inflation * years);
         const realValue = result.amount / Math.pow(1 + inflation / 100, years);
         return { inflation, nominalReturn: nominalReturn.toFixed(1), realReturn: realReturn.toFixed(1), realValue: Math.round(realValue) };
-    }, [result, principal, years]);
+    }, [resultValues: result, principal, years]);
 
     const chartData = {
         labels: ['Invested', 'Interest Earned'],
@@ -83,7 +83,7 @@ export default function FDCalculator() {
     }), [yearWise, principal]);
 
     const handleSave = () => {
-        addSaved({ id: `FD-${Date.now()}`, type: 'FD Calculator', inputs: { principal, rate, years, compounding }, result: { primary: result.amount, ...result }, timestamp: Date.now() });
+        addSaved({ id: `FD-${Date.now()}`, calculatorType: 'FD Calculator', inputValues: { principal, rate, years, compounding }, resultValues: { primary: result.amount, ...result }, timestamp: Date.now() });
         setSaved(true);
     };
 

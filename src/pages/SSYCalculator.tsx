@@ -103,9 +103,9 @@ export default function SSYCalculator() {
     const handleSave = () => {
         addSaved({
             id: `ssy-${Date.now()}`,
-            type: 'ssy',
-            inputs: { annual, rate, childAge },
-            result: { primary: result.maturity, label: 'Maturity Amount', invested: result.invested, returns: result.totalInterest },
+            calculatorType: 'ssy',
+            inputValues: { annual, rate, childAge },
+            resultValues: { primary: result.maturity, label: 'Maturity Amount', invested: result.invested, returns: result.totalInterest },
             timestamp: Date.now(),
         });
         setSaved(true);

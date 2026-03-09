@@ -118,9 +118,9 @@ export default function SalaryHikeCalculator() {
         const timer = setTimeout(() => {
             addHistory({
                 id: `SalaryHike-${Date.now()}`,
-                type: 'Salary Hike Calculator',
-                inputs: { currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit, mode },
-                result: { primary: result.newSalary, ...result },
+                calculatorType: 'Salary Hike Calculator',
+                inputValues: { currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit, mode },
+                resultValues: { primary: result.newSalary, ...result },
                 timestamp: Date.now(),
             });
         }, 1000);
@@ -140,9 +140,9 @@ export default function SalaryHikeCalculator() {
     const handleSave = () => {
         addSaved({
             id: `SalaryHike-Save-${Date.now()}`,
-            type: 'Salary Hike Calculator',
-            inputs: { currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit },
-            result: { primary: result.newSalary, ...result },
+            calculatorType: 'Salary Hike Calculator',
+            inputValues: { currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit },
+            resultValues: { primary: result.newSalary, ...result },
             timestamp: Date.now(),
         });
         setIsSaved(true);

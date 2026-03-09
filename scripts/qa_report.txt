@@ -1,0 +1,14 @@
+[SAVED STATE] AdvancedSIPCalculator.tsx: addSaved payload is missing exact keys (calculatorType, inputValues, resultValues).
+[EXCEL FORMAT] BreakEvenCalculator.tsx: Excel export contains formatted currency strings instead of raw numeric values.
+[SAVED STATE] BreakEvenCalculator.tsx: addSaved payload is missing exact keys (calculatorType, inputValues, resultValues).
+[SAVED STATE] CarLoanCalculator.tsx: addSaved payload is missing exact keys (calculatorType, inputValues, resultValues).
+[SAVED STATE] EMICalculator.tsx: addSaved payload is missing exact keys (calculatorType, inputValues, resultValues).
+[SAVED STATE] FDCalculator.tsx: addSaved payload is missing exact keys (calculatorType, inputValues, resultValues).
+[SAVED STATE] GSTCalculator.tsx: addSaved payload is missing exact keys (calculatorType, inputValues, resultValues).
+[EXCEL FORMAT] NPSCalculator.tsx: Excel export contains formatted currency strings instead of raw numeric values.
+[SAVED STATE] NPSCalculator.tsx: addSaved payload is missing exact keys (calculatorType, inputValues, resultValues).
+[SAVED STATE] PropertyCalculator.tsx: addSaved payload is missing exact keys (calculatorType, inputValues, resultValues).
+[SAVED STATE] SalaryHikeCalculator.tsx: addSaved payload is missing exact keys (calculatorType, inputValues, resultValues).
+[EXCEL FORMAT] SimpleInterestCalculator.tsx: Excel export contains formatted currency strings instead of raw numeric values.
+[SAVED STATE] SIPCalculator.tsx: addSaved payload is missing exact keys (calculatorType, inputValues, resultValues).
+[SAVED STATE] SSYCalculator.tsx: addSaved payload is missing exact keys (calculatorType, inputValues, resultValues).

@@ -107,13 +107,13 @@ function formatValue(key: string, val: any): string {
 
 function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void }) {
     const [expanded, setExpanded] = useState(false);
-    const meta = calcMeta[calc.type] || defaultMeta;
+    const meta = calcMeta[calc.calculatorType] || defaultMeta;
     const Icon = meta.icon;
-    const primaryValue = typeof calc.result === 'number' ? calc.result : (calc.result?.primary || 0);
+    const primaryValue = typeof calc.resultValues === 'number' ? calc.resultValues : (calc.resultValues?.primary || 0);
 
     // Parse inputs and results for detailed display
-    const inputEntries = Object.entries(calc.inputs || {}).filter(([k, v]) => v !== undefined && v !== null && k !== 'type');
-    const resultEntries = Object.entries(calc.result || {}).filter(([k, v]) => k !== 'primary' && k !== 'amortization' && k !== 'schedule' && v !== undefined && v !== null && typeof v !== 'object');
+    const inputEntries = Object.entries(calc.inputValues || {}).filter(([k, v]) => v !== undefined && v !== null && k !== 'type');
+    const resultEntries = Object.entries(calc.resultValues || {}).filter(([k, v]) => k !== 'primary' && k !== 'amortization' && k !== 'schedule' && v !== undefined && v !== null && typeof v !== 'object');
 
     return (
         <motion.div layout className={`rounded-2xl bg-gradient-to-br ${meta.gradient} border border-white/5 overflow-hidden`}>

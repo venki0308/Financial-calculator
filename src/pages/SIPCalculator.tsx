@@ -161,9 +161,9 @@ export default function SIPCalculator() {
         const timer = setTimeout(() => {
             addHistory({
                 id: `SIP-${Date.now()}`,
-                type: 'SIP Calculator',
-                inputs: activeTab === 'basic' ? { monthly, rate, years } : activeTab === 'stepup' ? { initial: suInitial, stepUp: suStepUp, rate: suRate, years: suYears } : { target: goalTarget, years: goalYears, rate: goalRate },
-                result: { primary: displayValues.primary, invested: displayValues.invested, returns: displayValues.returns, label: displayValues.label },
+                calculatorType: 'SIP Calculator',
+                inputValues: activeTab === 'basic' ? { monthly, rate, years } : activeTab === 'stepup' ? { initial: suInitial, stepUp: suStepUp, rate: suRate, years: suYears } : { target: goalTarget, years: goalYears, rate: goalRate },
+                resultValues: { primary: displayValues.primary, invested: displayValues.invested, returns: displayValues.returns, label: displayValues.label },
                 timestamp: Date.now()
             });
         }, 1000);
@@ -173,9 +173,9 @@ export default function SIPCalculator() {
     const handleSave = () => {
         addSaved({
             id: `SIP-Save-${Date.now()}`,
-            type: 'SIP Calculator',
-            inputs: activeTab === 'basic' ? { monthly, rate, years } : activeTab === 'stepup' ? { initial: suInitial, stepUp: suStepUp, rate: suRate, years: suYears } : { target: goalTarget, years: goalYears, rate: goalRate },
-            result: { primary: displayValues.primary, invested: displayValues.invested, returns: displayValues.returns, label: displayValues.label },
+            calculatorType: 'SIP Calculator',
+            inputValues: activeTab === 'basic' ? { monthly, rate, years } : activeTab === 'stepup' ? { initial: suInitial, stepUp: suStepUp, rate: suRate, years: suYears } : { target: goalTarget, years: goalYears, rate: goalRate },
+            resultValues: { primary: displayValues.primary, invested: displayValues.invested, returns: displayValues.returns, label: displayValues.label },
             timestamp: Date.now()
         });
         setIsSaved(true);

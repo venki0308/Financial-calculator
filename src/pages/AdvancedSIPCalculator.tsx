@@ -72,9 +72,9 @@ export default function AdvancedSIPCalculator() {
         if (!result) return;
         addSaved({
             id: `AdvSIP-${Date.now()}`,
-            type: 'Advanced SIP Calculator',
-            inputs: { monthly, rate, years },
-            result: { primary: result.totalValue, ...result },
+            calculatorType: 'Advanced SIP Calculator',
+            inputValues: { monthly, rate, years },
+            resultValues: { primary: result.totalValue, ...result },
             timestamp: Date.now()
         });
         setSaved(true);

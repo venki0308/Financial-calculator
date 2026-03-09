@@ -346,8 +346,8 @@ export default function PropertyCalculator() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
-            <div className="px-4 pt-14 pb-8">
+        <div className="min-h-dvh bg-[#0F172A] animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
+            <div className="px-4 pt-14 pb-48">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
@@ -517,7 +517,7 @@ export default function PropertyCalculator() {
                                         {/* Actions */}
                                         <div className="grid grid-cols-2 gap-2">
                                             <button
-                                                onClick={() => addSaved({ id: Date.now().toString(), type: 'Land Value', inputs: { landArea, landUnit, landPrice }, result: { primary: landResult.totalValue }, timestamp: Date.now() })}
+                                                onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Land Value', inputValues: { landArea, landUnit, landPrice }, resultValues: { primary: landResult.totalValue }, timestamp: Date.now() })}
                                                 className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold"
                                             >
                                                 Save
@@ -635,7 +635,7 @@ export default function PropertyCalculator() {
                                         )}
 
                                         <div className="grid grid-cols-2 gap-2">
-                                            <button onClick={() => addSaved({ id: Date.now().toString(), type: 'Flat Price', inputs: { builtUp, carpet, ppsf, parking, amenities, maint, gstPct }, result: { primary: flatResult.totalCost }, timestamp: Date.now() })}
+                                            <button onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Flat Price', inputValues: { builtUp, carpet, ppsf, parking, amenities, maint, gstPct }, resultValues: { primary: flatResult.totalCost }, timestamp: Date.now() })}
                                                 className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">Save</button>
                                             <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-700 text-slate-300 text-xs font-bold">📄 PDF</button>
                                         </div>
@@ -761,7 +761,7 @@ export default function PropertyCalculator() {
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-2">
-                                            <button onClick={() => addSaved({ id: Date.now().toString(), type: 'Villa Construction', inputs: { groundFloor, firstFloor, secondFloor, constRate }, result: { primary: villaResult.totalCost }, timestamp: Date.now() })}
+                                            <button onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Villa Construction', inputValues: { groundFloor, firstFloor, secondFloor, constRate }, resultValues: { primary: villaResult.totalCost }, timestamp: Date.now() })}
                                                 className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">Save</button>
                                             <button className="py-3 rounded-xl bg-slate-700 text-slate-300 text-xs font-bold">📄 PDF</button>
                                         </div>
@@ -941,7 +941,8 @@ export default function PropertyCalculator() {
                 <motion.div 
                     initial={{ y: 100 }}
                     animate={{ y: 0 }}
-                    className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-brand-green/20 px-4 py-4 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]"
+                    className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-brand-green/20 px-4 pt-4 pb-8 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]"
+                    style={{ maxWidth: 428, margin: '0 auto' }}
                 >
                     <div className="max-w-2xl mx-auto space-y-3">
                         <div className="flex justify-between items-center mb-1">

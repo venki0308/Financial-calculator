@@ -89,14 +89,14 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
         const timer = setTimeout(() => {
             addHistory({
                 id: `${config.title}-${Date.now()}`,
-                type: config.title,
-                inputs: vals,
-                result: result,
+                calculatorType: config.title,
+                inputValues: vals,
+                resultValues: resultValues: result,
                 timestamp: Date.now()
             });
         }, 1000);
         return () => clearTimeout(timer);
-    }, [vals, result, config.title, addHistory]);
+    }, [vals, resultValues: result, config.title, addHistory]);
 
     // Track recent calculator usage
     useEffect(() => {
@@ -111,9 +111,9 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
     const handleSave = () => {
         addSaved({
             id: `${config.title}-${Date.now()}`,
-            type: config.title,
-            inputs: vals,
-            result: result,
+            calculatorType: config.title,
+            inputValues: vals,
+            resultValues: resultValues: result,
             timestamp: Date.now()
         });
         setSaved(true);
