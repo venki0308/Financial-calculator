@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Share2 } from 'lucide-react';
+import { nativeShare } from '../utils/nativeShare';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerBanner from '../components/DisclaimerBanner';
@@ -156,7 +157,7 @@ export default function SimpleInterestCalculator() {
                         </button>
                         <button
                             className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border"
-                            onClick={() => { if (navigator.share) navigator.share({ title: 'Interest Calculator', url: window.location.href }); }}
+                            onClick={() => nativeShare('Interest Calculator', 'Check out this Interest Calculator on FinCalix!', window.location.href)}
                         >
                             <Share2 size={16} className="text-slate-400" />
                         </button>

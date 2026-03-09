@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Download, Share2, Save, TrendingUp, ChevronDown, ChevronUp, DollarSign, Target } from 'lucide-react';
+import { nativeShare } from '../utils/nativeShare';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title,
@@ -94,7 +95,7 @@ export default function BreakEvenCalculator() {
 
     const handleShare = async () => {
         const text = `📊 Break-even Analysis\n\n🔧 Fixed Costs: ${formatINR(fixed)}\n💰 Price/Unit: ${formatINR(price)}\n📦 Variable/Unit: ${formatINR(variable)}\n\n✅ Break Even: ${result.breakEvenUnits} units\n💵 Revenue needed: ${formatINR(result.breakEvenSales)}\n📈 Margin: ${result.marginPct}%\n\nCalculated with FinCalix 🧮`;
-        try { if (navigator.share) await navigator.share({ title: 'Break-even – FinCalix', text }); else await navigator.clipboard.writeText(text); } catch { }
+        await nativeShare('Break-even – FinCalix', text);
     };
 
     return (

@@ -7,6 +7,7 @@ import { schemes } from '../data/schemes';
 import { useSchemeStore } from '../store/useSchemeStore';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 import { AnalyticsService } from '../lib/analytics';
+import { nativeShare } from '../utils/nativeShare';
 
 export default function SchemeDetail() {
     const { id } = useParams();
@@ -224,11 +225,7 @@ export default function SchemeDetail() {
             <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[428px] bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg border-t border-slate-200 dark:border-dark-border p-4 flex gap-3">
                 <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => {
-                        if (navigator.share) {
-                            navigator.share({ title: scheme.name, text: `Check out the ${scheme.name} on FinCalix`, url: window.location.href });
-                        }
-                    }}
+                    onClick={() => nativeShare(scheme.name, `Check out the ${scheme.name} on FinCalix`, window.location.href)}
                     className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 font-semibold text-sm"
                 >
                     <Share2 size={18} /> {t('schemes.share')}

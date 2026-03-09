@@ -27,6 +27,7 @@ import { AnalyticsService } from '../lib/analytics';
 import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
+import { nativeShare } from '../utils/nativeShare';
 
 ChartJS.register(
     ArcElement,
@@ -396,7 +397,7 @@ export default function SIPCalculator() {
                     </button>
                     <button onClick={async () => {
                         const text = `📈 My SIP Investment Plan\n\n💰 Monthly: ${formatINR(displayValues.invested / (activeTab === 'basic' ? years * 12 : activeTab === 'stepup' ? suYears * 12 : goalYears * 12))}\n📅 Duration: ${activeTab === 'basic' ? years : activeTab === 'stepup' ? suYears : goalYears} years\n\n✅ Future Value: ${formatINR(displayValues.primary)}\n💵 Invested: ${formatINR(displayValues.invested)}\n📊 Returns: ${formatINR(displayValues.returns)}\n\nCalculated with FinCalix 🧮`;
-                        try { if (navigator.share) await navigator.share({ title: 'SIP Plan – FinCalix', text }); else await navigator.clipboard.writeText(text); } catch {}
+                        await nativeShare('SIP Plan – FinCalix', text);
                     }} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-[10px] font-bold">
                         <Share2 size={16} /> Share
                     </button>

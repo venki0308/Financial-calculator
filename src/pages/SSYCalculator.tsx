@@ -15,6 +15,7 @@ import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import ShareableCard from '../components/ShareableCard';
+import { nativeShare } from '../utils/nativeShare';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
@@ -147,19 +148,7 @@ export default function SSYCalculator() {
 
     const handleShare = async () => {
         const text = `🌸 My Sukanya Samriddhi Investment\n\n💰 Annual Deposit: ${formatINR(annual)}\n📈 Interest Rate: ${rate}%\n🎂 Child Age: ${childAge} years\n\n✅ Maturity Amount: ${formatINR(result.maturity)}\n📅 Maturity Age: ${result.maturityAge} years\n💰 Total Invested: ${formatINR(result.invested)}\n📊 Interest Earned: ${formatINR(result.totalInterest)}\n\nCalculated with FinCalix 🧮`;
-        try {
-            if (navigator.share) {
-                await navigator.share({ title: 'SSY Calculation – FinCalix', text });
-            } else {
-                await navigator.clipboard.writeText(text);
-                // Show toast
-                const t = document.createElement('div');
-                t.textContent = '✅ Copied to clipboard!';
-                Object.assign(t.style, { position: 'fixed', bottom: '110px', left: '50%', transform: 'translateX(-50%)', background: '#10B981', color: '#fff', padding: '10px 20px', borderRadius: '12px', fontSize: '14px', fontWeight: '600', zIndex: '99999' });
-                document.body.appendChild(t);
-                setTimeout(() => t.remove(), 3000);
-            }
-        } catch { }
+        await nativeShare('SSY Calculation – FinCalix', text);
     };
 
     return (

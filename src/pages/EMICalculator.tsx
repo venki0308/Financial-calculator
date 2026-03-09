@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Share2, ChevronDown, ChevronUp, Save, Check, Download } from 'lucide-react';
+import { nativeShare } from '../utils/nativeShare';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Chart as ChartJS,
@@ -199,9 +200,7 @@ export default function EMICalculator() {
                         </button>
                         <button
                             className="p-2 rounded-xl bg-dark-card border border-dark-border"
-                            onClick={() => {
-                                if (navigator.share) navigator.share({ title: 'EMI Calculator', text: 'Calculate your EMI', url: window.location.href });
-                            }}
+                            onClick={() => nativeShare('EMI Calculator', 'Calculate your EMI with FinCalix!', window.location.href)}
                         >
                             <Share2 size={16} className="text-slate-400" />
                         </button>

@@ -8,6 +8,7 @@ import DisclaimerBanner from '../components/DisclaimerBanner';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
+import { nativeShare } from '../utils/nativeShare';
 
 interface GoalPlan {
     goalId: string;
@@ -507,14 +508,8 @@ export default function AIFinancialAssistant() {
                                 </button>
                                 <button
                                     onClick={() => {
-                                        if (navigator.share) {
-                                            const goalSummary = plan.goalPlans.map(gp => `${gp.goalLabel}: SIP ${formatINR(gp.monthlySIP)}/mo → ${formatINR(gp.targetCorpus)}`).join('\n');
-                                            navigator.share({
-                                                title: 'My Financial Plan - FinCalix',
-                                                text: `My Financial Health Score: ${plan.score}/100\n\n${goalSummary}\n\nTotal SIP: ${formatINR(plan.totalMonthlySIP)}/mo\n\nGenerated with FinCalix`,
-                                                url: window.location.href,
-                                            });
-                                        }
+                                        const goalSummary = plan.goalPlans.map(gp => `${gp.goalLabel}: SIP ${formatINR(gp.monthlySIP)}/mo → ${formatINR(gp.targetCorpus)}`).join('\n');
+                                        nativeShare('My Financial Plan - FinCalix', `My Financial Health Score: ${plan.score}/100\n\n${goalSummary}\n\nTotal SIP: ${formatINR(plan.totalMonthlySIP)}/mo\n\nGenerated with FinCalix`);
                                     }}
                                     className="flex-1 py-4 rounded-2xl bg-brand-purple text-white font-bold text-sm shadow-lg shadow-brand-purple/20 flex items-center justify-center gap-2"
                                 >

@@ -13,6 +13,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
+import { nativeShare } from '../utils/nativeShare';
 
 export default function SalaryHikeCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Salary_Hike'); }, []);
@@ -173,11 +174,7 @@ export default function SalaryHikeCalculator() {
                         </button>
                         <button
                             className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border"
-                            onClick={() => {
-                                if (navigator.share) {
-                                    navigator.share({ title: 'Salary Hike Calculator', text: `My salary after ${result.hikePctComputed.toFixed(1)}% hike: ${formatINR(result.newSalary)}`, url: window.location.href });
-                                }
-                            }}
+                            onClick={() => nativeShare('Salary Hike Calculator', `My salary after ${result.hikePctComputed.toFixed(1)}% hike: ${formatINR(result.newSalary)}`)}
                         >
                             <Share2 size={16} className="text-slate-400" />
                         </button>

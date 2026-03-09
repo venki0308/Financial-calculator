@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Download, Share2, Shield, Calendar, TrendingUp, IndianRupee, ChevronDown, ChevronUp, Save } from 'lucide-react';
+import { nativeShare } from '../utils/nativeShare';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement,
@@ -100,7 +101,7 @@ export default function NPSCalculator() {
 
     const handleShare = async () => {
         const text = `🏦 My NPS Retirement Plan\n\n💰 Monthly: ${formatINR(monthly)}\n📈 Rate: ${rate}%\n🎂 Age: ${age} → ${retireAge}\n\n✅ Corpus: ${formatINR(result.corpus)}\n💵 Monthly Pension: ${formatINR(result.monthlyPension)}\n\nCalculated with FinCalix 🧮`;
-        try { if (navigator.share) await navigator.share({ title: 'NPS Plan – FinCalix', text }); else { await navigator.clipboard.writeText(text); } } catch { }
+        await nativeShare('NPS Plan – FinCalix', text);
     };
 
     return (

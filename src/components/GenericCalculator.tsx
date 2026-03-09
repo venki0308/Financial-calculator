@@ -23,6 +23,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import { Share2, Info } from 'lucide-react';
 import CalculatorInfoModal from './CalculatorInfoModal';
+import { nativeShare } from '../utils/nativeShare';
 
 ChartJS.register(
     ArcElement,
@@ -185,9 +186,7 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
                         </button>
                         <button
                             className="p-2 rounded-xl bg-dark-card border border-dark-border"
-                            onClick={() => {
-                                if (navigator.share) navigator.share({ title: config.title, text: `Check out this ${config.title} calculation!`, url: window.location.href });
-                            }}
+                            onClick={() => nativeShare(config.title, `Check out this ${config.title} calculation!`, window.location.href)}
                         >
                             <Share2 size={16} className="text-slate-400" />
                         </button>

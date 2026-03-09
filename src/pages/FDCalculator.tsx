@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Save, Check, Download, Share2, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
+import { nativeShare } from '../utils/nativeShare';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title,
@@ -118,7 +119,7 @@ export default function FDCalculator() {
 
     const handleShare = async () => {
         const text = `🏦 My FD Investment\n\n💰 Deposit: ${formatINR(principal)}\n📈 Rate: ${rate}%\n📅 Tenure: ${years} years\n\n✅ Maturity: ${formatINR(result.amount)}\n💵 Interest: ${formatINR(result.interest)}\n📉 After inflation: ${formatINR(inflationAdj.realValue)}\n\nCalculated with FinCalix 🧮`;
-        try { if (navigator.share) await navigator.share({ title: 'FD Calculation – FinCalix', text }); else await navigator.clipboard.writeText(text); } catch { }
+        await nativeShare('FD Calculation – FinCalix', text);
     };
 
     return (
