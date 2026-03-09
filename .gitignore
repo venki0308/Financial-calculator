@@ -41,3 +41,9 @@ coverage/
 # Misc
 *.tgz
 .cache/
+
+# Signing keys & credentials — NEVER COMMIT
+*.keystore
+*.jks
+android/app/keystore.properties
+keystore.properties
