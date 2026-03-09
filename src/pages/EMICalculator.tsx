@@ -60,18 +60,8 @@ export default function EMICalculator() {
     const [showInfo, setShowInfo] = useState(false);
     const [prepayAmount, setPrepayAmount] = useState(0);
     const [prepayMonth, setPrepayMonth] = useState(12);
-    const [showBankCompare, setShowBankCompare] = useState(false);
 
     const months = tenureUnit === 'years' ? tenure * 12 : tenure;
-
-    const bankRates = useMemo(() => [
-        { name: 'SBI', rate: loanType === 'Home Loan' ? 8.50 : loanType === 'Car Loan' ? 8.65 : 11.15 },
-        { name: 'HDFC', rate: loanType === 'Home Loan' ? 8.75 : loanType === 'Car Loan' ? 8.75 : 10.75 },
-        { name: 'ICICI', rate: loanType === 'Home Loan' ? 8.80 : loanType === 'Car Loan' ? 8.80 : 10.99 },
-        { name: 'Axis', rate: loanType === 'Home Loan' ? 8.75 : loanType === 'Car Loan' ? 8.90 : 10.49 },
-        { name: 'Kotak', rate: loanType === 'Home Loan' ? 8.70 : loanType === 'Car Loan' ? 8.50 : 10.99 },
-        { name: 'BOB', rate: loanType === 'Home Loan' ? 8.40 : loanType === 'Car Loan' ? 8.45 : 10.60 },
-    ], [loanType]);
 
     // Prepayment calculation
     const prepayResult = useMemo(() => {
@@ -376,45 +366,6 @@ export default function EMICalculator() {
                     </motion.div>
                 )}
 
-                {/* Bank Comparison */}
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-5 bg-dark-card border border-dark-border rounded-2xl overflow-hidden">
-                    <button onClick={() => setShowBankCompare(p => !p)} className="w-full p-4 flex items-center justify-between">
-                        <h3 className="text-white font-bold text-sm flex items-center gap-2">🏦 Bank Comparison</h3>
-                        {showBankCompare ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
-                    </button>
-                    <AnimatePresence>
-                        {showBankCompare && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="px-4 pb-4 overflow-hidden">
-                                <table className="w-full text-xs">
-                                    <thead>
-                                        <tr className="text-slate-500 border-b border-dark-border">
-                                            <th className="py-2 text-left font-medium">Bank</th>
-                                            <th className="py-2 text-right font-medium">Rate</th>
-                                            <th className="py-2 text-right font-medium">EMI</th>
-                                            <th className="py-2 text-right font-medium">Total Int.</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {bankRates.sort((a, b) => a.rate - b.rate).map(bank => {
-                                            const r = bank.rate / 12 / 100;
-                                            const emi = r === 0 ? Math.round(principal / months) : Math.round(principal * r * Math.pow(1 + r, months) / (Math.pow(1 + r, months) - 1));
-                                            const totalInt = emi * months - principal;
-                                            const isBest = bank.rate === Math.min(...bankRates.map(b => b.rate));
-                                            return (
-                                                <tr key={bank.name} className={`border-b border-dark-border/30 ${isBest ? 'bg-brand-green/5' : ''}`}>
-                                                    <td className="py-2.5 text-white font-medium">{bank.name} {isBest && <span className="text-brand-green text-[9px] ml-1">BEST</span>}</td>
-                                                    <td className="py-2.5 text-right text-slate-300">{bank.rate}%</td>
-                                                    <td className={`py-2.5 text-right font-medium ${isBest ? 'text-brand-green' : 'text-white'}`}>{formatINR(emi)}</td>
-                                                    <td className="py-2.5 text-right text-brand-gold">{formatINR(totalInt)}</td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.div>
 
                 {/* What-If Simulator */}
                 <WhatIfSimulator
