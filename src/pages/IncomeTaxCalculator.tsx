@@ -378,7 +378,7 @@ export default function IncomeTaxCalculator() {
     return (
         <div className="min-h-dvh bg-slate-50 dark:bg-[#0F172A]">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 pt-safe px-4 py-3 flex items-center gap-3">
+            <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 pt-14 px-4 py-3 flex items-center gap-3">
                 <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10">
                     <ArrowLeft size={18} className="text-slate-700 dark:text-white" />
                 </button>

@@ -93,8 +93,8 @@ export default function CarLoanCalculator() {
                             <span className="text-red-400">Interest ({((result.totalInterest / result.totalPayment) * 100).toFixed(0)}%)</span>
                         </div>
 
-                        <motion.button whileTap={{ scale: 0.97 }} onClick={() => addSaved({ id: Date.now().toString(), type: 'Car Loan Calculator', inputs: { carPrice, discount, downPayment, interestRate, tenure }, result, timestamp: Date.now() })}
-                            className="w-full py-3 bg-brand-purple/20 text-brand-purple font-semibold rounded-xl text-sm border border-brand-purple/30">{t('common.saveCalculation')}</motion.button>
+                        <motion.button whileTap={{ scale: 0.97 }} onClick={() => { addSaved({ id: Date.now().toString(), type: 'Car Loan Calculator', inputs: { carPrice, discount, downPayment, interestRate, tenure }, result, timestamp: Date.now() }); }}
+                            className="w-full py-4 bg-brand-purple text-white font-bold rounded-xl text-sm shadow-lg shadow-brand-purple/30 flex items-center justify-center gap-2">{t('common.saveCalculation')}</motion.button>
                     </motion.div>
                 )}
             </div>

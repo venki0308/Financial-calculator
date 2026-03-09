@@ -102,7 +102,7 @@ export default function ScientificCalculator() {
     return (
         <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-[#0F172A]/95 backdrop-blur-xl border-b border-white/10 pt-safe px-4 py-3 flex items-center gap-3">
+            <div className="sticky top-0 z-30 bg-[#0F172A]/95 backdrop-blur-xl border-b border-white/10 pt-14 px-4 py-3 flex items-center gap-3">
                 <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white/5 border border-white/10">
                     <ArrowLeft size={18} className="text-white" />
                 </button>

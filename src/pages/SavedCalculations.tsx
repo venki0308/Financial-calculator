@@ -21,9 +21,15 @@ const calcMeta: Record<string, { label: string; icon: any; color: string; gradie
     'breakeven': { label: 'Break-even', icon: Calculator, color: '#22C55E', gradient: 'from-green-600/20 to-lime-600/20' },
     'home_loan': { label: 'Home Loan', icon: Home, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
     'car_loan': { label: 'Car Loan', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
+    'Car Loan Calculator': { label: 'Car Loan', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
     'lumpsum': { label: 'Lumpsum', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-blue-600/20' },
     'salary_hike': { label: 'Salary Hike', icon: TrendingUp, color: '#22D3EE', gradient: 'from-cyan-600/20 to-sky-600/20' },
     'gst': { label: 'GST Calculator', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
+    'GST Calculator (standard)': { label: 'GST Standard', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
+    'GST Calculator (reverse)': { label: 'GST Reverse', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
+    'GST Calculator (profit)': { label: 'GST Profit Margin', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
+    'GST Calculator (itc)': { label: 'GST ITC', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
+    'GST Calculator (invoice)': { label: 'GST Invoice', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
 };
 
 const defaultMeta = { label: 'Calculator', icon: Calculator, color: '#64748B', gradient: 'from-slate-600/20 to-gray-600/20' };
@@ -41,12 +47,31 @@ const labelMap: Record<string, string> = {
     price: 'Price/Unit', variable: 'Variable Cost/Unit', fixed: 'Fixed Costs',
     stepUp: 'Annual Step-Up %', goalTarget: 'Target Amount', loanType: 'Loan Type',
     method: 'Calculation Method', tenureUnit: 'Tenure Unit',
+    items: 'Items', invoiceIsIGST: 'Is IGST', stdAmount: 'Amount', stdRate: 'GST Rate',
+    stdDirection: 'Direction', isIGST: 'Interstate (IGST)', costPrice: 'Cost Price',
+    sellingPrice: 'Selling Price', profitGstRate: 'GST Rate', purchaseGst: 'Purchase GST',
+    salesGst: 'Sales GST', carPrice: 'Car Price', discount: 'Discount', downPayment: 'Down Payment',
+    interestRate: 'Interest Rate',
 };
 
 function formatValue(key: string, val: any): string {
     if (val === undefined || val === null) return '—';
+    if (typeof val === 'boolean') return val ? 'Yes' : 'No';
     if (typeof val === 'string') return val;
-    if (key === 'rate' || key === 'annuityPct' || key === 'stepUp') return `${val}%`;
+    if (Array.isArray(val)) {
+        // Handle arrays of objects (e.g., invoice items)
+        if (val.length > 0 && typeof val[0] === 'object') {
+            return val.map((item: any) => item.name || item.label || JSON.stringify(item)).join(', ');
+        }
+        return val.join(', ');
+    }
+    if (typeof val === 'object') {
+        // Handle plain objects - show key fields
+        const name = val.name || val.label || val.title;
+        if (name) return String(name);
+        return JSON.stringify(val);
+    }
+    if (key === 'rate' || key === 'annuityPct' || key === 'stepUp' || key === 'profitGstRate' || key === 'stdRate') return `${val}%`;
     if (key === 'compounding') return val === 4 ? 'Quarterly' : val === 12 ? 'Monthly' : val === 1 ? 'Yearly' : `${val}x/yr`;
     if (key === 'years' || key === 'age' || key === 'retireAge' || key === 'childAge' || key === 'months' || key === 'tenure') return `${val}`;
     if (typeof val === 'number' && val > 100) return formatINR(val);
