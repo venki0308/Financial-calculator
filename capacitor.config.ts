@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.venki0308.fincalix',
+  appId: 'com.fincalix.app',
   appName: 'FinCalix',
   webDir: 'dist',
   server: {

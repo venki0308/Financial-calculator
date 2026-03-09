@@ -115,7 +115,7 @@ export default function Settings() {
                     <MenuItem icon={FileText} label={t('settings.termsOfService')} color="#8B5CF6" onClick={() => navigate('/terms-of-service')} />
                     <div className="h-px bg-dark-border mx-4" />
                     <MenuItem icon={Star} label={t('settings.rateApp')} color="#F59E0B" onClick={() => {
-                        const packageId = 'com.venki0308.fincalix';
+                        const packageId = 'com.fincalix.app';
                         if (Capacitor.isNativePlatform()) {
                             // On Android, use market:// intent for direct Play Store launch
                             window.open(`market://details?id=${packageId}`, '_system');
