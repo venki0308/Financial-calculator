@@ -68,14 +68,14 @@ export default function About() {
                         alt="FinCalix"
                         className="relative w-24 h-24 rounded-3xl mx-auto mb-5 shadow-lg ring-2 ring-green-500/30"
                     />
-                    <h2 className="relative text-2xl font-extrabold text-white tracking-tight">FinCalix</h2>
+                    <h2 className="relative text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">FinCalix</h2>
                     {/* Version badge with pulsing dot */}
-                    <div className="relative inline-flex items-center gap-2 mt-3 px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60">
+                    <div className="relative inline-flex items-center gap-2 mt-3 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60">
                         <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
                         </span>
-                        <span className="text-xs text-slate-300 font-medium">v1.0.0</span>
+                        <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">v1.0.0</span>
                     </div>
                 </motion.div>
 

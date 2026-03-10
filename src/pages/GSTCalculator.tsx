@@ -599,9 +599,9 @@ export default function GSTCalculator() {
 
                 {/* Smart Insight */}
                 {insight && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20 mb-5">
-                        <Info size={14} className="text-amber-400 mt-0.5 flex-shrink-0" />
-                        <p className="text-xs text-amber-200/80 leading-relaxed">{insight}</p>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 mb-5">
+                        <Info size={14} className="text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-amber-900 dark:text-amber-200/80 leading-relaxed">{insight}</p>
                     </motion.div>
                 )}
 
