@@ -66,6 +66,8 @@ import BookmarkedSchemes from './pages/BookmarkedSchemes';
 import Notifications from './pages/Notifications';
 
 
+import GlobalDisclaimerModal from './components/GlobalDisclaimerModal';
+
 // Toast component for back-press notification
 function BackToast({ visible }: { visible: boolean }) {
     if (!visible) return null;
@@ -138,6 +140,7 @@ function AppContent() {
 
     return (
         <>
+            <GlobalDisclaimerModal />
             <BackToast visible={showBackToast} />
             <UpdateChecker />
             <Routes>

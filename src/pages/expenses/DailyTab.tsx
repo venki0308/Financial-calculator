@@ -318,10 +318,7 @@ export default function DailyTab() {
                 </div>
             </div>
 
-            {/* Mini Disclaimer Footer */}
-            <div className="border-t border-gray-100 dark:border-white/5 py-3 px-4 text-center">
-                <p className="text-xs text-gray-400 dark:text-gray-500">{t('disclaimer.miniFooter')}</p>
-            </div>
+
 
             {/* Add Expense Modal */}
             <AnimatePresence>

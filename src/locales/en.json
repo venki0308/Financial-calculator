@@ -508,22 +508,6 @@
         "recentEntries": "Recent Entries",
         "incomeSpent": "Income: ₹{{income}} | Spent: ₹{{spent}}"
     },
-    "disclaimer": {
-        "modalTitle": "Important Disclaimer",
-        "modalIntro": "FinCalix Expense Tracker is a personal finance management tool designed to help you track and organize your expenses.",
-        "modalNote": "Please note:",
-        "bullet1": "This tool is for personal tracking purposes only and does not constitute financial, tax, or investment advice.",
-        "bullet2": "All data is stored locally on your device. FinCalix does not store, access, or share your financial information.",
-        "bullet3": "Financial Health Score and Smart Insights are calculated using simple rule-based logic and are indicative only — not professional assessments.",
-        "bullet4": "Budget recommendations are based on the data you enter and may not reflect your actual financial situation.",
-        "bullet5": "For professional financial advice, please consult a certified financial advisor or CA.",
-        "bullet6": "Subscription renewal dates and amounts are based on data you enter — please verify with your actual service providers.",
-        "modalAcknowledge": "By continuing, you acknowledge that you have read and understood this disclaimer.",
-        "modalButton": "I Understand, Continue",
-        "miniFooter": "⚠️ For personal tracking only. Not financial advice. Data stored locally on your device.",
-        "healthScoreNote": "Score is indicative only, not a professional assessment.",
-        "reportsBanner": "📊 Reports are based on your entered data only."
-    },
     "advisor": {
         "title": "Financial Advisor",
         "subtitle": "AI-Powered Financial Planning",
@@ -713,5 +697,28 @@
         "footerTitle": "FinCalix — Smart Financial Planning Tool",
         "footerMade": "Made with ❤️ in India",
         "footerCopyright": "© 2026 FinCalix. All rights reserved."
+    },
+    "globalDisclaimer": {
+        "title": "Important Disclaimer",
+        "welcome": "Welcome to FinCalix — Your Personal Finance Companion.",
+        "readCarefully": "Before you begin, please read this disclaimer carefully.",
+        "calcTitle": "Calculators & Tools:",
+        "calcBullet1": "All calculators (Home Loan, Car Loan, SIP, PPF, FD, Income Tax, Property, and others) provide estimates based on the values you enter.",
+        "calcBullet2": "Results are for informational and planning purposes only.",
+        "calcBullet3": "Actual figures may vary based on bank policies, market conditions, tax rule changes, and other factors.",
+        "expenseTitle": "Expense Tracker:",
+        "expenseBullet1": "The Expense Tracker is for personal record-keeping only.",
+        "expenseBullet2": "Financial Health Scores and Smart Insights are rule-based estimates — not professional financial assessments.",
+        "expenseBullet3": "All data is stored locally on your device. FinCalix does not collect, store, or share your financial data.",
+        "schemesTitle": "Government Schemes:",
+        "schemesBullet1": "Scheme information is provided for general awareness only.",
+        "schemesBullet2": "Eligibility criteria, interest rates, and benefits are subject to change by the government.",
+        "schemesBullet3": "Always verify details on official government websites before applying.",
+        "generalTitle": "General:",
+        "generalBullet1": "Nothing in this app constitutes financial, tax, investment, or legal advice.",
+        "generalBullet2": "For professional guidance, consult a SEBI-registered advisor, certified financial planner, or chartered accountant.",
+        "generalBullet3": "FinCalix and its developers are not liable for any financial decisions made using this app.",
+        "acknowledge": "By continuing, you confirm that you have read, understood, and agreed to this disclaimer.",
+        "button": "I Understand, Continue"
     }
 }

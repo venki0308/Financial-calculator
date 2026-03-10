@@ -217,7 +217,6 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
 
             {/* Financial Health Score (NEW) */}
             {healthScore && healthScore.total > 0 && (
-                <>
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 flex items-center gap-4">
                     <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
                         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -233,8 +232,6 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{healthScore.tips[0] || "Looking good this month!"}</p>
                     </div>
                 </div>
-                <p className="text-xs text-gray-400 dark:text-gray-500 text-center italic mt-1 mb-2">{t('disclaimer.healthScoreNote')}</p>
-                </>
             )}
 
             {/* General Budget Alert */}
@@ -507,10 +504,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                 )}
             </div>
 
-            {/* Mini Disclaimer Footer */}
-            <div className="border-t border-gray-100 dark:border-white/5 py-3 px-4 text-center">
-                <p className="text-xs text-gray-400 dark:text-gray-500">{t('disclaimer.miniFooter')}</p>
-            </div>
+
 
             {/* Net Worth Bottom Sheet Modal */}
             <BottomSheet isOpen={showNetWorthModal} onClose={() => setShowNetWorthModal(false)} title="Update Net Worth">

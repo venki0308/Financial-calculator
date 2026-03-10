@@ -278,10 +278,7 @@ export default function BudgetTab() {
                 {saved ? `✓ ${t('expenses.budgetSaved')}` : t('expenses.saveBudget')}
             </motion.button>
 
-            {/* Mini Disclaimer Footer */}
-            <div className="border-t border-gray-100 dark:border-white/5 py-3 px-4 text-center">
-                <p className="text-xs text-gray-400 dark:text-gray-500">{t('disclaimer.miniFooter')}</p>
-            </div>
+
         </div>
     );
 }

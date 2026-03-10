@@ -9,7 +9,7 @@ import BudgetTab from './expenses/BudgetTab';
 import DailyTab from './expenses/DailyTab';
 import ReportsTab from './expenses/ReportsTab';
 import SubscriptionsTab from './expenses/SubscriptionsTab';
-import DisclaimerModal from '../components/DisclaimerModal';
+
 
 const TABS = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -43,7 +43,7 @@ export default function ExpenseTracker() {
 
     return (
         <div className="min-h-dvh bg-slate-50 dark:bg-[#0F172A] animate-fade-in">
-            <DisclaimerModal />
+
             {/* ── Sticky header with safe-area-inset-top ── */}
             <div
                 className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10"
