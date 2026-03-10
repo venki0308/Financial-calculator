@@ -1,31 +1,33 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Info, ShieldCheck, FileText, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 export default function About() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const infoCards = [
         {
             icon: Info,
-            title: 'Reference Tool',
-            description: 'This application is designed as a companion tool for Indian citizens to explore government schemes and perform financial projections.',
+            titleKey: 'about.referenceToolTitle',
+            descKey: 'about.referenceToolDesc',
             accent: '#3B82F6', // blue
             bgTint: 'rgba(59,130,246,0.08)',
             borderTint: 'rgba(59,130,246,0.18)',
         },
         {
             icon: ShieldCheck,
-            title: 'Data Accuracy',
-            description: 'We strive to provide the most accurate and up-to-date information for 2026. However, interest rates and scheme rules change frequently.',
+            titleKey: 'about.dataAccuracyTitle',
+            descKey: 'about.dataAccuracyDesc',
             accent: '#22C55E', // green
             bgTint: 'rgba(34,197,94,0.08)',
             borderTint: 'rgba(34,197,94,0.18)',
         },
         {
             icon: FileText,
-            title: 'Official Sources',
-            description: 'All calculations and scheme details are based on publicly available data from official portals like india.gov.in, npsc.gov.in, etc.',
+            titleKey: 'about.officialSourcesTitle',
+            descKey: 'about.officialSourcesDesc',
             accent: '#F59E0B', // amber
             bgTint: 'rgba(245,158,11,0.08)',
             borderTint: 'rgba(245,158,11,0.18)',
@@ -46,7 +48,7 @@ export default function About() {
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
                         <ArrowLeft size={18} className="text-slate-400" />
                     </button>
-                    <h1 className="text-lg font-bold text-white">About the App</h1>
+                    <h1 className="text-lg font-bold text-white">{t('about.title')}</h1>
                 </div>
             </div>
 
@@ -83,7 +85,7 @@ export default function About() {
                 <div className="space-y-4">
                     {infoCards.map((card, idx) => (
                         <motion.div
-                            key={card.title}
+                            key={card.titleKey}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.4, delay: 0.15 * idx }}
@@ -97,8 +99,8 @@ export default function About() {
                                 <card.icon size={20} style={{ color: card.accent }} />
                             </div>
                             <div>
-                                <h3 className="text-white font-bold text-sm">{card.title}</h3>
-                                <p className="text-slate-400 text-xs leading-relaxed mt-1">{card.description}</p>
+                                <h3 className="text-white font-bold text-sm">{t(card.titleKey)}</h3>
+                                <p className="text-slate-400 text-xs leading-relaxed mt-1">{t(card.descKey)}</p>
                             </div>
                         </motion.div>
                     ))}
@@ -111,7 +113,7 @@ export default function About() {
                     transition={{ duration: 0.4, delay: 0.5 }}
                     className="p-5 rounded-2xl bg-dark-card border border-dark-border"
                 >
-                    <h3 className="text-white font-bold text-sm mb-4">Key Resources</h3>
+                    <h3 className="text-white font-bold text-sm mb-4">{t('about.keyResources')}</h3>
                     <div className="space-y-2.5">
                         {resources.map((res) => (
                             <a
@@ -133,8 +135,8 @@ export default function About() {
 
                 {/* ─── Footer ─── */}
                 <div className="text-center pt-8 pb-4 text-[10px] text-slate-600 space-y-1">
-                    <p>© 2026 FinCalix</p>
-                    <p>Made with ❤️ in India</p>
+                    <p>© {new Date().getFullYear()} FinCalix</p>
+                    <p>{t('about.madeWithLove')}</p>
                 </div>
             </div>
         </div>

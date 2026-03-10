@@ -197,9 +197,9 @@ export default function SubscriptionsTab() {
 
             {/* Add Button */}
             <motion.button
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => openModal()}
-                className="fixed bottom-24 right-5 w-14 h-14 bg-brand-purple text-white rounded-2xl flex items-center justify-center shadow-lg shadow-brand-purple/30 z-40"
+                className="fixed right-5 w-14 h-14 bg-brand-purple text-white rounded-2xl flex items-center justify-center shadow-lg shadow-brand-purple/30 z-40 bottom-[calc(env(safe-area-inset-bottom,20px)+5.5rem)]"
             >
                 <Plus size={24} />
             </motion.button>

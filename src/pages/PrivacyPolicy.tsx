@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, Lock, Eye, EyeOff, Server, Users, FileText, Mail, Globe, Smartphone } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 function Section({ number, title, icon: Icon, children }: { number: number; title: string; icon: any; children: React.ReactNode }) {
     return (
@@ -25,6 +26,7 @@ function Section({ number, title, icon: Icon, children }: { number: number; titl
 
 export default function PrivacyPolicy() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     return (
         <div className="min-h-dvh bg-[#0F172A] pb-10" style={{ maxWidth: 428, margin: '0 auto' }}>
@@ -34,7 +36,7 @@ export default function PrivacyPolicy() {
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
                         <ArrowLeft size={18} className="text-slate-400" />
                     </button>
-                    <h1 className="text-lg font-bold text-white">Privacy Policy</h1>
+                    <h1 className="text-lg font-bold text-white">{t('privacyPolicy.title')}</h1>
                 </div>
             </div>
 
@@ -48,145 +50,143 @@ export default function PrivacyPolicy() {
                     <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-brand-purple/20 flex items-center justify-center">
                         <Shield size={28} className="text-brand-purple" />
                     </div>
-                    <h2 className="text-white font-bold text-base mb-1">Your Privacy Matters</h2>
-                    <p className="text-slate-400 text-xs leading-relaxed">
-                        FinCalix collects <span className="text-brand-green font-bold">zero personal data</span>. No backend, no database, no server-side storage. Everything stays on your device.
-                    </p>
-                    <p className="text-slate-500 text-[10px] mt-3 font-medium">Last Updated: March 2026</p>
+                    <h2 className="text-white font-bold text-base mb-1">{t('privacyPolicy.heroTitle')}</h2>
+                    <p className="text-slate-400 text-xs leading-relaxed" dangerouslySetInnerHTML={{ __html: t('privacyPolicy.heroDesc') }}></p>
+                    <p className="text-slate-500 text-[10px] mt-3 font-medium">{t('privacyPolicy.lastUpdated')}</p>
                 </motion.div>
 
                 {/* Section 1 */}
-                <Section number={1} title="Information We Collect" icon={Eye}>
-                    <p>FinCalix does <strong className="text-white">NOT</strong> collect any personal information whatsoever.</p>
+                <Section number={1} title={t('privacyPolicy.sec1Title')} icon={Eye}>
+                    <p dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec1Desc') }}></p>
                     <ul className="list-disc pl-4 space-y-1">
-                        <li>No name, email address, phone number, or postal address is collected</li>
-                        <li>No financial data (salary, investments, EMI amounts) is collected</li>
-                        <li>No account creation or login is required to use the app</li>
-                        <li>No user profiles are created or stored</li>
+                        <li>{t('privacyPolicy.sec1Li1')}</li>
+                        <li>{t('privacyPolicy.sec1Li2')}</li>
+                        <li>{t('privacyPolicy.sec1Li3')}</li>
+                        <li>{t('privacyPolicy.sec1Li4')}</li>
                     </ul>
-                    <p>You can open the app and start calculating instantly — we never ask for any personal details.</p>
+                    <p>{t('privacyPolicy.sec1End')}</p>
                 </Section>
 
                 {/* Section 2 */}
-                <Section number={2} title="Data Stored on Your Device" icon={Smartphone}>
-                    <p>FinCalix stores the following data <strong className="text-white">locally on your device only</strong> using your browser's LocalStorage:</p>
+                <Section number={2} title={t('privacyPolicy.sec2Title')} icon={Smartphone}>
+                    <p dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec2Desc') }}></p>
                     <ul className="list-disc pl-4 space-y-1">
-                        <li><strong className="text-slate-300">Calculation inputs</strong> — Numbers you enter in calculators</li>
-                        <li><strong className="text-slate-300">Recently used calculators</strong> — For quick access on the home screen</li>
-                        <li><strong className="text-slate-300">Saved calculations</strong> — When you manually save a result</li>
-                        <li><strong className="text-slate-300">App preferences</strong> — Theme (dark/light), language choice</li>
+                        <li dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec2Li1') }}></li>
+                        <li dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec2Li2') }}></li>
+                        <li dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec2Li3') }}></li>
+                        <li dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec2Li4') }}></li>
                     </ul>
                     <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 mt-2">
-                        <p className="text-emerald-400 text-[11px] font-semibold">🔒 This data stays on your device permanently until you:</p>
+                        <p className="text-emerald-400 text-[11px] font-semibold">{t('privacyPolicy.sec2BoxTitle')}</p>
                         <ul className="list-disc pl-4 text-emerald-300/80 text-[11px] mt-1 space-y-0.5">
-                            <li>Clear the app data from your device settings</li>
-                            <li>Uninstall the app</li>
-                            <li>Clear browser data (on web version)</li>
+                            <li>{t('privacyPolicy.sec2BoxLi1')}</li>
+                            <li>{t('privacyPolicy.sec2BoxLi2')}</li>
+                            <li>{t('privacyPolicy.sec2BoxLi3')}</li>
                         </ul>
-                        <p className="text-emerald-400 text-[11px] font-semibold mt-1.5">We have absolutely zero access to this data. It never leaves your device and is never synced to any server.</p>
+                        <p className="text-emerald-400 text-[11px] font-semibold mt-1.5">{t('privacyPolicy.sec2BoxEnd')}</p>
                     </div>
                 </Section>
 
                 {/* Section 3 */}
-                <Section number={3} title="Analytics" icon={EyeOff}>
-                    <p>We use <strong className="text-slate-300">Google Analytics</strong> to collect fully anonymized usage data to improve the app experience.</p>
+                <Section number={3} title={t('privacyPolicy.sec3Title')} icon={EyeOff}>
+                    <p dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec3Desc') }}></p>
                     <div className="grid grid-cols-2 gap-2 mt-1">
                         <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                            <p className="text-blue-400 text-[10px] font-bold uppercase mb-1">What IS collected</p>
+                            <p className="text-blue-400 text-[10px] font-bold uppercase mb-1">{t('privacyPolicy.whatIsCollected')}</p>
                             <ul className="text-blue-300/70 text-[10px] space-y-0.5">
-                                <li>• Which calculator was used</li>
-                                <li>• Session duration</li>
-                                <li>• Device type</li>
-                                <li>• App version</li>
-                                <li>• Country</li>
+                                <li>{t('privacyPolicy.sec3IsLi1')}</li>
+                                <li>{t('privacyPolicy.sec3IsLi2')}</li>
+                                <li>{t('privacyPolicy.sec3IsLi3')}</li>
+                                <li>{t('privacyPolicy.sec3IsLi4')}</li>
+                                <li>{t('privacyPolicy.sec3IsLi5')}</li>
                             </ul>
                         </div>
                         <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
-                            <p className="text-red-400 text-[10px] font-bold uppercase mb-1">What is NOT collected</p>
+                            <p className="text-red-400 text-[10px] font-bold uppercase mb-1">{t('privacyPolicy.whatIsNotCollected')}</p>
                             <ul className="text-red-300/70 text-[10px] space-y-0.5">
-                                <li>• Your calculation inputs</li>
-                                <li>• Financial figures</li>
-                                <li>• Personal identity</li>
-                                <li>• Name or email</li>
-                                <li>• Browsing history</li>
+                                <li>{t('privacyPolicy.sec3NotLi1')}</li>
+                                <li>{t('privacyPolicy.sec3NotLi2')}</li>
+                                <li>{t('privacyPolicy.sec3NotLi3')}</li>
+                                <li>{t('privacyPolicy.sec3NotLi4')}</li>
+                                <li>{t('privacyPolicy.sec3NotLi5')}</li>
                             </ul>
                         </div>
                     </div>
-                    <p className="mt-1">All analytics data is fully anonymized and <strong className="text-white">cannot be traced to any individual</strong>. No personal information is part of analytics.</p>
+                    <p className="mt-1" dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec3End') }}></p>
                 </Section>
 
                 {/* Section 4 */}
-                <Section number={4} title="Third-Party Services" icon={Server}>
-                    <p>FinCalix uses only the following third-party services:</p>
+                <Section number={4} title={t('privacyPolicy.sec4Title')} icon={Server}>
+                    <p>{t('privacyPolicy.sec4Desc')}</p>
                     <div className="space-y-2 mt-1">
                         <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-white text-[11px] font-bold">Google Analytics</p>
-                            <p className="text-slate-500 text-[10px]">Anonymized usage statistics only. No personal data is transmitted.</p>
+                            <p className="text-white text-[11px] font-bold">{t('privacyPolicy.gaTitle')}</p>
+                            <p className="text-slate-500 text-[10px]">{t('privacyPolicy.gaDesc')}</p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-white text-[11px] font-bold">Vercel (Web Hosting)</p>
-                            <p className="text-slate-500 text-[10px]">Hosts the web app files. No user data is transmitted to Vercel servers.</p>
+                            <p className="text-white text-[11px] font-bold">{t('privacyPolicy.vercelTitle')}</p>
+                            <p className="text-slate-500 text-[10px]">{t('privacyPolicy.vercelDesc')}</p>
                         </div>
                     </div>
-                    <p className="mt-1">No other third-party services, advertising networks, or tracking tools are used.</p>
+                    <p className="mt-1">{t('privacyPolicy.sec4End')}</p>
                 </Section>
 
                 {/* Section 5 */}
-                <Section number={5} title="Your Financial Data" icon={Lock}>
+                <Section number={5} title={t('privacyPolicy.sec5Title')} icon={Lock}>
                     <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                        <p className="text-amber-400 text-[11px] font-semibold">💰 Your financial data is 100% safe</p>
+                        <p className="text-amber-400 text-[11px] font-semibold">{t('privacyPolicy.sec5BoxTitle')}</p>
                         <ul className="list-disc pl-4 text-amber-300/80 text-[11px] mt-1 space-y-0.5">
-                            <li>All numbers you enter (salary, EMI, tax inputs, SIP amounts, etc.) are processed <strong>entirely on your device</strong></li>
-                            <li>We <strong>never</strong> see, store, or transmit your financial figures</li>
-                            <li>All calculations happen in your browser/app — not on any server</li>
-                            <li>There is no backend or API that receives your data</li>
+                            <li dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec5Li1') }}></li>
+                            <li dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec5Li2') }}></li>
+                            <li>{t('privacyPolicy.sec5Li3')}</li>
+                            <li>{t('privacyPolicy.sec5Li4')}</li>
                         </ul>
                     </div>
                 </Section>
 
                 {/* Section 6 */}
-                <Section number={6} title="Children's Privacy" icon={Users}>
-                    <p>FinCalix is designed for users <strong className="text-white">18 years of age and above</strong>. The app contains financial calculators intended for adult use (tax planning, loan EMI, investment returns, etc.).</p>
-                    <p>We do not knowingly collect data from anyone under 18 years of age. Since we collect no personal data at all, there is no risk of children's data being stored.</p>
+                <Section number={6} title={t('privacyPolicy.sec6Title')} icon={Users}>
+                    <p dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec6P1') }}></p>
+                    <p>{t('privacyPolicy.sec6P2')}</p>
                 </Section>
 
                 {/* Section 7 */}
-                <Section number={7} title="Data Security" icon={Shield}>
-                    <p>Since FinCalix stores <strong className="text-white">nothing on any server</strong>, there is no server-side data breach risk.</p>
+                <Section number={7} title={t('privacyPolicy.sec7Title')} icon={Shield}>
+                    <p dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec7Desc') }}></p>
                     <ul className="list-disc pl-4 space-y-1">
-                        <li>Your data security equals your device security</li>
-                        <li>All web traffic uses HTTPS encryption</li>
-                        <li>We recommend using a device lock screen (PIN, fingerprint, face unlock) to protect your locally stored data</li>
+                        <li>{t('privacyPolicy.sec7Li1')}</li>
+                        <li>{t('privacyPolicy.sec7Li2')}</li>
+                        <li>{t('privacyPolicy.sec7Li3')}</li>
                     </ul>
                 </Section>
 
                 {/* Section 8 */}
-                <Section number={8} title="Your Rights" icon={FileText}>
+                <Section number={8} title={t('privacyPolicy.sec8Title')} icon={FileText}>
                     <div className="space-y-2">
                         <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-white text-[11px] font-bold">Access</p>
-                            <p className="text-slate-500 text-[10px]">All your data is visible directly in the app (Saved Calculations, History, Preferences).</p>
+                            <p className="text-white text-[11px] font-bold">{t('privacyPolicy.accessTitle')}</p>
+                            <p className="text-slate-500 text-[10px]">{t('privacyPolicy.accessDesc')}</p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-white text-[11px] font-bold">Delete</p>
-                            <p className="text-slate-500 text-[10px]">Clear app data from your device settings, or simply uninstall the app. All data is removed instantly.</p>
+                            <p className="text-white text-[11px] font-bold">{t('privacyPolicy.deleteTitle')}</p>
+                            <p className="text-slate-500 text-[10px]">{t('privacyPolicy.deleteDesc')}</p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-white text-[11px] font-bold">Portability</p>
-                            <p className="text-slate-500 text-[10px]">We cannot delete data on your behalf because we never had it. You have full control.</p>
+                            <p className="text-white text-[11px] font-bold">{t('privacyPolicy.portabilityTitle')}</p>
+                            <p className="text-slate-500 text-[10px]">{t('privacyPolicy.portabilityDesc')}</p>
                         </div>
                     </div>
                 </Section>
 
                 {/* Section 9 */}
-                <Section number={9} title="Changes to This Policy" icon={FileText}>
-                    <p>We may update this Privacy Policy from time to time. When we do, we will update the "Last Updated" date at the top of this page.</p>
-                    <p>Continued use of FinCalix after changes to this policy constitutes acceptance of the updated terms. We encourage you to review this page periodically.</p>
+                <Section number={9} title={t('privacyPolicy.sec9Title')} icon={FileText}>
+                    <p>{t('privacyPolicy.sec9P1')}</p>
+                    <p>{t('privacyPolicy.sec9P2')}</p>
                 </Section>
 
                 {/* Section 10 */}
-                <Section number={10} title="Contact Us" icon={Mail}>
-                    <p>If you have any questions or concerns about this Privacy Policy, feel free to reach out:</p>
+                <Section number={10} title={t('privacyPolicy.sec10Title')} icon={Mail}>
+                    <p>{t('privacyPolicy.sec10Desc')}</p>
                     <div className="space-y-2 mt-1">
                         <a href="mailto:support@fincalix.com" className="flex items-center gap-2.5 p-3 rounded-xl bg-brand-purple/10 border border-brand-purple/20">
                             <Mail size={16} className="text-brand-purple" />
@@ -206,15 +206,15 @@ export default function PrivacyPolicy() {
                         className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-white font-bold text-xs"
                     >
                         <Shield size={16} className="text-brand-green" />
-                        View Data & Privacy (Play Store Data Safety)
+                        {t('privacyPolicy.viewDataSafety')}
                     </button>
                 </div>
 
                 {/* Footer */}
                 <div className="pt-6 pb-4 border-t border-dark-border text-center space-y-2">
-                    <p className="text-slate-500 text-[11px] font-semibold">FinCalix — Smart Financial Planning Tool</p>
-                    <p className="text-slate-600 text-[10px]">Made with ❤️ in India</p>
-                    <p className="text-slate-600 text-[10px]">© {new Date().getFullYear()} FinCalix. All rights reserved.</p>
+                    <p className="text-slate-500 text-[11px] font-semibold">{t('privacyPolicy.footerTitle')}</p>
+                    <p className="text-slate-600 text-[10px]">{t('privacyPolicy.footerMade')}</p>
+                    <p className="text-slate-600 text-[10px]">&copy; {new Date().getFullYear()} FinCalix. All rights reserved.</p>
                 </div>
             </div>
         </div>

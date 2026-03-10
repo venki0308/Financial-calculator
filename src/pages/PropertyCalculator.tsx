@@ -951,7 +951,7 @@ export default function PropertyCalculator() {
                 <motion.div 
                     initial={{ y: 100 }}
                     animate={{ y: 0 }}
-                    className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-brand-green/20 px-4 pt-4 pb-8 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]"
+                    className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-brand-green/20 px-4 pt-4 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] pb-[calc(env(safe-area-inset-bottom,20px)+2rem)] sm:pb-8"
                     style={{ maxWidth: 428, margin: '0 auto' }}
                 >
                     <div className="max-w-2xl mx-auto space-y-3">
