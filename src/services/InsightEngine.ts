@@ -109,18 +109,22 @@ export function generateInsights(
 
     // 4. Subscriptions
     const activeSubs = subscriptions.filter(s => s.isActive);
-    const subMonthlyTotal = activeSubs.reduce((sum, s) => sum + s.amount, 0);
-    if (monthlyIncome > 0 && subMonthlyTotal > monthlyIncome * 0.05) {
-        insights.push({
-            id: `subs-tip-${currentMonthNum}-${currentYear}`,
-            type: 'tip',
-            title: 'High Subscription Costs',
-            message: `You're spending ₹${subMonthlyTotal} on subscriptions (> 5% of income). Review if you use all of them.`,
-            actionLabel: 'View Subs',
-            actionRoute: 'subs',
-            dismissed: false,
-            generatedAt: nowStr
-        });
+    const subMonthlyTotal = activeSubs.reduce((sum, s) => sum + Math.round(s.billingCycle === 'monthly' ? s.amount : s.amount / 12), 0);
+    
+    if (activeSubs.length > 0 && monthlyIncome > 0) {
+        const pct = ((subMonthlyTotal / monthlyIncome) * 100).toFixed(1);
+        if (subMonthlyTotal > monthlyIncome * 0.05) {
+            insights.push({
+                id: `subs-tip-${currentMonthNum}-${currentYear}`,
+                type: 'tip',
+                title: 'High Subscription Costs',
+                message: `You have ${activeSubs.length} active subscriptions costing ₹${subMonthlyTotal.toLocaleString('en-IN')}/mo (${pct}% of income). Review them to save money.`,
+                actionLabel: 'View Subs',
+                actionRoute: 'subs',
+                dismissed: false,
+                generatedAt: nowStr
+            });
+        }
     }
 
     return insights;

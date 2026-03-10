@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff, ChevronLeft, ChevronRight, Activity, ChevronDown, ChevronUp } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff, ChevronLeft, ChevronRight, Activity, ChevronDown, ChevronUp, Edit2, Repeat } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 import { Pie } from 'react-chartjs-2';
@@ -32,7 +32,7 @@ const COLORS = [
     '#3b82f6', '#ec4899', '#84cc16', '#f97316',
 ];
 
-export default function DashboardTab({ onAddExpense, onViewAll }: { onAddExpense: () => void, onViewAll: () => void }) {
+export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { onAddExpense: () => void, onViewAll: () => void, onViewSubs?: () => void }) {
     const { t } = useTranslation();
     const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, fixedExpenses, subscriptions, netWorthHistory, healthScore, setHealthScore, setInsights, insights } = useBudgetTrackerStore();
 
@@ -283,7 +283,14 @@ export default function DashboardTab({ onAddExpense, onViewAll }: { onAddExpense
                             </div>
                             <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 leading-snug">{alert.message}</p>
                             {alert.actionLabel && (
-                                <button className="self-start mt-1 text-[10px] font-bold text-brand-purple bg-brand-purple/10 px-2 py-1 rounded-md">
+                                <button
+                                    onClick={() => {
+                                        if (alert.actionLabel === 'View Subs' && onViewSubs) {
+                                            onViewSubs();
+                                        }
+                                    }}
+                                    className="self-start mt-1 text-[10px] font-bold text-brand-purple bg-brand-purple/10 px-2 py-1 rounded-md"
+                                >
                                     {alert.actionLabel}
                                 </button>
                             )}
@@ -363,6 +370,33 @@ export default function DashboardTab({ onAddExpense, onViewAll }: { onAddExpense
                             <span className="font-bold text-slate-900 dark:text-white">
                                 ₹{netWorthHistory.length > 0 ? netWorthHistory[netWorthHistory.length - 1].netWorth.toLocaleString('en-IN') : '0'}
                             </span>
+                            {netWorthHistory.length > 0 && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const lastEntry = netWorthHistory[netWorthHistory.length - 1];
+                                        
+                                        const mappedAssets: Record<string, string> = {};
+                                        lastEntry.assets?.forEach(a => {
+                                            const field = ASSET_FIELDS.find(f => f.label === a.label);
+                                            if (field) mappedAssets[field.key] = String(a.value);
+                                        });
+                                        setNwAssets(mappedAssets);
+                                        
+                                        const mappedLiab: Record<string, string> = {};
+                                        lastEntry.liabilities?.forEach(l => {
+                                            const field = LIABILITY_FIELDS.find(f => f.label === l.label);
+                                            if (field) mappedLiab[field.key] = String(l.value);
+                                        });
+                                        setNwLiabilities(mappedLiab);
+                                        
+                                        setShowNetWorthModal(true);
+                                    }}
+                                    className="p-1 text-slate-400 hover:text-brand-purple focus:outline-none"
+                                >
+                                    <Edit2 size={16} />
+                                </button>
+                            )}
                             {isNetWorthOpen ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
                         </div>
                     </button>
@@ -392,7 +426,6 @@ export default function DashboardTab({ onAddExpense, onViewAll }: { onAddExpense
                                                 <p className="font-bold text-red-500 text-sm">₹{netWorthHistory[netWorthHistory.length - 1].totalLiabilities.toLocaleString('en-IN')}</p>
                                             </div>
                                         </div>
-                                        <button onClick={() => setShowNetWorthModal(true)} className="mt-3 w-full py-2.5 rounded-xl bg-brand-purple/10 text-brand-purple text-xs font-bold border border-brand-purple/20">Update Net Worth</button>
                                     </>
                                 )}
                             </motion.div>
@@ -400,6 +433,36 @@ export default function DashboardTab({ onAddExpense, onViewAll }: { onAddExpense
                     </AnimatePresence>
                 </div>
             )}
+
+            {/* Subscriptions Summary Row */}
+            {subscriptions.filter(s => s.isActive).length > 0 && (() => {
+                const activeSubs = subscriptions.filter(s => s.isActive);
+                const subMonthlyTotal = activeSubs.reduce((sum, s) => sum + Math.round(s.billingCycle === 'monthly' ? s.amount : s.amount / 12), 0);
+                const nextRenewal = [...activeSubs].sort((a, b) => new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime())[0];
+                return (
+                    <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 flex items-center justify-between mt-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                                <Repeat size={16} />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="font-bold text-slate-900 dark:text-white text-sm">Subscriptions</h3>
+                                <p className="text-[10px] text-slate-500">{activeSubs.length} Active • Next: {new Date(nextRenewal.nextDueDate).toLocaleDateString('en-IN')}</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <span className="font-bold text-slate-900 dark:text-white block">
+                                ₹{subMonthlyTotal.toLocaleString('en-IN')}<span className="text-[10px] text-slate-400 font-normal">/mo</span>
+                            </span>
+                            {onViewSubs && (
+                                <button onClick={onViewSubs} className="text-[10px] font-bold text-brand-purple hover:underline mt-0.5">
+                                    Manage
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                );
+            })()}
 
             {/* Recent Transactions */}
             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">

@@ -5,10 +5,21 @@ import { Capacitor } from '@capacitor/core';
 
 // ─── Toast notification ────────────────────────────────────────────────────
 // ─── PDF text sanitizer (strips emoji that jsPDF can't render) ─────────────
-function sanitizeForPDF(text: string): string {
+export function sanitizeForPDF(text: string): string {
     // Remove emoji + common unicode symbols outside Latin-1 range
     return text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
 }
+
+// Monkey-patch jsPDF text method to always sanitize text globally
+const originalText = (jsPDF.prototype as any).text;
+(jsPDF.prototype as any).text = function(text: any, x: number, y: number, options?: any) {
+    if (Array.isArray(text)) {
+        text = text.map(t => sanitizeForPDF(String(t)));
+    } else {
+        text = sanitizeForPDF(String(text));
+    }
+    return originalText.call(this, text, x, y, options);
+};
 
 function showToast(message: string, isError = false) {
     const old = document.getElementById('fncx-toast');
@@ -116,8 +127,7 @@ export const exportToPDF = async (
             // 1. Replace Rupee symbol with INR
             let text = cell.replace(/₹\s*/g, 'INR ').replace(/Rs\.\s*/g, 'INR ');
             // 2. Strip emojis/special characters that jspdf can't render
-            // This preserves Latin-1 chars, numbers, and basic punctuation
-            return text.replace(/[^\x00-\x7F]/g, '').trim();
+            return sanitizeForPDF(text);
         };
 
         // Split at separator rows — first section = inputs, second = results
@@ -135,7 +145,7 @@ export const exportToPDF = async (
             if (inputRows.length > 0) {
                 autoTable(doc, {
                     startY: currentY,
-                    head: [headers],
+                    head: [headers.map(sanitise)],
                     body: inputRows,
                     theme: 'grid',
                     headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold' },
@@ -324,10 +334,10 @@ const sanitiseCell = (cell: string | number) => {
     return cell.replace(/₹\s*/g, 'INR ').replace(/Rs\.\s*/g, 'INR ').replace(/[^\x00-\x7F]/g, '').trim();
 };
 
-const fmtINR = (v: number) => {
-    if (v >= 10000000) return `INR ${(v / 10000000).toFixed(2)} Cr`;
-    if (v >= 100000) return `INR ${(v / 100000).toFixed(2)} L`;
-    return `INR ${v.toLocaleString('en-IN')}`;
+export const formatForPDF = (v: number | string): string => {
+    const num = typeof v === 'string' ? parseFloat(v.toString().replace(/[^0-9.-]+/g, '')) : v;
+    if (isNaN(num)) return String(v);
+    return `INR ${num.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 };
 
 export const exportComparisonPDF = async (params: ComparisonPDFParams): Promise<void> => {
@@ -355,12 +365,12 @@ export const exportComparisonPDF = async (params: ComparisonPDFParams): Promise<
                 startY: 50,
                 head: [['Metric', 'Scenario A', 'Scenario B', 'Difference']],
                 body: [
-                    ['Loan Amount', fmtINR(scenarioA.principal), fmtINR(scenarioB.principal), fmtINR(Math.abs(scenarioA.principal - scenarioB.principal))],
+                    ['Loan Amount', formatForPDF(scenarioA.principal), formatForPDF(scenarioB.principal), formatForPDF(Math.abs(scenarioA.principal - scenarioB.principal))],
                     ['Interest Rate', `${scenarioA.rate}%`, `${scenarioB.rate}%`, `${Math.abs(scenarioA.rate - scenarioB.rate).toFixed(1)}%`],
                     ['Tenure', `${scenarioA.years} years`, `${scenarioB.years} years`, `${Math.abs(scenarioA.years - scenarioB.years)} years`],
-                    ['Monthly EMI', fmtINR(scenarioA.emi), fmtINR(scenarioB.emi), fmtINR(Math.abs(scenarioA.emi - scenarioB.emi))],
-                    ['Total Interest', fmtINR(scenarioA.totalInterest), fmtINR(scenarioB.totalInterest), fmtINR(Math.abs(scenarioA.totalInterest - scenarioB.totalInterest))],
-                    ['Total Payment', fmtINR(scenarioA.totalPayment), fmtINR(scenarioB.totalPayment), fmtINR(Math.abs(scenarioA.totalPayment - scenarioB.totalPayment))],
+                    ['Monthly EMI', formatForPDF(scenarioA.emi), formatForPDF(scenarioB.emi), formatForPDF(Math.abs(scenarioA.emi - scenarioB.emi))],
+                    ['Total Interest', formatForPDF(scenarioA.totalInterest), formatForPDF(scenarioB.totalInterest), formatForPDF(Math.abs(scenarioA.totalInterest - scenarioB.totalInterest))],
+                    ['Total Payment', formatForPDF(scenarioA.totalPayment), formatForPDF(scenarioB.totalPayment), formatForPDF(Math.abs(scenarioA.totalPayment - scenarioB.totalPayment))],
                 ],
                 theme: 'grid',
                 headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
@@ -384,7 +394,7 @@ export const exportComparisonPDF = async (params: ComparisonPDFParams): Promise<
             doc.text(`Winner: Scenario ${winner}`, 14, summaryY + 12);
             doc.setFontSize(9);
             doc.setTextColor(100);
-            doc.text(`Scenario ${winner} saves ${fmtINR(Math.abs(scenarioA.totalInterest - scenarioB.totalInterest))} in total interest.`, 14, summaryY + 20);
+            doc.text(`Scenario ${winner} saves ${formatForPDF(Math.abs(scenarioA.totalInterest - scenarioB.totalInterest))} in total interest.`, 14, summaryY + 20);
 
             // ─── PAGE 2: Graphical comparison bars ──────────────────────
             doc.addPage();
@@ -415,7 +425,7 @@ export const exportComparisonPDF = async (params: ComparisonPDFParams): Promise<
                 doc.setFillColor(59, 130, 246);
                 doc.rect(22, barY, (metric.a / max) * barWidth, 6, 'F');
                 doc.setTextColor(59, 130, 246);
-                doc.text(fmtINR(metric.a), 22 + (metric.a / max) * barWidth + 3, barY + 4.5);
+                doc.text(formatForPDF(metric.a), 22 + (metric.a / max) * barWidth + 3, barY + 4.5);
 
                 // Scenario B bar
                 barY += 10;
@@ -424,7 +434,7 @@ export const exportComparisonPDF = async (params: ComparisonPDFParams): Promise<
                 doc.setFillColor(245, 158, 11);
                 doc.rect(22, barY, (metric.b / max) * barWidth, 6, 'F');
                 doc.setTextColor(245, 158, 11);
-                doc.text(fmtINR(metric.b), 22 + (metric.b / max) * barWidth + 3, barY + 4.5);
+                doc.text(formatForPDF(metric.b), 22 + (metric.b / max) * barWidth + 3, barY + 4.5);
 
                 barY += 18;
             });
@@ -436,13 +446,13 @@ export const exportComparisonPDF = async (params: ComparisonPDFParams): Promise<
             doc.text(`Amortization Schedule — Scenario A`, 14, 22);
             doc.setFontSize(9);
             doc.setTextColor(100);
-            doc.text(`Loan: ${fmtINR(scenarioA.principal)} | Rate: ${scenarioA.rate}% | Tenure: ${scenarioA.years} yrs | EMI: ${fmtINR(scenarioA.emi)}`, 14, 30);
+            doc.text(`Loan: ${formatForPDF(scenarioA.principal)} | Rate: ${scenarioA.rate}% | Tenure: ${scenarioA.years} yrs | EMI: ${formatForPDF(scenarioA.emi)}`, 14, 30);
 
             const amortHeadersA = ['Month', 'EMI', 'Principal', 'Interest', 'Balance'];
             // Show every 6th month + last row to keep PDF manageable
             const amortRowsA = scenarioA.amortization
                 .filter((_, i) => i % 6 === 0 || i === scenarioA.amortization.length - 1)
-                .map(r => [String(r.month), fmtINR(r.emi), fmtINR(r.principal), fmtINR(r.interest), fmtINR(r.balance)]);
+                .map(r => [String(r.month), formatForPDF(r.emi), formatForPDF(r.principal), formatForPDF(r.interest), formatForPDF(r.balance)]);
 
             autoTable(doc, {
                 startY: 36,
@@ -461,11 +471,11 @@ export const exportComparisonPDF = async (params: ComparisonPDFParams): Promise<
             doc.text(`Amortization Schedule — Scenario B`, 14, 22);
             doc.setFontSize(9);
             doc.setTextColor(100);
-            doc.text(`Loan: ${fmtINR(scenarioB.principal)} | Rate: ${scenarioB.rate}% | Tenure: ${scenarioB.years} yrs | EMI: ${fmtINR(scenarioB.emi)}`, 14, 30);
+            doc.text(`Loan: ${formatForPDF(scenarioB.principal)} | Rate: ${scenarioB.rate}% | Tenure: ${scenarioB.years} yrs | EMI: ${formatForPDF(scenarioB.emi)}`, 14, 30);
 
             const amortRowsB = scenarioB.amortization
                 .filter((_, i) => i % 6 === 0 || i === scenarioB.amortization.length - 1)
-                .map(r => [String(r.month), fmtINR(r.emi), fmtINR(r.principal), fmtINR(r.interest), fmtINR(r.balance)]);
+                .map(r => [String(r.month), formatForPDF(r.emi), formatForPDF(r.principal), formatForPDF(r.interest), formatForPDF(r.balance)]);
 
             autoTable(doc, {
                 startY: 36,
@@ -568,12 +578,12 @@ export const exportSIPComparisonPDF = async (params: SIPComparisonParams): Promi
                 startY: 45,
                 head: [['Metric', 'Scenario A', 'Scenario B', 'Difference']],
                 body: [
-                    ['Monthly SIP', fmtINR(scenarioA.monthly), fmtINR(scenarioB.monthly), fmtINR(Math.abs(scenarioA.monthly - scenarioB.monthly))],
+                    ['Monthly SIP', formatForPDF(scenarioA.monthly), formatForPDF(scenarioB.monthly), formatForPDF(Math.abs(scenarioA.monthly - scenarioB.monthly))],
                     ['Return Rate', `${scenarioA.rate}%`, `${scenarioB.rate}%`, `${Math.abs(scenarioA.rate - scenarioB.rate).toFixed(1)}%`],
                     ['Duration', `${scenarioA.years} years`, `${scenarioB.years} years`, `${Math.abs(scenarioA.years - scenarioB.years)} years`],
-                    ['Total Invested', fmtINR(scenarioA.invested), fmtINR(scenarioB.invested), fmtINR(Math.abs(scenarioA.invested - scenarioB.invested))],
-                    ['Future Value', fmtINR(scenarioA.futureValue), fmtINR(scenarioB.futureValue), fmtINR(Math.abs(scenarioA.futureValue - scenarioB.futureValue))],
-                    ['Total Returns', fmtINR(scenarioA.returns), fmtINR(scenarioB.returns), fmtINR(Math.abs(scenarioA.returns - scenarioB.returns))],
+                    ['Total Invested', formatForPDF(scenarioA.invested), formatForPDF(scenarioB.invested), formatForPDF(Math.abs(scenarioA.invested - scenarioB.invested))],
+                    ['Future Value', formatForPDF(scenarioA.futureValue), formatForPDF(scenarioB.futureValue), formatForPDF(Math.abs(scenarioA.futureValue - scenarioB.futureValue))],
+                    ['Total Returns', formatForPDF(scenarioA.returns), formatForPDF(scenarioB.returns), formatForPDF(Math.abs(scenarioA.returns - scenarioB.returns))],
                 ],
                 theme: 'grid',
                 headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
@@ -602,7 +612,7 @@ export const exportSIPComparisonPDF = async (params: SIPComparisonParams): Promi
                 const nB = Math.min(y, scenarioB.years) * 12;
                 const fvB = rB === 0 ? scenarioB.monthly * nB : scenarioB.monthly * (((Math.pow(1 + rB, nB) - 1) / rB) * (1 + rB));
 
-                projRows.push([String(y), fmtINR(Math.round(fvA)), fmtINR(Math.round(fvB)), fmtINR(Math.abs(Math.round(fvA - fvB)))]);
+                projRows.push([String(y), formatForPDF(Math.round(fvA)), formatForPDF(Math.round(fvB)), formatForPDF(Math.abs(Math.round(fvA - fvB)))]);
             }
 
             autoTable(doc, {
@@ -679,11 +689,11 @@ export const exportFDComparisonPDF = async (params: FDComparisonParams): Promise
                 startY: 45,
                 head: [['Metric', 'Scenario A', 'Scenario B', 'Difference']],
                 body: [
-                    ['Principal', fmtINR(scenarioA.principal), fmtINR(scenarioB.principal), fmtINR(Math.abs(scenarioA.principal - scenarioB.principal))],
+                    ['Principal', formatForPDF(scenarioA.principal), formatForPDF(scenarioB.principal), formatForPDF(Math.abs(scenarioA.principal - scenarioB.principal))],
                     ['Interest Rate', `${scenarioA.rate}%`, `${scenarioB.rate}%`, `${Math.abs(scenarioA.rate - scenarioB.rate).toFixed(1)}%`],
                     ['Tenure', `${scenarioA.years} years`, `${scenarioB.years} years`, `${Math.abs(scenarioA.years - scenarioB.years)} years`],
-                    ['Maturity Amount', fmtINR(scenarioA.maturity), fmtINR(scenarioB.maturity), fmtINR(Math.abs(scenarioA.maturity - scenarioB.maturity))],
-                    ['Interest Earned', fmtINR(scenarioA.interest), fmtINR(scenarioB.interest), fmtINR(Math.abs(scenarioA.interest - scenarioB.interest))],
+                    ['Maturity Amount', formatForPDF(scenarioA.maturity), formatForPDF(scenarioB.maturity), formatForPDF(Math.abs(scenarioA.maturity - scenarioB.maturity))],
+                    ['Interest Earned', formatForPDF(scenarioA.interest), formatForPDF(scenarioB.interest), formatForPDF(Math.abs(scenarioA.interest - scenarioB.interest))],
                     ['Effective Return', `${((scenarioA.maturity / scenarioA.principal - 1) * 100).toFixed(1)}%`, `${((scenarioB.maturity / scenarioB.principal - 1) * 100).toFixed(1)}%`, ''],
                 ],
                 theme: 'grid',
@@ -707,7 +717,7 @@ export const exportFDComparisonPDF = async (params: FDComparisonParams): Promise
             for (let y = 1; y <= maxFdYrs; y++) {
                 const matA = y <= scenarioA.years ? scenarioA.principal * Math.pow(1 + scenarioA.rate / 400, y * 4) : scenarioA.maturity;
                 const matB = y <= scenarioB.years ? scenarioB.principal * Math.pow(1 + scenarioB.rate / 400, y * 4) : scenarioB.maturity;
-                fdProjRows.push([String(y), fmtINR(Math.round(matA)), fmtINR(Math.round(matB)), fmtINR(Math.abs(Math.round(matA - matB)))]);
+                fdProjRows.push([String(y), formatForPDF(Math.round(matA)), formatForPDF(Math.round(matB)), formatForPDF(Math.abs(Math.round(matA - matB)))]);
             }
 
             autoTable(doc, {
@@ -798,10 +808,10 @@ export const exportExpenseReportPDF = async (data: ExpenseReportData): Promise<v
                 startY: currentY,
                 head: [['Metric', 'Amount', 'Note']],
                 body: [
-                    ['Total Income', fmtINR(data.income), ''],
-                    ['Total Expenses', fmtINR(data.expenses), ''],
-                    ['Total Savings', fmtINR(data.savings), `Savings Rate: ${data.savingsRate.toFixed(1)}%`],
-                    ...(data.netWorth !== undefined ? [['Estimated Net Worth', fmtINR(data.netWorth), '']] : [])
+                    ['Total Income', formatForPDF(data.income), ''],
+                    ['Total Expenses', formatForPDF(data.expenses), ''],
+                    ['Total Savings', formatForPDF(data.savings), `Savings Rate: ${data.savingsRate.toFixed(1)}%`],
+                    ...(data.netWorth !== undefined ? [['Estimated Net Worth', formatForPDF(data.netWorth), '']] : [])
                 ],
                 theme: 'grid',
                 headStyles: { fillColor: [124, 58, 237], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
@@ -822,7 +832,7 @@ export const exportExpenseReportPDF = async (data: ExpenseReportData): Promise<v
                 head: [['Category', 'Amount Spent', '% of Total Expenses']],
                 body: data.categoryData.map(c => [
                     c.name, 
-                    fmtINR(c.total), 
+                    formatForPDF(c.total), 
                     `${c.percentage.toFixed(1)}%`
                 ]),
                 theme: 'striped',
@@ -855,7 +865,7 @@ export const exportExpenseReportPDF = async (data: ExpenseReportData): Promise<v
                 body: data.budgetVsActual.map(b => {
                     const variance = b.budget - b.actual;
                     const status = variance >= 0 ? 'Under Budget' : 'Over Budget';
-                    return [b.category, fmtINR(b.budget), fmtINR(b.actual), status, fmtINR(Math.abs(variance))];
+                    return [b.category, formatForPDF(b.budget), formatForPDF(b.actual), status, formatForPDF(Math.abs(variance))];
                 }),
                 theme: 'grid',
                 headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
@@ -875,7 +885,7 @@ export const exportExpenseReportPDF = async (data: ExpenseReportData): Promise<v
                 head: [['Month', 'Amount Saved', 'Status']],
                 body: data.savingsTrend.map(t => [
                     t.month,
-                    fmtINR(t.saved),
+                    formatForPDF(t.saved),
                     t.hasData ? (t.saved >= 0 ? 'Surplus' : 'Deficit') : 'No Data'
                 ]),
                 theme: 'striped',

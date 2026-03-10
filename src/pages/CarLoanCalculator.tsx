@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Car } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, Car, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { AnalyticsService } from '../lib/analytics';
@@ -19,6 +19,7 @@ export default function CarLoanCalculator() {
     const [downPayment, setDownPayment] = useState('');
     const [interestRate, setInterestRate] = useState('9');
     const [tenure, setTenure] = useState('5');
+    const [showToast, setShowToast] = useState(false);
 
     const result = useMemo(() => {
         const price = Number(carPrice);
@@ -93,11 +94,28 @@ export default function CarLoanCalculator() {
                             <span className="text-red-400">Interest ({((result.totalInterest / result.totalPayment) * 100).toFixed(0)}%)</span>
                         </div>
 
-                        <motion.button whileTap={{ scale: 0.97 }} onClick={() => { addSaved({ id: Date.now().toString(), calculatorType: 'Car Loan Calculator', inputValues: { carPrice, discount, downPayment, interestRate, tenure }, resultValues: result, timestamp: Date.now() }); }}
+                        <motion.button whileTap={{ scale: 0.97 }} onClick={() => { 
+                            addSaved({ id: Date.now().toString(), calculatorType: 'Car Loan Calculator', inputValues: { carPrice, discount, downPayment, interestRate, tenure }, resultValues: result, timestamp: Date.now() }); 
+                            setShowToast(true);
+                            setTimeout(() => setShowToast(false), 2500);
+                        }}
                             className="w-full py-4 bg-brand-purple text-white font-bold rounded-xl text-sm shadow-lg shadow-brand-purple/30 flex items-center justify-center gap-2">{t('common.saveCalculation')}</motion.button>
                     </motion.div>
                 )}
             </div>
+            
+            <AnimatePresence>
+                {showToast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 50 }}
+                        className="fixed bottom-24 left-4 right-4 bg-brand-green/20 border border-brand-green/50 text-brand-green px-4 py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg backdrop-blur-md z-50 text-sm font-semibold"
+                    >
+                        <CheckCircle2 size={18} /> Calculation saved successfully! ✓
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -82,8 +82,7 @@ export default function SubscriptionsTab() {
     };
 
     const handleSuggest = (suggest: typeof PREPOPULATED[0]) => {
-        setEditingId(null);
-        setFormData({
+        addSubscription({
             name: suggest.name,
             amount: suggest.amount,
             billingCycle: 'monthly',
@@ -92,7 +91,6 @@ export default function SubscriptionsTab() {
             colorTag: suggest.color,
             isActive: true,
         });
-        setIsModalOpen(true);
     };
 
     const sortedSubs = [...subscriptions].sort((a, b) => new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime());

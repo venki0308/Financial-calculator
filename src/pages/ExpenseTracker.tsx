@@ -99,6 +99,7 @@ export default function ExpenseTracker() {
                             <DashboardTab 
                                 onAddExpense={handleAddExpenseFromDashboard} 
                                 onViewAll={() => setActiveTab('daily')} 
+                                onViewSubs={() => setActiveTab('subs')}
                             />
                         )}
                         {activeTab === 'budget' && <BudgetTab />}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Building2, MapPin, ArrowRightLeft, Copy, Check, Home, FileText, Info, Download, Landmark, ChevronDown, ChevronUp, Calculator } from 'lucide-react';
@@ -151,6 +151,13 @@ export default function PropertyCalculator() {
         copyText(`${label}: ${fmt(val)}`, 'res-copy');
     };
 
+    const resultRef = useRef<HTMLDivElement>(null);
+    const scrollToResult = () => {
+        setTimeout(() => {
+            resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    };
+
     // ── Calculations ──────────────────────────────────────────────────────────
     const calculateLand = () => {
         const a = Number(landArea), p = Number(landPrice);
@@ -175,6 +182,7 @@ export default function PropertyCalculator() {
                 value: `${fmtArea(sqftArea / UNIT_CONV[k])} ${UNIT_LABELS[k]}`,
             }));
         setLandResult({ totalValue, baseValue, premiumValue, conversions });
+        scrollToResult();
     };
 
     const calculateFlat = () => {
@@ -188,6 +196,7 @@ export default function PropertyCalculator() {
         const gstAmt = (basePrice) * (Number(gstPct) / 100);
         const totalCost = subtotal + gstAmt;
         setFlatResult({ basePrice, parkingAmt, amenitiesAmt, maintAmt, subtotal, gstAmt, totalCost });
+        scrollToResult();
     };
 
     const calculateSD = () => {
@@ -249,6 +258,7 @@ export default function PropertyCalculator() {
         const misc = baseCost * (ohMisc / 100);
         const totalCost = baseCost + electrical + plumbing + interior + misc;
         setVillaResult({ floors, constructionCost, wallCost, electrical, plumbing, interior, misc, totalCost, costPerSqft: Math.round(totalCost / totalBuiltUp) });
+        scrollToResult();
     };
 
     const getAmortizationSchedule = () => {
@@ -346,8 +356,8 @@ export default function PropertyCalculator() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
-            <div className="px-4 pt-14 pb-48">
+        <div className="min-h-dvh bg-[#0F172A] animate-fade-in relative pb-[env(safe-area-inset-bottom,40px)]" style={{ maxWidth: 428, margin: '0 auto' }}>
+            <div className="px-4 pt-14 pb-32">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
@@ -587,7 +597,7 @@ export default function PropertyCalculator() {
                                 </motion.button>
 
                                 {flatResult && (
-                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+                                    <motion.div ref={resultRef} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
                                         {/* Breakdown card */}
                                         <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-2.5 relative overflow-hidden">
                                             <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Cost Breakdown</p>
@@ -712,7 +722,7 @@ export default function PropertyCalculator() {
                                 </motion.button>
 
                                 {villaResult && (
-                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+                                    <motion.div ref={resultRef} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
                                         {/* Floor-wise breakdown */}
                                         <div className="bg-dark-card border border-dark-border rounded-2xl p-4">
                                             <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">Floor-wise Cost</p>
