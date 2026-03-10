@@ -3,6 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const FIXED_FIELDS: { key: 'rent' | 'utilities' | 'mobile' | 'insurance' | 'emi'; label: string; icon: string }[] = [
     { key: 'rent', label: 'Rent / EMI', icon: '🏠' },
@@ -180,24 +184,38 @@ export default function BudgetTab() {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                         >
-                            <div className="px-4 pb-4 space-y-3 border-t border-slate-100 dark:border-white/10 pt-3">
+                            <div className="px-4 pb-4 space-y-4 border-t border-slate-100 dark:border-white/10 pt-4">
                                 {EXPENSE_CATEGORIES.map((cat) => {
                                     const key = cat.id as keyof typeof categoryBudgets;
+                                    const limit = categoryBudgets[key] || 0;
                                     return (
-                                        <div key={cat.id} className="flex items-center gap-3">
-                                            <span className="text-xl w-8 text-center">{cat.icon}</span>
-                                            <div className="flex-1">
-                                                <p className="text-slate-700 dark:text-slate-300 text-xs font-medium mb-1">{t(`expenses.categories.${cat.id}`)}</p>
-                                                <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2">
-                                                    <span className="text-slate-400 text-sm">₹</span>
+                                        <div key={cat.id} className="flex flex-col gap-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xl w-6 text-center">{cat.icon}</span>
+                                                    <p className="text-slate-700 dark:text-slate-300 text-xs font-medium">{t(`expenses.categories.${cat.id}`)}</p>
+                                                </div>
+                                                <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 flex items-center min-w-[80px]">
+                                                    <span className="text-slate-400 text-xs px-1">₹</span>
                                                     <input
                                                         type="number"
-                                                        value={categoryBudgets[key] || ''}
+                                                        value={limit || ''}
                                                         onChange={(e) => setCategoryBudgets({ [key]: Number(e.target.value) })}
                                                         placeholder="0"
-                                                        className="flex-1 bg-transparent text-slate-900 dark:text-white text-sm font-semibold outline-none"
+                                                        className="w-full bg-transparent text-slate-900 dark:text-white text-xs font-bold outline-none text-right placeholder:text-slate-400"
                                                     />
                                                 </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="range"
+                                                    min="0"
+                                                    max="50000"
+                                                    step="500"
+                                                    value={limit}
+                                                    onChange={(e) => setCategoryBudgets({ [key]: Number(e.target.value) })}
+                                                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-purple"
+                                                />
                                             </div>
                                         </div>
                                     );
@@ -209,23 +227,45 @@ export default function BudgetTab() {
             </div>
 
             {/* Summary */}
-            <div className="bg-gradient-to-br from-brand-purple/10 to-blue-600/10 border border-brand-purple/20 rounded-2xl p-4 space-y-2">
-                <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">{t('expenses.monthlySummary')}</h3>
-                {[
-                    { label: t('expenses.monthlyIncome'), value: monthlyIncome, color: 'text-brand-green', sign: '+' },
-                    { label: t('expenses.totalFixed'), value: totalFixed, color: 'text-red-400', sign: '-' },
-                    { label: t('expenses.categoryBudgetsLabel'), value: totalCategoryBudgets, color: 'text-orange-400', sign: '-' },
-                ].map((row) => (
-                    <div key={row.label} className="flex justify-between items-center">
-                        <span className="text-slate-500 dark:text-slate-400 text-sm">{row.label}</span>
-                        <span className={`font-bold text-sm ${row.color}`}>{row.sign}₹{row.value.toLocaleString('en-IN')}</span>
+            <div className="bg-gradient-to-br from-brand-purple/10 to-blue-600/10 border border-brand-purple/20 rounded-2xl p-4 flex flex-col items-center">
+                <h3 className="w-full font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.monthlySummary')}</h3>
+                <div className="flex items-center w-full gap-4">
+                    <div className="w-24 h-24 flex-shrink-0 relative">
+                        <Doughnut 
+                            data={{
+                                labels: [t('expenses.fixedExpenses'), t('expenses.categoryBudgetLimits'), t('expenses.estSavings')],
+                                datasets: [{
+                                    data: [totalFixed, totalCategoryBudgets, Math.max(availableForSavings, 0)],
+                                    backgroundColor: ['#f87171', '#fb923c', '#4ade80'],
+                                    borderWidth: 0,
+                                }]
+                            }}
+                            options={{
+                                responsive: true,
+                                cutout: '75%',
+                                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                            }}
+                        />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                            <span className="text-[10px] text-slate-500 uppercase font-bold">Total</span>
+                            <span className="text-xs font-bold text-slate-800 dark:text-white">₹{monthlyIncome.toLocaleString('en-IN')}</span>
+                        </div>
                     </div>
-                ))}
-                <div className="border-t border-brand-purple/20 pt-2 flex justify-between items-center">
-                    <span className="font-bold text-slate-900 dark:text-white text-sm">{t('expenses.estSavings')}</span>
-                    <span className={`font-extrabold text-lg ${availableForSavings < 0 ? 'text-red-400' : 'text-brand-green'}`}>
-                        ₹{availableForSavings.toLocaleString('en-IN')}
-                    </span>
+                    <div className="flex flex-col gap-2 flex-1 pt-1 border-brand-purple/20">
+                        {[
+                            { label: t('expenses.fixedExpenses'), value: totalFixed, color: 'text-red-400', bg: 'bg-red-400', sign: '-' },
+                            { label: t('expenses.categoryBudgetLimits'), value: totalCategoryBudgets, color: 'text-orange-400', bg: 'bg-orange-400', sign: '-' },
+                            { label: t('expenses.estSavings'), value: availableForSavings, color: availableForSavings < 0 ? 'text-red-400' : 'text-green-500', bg: availableForSavings < 0 ? 'bg-red-400' : 'bg-green-500', sign: availableForSavings < 0 ? '' : '+' },
+                        ].map((row) => (
+                            <div key={row.label} className="flex justify-between items-center text-xs">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <div className={`w-2 h-2 rounded-full ${row.bg}`} />
+                                    <span className="text-slate-600 dark:text-slate-300 truncate">{row.label}</span>
+                                </div>
+                                <span className={`font-bold ml-2 ${row.color}`}>{row.sign}₹{Math.abs(row.value).toLocaleString('en-IN')}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
 

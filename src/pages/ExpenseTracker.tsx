@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, LayoutDashboard, Wallet, Calendar, BarChart3 } from 'lucide-react';
+import { ArrowLeft, LayoutDashboard, Wallet, Calendar, BarChart3, Repeat } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AnalyticsService } from '../lib/analytics';
@@ -8,12 +8,14 @@ import DashboardTab from './expenses/DashboardTab';
 import BudgetTab from './expenses/BudgetTab';
 import DailyTab from './expenses/DailyTab';
 import ReportsTab from './expenses/ReportsTab';
+import SubscriptionsTab from './expenses/SubscriptionsTab';
 
 const TABS = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'budget', label: 'Budget', icon: Wallet },
     { id: 'daily', label: 'Daily', icon: Calendar },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
+    { id: 'subs', label: 'Subs', icon: Repeat },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
@@ -23,6 +25,7 @@ const TAB_SUBTITLES: Record<TabId, string> = {
     budget: 'expenses.budgetSubtitle',
     daily: 'expenses.dailySubtitle',
     reports: 'expenses.reportsSubtitle',
+    subs: 'expenses.subsSubtitle',
 };
 
 export default function ExpenseTracker() {
@@ -93,11 +96,15 @@ export default function ExpenseTracker() {
                         transition={{ duration: 0.18 }}
                     >
                         {activeTab === 'dashboard' && (
-                            <DashboardTab onAddExpense={handleAddExpenseFromDashboard} />
+                            <DashboardTab 
+                                onAddExpense={handleAddExpenseFromDashboard} 
+                                onViewAll={() => setActiveTab('daily')} 
+                            />
                         )}
                         {activeTab === 'budget' && <BudgetTab />}
                         {activeTab === 'daily' && <DailyTab />}
                         {activeTab === 'reports' && <ReportsTab />}
+                        {activeTab === 'subs' && <SubscriptionsTab />}
                     </motion.div>
                 </AnimatePresence>
             </div>

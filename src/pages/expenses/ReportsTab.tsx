@@ -9,7 +9,7 @@ import {
     BarElement, Title,
 } from 'chart.js';
 import { Pie, Line, Bar } from 'react-chartjs-2';
-import { exportToPDF } from '../../utils/exportUtils';
+import { exportExpenseReportPDF, ExpenseReportData } from '../../utils/exportUtils';
 
 ChartJS.register(
     ArcElement, Tooltip, Legend,
@@ -26,7 +26,7 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 export default function ReportsTab() {
     const { t } = useTranslation();
-    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets } = useBudgetTrackerStore();
+    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, netWorthHistory, insights } = useBudgetTrackerStore();
 
     const pieChartRef = useRef<any>(null);
 
@@ -107,39 +107,57 @@ export default function ReportsTab() {
         }).filter((row) => row.budget > 0 || row.actual > 0);
     }, [activeEntries, categoryBudgets, t]);
 
-    const handleDownloadPDF = async () => {
-        const headers = [t('expenses.category'), t('expenses.spent'), '%'];
-        const pdfData = [
-            [t('expenses.income'), income.toLocaleString('en-IN'), '-'],
-            [t('expenses.expenses'), totalExpenses.toLocaleString('en-IN'), '-'],
-            [t('expenses.savings'), savings.toLocaleString('en-IN'), `${savingsRate.toFixed(1)}%`],
-            ['---', '---', '---'],
-            ...categoryData.map((c) => [
-                `${c.icon} ${c.name}`,
-                c.total.toLocaleString('en-IN'),
-                totalDaily > 0 ? `${((c.total / totalDaily) * 100).toFixed(1)}%` : '0%',
-            ]),
-        ];
+    // 6-Month Savings Trend
+    const savingsTrend = useMemo(() => {
+        const trend = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(currentYear, currentMonth - 1 - i, 1);
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1;
+            const msEntries = entries.filter((e) => {
+                const date = new Date(e.date);
+                return date.getFullYear() === y && date.getMonth() + 1 === m;
+            });
+            const spent = msEntries.reduce((s, e) => s + e.amount, 0) + getTotalFixed();
+            const hasMonthActive = (y === currentYear && m === currentMonth) || msEntries.length > 0;
+            const inc = hasMonthActive ? monthlyIncome : 0;
+            const saved = inc - spent;
+            trend.push({ month: MONTHS[m - 1], saved, hasData: hasMonthActive });
+        }
+        return trend;
+    }, [entries, currentMonth, currentYear, monthlyIncome, getTotalFixed]);
 
+    const maxCategoryTotal = categoryData.length > 0 ? categoryData[0].total : 0;
+
+    const handleDownloadPDF = async () => {
         let chartImage: string | undefined;
         if (pieChartRef.current) {
             chartImage = pieChartRef.current.toBase64Image();
         }
 
-        const chartSummary = categoryData.slice(0, 4).map((c, i) => ({
-            label: c.name,
-            value: `₹${c.total.toLocaleString('en-IN')}`,
-            color: hexToRgb(COLORS[i % COLORS.length])
-        }));
-
-        await exportToPDF(
-            `${t('expenses.title')} - ${period === 'month' ? MONTHS[selectedMonth - 1] : ''} ${selectedYear}`,
-            headers,
-            pdfData,
-            `Expense_Report_${selectedYear}_${selectedMonth}`,
+        const reportData: ExpenseReportData = {
+            periodLabel: period === 'month' ? `${MONTHS[selectedMonth - 1]} ${selectedYear}` : `${selectedYear}`,
+            income,
+            expenses: totalExpenses,
+            savings,
+            savingsRate,
+            categoryData: categoryData.map((c) => ({
+                name: `${c.icon} ${c.name}`,
+                total: c.total,
+                percentage: totalDaily > 0 ? (c.total / totalDaily) * 100 : 0
+            })),
+            savingsTrend: savingsTrend,
+            budgetVsActual: budgetVsActual.map(b => ({
+                category: b.category,
+                budget: b.budget,
+                actual: b.actual
+            })),
             chartImage,
-            chartSummary
-        );
+            netWorth: netWorthHistory.length > 0 ? netWorthHistory[netWorthHistory.length - 1].netWorth : undefined,
+            insights: insights.filter(i => !i.dismissed).map(i => i.title + ': ' + i.message)
+        };
+
+        await exportExpenseReportPDF(reportData);
     };
 
     const hexToRgb = (hex: string): [number, number, number] => {
@@ -250,12 +268,12 @@ export default function ReportsTab() {
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
                             <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.spendingByCategory')}</h3>
                             <div className="flex flex-col items-center gap-4">
-                                <div style={{ width: 220, height: 220 }}>
+                                <div className="w-full h-56 relative flex items-center justify-center">
                                     <Pie
                                         ref={pieChartRef}
                                         data={{
                                             labels: categoryData.map((c) => `${c.icon} ${c.name}`),
-                                            datasets: [{ data: categoryData.map((c) => c.total), backgroundColor: COLORS, borderWidth: 0 }],
+                                            datasets: [{ data: categoryData.map((c) => c.total), backgroundColor: COLORS, borderWidth: 2, borderColor: '#ffffff10' }],
                                         }}
                                         options={{
                                             responsive: true,
@@ -284,22 +302,52 @@ export default function ReportsTab() {
                             <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.dailyTrend')}</h3>
                             <Line
                                 data={{
-                                    labels: dailyTrend.filter(d => d.amount > 0).map(d => d.day),
+                                    labels: dailyTrend.map(d => d.day),
                                     datasets: [{
                                         label: 'Amount',
-                                        data: dailyTrend.filter(d => d.amount > 0).map(d => d.amount),
+                                        data: dailyTrend.map(d => d.amount),
                                         borderColor: '#8b5cf6',
                                         backgroundColor: 'rgba(139,92,246,0.1)',
                                         fill: true,
                                         tension: 0.4,
                                         pointBackgroundColor: '#8b5cf6',
-                                        pointRadius: 4,
+                                        pointRadius: (ctx) => (ctx.raw as number) > 0 ? 4 : 0,
+                                        pointHoverRadius: 6,
                                     }],
                                 }}
                                 options={{
                                     responsive: true,
                                     plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
-                                    scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(148,163,184,0.1)' } } },
+                                    scales: {
+                                        x: { grid: { display: false } },
+                                        y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,0.1)' } }
+                                    },
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    {/* Savings Trend 6-month */}
+                    {savingsTrend.filter(t => t.hasData).length > 0 && (
+                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Savings Trend (6 Months)</h3>
+                            <Bar
+                                data={{
+                                    labels: savingsTrend.map(t => t.month),
+                                    datasets: [{
+                                        label: 'Saved',
+                                        data: savingsTrend.map(t => t.saved),
+                                        backgroundColor: savingsTrend.map(t => t.saved >= 0 ? 'rgba(16,185,129,0.8)' : 'rgba(239,68,68,0.8)'),
+                                        borderRadius: 4
+                                    }]
+                                }}
+                                options={{
+                                    responsive: true,
+                                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
+                                    scales: {
+                                        x: { grid: { display: false } },
+                                        y: { grid: { color: 'rgba(148,163,184,0.1)' } }
+                                    }
                                 }}
                             />
                         </div>
@@ -319,8 +367,11 @@ export default function ReportsTab() {
                                 }}
                                 options={{
                                     responsive: true,
-                                    plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
-                                    scales: { y: { grid: { color: 'rgba(148,163,184,0.1)' } } },
+                                    plugins: { legend: { position: 'bottom', align: 'start', labels: { boxWidth: 12, font: { size: 10 } } }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
+                                    scales: { 
+                                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                        y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,0.1)' } } 
+                                    },
                                 }}
                             />
                         </div>
@@ -341,7 +392,7 @@ export default function ReportsTab() {
                                             <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full mt-1 overflow-hidden">
                                                 <motion.div
                                                     initial={{ width: 0 }}
-                                                    animate={{ width: `${totalDaily > 0 ? (cat.total / totalDaily) * 100 : 0}%` }}
+                                                    animate={{ width: `${maxCategoryTotal > 0 ? (cat.total / maxCategoryTotal) * 100 : 0}%` }}
                                                     transition={{ duration: 0.6 }}
                                                     className="h-full rounded-full"
                                                     style={{ backgroundColor: COLORS[i] }}

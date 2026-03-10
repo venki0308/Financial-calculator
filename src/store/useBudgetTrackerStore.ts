@@ -9,6 +9,46 @@ export interface BudgetCategory {
     spent: number;
 }
 
+export interface Subscription {
+    id: string;
+    name: string;
+    amount: number;
+    billingCycle: 'monthly' | 'quarterly' | 'yearly';
+    nextDueDate: string;
+    category: string;
+    colorTag: string;
+    isActive: boolean;
+}
+
+export interface NetWorthEntry {
+    month: string;
+    assets: { label: string; value: number }[];
+    liabilities: { label: string; value: number }[];
+    totalAssets: number;
+    totalLiabilities: number;
+    netWorth: number;
+}
+
+export interface Insight {
+    id: string;
+    type: 'warning' | 'success' | 'tip' | 'alert';
+    title: string;
+    message: string;
+    actionLabel?: string;
+    actionRoute?: string;
+    dismissed: boolean;
+    generatedAt: string;
+}
+
+export interface HealthScore {
+    total: number;
+    savingsScore: number;
+    adherenceScore: number;
+    consistencyScore: number;
+    tips: string[];
+    calculatedAt: string;
+}
+
 export type PaymentMethod = 'Cash' | 'UPI' | 'Debit Card' | 'Credit Card';
 
 export interface BudgetEntry {
@@ -76,6 +116,11 @@ interface BudgetTrackerState {
     categories: BudgetCategory[];
     entries: BudgetEntry[];
 
+    subscriptions: Subscription[];
+    netWorthHistory: NetWorthEntry[];
+    insights: Insight[];
+    healthScore: HealthScore | null;
+
     // Setters
     setMonthlyIncome: (v: number) => void;
     setCurrentBalance: (v: number) => void;
@@ -102,6 +147,16 @@ interface BudgetTrackerState {
     getEntriesByMonth: (year: number, month: number) => BudgetEntry[];
     getEntriesByDate: (dateStr: string) => BudgetEntry[];
     getMonthlySpentByCategory: (categoryId: string) => number;
+
+    addSubscription: (sub: Omit<Subscription, 'id'>) => void;
+    updateSubscription: (id: string, updates: Partial<Subscription>) => void;
+    deleteSubscription: (id: string) => void;
+
+    addNetWorthSnapshot: (entry: NetWorthEntry) => void;
+
+    setInsights: (insights: Insight[]) => void;
+    dismissInsight: (id: string) => void;
+    setHealthScore: (score: HealthScore) => void;
 }
 
 export const useBudgetTrackerStore = create<BudgetTrackerState>()(
@@ -115,6 +170,10 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
             categoryBudgets: defaultCategoryBudgets,
             categories: [],
             entries: [],
+            subscriptions: [],
+            netWorthHistory: [],
+            insights: [],
+            healthScore: null,
 
             setMonthlyIncome: (v) => set({ monthlyIncome: v }),
             setCurrentBalance: (v) => set({ currentBalance: v }),
@@ -204,6 +263,25 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
                     .filter((e) => e.categoryId === categoryId)
                     .reduce((sum, e) => sum + e.amount, 0);
             },
+            
+            addSubscription: (sub) => set((s) => ({
+                subscriptions: [...s.subscriptions, { ...sub, id: Date.now().toString() }]
+            })),
+            updateSubscription: (id, updates) => set((s) => ({
+                subscriptions: s.subscriptions.map(sub => sub.id === id ? { ...sub, ...updates } : sub)
+            })),
+            deleteSubscription: (id) => set((s) => ({
+                subscriptions: s.subscriptions.filter(sub => sub.id !== id)
+            })),
+            addNetWorthSnapshot: (entry) => set((s) => {
+                const filtered = s.netWorthHistory.filter(n => n.month !== entry.month);
+                return { netWorthHistory: [...filtered, entry].sort((a, b) => a.month.localeCompare(b.month)) };
+            }),
+            setInsights: (insights) => set({ insights }),
+            dismissInsight: (id) => set((s) => ({
+                insights: s.insights.map(i => i.id === id ? { ...i, dismissed: true } : i)
+            })),
+            setHealthScore: (healthScore) => set({ healthScore }),
         }),
         { name: 'budget-tracker-storage' }
     )

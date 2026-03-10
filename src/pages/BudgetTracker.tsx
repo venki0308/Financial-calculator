@@ -87,7 +87,7 @@ export default function BudgetTracker() {
                         transition={{ duration: 0.2 }}
                     >
                         {activeTab === 'dashboard' && (
-                            <DashboardTab onAddExpense={handleAddExpenseFromDashboard} />
+                            <DashboardTab onAddExpense={handleAddExpenseFromDashboard} onViewAll={() => setActiveTab('daily')} />
                         )}
                         {activeTab === 'budget' && <BudgetTab />}
                         {activeTab === 'daily' && <DailyTab />}

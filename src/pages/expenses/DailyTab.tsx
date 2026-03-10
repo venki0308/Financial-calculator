@@ -40,15 +40,21 @@ export default function DailyTab() {
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
 
+    const [quickAdds, setQuickAdds] = useState<typeof QUICK_ADD>(() => {
+        const saved = localStorage.getItem('fincalix_quick_adds');
+        return saved ? JSON.parse(saved) : QUICK_ADD;
+    });
+
+    const [editingQA, setEditingQA] = useState<number | null>(null);
+    const [qaLabel, setQaLabel] = useState('');
+    const [qaAmount, setQaAmount] = useState('');
+    const [qaEmoji, setQaEmoji] = useState('');
+
     // Add form state
     const [fCategory, setFCategory] = useState('food');
     const [fAmount, setFAmount] = useState('');
     const [fDesc, setFDesc] = useState('');
     const [fPayment, setFPayment] = useState<PaymentMethod>('UPI');
-
-    // Edit form state
-    const [editAmount, setEditAmount] = useState('');
-    const [editDesc, setEditDesc] = useState('');
 
     const dayEntries = useMemo(
         () => getEntriesByDate(selectedDate).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
@@ -72,18 +78,27 @@ export default function DailyTab() {
     const handleSaveEntry = () => {
         if (!fAmount) return;
 
-        // Build a local date string based on selectedDate and current time
-        const now = new Date();
-        const timeStr = now.toTimeString().split(' ')[0]; // HH:mm:ss
-        const localIso = `${selectedDate}T${timeStr}`;
+        if (editingId) {
+            updateEntry(editingId, {
+                categoryId: fCategory,
+                amount: parseFloat(fAmount),
+                description: fDesc || t(`expenses.categories.${fCategory}`),
+                paymentMethod: fPayment,
+            });
+            setEditingId(null);
+        } else {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const localIso = `${selectedDate}T${timeStr}`;
 
-        addEntry({
-            categoryId: fCategory,
-            amount: parseFloat(fAmount),
-            description: fDesc || t(`expenses.categories.${fCategory}`),
-            date: localIso,
-            paymentMethod: fPayment,
-        });
+            addEntry({
+                categoryId: fCategory,
+                amount: parseFloat(fAmount),
+                description: fDesc || t(`expenses.categories.${fCategory}`),
+                date: localIso,
+                paymentMethod: fPayment,
+            });
+        }
         setFCategory('food');
         setFAmount('');
         setFDesc('');
@@ -95,14 +110,29 @@ export default function DailyTab() {
         const e = entries.find(e => e.id === id);
         if (!e) return;
         setEditingId(id);
-        setEditAmount(e.amount.toString());
-        setEditDesc(e.description);
+        setFCategory(e.categoryId);
+        setFAmount(e.amount.toString());
+        setFDesc(e.description);
+        setFPayment(e.paymentMethod || 'UPI');
+        setShowAddForm(true);
     };
 
-    const handleSaveEdit = () => {
-        if (!editingId) return;
-        updateEntry(editingId, { amount: parseFloat(editAmount), description: editDesc });
-        setEditingId(null);
+    const handleQuickAddPress = (e: React.MouseEvent | React.TouchEvent, index: number) => {
+        e.preventDefault();
+        const qa = quickAdds[index];
+        setEditingQA(index);
+        setQaLabel(qa.label);
+        setQaAmount(qa.amount.toString());
+        setQaEmoji(qa.emoji);
+    };
+
+    const saveQuickAdd = () => {
+        if (editingQA === null || !qaLabel || !qaAmount || !qaEmoji) return;
+        const newQAs = [...quickAdds];
+        newQAs[editingQA] = { ...newQAs[editingQA], label: qaLabel, amount: parseFloat(qaAmount), emoji: qaEmoji };
+        setQuickAdds(newQAs);
+        localStorage.setItem('fincalix_quick_adds', JSON.stringify(newQAs));
+        setEditingQA(null);
     };
 
     function shiftDate(days: number) {
@@ -128,50 +158,113 @@ export default function DailyTab() {
 
             {/* Quick Add Shortcuts */}
             <div>
-                <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2">{t('expenses.quickAddLabel')}</p>
+                <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2 flex justify-between">
+                    {t('expenses.quickAddLabel')}
+                    <span className="text-[9px] lowercase font-normal opacity-60">(long press to edit)</span>
+                </p>
                 <div className="grid grid-cols-3 gap-2">
-                    {QUICK_ADD.map((qa) => (
+                    {quickAdds.map((qa, idx) => (
                         <motion.button
-                            key={qa.label}
+                            key={idx}
                             whileTap={{ scale: 0.93 }}
                             onClick={() => handleQuickAdd(qa)}
-                            className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-center"
+                            onContextMenu={(e) => handleQuickAddPress(e, idx)}
+                            onTouchStart={(e) => {
+                                const timer = setTimeout(() => handleQuickAddPress(e, idx), 600);
+                                e.currentTarget.setAttribute('data-timer', timer.toString());
+                            }}
+                            onTouchEnd={(e) => {
+                                const timer = e.currentTarget.getAttribute('data-timer');
+                                if (timer) clearTimeout(Number(timer));
+                            }}
+                            className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-center select-none"
                         >
                             <span className="text-2xl">{qa.emoji}</span>
-                            <span className="text-slate-700 dark:text-slate-200 text-xs font-semibold">{t(`expenses.quickAdd.${qa.label.toLowerCase()}`)}</span>
+                            <span className="text-slate-700 dark:text-slate-200 text-[11px] font-semibold">{qa.label}</span>
                             <span className="text-brand-purple text-xs font-bold">₹{qa.amount}</span>
                         </motion.button>
                     ))}
                 </div>
             </div>
 
+            {/* Edit Quick Add Modal */}
+            <AnimatePresence>
+                {editingQA !== null && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+                        onClick={() => setEditingQA(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                            className="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-3xl p-6"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h3 className="text-white font-bold text-lg mb-4">Edit Quick Add</h3>
+                            <div className="space-y-3 mb-6">
+                                <div>
+                                    <label className="text-slate-400 text-xs mb-1 block">Label</label>
+                                    <input type="text" value={qaLabel} onChange={(e) => setQaLabel(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-purple" />
+                                </div>
+                                <div>
+                                    <label className="text-slate-400 text-xs mb-1 block">Amount (₹)</label>
+                                    <input type="number" value={qaAmount} onChange={(e) => setQaAmount(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-purple" />
+                                </div>
+                                <div>
+                                    <label className="text-slate-400 text-xs mb-1 block">Emoji</label>
+                                    <input type="text" maxLength={2} value={qaEmoji} onChange={(e) => setQaEmoji(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-purple" />
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <button onClick={() => setEditingQA(null)} className="flex-1 py-3 rounded-xl bg-slate-700 text-slate-300 font-medium text-sm">{t('common.cancel')}</button>
+                                <button onClick={saveQuickAdd} className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm">Save</button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Date Navigator */}
             <div className="flex items-center gap-2">
                 <button onClick={() => shiftDate(-1)} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10">
                     <ChevronLeft size={18} className="text-slate-500" />
                 </button>
-                <input
-                    type="date"
-                    value={selectedDate}
-                    max={toDateInput(new Date())}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-sm font-semibold outline-none"
-                />
+                <div className="relative flex-1">
+                    <input
+                        type="date"
+                        value={selectedDate}
+                        max={toDateInput(new Date())}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-sm font-semibold outline-none"
+                    />
+                    {!isToday && <div className="absolute top-2 right-4 w-2 h-2 rounded-full border-2 border-white dark:border-slate-800 bg-brand-purple" />}
+                </div>
                 <button onClick={() => shiftDate(1)} disabled={isToday} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 disabled:opacity-30">
                     <ChevronRight size={18} className="text-slate-500" />
                 </button>
             </div>
 
             {/* Today's Totals */}
-            <div className="bg-gradient-to-r from-brand-purple/10 to-blue-600/10 border border-brand-purple/20 rounded-2xl p-4 flex justify-between items-center">
-                <div>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">
-                        {isToday ? t('expenses.todaySpending') : t('expenses.selectedDaySpending')}
-                    </p>
-                    <p className="text-2xl font-extrabold text-brand-purple mt-0.5">₹{todayTotal.toLocaleString('en-IN')}</p>
-                    <p className="text-slate-400 text-xs mt-0.5">{dayEntries.length} {dayEntries.length === 1 ? t('expenses.transaction') : t('expenses.transactions')}</p>
+            <div className="bg-gradient-to-r from-brand-purple/10 to-blue-600/10 border border-brand-purple/20 rounded-2xl p-4 flex flex-col gap-3">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">
+                            {isToday ? t('expenses.todaySpending') : t('expenses.selectedDaySpending')}
+                        </p>
+                        <p className="text-2xl font-extrabold text-brand-purple mt-0.5">₹{todayTotal.toLocaleString('en-IN')}</p>
+                        <p className="text-slate-400 text-xs mt-0.5">{dayEntries.length} {dayEntries.length === 1 ? t('expenses.transaction') : t('expenses.transactions')}</p>
+                    </div>
+                    <div className="text-4xl">💸</div>
                 </div>
-                <div className="text-4xl">💸</div>
+                {(() => {
+                    const dailyBudget = Object.values(categoryBudgets as unknown as Record<string, number>).reduce((a, b) => a + b, 0) / 30;
+                    const pct = dailyBudget > 0 ? Math.min(100, (todayTotal / dailyBudget) * 100) : 0;
+                    return (
+                        <div className="w-full bg-white/50 dark:bg-black/20 rounded-full h-1.5 overflow-hidden">
+                            <div className={`h-full rounded-full transition-all duration-500 ${pct > 90 ? 'bg-red-400' : 'bg-brand-purple'}`} style={{ width: `${pct}%` }} />
+                        </div>
+                    );
+                })()}
             </div>
 
             {/* Expenses List */}
@@ -188,53 +281,31 @@ export default function DailyTab() {
                     {dayEntries.map((exp) => {
                         const cat = EXPENSE_CATEGORIES.find((c) => c.id === exp.categoryId);
                         return (
-                            <div key={exp.id} className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-3">
-                                {editingId === exp.id ? (
-                                    <div className="space-y-2">
-                                        <input
-                                            type="number"
-                                            value={editAmount}
-                                            onChange={(e) => setEditAmount(e.target.value)}
-                                            className="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white text-sm outline-none"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={editDesc}
-                                            onChange={(e) => setEditDesc(e.target.value)}
-                                            className="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white text-sm outline-none"
-                                        />
-                                        <div className="flex gap-2">
-                                            <button onClick={() => setEditingId(null)} className="flex-1 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 text-sm">
-                                                <X size={14} className="inline mr-1" />{t('common.cancel')}
-                                            </button>
-                                            <button onClick={handleSaveEdit} className="flex-1 py-2 rounded-lg bg-brand-green text-white text-sm font-bold">
-                                                <Check size={14} className="inline mr-1" />{t('common.save')}
-                                            </button>
-                                        </div>
+                            <div key={exp.id} className="relative rounded-2xl bg-red-500 overflow-hidden mb-2">
+                                <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center text-white">
+                                    <Trash2 size={20} />
+                                </div>
+                                <motion.div
+                                    drag="x"
+                                    dragConstraints={{ left: -80, right: 0 }}
+                                    onDragEnd={(e, info) => { if (info.offset.x < -50) deleteEntry(exp.id); }}
+                                    className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-3 flex items-center gap-3 relative z-10 cursor-pointer"
+                                    onClick={() => startEdit(exp.id)}
+                                >
+                                    <div className="w-10 h-10 rounded-xl bg-brand-purple/10 flex items-center justify-center text-xl flex-shrink-0">
+                                        {cat?.icon || '📌'}
                                     </div>
-                                ) : (
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-brand-purple/10 flex items-center justify-center text-xl flex-shrink-0">
-                                            {cat?.icon || '📌'}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-slate-800 dark:text-white text-sm font-semibold truncate">{exp.description}</p>
-                                            <p className="text-slate-400 text-[10px]">
-                                                {t(`expenses.categories.${cat?.id || 'others'}`)} · {formatDate(exp.date)}
-                                                {exp.paymentMethod && (
-                                                    <span className="ml-1 px-1.5 py-0.5 bg-brand-purple/10 text-brand-purple rounded text-[9px] font-bold">{t(`expenses.paymentMethods.${exp.paymentMethod}`)}</span>
-                                                )}
-                                            </p>
-                                        </div>
-                                        <p className="text-red-400 font-bold text-sm mr-2">-₹{exp.amount.toLocaleString('en-IN')}</p>
-                                        <button onClick={() => startEdit(exp.id)} className="text-slate-400 hover:text-brand-purple p-1">
-                                            <Edit3 size={14} />
-                                        </button>
-                                        <button onClick={() => deleteEntry(exp.id)} className="text-slate-400 hover:text-red-400 p-1">
-                                            <Trash2 size={14} />
-                                        </button>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-slate-800 dark:text-white text-sm font-semibold truncate">{exp.description}</p>
+                                        <p className="text-slate-400 text-[10px]">
+                                            {t(`expenses.categories.${cat?.id || 'others'}`)} · {formatDate(exp.date)}
+                                            {exp.paymentMethod && (
+                                                <span className="ml-1 px-1.5 py-0.5 bg-brand-purple/10 text-brand-purple rounded text-[9px] font-bold">{t(`expenses.paymentMethods.${exp.paymentMethod}`)}</span>
+                                            )}
+                                        </p>
                                     </div>
-                                )}
+                                    <p className="text-red-400 font-bold text-sm mr-2">-₹{exp.amount.toLocaleString('en-IN')}</p>
+                                </motion.div>
                             </div>
                         );
                     })}
@@ -256,7 +327,9 @@ export default function DailyTab() {
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5" />
-                            <h3 className="text-white font-bold text-lg mb-4">{t('expenses.addExpenseTitle')}</h3>
+                            <h3 className="text-white font-bold text-lg mb-4">
+                                {editingId ? t('expenses.editExpenseTitle', 'Edit Expense') : t('expenses.addExpenseTitle')}
+                            </h3>
                             <div className="space-y-3">
                                 {/* Category */}
                                 <div>
@@ -337,7 +410,7 @@ export default function DailyTab() {
                                     disabled={!fAmount}
                                     className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm disabled:opacity-40"
                                 >
-                                    {t('expenses.saveExpense')}
+                                    {editingId ? t('common.save', 'Save') : t('expenses.saveExpense')}
                                 </motion.button>
                             </div>
                         </motion.div>

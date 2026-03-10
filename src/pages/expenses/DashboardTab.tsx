@@ -1,11 +1,12 @@
-import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff, ChevronLeft, ChevronRight, Activity, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { generateInsights } from '../../services/InsightEngine';
+import { calculateHealthScore } from '../../services/HealthScoreService';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -15,17 +16,36 @@ const COLORS = [
     '#3b82f6', '#ec4899', '#84cc16', '#f97316',
 ];
 
-export default function DashboardTab({ onAddExpense }: { onAddExpense: () => void }) {
+export default function DashboardTab({ onAddExpense, onViewAll }: { onAddExpense: () => void, onViewAll: () => void }) {
     const { t } = useTranslation();
-    const navigate = useNavigate();
-    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets } = useBudgetTrackerStore();
+    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, fixedExpenses, subscriptions, netWorthHistory, healthScore, setHealthScore, setInsights, insights } = useBudgetTrackerStore();
 
-    const now = new Date();
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const currentYear = selectedDate.getFullYear();
+    const currentMonthNum = selectedDate.getMonth() + 1;
+
+    const [selectedPieCategory, setSelectedPieCategory] = useState<string | null>(null);
+    const [isNetWorthOpen, setIsNetWorthOpen] = useState(false);
+
     const monthEntries = useMemo(
-        () => getEntriesByMonth(now.getFullYear(), now.getMonth() + 1),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [entries, now.getFullYear(), now.getMonth()]
+        () => getEntriesByMonth(currentYear, currentMonthNum),
+        [entries, currentYear, currentMonthNum, getEntriesByMonth]
     );
+
+    useEffect(() => {
+        // Generate insights and health score dynamically
+        const newInsights = generateInsights(entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, subscriptions);
+        setInsights(newInsights);
+
+        const newScore = calculateHealthScore(entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, netWorthHistory);
+        setHealthScore(newScore);
+    }, [entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, subscriptions, netWorthHistory, setInsights, setHealthScore]);
+
+    const changeMonth = (offset: number) => {
+        const newDate = new Date(selectedDate);
+        newDate.setMonth(newDate.getMonth() + offset);
+        setSelectedDate(newDate);
+    };
 
     const totalFixed = getTotalFixed();
     const totalDaily = monthEntries.reduce((s, e) => s + e.amount, 0);
@@ -36,39 +56,8 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
     const budgetUsePct = monthlyIncome > 0 ? (totalSpent / monthlyIncome) * 100 : 0;
 
     // ── Smart Per-Category Alerts ─────────────────────────────────────────────
-    const smartAlerts = useMemo(() => {
-        const alerts: { type: 'warn' | 'danger' | 'success'; message: string }[] = [];
-        const budgetMap = categoryBudgets as unknown as Record<string, number>;
-
-        EXPENSE_CATEGORIES.forEach((cat) => {
-            const limit = budgetMap[cat.id] || 0;
-            if (limit <= 0) return;
-            const spent = monthEntries
-                .filter((e) => e.categoryId === cat.id)
-                .reduce((s, e) => s + e.amount, 0);
-            const pct = (spent / limit) * 100;
-            if (pct > 100) {
-                alerts.push({
-                    type: 'danger',
-                    message: t('expenses.alerts.exceeded', { category: t(`expenses.categories.${cat.id}`), amount: (spent - limit).toLocaleString('en-IN') }),
-                });
-            } else if (pct >= 80) {
-                alerts.push({
-                    type: 'warn',
-                    message: t('expenses.alerts.usedPct', { pct: pct.toFixed(0), category: t(`expenses.categories.${cat.id}`) }),
-                });
-            }
-        });
-
-        if (savingsRate >= 20 && savings > 0) {
-            alerts.push({
-                type: 'success',
-                message: t('expenses.alerts.savedWell', { amount: savings.toLocaleString('en-IN'), rate: savingsRate.toFixed(0) }),
-            });
-        }
-
-        return alerts;
-    }, [monthEntries, categoryBudgets, savings, savingsRate]);
+    // Removed old static alerts, now using dynamic insights array from store.
+    const activeInsights = insights.filter(i => !i.dismissed);
 
 
     // Category breakdown for pie chart
@@ -90,7 +79,9 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
         datasets: [{
             data: categoryTotals.map((c) => c.total),
             backgroundColor: COLORS,
-            borderWidth: 0,
+            borderWidth: categoryTotals.map((c) => selectedPieCategory === c.id ? 4 : 0),
+            borderColor: '#7C3AED',
+            hoverOffset: 6,
         }],
     };
 
@@ -106,11 +97,19 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-gradient-to-br from-brand-purple via-purple-600 to-blue-600 rounded-3xl p-6 text-white shadow-xl shadow-purple-800/30"
             >
-                <p className="text-purple-100 text-xs font-semibold uppercase tracking-wider mb-1">
-                    {now.toLocaleString(undefined, { month: 'long', year: 'numeric' })}
-                </p>
+                <div className="flex justify-between items-center mb-1">
+                    <p className="text-purple-100 text-xs font-semibold uppercase tracking-wider">
+                        {t('expenses.totalSpentMonth')}
+                    </p>
+                    <div className="flex items-center gap-2 bg-white/20 rounded-full px-2 py-1">
+                        <button onClick={() => changeMonth(-1)} className="p-0.5 text-white"><ChevronLeft size={14}/></button>
+                        <span className="text-[10px] font-bold text-white min-w-[70px] text-center">
+                            {selectedDate.toLocaleString(undefined, { month: 'short', year: 'numeric' })}
+                        </span>
+                        <button onClick={() => changeMonth(1)} disabled={selectedDate.getMonth() === new Date().getMonth() && selectedDate.getFullYear() === new Date().getFullYear()} className="p-0.5 text-white disabled:opacity-30"><ChevronRight size={14}/></button>
+                    </div>
+                </div>
                 <h2 className="text-4xl font-extrabold mb-0.5">₹{totalSpent.toLocaleString('en-IN')}</h2>
-                <p className="text-purple-200 text-sm">{t('expenses.totalSpentMonth')}</p>
 
                 {/* Budget progress bar */}
                 <div className="mt-4 mb-2">
@@ -149,23 +148,52 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
             </motion.div>
 
             {/* Quick Stats */}
+            {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-3">
                 {[
-                    { label: t('expenses.fixed'), value: totalFixed, icon: Wallet, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' },
-                    { label: t('expenses.daily'), value: totalDaily, icon: TrendingDown, color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20' },
-                    { label: t('expenses.available'), value: available, icon: TrendingUp, color: available < 0 ? 'text-red-400' : 'text-green-400', bg: available < 0 ? 'bg-red-500/10' : 'bg-green-500/10', border: available < 0 ? 'border-red-500/20' : 'border-green-500/20' },
+                    { label: t('expenses.fixed'), value: totalFixed, icon: Wallet, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20', metric: monthlyIncome > 0 ? (totalFixed / monthlyIncome) : 0 },
+                    { label: t('expenses.daily'), value: totalDaily, icon: TrendingDown, color: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/20', metric: monthlyIncome > 0 ? (totalDaily / monthlyIncome) : 0 },
+                    { label: t('expenses.available'), value: available, icon: TrendingUp, color: available < 0 ? 'text-red-400' : 'text-green-400', bg: available < 0 ? 'bg-red-500/10' : 'bg-green-500/10', border: available < 0 ? 'border-red-500/20' : 'border-green-500/20', metric: monthlyIncome > 0 ? (available / monthlyIncome) : 0 },
                 ].map((stat) => (
                     <motion.div
                         key={stat.label}
                         whileTap={{ scale: 0.96 }}
-                        className={`p-3 rounded-2xl ${stat.bg} border ${stat.border} flex flex-col gap-1`}
+                        className={`p-3 rounded-2xl ${stat.bg} border ${stat.border} flex flex-col gap-1 relative overflow-hidden`}
                     >
-                        <stat.icon size={16} className={stat.color} />
-                        <p className="text-slate-400 text-[10px] font-semibold uppercase tracking-wider">{stat.label}</p>
-                        <p className={`font-bold text-sm ${stat.color}`}>₹{Math.abs(stat.value).toLocaleString('en-IN')}</p>
+                        <div className="flex justify-between items-start">
+                            <stat.icon size={14} className={stat.color} />
+                            {stat.metric > 0 && (
+                                <span className={`text-[9px] font-bold ${stat.color}`}>{(stat.metric * 100).toFixed(0)}%</span>
+                            )}
+                        </div>
+                        <p className="text-slate-400 text-[9px] font-semibold uppercase tracking-wider mt-1">{stat.label}</p>
+                        <p className={`font-bold text-xs ${stat.color}`}>₹{Math.abs(stat.value).toLocaleString('en-IN')}</p>
+                        {/* Mini progress bar */}
+                        {stat.metric > 0 && <div className="absolute bottom-0 left-0 h-1 bg-white/20 w-full">
+                            <div className="h-full bg-current opacity-40" style={{ width: `${Math.min(Math.abs(stat.metric) * 100, 100)}%`, color: stat.color.replace('text-', '') }} />
+                        </div>}
                     </motion.div>
                 ))}
             </div>
+
+            {/* Financial Health Score (NEW) */}
+            {healthScore && healthScore.total > 0 && (
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 flex items-center gap-4">
+                    <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <path className="text-slate-200 dark:text-slate-700" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path className={`${healthScore.total >= 80 ? 'text-green-500' : healthScore.total >= 50 ? 'text-yellow-500' : 'text-red-500'}`} strokeDasharray={`${healthScore.total}, 100`} strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-lg font-bold text-slate-900 dark:text-white leading-none">{healthScore.total}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-sm">Financial Health</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{healthScore.tips[0] || "Looking good this month!"}</p>
+                    </div>
+                </div>
+            )}
 
             {/* General Budget Alert */}
             {budgetUsePct >= 90 && monthlyIncome > 0 && (
@@ -186,31 +214,40 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
             )}
 
             {/* Smart Per-Category Alerts */}
-            {smartAlerts.length > 0 && (
-                <div className="space-y-2">
-                    {smartAlerts.map((alert, i) => (
+            {activeInsights.length > 0 && (
+                <div className="flex overflow-x-auto gap-3 pb-2 snap-x hide-scrollbar">
+                    {activeInsights.map((alert, i) => (
                         <motion.div
-                            key={i}
+                            key={alert.id}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.05 }}
-                            className={`rounded-2xl p-3 flex items-start gap-3 border ${alert.type === 'danger'
+                            className={`min-w-[240px] rounded-2xl p-3 flex flex-col gap-2 border snap-center ${alert.type === 'alert'
                                 ? 'bg-red-500/10 border-red-500/30'
-                                : alert.type === 'warn'
+                                : alert.type === 'warning'
                                     ? 'bg-yellow-500/10 border-yellow-500/30'
-                                    : 'bg-green-500/10 border-green-500/30'
+                                    : alert.type === 'tip'
+                                        ? 'bg-blue-500/10 border-blue-500/30'
+                                        : 'bg-green-500/10 border-green-500/30'
                                 }`}
                         >
-                            {alert.type === 'success'
-                                ? <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                                : alert.type === 'danger'
-                                    ? <ZapOff className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                                    : <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
-                            }
-                            <p className={`text-xs font-medium ${alert.type === 'danger' ? 'text-red-300'
-                                : alert.type === 'warn' ? 'text-yellow-300'
-                                    : 'text-green-300'
-                                }`}>{alert.message}</p>
+                            <div className="flex items-center gap-2">
+                                {alert.type === 'success'
+                                    ? <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
+                                    : alert.type === 'alert'
+                                        ? <ZapOff className="w-4 h-4 text-red-400 flex-shrink-0" />
+                                        : alert.type === 'tip'
+                                            ? <Activity className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                                            : <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                                }
+                                <span className="font-bold text-xs text-slate-800 dark:text-white">{alert.title}</span>
+                            </div>
+                            <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 leading-snug">{alert.message}</p>
+                            {alert.actionLabel && (
+                                <button className="self-start mt-1 text-[10px] font-bold text-brand-purple bg-brand-purple/10 px-2 py-1 rounded-md">
+                                    {alert.actionLabel}
+                                </button>
+                            )}
                         </motion.div>
                     ))}
                 </div>
@@ -227,6 +264,15 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
                                 data={pieData}
                                 options={{
                                     responsive: true,
+                                    onClick: (_, elements) => {
+                                        if (elements.length > 0) {
+                                            const idx = elements[0].index;
+                                            const cat = categoryTotals[idx];
+                                            setSelectedPieCategory(prev => prev === cat.id ? null : cat.id);
+                                        } else {
+                                            setSelectedPieCategory(null);
+                                        }
+                                    },
                                     plugins: {
                                         legend: { display: false },
                                         tooltip: {
@@ -239,15 +285,77 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
                             />
                         </div>
                         <div className="w-full grid grid-cols-2 gap-x-4 gap-y-2">
-                            {categoryTotals.map((cat, i) => (
-                                <div key={cat.id} className="flex items-center gap-2">
-                                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                    <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{cat.icon} {t(`expenses.categories.${cat.id}`)}</span>
-                                    <span className="text-[10px] font-bold text-slate-700 dark:text-white ml-auto">₹{cat.total.toLocaleString('en-IN')}</span>
-                                </div>
-                            ))}
+                            {categoryTotals.map((cat, i) => {
+                                const isSelected = selectedPieCategory === cat.id;
+                                return (
+                                    <div 
+                                        key={cat.id} 
+                                        onClick={() => setSelectedPieCategory(prev => prev === cat.id ? null : cat.id)}
+                                        className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all ${isSelected ? 'bg-brand-purple/10 ring-1 ring-brand-purple scale-105' : 'hover:bg-slate-50 dark:hover:bg-white/5 opacity-80 hover:opacity-100'}`}
+                                    >
+                                        <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${isSelected ? 'animate-pulse' : ''}`} style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                                        <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{cat.icon} {t(`expenses.categories.${cat.id}`)}</span>
+                                        <span className={`text-[10px] font-bold ml-auto ${isSelected ? 'text-brand-purple' : 'text-slate-700 dark:text-white'}`}>₹{cat.total.toLocaleString('en-IN')}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Net Worth Tracker Collapsible */}
+            {netWorthHistory && (
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden">
+                    <button 
+                        onClick={() => setIsNetWorthOpen(!isNetWorthOpen)}
+                        className="w-full flex justify-between items-center p-4 focus:outline-none"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                <TrendingUp size={16} />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="font-bold text-slate-900 dark:text-white text-sm">Net Worth</h3>
+                                <p className="text-[10px] text-slate-500">Assets vs Liabilities</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 dark:text-white">
+                                ₹{netWorthHistory.length > 0 ? netWorthHistory[netWorthHistory.length - 1].netWorth.toLocaleString('en-IN') : '0'}
+                            </span>
+                            {isNetWorthOpen ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                        </div>
+                    </button>
+                    
+                    <AnimatePresence>
+                        {isNetWorthOpen && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="px-4 pb-4 border-t border-slate-100 dark:border-white/5"
+                            >
+                                {netWorthHistory.length === 0 ? (
+                                    <div className="text-center py-4 text-slate-500 text-xs">
+                                        No net worth data added yet. 
+                                        <button className="text-brand-purple block mx-auto mt-2 font-semibold">Update Net Worth</button>
+                                    </div>
+                                ) : (
+                                    <div className="pt-4 grid grid-cols-2 gap-4">
+                                        <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3">
+                                            <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Total Assets</p>
+                                            <p className="font-bold text-green-500 text-sm">₹{netWorthHistory[netWorthHistory.length - 1].totalAssets.toLocaleString('en-IN')}</p>
+                                        </div>
+                                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+                                            <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Total Liabilities</p>
+                                            <p className="font-bold text-red-500 text-sm">₹{netWorthHistory[netWorthHistory.length - 1].totalLiabilities.toLocaleString('en-IN')}</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             )}
 
@@ -255,7 +363,7 @@ export default function DashboardTab({ onAddExpense }: { onAddExpense: () => voi
             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="font-bold text-slate-900 dark:text-white text-sm">{t('expenses.recentExpenses')}</h3>
-                    <button onClick={() => navigate('/expenses')} className="text-brand-purple text-xs font-semibold">{t('home.viewAll')}</button>
+                    <button onClick={onViewAll} className="text-brand-purple text-xs font-semibold">{t('home.viewAll')}</button>
                 </div>
                 {recentExpenses.length === 0 ? (
                     <div className="text-center py-6">
