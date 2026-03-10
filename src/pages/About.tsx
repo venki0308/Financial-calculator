@@ -75,7 +75,7 @@ export default function About() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
                         </span>
-                        <span className="text-xs text-slate-300 font-medium">v2.0.26 · Beta</span>
+                        <span className="text-xs text-slate-300 font-medium">v1.0.0</span>
                     </div>
                 </motion.div>
 
@@ -134,7 +134,7 @@ export default function About() {
                 {/* ─── Footer ─── */}
                 <div className="text-center pt-8 pb-4 text-[10px] text-slate-600 space-y-1">
                     <p>© 2026 FinCalix</p>
-                    <p>Designed with ❤️ for Indian Citizens</p>
+                    <p>Made with ❤️ in India</p>
                 </div>
             </div>
         </div>
