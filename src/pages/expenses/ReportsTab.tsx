@@ -224,6 +224,11 @@ export default function ReportsTab() {
             )}
 
             {/* Empty state: month with no activity and not current month */}
+            {/* Reports Data Disclaimer Banner */}
+            <div className="bg-[#FFF7ED] dark:bg-orange-900/20 border border-[#FED7AA] dark:border-orange-700/30 rounded-lg py-2 px-3 text-center mb-3">
+                <p className="text-xs text-orange-700 dark:text-orange-400">{t('disclaimer.reportsBanner')}</p>
+            </div>
+
             {!hasData ? (
                 <div className="flex flex-col items-center justify-center py-16 px-4">
                     <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
@@ -432,6 +437,11 @@ export default function ReportsTab() {
                     </motion.button>
                 </>
             )}
+
+            {/* Mini Disclaimer Footer */}
+            <div className="border-t border-gray-100 dark:border-white/5 py-3 px-4 text-center">
+                <p className="text-xs text-gray-400 dark:text-gray-500">{t('disclaimer.miniFooter')}</p>
+            </div>
         </div>
     );
 }

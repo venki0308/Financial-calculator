@@ -509,9 +509,20 @@
         "incomeSpent": "Income: ₹{{income}} | Spent: ₹{{spent}}"
     },
     "disclaimer": {
-        "title": "Disclaimer",
-        "scheme": "For reference purposes only. Scheme information may change. Please visit the official government portal (link provided below) to verify current eligibility, benefits, and application process before applying.",
-        "calculator": "For simulation purposes only. Please consult your bank or financial advisor for accurate calculations. Visit official calculators at incometaxindia.gov.in (Tax), your bank's website (EMI), or SEBI-registered advisors (Investments)."
+        "modalTitle": "Important Disclaimer",
+        "modalIntro": "FinCalix Expense Tracker is a personal finance management tool designed to help you track and organize your expenses.",
+        "modalNote": "Please note:",
+        "bullet1": "This tool is for personal tracking purposes only and does not constitute financial, tax, or investment advice.",
+        "bullet2": "All data is stored locally on your device. FinCalix does not store, access, or share your financial information.",
+        "bullet3": "Financial Health Score and Smart Insights are calculated using simple rule-based logic and are indicative only — not professional assessments.",
+        "bullet4": "Budget recommendations are based on the data you enter and may not reflect your actual financial situation.",
+        "bullet5": "For professional financial advice, please consult a certified financial advisor or CA.",
+        "bullet6": "Subscription renewal dates and amounts are based on data you enter — please verify with your actual service providers.",
+        "modalAcknowledge": "By continuing, you acknowledge that you have read and understood this disclaimer.",
+        "modalButton": "I Understand, Continue",
+        "miniFooter": "⚠️ For personal tracking only. Not financial advice. Data stored locally on your device.",
+        "healthScoreNote": "Score is indicative only, not a professional assessment.",
+        "reportsBanner": "📊 Reports are based on your entered data only."
     },
     "advisor": {
         "title": "Financial Advisor",
