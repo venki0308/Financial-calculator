@@ -4,6 +4,12 @@ import * as XLSX from 'xlsx';
 import { Capacitor } from '@capacitor/core';
 
 // ─── Toast notification ────────────────────────────────────────────────────
+// ─── PDF text sanitizer (strips emoji that jsPDF can't render) ─────────────
+function sanitizeForPDF(text: string): string {
+    // Remove emoji + common unicode symbols outside Latin-1 range
+    return text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '').trim();
+}
+
 function showToast(message: string, isError = false) {
     const old = document.getElementById('fncx-toast');
     if (old) old.remove();
@@ -890,7 +896,7 @@ export const exportExpenseReportPDF = async (data: ExpenseReportData): Promise<v
                 doc.setFillColor(254, 252, 232);
                 doc.roundedRect(14, currentY, 182, 12, 2, 2, 'F');
                 doc.setFontSize(9); doc.setTextColor(15, 23, 42);
-                doc.text(`💡 ${insight}`, 18, currentY + 7);
+                doc.text(`${sanitizeForPDF(insight)}`, 18, currentY + 7);
                 currentY += 15;
             });
         }

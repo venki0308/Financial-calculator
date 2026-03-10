@@ -109,7 +109,18 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
     const [expanded, setExpanded] = useState(false);
     const meta = calcMeta[calc.calculatorType] || defaultMeta;
     const Icon = meta.icon;
-    const primaryValue = typeof calc.resultValues === 'number' ? calc.resultValues : (calc.resultValues?.primary || 0);
+    const primaryValue = (() => {
+        if (typeof calc.resultValues === 'number') return calc.resultValues;
+        if (!calc.resultValues || typeof calc.resultValues !== 'object') return 0;
+        const rv = calc.resultValues as Record<string, any>;
+        // Try common result keys in priority order
+        for (const key of ['primary', 'emi', 'maturity', 'totalPayment', 'totalAmount', 'futureValue', 'corpus', 'totalValue', 'total', 'netPay', 'totalSalary', 'taxPayable']) {
+            if (typeof rv[key] === 'number' && rv[key] > 0) return rv[key];
+        }
+        // Fallback: first numeric value > 0
+        const firstNum = Object.values(rv).find(v => typeof v === 'number' && v > 0);
+        return firstNum || 0;
+    })();
 
     // Parse inputs and results for detailed display
     const inputEntries = Object.entries(calc.inputValues || {}).filter(([k, v]) => v !== undefined && v !== null && k !== 'type');

@@ -7,8 +7,24 @@ import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { generateInsights } from '../../services/InsightEngine';
 import { calculateHealthScore } from '../../services/HealthScoreService';
+import BottomSheet from '../../components/BottomSheet';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
+
+const ASSET_FIELDS = [
+    { key: 'bankBalance', label: 'Bank Balance' },
+    { key: 'fd', label: 'Fixed Deposits' },
+    { key: 'mutualFunds', label: 'Mutual Funds' },
+    { key: 'gold', label: 'Gold' },
+    { key: 'property', label: 'Property' },
+    { key: 'otherAssets', label: 'Other Assets' },
+];
+const LIABILITY_FIELDS = [
+    { key: 'homeLoan', label: 'Home Loan' },
+    { key: 'carLoan', label: 'Car Loan' },
+    { key: 'personalLoan', label: 'Personal Loan' },
+    { key: 'creditCard', label: 'Credit Card Outstanding' },
+];
 
 
 const COLORS = [
@@ -26,6 +42,10 @@ export default function DashboardTab({ onAddExpense, onViewAll }: { onAddExpense
 
     const [selectedPieCategory, setSelectedPieCategory] = useState<string | null>(null);
     const [isNetWorthOpen, setIsNetWorthOpen] = useState(false);
+    const [showNetWorthModal, setShowNetWorthModal] = useState(false);
+    const [nwAssets, setNwAssets] = useState<Record<string, string>>({});
+    const [nwLiabilities, setNwLiabilities] = useState<Record<string, string>>({});
+    const addNetWorthSnapshot = useBudgetTrackerStore((s) => s.addNetWorthSnapshot);
 
     const monthEntries = useMemo(
         () => getEntriesByMonth(currentYear, currentMonthNum),
@@ -47,13 +67,32 @@ export default function DashboardTab({ onAddExpense, onViewAll }: { onAddExpense
         setSelectedDate(newDate);
     };
 
-    const totalFixed = getTotalFixed();
+    // Bug 2 fix: Only show fixed expenses and income for months that have actual data
+    const now = new Date();
+    const isCurrentMonth = currentMonthNum === (now.getMonth() + 1) && currentYear === now.getFullYear();
+    const hasMonthData = isCurrentMonth || monthEntries.length > 0;
+
+    // Subscriptions: calculate active monthly equivalent
+    const activeSubsMonthly = useMemo(() => {
+        return subscriptions
+            .filter(s => s.isActive)
+            .reduce((sum, s) => {
+                if (s.billingCycle === 'monthly') return sum + s.amount;
+                if (s.billingCycle === 'quarterly') return sum + s.amount / 3;
+                if (s.billingCycle === 'yearly') return sum + s.amount / 12;
+                return sum;
+            }, 0);
+    }, [subscriptions]);
+
+    const effectiveFixed = hasMonthData ? getTotalFixed() : 0;
+    const effectiveIncome = hasMonthData ? monthlyIncome : 0;
+    const totalFixed = effectiveFixed;
     const totalDaily = monthEntries.reduce((s, e) => s + e.amount, 0);
-    const totalSpent = totalFixed + totalDaily;
-    const savings = monthlyIncome - totalSpent;
-    const savingsRate = monthlyIncome > 0 ? (savings / monthlyIncome) * 100 : 0;
-    const available = monthlyIncome - totalSpent;
-    const budgetUsePct = monthlyIncome > 0 ? (totalSpent / monthlyIncome) * 100 : 0;
+    const totalSpent = totalFixed + totalDaily + (hasMonthData ? activeSubsMonthly : 0);
+    const savings = effectiveIncome - totalSpent;
+    const savingsRate = effectiveIncome > 0 ? (savings / effectiveIncome) * 100 : 0;
+    const available = effectiveIncome - totalSpent;
+    const budgetUsePct = effectiveIncome > 0 ? (totalSpent / effectiveIncome) * 100 : 0;
 
     // ── Smart Per-Category Alerts ─────────────────────────────────────────────
     // Removed old static alerts, now using dynamic insights array from store.
@@ -130,7 +169,7 @@ export default function DashboardTab({ onAddExpense, onViewAll }: { onAddExpense
                 <div className="grid grid-cols-3 gap-3 mt-4">
                     <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center">
                         <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">{t('expenses.income')}</p>
-                        <p className="text-white font-bold text-sm mt-0.5">₹{monthlyIncome.toLocaleString('en-IN')}</p>
+                        <p className="text-white font-bold text-sm mt-0.5">₹{effectiveIncome.toLocaleString('en-IN')}</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center">
                         <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">{t('expenses.savings')}</p>
@@ -339,19 +378,22 @@ export default function DashboardTab({ onAddExpense, onViewAll }: { onAddExpense
                                 {netWorthHistory.length === 0 ? (
                                     <div className="text-center py-4 text-slate-500 text-xs">
                                         No net worth data added yet. 
-                                        <button className="text-brand-purple block mx-auto mt-2 font-semibold">Update Net Worth</button>
+                                        <button onClick={() => setShowNetWorthModal(true)} className="text-brand-purple block mx-auto mt-2 font-semibold">Update Net Worth</button>
                                     </div>
                                 ) : (
-                                    <div className="pt-4 grid grid-cols-2 gap-4">
-                                        <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3">
-                                            <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Total Assets</p>
-                                            <p className="font-bold text-green-500 text-sm">₹{netWorthHistory[netWorthHistory.length - 1].totalAssets.toLocaleString('en-IN')}</p>
+                                    <>
+                                        <div className="pt-4 grid grid-cols-2 gap-4">
+                                            <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3">
+                                                <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Total Assets</p>
+                                                <p className="font-bold text-green-500 text-sm">₹{netWorthHistory[netWorthHistory.length - 1].totalAssets.toLocaleString('en-IN')}</p>
+                                            </div>
+                                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
+                                                <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Total Liabilities</p>
+                                                <p className="font-bold text-red-500 text-sm">₹{netWorthHistory[netWorthHistory.length - 1].totalLiabilities.toLocaleString('en-IN')}</p>
+                                            </div>
                                         </div>
-                                        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
-                                            <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Total Liabilities</p>
-                                            <p className="font-bold text-red-500 text-sm">₹{netWorthHistory[netWorthHistory.length - 1].totalLiabilities.toLocaleString('en-IN')}</p>
-                                        </div>
-                                    </div>
+                                        <button onClick={() => setShowNetWorthModal(true)} className="mt-3 w-full py-2.5 rounded-xl bg-brand-purple/10 text-brand-purple text-xs font-bold border border-brand-purple/20">Update Net Worth</button>
+                                    </>
                                 )}
                             </motion.div>
                         )}
@@ -398,6 +440,60 @@ export default function DashboardTab({ onAddExpense, onViewAll }: { onAddExpense
                     </div>
                 )}
             </div>
+
+            {/* Net Worth Bottom Sheet Modal */}
+            <BottomSheet isOpen={showNetWorthModal} onClose={() => setShowNetWorthModal(false)} title="Update Net Worth">
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+                    {/* Assets Section */}
+                    <div>
+                        <p className="text-green-500 text-xs font-bold uppercase tracking-wider mb-2">Assets</p>
+                        <div className="space-y-2">
+                            {ASSET_FIELDS.map(f => (
+                                <div key={f.key} className="flex items-center gap-3">
+                                    <span className="text-slate-400 text-xs w-28 flex-shrink-0">{f.label}</span>
+                                    <div className="flex-1 relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">₹</span>
+                                        <input type="number" value={nwAssets[f.key] || ''} onChange={e => setNwAssets(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                            className="w-full pl-7 pr-3 py-2.5 bg-slate-800 border border-slate-600 rounded-xl text-white text-sm focus:outline-none focus:border-green-500" placeholder="0" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Liabilities Section */}
+                    <div>
+                        <p className="text-red-400 text-xs font-bold uppercase tracking-wider mb-2">Liabilities</p>
+                        <div className="space-y-2">
+                            {LIABILITY_FIELDS.map(f => (
+                                <div key={f.key} className="flex items-center gap-3">
+                                    <span className="text-slate-400 text-xs w-28 flex-shrink-0">{f.label}</span>
+                                    <div className="flex-1 relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">₹</span>
+                                        <input type="number" value={nwLiabilities[f.key] || ''} onChange={e => setNwLiabilities(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                            className="w-full pl-7 pr-3 py-2.5 bg-slate-800 border border-slate-600 rounded-xl text-white text-sm focus:outline-none focus:border-red-500" placeholder="0" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <motion.button whileTap={{ scale: 0.97 }} onClick={() => {
+                    const assets = ASSET_FIELDS.map(f => ({ label: f.label, value: Number(nwAssets[f.key]) || 0 }));
+                    const liabilities = LIABILITY_FIELDS.map(f => ({ label: f.label, value: Number(nwLiabilities[f.key]) || 0 }));
+                    const totalAssets = assets.reduce((s, a) => s + a.value, 0);
+                    const totalLiabilities = liabilities.reduce((s, l) => s + l.value, 0);
+                    const netWorth = totalAssets - totalLiabilities;
+                    const month = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}`;
+                    addNetWorthSnapshot({ month, assets, liabilities, totalAssets, totalLiabilities, netWorth });
+                    setShowNetWorthModal(false);
+                    setNwAssets({});
+                    setNwLiabilities({});
+                }} className="w-full mt-4 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm">
+                    Save Net Worth
+                </motion.button>
+            </BottomSheet>
         </div>
     );
 }

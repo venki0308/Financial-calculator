@@ -378,12 +378,12 @@ export default function PropertyCalculator() {
                         <button
                             key={key}
                             onClick={() => { setMode(key); }}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-semibold transition-all whitespace-nowrap min-w-[80px] ${mode === key
+                            className={`flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap min-w-[65px] ${mode === key
                                 ? 'bg-brand-green text-black shadow-lg shadow-brand-green/20'
                                 : 'bg-dark-card border border-dark-border text-slate-400'
                                 }`}
                         >
-                            <Icon size={13} />
+                            <Icon size={12} />
                             {label}
                         </button>
                     ))}

@@ -310,7 +310,9 @@
             "exceeded": "🚨 You exceeded your {{category}} budget by ₹{{amount}}.",
             "usedPct": "⚠️ You have used {{pct}}% of your {{category}} budget.",
             "savedWell": "🎉 Great job! You saved ₹{{amount}} this month ({{rate}}% savings rate)."
-        }
+        },
+        "subs": "Subs",
+        "subsSubtitle": "Subscriptions & recurring"
     },
     "schemes": {
         "title": "Government Schemes",

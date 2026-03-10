@@ -26,7 +26,7 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 
 export default function ReportsTab() {
     const { t } = useTranslation();
-    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, netWorthHistory, insights } = useBudgetTrackerStore();
+    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, netWorthHistory, insights, subscriptions } = useBudgetTrackerStore();
 
     const pieChartRef = useRef<any>(null);
 
@@ -62,12 +62,25 @@ export default function ReportsTab() {
     const hasYearData = yearEntries.length > 0;
     const hasData = period === 'month' ? hasMonthData : hasYearData;
 
+    // Subscriptions: calculate monthly equivalent
+    const activeSubsMonthly = useMemo(() => {
+        return subscriptions
+            .filter(s => s.isActive)
+            .reduce((sum, s) => {
+                if (s.billingCycle === 'monthly') return sum + s.amount;
+                if (s.billingCycle === 'quarterly') return sum + s.amount / 3;
+                if (s.billingCycle === 'yearly') return sum + s.amount / 12;
+                return sum;
+            }, 0);
+    }, [subscriptions]);
+
     const effectiveFixed = period === 'month'
         ? (hasMonthData ? getTotalFixed() : 0)
         : (hasYearData ? getTotalFixed() * 12 : 0);
     const totalFixed = effectiveFixed;
     const totalDaily = activeEntries.reduce((s, e) => s + e.amount, 0);
-    const totalExpenses = totalFixed + totalDaily;
+    const totalSubs = period === 'month' ? activeSubsMonthly : activeSubsMonthly * 12;
+    const totalExpenses = totalFixed + totalDaily + (hasData ? totalSubs : 0);
     const income = (period === 'month' ? (hasMonthData ? monthlyIncome : 0) : (hasYearData ? monthlyIncome * 12 : 0));
     const savings = income - totalExpenses;
     const savingsRate = income > 1 ? (savings / income) * 100 : 0;

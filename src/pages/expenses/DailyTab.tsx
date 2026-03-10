@@ -304,7 +304,13 @@ export default function DailyTab() {
                                             )}
                                         </p>
                                     </div>
-                                    <p className="text-red-400 font-bold text-sm mr-2">-₹{exp.amount.toLocaleString('en-IN')}</p>
+                                    <p className="text-red-400 font-bold text-sm mr-1">-₹{exp.amount.toLocaleString('en-IN')}</p>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); deleteEntry(exp.id); }}
+                                        className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors flex-shrink-0"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
                                 </motion.div>
                             </div>
                         );
