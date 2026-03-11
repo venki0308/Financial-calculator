@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import {
     ArrowLeft, Info, Share2, ChevronDown, ChevronUp, Save, Check, Download,
-    Calculator, TrendingDown, FileText, AlertTriangle, ChevronLeft, ChevronRight, Calendar
+    Calculator, TrendingDown, FileText, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -114,11 +114,10 @@ export default function EMICalculator() {
     const insights = useMemo(() => {
         const items: { type: 'warning' | 'caution' | 'positive' | 'tip'; text: string }[] = [];
 
-        // Rule 1: EMI to Income Ratio
         if (monthlyIncome > 0) {
             const emiRatio = (result.emi / monthlyIncome) * 100;
             if (emiRatio > 40) {
-                items.push({ type: 'warning', text: `Your EMI exceeds ${emiRatio.toFixed(0)}% of income. Most banks recommend keeping EMI below 40% of take-home salary. Consider longer tenure or lower loan amount.` });
+                items.push({ type: 'warning', text: `Your EMI exceeds ${emiRatio.toFixed(0)}% of income. Most banks recommend keeping EMI below 40% of take-home salary.` });
             } else if (emiRatio >= 30) {
                 items.push({ type: 'caution', text: `Your EMI is ${emiRatio.toFixed(0)}% of income — manageable but at the higher end. Maintain 6 months EMI (${formatINR(result.emi * 6)}) as emergency fund.` });
             } else {
@@ -126,14 +125,12 @@ export default function EMICalculator() {
             }
         }
 
-        // Rule 2: Total Interest Warning
         if (result.totalInterest > principal) {
-            items.push({ type: 'warning', text: `You will pay more in interest (${formatINR(result.totalInterest)}) than the loan itself (${formatINR(principal)}). Consider increasing EMI or making annual prepayments.` });
+            items.push({ type: 'warning', text: `You will pay more in interest (${formatINR(result.totalInterest)}) than the loan itself. Consider shorter tenure or prepayments.` });
         }
 
-        // Rule 3: Prepayment Suggestion
         if (prepayInsight && prepayInsight.interestSaved > 10000) {
-            items.push({ type: 'tip', text: `Paying just ${formatINR(prepayInsight.extraMonthlyAmount)} extra per month saves ${formatINR(prepayInsight.interestSaved)} in interest and closes loan ${prepayInsight.monthsSaved} months earlier.` });
+            items.push({ type: 'tip', text: `Paying just ${formatINR(prepayInsight.extraMonthlyAmount)} extra/month saves ${formatINR(prepayInsight.interestSaved)} and closes loan ${prepayInsight.monthsSaved} months earlier.` });
         }
 
         return items;
@@ -166,24 +163,26 @@ export default function EMICalculator() {
     };
 
     const isAlreadySaved = useMemo(() => {
-        return savedCalculations.some(s => s.calculatorType === 'Loan EMI Calculator' && JSON.stringify(s.inputValues) === JSON.stringify({ principal, rate, months, method, loanType }));
+        return savedCalculations.some(s =>
+            s.calculatorType === 'Loan EMI Calculator' &&
+            s.inputValues.principal === principal &&
+            s.inputValues.rate === rate &&
+            s.inputValues.months === months &&
+            s.inputValues.method === method &&
+            s.inputValues.loanType === loanType
+        );
     }, [savedCalculations, principal, rate, months, method, loanType]);
 
-    // ─── PDF Export (3-page loan report) ────────────────────────────────
+    // ─── PDF Export ─────────────────────────────────────────────────────
     const handleDownloadPDF = async () => {
         let chartImage: string | undefined;
         if (chartRef.current) chartImage = chartRef.current.toBase64Image();
 
-        const headers = ['Month', 'Opening Bal', 'EMI', 'Principal', 'Interest', 'Closing Bal', 'Cum. Principal', 'Cum. Interest'];
+        const headers = ['Month', 'Opening Bal', 'EMI', 'Principal', 'Interest', 'Closing Bal', 'Cum.P', 'Cum.I'];
         const data = (result.schedule || []).map(row => [
-            row.month.toString(),
-            formatINR(row.openingBalance),
-            formatINR(row.emi),
-            formatINR(row.principal),
-            formatINR(row.interest),
-            formatINR(row.closingBalance),
-            formatINR(row.cumulativePrincipal),
-            formatINR(row.cumulativeInterest),
+            row.month.toString(), formatINR(row.openingBalance), formatINR(row.emi),
+            formatINR(row.principal), formatINR(row.interest), formatINR(row.closingBalance),
+            formatINR(row.cumulativePrincipal), formatINR(row.cumulativeInterest),
         ]);
         const chartSummary = [
             { label: 'Loan Type', value: loanType, color: [79, 70, 229] as [number, number, number] },
@@ -194,7 +193,8 @@ export default function EMICalculator() {
             { label: 'Total Interest', value: formatINR(result.totalInterest), color: [239, 68, 68] as [number, number, number] },
             { label: 'Total Payment', value: formatINR(result.totalPayment), color: [16, 185, 129] as [number, number, number] },
         ];
-        await exportToPDF(`${loanType} - Loan Report`, headers, data, `FinCalix_${loanType.replace(/\s/g, '')}_${new Date().toISOString().slice(0, 10)}`, chartImage, chartSummary);
+        await exportToPDF(`${loanType} - Loan Report`, headers, data,
+            `FinCalix_${loanType.replace(/\s/g, '')}_${new Date().toISOString().slice(0, 10)}`, chartImage, chartSummary);
     };
 
     const handleDownloadExcel = async () => {
@@ -207,38 +207,38 @@ export default function EMICalculator() {
         await exportToExcel(headers, data, `FinCalix_${loanType.replace(/\s/g, '')}_${new Date().toISOString().slice(0, 10)}`);
     };
 
-    // ─── Insight colors ─────────────────────────────────────────────────
+    // ─── Insight styles ─────────────────────────────────────────────────
     const insightStyle = (type: string) => {
         switch (type) {
-            case 'warning': return { bg: 'bg-red-500/10', border: 'border-red-500/30', text: 'text-red-400', icon: '⚠️' };
-            case 'caution': return { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400', icon: '⚡' };
-            case 'positive': return { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', icon: '✅' };
-            case 'tip': return { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', icon: '💡' };
-            default: return { bg: 'bg-slate-500/10', border: 'border-slate-500/30', text: 'text-slate-400', icon: 'ℹ️' };
+            case 'warning': return { bg: 'bg-red-50 dark:bg-red-500/10', border: 'border-red-200 dark:border-red-500/30', text: 'text-red-700 dark:text-red-400', icon: '⚠️' };
+            case 'caution': return { bg: 'bg-amber-50 dark:bg-amber-500/10', border: 'border-amber-200 dark:border-amber-500/30', text: 'text-amber-700 dark:text-amber-400', icon: '⚡' };
+            case 'positive': return { bg: 'bg-emerald-50 dark:bg-emerald-500/10', border: 'border-emerald-200 dark:border-emerald-500/30', text: 'text-emerald-700 dark:text-emerald-400', icon: '✅' };
+            case 'tip': return { bg: 'bg-blue-50 dark:bg-blue-500/10', border: 'border-blue-200 dark:border-blue-500/30', text: 'text-blue-700 dark:text-blue-400', icon: '💡' };
+            default: return { bg: 'bg-slate-50 dark:bg-slate-500/10', border: 'border-slate-200 dark:border-slate-500/30', text: 'text-slate-700 dark:text-slate-400', icon: 'ℹ️' };
         }
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
+        <div className="min-h-dvh bg-white dark:bg-[#0F172A] animate-fade-in">
             {/* ── Header ───────────────────────────────────────────── */}
-            <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3">
+            <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                            <ArrowLeft size={18} className="text-slate-400" />
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
+                            <ArrowLeft size={18} className="text-slate-600 dark:text-slate-400" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-white">Loan Analytics</h1>
-                            <p className="text-slate-500 text-xs">Banking-grade EMI calculator</p>
+                            <h1 className="text-lg font-bold text-slate-900 dark:text-white">Loan Analytics</h1>
+                            <p className="text-slate-500 dark:text-slate-500 text-xs">Banking-grade EMI calculator</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                            <Info size={16} className="text-slate-400" />
+                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
+                            <Info size={16} className="text-slate-600 dark:text-slate-400" />
                         </button>
-                        <button className="p-2 rounded-xl bg-dark-card border border-dark-border"
+                        <button className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border"
                             onClick={() => nativeShare('EMI Calculator', 'Calculate your EMI with FinCalix!', window.location.href)}>
-                            <Share2 size={16} className="text-slate-400" />
+                            <Share2 size={16} className="text-slate-600 dark:text-slate-400" />
                         </button>
                     </div>
                 </div>
@@ -253,7 +253,7 @@ export default function EMICalculator() {
                         <button key={t} onClick={() => setLoanType(t)}
                             className={`px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${loanType === t
                                 ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/20'
-                                : 'bg-dark-card border border-dark-border text-slate-400 hover:border-slate-600'
+                                : 'bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-600'
                             }`}>
                             <span>{LOAN_TYPE_CONFIGS[t].icon}</span>
                             {t}
@@ -262,12 +262,12 @@ export default function EMICalculator() {
                 </div>
 
                 {/* ── Interest Method Toggle ──────────────────────── */}
-                <div className="flex rounded-2xl bg-dark-card border border-dark-border p-1 mb-4">
+                <div className="flex rounded-2xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border p-1 mb-4">
                     {(['reducing', 'flat'] as const).map((m) => (
                         <button key={m} onClick={() => setMethod(m)}
                             className={`flex-1 py-2.5 rounded-xl text-xs font-medium transition-all ${method === m
                                 ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white'
-                                : 'text-slate-500'
+                                : 'text-slate-500 dark:text-slate-500'
                             }`}>
                             {m === 'reducing' ? '📉 Reducing Balance' : '📊 Flat Rate'}
                         </button>
@@ -277,8 +277,8 @@ export default function EMICalculator() {
                 {/* Flat Rate comparison banner */}
                 {effectiveRate && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                        className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
-                        <p className="text-xs text-amber-300">
+                        className="mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30">
+                        <p className="text-xs text-amber-700 dark:text-amber-300">
                             <span className="font-bold">Effective Rate:</span> This {rate}% flat rate = ~{effectiveRate}% reducing balance rate.
                             Banks use reducing balance for home/car loans.
                         </p>
@@ -295,7 +295,7 @@ export default function EMICalculator() {
                         min={1} max={30} suffix="%" step={0.05} helperText="1% - 30%" />
 
                     <div>
-                        <div className="flex rounded-xl bg-dark-card border border-dark-border p-1 mb-2">
+                        <div className="flex rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border p-1 mb-2">
                             {(['months', 'years'] as const).map((u) => (
                                 <button key={u} onClick={() => {
                                     if (u === 'years' && tenureUnit === 'months') setTenure(Math.round(tenure / 12) || 1);
@@ -304,7 +304,7 @@ export default function EMICalculator() {
                                 }}
                                     className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all capitalize ${tenureUnit === u
                                         ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white'
-                                        : 'text-slate-500'
+                                        : 'text-slate-500 dark:text-slate-500'
                                     }`}>
                                     {u}
                                 </button>
@@ -318,15 +318,15 @@ export default function EMICalculator() {
                 </div>
 
                 {/* ── Result Card ─────────────────────────────────── */}
-                <motion.div layout className="p-5 rounded-2xl bg-dark-card border border-dark-border mb-4">
+                <motion.div layout className="p-5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border shadow-lg dark:shadow-none mb-4">
                     <div className="text-center mb-5">
-                        <p className="text-slate-400 text-sm mb-1">Monthly EMI</p>
+                        <p className="text-slate-500 text-sm mb-1">Monthly EMI</p>
                         <motion.p key={result.emi} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                            className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">
+                            className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-500 dark:from-emerald-400 dark:to-green-300 bg-clip-text text-transparent">
                             {formatINR(result.emi)}
                         </motion.p>
                         {result.emi > 100000 && (
-                            <p className="text-slate-500 text-[10px] mt-1">({formatINRWords(result.emi)})</p>
+                            <p className="text-slate-400 dark:text-slate-500 text-[10px] mt-1">({formatINRWords(result.emi)})</p>
                         )}
                     </div>
 
@@ -339,28 +339,28 @@ export default function EMICalculator() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mb-5">
-                        <div className="text-center p-3 rounded-xl bg-slate-800/30">
+                        <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30">
                             <div className="flex items-center justify-center gap-1.5 mb-1">
                                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                                 <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Principal</span>
                             </div>
-                            <p className="text-white font-bold text-sm">{formatINR(principal)}</p>
-                            {principal >= 100000 && <p className="text-slate-500 text-[9px] mt-0.5">({formatINRWords(principal)})</p>}
+                            <p className="text-slate-900 dark:text-white font-bold text-sm">{formatINR(principal)}</p>
+                            {principal >= 100000 && <p className="text-slate-400 dark:text-slate-500 text-[9px] mt-0.5">({formatINRWords(principal)})</p>}
                         </div>
-                        <div className="text-center p-3 rounded-xl bg-slate-800/30">
+                        <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30">
                             <div className="flex items-center justify-center gap-1.5 mb-1">
                                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                                 <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Interest</span>
                             </div>
-                            <p className="text-white font-bold text-sm">{formatINR(result.totalInterest)}</p>
-                            {result.totalInterest >= 100000 && <p className="text-slate-500 text-[9px] mt-0.5">({formatINRWords(result.totalInterest)})</p>}
+                            <p className="text-slate-900 dark:text-white font-bold text-sm">{formatINR(result.totalInterest)}</p>
+                            {result.totalInterest >= 100000 && <p className="text-slate-400 dark:text-slate-500 text-[9px] mt-0.5">({formatINRWords(result.totalInterest)})</p>}
                         </div>
                     </div>
 
-                    <div className="pt-4 border-t border-dark-border/40 text-center">
+                    <div className="pt-4 border-t border-slate-200 dark:border-dark-border/40 text-center">
                         <p className="text-slate-500 text-xs mb-1">Total Payment</p>
-                        <p className="text-xl font-bold text-white">{formatINR(result.totalPayment)}</p>
-                        {result.totalPayment >= 100000 && <p className="text-slate-500 text-[9px] mt-0.5">({formatINRWords(result.totalPayment)})</p>}
+                        <p className="text-xl font-bold text-slate-900 dark:text-white">{formatINR(result.totalPayment)}</p>
+                        {result.totalPayment >= 100000 && <p className="text-slate-400 dark:text-slate-500 text-[9px] mt-0.5">({formatINRWords(result.totalPayment)})</p>}
                     </div>
                 </motion.div>
 
@@ -371,8 +371,7 @@ export default function EMICalculator() {
                         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Smart EMI Insights</span>
                     </div>
 
-                    {/* Optional income input */}
-                    <div className="p-3 rounded-xl bg-dark-card border border-dark-border mb-3">
+                    <div className="p-3 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border mb-3">
                         <NumberInput label="Your Monthly Income (optional)" value={monthlyIncome} onChange={setMonthlyIncome}
                             min={0} max={10000000} prefix="₹" helperText="Enter to see EMI-to-income analysis" />
                     </div>
@@ -394,7 +393,7 @@ export default function EMICalculator() {
                 {method === 'reducing' && result.schedule && result.schedule.length > 0 && (
                     <div className="mb-4">
                         <button onClick={() => { setShowAmortization(!showAmortization); setAmortPage(0); }}
-                            className="w-full py-3.5 rounded-2xl border border-dark-border text-slate-300 font-bold text-sm bg-dark-card/50 flex items-center justify-center gap-2 mb-3">
+                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 font-bold text-sm bg-white dark:bg-dark-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
                             <Calculator size={16} />
                             {showAmortization ? 'Hide' : 'View'} Amortization Schedule
                             {showAmortization ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -404,10 +403,10 @@ export default function EMICalculator() {
                             {showAmortization && (
                                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                                     exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                                    <div className="bg-dark-card border border-dark-border rounded-2xl p-3 overflow-x-auto">
+                                    <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-2xl p-3 overflow-x-auto shadow-sm dark:shadow-none">
                                         <table className="w-full text-[10px] min-w-[650px]">
                                             <thead>
-                                                <tr className="text-slate-500 border-b border-dark-border">
+                                                <tr className="text-slate-500 border-b border-slate-200 dark:border-dark-border">
                                                     <th className="py-2 text-left font-semibold">Mo.</th>
                                                     <th className="py-2 text-right font-semibold">Opening</th>
                                                     <th className="py-2 text-right font-semibold">EMI</th>
@@ -422,30 +421,29 @@ export default function EMICalculator() {
                                                 {pagedSchedule.map((row) => {
                                                     const isYearEnd = row.month % 12 === 0;
                                                     return (
-                                                        <tr key={row.month} className={`border-b border-dark-border/30 ${isYearEnd ? 'bg-violet-500/5' : ''}`}>
-                                                            <td className={`py-1.5 text-slate-300 ${isYearEnd ? 'font-bold text-violet-300' : ''}`}>
+                                                        <tr key={row.month} className={`border-b border-slate-100 dark:border-dark-border/30 ${isYearEnd ? 'bg-violet-50 dark:bg-violet-500/5' : ''}`}>
+                                                            <td className={`py-1.5 text-slate-700 dark:text-slate-300 ${isYearEnd ? 'font-bold text-violet-700 dark:text-violet-300' : ''}`}>
                                                                 {row.month}
-                                                                {isYearEnd && <span className="text-[8px] text-violet-400 ml-1">Y{row.month / 12}</span>}
+                                                                {isYearEnd && <span className="text-[8px] text-violet-500 dark:text-violet-400 ml-1">Y{row.month / 12}</span>}
                                                             </td>
-                                                            <td className="py-1.5 text-right text-slate-400">{formatINR(row.openingBalance)}</td>
-                                                            <td className="py-1.5 text-right text-white font-medium">{formatINR(row.emi)}</td>
-                                                            <td className="py-1.5 text-right text-emerald-400">{formatINR(row.principal)}</td>
-                                                            <td className="py-1.5 text-right text-amber-400">{formatINR(row.interest)}</td>
-                                                            <td className="py-1.5 text-right text-white">{formatINR(row.closingBalance)}</td>
-                                                            <td className="py-1.5 text-right text-slate-500">{formatINR(row.cumulativePrincipal)}</td>
-                                                            <td className="py-1.5 text-right text-slate-500">{formatINR(row.cumulativeInterest)}</td>
+                                                            <td className="py-1.5 text-right text-slate-500 dark:text-slate-400">{formatINR(row.openingBalance)}</td>
+                                                            <td className="py-1.5 text-right text-slate-800 dark:text-white font-medium">{formatINR(row.emi)}</td>
+                                                            <td className="py-1.5 text-right text-emerald-600 dark:text-emerald-400">{formatINR(row.principal)}</td>
+                                                            <td className="py-1.5 text-right text-amber-600 dark:text-amber-400">{formatINR(row.interest)}</td>
+                                                            <td className="py-1.5 text-right text-slate-800 dark:text-white">{formatINR(row.closingBalance)}</td>
+                                                            <td className="py-1.5 text-right text-slate-400 dark:text-slate-500">{formatINR(row.cumulativePrincipal)}</td>
+                                                            <td className="py-1.5 text-right text-slate-400 dark:text-slate-500">{formatINR(row.cumulativeInterest)}</td>
                                                         </tr>
                                                     );
                                                 })}
                                             </tbody>
                                         </table>
 
-                                        {/* Pagination */}
                                         {totalPages > 1 && (
-                                            <div className="flex items-center justify-between pt-3 border-t border-dark-border mt-2">
+                                            <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-dark-border mt-2">
                                                 <button onClick={() => setAmortPage(Math.max(0, amortPage - 1))}
                                                     disabled={amortPage === 0}
-                                                    className="p-2 rounded-lg bg-slate-800 text-slate-400 disabled:opacity-30">
+                                                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 disabled:opacity-30">
                                                     <ChevronLeft size={14} />
                                                 </button>
                                                 <span className="text-slate-500 text-[10px] font-medium">
@@ -453,7 +451,7 @@ export default function EMICalculator() {
                                                 </span>
                                                 <button onClick={() => setAmortPage(Math.min(totalPages - 1, amortPage + 1))}
                                                     disabled={amortPage === totalPages - 1}
-                                                    className="p-2 rounded-lg bg-slate-800 text-slate-400 disabled:opacity-30">
+                                                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 disabled:opacity-30">
                                                     <ChevronRight size={14} />
                                                 </button>
                                             </div>
@@ -469,7 +467,7 @@ export default function EMICalculator() {
                 {method === 'reducing' && result.schedule && result.schedule.length > 0 && (
                     <div className="mb-4">
                         <button onClick={() => setShowForeclosure(!showForeclosure)}
-                            className="w-full py-3.5 rounded-2xl border border-dark-border text-slate-300 font-bold text-sm bg-dark-card/50 flex items-center justify-center gap-2 mb-3">
+                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 font-bold text-sm bg-white dark:bg-dark-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
                             <TrendingDown size={16} />
                             {showForeclosure ? 'Hide' : 'Foreclosure Calculator'}
                             {showForeclosure ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -479,9 +477,9 @@ export default function EMICalculator() {
                             {showForeclosure && (
                                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                                     exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                                    <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
-                                        <h3 className="text-white font-bold text-sm flex items-center gap-2">
-                                            <TrendingDown size={16} className="text-violet-400" />
+                                    <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none">
+                                        <h3 className="text-slate-800 dark:text-white font-bold text-sm flex items-center gap-2">
+                                            <TrendingDown size={16} className="text-violet-600 dark:text-violet-400" />
                                             Foreclosure Simulation
                                         </h3>
 
@@ -498,39 +496,36 @@ export default function EMICalculator() {
                                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-3">
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {[
-                                                        { label: 'Outstanding Principal', value: formatINR(foreclosureResult.outstandingPrincipal), color: 'text-white' },
-                                                        { label: 'Interest Already Paid', value: formatINR(foreclosureResult.totalInterestPaid), color: 'text-amber-400' },
-                                                        { label: 'Interest Saved', value: formatINR(foreclosureResult.interestSaved), color: 'text-emerald-400' },
-                                                        { label: 'Foreclosure Charge', value: formatINR(foreclosureResult.foreclosureCharge), color: 'text-red-400' },
+                                                        { label: 'Outstanding Principal', value: formatINR(foreclosureResult.outstandingPrincipal), color: 'text-slate-800 dark:text-white' },
+                                                        { label: 'Interest Already Paid', value: formatINR(foreclosureResult.totalInterestPaid), color: 'text-amber-600 dark:text-amber-400' },
+                                                        { label: 'Interest Saved', value: formatINR(foreclosureResult.interestSaved), color: 'text-emerald-600 dark:text-emerald-400' },
+                                                        { label: 'Foreclosure Charge', value: formatINR(foreclosureResult.foreclosureCharge), color: 'text-red-600 dark:text-red-400' },
                                                     ].map(item => (
-                                                        <div key={item.label} className="p-3 rounded-xl bg-slate-800/40 text-center">
+                                                        <div key={item.label} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-center">
                                                             <p className="text-slate-500 text-[9px] uppercase font-bold mb-1">{item.label}</p>
                                                             <p className={`font-bold text-xs ${item.color}`}>{item.value}</p>
                                                         </div>
                                                     ))}
                                                 </div>
 
-                                                {/* Total Settlement */}
-                                                <div className="p-4 rounded-xl bg-gradient-to-r from-violet-500/10 to-indigo-500/10 border border-violet-500/30 text-center">
-                                                    <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1">Total Amount to Pay Bank Today</p>
-                                                    <p className="text-xl font-bold text-white">{formatINR(foreclosureResult.totalSettlement)}</p>
+                                                <div className="p-4 rounded-xl bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-500/10 dark:to-indigo-500/10 border border-violet-200 dark:border-violet-500/30 text-center">
+                                                    <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-1">Total Amount to Pay Bank Today</p>
+                                                    <p className="text-xl font-bold text-slate-900 dark:text-white">{formatINR(foreclosureResult.totalSettlement)}</p>
                                                     {foreclosureResult.totalSettlement >= 100000 && (
-                                                        <p className="text-slate-500 text-[9px] mt-0.5">({formatINRWords(foreclosureResult.totalSettlement)})</p>
+                                                        <p className="text-slate-400 dark:text-slate-500 text-[9px] mt-0.5">({formatINRWords(foreclosureResult.totalSettlement)})</p>
                                                     )}
                                                 </div>
 
-                                                {/* Net Benefit */}
                                                 <div className={`p-4 rounded-xl border text-center ${foreclosureResult.netBenefit >= 0
-                                                    ? 'bg-emerald-500/10 border-emerald-500/30'
-                                                    : 'bg-red-500/10 border-red-500/30'
-                                                }`}>
-                                                    <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-1">Net Benefit of Foreclosing</p>
-                                                    <p className={`text-lg font-bold ${foreclosureResult.netBenefit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                    ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30'
+                                                    : 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30'
+                                                    }`}>
+                                                    <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-1">Net Benefit of Foreclosing</p>
+                                                    <p className={`text-lg font-bold ${foreclosureResult.netBenefit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                                                         {foreclosureResult.netBenefit >= 0 ? '+' : ''}{formatINR(foreclosureResult.netBenefit)}
                                                     </p>
-                                                    <p className="text-slate-500 text-[9px] mt-1">
-                                                        You save {formatINR(foreclosureResult.interestSaved)} in interest.
-                                                        Foreclosure charge is {formatINR(foreclosureResult.foreclosureCharge)}.
+                                                    <p className="text-slate-400 dark:text-slate-500 text-[9px] mt-1">
+                                                        You save {formatINR(foreclosureResult.interestSaved)} in interest. Charge: {formatINR(foreclosureResult.foreclosureCharge)}.
                                                     </p>
                                                 </div>
                                             </motion.div>
@@ -546,20 +541,20 @@ export default function EMICalculator() {
                 <div className="space-y-3 mb-5">
                     <div className="flex gap-3">
                         <motion.button whileTap={{ scale: 0.97 }} onClick={handleDownloadPDF}
-                            className="flex-1 py-4 rounded-2xl bg-violet-500/10 border border-violet-500/30 text-violet-400 font-bold text-sm flex items-center justify-center gap-2">
+                            className="flex-1 py-4 rounded-2xl bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/30 text-violet-600 dark:text-violet-400 font-bold text-sm flex items-center justify-center gap-2">
                             <FileText size={16} /> PDF Report
                         </motion.button>
                         <motion.button whileTap={{ scale: 0.97 }} onClick={handleDownloadExcel}
-                            className="flex-1 py-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center gap-2">
+                            className="flex-1 py-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center justify-center gap-2">
                             <Download size={16} /> Excel
                         </motion.button>
                     </div>
                     <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave}
                         disabled={isSaved || isAlreadySaved}
                         className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${isSaved || isAlreadySaved
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
                             : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/20'
-                        }`}>
+                            }`}>
                         {isSaved || isAlreadySaved ? <><Check size={18} /> Saved</> : <><Save size={18} /> Save Calculation</>}
                     </motion.button>
                 </div>

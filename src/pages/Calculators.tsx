@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronRight, Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare } from 'lucide-react';
+import { Search, ChevronRight, Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare, Calendar, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { AnalyticsService } from '../lib/analytics';
@@ -52,6 +52,9 @@ const allCalcs: CalcItem[] = [
 
     // Tools
     { nameKey: 'Scientific Calculator', descKey: 'Trig, log, binary, hex', icon: Sparkles, color: '#EC4899', path: '/calculator/scientific', category: 'tools' },
+    { nameKey: 'Age Calculator', descKey: 'Exact age, generation & zodiac', icon: Calendar, color: '#F97316', path: '/calculator/age', category: 'tools' },
+    { nameKey: 'World Clock', descKey: 'Compare time across cities', icon: Globe, color: '#3B82F6', path: '/world-clock', category: 'tools' },
+    { nameKey: 'PPF Advanced', descKey: 'Monthly/quarterly/yearly PPF', icon: Landmark, color: '#10B981', path: '/calculator/ppf-advanced', category: 'retirement' },
 ];
 
 // Most Used calculators (featured)
@@ -123,7 +126,7 @@ export default function Calculators() {
         <div className="px-4 pt-14 animate-fade-in pb-24">
             {/* Header */}
             <div className="mb-5">
-                <h1 className="text-2xl font-bold text-white">{t('calculators.title')}</h1>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('calculators.title')}</h1>
                 <p className="text-slate-500 text-sm mt-1">{t('calculators.subtitle')}</p>
             </div>
 
@@ -135,7 +138,7 @@ export default function Calculators() {
                     placeholder={t('calculators.search')}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 rounded-2xl bg-dark-card border border-dark-border text-white placeholder-slate-500 text-sm focus:outline-none focus:border-brand-green/50 transition-colors"
+                    className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:border-brand-green/50 transition-colors"
                 />
             </div>
 
@@ -186,7 +189,7 @@ export default function Calculators() {
                                 key={item.path}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => navigate(item.path)}
-                                className="flex items-center gap-3 p-3.5 rounded-2xl bg-dark-card border border-dark-border hover:border-slate-600 transition-all"
+                                className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600 transition-all"
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.06 }}
@@ -194,7 +197,7 @@ export default function Calculators() {
                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${item.color}15` }}>
                                     <item.icon size={18} style={{ color: item.color }} />
                                 </div>
-                                <span className="text-white font-medium text-xs truncate">{t(item.nameKey as any)}</span>
+                                <span className="text-slate-900 dark:text-white font-medium text-xs truncate">{t(item.nameKey as any)}</span>
                             </motion.button>
                         ))}
                     </div>
@@ -238,7 +241,7 @@ export default function Calculators() {
                                 onClick={() => setSelectedCategory(cat)}
                                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${isActive
                                         ? 'bg-brand-green text-black shadow-lg shadow-brand-green/20'
-                                        : 'bg-dark-card border border-dark-border text-slate-400 hover:border-slate-600'
+                                        : 'bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
                                     }`}
                             >
                                 {cat === 'all' ? (
@@ -281,14 +284,14 @@ export default function Calculators() {
                                         key={item.nameKey + item.category}
                                         whileTap={{ scale: 0.97 }}
                                         onClick={() => navigate(item.path)}
-                                        className="w-full flex items-center gap-4 p-4 rounded-2xl bg-dark-card border border-dark-border hover:border-slate-600 transition-colors animate-slide-up"
+                                        className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600 transition-colors animate-slide-up"
                                         style={{ animationDelay: `${i * 40}ms` }}
                                     >
                                         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${item.color}15` }}>
                                             <item.icon size={20} style={{ color: item.color }} />
                                         </div>
                                         <div className="flex-1 text-left">
-                                            <h3 className="text-white font-medium text-sm">{t(item.nameKey as any)}</h3>
+                                            <h3 className="text-slate-800 dark:text-white font-medium text-sm">{t(item.nameKey as any)}</h3>
                                             <p className="text-slate-500 text-xs mt-0.5">{t(item.descKey as any)}</p>
                                         </div>
                                         <ChevronRight size={16} className="text-slate-600 flex-shrink-0" />

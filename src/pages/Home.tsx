@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare } from 'lucide-react';
+import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useTranslation } from 'react-i18next';
@@ -39,6 +39,9 @@ const calcCatalog: Record<string, { icon: React.ElementType; color: string; labe
     '/calculator/gst': { icon: Receipt, color: '#06B6D4', label: 'GST Calculator' },
     '/calculator/break-even': { icon: BarChart3, color: '#10B981', label: 'Break Even' },
     '/calculator/car-loan': { icon: Car, color: '#3B82F6', label: 'Car Loan' },
+    '/calculator/age': { icon: Calendar, color: '#F97316', label: 'Age Calculator' },
+    '/world-clock': { icon: Globe, color: '#3B82F6', label: 'World Clock' },
+    '/calculator/ppf-advanced': { icon: Landmark, color: '#10B981', label: 'PPF Advanced' },
 };
 
 // Default items if history is empty
@@ -244,6 +247,38 @@ export default function Home() {
                         <p className="text-white/60 text-[10px] mt-0.5">Loan A vs B, SIP rates, FD tenures</p>
                     </div>
                     <ChevronRight size={16} className="text-white/40" />
+                </motion.button>
+            </section>
+
+            {/* Utility Tools */}
+            <section className="mb-8 grid grid-cols-2 gap-3">
+                <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate('/world-clock')}
+                    className="p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 border border-blue-400/30 shadow-lg text-left"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 }}
+                >
+                    <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
+                        <Globe size={18} className="text-white" />
+                    </div>
+                    <h3 className="text-white font-bold text-sm">World Clock</h3>
+                    <p className="text-white/60 text-[10px] mt-0.5">Compare time zones</p>
+                </motion.button>
+                <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate('/calculator/age')}
+                    className="p-4 rounded-2xl bg-gradient-to-br from-orange-500 to-pink-600 border border-orange-400/30 shadow-lg text-left"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.45 }}
+                >
+                    <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
+                        <Calendar size={18} className="text-white" />
+                    </div>
+                    <h3 className="text-white font-bold text-sm">Age Calculator</h3>
+                    <p className="text-white/60 text-[10px] mt-0.5">Know your exact age</p>
                 </motion.button>
             </section>
 

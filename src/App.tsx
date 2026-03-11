@@ -54,6 +54,9 @@ import BudgetTracker from './pages/BudgetTracker';
 import GoalPlanner from './pages/GoalPlanner';
 import AIFinancialAssistant from './pages/AIFinancialAssistant';
 import CompareCalculator from './pages/CompareCalculator';
+import AgeCalculator from './pages/AgeCalculator';
+import WorldClock from './pages/WorldClock';
+import AdvancedPPFCalculator from './pages/AdvancedPPFCalculator';
 
 // Support Pages
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -202,6 +205,9 @@ function AppContent() {
                     <Route path="/ai-advisor" element={<Navigate to="/financial-advisor" replace />} />
                     <Route path="/compare" element={<CompareCalculator />} />
                     <Route path="/calculator/scientific" element={<ScientificCalculator />} />
+                    <Route path="/calculator/age" element={<AgeCalculator />} />
+                    <Route path="/world-clock" element={<WorldClock />} />
+                    <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/" replace />} />
