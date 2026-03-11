@@ -28,6 +28,7 @@ import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { nativeShare } from '../utils/nativeShare';
+import { triggerCalcNotification } from '../services/calcNotifications';
 
 ChartJS.register(
     ArcElement,
@@ -80,6 +81,16 @@ export default function SIPCalculator() {
 
     // ---- Basic SIP calculation ----
     const basicResult = useMemo(() => calculateSIP(monthly, rate, years), [monthly, rate, years]);
+
+    // ─── Notification trigger ────
+    useEffect(() => {
+        if (!basicResult.futureValue) return;
+        const t = setTimeout(() => {
+            triggerCalcNotification('sip', `Future value ₹${Math.round(basicResult.futureValue).toLocaleString('en-IN')}`);
+        }, 2000);
+        return () => clearTimeout(t);
+    }, [basicResult.futureValue]);
+
 
     // ---- Step-Up SIP calculation ----
     const stepUpResult = useMemo(() => {

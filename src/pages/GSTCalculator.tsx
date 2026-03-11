@@ -24,6 +24,7 @@ import {
 } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { AnalyticsService } from '../lib/analytics';
+import { triggerCalcNotification } from '../services/calcNotifications';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
@@ -95,6 +96,16 @@ export default function GSTCalculator() {
             return { base, gst, cgst: isIGST ? 0 : gst / 2, sgst: isIGST ? 0 : gst / 2, igst: isIGST ? gst : 0, total: stdAmount };
         }
     }, [stdAmount, stdRate, stdDirection, isIGST]);
+
+    // ─── Notification trigger ────
+    useEffect(() => {
+        if (!stdResult?.total) return;
+        const t = setTimeout(() => {
+            triggerCalcNotification('gst', `Total ₹${Math.round(stdResult.total).toLocaleString('en-IN')} @${stdRate}%`);
+        }, 2000);
+        return () => clearTimeout(t);
+    }, [stdResult?.total, stdRate]);
+
 
     // ── Reverse calculation (explicit) ──
     const reverseResult = useMemo(() => {

@@ -1,10 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bell, CheckCheck, Trash2, BellOff, Settings2 } from 'lucide-react';
+import { ArrowLeft, Bell, CheckCheck, Trash2, BellOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
 import { AnalyticsService } from '../lib/analytics';
 import { useNotificationStore, AppNotification } from '../store/useNotificationStore';
-import { simulateAllNotifications } from '../services/NotificationScheduler';
 
 const TYPE_META: Record<string, { emoji: string; color: string; bg: string }> = {
     emi_reminder:    { emoji: '💳', color: '#3B82F6', bg: 'bg-blue-50 dark:bg-blue-500/10' },
@@ -148,12 +147,6 @@ export default function Notifications() {
                         <p className="text-slate-500 text-sm text-center leading-relaxed">
                             No notifications yet. Financial reminders and<br />insights will appear here.
                         </p>
-                        <button
-                            onClick={simulateAllNotifications}
-                            className="mt-6 px-4 py-2 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-sm font-medium"
-                        >
-                            Simulate notifications (Dev)
-                        </button>
                     </motion.div>
                 ) : (
                     <>
@@ -208,12 +201,6 @@ export default function Notifications() {
                             </div>
                         )}
 
-                        <button
-                            onClick={simulateAllNotifications}
-                            className="w-full flex items-center justify-center gap-2 mt-2 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 text-xs font-medium"
-                        >
-                            <Settings2 size={13} /> Simulate test notifications (Dev)
-                        </button>
                     </>
                 )}
             </div>

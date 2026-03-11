@@ -25,6 +25,7 @@ import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import ShareableCard from '../components/ShareableCard';
+import { triggerCalcNotification } from '../services/calcNotifications';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
@@ -97,6 +98,15 @@ export default function EMICalculator() {
         if (method !== 'reducing' || !result.emi) return null;
         return calculatePrepaymentSavings(principal, rate, months, result.emi);
     }, [principal, rate, months, result.emi, method]);
+
+    // ─── Notification trigger ────────────────────────────────────────────
+    useEffect(() => {
+        if (!result.emi) return;
+        const t = setTimeout(() => {
+            triggerCalcNotification('emi', `EMI ₹${Math.round(result.emi).toLocaleString('en-IN')}/mo`);
+        }, 2000);
+        return () => clearTimeout(t);
+    }, [result.emi]);
 
     // ─── Amortization pagination ────────────────────────────────────────
     const totalPages = Math.ceil((result.schedule?.length || 0) / ROWS_PER_PAGE);

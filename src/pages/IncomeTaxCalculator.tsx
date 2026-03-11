@@ -5,6 +5,7 @@ import { ArrowLeft, Info, TrendingUp, Download, ExternalLink, ChevronDown, Chevr
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportToPDF } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
+import { triggerCalcNotification } from '../services/calcNotifications';
 
 // ─── Tax Slab Tables ──────────────────────────────────────────────────────────
 const OLD_REGIME = [
@@ -315,6 +316,15 @@ export default function IncomeTaxCalculator() {
         if (!num('homeLoan')) t.push(`Home loan interest under Section 24 allows deduction up to Rs 2,00,000.`);
         return t;
     }, [inputs, grossSalary, num]);
+
+    // ─── Notification trigger ────────────────────────────────────────────────
+    useEffect(() => {
+        if (grossSalary <= 0) return;
+        const t = setTimeout(() => {
+            triggerCalcNotification('tax', `Tax ₹${Math.round(activeTotalTax).toLocaleString('en-IN')}/yr`);
+        }, 2000);
+        return () => clearTimeout(t);
+    }, [activeTotalTax, grossSalary]);
 
     // ─── PDF Handler ──────────────────────────────────────────────────────────
     const handleDownloadPDF = async () => {

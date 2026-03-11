@@ -17,6 +17,7 @@ import { calculateFD, formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
+import { triggerCalcNotification } from '../services/calcNotifications';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
@@ -35,6 +36,15 @@ export default function FDCalculator() {
     const chartRef = useRef<any>(null);
 
     const result = useMemo(() => calculateFD(principal, rate, years, compounding), [principal, rate, years, compounding]);
+
+    // ─── Notification trigger ────────────────────────────────────────────
+    useEffect(() => {
+        if (!result.amount) return;
+        const t = setTimeout(() => {
+            triggerCalcNotification('fd', `Maturity ₹${Math.round(result.amount).toLocaleString('en-IN')}`);
+        }, 2000);
+        return () => clearTimeout(t);
+    }, [result.amount]);
 
     // Compounding comparison
     const compoundingComparison = useMemo(() => {
