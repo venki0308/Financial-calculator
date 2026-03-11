@@ -1,107 +1,221 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bell, FileText, Calculator, Zap, Calendar } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { ArrowLeft, Bell, CheckCheck, Trash2, BellOff, Settings2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState, useMemo } from 'react';
 import { AnalyticsService } from '../lib/analytics';
+import { useNotificationStore, AppNotification } from '../store/useNotificationStore';
+import { simulateAllNotifications } from '../services/NotificationScheduler';
 
-interface NotificationSetting {
-    id: string;
-    label: string;
-    description: string;
-    icon: React.ElementType;
-    color: string;
-    enabled: boolean;
+const TYPE_META: Record<string, { emoji: string; color: string; bg: string }> = {
+    emi_reminder:    { emoji: '💳', color: '#3B82F6', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    sip_reminder:   { emoji: '📈', color: '#10B981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    tax_alert:      { emoji: '⚠️', color: '#F59E0B', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+    savings_insight: { emoji: '💡', color: '#8B5CF6', bg: 'bg-violet-50 dark:bg-violet-500/10' },
+    bill_payment:   { emoji: '🧾', color: '#EF4444', bg: 'bg-red-50 dark:bg-red-500/10' },
+    general:        { emoji: '🔔', color: '#6B7280', bg: 'bg-slate-50 dark:bg-slate-800' },
+};
+
+function timeAgo(iso: string): string {
+    const diff = Date.now() - new Date(iso).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
 }
 
-const defaultSettings: NotificationSetting[] = [
-    { id: 'newSchemes', label: 'New Government Schemes', description: 'Notification when new schemes are added', icon: FileText, color: '#10B981', enabled: true },
-    { id: 'calculationReminders', label: 'Calculation Reminders', description: 'Remind to review your saved calculations', icon: Calculator, color: '#3B82F6', enabled: false },
-    { id: 'appUpdates', label: 'App Updates', description: 'New features and calculator additions', icon: Zap, color: '#8B5CF6', enabled: true },
-    { id: 'schemeDeadlines', label: 'Scheme Application Deadlines', description: 'Alerts for bookmarked scheme deadlines', icon: Calendar, color: '#EF4444', enabled: true },
-];
+function groupNotifications(notifications: AppNotification[]) {
+    const now = Date.now();
+    const today: AppNotification[] = [];
+    const week: AppNotification[] = [];
+    const older: AppNotification[] = [];
+
+    notifications.filter(n => !n.dismissed).forEach(n => {
+        const diff = now - new Date(n.createdAt).getTime();
+        if (diff < 86400000) today.push(n);
+        else if (diff < 7 * 86400000) week.push(n);
+        else older.push(n);
+    });
+
+    return { today, week, older };
+}
+
+interface NotifCardProps {
+    n: AppNotification;
+    onRead: () => void;
+    onDismiss: () => void;
+    onClick: () => void;
+}
+
+function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
+    const meta = TYPE_META[n.type] || TYPE_META.general;
+    const isUnread = !n.readAt;
+
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 10, height: 0 }}
+            className={`relative rounded-2xl border transition-all ${isUnread
+                ? 'bg-white dark:bg-dark-card border-slate-200 dark:border-indigo-500/30 shadow-sm'
+                : 'bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-700/30'
+            }`}
+        >
+            {isUnread && (
+                <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-indigo-500" />
+            )}
+            <button className="w-full text-left p-4" onClick={() => { onRead(); onClick(); }}>
+                <div className="flex items-start gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.bg}`}>
+                        <span className="text-xl">{n.icon || meta.emoji}</span>
+                    </div>
+                    <div className="flex-1 min-w-0 pr-4">
+                        <h4 className={`text-sm font-semibold truncate ${isUnread ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
+                            {n.title}
+                        </h4>
+                        <p className="text-slate-500 text-xs mt-0.5 leading-relaxed line-clamp-2">{n.body}</p>
+                        <p className="text-[10px] text-slate-400 mt-1.5">{timeAgo(n.createdAt)}</p>
+                    </div>
+                </div>
+            </button>
+            <button
+                onClick={onDismiss}
+                className="absolute top-2 right-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label="Dismiss"
+            >
+                <Trash2 size={12} className="text-slate-400" />
+            </button>
+        </motion.div>
+    );
+}
 
 export default function Notifications() {
     useEffect(() => { AnalyticsService.trackScreen('Notifications'); }, []);
     const navigate = useNavigate();
-    const [settings, setSettings] = useState<NotificationSetting[]>(() => {
-        try {
-            const stored = localStorage.getItem('notificationSettings');
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                // Ensure parsed data has the correct shape — merge with defaults
-                if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].id) {
-                    return defaultSettings.map(def => {
-                        const saved = parsed.find((p: NotificationSetting) => p.id === def.id);
-                        return saved ? { ...def, enabled: saved.enabled } : def;
-                    });
-                }
-            }
-        } catch {
-            // ignore parse errors
-        }
-        return defaultSettings;
-    });
+    const { notifications, markRead, markAllRead, dismiss, clearAll } = useNotificationStore();
+    const unreadCount = useNotificationStore(s => s.notifications.filter(n => !n.readAt && !n.dismissed).length);
 
-    useEffect(() => {
-        localStorage.setItem('notificationSettings', JSON.stringify(settings));
-    }, [settings]);
+    const groups = useMemo(() => groupNotifications(notifications), [notifications]);
+    const hasAny = groups.today.length + groups.week.length + groups.older.length > 0;
 
-    const toggleSetting = (id: string) => {
-        setSettings((prev) => prev.map((s) => (s.id === id ? { ...s, enabled: !s.enabled } : s)));
+    const handleClick = (n: AppNotification) => {
+        if (n.route) navigate(n.route);
     };
 
     return (
-        <div className="min-h-dvh bg-white dark:bg-[#0F172A]">
-            <div className="px-4 pt-14 pb-8">
-                <div className="flex items-center gap-3 mb-6">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
+        <div className="min-h-dvh bg-slate-50 dark:bg-[#0F172A]">
+            {/* Header */}
+            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border">
                         <ArrowLeft size={18} className="text-slate-400" />
                     </button>
-                    <div>
-                        <h1 className="text-lg font-bold text-slate-900 dark:text-white">Notifications</h1>
-                        <p className="text-slate-500 text-xs">Manage your alerts</p>
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-lg font-bold text-slate-900 dark:text-white">Notifications</h1>
+                            {unreadCount > 0 && (
+                                <span className="bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                    {unreadCount}
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-slate-500 text-xs">Financial reminders & alerts</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {unreadCount > 0 && (
+                            <button onClick={markAllRead} className="p-2 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30" title="Mark all read">
+                                <CheckCheck size={16} className="text-indigo-600 dark:text-indigo-400" />
+                            </button>
+                        )}
+                        {hasAny && (
+                            <button onClick={clearAll} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" title="Clear all">
+                                <Trash2 size={16} className="text-slate-500" />
+                            </button>
+                        )}
                     </div>
                 </div>
+            </div>
 
-                {/* Toggle Cards */}
-                <div className="space-y-3 mb-8">
-                    {settings.map(({ id, label, description, icon: Icon, color, enabled }, index) => (
-                        <motion.div
-                            key={id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border"
+            <div className="px-4 pt-4 pb-28 space-y-6">
+                {!hasAny ? (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-20">
+                        <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                            <BellOff size={32} className="text-slate-400" />
+                        </div>
+                        <h3 className="text-slate-700 dark:text-slate-300 font-semibold mb-1">All caught up!</h3>
+                        <p className="text-slate-500 text-sm text-center leading-relaxed">
+                            No notifications yet. Financial reminders and<br />insights will appear here.
+                        </p>
+                        <button
+                            onClick={simulateAllNotifications}
+                            className="mt-6 px-4 py-2 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-sm font-medium"
                         >
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}15` }}>
-                                <Icon size={20} style={{ color }} />
+                            Simulate notifications (Dev)
+                        </button>
+                    </motion.div>
+                ) : (
+                    <>
+                        {groups.today.length > 0 && (
+                            <div>
+                                <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Today</p>
+                                <div className="space-y-2">
+                                    <AnimatePresence>
+                                        {groups.today.map(n => (
+                                            <NotifCard key={n.id} n={n}
+                                                onRead={() => markRead(n.id)}
+                                                onDismiss={() => dismiss(n.id)}
+                                                onClick={() => handleClick(n)}
+                                            />
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-slate-900 dark:text-white font-medium text-sm">{label}</p>
-                                <p className="text-slate-500 text-[11px] mt-0.5 leading-relaxed">{description}</p>
-                            </div>
-                            <button
-                                onClick={() => toggleSetting(id)}
-                                className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${enabled ? 'bg-brand-green' : 'bg-slate-300 dark:bg-slate-700'}`}
-                            >
-                                <motion.div
-                                    layout
-                                    className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm"
-                                    style={{ left: enabled ? 22 : 2 }}
-                                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                />
-                            </button>
-                        </motion.div>
-                    ))}
-                </div>
+                        )}
 
-                {/* Info Note */}
-                <div className="p-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/15">
-                    <p className="text-slate-500 text-xs leading-relaxed">
-                        <Bell size={12} className="inline mr-1.5 text-brand-blue" />
-                        Notification preferences are stored locally. Push notifications will be available in a future update.
-                    </p>
-                </div>
+                        {groups.week.length > 0 && (
+                            <div>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">This Week</p>
+                                <div className="space-y-2">
+                                    <AnimatePresence>
+                                        {groups.week.map(n => (
+                                            <NotifCard key={n.id} n={n}
+                                                onRead={() => markRead(n.id)}
+                                                onDismiss={() => dismiss(n.id)}
+                                                onClick={() => handleClick(n)}
+                                            />
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            </div>
+                        )}
+
+                        {groups.older.length > 0 && (
+                            <div>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Older</p>
+                                <div className="space-y-2">
+                                    <AnimatePresence>
+                                        {groups.older.map(n => (
+                                            <NotifCard key={n.id} n={n}
+                                                onRead={() => markRead(n.id)}
+                                                onDismiss={() => dismiss(n.id)}
+                                                onClick={() => handleClick(n)}
+                                            />
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={simulateAllNotifications}
+                            className="w-full flex items-center justify-center gap-2 mt-2 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 text-xs font-medium"
+                        >
+                            <Settings2 size={13} /> Simulate test notifications (Dev)
+                        </button>
+                    </>
+                )}
             </div>
         </div>
     );

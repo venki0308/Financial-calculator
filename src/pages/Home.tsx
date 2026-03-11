@@ -9,6 +9,7 @@ import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
 import { allCalcs } from '../data/calculatorList';
 import { schemes } from '../data/schemes';
+import { useNotificationStore } from '../store/useNotificationStore';
 
 // Full calculator catalog for icon/color resolution
 const calcCatalog: Record<string, { icon: React.ElementType; color: string; label: string }> = {
@@ -76,7 +77,8 @@ export default function Home() {
     }, []);
 
     const searchResults = useMemo(() => {
-        if (!searchQuery.trim()) return [];
+        const empty = { calcOnly: [] as any[], schemeResults: [] as any[], utilityResults: [] as any[], all: [] as any[] };
+        if (!searchQuery.trim()) return empty;
         const q = searchQuery.toLowerCase();
         
         const calcResults = allCalcs.filter(c => {
@@ -91,7 +93,8 @@ export default function Home() {
             subtitle: t(c.descKey) === c.descKey ? c.descKey : t(c.descKey),
             icon: c.icon,
             color: c.color,
-            path: c.path
+            path: c.path,
+            category: c.category,
         }));
 
         const schemeResults = schemes.filter(s => {
@@ -104,11 +107,16 @@ export default function Home() {
             subtitle: s.description,
             icon: Bookmark, 
             color: '#8B5CF6',
-            path: `/schemes/${s.id}`
+            path: `/scheme/${s.id}`
         }));
 
-        return [...calcResults, ...schemeResults].slice(0, 10);
+        const utilityResults = calcResults.filter(r => r.category === 'tools');
+        const calcOnly = calcResults.filter(r => r.category !== 'tools');
+
+        return { calcOnly: calcOnly.slice(0, 6), schemeResults: schemeResults.slice(0, 4), utilityResults: utilityResults.slice(0, 4), all: [...calcOnly, ...schemeResults, ...utilityResults] };
     }, [searchQuery, t]);
+
+    const unreadCount = useNotificationStore(s => s.notifications.filter(n => !n.readAt && !n.dismissed).length);
 
     // Compute effective current balance: if user hasn't set one, derive from income - expenses
     const effectiveBalance = useMemo(() => {
@@ -156,8 +164,11 @@ export default function Home() {
                         <p className="text-slate-400 text-sm mt-0">{t('home.tagline')}</p>
                     </div>
                 </div>
-                <button onClick={() => navigate('/notifications')} className="p-2.5 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-400 shadow-lg">
+                <button onClick={() => navigate('/notifications')} className="relative p-2.5 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-400 shadow-lg">
                     <Bell size={20} />
+                    {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                    )}
                 </button>
             </div>
 
@@ -196,39 +207,86 @@ export default function Home() {
                                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">What are you looking for?</p>
                                     <p className="text-xs text-slate-500 mt-1">Try "home loan", "tax", "sip" or "zodiac"</p>
                                 </div>
-                            ) : searchResults.length > 0 ? (
+                            ) : searchResults && searchResults.all && searchResults.all.length > 0 ? (
                                 <div className="py-2">
-                                    {searchResults.map((result, i) => {
-                                        return (
-                                            <button 
-                                                key={i} 
-                                                onClick={() => navigate(result.path)}
-                                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
-                                            >
-                                                <div className="w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${result.color}15` }}>
-                                                    <result.icon size={18} style={{ color: result.color }} />
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{result.title}</h3>
-                                                        {result.type === 'scheme' && (
-                                                            <span className="text-[9px] bg-brand-purple/10 text-brand-purple px-1.5 py-0.5 rounded font-bold uppercase">Scheme</span>
-                                                        )}
+                                    {/* Calculators Group */}
+                                    {searchResults.calcOnly.length > 0 && (
+                                        <div>
+                                            <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-indigo-500">Calculators</p>
+                                            {searchResults.calcOnly.map((result: any, i: number) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => { setIsSearching(false); setSearchQuery(''); navigate(result.path); }}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                                                >
+                                                    <div className="w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${result.color}15` }}>
+                                                        <result.icon size={18} style={{ color: result.color }} />
                                                     </div>
-                                                    <p className="text-xs text-slate-500 truncate">{result.subtitle}</p>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
+                                                    <div>
+                                                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{result.title}</h3>
+                                                        <p className="text-xs text-slate-500 truncate">{result.subtitle}</p>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {/* Govt Schemes Group */}
+                                    {searchResults.schemeResults.length > 0 && (
+                                        <div>
+                                            <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-violet-500">Government Schemes</p>
+                                            {searchResults.schemeResults.map((result: any, i: number) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => { setIsSearching(false); setSearchQuery(''); navigate(result.path); }}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                                                >
+                                                    <div className="w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center bg-violet-50 dark:bg-violet-500/10">
+                                                        <result.icon size={18} className="text-violet-500" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate">{result.title}</h3>
+                                                            <span className="text-[9px] bg-violet-100 dark:bg-violet-500/10 text-violet-600 px-1.5 py-0.5 rounded font-bold uppercase flex-shrink-0">Scheme</span>
+                                                        </div>
+                                                        <p className="text-xs text-slate-500 truncate">{result.subtitle}</p>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {/* Utilities Group */}
+                                    {searchResults.utilityResults.length > 0 && (
+                                        <div>
+                                            <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-500">Tools & Utilities</p>
+                                            {searchResults.utilityResults.map((result: any, i: number) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => { setIsSearching(false); setSearchQuery(''); navigate(result.path); }}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                                                >
+                                                    <div className="w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${result.color}15` }}>
+                                                        <result.icon size={18} style={{ color: result.color }} />
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{result.title}</h3>
+                                                            <span className="text-[9px] bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded font-bold uppercase">Tool</span>
+                                                        </div>
+                                                        <p className="text-xs text-slate-500 truncate">{result.subtitle}</p>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="p-8 text-center flex flex-col items-center justify-center">
                                     <div className="relative mb-4">
                                         <div className="absolute inset-0 bg-brand-purple/20 blur-xl rounded-full" />
-                                        <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png" alt="No results" className="w-32 h-32 object-contain opacity-80 mix-blend-multiply dark:mix-blend-plus-lighter" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                        <span className="text-5xl relative">🔍</span>
                                     </div>
-                                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No calculators found</p>
-                                    <p className="text-xs text-slate-500 mt-1">Try a different search term</p>
+                                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No results found</p>
+                                    <p className="text-xs text-slate-500 mt-1">Try "home loan", "tax", "sip" or "ppf"</p>
                                 </div>
                             )}
                         </motion.div>

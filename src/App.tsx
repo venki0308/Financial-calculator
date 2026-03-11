@@ -70,6 +70,8 @@ import Notifications from './pages/Notifications';
 
 
 import GlobalDisclaimerModal from './components/GlobalDisclaimerModal';
+import { NotificationScheduler } from './services/NotificationScheduler';
+import ValidatorPage from './pages/ValidatorPage';
 
 // Toast component for back-press notification
 function BackToast({ visible }: { visible: boolean }) {
@@ -111,6 +113,8 @@ function AppContent() {
             });
         };
         initAnalytics();
+        // Run notification scheduler (at most once every 23h)
+        NotificationScheduler.initialize();
     }, []);
 
     // Android hardware back button — double-tap to exit on home, navigate back elsewhere
@@ -210,6 +214,7 @@ function AppContent() {
                     <Route path="/calculator/age" element={<AgeCalculator />} />
                     <Route path="/world-clock" element={<WorldClock />} />
                     <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
+                    <Route path="/dev/validator" element={<ValidatorPage />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/" replace />} />
