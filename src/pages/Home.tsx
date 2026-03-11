@@ -1,12 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe, Search, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
 import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
+import { allCalcs } from '../data/calculatorList';
+import { schemes } from '../data/schemes';
 
 // Full calculator catalog for icon/color resolution
 const calcCatalog: Record<string, { icon: React.ElementType; color: string; label: string }> = {
@@ -59,6 +61,8 @@ export default function Home() {
     const { currentBalance, monthlyIncome, getTotalFixed, getTotalSpent } = useBudgetTrackerStore();
 
     const [recentPaths, setRecentPaths] = useState<string[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
 
     useEffect(() => {
         AnalyticsService.trackScreen('Home');
@@ -70,6 +74,41 @@ export default function Home() {
             setRecentPaths(stored);
         } catch { }
     }, []);
+
+    const searchResults = useMemo(() => {
+        if (!searchQuery.trim()) return [];
+        const q = searchQuery.toLowerCase();
+        
+        const calcResults = allCalcs.filter(c => {
+            const label = t(c.nameKey) === c.nameKey ? c.nameKey : t(c.nameKey);
+            const desc = t(c.descKey) === c.descKey ? c.descKey : t(c.descKey);
+            return label.toLowerCase().includes(q) || 
+                   desc.toLowerCase().includes(q) ||
+                   c.keywords?.some(kw => kw.toLowerCase().includes(q));
+        }).map(c => ({
+            type: 'calculator',
+            title: t(c.nameKey) === c.nameKey ? c.nameKey : t(c.nameKey),
+            subtitle: t(c.descKey) === c.descKey ? c.descKey : t(c.descKey),
+            icon: c.icon,
+            color: c.color,
+            path: c.path
+        }));
+
+        const schemeResults = schemes.filter(s => {
+            return s.name.toLowerCase().includes(q) ||
+                   s.description.toLowerCase().includes(q) ||
+                   s.ministry.toLowerCase().includes(q);
+        }).map(s => ({
+            type: 'scheme',
+            title: s.name,
+            subtitle: s.description,
+            icon: Bookmark, 
+            color: '#8B5CF6',
+            path: `/schemes/${s.id}`
+        }));
+
+        return [...calcResults, ...schemeResults].slice(0, 10);
+    }, [searchQuery, t]);
 
     // Compute effective current balance: if user hasn't set one, derive from income - expenses
     const effectiveBalance = useMemo(() => {
@@ -108,8 +147,8 @@ export default function Home() {
     ];
 
     return (
-        <div className="px-5 pt-14 animate-fade-in pb-20">
-            <div className="flex items-start justify-between mb-8">
+        <div className="px-5 pt-14 animate-fade-in pb-20 max-w-md mx-auto">
+            <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-3">
                     <img src="/icons/fincalix-logo.jpg" alt="FinCalix" className="w-10 h-10 rounded-xl" />
                     <div>
@@ -122,29 +161,94 @@ export default function Home() {
                 </button>
             </div>
 
-            <section className="mb-8">
-                <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 px-1">
-                    {recentPaths.length > 0 ? t('home.recentlyUsed') : t('home.quickCalculate')}
-                </h2>
-                <div className="grid grid-cols-2 gap-3">
-                    {displayItems.map((item, i) => (
-                        <motion.button
-                            key={item.path}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => navigate(item.path)}
-                            className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm"
+            {/* Global Search Bar */}
+            <div className="relative z-50 mb-8">
+                <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl border transition-all ${isSearching ? 'bg-white dark:bg-dark-card border-violet-500 shadow-lg shadow-violet-500/10' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-dark-border text-slate-400'}`}>
+                    <Search size={18} className={isSearching ? 'text-violet-500' : 'text-slate-400'} />
+                    <input 
+                        type="text" 
+                        placeholder={t('home.searchTools', 'Search any calculator...')} 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => setIsSearching(true)}
+                        className="flex-1 bg-transparent border-none outline-none text-sm text-slate-900 dark:text-white placeholder-slate-400"
+                    />
+                    {isSearching && (
+                        <button onClick={() => { setIsSearching(false); setSearchQuery(''); }} className="p-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                            <X size={14} />
+                        </button>
+                    )}
+                </div>
+
+                <AnimatePresence>
+                    {isSearching && (
+                        <motion.div 
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700/50 rounded-2xl shadow-xl overflow-hidden z-50 max-h-[60vh] overflow-y-auto"
                         >
-                            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${item.color}15` }}>
-                                <item.icon size={22} style={{ color: item.color }} />
-                            </div>
-                            <span className="text-slate-900 dark:text-white font-semibold text-sm truncate">{item.label}</span>
-                        </motion.button>
-                    ))}
-                </div>
-            </section>
+                            {!searchQuery.trim() ? (
+                                <div className="p-6 text-center">
+                                    <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+                                        <Search size={20} className="text-slate-400" />
+                                    </div>
+                                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">What are you looking for?</p>
+                                    <p className="text-xs text-slate-500 mt-1">Try "home loan", "tax", "sip" or "zodiac"</p>
+                                </div>
+                            ) : searchResults.length > 0 ? (
+                                <div className="py-2">
+                                    {searchResults.map((result, i) => {
+                                        return (
+                                            <button 
+                                                key={i} 
+                                                onClick={() => navigate(result.path)}
+                                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                                            >
+                                                <div className="w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${result.color}15` }}>
+                                                    <result.icon size={18} style={{ color: result.color }} />
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{result.title}</h3>
+                                                        {result.type === 'scheme' && (
+                                                            <span className="text-[9px] bg-brand-purple/10 text-brand-purple px-1.5 py-0.5 rounded font-bold uppercase">Scheme</span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-slate-500 truncate">{result.subtitle}</p>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="p-8 text-center flex flex-col items-center justify-center">
+                                    <div className="relative mb-4">
+                                        <div className="absolute inset-0 bg-brand-purple/20 blur-xl rounded-full" />
+                                        <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png" alt="No results" className="w-32 h-32 object-contain opacity-80 mix-blend-multiply dark:mix-blend-plus-lighter" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                    </div>
+                                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No calculators found</p>
+                                    <p className="text-xs text-slate-500 mt-1">Try a different search term</p>
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+            
+            {/* Darken background when searching */}
+            <AnimatePresence>
+                {isSearching && (
+                    <motion.div 
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 0.5 }} 
+                        exit={{ opacity: 0 }} 
+                        onClick={() => setIsSearching(false)}
+                        className="fixed inset-0 bg-slate-900 z-40" 
+                    />
+                )}
+            </AnimatePresence>
+
 
             <section className="mb-8">
                 <div className="flex items-center justify-between mb-3 px-1">
@@ -283,23 +387,25 @@ export default function Home() {
             </section>
 
             <section className="pb-6">
-                <div className="flex items-center justify-between mb-3 px-1">
-                    <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('home.popularCalcs')}</h2>
-                    <button onClick={() => navigate('/calculators')} className="text-brand-green text-xs font-medium">{t('home.seeAll')}</button>
-                </div>
-                <div className="space-y-3">
-                    {popularCalcs.map((c) => (
-                        <button
-                            key={c.name}
-                            onClick={() => navigate(c.path)}
-                            className="w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-all"
+                <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-1">
+                    {recentPaths.length > 0 ? t('home.recentlyUsed') : t('home.quickCalculate')}
+                </h2>
+                <div className="grid grid-cols-2 gap-3">
+                    {displayItems.map((item, i) => (
+                        <motion.button
+                            key={item.path}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate(item.path)}
+                            className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
                         >
-                            <div className="text-left">
-                                <h4 className="text-slate-800 dark:text-slate-200 font-bold text-sm">{c.name}</h4>
-                                <p className="text-slate-500 text-[11px] mt-0.5">{c.desc}</p>
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${item.color}15` }}>
+                                <item.icon size={22} style={{ color: item.color }} />
                             </div>
-                            <ChevronRight size={18} className="text-slate-600" />
-                        </button>
+                            <span className="text-slate-900 dark:text-white font-semibold text-sm truncate">{item.label}</span>
+                        </motion.button>
                     ))}
                 </div>
             </section>

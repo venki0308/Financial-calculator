@@ -7,6 +7,7 @@ import { schemes, schemeCategories } from '../data/schemes';
 import { useSchemeStore } from '../store/useSchemeStore';
 import BottomSheet from '../components/BottomSheet';
 import { AnalyticsService } from '../lib/analytics';
+import DisclaimerBanner from '../components/DisclaimerBanner';
 
 const catIcons: Record<string, React.ElementType> = { Women: Users, Education: GraduationCap, Farmers: Tractor, MSME: Building2, 'Senior Citizens': UserCheck, Insurance: Shield, Housing: HomeIcon, Banking: Landmark, Pension: Clock, Health: Heart, Employment: Briefcase, 'Social Welfare': HandHeart };
 
@@ -26,10 +27,12 @@ export default function Schemes() {
 
     return (
         <div className="px-4 pt-14 animate-fade-in">
-            <div className="mb-5">
+            <div className="mb-4">
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('schemes.title')}</h1>
                 <p className="text-slate-500 text-sm mt-1">{t('schemes.subtitle')}</p>
             </div>
+
+            <DisclaimerBanner type="scheme" />
 
             {/* Search */}
             <div className="relative mb-4">

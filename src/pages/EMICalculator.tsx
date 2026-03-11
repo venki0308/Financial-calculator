@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import {
     ArrowLeft, Info, Share2, ChevronDown, ChevronUp, Save, Check, Download,
@@ -37,7 +37,13 @@ export default function EMICalculator() {
     const navigate = useNavigate();
 
     // ─── State ──────────────────────────────────────────────────────────
-    const [loanType, setLoanType] = useState('Home Loan');
+    const location = useLocation();
+    const [loanType, setLoanType] = useState(() => {
+        if (location.pathname.includes('car-loan')) return 'Car Loan';
+        if (location.pathname.includes('personal-loan')) return 'Personal Loan';
+        if (location.pathname.includes('education-loan')) return 'Education Loan';
+        return 'Home Loan';
+    });
     const [method, setMethod] = useState<'reducing' | 'flat'>('reducing');
     const [principal, setPrincipal] = useState(3000000);
     const [rate, setRate] = useState(8.5);
@@ -46,6 +52,7 @@ export default function EMICalculator() {
     const [showAmortization, setShowAmortization] = useState(false);
     const [amortPage, setAmortPage] = useState(0);
     const [isSaved, setIsSaved] = useState(false);
+    const [savedId, setSavedId] = useState<string | null>(null);
     const [showInfo, setShowInfo] = useState(false);
     const [monthlyIncome, setMonthlyIncome] = useState(0);
 
@@ -54,7 +61,7 @@ export default function EMICalculator() {
     const [foreclosureMonths, setForeclosureMonths] = useState(24);
     const [foreclosureChargePercent, setForeclosureChargePercent] = useState(2);
 
-    const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
+    const { addHistory, addSaved, updateSaved, savedCalculations } = useCalculatorStore();
     const chartRef = useRef<any>(null);
 
     const config = LOAN_TYPE_CONFIGS[loanType];
@@ -150,15 +157,30 @@ export default function EMICalculator() {
         return () => clearTimeout(timer);
     }, [principal, rate, months, method, loanType, result.emi, addHistory]);
 
+    // ─── Reset Save State on Input Change ───────────────────────────────
+    useEffect(() => {
+        setIsSaved(false);
+        setSavedId(null); // Also clear savedId when inputs change to allow saving as new
+    }, [principal, rate, tenure, tenureUnit, method, loanType, showForeclosure, foreclosureMonths, foreclosureChargePercent]);
+
     const handleSave = () => {
         const name = `${loanType} - ${formatINRShort(principal)} - ${tenureYears}yr`;
-        addSaved({
-            id: `EMI-Save-${Date.now()}`,
-            calculatorType: 'Loan EMI Calculator',
-            inputValues: { principal, rate, months, method, loanType, name },
-            resultValues: { primary: result.emi, emi: result.emi, totalInterest: result.totalInterest, totalPayment: result.totalPayment },
-            timestamp: Date.now()
-        });
+        const updatedResult = { primary: result.emi, emi: result.emi, totalInterest: result.totalInterest, totalPayment: result.totalPayment };
+        const inputVars = { principal, rate, months, method, loanType, name };
+        
+        if (savedId) {
+            updateSaved(savedId, inputVars, updatedResult);
+        } else {
+            const newId = `EMI-Save-${Date.now()}`;
+            addSaved({
+                id: newId,
+                calculatorType: 'Loan EMI Calculator',
+                inputValues: inputVars,
+                resultValues: updatedResult,
+                timestamp: Date.now()
+            });
+            setSavedId(newId);
+        }
         setIsSaved(true);
     };
 
@@ -184,15 +206,28 @@ export default function EMICalculator() {
             formatINR(row.principal), formatINR(row.interest), formatINR(row.closingBalance),
             formatINR(row.cumulativePrincipal), formatINR(row.cumulativeInterest),
         ]);
-        const chartSummary = [
-            { label: 'Loan Type', value: loanType, color: [79, 70, 229] as [number, number, number] },
-            { label: 'Principal', value: formatINR(principal), color: [16, 185, 129] as [number, number, number] },
-            { label: 'Interest Rate', value: `${rate}% p.a.`, color: [59, 130, 246] as [number, number, number] },
-            { label: 'Tenure', value: `${tenureYears} years (${months} months)`, color: [139, 92, 246] as [number, number, number] },
-            { label: 'Monthly EMI', value: formatINR(result.emi), color: [245, 158, 11] as [number, number, number] },
-            { label: 'Total Interest', value: formatINR(result.totalInterest), color: [239, 68, 68] as [number, number, number] },
-            { label: 'Total Payment', value: formatINR(result.totalPayment), color: [16, 185, 129] as [number, number, number] },
+        const chartSummary: any[] = [
+            { label: 'Loan Type', value: loanType, color: [79, 70, 229] },
+            { label: 'Principal', value: formatINR(principal), color: [16, 185, 129] },
+            { label: 'Interest Rate', value: `${rate}% p.a.`, color: [59, 130, 246] },
+            { label: 'Tenure', value: `${tenureYears} years (${months} months)`, color: [139, 92, 246] },
+            { label: 'Monthly EMI', value: formatINR(result.emi), color: [245, 158, 11] },
+            { label: 'Total Interest', value: formatINR(result.totalInterest), color: [239, 68, 68] },
+            { label: 'Total Payment', value: formatINR(result.totalPayment), color: [16, 185, 129] },
         ];
+
+        if (showForeclosure && foreclosureResult) {
+            chartSummary.push(
+                { label: '--- Foreclosure Details ---', value: '', color: [100, 116, 139] },
+                { label: 'Months Paid', value: `${foreclosureMonths} months`, color: [100, 116, 139] },
+                { label: 'Outstanding Principal', value: formatINR(foreclosureResult.outstandingPrincipal), color: [15, 23, 42] },
+                { label: 'Foreclosure Charge', value: formatINR(foreclosureResult.foreclosureCharge), color: [220, 38, 38] },
+                { label: 'Interest Saved', value: formatINR(foreclosureResult.interestSaved), color: [16, 185, 129] },
+                { label: 'Total Settlement', value: formatINR(foreclosureResult.totalSettlement), color: [79, 70, 229] },
+                { label: 'Net Benefit', value: formatINR(foreclosureResult.netBenefit), color: foreclosureResult.netBenefit >= 0 ? [16, 185, 129] : [220, 38, 38] }
+            );
+        }
+
         await exportToPDF(`${loanType} - Loan Report`, headers, data,
             `FinCalix_${loanType.replace(/\s/g, '')}_${new Date().toISOString().slice(0, 10)}`, chartImage, chartSummary);
     };
@@ -339,21 +374,21 @@ export default function EMICalculator() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mb-5">
-                        <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30">
+                        <div className="text-center p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 border border-slate-200 dark:border-transparent">
                             <div className="flex items-center justify-center gap-1.5 mb-1">
                                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                                <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Principal</span>
+                                <span className="text-slate-600 dark:text-slate-500 text-[10px] uppercase font-bold tracking-wider">Principal</span>
                             </div>
                             <p className="text-slate-900 dark:text-white font-bold text-sm">{formatINR(principal)}</p>
-                            {principal >= 100000 && <p className="text-slate-400 dark:text-slate-500 text-[9px] mt-0.5">({formatINRWords(principal)})</p>}
+                            {principal >= 100000 && <p className="text-slate-500 dark:text-slate-500 text-[9px] mt-0.5">({formatINRWords(principal)})</p>}
                         </div>
-                        <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30">
+                        <div className="text-center p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 border border-slate-200 dark:border-transparent">
                             <div className="flex items-center justify-center gap-1.5 mb-1">
                                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                                <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Interest</span>
+                                <span className="text-slate-600 dark:text-slate-500 text-[10px] uppercase font-bold tracking-wider">Interest</span>
                             </div>
                             <p className="text-slate-900 dark:text-white font-bold text-sm">{formatINR(result.totalInterest)}</p>
-                            {result.totalInterest >= 100000 && <p className="text-slate-400 dark:text-slate-500 text-[9px] mt-0.5">({formatINRWords(result.totalInterest)})</p>}
+                            {result.totalInterest >= 100000 && <p className="text-slate-500 dark:text-slate-500 text-[9px] mt-0.5">({formatINRWords(result.totalInterest)})</p>}
                         </div>
                     </div>
 
@@ -537,25 +572,35 @@ export default function EMICalculator() {
                     </div>
                 )}
 
-                {/* ── Action Buttons ──────────────────────────────── */}
+                {/* Action Buttons */}
                 <div className="space-y-3 mb-5">
-                    <div className="flex gap-3">
-                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleDownloadPDF}
-                            className="flex-1 py-4 rounded-2xl bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/30 text-violet-600 dark:text-violet-400 font-bold text-sm flex items-center justify-center gap-2">
-                            <FileText size={16} /> PDF Report
+                    <div className="grid grid-cols-2 gap-3">
+                        <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadPDF}
+                            className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 font-bold text-sm">
+                            <FileText size={18} className="text-violet-500" /> Export PDF
                         </motion.button>
-                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleDownloadExcel}
-                            className="flex-1 py-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center justify-center gap-2">
-                            <Download size={16} /> Excel
+                        <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadExcel}
+                            className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 font-bold text-sm">
+                            <Download size={18} className="text-emerald-500" /> Export Excel
                         </motion.button>
                     </div>
-                    <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave}
-                        disabled={isSaved || isAlreadySaved}
-                        className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${isSaved || isAlreadySaved
-                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
-                            : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/20'
-                            }`}>
-                        {isSaved || isAlreadySaved ? <><Check size={18} /> Saved</> : <><Save size={18} /> Save Calculation</>}
+
+                    <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={handleSave}
+                        disabled={isSaved}
+                        className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${isSaved
+                                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
+                                : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/20'
+                            }`}
+                    >
+                        {isSaved ? (
+                            <><Check size={18} /> Saved</>
+                        ) : savedId ? (
+                            <><Save size={18} /> Update Calculation</>
+                        ) : (
+                            <><Save size={18} /> Save Calculation</>
+                        )}
                     </motion.button>
                 </div>
 

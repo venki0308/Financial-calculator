@@ -33,7 +33,8 @@ import SWPCalculator from './pages/SWPCalculator';
 import CAGRCalculator from './pages/CAGRCalculator';
 import StepUpSIPCalculator from './pages/StepUpSIPCalculator';
 import GoalSIPCalculator from './pages/GoalSIPCalculator';
-import PPFCalculator from './pages/PPFCalculator';
+// PPF Calculators
+import AdvancedPPFCalculator from './pages/AdvancedPPFCalculator';
 import NPSCalculator from './pages/NPSCalculator';
 import EPFCalculator from './pages/EPFCalculator';
 import GratuityCalculator from './pages/GratuityCalculator';
@@ -49,14 +50,13 @@ import BreakEvenCalculator from './pages/BreakEvenCalculator';
 import PropertyCalculator from './pages/PropertyCalculator';
 import GSTCalculator from './pages/GSTCalculator';
 import ScientificCalculator from './pages/ScientificCalculator';
-import CarLoanCalculator from './pages/CarLoanCalculator';
 import BudgetTracker from './pages/BudgetTracker';
 import GoalPlanner from './pages/GoalPlanner';
 import AIFinancialAssistant from './pages/AIFinancialAssistant';
 import CompareCalculator from './pages/CompareCalculator';
 import AgeCalculator from './pages/AgeCalculator';
 import WorldClock from './pages/WorldClock';
-import AdvancedPPFCalculator from './pages/AdvancedPPFCalculator';
+
 
 // Support Pages
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -182,7 +182,7 @@ function AppContent() {
                     <Route path="/calculator/cagr" element={<CAGRCalculator />} />
                     <Route path="/calculator/step-up-sip" element={<Navigate to="/calculator/sip" replace />} />
                     <Route path="/calculator/goal-sip" element={<Navigate to="/calculator/sip" replace />} />
-                    <Route path="/calculator/ppf" element={<PPFCalculator />} />
+                    <Route path="/calculator/ppf" element={<AdvancedPPFCalculator />} />
                     <Route path="/calculator/nps" element={<NPSCalculator />} />
                     <Route path="/calculator/epf" element={<EPFCalculator />} />
                     <Route path="/calculator/gratuity" element={<GratuityCalculator />} />
@@ -198,7 +198,9 @@ function AppContent() {
                     <Route path="/calculator/property" element={<PropertyCalculator />} />
                     <Route path="/calculator/advanced-sip" element={<Navigate to="/calculator/sip" replace />} />
                     <Route path="/calculator/gst" element={<GSTCalculator />} />
-                    <Route path="/calculator/car-loan" element={<CarLoanCalculator />} />
+                    <Route path="/calculator/car-loan" element={<EMICalculator />} />
+                    <Route path="/calculator/personal-loan" element={<EMICalculator />} />
+                    <Route path="/calculator/education-loan" element={<EMICalculator />} />
                     <Route path="/budget-tracker" element={<BudgetTracker />} />
                     <Route path="/goal-planner" element={<GoalPlanner />} />
                     <Route path="/financial-advisor" element={<AIFinancialAssistant />} />

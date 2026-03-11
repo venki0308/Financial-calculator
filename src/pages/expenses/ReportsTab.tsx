@@ -232,10 +232,10 @@ export default function ReportsTab() {
                         <span className="text-4xl">📭</span>
                     </div>
                     <h3 className="text-slate-800 dark:text-white font-bold text-base mb-2">
-                        No data for {MONTHS[selectedMonth - 1]} {selectedYear}
+                        No data for {period === 'month' ? `${MONTHS[selectedMonth - 1]} ${selectedYear}` : selectedYear}
                     </h3>
                     <p className="text-slate-500 text-sm text-center leading-relaxed">
-                        No expenses were recorded for this month.<br />
+                        No expenses were recorded for this {period === 'month' ? 'month' : 'year'}.<br />
                         Go to the <span className="font-semibold text-brand-purple">Daily tab</span> to add expenses.
                     </p>
                 </div>

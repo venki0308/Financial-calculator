@@ -1,36 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Star, Clock, Cake, Info } from 'lucide-react';
+import { ArrowLeft, Calendar, Star, Clock, Cake, Info, Activity, Wind, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
-const ZODIAC_SIGNS = [
-    { sign: 'Capricorn', symbol: '♑', start: [1, 1], end: [1, 19] },
-    { sign: 'Aquarius', symbol: '♒', start: [1, 20], end: [2, 18] },
-    { sign: 'Pisces', symbol: '♓', start: [2, 19], end: [3, 20] },
-    { sign: 'Aries', symbol: '♈', start: [3, 21], end: [4, 19] },
-    { sign: 'Taurus', symbol: '♉', start: [4, 20], end: [5, 20] },
-    { sign: 'Gemini', symbol: '♊', start: [5, 21], end: [6, 20] },
-    { sign: 'Cancer', symbol: '♋', start: [6, 21], end: [7, 22] },
-    { sign: 'Leo', symbol: '♌', start: [7, 23], end: [8, 22] },
-    { sign: 'Virgo', symbol: '♍', start: [8, 23], end: [9, 22] },
-    { sign: 'Libra', symbol: '♎', start: [9, 23], end: [10, 22] },
-    { sign: 'Scorpio', symbol: '♏', start: [10, 23], end: [11, 21] },
-    { sign: 'Sagittarius', symbol: '♐', start: [11, 22], end: [12, 21] },
-    { sign: 'Capricorn', symbol: '♑', start: [12, 22], end: [12, 31] },
-];
-
-function getZodiac(month: number, day: number) {
-    return ZODIAC_SIGNS.find(z => {
-        const [sm, sd] = z.start;
-        const [em, ed] = z.end;
-        if (sm === em) return month === sm && day >= sd && day <= ed;
-        if (month === sm) return day >= sd;
-        if (month === em) return day <= ed;
-        return false;
-    }) || ZODIAC_SIGNS[0];
-}
 
 function getGeneration(year: number) {
     if (year >= 2013) return { name: 'Gen Alpha', emoji: '👶', color: 'text-pink-500' };
@@ -84,12 +58,16 @@ export default function AgeCalculator() {
         if (isNaN(bd.getTime()) || bd > today) return null;
 
         const age = calculateAge(bd, today);
-        const zodiac = getZodiac(bd.getMonth() + 1, bd.getDate());
         const gen = getGeneration(bd.getFullYear());
         const nextBday = getNextBirthday(bd, today);
         const dayOfWeek = bd.toLocaleDateString('en-US', { weekday: 'long' });
 
-        return { age, zodiac, gen, nextBday, dayOfWeek, birthYear: bd.getFullYear() };
+        const heartbeats = age.totalDays * 103680; // ~72 bpm
+        const breaths = age.totalDays * 23040; // ~16 bpm
+        const sleepYears = (age.totalDays * 8) / 24 / 365.25;
+        const metrics = { heartbeats, breaths, sleepYears };
+
+        return { age, gen, nextBday, dayOfWeek, metrics, birthYear: bd.getFullYear() };
     }, [birthDate]);
 
     return (
@@ -142,17 +120,31 @@ export default function AgeCalculator() {
                             ))}
                         </div>
 
-                        {/* Generation & Zodiac */}
-                        <div className="grid grid-cols-2 gap-3">
+                        {/* Generation */}
+                        <div className="grid grid-cols-1 gap-3">
                             <div className="p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border shadow-sm dark:shadow-none text-center">
                                 <span className="text-3xl">{result.gen.emoji}</span>
                                 <p className={`text-lg font-bold mt-1 ${result.gen.color}`}>{result.gen.name}</p>
                                 <p className="text-slate-500 text-[10px] uppercase font-bold">Generation</p>
                             </div>
-                            <div className="p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border shadow-sm dark:shadow-none text-center">
-                                <span className="text-3xl">{result.zodiac.symbol}</span>
-                                <p className="text-lg font-bold text-slate-800 dark:text-white mt-1">{result.zodiac.sign}</p>
-                                <p className="text-slate-500 text-[10px] uppercase font-bold">Zodiac Sign</p>
+                        </div>
+
+                        {/* Fun Facts */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-center">
+                                <div className="text-rose-500 mb-1 flex justify-center"><Activity size={20} /></div>
+                                <p className="text-lg font-bold text-slate-800 dark:text-white">{result.metrics.heartbeats.toLocaleString()}</p>
+                                <p className="text-rose-600 dark:text-rose-400 text-[10px] uppercase font-bold mt-1">Total Heartbeats</p>
+                            </div>
+                            <div className="p-4 rounded-2xl bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/30 text-center">
+                                <div className="text-sky-500 mb-1 flex justify-center"><Wind size={20} /></div>
+                                <p className="text-lg font-bold text-slate-800 dark:text-white">{result.metrics.breaths.toLocaleString()}</p>
+                                <p className="text-sky-600 dark:text-sky-400 text-[10px] uppercase font-bold mt-1">Total Breaths</p>
+                            </div>
+                            <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-center col-span-2">
+                                <div className="text-indigo-500 mb-1 flex justify-center"><Moon size={20} /></div>
+                                <p className="text-lg font-bold text-slate-800 dark:text-white">{result.metrics.sleepYears.toFixed(1)} <span className="text-sm font-medium">years</span></p>
+                                <p className="text-indigo-600 dark:text-indigo-400 text-[10px] uppercase font-bold mt-1">Time Spent Sleeping</p>
                             </div>
                         </div>
 

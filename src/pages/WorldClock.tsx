@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import DisclaimerBanner from '../components/DisclaimerBanner';
 
+import { Search } from 'lucide-react';
+
 interface TimezoneInfo {
     id: string;
     city: string;
@@ -13,20 +15,18 @@ interface TimezoneInfo {
     offset: string;
 }
 
-const TIMEZONE_LIST: TimezoneInfo[] = [
-    { id: 'ist', city: 'Mumbai', country: 'India', iana: 'Asia/Kolkata', offset: 'IST (UTC+5:30)' },
-    { id: 'gmt', city: 'London', country: 'UK', iana: 'Europe/London', offset: 'GMT/BST' },
-    { id: 'utc', city: 'UTC', country: 'Coordinated', iana: 'UTC', offset: 'UTC (UTC+0)' },
-    { id: 'est', city: 'New York', country: 'USA', iana: 'America/New_York', offset: 'EST/EDT' },
-    { id: 'pst', city: 'Los Angeles', country: 'USA', iana: 'America/Los_Angeles', offset: 'PST/PDT' },
-    { id: 'cst', city: 'Chicago', country: 'USA', iana: 'America/Chicago', offset: 'CST/CDT' },
-    { id: 'gst', city: 'Dubai', country: 'UAE', iana: 'Asia/Dubai', offset: 'GST (UTC+4)' },
-    { id: 'jst', city: 'Tokyo', country: 'Japan', iana: 'Asia/Tokyo', offset: 'JST (UTC+9)' },
-    { id: 'aest', city: 'Sydney', country: 'Australia', iana: 'Australia/Sydney', offset: 'AEST/AEDT' },
-    { id: 'sgt', city: 'Singapore', country: 'Singapore', iana: 'Asia/Singapore', offset: 'SGT (UTC+8)' },
-    { id: 'cet', city: 'Berlin', country: 'Germany', iana: 'Europe/Berlin', offset: 'CET/CEST' },
-    { id: 'hkt', city: 'Hong Kong', country: 'China', iana: 'Asia/Hong_Kong', offset: 'HKT (UTC+8)' },
-];
+const TIMEZONE_LIST: TimezoneInfo[] = (Intl as any).supportedValuesOf('timeZone').map((iana: string) => {
+    const parts = iana.split('/');
+    const city = parts[parts.length - 1]?.replace(/_/g, ' ') || iana;
+    const country = parts.length > 1 ? parts[0].replace(/_/g, ' ') : '';
+    return {
+        id: iana.toLowerCase(),
+        city,
+        country,
+        iana,
+        offset: iana.split('/')[0]
+    };
+});
 
 function getTimeInZone(iana: string, now: Date) {
     try {
@@ -57,8 +57,9 @@ export default function WorldClock() {
     useEffect(() => { AnalyticsService.trackScreen('World_Clock'); }, []);
     const navigate = useNavigate();
     const [now, setNow] = useState(new Date());
-    const [selected, setSelected] = useState<string[]>(['ist', 'gmt', 'est', 'gst']);
+    const [selected, setSelected] = useState<string[]>(['asia/kolkata', 'europe/london', 'america/new_york', 'asia/dubai']);
     const [showAddPanel, setShowAddPanel] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const interval = setInterval(() => setNow(new Date()), 1000);
@@ -66,12 +67,16 @@ export default function WorldClock() {
     }, []);
 
     const activeZones = useMemo(() => {
-        return selected.map(id => TIMEZONE_LIST.find(t => t.id === id)!).filter(Boolean);
+        return selected.map(id => TIMEZONE_LIST.find(t => t.id === id)).filter(Boolean) as TimezoneInfo[];
     }, [selected]);
 
     const availableZones = useMemo(() => {
-        return TIMEZONE_LIST.filter(t => !selected.includes(t.id));
-    }, [selected]);
+        const query = searchQuery.toLowerCase().trim();
+        return TIMEZONE_LIST.filter(t => 
+            !selected.includes(t.id) &&
+            (t.city.toLowerCase().includes(query) || t.country.toLowerCase().includes(query) || t.iana.toLowerCase().includes(query))
+        );
+    }, [selected, searchQuery]);
 
     const addZone = (id: string) => {
         setSelected(prev => [...prev, id]);
@@ -163,10 +168,27 @@ export default function WorldClock() {
                                 className="absolute bottom-0 left-0 right-0 bg-white dark:bg-[#1E293B] rounded-t-3xl p-6 max-h-[60vh] overflow-y-auto">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white">Add Time Zone</h3>
-                                    <button onClick={() => setShowAddPanel(false)} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800">
+                                    <button onClick={() => { setShowAddPanel(false); setSearchQuery(''); }} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800">
                                         <X size={18} className="text-slate-500" />
                                     </button>
                                 </div>
+
+                                <div className="mb-4 relative">
+                                    <Search size={16} className="absolute inset-y-0 my-auto left-4 text-slate-400" />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Search city, country or timezone..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl py-3 pl-11 pr-4 text-sm text-slate-900 dark:text-white outline-none focus:border-violet-500 transition-colors"
+                                    />
+                                    {searchQuery && (
+                                        <button onClick={() => setSearchQuery('')} className="absolute inset-y-0 my-auto right-4 text-slate-400">
+                                            <X size={14} />
+                                        </button>
+                                    )}
+                                </div>
+
                                 <div className="space-y-2">
                                     {availableZones.map(tz => (
                                         <button key={tz.id} onClick={() => addZone(tz.id)}

@@ -5,57 +5,8 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { AnalyticsService } from '../lib/analytics';
 
-interface CalcItem { nameKey: string; descKey: string; icon: React.ElementType; color: string; path: string; category: string; }
-
-const allCalcs: CalcItem[] = [
-    // Tax & Salary
-    { nameKey: 'calculators.incomeTax.name', descKey: 'calculators.incomeTax.desc', icon: FileText, color: '#F59E0B', path: '/calculator/income-tax', category: 'taxSalary' },
-    { nameKey: 'calculators.salaryHike.name', descKey: 'calculators.salaryHike.desc', icon: ArrowUpRight, color: '#10B981', path: '/calculator/salary-hike', category: 'taxSalary' },
-    { nameKey: 'calculators.hra.name', descKey: 'calculators.hra.desc', icon: GraduationCap, color: '#F59E0B', path: '/calculator/hra', category: 'taxSalary' },
-
-    // Loans
-    { nameKey: 'calculators.emi.name', descKey: 'calculators.emi.desc', icon: Calculator, color: '#10B981', path: '/calculator/loan-emi', category: 'loans' },
-    { nameKey: 'calculators.carLoan.name', descKey: 'calculators.carLoan.desc', icon: Car, color: '#3B82F6', path: '/calculator/car-loan', category: 'loans' },
-    { nameKey: 'calculators.compound.name', descKey: 'calculators.compound.desc', icon: Percent, color: '#8B5CF6', path: '/calculator/compound-interest', category: 'loans' },
-
-    // Investments
-    { nameKey: 'calculators.sip.name', descKey: 'calculators.sip.desc', icon: TrendingUp, color: '#3B82F6', path: '/calculator/sip', category: 'investments' },
-    { nameKey: 'calculators.lumpsum.name', descKey: 'calculators.lumpsum.desc', icon: Wallet, color: '#10B981', path: '/calculator/lumpsum', category: 'investments' },
-    { nameKey: 'calculators.swp.name', descKey: 'calculators.swp.desc', icon: TrendingUp, color: '#F59E0B', path: '/calculator/swp', category: 'investments' },
-    { nameKey: 'calculators.cagr.name', descKey: 'calculators.cagr.desc', icon: BarChart3, color: '#8B5CF6', path: '/calculator/cagr', category: 'investments' },
-
-    // Banking
-    { nameKey: 'calculators.fd.name', descKey: 'calculators.fd.desc', icon: PiggyBank, color: '#F59E0B', path: '/calculator/fixed-deposit', category: 'banking' },
-    { nameKey: 'calculators.rd.name', descKey: 'calculators.rd.desc', icon: Clock, color: '#3B82F6', path: '/calculator/recurring-deposit', category: 'banking' },
-    { nameKey: 'calculators.compound.name', descKey: 'calculators.compound.desc', icon: Percent, color: '#8B5CF6', path: '/calculator/compound-interest', category: 'banking' },
-    { nameKey: 'calculators.simple.name', descKey: 'calculators.simple.desc', icon: Minus, color: '#6B7280', path: '/calculator/simple-interest', category: 'banking' },
-
-    // Retirement
-    { nameKey: 'calculators.epf.name', descKey: 'calculators.epf.desc', icon: Wallet, color: '#F59E0B', path: '/calculator/epf', category: 'retirement' },
-    { nameKey: 'calculators.nps.name', descKey: 'calculators.nps.desc', icon: LayoutGrid, color: '#3B82F6', path: '/calculator/nps', category: 'retirement' },
-    { nameKey: 'calculators.ppf.name', descKey: 'calculators.ppf.desc', icon: Landmark, color: '#10B981', path: '/calculator/ppf', category: 'retirement' },
-    { nameKey: 'calculators.gratuity.name', descKey: 'calculators.gratuity.desc', icon: DollarSign, color: '#8B5CF6', path: '/calculator/gratuity', category: 'retirement' },
-
-    // Post Office
-    { nameKey: 'calculators.ssy.name', descKey: 'calculators.ssy.desc', icon: Heart, color: '#EF4444', path: '/calculator/sukanya-samriddhi', category: 'postOffice' },
-    { nameKey: 'calculators.nsc.name', descKey: 'calculators.nsc.desc', icon: RefreshCcw, color: '#3B82F6', path: '/calculator/nsc', category: 'postOffice' },
-    { nameKey: 'calculators.kvp.name', descKey: 'calculators.kvp.desc', icon: Clock, color: '#F59E0B', path: '/calculator/kvp', category: 'postOffice' },
-    { nameKey: 'calculators.pomis.name', descKey: 'calculators.pomis.desc', icon: DollarSign, color: '#10B981', path: '/calculator/post-office-mis', category: 'postOffice' },
-    { nameKey: 'calculators.potd.name', descKey: 'calculators.potd.desc', icon: PiggyBank, color: '#3B82F6', path: '/calculator/post-office-td', category: 'postOffice' },
-
-    // Business
-    { nameKey: 'calculators.gst.name', descKey: 'calculators.gst.desc', icon: Receipt, color: '#06B6D4', path: '/calculator/gst', category: 'business' },
-    { nameKey: 'calculators.breakEven.name', descKey: 'calculators.breakEven.desc', icon: BarChart3, color: '#10B981', path: '/calculator/break-even', category: 'business' },
-
-    // Property
-    { nameKey: 'calculators.property.name', descKey: 'calculators.property.desc', icon: Building2, color: '#F97316', path: '/calculator/property', category: 'property' },
-
-    // Tools
-    { nameKey: 'Scientific Calculator', descKey: 'Trig, log, binary, hex', icon: Sparkles, color: '#EC4899', path: '/calculator/scientific', category: 'tools' },
-    { nameKey: 'Age Calculator', descKey: 'Exact age, generation & zodiac', icon: Calendar, color: '#F97316', path: '/calculator/age', category: 'tools' },
-    { nameKey: 'World Clock', descKey: 'Compare time across cities', icon: Globe, color: '#3B82F6', path: '/world-clock', category: 'tools' },
-    { nameKey: 'PPF Advanced', descKey: 'Monthly/quarterly/yearly PPF', icon: Landmark, color: '#10B981', path: '/calculator/ppf-advanced', category: 'retirement' },
-];
+import { allCalcs, CalcItem } from '../data/calculatorList';
+import DisclaimerBanner from '../components/DisclaimerBanner';
 
 // Most Used calculators (featured)
 const mostUsed = [
@@ -125,10 +76,12 @@ export default function Calculators() {
     return (
         <div className="px-4 pt-14 animate-fade-in pb-24">
             {/* Header */}
-            <div className="mb-5">
+            <div className="mb-4">
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('calculators.title')}</h1>
                 <p className="text-slate-500 text-sm mt-1">{t('calculators.subtitle')}</p>
             </div>
+
+            <DisclaimerBanner type="calculator" />
 
             {/* Search */}
             <div className="relative mb-4 sticky top-12 z-10">
