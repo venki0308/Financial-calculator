@@ -343,8 +343,13 @@ function CityDetailView({ tz, now, onBack }: { tz: TimezoneInfo; now: Date; onBa
                     <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Geography</p>
                     <div className="rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 p-4 flex items-center gap-4 shadow-lg">
                         <div className="flex-shrink-0">
-                            <div className="w-16 h-16 rounded-xl bg-white/20 flex flex-col items-center justify-center gap-1">
-                                <span className="text-3xl">{meta.flag}</span>
+                            <div className="w-16 h-16 rounded-xl bg-white/20 flex flex-col items-center justify-center gap-2">
+                                <img 
+                                    src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
+                                    alt={meta.countryCode}
+                                    className="w-8 h-auto shadow-[0_0_10px_rgba(0,0,0,0.2)] rounded-sm"
+                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
                                 <MapPin size={10} className="text-indigo-200" />
                             </div>
                         </div>
@@ -486,7 +491,14 @@ export default function WorldClock() {
 
                             <div className="relative p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <span className="text-3xl">{meta.flag}</span>
+                                    <div className="w-[36px] flex-shrink-0 flex items-center justify-center">
+                                        <img 
+                                            src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
+                                            alt={meta.countryCode}
+                                            className="w-full h-auto shadow-md rounded-[2px]"
+                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                        />
+                                    </div>
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <h3 className="text-white font-bold text-base">{tz.city}</h3>
@@ -580,7 +592,14 @@ export default function WorldClock() {
                                     return (
                                         <button key={tz.iana} onClick={() => addZone(tz.iana)}
                                             className="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:border-indigo-400 transition-colors text-left">
-                                            <span className="text-2xl flex-shrink-0">{meta.flag}</span>
+                                            <div className="w-8 flex-shrink-0 flex items-center justify-center">
+                                                <img 
+                                                    src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
+                                                    alt={meta.countryCode}
+                                                    className="w-full h-auto shadow-sm rounded-sm"
+                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                />
+                                            </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-slate-900 dark:text-white font-semibold text-sm truncate">{tz.city}</p>
                                                 <p className="text-slate-400 text-xs truncate">{tz.country} · {tz.iana}</p>

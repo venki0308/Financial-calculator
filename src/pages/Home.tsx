@@ -205,7 +205,7 @@ export default function Home() {
                                         <Search size={20} className="text-slate-400" />
                                     </div>
                                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">What are you looking for?</p>
-                                    <p className="text-xs text-slate-500 mt-1">Try "home loan", "tax", "sip" or "zodiac"</p>
+                                    <p className="text-xs text-slate-500 mt-1">Try "home loan", "tax", "sip" or "ppf"</p>
                                 </div>
                             ) : searchResults && searchResults.all && searchResults.all.length > 0 ? (
                                 <div className="py-2">

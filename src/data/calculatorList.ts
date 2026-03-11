@@ -37,7 +37,7 @@ export const allCalcs: CalcItem[] = [
     // Retirement
     { nameKey: 'calculators.epf.name', descKey: 'calculators.epf.desc', icon: Wallet, color: '#F59E0B', path: '/calculator/epf', category: 'retirement', keywords: ['epf', 'pf', 'provident', 'fund', 'employee'] },
     { nameKey: 'calculators.nps.name', descKey: 'calculators.nps.desc', icon: LayoutGrid, color: '#3B82F6', path: '/calculator/nps', category: 'retirement', keywords: ['nps', 'national', 'pension', 'system'] },
-    { nameKey: 'calculators.ppf.name', descKey: 'calculators.ppf.desc', icon: Landmark, color: '#10B981', path: '/calculator/ppf', category: 'retirement', keywords: ['ppf', 'public', 'provident', 'fund'] },
+    { nameKey: 'calculators.ppf.name', descKey: 'calculators.ppf.desc', icon: Landmark, color: '#10B981', path: '/calculator/ppf', category: 'retirement', keywords: ['ppf', 'public', 'provident', 'fund', 'tax', 'saving', 'monthly', 'quarterly', 'yearly'] },
     { nameKey: 'calculators.gratuity.name', descKey: 'calculators.gratuity.desc', icon: DollarSign, color: '#8B5CF6', path: '/calculator/gratuity', category: 'retirement', keywords: ['gratuity', 'retirement', 'employee', 'bonus'] },
 
     // Post Office
@@ -55,16 +55,5 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.property.name', descKey: 'calculators.property.desc', icon: Building2, color: '#F97316', path: '/calculator/property', category: 'property', keywords: ['property', 'real', 'estate', 'house', 'appreciation'] },
 
     // Tools
-    { nameKey: 'Scientific Calculator', descKey: 'Trig, log, binary, hex', icon: Sparkles, color: '#EC4899', path: '/calculator/scientific', category: 'tools', keywords: ['scientific', 'math', 'trig', 'log', 'calc'] },
-    { nameKey: 'Age Calculator', descKey: 'Exact age, generation & zodiac', icon: Calendar, color: '#F97316', path: '/calculator/age', category: 'tools', keywords: ['age', 'date', 'birth', 'zodiac'] },
-    { nameKey: 'World Clock', descKey: 'Compare time across cities', icon: Globe, color: '#3B82F6', path: '/world-clock', category: 'tools', keywords: ['world', 'clock', 'time', 'zone', 'city'] },
-    {
-        nameKey: 'PPF Advanced',
-        descKey: 'Monthly/quarterly/yearly PPF',
-        icon: PiggyBank, // Changed icon from Landmark to PiggyBank
-        color: '#10B981', // Kept original color
-        path: '/calculator/ppf-advanced',
-        category: 'retirement',
-        keywords: ['ppf', 'provident', 'fund', 'saving', 'tax', 'retirement', 'fixed', 'investment', 'monthly', 'quarterly', 'yearly']
-    },
+    { nameKey: 'Age Calculator', descKey: 'Exact age & generation', icon: Calendar, color: '#F97316', path: '/calculator/age', category: 'tools', keywords: ['age', 'date', 'birth', 'generation'] },
 ];

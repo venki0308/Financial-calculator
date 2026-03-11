@@ -59,6 +59,11 @@ export default function AdvancedPPFCalculator() {
 
     const { addHistory, addSaved } = useCalculatorStore();
 
+    // Reset save state when inputs change
+    useEffect(() => {
+        setIsSaved(false);
+    }, [frequency, amountPerPeriod, rate, years]);
+
     const freqFactor = FREQ_OPTIONS.find(f => f.key === frequency)?.factor || 1;
     const annualContribution = useMemo(() => {
         return Math.min(amountPerPeriod * freqFactor, PPF_MAX_INVEST);
@@ -129,7 +134,7 @@ export default function AdvancedPPFCalculator() {
                         </button>
                         <div>
                             <h1 className="text-lg font-bold text-slate-900 dark:text-white">PPF Calculator</h1>
-                            <p className="text-slate-500 text-xs">Public Provident Fund — Advanced</p>
+                            <p className="text-slate-500 text-xs">Public Provident Fund</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -177,17 +182,15 @@ export default function AdvancedPPFCalculator() {
                 </div>
 
                 {/* Annual Contribution Banner */}
-                {frequency !== 'yearly' && (
-                    <div className="mb-4 p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30">
-                        <p className="text-xs text-blue-700 dark:text-blue-300">
-                            <span className="font-bold">Annual Contribution:</span> {formatINR(annualContribution)}/year
-                            ({formatINR(amountPerPeriod)} × {freqFactor} = {formatINR(amountPerPeriod * freqFactor)})
-                            {amountPerPeriod * freqFactor > PPF_MAX_INVEST && (
-                                <span className="text-amber-600 dark:text-amber-400"> — Capped at ₹1,50,000/year</span>
-                            )}
-                        </p>
-                    </div>
-                )}
+                <div className="mb-4 p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30">
+                    <p className="text-xs text-blue-700 dark:text-blue-300">
+                        <span className="font-bold">Annual Contribution:</span> {formatINR(annualContribution)}/year
+                        {frequency !== 'yearly' && ` (${formatINR(amountPerPeriod)} × ${freqFactor} = ${formatINR(amountPerPeriod * freqFactor)})`}
+                        {amountPerPeriod * freqFactor > PPF_MAX_INVEST && (
+                            <span className="text-amber-600 dark:text-amber-400"> — Capped at ₹1,50,000/year</span>
+                        )}
+                    </p>
+                </div>
 
                 {/* Result Card */}
                 <motion.div layout className="p-5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border shadow-lg dark:shadow-none mb-4">
