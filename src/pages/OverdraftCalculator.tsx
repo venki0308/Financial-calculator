@@ -1,4 +1,4 @@
-```
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Share2, FileText, Download, Calculator, Info, Wallet, PieChart, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -103,7 +103,7 @@ export default function OverdraftCalculator() {
     doc.text(`Total Amount Payable: ${formatINR(utilizedNum + totalInterest)}`, 14, 78);
 
     doc.save(`FinCalix_Overdraft_${new Date().toISOString().slice(0, 10)}.pdf`);
-    AnalyticsService.trackEvent('export_pdf', { calculator: 'overdraft' });
+    AnalyticsService.trackFileDownload('pdf', 'overdraft_calculator');
   };
 
   const exportToExcel = () => {
@@ -122,7 +122,7 @@ export default function OverdraftCalculator() {
     ];
 
     utilsExportToExcel(headers, data, `FinCalix_Overdraft_${new Date().toISOString().slice(0, 10)}`);
-    AnalyticsService.trackEvent('export_excel', { calculator: 'overdraft' });
+    AnalyticsService.trackFileDownload('excel', 'overdraft_calculator');
   };
 
   const handleShare = async () => {
@@ -133,7 +133,7 @@ export default function OverdraftCalculator() {
           text: `Overdraft Limit: ${odLimit}\nUtilized: ${utilizedAmount}\nInterest Payable: ${formatINR(totalInterest)}\nCalculate yours on FinCalix!`,
           url: window.location.href,
         });
-        AnalyticsService.trackEvent('share_calculator', { calculator: 'overdraft' });
+        AnalyticsService.trackCalculatorUsed('overdraft', { action: 'share' });
       } catch (error) {
         console.error('Error sharing:', error);
       }
@@ -407,9 +407,8 @@ export default function OverdraftCalculator() {
       
       <div className="mt-8">
         <FinancialQuote />
-        <DisclaimerComponent module="calculators" />
+        <DisclaimerComponent module="overdraft" />
       </div>
     </div>
   );
 }
-```
