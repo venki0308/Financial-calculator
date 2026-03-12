@@ -6,12 +6,7 @@ import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { getCountryMeta, getSunTimes } from '../data/countryData';
 
-interface TimezoneInfo {
-    iana: string;
-    city: string;
-    country: string;
-    searchTerms: string;
-}
+import { WORLD_TIMEZONES, POPULAR_IANA, TimezoneInfo } from '../data/timezones';
 
 interface SavedClock {
     id: string;
@@ -21,164 +16,6 @@ interface SavedClock {
     addedAt: string;
     isPinned?: boolean;
 }
-
-const WORLD_TIMEZONES: TimezoneInfo[] = [
-    // ── INDIA ──
-    { iana: 'Asia/Kolkata', city: 'Kolkata / Mumbai / Delhi', country: 'India', searchTerms: 'india kolkata mumbai delhi new delhi chennai bangalore hyderabad in' },
-    // ── SOUTH ASIA ──
-    { iana: 'Asia/Karachi', city: 'Karachi', country: 'Pakistan', searchTerms: 'pakistan karachi islamabad lahore pk' },
-    { iana: 'Asia/Dhaka', city: 'Dhaka', country: 'Bangladesh', searchTerms: 'bangladesh dhaka bd' },
-    { iana: 'Asia/Colombo', city: 'Colombo', country: 'Sri Lanka', searchTerms: 'sri lanka colombo lk' },
-    { iana: 'Asia/Kathmandu', city: 'Kathmandu', country: 'Nepal', searchTerms: 'nepal kathmandu np' },
-    { iana: 'Asia/Kabul', city: 'Kabul', country: 'Afghanistan', searchTerms: 'afghanistan kabul af' },
-    { iana: 'Asia/Thimphu', city: 'Thimphu', country: 'Bhutan', searchTerms: 'bhutan thimphu bt' },
-    // ── MIDDLE EAST ──
-    { iana: 'Asia/Dubai', city: 'Dubai / Abu Dhabi', country: 'UAE', searchTerms: 'uae dubai abu dhabi emirates ae' },
-    { iana: 'Asia/Riyadh', city: 'Riyadh', country: 'Saudi Arabia', searchTerms: 'saudi arabia riyadh jeddah sa' },
-    { iana: 'Asia/Kuwait', city: 'Kuwait City', country: 'Kuwait', searchTerms: 'kuwait city kw' },
-    { iana: 'Asia/Muscat', city: 'Muscat', country: 'Oman', searchTerms: 'oman muscat om' },
-    { iana: 'Asia/Bahrain', city: 'Manama', country: 'Bahrain', searchTerms: 'bahrain manama bh' },
-    { iana: 'Asia/Qatar', city: 'Doha', country: 'Qatar', searchTerms: 'qatar doha qa' },
-    { iana: 'Asia/Beirut', city: 'Beirut', country: 'Lebanon', searchTerms: 'lebanon beirut lb' },
-    { iana: 'Asia/Amman', city: 'Amman', country: 'Jordan', searchTerms: 'jordan amman jo' },
-    { iana: 'Asia/Jerusalem', city: 'Jerusalem / Tel Aviv', country: 'Israel', searchTerms: 'israel jerusalem tel aviv il' },
-    { iana: 'Asia/Baghdad', city: 'Baghdad', country: 'Iraq', searchTerms: 'iraq baghdad iq' },
-    { iana: 'Asia/Tehran', city: 'Tehran', country: 'Iran', searchTerms: 'iran tehran ir' },
-    // ── EAST ASIA ──
-    { iana: 'Asia/Tokyo', city: 'Tokyo', country: 'Japan', searchTerms: 'japan tokyo osaka jp' },
-    { iana: 'Asia/Seoul', city: 'Seoul', country: 'South Korea', searchTerms: 'south korea seoul busan kr' },
-    { iana: 'Asia/Shanghai', city: 'Shanghai / Beijing', country: 'China', searchTerms: 'china beijing shanghai guangzhou cn' },
-    { iana: 'Asia/Hong_Kong', city: 'Hong Kong', country: 'Hong Kong', searchTerms: 'hong kong hk' },
-    { iana: 'Asia/Taipei', city: 'Taipei', country: 'Taiwan', searchTerms: 'taiwan taipei tw' },
-    { iana: 'Asia/Ulaanbaatar', city: 'Ulaanbaatar', country: 'Mongolia', searchTerms: 'mongolia ulaanbaatar mn' },
-    { iana: 'Asia/Pyongyang', city: 'Pyongyang', country: 'North Korea', searchTerms: 'north korea pyongyang kp' },
-    // ── SOUTHEAST ASIA ──
-    { iana: 'Asia/Singapore', city: 'Singapore', country: 'Singapore', searchTerms: 'singapore sg' },
-    { iana: 'Asia/Bangkok', city: 'Bangkok', country: 'Thailand', searchTerms: 'thailand bangkok th' },
-    { iana: 'Asia/Jakarta', city: 'Jakarta', country: 'Indonesia', searchTerms: 'indonesia jakarta bali id' },
-    { iana: 'Asia/Manila', city: 'Manila', country: 'Philippines', searchTerms: 'philippines manila ph' },
-    { iana: 'Asia/Kuala_Lumpur', city: 'Kuala Lumpur', country: 'Malaysia', searchTerms: 'malaysia kuala lumpur my' },
-    { iana: 'Asia/Ho_Chi_Minh', city: 'Ho Chi Minh City / Hanoi', country: 'Vietnam', searchTerms: 'vietnam hanoi ho chi minh vn' },
-    { iana: 'Asia/Rangoon', city: 'Yangon (Rangoon)', country: 'Myanmar', searchTerms: 'myanmar burma yangon rangoon mm' },
-    { iana: 'Asia/Phnom_Penh', city: 'Phnom Penh', country: 'Cambodia', searchTerms: 'cambodia phnom penh kh' },
-    { iana: 'Asia/Vientiane', city: 'Vientiane', country: 'Laos', searchTerms: 'laos vientiane la' },
-    { iana: 'Asia/Dili', city: 'Dili', country: 'East Timor', searchTerms: 'east timor dili tl' },
-    // ── CENTRAL ASIA ──
-    { iana: 'Asia/Tashkent', city: 'Tashkent', country: 'Uzbekistan', searchTerms: 'uzbekistan tashkent uz' },
-    { iana: 'Asia/Almaty', city: 'Almaty', country: 'Kazakhstan', searchTerms: 'kazakhstan almaty kz' },
-    { iana: 'Asia/Ashgabat', city: 'Ashgabat', country: 'Turkmenistan', searchTerms: 'turkmenistan ashgabat tm' },
-    { iana: 'Asia/Bishkek', city: 'Bishkek', country: 'Kyrgyzstan', searchTerms: 'kyrgyzstan bishkek kg' },
-    { iana: 'Asia/Dushanbe', city: 'Dushanbe', country: 'Tajikistan', searchTerms: 'tajikistan dushanbe tj' },
-    { iana: 'Asia/Baku', city: 'Baku', country: 'Azerbaijan', searchTerms: 'azerbaijan baku az' },
-    { iana: 'Asia/Yerevan', city: 'Yerevan', country: 'Armenia', searchTerms: 'armenia yerevan am' },
-    { iana: 'Asia/Tbilisi', city: 'Tbilisi', country: 'Georgia', searchTerms: 'georgia tbilisi ge' },
-    // ── EUROPE ──
-    { iana: 'Europe/London', city: 'London', country: 'United Kingdom', searchTerms: 'uk united kingdom london britain england gb' },
-    { iana: 'Europe/Paris', city: 'Paris', country: 'France', searchTerms: 'france paris fr' },
-    { iana: 'Europe/Berlin', city: 'Berlin', country: 'Germany', searchTerms: 'germany berlin de' },
-    { iana: 'Europe/Rome', city: 'Rome', country: 'Italy', searchTerms: 'italy rome milan it' },
-    { iana: 'Europe/Madrid', city: 'Madrid', country: 'Spain', searchTerms: 'spain madrid barcelona es' },
-    { iana: 'Europe/Amsterdam', city: 'Amsterdam', country: 'Netherlands', searchTerms: 'netherlands amsterdam nl' },
-    { iana: 'Europe/Brussels', city: 'Brussels', country: 'Belgium', searchTerms: 'belgium brussels be' },
-    { iana: 'Europe/Zurich', city: 'Zurich', country: 'Switzerland', searchTerms: 'switzerland zurich bern ch' },
-    { iana: 'Europe/Stockholm', city: 'Stockholm', country: 'Sweden', searchTerms: 'sweden stockholm se' },
-    { iana: 'Europe/Oslo', city: 'Oslo', country: 'Norway', searchTerms: 'norway oslo no' },
-    { iana: 'Europe/Copenhagen', city: 'Copenhagen', country: 'Denmark', searchTerms: 'denmark copenhagen dk' },
-    { iana: 'Europe/Helsinki', city: 'Helsinki', country: 'Finland', searchTerms: 'finland helsinki fi' },
-    { iana: 'Europe/Warsaw', city: 'Warsaw', country: 'Poland', searchTerms: 'poland warsaw pl' },
-    { iana: 'Europe/Prague', city: 'Prague', country: 'Czech Republic', searchTerms: 'czech republic prague cz' },
-    { iana: 'Europe/Budapest', city: 'Budapest', country: 'Hungary', searchTerms: 'hungary budapest hu' },
-    { iana: 'Europe/Vienna', city: 'Vienna', country: 'Austria', searchTerms: 'austria vienna at' },
-    { iana: 'Europe/Athens', city: 'Athens', country: 'Greece', searchTerms: 'greece athens gr' },
-    { iana: 'Europe/Lisbon', city: 'Lisbon', country: 'Portugal', searchTerms: 'portugal lisbon pt' },
-    { iana: 'Europe/Istanbul', city: 'Istanbul / Ankara', country: 'Turkey', searchTerms: 'turkey istanbul ankara tr' },
-    { iana: 'Europe/Moscow', city: 'Moscow', country: 'Russia', searchTerms: 'russia moscow ru' },
-    { iana: 'Europe/Kiev', city: 'Kyiv (Kiev)', country: 'Ukraine', searchTerms: 'ukraine kyiv kiev ua' },
-    { iana: 'Europe/Bucharest', city: 'Bucharest', country: 'Romania', searchTerms: 'romania bucharest ro' },
-    { iana: 'Europe/Sofia', city: 'Sofia', country: 'Bulgaria', searchTerms: 'bulgaria sofia bg' },
-    { iana: 'Europe/Minsk', city: 'Minsk', country: 'Belarus', searchTerms: 'belarus minsk by' },
-    { iana: 'Europe/Riga', city: 'Riga', country: 'Latvia', searchTerms: 'latvia riga lv' },
-    { iana: 'Europe/Tallinn', city: 'Tallinn', country: 'Estonia', searchTerms: 'estonia tallinn ee' },
-    { iana: 'Europe/Vilnius', city: 'Vilnius', country: 'Lithuania', searchTerms: 'lithuania vilnius lt' },
-    { iana: 'Europe/Bratislava', city: 'Bratislava', country: 'Slovakia', searchTerms: 'slovakia bratislava sk' },
-    { iana: 'Europe/Zagreb', city: 'Zagreb', country: 'Croatia', searchTerms: 'croatia zagreb hr' },
-    { iana: 'Europe/Sarajevo', city: 'Sarajevo', country: 'Bosnia', searchTerms: 'bosnia sarajevo ba' },
-    { iana: 'Europe/Belgrade', city: 'Belgrade', country: 'Serbia', searchTerms: 'serbia belgrade rs' },
-    { iana: 'Europe/Dublin', city: 'Dublin', country: 'Ireland', searchTerms: 'ireland dublin ie' },
-    { iana: 'Europe/Valletta', city: 'Valletta', country: 'Malta', searchTerms: 'malta valletta mt' },
-    { iana: 'Atlantic/Reykjavik', city: 'Reykjavik', country: 'Iceland', searchTerms: 'iceland reykjavik is' },
-    // ── AMERICAS ──
-    { iana: 'America/New_York', city: 'New York (EST)', country: 'United States', searchTerms: 'usa united states new york est eastern us' },
-    { iana: 'America/Chicago', city: 'Chicago (CST)', country: 'United States', searchTerms: 'usa chicago cst central us' },
-    { iana: 'America/Denver', city: 'Denver (MST)', country: 'United States', searchTerms: 'usa denver mst mountain us' },
-    { iana: 'America/Los_Angeles', city: 'Los Angeles (PST)', country: 'United States', searchTerms: 'usa los angeles pst pacific california us' },
-    { iana: 'America/Anchorage', city: 'Anchorage', country: 'United States', searchTerms: 'usa alaska anchorage us' },
-    { iana: 'Pacific/Honolulu', city: 'Honolulu, Hawaii', country: 'United States', searchTerms: 'usa hawaii honolulu us' },
-    { iana: 'America/Toronto', city: 'Toronto', country: 'Canada', searchTerms: 'canada toronto ontario ca' },
-    { iana: 'America/Vancouver', city: 'Vancouver', country: 'Canada', searchTerms: 'canada vancouver bc ca' },
-    { iana: 'America/Mexico_City', city: 'Mexico City', country: 'Mexico', searchTerms: 'mexico mexico city mx' },
-    { iana: 'America/Sao_Paulo', city: 'São Paulo / Brasília', country: 'Brazil', searchTerms: 'brazil sao paulo brasilia br' },
-    { iana: 'America/Argentina/Buenos_Aires', city: 'Buenos Aires', country: 'Argentina', searchTerms: 'argentina buenos aires ar' },
-    { iana: 'America/Bogota', city: 'Bogotá', country: 'Colombia', searchTerms: 'colombia bogota co' },
-    { iana: 'America/Lima', city: 'Lima', country: 'Peru', searchTerms: 'peru lima pe' },
-    { iana: 'America/Santiago', city: 'Santiago', country: 'Chile', searchTerms: 'chile santiago cl' },
-    { iana: 'America/Caracas', city: 'Caracas', country: 'Venezuela', searchTerms: 'venezuela caracas ve' },
-    { iana: 'America/Havana', city: 'Havana', country: 'Cuba', searchTerms: 'cuba havana cu' },
-    { iana: 'America/Panama', city: 'Panama City', country: 'Panama', searchTerms: 'panama city pa' },
-    { iana: 'America/Costa_Rica', city: 'San José', country: 'Costa Rica', searchTerms: 'costa rica san jose cr' },
-    { iana: 'America/La_Paz', city: 'La Paz', country: 'Bolivia', searchTerms: 'bolivia la paz bo' },
-    { iana: 'America/Asuncion', city: 'Asunción', country: 'Paraguay', searchTerms: 'paraguay asuncion py' },
-    { iana: 'America/Montevideo', city: 'Montevideo', country: 'Uruguay', searchTerms: 'uruguay montevideo uy' },
-    { iana: 'America/Guayaquil', city: 'Quito / Guayaquil', country: 'Ecuador', searchTerms: 'ecuador quito guayaquil ec' },
-    { iana: 'America/Guyana', city: 'Georgetown', country: 'Guyana', searchTerms: 'guyana georgetown gy' },
-    { iana: 'America/Jamaica', city: 'Kingston', country: 'Jamaica', searchTerms: 'jamaica kingston jm' },
-    { iana: 'America/Port-au-Prince', city: 'Port-au-Prince', country: 'Haiti', searchTerms: 'haiti port au prince ht' },
-    { iana: 'America/Nassau', city: 'Nassau', country: 'Bahamas', searchTerms: 'bahamas nassau bs' },
-    { iana: 'America/Barbados', city: 'Bridgetown', country: 'Barbados', searchTerms: 'barbados bridgetown bb' },
-    { iana: 'America/Port_of_Spain', city: 'Port of Spain', country: 'Trinidad', searchTerms: 'trinidad port of spain tt' },
-    // ── AFRICA ──
-    { iana: 'Africa/Lagos', city: 'Lagos / Abuja', country: 'Nigeria', searchTerms: 'nigeria lagos abuja ng' },
-    { iana: 'Africa/Cairo', city: 'Cairo', country: 'Egypt', searchTerms: 'egypt cairo eg' },
-    { iana: 'Africa/Johannesburg', city: 'Johannesburg / Cape Town', country: 'South Africa', searchTerms: 'south africa johannesburg cape town za' },
-    { iana: 'Africa/Nairobi', city: 'Nairobi', country: 'Kenya', searchTerms: 'kenya nairobi ke' },
-    { iana: 'Africa/Accra', city: 'Accra', country: 'Ghana', searchTerms: 'ghana accra gh' },
-    { iana: 'Africa/Addis_Ababa', city: 'Addis Ababa', country: 'Ethiopia', searchTerms: 'ethiopia addis ababa et' },
-    { iana: 'Africa/Casablanca', city: 'Casablanca / Rabat', country: 'Morocco', searchTerms: 'morocco casablanca rabat ma' },
-    { iana: 'Africa/Tunis', city: 'Tunis', country: 'Tunisia', searchTerms: 'tunisia tunis tn' },
-    { iana: 'Africa/Algiers', city: 'Algiers', country: 'Algeria', searchTerms: 'algeria algiers dz' },
-    { iana: 'Africa/Tripoli', city: 'Tripoli', country: 'Libya', searchTerms: 'libya tripoli ly' },
-    { iana: 'Africa/Khartoum', city: 'Khartoum', country: 'Sudan', searchTerms: 'sudan khartoum sd' },
-    { iana: 'Africa/Dar_es_Salaam', city: 'Dar es Salaam', country: 'Tanzania', searchTerms: 'tanzania dar es salaam tz' },
-    { iana: 'Africa/Kampala', city: 'Kampala', country: 'Uganda', searchTerms: 'uganda kampala ug' },
-    { iana: 'Africa/Dakar', city: 'Dakar', country: 'Senegal', searchTerms: 'senegal dakar sn' },
-    { iana: 'Africa/Abidjan', city: 'Abidjan', country: 'Ivory Coast', searchTerms: 'ivory coast abidjan ci' },
-    { iana: 'Africa/Douala', city: 'Douala', country: 'Cameroon', searchTerms: 'cameroon douala cm' },
-    { iana: 'Africa/Lusaka', city: 'Lusaka', country: 'Zambia', searchTerms: 'zambia lusaka zm' },
-    { iana: 'Africa/Harare', city: 'Harare', country: 'Zimbabwe', searchTerms: 'zimbabwe harare zw' },
-    { iana: 'Africa/Maputo', city: 'Maputo', country: 'Mozambique', searchTerms: 'mozambique maputo mz' },
-    { iana: 'Africa/Luanda', city: 'Luanda', country: 'Angola', searchTerms: 'angola luanda ao' },
-    { iana: 'Africa/Antananarivo', city: 'Antananarivo', country: 'Madagascar', searchTerms: 'madagascar antananarivo mg' },
-    // ── OCEANIA ──
-    { iana: 'Australia/Sydney', city: 'Sydney', country: 'Australia', searchTerms: 'australia sydney nsw au' },
-    { iana: 'Australia/Melbourne', city: 'Melbourne', country: 'Australia', searchTerms: 'australia melbourne vic au' },
-    { iana: 'Australia/Brisbane', city: 'Brisbane', country: 'Australia', searchTerms: 'australia brisbane qld au' },
-    { iana: 'Australia/Perth', city: 'Perth', country: 'Australia', searchTerms: 'australia perth wa au' },
-    { iana: 'Australia/Adelaide', city: 'Adelaide', country: 'Australia', searchTerms: 'australia adelaide au' },
-    { iana: 'Pacific/Auckland', city: 'Auckland / Wellington', country: 'New Zealand', searchTerms: 'new zealand auckland wellington nz' },
-    { iana: 'Pacific/Fiji', city: 'Suva', country: 'Fiji', searchTerms: 'fiji suva fj' },
-    { iana: 'Pacific/Port_Moresby', city: 'Port Moresby', country: 'Papua New Guinea', searchTerms: 'papua new guinea port moresby pg' },
-    { iana: 'Pacific/Guam', city: 'Guam', country: 'Guam', searchTerms: 'guam gu' },
-    // ── GLOBAL ──
-    { iana: 'UTC', city: 'UTC / GMT', country: 'Universal Time', searchTerms: 'utc gmt greenwich universal' },
-];
-
-const POPULAR_IANA = [
-    'Asia/Kolkata', 'Europe/London', 'America/New_York', 'Asia/Dubai',
-    'Asia/Tokyo', 'Asia/Singapore', 'Europe/Paris', 'America/Los_Angeles',
-    'Australia/Sydney', 'Asia/Shanghai', 'Europe/Berlin', 'America/Chicago',
-    'Africa/Lagos', 'America/Sao_Paulo', 'Asia/Seoul', 'Asia/Bangkok',
-    'Asia/Karachi', 'Asia/Dhaka', 'Asia/Hong_Kong',
-];
 
 const DEFAULT_CLOCKS: SavedClock[] = [
     {
@@ -478,22 +315,28 @@ export default function WorldClock() {
         return () => clearInterval(interval);
     }, []);
 
-    // Sorting Logic - A-Z with Pinned IST
+    // Sorting Logic - IST Pinned Top, Karachi Pinned Bottom, Rest A-Z
     const activeClocks = useMemo(() => {
-        let sorted = [...clocks].sort((a, b) => a.cityName.localeCompare(b.cityName));
-        const istIndex = sorted.findIndex(c => c.isPinned);
-        if (istIndex > 0) {
-            const ist = sorted.splice(istIndex, 1)[0];
-            sorted.unshift(ist);
-        } else if (istIndex === -1 && sorted.length > 0) {
-            // Failsafe pin IST if lost somehow
-            const fallbackIST = sorted.findIndex(c => c.timezone === 'Asia/Kolkata');
+        let clocksCopy = [...clocks];
+        
+        // Failsafe pin IST if lost somehow
+        const hasPinned = clocksCopy.some(c => c.isPinned);
+        if (!hasPinned && clocksCopy.length > 0) {
+            const fallbackIST = clocksCopy.findIndex(c => c.timezone === 'Asia/Kolkata');
             if (fallbackIST >= 0) {
-                sorted[fallbackIST].isPinned = true;
-                const ist = sorted.splice(fallbackIST, 1)[0];
-                sorted.unshift(ist);
+                clocksCopy[fallbackIST] = { ...clocksCopy[fallbackIST], isPinned: true };
             }
         }
+
+        let sorted = clocksCopy.filter(c => c.timezone !== 'Asia/Kolkata' && c.timezone !== 'Asia/Karachi')
+            .sort((a, b) => a.cityName.localeCompare(b.cityName));
+
+        const istClock = clocksCopy.find(c => c.timezone === 'Asia/Kolkata');
+        const karachiClock = clocksCopy.find(c => c.timezone === 'Asia/Karachi');
+
+        if (istClock) sorted.unshift(istClock);
+        if (karachiClock) sorted.push(karachiClock);
+
         return sorted;
     }, [clocks]);
 
@@ -577,7 +420,6 @@ export default function WorldClock() {
                 </div>
             </div>
 
-            <DisclaimerComponent module="world_clock" />
 
             {/* Clock Cards */}
             <div className="px-4 pt-3 pb-28 space-y-4">

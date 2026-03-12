@@ -10,6 +10,7 @@ import {
 import { Pie, Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
@@ -141,6 +142,7 @@ export default function FDCalculator() {
                 </div>
             </div>
 
+            <FinancialQuote />
             <DisclaimerComponent module="investment" />
 
             <div className="px-4 pb-28 pt-4 space-y-5">

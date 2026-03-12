@@ -18,6 +18,7 @@ import {
 import { Pie, Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import { calculateSIP, formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -250,7 +251,6 @@ export default function SIPCalculator() {
                 </div>
             </div>
 
-            <DisclaimerComponent module="sip" />
 
             <div className="px-4 pb-28 pt-4">
                 {/* SIP Type Tabs */}
@@ -448,6 +448,9 @@ export default function SIPCalculator() {
                     calculatorTitle="SIP Calculator"
                 />
             </div>
+            
+            <FinancialQuote />
+            <DisclaimerComponent module="sip" />
         </div>
     );
 }

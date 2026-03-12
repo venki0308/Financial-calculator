@@ -9,6 +9,7 @@ import {
 import { Pie, Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import SmartInsight from '../components/SmartInsight';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
@@ -166,8 +167,6 @@ export default function SSYCalculator() {
                     <Heart size={20} className="text-pink-400" />
                 </div>
             </div>
-
-            <DisclaimerComponent module="government" />
 
             <div className="px-4 pb-28 pt-4 space-y-5">
                 {/* Inputs */}
@@ -346,6 +345,9 @@ export default function SSYCalculator() {
                     ]}
                     gradient="from-pink-600 via-rose-500 to-red-500"
                 />
+
+                <FinancialQuote />
+                <DisclaimerComponent module="government" />
             </div>
         </div>
     );

@@ -249,8 +249,56 @@ export function simulateAllNotifications() {
     });
 }
 
+function seedInitialNotifications() {
+    const SEED_KEY = 'fincalix_scheduler_first_seed';
+    if (localStorage.getItem(SEED_KEY)) return;
+
+    const notifs = useNotificationStore.getState().notifications;
+    if (notifs.length > 0) {
+        localStorage.setItem(SEED_KEY, 'done');
+        return;
+    }
+
+    // Welcome notification
+    addNotif({
+        type: 'general',
+        title: '🎉 Welcome to FinCalix!',
+        body: 'Your personal finance super-app is ready. Explore 25+ calculators, budget tools, government schemes, and more!',
+        icon: '🎉',
+        route: '/',
+    });
+
+    // Daily quote
+    const now = new Date();
+    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
+    const quoteIndex = dayOfYear % dailyQuotes.length;
+    const quote = dailyQuotes[quoteIndex];
+
+    addNotif({
+        type: 'savings_insight',
+        title: '💡 Daily Financial Quote',
+        body: String(quote.en),
+        icon: '💡',
+        route: '/',
+    });
+
+    // Savings tip
+    addNotif({
+        type: 'savings_insight',
+        title: '💡 Smart Savings Tip',
+        body: 'Start with the 50-30-20 rule: 50% needs, 30% wants, 20% savings. Try our Budget Tracker to get started!',
+        icon: '💡',
+        route: '/expenses',
+    });
+
+    localStorage.setItem(SEED_KEY, 'done');
+}
+
 export const NotificationScheduler = {
     initialize() {
+        // Always seed for first-time users
+        seedInitialNotifications();
+
         if (!shouldRun()) return;
         localStorage.setItem(LAST_RUN_KEY, Date.now().toString());
         
@@ -262,3 +310,4 @@ export const NotificationScheduler = {
         checkDailyQuote();
     },
 };
+

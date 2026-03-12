@@ -10,6 +10,7 @@ import { Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import { formatINR, calculateSIP } from '../utils/calculations';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import { AnalyticsService } from '../lib/analytics';
 import { exportComparisonPDF, exportSIPComparisonPDF, exportFDComparisonPDF } from '../utils/exportUtils';
 
@@ -179,6 +180,7 @@ export default function CompareCalculator() {
                 </div>
             </div>
 
+            <FinancialQuote />
             <DisclaimerComponent module="investment" />
 
             <div className="px-4 pb-28 pt-4">

@@ -5,6 +5,7 @@ import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import BottomSheet from '../components/BottomSheet';
 import { formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -182,9 +183,7 @@ export default function SalaryHikeCalculator() {
                 </div>
             </div>
 
-            <DisclaimerComponent module="general" />
-
-            <div className="px-4 pb-28">
+            <div className="px-4 pb-28 pt-4">
                 {/* Mode Selector — matching reference design */}
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border mb-4 mt-2">
                     <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold mb-3 uppercase tracking-wider">Quarter Of Return Filing</p>
@@ -426,6 +425,11 @@ export default function SalaryHikeCalculator() {
                     onClose={() => setShowInfo(false)}
                     calculatorTitle="Salary Hike Calculator"
                 />
+
+                <div className="mt-8">
+                    <FinancialQuote />
+                    <DisclaimerComponent module="general" />
+                </div>
             </div>
         </div>
     );

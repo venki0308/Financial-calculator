@@ -4,6 +4,8 @@ import { ArrowLeft, Calendar, Star, Clock, Cake, Info, Activity, Wind, Moon } fr
 import { motion } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
+import { triggerCalcNotification } from '../services/calcNotifications';
 
 
 function getGeneration(year: number) {
@@ -72,7 +74,7 @@ export default function AgeCalculator() {
 
     return (
         <div className="min-h-dvh bg-white dark:bg-background animate-fade-in">
-            <div className="sticky top-0 z-10 bg-white/95 dark:bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3">
+            <div className="sticky top-0 z-10 bg-white/95 dark:bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-200 dark:border-border">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">
                         <ArrowLeft size={18} className="text-slate-600 dark:text-muted-foreground" />
@@ -83,8 +85,6 @@ export default function AgeCalculator() {
                     </div>
                 </div>
             </div>
-
-            <DisclaimerComponent module="general" />
 
             <div className="px-4 pb-28">
                 {/* Date Input */}
@@ -161,6 +161,9 @@ export default function AgeCalculator() {
                         </div>
                     </motion.div>
                 )}
+
+                <FinancialQuote />
+                <DisclaimerComponent module="general" />
             </div>
         </div>
     );

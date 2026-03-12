@@ -10,6 +10,7 @@ import {
 import { Bar, Line } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { formatINR } from '../utils/calculations';
@@ -107,6 +108,7 @@ export default function BreakEvenCalculator() {
                 </div>
             </div>
 
+            <FinancialQuote />
             <DisclaimerComponent module="general" />
 
             <div className="px-4 pb-28 pt-4 space-y-5">

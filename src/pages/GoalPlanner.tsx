@@ -5,6 +5,7 @@ import { ArrowLeft, Home, GraduationCap, Car, Umbrella, Target, TrendingUp } fro
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
 import { useNotificationStore } from '../store/useNotificationStore';
@@ -108,8 +109,6 @@ export default function GoalPlanner() {
                     </div>
                 </div>
             </div>
-
-            <DisclaimerComponent module="investment" />
 
             <div className="px-4 pb-28 pt-4">
                 {!selectedGoal ? (
@@ -237,6 +236,9 @@ export default function GoalPlanner() {
                         )}
                     </div>
                 )}
+
+                <FinancialQuote />
+                <DisclaimerComponent module="investment" />
             </div>
         </div>
     );

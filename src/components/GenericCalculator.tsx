@@ -17,6 +17,7 @@ import {
 import { Pie } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import { formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -194,6 +195,7 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
                 </div>
             </div>
 
+            <FinancialQuote />
             <DisclaimerComponent />
 
             <div className="px-4 pt-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 7rem)' }}>

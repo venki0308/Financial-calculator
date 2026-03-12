@@ -259,9 +259,7 @@ export default function AIFinancialAssistant() {
                 </div>
             </div>
 
-            <DisclaimerComponent module="general" />
-
-            <div className="px-4 pb-28 pt-4">
+            <div className="px-4 pb-[80px] pt-4">
                 <AnimatePresence mode="wait">
                     {!showResults ? (
                         <motion.div key="inputs" initial={{ opacity: 1 }} exit={{ opacity: 0, x: -50 }}>
@@ -526,6 +524,8 @@ export default function AIFinancialAssistant() {
                     )}
                 </AnimatePresence>
             </div>
+            
+            <DisclaimerComponent module="advisor" />
         </div>
     );
 }

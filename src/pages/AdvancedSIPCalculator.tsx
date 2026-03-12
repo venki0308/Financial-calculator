@@ -21,6 +21,7 @@ import {
 } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import { AnalyticsService } from '../lib/analytics';
 
 ChartJS.register(
@@ -137,6 +138,7 @@ export default function AdvancedSIPCalculator() {
                     </div>
                 </div>
 
+                <FinancialQuote />
                 <DisclaimerComponent module="sip" />
 
                 {/* Tab bar */}

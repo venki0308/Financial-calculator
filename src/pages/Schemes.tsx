@@ -32,8 +32,6 @@ export default function Schemes() {
                 <p className="text-muted-foreground text-sm mt-1">{t('schemes.subtitle')}</p>
             </div>
 
-            <DisclaimerComponent module="government" />
-
             {/* Search */}
             <div className="relative mb-4">
                 <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -84,6 +82,10 @@ export default function Schemes() {
                         </motion.div>
                     );
                 })}
+            </div>
+
+            <div className="pb-8">
+                <DisclaimerComponent module="government" />
             </div>
         </div>
     );

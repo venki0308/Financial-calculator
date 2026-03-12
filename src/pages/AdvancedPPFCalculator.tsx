@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { nativeShare } from '../utils/nativeShare';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import { formatINR, formatINRWords } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
@@ -149,6 +150,7 @@ export default function AdvancedPPFCalculator() {
                 </div>
             </div>
 
+            <FinancialQuote />
             <DisclaimerComponent module="government" />
 
             <div className="px-4 pb-28">

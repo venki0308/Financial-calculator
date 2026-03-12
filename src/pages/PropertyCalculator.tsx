@@ -8,6 +8,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { AnalyticsService } from '../lib/analytics';
 import { exportToPDF } from '../utils/exportUtils';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 
 import { 
     UNIT_CONV, UNIT_LABELS, UNIT_SHORT, UNIT_KEYS, REF_UNITS, 
@@ -370,7 +371,8 @@ export default function PropertyCalculator() {
                     </div>
                 </div>
 
-                <DisclaimerComponent module="property" />
+                <FinancialQuote />
+                <DisclaimerComponent module="general" />
 
                 {/* Mode Tabs */}
                 <div className="flex gap-1.5 mb-5 overflow-x-auto pb-1">

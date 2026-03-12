@@ -81,7 +81,6 @@ export default function Calculators() {
                 <p className="text-muted-foreground text-sm mt-1">{t('calculators.subtitle')}</p>
             </div>
 
-            <DisclaimerComponent module="general" />
 
             {/* Search */}
             <div className="relative mb-4 sticky top-12 z-10">
@@ -263,6 +262,8 @@ export default function Calculators() {
                     <p className="text-muted-foreground text-sm">{t('calculators.search')} — no results</p>
                 </div>
             )}
+            
+            <DisclaimerComponent module="general" />
         </div>
     );
 }

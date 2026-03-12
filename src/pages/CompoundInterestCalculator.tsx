@@ -5,6 +5,7 @@ import { ArrowLeft, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import { calculateCompoundInterest, formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
@@ -75,6 +76,7 @@ export default function CompoundInterestCalculator() {
                 </div>
             </div>
 
+            <FinancialQuote />
             <DisclaimerComponent module="investment" />
 
             <div className="px-4 pb-28">

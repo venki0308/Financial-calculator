@@ -10,6 +10,7 @@ import {
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
@@ -112,9 +113,6 @@ export default function NPSCalculator() {
                     <div className="flex-1"><h1 className="text-lg font-bold text-foreground">NPS Calculator</h1><p className="text-muted-foreground text-xs">National Pension System</p></div>
                 </div>
             </div>
-
-            <DisclaimerComponent module="government" />
-
             <div className="px-4 pb-28 pt-4 space-y-5">
                 <div className="space-y-3">
                     <NumberInput label="Monthly Contribution" value={monthly} onChange={setMonthly} min={500} max={200000} prefix="₹" />
@@ -249,7 +247,6 @@ export default function NPSCalculator() {
                     <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-[10px] font-bold"><Share2 size={16} /> Share</button>
                 </div>
 
-                {/* Shareable Card */}
                 <ShareableCard
                     title="My NPS Retirement Plan"
                     highlight={formatINR(result.corpus)}
@@ -262,6 +259,9 @@ export default function NPSCalculator() {
                     ]}
                     gradient="from-blue-600 via-indigo-600 to-violet-600"
                 />
+
+                <FinancialQuote />
+                <DisclaimerComponent module="government" />
             </div>
         </div>
     );

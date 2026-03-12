@@ -14,6 +14,7 @@ import {
 import { Pie } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 import {
     calculateReducingEMI, calculateFlatEMI, calculateEffectiveRate,
     calculateForeclosure, calculatePrepaymentSavings,
@@ -295,6 +296,7 @@ export default function EMICalculator() {
                 </div>
             </div>
 
+            <FinancialQuote />
             <DisclaimerComponent module="emi" />
 
             <div className="px-4 pb-28">

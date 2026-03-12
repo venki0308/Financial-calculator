@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { exportToPDF } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
 import { triggerCalcNotification } from '../services/calcNotifications';
+import FinancialQuote from '../components/FinancialQuote';
 
 // ─── Tax Slab Tables ──────────────────────────────────────────────────────────
 const OLD_REGIME = [
@@ -855,6 +856,8 @@ export default function IncomeTaxCalculator() {
                         </motion.button>
                     </>
                 )}
+
+                <FinancialQuote />
 
                 {/* Collapsible Disclaimer */}
                 <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-700/40 rounded-2xl overflow-hidden">

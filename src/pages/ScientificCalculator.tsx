@@ -5,6 +5,7 @@ import { ArrowLeft, Delete, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import FinancialQuote from '../components/FinancialQuote';
 
 type CalcMode = 'standard' | 'scientific' | 'programmer';
 
@@ -112,6 +113,7 @@ export default function ScientificCalculator() {
                 </div>
             </div>
 
+            <FinancialQuote />
             <DisclaimerComponent module="general" />
 
             <div className="px-4 pt-4 pb-28 space-y-4">

@@ -30,7 +30,6 @@ import RDCalculator from './pages/RDCalculator';
 import SimpleInterestCalculator from './pages/SimpleInterestCalculator';
 import LumpsumCalculator from './pages/LumpsumCalculator';
 import SWPCalculator from './pages/SWPCalculator';
-import CAGRCalculator from './pages/CAGRCalculator';
 import StepUpSIPCalculator from './pages/StepUpSIPCalculator';
 import GoalSIPCalculator from './pages/GoalSIPCalculator';
 // PPF Calculators
@@ -45,6 +44,8 @@ import POMISCalculator from './pages/POMISCalculator';
 import SCSSCalculator from './pages/SCSSCalculator';
 import POTDCalculator from './pages/POTDCalculator';
 import BreakEvenCalculator from './pages/BreakEvenCalculator';
+import OverdraftCalculator from './pages/OverdraftCalculator';
+import CAGRCalculator from './pages/CAGRCalculator';
 
 // New Calculators
 import PropertyCalculator from './pages/PropertyCalculator';
@@ -196,7 +197,10 @@ function AppContent() {
                     <Route path="/calculator/post-office-mis" element={<POMISCalculator />} />
                     <Route path="/calculator/senior-citizen-savings" element={<SCSSCalculator />} />
                     <Route path="/calculator/post-office-td" element={<POTDCalculator />} />
+                    
                     <Route path="/calculator/break-even" element={<BreakEvenCalculator />} />
+                    <Route path="/calculator/overdraft" element={<OverdraftCalculator />} />
+                    <Route path="/calculator/cagr" element={<CAGRCalculator />} />
 
                     {/* New Calculators */}
                     <Route path="/calculator/property" element={<PropertyCalculator />} />

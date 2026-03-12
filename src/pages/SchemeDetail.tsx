@@ -69,7 +69,6 @@ export default function SchemeDetail() {
                 <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">{scheme.name}</h1>
             </div>
 
-            <DisclaimerComponent module="government" />
 
             <div className="px-4 mt-5">
 
@@ -220,6 +219,8 @@ export default function SchemeDetail() {
                     </div>
                 )}
             </div>
+
+            <DisclaimerComponent module="government" />
 
             {/* Sticky bottom buttons */}
             <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[428px] bg-white/95 dark:bg-background/95 backdrop-blur-lg border-t border-slate-200 dark:border-border p-4 flex gap-3">
