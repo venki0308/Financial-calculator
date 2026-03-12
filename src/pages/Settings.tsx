@@ -214,7 +214,7 @@ export default function Settings() {
             {/* Notification Sheet */}
             <BottomSheet isOpen={showNotif} onClose={() => setShowNotif(false)} title={t('settings.notifications')}>
                 <div className="space-y-3">
-                    {([['dailyQuotes', 'Daily Financial Quotes'], ['priceAlerts', t('settings.priceAlerts')], ['newSchemes', t('settings.newSchemes')], ['calcReminders', t('settings.calcReminders')], ['appUpdates', t('settings.appUpdates')]] as const).map(([key, label]) => (
+                    {([['dailyQuotes', 'Daily Financial Quotes'], ['newSchemes', t('settings.newSchemes')], ['calcReminders', t('settings.calcReminders')], ['appUpdates', t('settings.appUpdates')]] as const).map(([key, label]) => (
                         <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-muted">
                             <span className="text-foreground text-sm">{label}</span>
                             <button onClick={async () => {

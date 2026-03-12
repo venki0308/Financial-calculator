@@ -347,9 +347,10 @@ export default function WorldClock() {
         const notSelected = WORLD_TIMEZONES.filter(t => !excludeIanas.includes(t.iana));
 
         if (!q || q.length < 2) {
-            // Show popular first, max 20
-            const popular = notSelected.filter(t => POPULAR_IANA.includes(t.iana));
-            const rest = notSelected.filter(t => !POPULAR_IANA.includes(t.iana));
+            // Show popular first, max 20, keeping the order of POPULAR_IANA to ensure Karachi is at the bottom
+            const popular = POPULAR_IANA.map(iana => notSelected.find(t => t.iana === iana)).filter(Boolean) as TimezoneInfo[];
+            const popularIanas = popular.map(t => t.iana);
+            const rest = notSelected.filter(t => !popularIanas.includes(t.iana));
             return [...popular, ...rest].slice(0, 20);
         }
 

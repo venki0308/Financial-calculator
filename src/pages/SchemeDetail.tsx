@@ -44,7 +44,7 @@ export default function SchemeDetail() {
 
     return (
         <div className="min-h-dvh bg-white dark:bg-background pb-28 animate-fade-in">
-            <div className="sticky top-0 z-10 bg-white/95 dark:bg-background/95 backdrop-blur-lg border-b border-slate-200 dark:border-border px-4 pt-14 pb-4">
+            <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg border-b border-slate-200 dark:border-border px-4 pt-14 pb-4">
                 <div className="flex items-center justify-between mb-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border"><ArrowLeft size={18} className="text-muted-foreground dark:text-muted-foreground" /></button>
                     <div className="flex gap-2">
@@ -223,7 +223,7 @@ export default function SchemeDetail() {
             <DisclaimerComponent module="government" />
 
             {/* Sticky bottom buttons */}
-            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[428px] bg-white/95 dark:bg-background/95 backdrop-blur-lg border-t border-slate-200 dark:border-border p-4 flex gap-3">
+            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[428px] bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg border-t border-slate-200 dark:border-border p-4 flex gap-3">
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => nativeShare(scheme.name, `Check out the ${scheme.name} on FinCalix`, window.location.href)}

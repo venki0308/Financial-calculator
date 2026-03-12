@@ -273,7 +273,7 @@ export default function EMICalculator() {
     return (
         <div className="min-h-dvh bg-white dark:bg-background animate-fade-in">
             {/* ── Header ───────────────────────────────────────────── */}
-            <div className="sticky top-0 z-10 bg-white/95 dark:bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3">
+            <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">

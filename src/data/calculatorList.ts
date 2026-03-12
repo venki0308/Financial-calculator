@@ -33,6 +33,7 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.fd.name', descKey: 'calculators.fd.desc', icon: PiggyBank, color: '#F59E0B', path: '/calculator/fixed-deposit', category: 'banking', keywords: ['fd', 'fixed', 'deposit', 'bank'] },
     { nameKey: 'calculators.rd.name', descKey: 'calculators.rd.desc', icon: Clock, color: '#3B82F6', path: '/calculator/recurring-deposit', category: 'banking', keywords: ['rd', 'recurring', 'deposit', 'bank'] },
     { nameKey: 'calculators.simple.name', descKey: 'calculators.simple.desc', icon: Minus, color: '#6B7280', path: '/calculator/simple-interest', category: 'banking', keywords: ['simple', 'interest', 'si'] },
+    { nameKey: 'calculators.overdraft.name', descKey: 'calculators.overdraft.desc', icon: Wallet, color: '#EF4444', path: '/calculator/overdraft', category: 'banking', keywords: ['overdraft', 'loan', 'bank', 'interest', 'od'] },
 
     // Retirement
     { nameKey: 'calculators.epf.name', descKey: 'calculators.epf.desc', icon: Wallet, color: '#F59E0B', path: '/calculator/epf', category: 'retirement', keywords: ['epf', 'pf', 'provident', 'fund', 'employee'] },
