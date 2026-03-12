@@ -11,7 +11,7 @@ const TYPE_META: Record<string, { emoji: string; color: string; bg: string }> = 
     tax_alert:      { emoji: '⚠️', color: '#F59E0B', bg: 'bg-amber-50 dark:bg-amber-500/10' },
     savings_insight: { emoji: '💡', color: '#8B5CF6', bg: 'bg-violet-50 dark:bg-violet-500/10' },
     bill_payment:   { emoji: '🧾', color: '#EF4444', bg: 'bg-red-50 dark:bg-red-500/10' },
-    general:        { emoji: '🔔', color: '#6B7280', bg: 'bg-slate-50 dark:bg-slate-800' },
+    general:        { emoji: '🔔', color: '#6B7280', bg: 'bg-slate-50 dark:bg-card border-border' },
 };
 
 function timeAgo(iso: string): string {
@@ -58,7 +58,7 @@ function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10, height: 0 }}
             className={`relative rounded-2xl border transition-all ${isUnread
-                ? 'bg-white dark:bg-dark-card border-slate-200 dark:border-indigo-500/30 shadow-sm'
+                ? 'bg-white dark:bg-card border-slate-200 dark:border-indigo-500/30 shadow-sm'
                 : 'bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-700/30'
             }`}
         >
@@ -71,11 +71,11 @@ function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
                         <span className="text-xl">{n.icon || meta.emoji}</span>
                     </div>
                     <div className="flex-1 min-w-0 pr-4">
-                        <h4 className={`text-sm font-semibold truncate ${isUnread ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
+                        <h4 className={`text-sm font-semibold truncate ${isUnread ? 'text-slate-900 dark:text-foreground' : 'text-slate-600 dark:text-muted-foreground'}`}>
                             {n.title}
                         </h4>
-                        <p className="text-slate-500 text-xs mt-0.5 leading-relaxed line-clamp-2">{n.body}</p>
-                        <p className="text-[10px] text-slate-400 mt-1.5">{timeAgo(n.createdAt)}</p>
+                        <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed line-clamp-2">{n.body}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1.5">{timeAgo(n.createdAt)}</p>
                     </div>
                 </div>
             </button>
@@ -84,7 +84,7 @@ function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
                 className="absolute top-2 right-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
                 aria-label="Dismiss"
             >
-                <Trash2 size={12} className="text-slate-400" />
+                <Trash2 size={12} className="text-muted-foreground" />
             </button>
         </motion.div>
     );
@@ -104,23 +104,23 @@ export default function Notifications() {
     };
 
     return (
-        <div className="min-h-dvh bg-slate-50 dark:bg-[#0F172A]">
+        <div className="min-h-dvh bg-slate-50 dark:bg-background">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-card border border-slate-200 dark:border-border">
+                        <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div className="flex-1">
                         <div className="flex items-center gap-2">
-                            <h1 className="text-lg font-bold text-slate-900 dark:text-white">Notifications</h1>
+                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">Notifications</h1>
                             {unreadCount > 0 && (
                                 <span className="bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                                     {unreadCount}
                                 </span>
                             )}
                         </div>
-                        <p className="text-slate-500 text-xs">Financial reminders & alerts</p>
+                        <p className="text-muted-foreground text-xs">Financial reminders & alerts</p>
                     </div>
                     <div className="flex items-center gap-2">
                         {unreadCount > 0 && (
@@ -129,8 +129,8 @@ export default function Notifications() {
                             </button>
                         )}
                         {hasAny && (
-                            <button onClick={clearAll} className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" title="Clear all">
-                                <Trash2 size={16} className="text-slate-500" />
+                            <button onClick={clearAll} className="p-2 rounded-xl bg-slate-100 dark:bg-card border-border border border-slate-200 dark:border-slate-700" title="Clear all">
+                                <Trash2 size={16} className="text-muted-foreground" />
                             </button>
                         )}
                     </div>
@@ -140,11 +140,11 @@ export default function Notifications() {
             <div className="px-4 pt-4 pb-28 space-y-6">
                 {!hasAny ? (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center justify-center py-20">
-                        <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
-                            <BellOff size={32} className="text-slate-400" />
+                        <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-card border-border flex items-center justify-center mb-4">
+                            <BellOff size={32} className="text-muted-foreground" />
                         </div>
                         <h3 className="text-slate-700 dark:text-slate-300 font-semibold mb-1">All caught up!</h3>
-                        <p className="text-slate-500 text-sm text-center leading-relaxed">
+                        <p className="text-muted-foreground text-sm text-center leading-relaxed">
                             No notifications yet. Financial reminders and<br />insights will appear here.
                         </p>
                     </motion.div>
@@ -169,7 +169,7 @@ export default function Notifications() {
 
                         {groups.week.length > 0 && (
                             <div>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">This Week</p>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">This Week</p>
                                 <div className="space-y-2">
                                     <AnimatePresence>
                                         {groups.week.map(n => (
@@ -186,7 +186,7 @@ export default function Notifications() {
 
                         {groups.older.length > 0 && (
                             <div>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Older</p>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Older</p>
                                 <div className="space-y-2">
                                     <AnimatePresence>
                                         {groups.older.map(n => (

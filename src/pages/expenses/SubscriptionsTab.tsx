@@ -112,7 +112,7 @@ export default function SubscriptionsTab() {
         <div className="space-y-6 pb-24">
             {/* Header Summary */}
             <div className="bg-gradient-to-r from-brand-purple to-indigo-600 rounded-2xl p-5 text-white shadow-lg shadow-brand-purple/20">
-                <div className="flex items-center gap-2 mb-2 text-white/80">
+                <div className="flex items-center gap-2 mb-2 text-foreground/80">
                     <CreditCard size={18} />
                     <span className="font-semibold text-sm">Monthly Commitment</span>
                 </div>
@@ -124,23 +124,23 @@ export default function SubscriptionsTab() {
             {subscriptions.length === 0 && (
                 <div className="space-y-4">
                     <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📱</div>
-                        <h3 className="font-bold text-slate-900 dark:text-white mb-2">No Subscriptions Yet</h3>
-                        <p className="text-slate-500 text-sm">Track your recurring expenses easily.</p>
+                        <div className="w-16 h-16 bg-slate-100 dark:bg-card border-border rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📱</div>
+                        <h3 className="font-bold text-slate-900 dark:text-foreground mb-2">No Subscriptions Yet</h3>
+                        <p className="text-muted-foreground text-sm">Track your recurring expenses easily.</p>
                     </div>
 
                     <div>
-                        <h4 className="font-bold text-slate-800 dark:text-white text-sm mb-3">Quick Add Popular</h4>
+                        <h4 className="font-bold text-slate-800 dark:text-foreground text-sm mb-3">Quick Add Popular</h4>
                         <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide">
                             {PREPOPULATED.map((p) => (
                                 <button
                                     key={p.name}
                                     onClick={() => handleSuggest(p)}
-                                    className="flex-shrink-0 flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3"
+                                    className="flex-shrink-0 flex items-center gap-2 bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3"
                                 >
                                     <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: p.color }} />
-                                    <span className="font-bold text-sm text-slate-800 dark:text-white">{p.name}</span>
-                                    <span className="text-slate-400 text-xs font-semibold ml-2">₹{p.amount}</span>
+                                    <span className="font-bold text-sm text-slate-800 dark:text-foreground">{p.name}</span>
+                                    <span className="text-muted-foreground text-xs font-semibold ml-2">₹{p.amount}</span>
                                 </button>
                             ))}
                         </div>
@@ -164,18 +164,18 @@ export default function SubscriptionsTab() {
                         >
                             <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ backgroundColor: sub.colorTag }} />
                             
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-lg flex-shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-card border-border flex items-center justify-center text-lg flex-shrink-0">
                                 {cat?.icon || '📅'}
                             </div>
                             
                             <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-slate-900 dark:text-white text-base truncate">{sub.name}</h3>
+                                <h3 className="font-bold text-slate-900 dark:text-foreground text-base truncate">{sub.name}</h3>
                                 <div className="flex items-center gap-2 mt-1">
                                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${indicator.color}`}>
                                         {indicator.text}
                                     </span>
                                     {!sub.isActive && (
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md text-slate-500 bg-slate-100 dark:bg-slate-800">
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md text-muted-foreground bg-slate-100 dark:bg-card border-border">
                                             Inactive
                                         </span>
                                     )}
@@ -183,10 +183,10 @@ export default function SubscriptionsTab() {
                             </div>
 
                             <div className="text-right">
-                                <p className="font-bold text-slate-900 dark:text-white text-base leading-none mb-1">
+                                <p className="font-bold text-slate-900 dark:text-foreground text-base leading-none mb-1">
                                     ₹{sub.amount.toLocaleString('en-IN')}
                                 </p>
-                                <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">
+                                <span className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
                                     /{sub.billingCycle === 'monthly' ? 'mo' : 'yr'}
                                 </span>
                             </div>
@@ -222,13 +222,13 @@ export default function SubscriptionsTab() {
                             animate={{ y: 0 }}
                             exit={{ y: '100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white dark:bg-slate-900 rounded-t-3xl z-50 shadow-2xl safe-bottom border-t border-slate-200 dark:border-white/10"
+                            className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white dark:bg-background rounded-t-3xl z-50 shadow-2xl safe-bottom border-t border-slate-200 dark:border-white/10"
                         >
                             <div className="p-6">
                                 <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-6" />
                                 
                                 <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                                    <h2 className="text-xl font-bold text-slate-900 dark:text-foreground">
                                         {editingId ? 'Edit Subscription' : 'New Subscription'}
                                     </h2>
                                     {editingId && (
@@ -248,23 +248,23 @@ export default function SubscriptionsTab() {
                                     {/* Name & Amount */}
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-500 ml-1">Name</label>
+                                            <label className="text-xs font-bold text-muted-foreground ml-1">Name</label>
                                             <input
                                                 type="text"
                                                 value={formData.name}
                                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
                                                 placeholder="e.g. Netflix"
-                                                className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-brand-purple"
+                                                className="w-full bg-slate-50 dark:bg-card border-border border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple"
                                             />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-500 ml-1">Amount (₹)</label>
+                                            <label className="text-xs font-bold text-muted-foreground ml-1">Amount (₹)</label>
                                             <input
                                                 type="number"
                                                 value={formData.amount || ''}
                                                 onChange={e => setFormData({ ...formData, amount: Number(e.target.value) })}
                                                 placeholder="0"
-                                                className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-brand-purple"
+                                                className="w-full bg-slate-50 dark:bg-card border-border border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple"
                                             />
                                         </div>
                                     </div>
@@ -272,23 +272,23 @@ export default function SubscriptionsTab() {
                                     {/* Date & Cycle */}
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-500 ml-1">Next Due Date</label>
+                                            <label className="text-xs font-bold text-muted-foreground ml-1">Next Due Date</label>
                                             <div className="relative">
-                                                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                                                 <input
                                                     type="date"
                                                     value={formData.nextDueDate}
                                                     onChange={e => setFormData({ ...formData, nextDueDate: e.target.value })}
-                                                    className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl pl-10 pr-4 py-3.5 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-brand-purple"
+                                                    className="w-full bg-slate-50 dark:bg-card border-border border-none rounded-xl pl-10 pr-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple"
                                                 />
                                             </div>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-500 ml-1">Billing Cycle</label>
+                                            <label className="text-xs font-bold text-muted-foreground ml-1">Billing Cycle</label>
                                             <select
                                                 value={formData.billingCycle}
                                                 onChange={e => setFormData({ ...formData, billingCycle: e.target.value as 'monthly' | 'yearly' })}
-                                                className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-brand-purple appearance-none cursor-pointer"
+                                                className="w-full bg-slate-50 dark:bg-card border-border border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple appearance-none cursor-pointer"
                                             >
                                                 <option value="monthly">Monthly</option>
                                                 <option value="yearly">Yearly</option>
@@ -298,11 +298,11 @@ export default function SubscriptionsTab() {
 
                                     {/* Category */}
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-500 ml-1">Category</label>
+                                        <label className="text-xs font-bold text-muted-foreground ml-1">Category</label>
                                         <select
                                             value={formData.category}
                                             onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-brand-purple appearance-none cursor-pointer"
+                                            className="w-full bg-slate-50 dark:bg-card border-border border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple appearance-none cursor-pointer"
                                         >
                                             {EXPENSE_CATEGORIES.map(c => (
                                                 <option key={c.id} value={c.id}>{c.icon} {t(`expenses.categories.${c.id}`)}</option>
@@ -320,7 +320,7 @@ export default function SubscriptionsTab() {
                                                     className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-transform ${formData.colorTag === color ? 'border-brand-purple scale-110' : 'border-transparent'}`}
                                                     style={{ backgroundColor: color }}
                                                 >
-                                                    {formData.colorTag === color && <CheckCircle2 size={14} className="text-white drop-shadow-sm" />}
+                                                    {formData.colorTag === color && <CheckCircle2 size={14} className="text-foreground drop-shadow-sm" />}
                                                 </button>
                                             ))}
                                         </div>
@@ -329,7 +329,7 @@ export default function SubscriptionsTab() {
                                                 type="checkbox"
                                                 checked={formData.isActive}
                                                 onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-                                                className="w-5 h-5 rounded text-brand-purple bg-slate-100 border-slate-300 focus:ring-brand-purple dark:bg-slate-800 dark:border-slate-700"
+                                                className="w-5 h-5 rounded text-brand-purple bg-slate-100 border-slate-300 focus:ring-brand-purple dark:bg-card border-border dark:border-slate-700"
                                             />
                                             <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Active</span>
                                         </label>
@@ -340,7 +340,7 @@ export default function SubscriptionsTab() {
                                     whileTap={{ scale: 0.98 }}
                                     onClick={handleSave}
                                     disabled={!formData.name || !formData.amount || !formData.nextDueDate}
-                                    className="w-full py-4 mt-2 bg-brand-purple hover:bg-brand-purple/90 text-white rounded-xl font-bold shadow-lg shadow-brand-purple/20 disabled:opacity-50 disabled:shadow-none transition-all"
+                                    className="w-full py-4 mt-2 bg-brand-purple hover:bg-brand-purple/90 text-foreground rounded-xl font-bold shadow-lg shadow-brand-purple/20 disabled:opacity-50 disabled:shadow-none transition-all"
                                 >
                                     Save Subscription
                                 </motion.button>

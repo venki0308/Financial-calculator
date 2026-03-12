@@ -53,13 +53,16 @@ export default function ReportsTab() {
     // that have actual daily entries (confirming activity happened).
     // For months with zero daily entries that aren't the current month → treat as no data.
     const isCurrentMonth = selectedMonth === currentMonth && selectedYear === currentYear;
+    const isCurrentYear = selectedYear === currentYear;
     const activeEntries = period === 'month' ? monthEntries : yearEntries;
+
+    const totalBudgetSet = getTotalFixed() + Object.values(categoryBudgets as unknown as Record<string, number>).reduce((a, b) => a + b, 0);
 
     // Strict logic: 
     // - If current month, show data if income or fixed budget is set.
     // - If NOT current month, show ONLY if there are ACTUAL daily entries.
-    const hasMonthData = (isCurrentMonth && (monthlyIncome > 0 || getTotalFixed() > 0)) || monthEntries.length > 0;
-    const hasYearData = yearEntries.length > 0;
+    const hasMonthData = (isCurrentMonth && (monthlyIncome > 0 || totalBudgetSet > 0)) || monthEntries.length > 0;
+    const hasYearData = yearEntries.length > 0 || (isCurrentYear && (monthlyIncome > 0 || totalBudgetSet > 0 || subscriptions.length > 0));
     const hasData = period === 'month' ? hasMonthData : hasYearData;
 
     // Subscriptions: calculate monthly equivalent
@@ -188,7 +191,7 @@ export default function ReportsTab() {
                     <button
                         key={p}
                         onClick={() => setPeriod(p)}
-                        className={`flex-1 py-2.5 text-xs font-bold rounded-lg capitalize transition-all ${period === p ? 'bg-brand-purple text-white shadow' : 'text-slate-400'}`}
+                        className={`flex-1 py-2.5 text-xs font-bold rounded-lg capitalize transition-all ${period === p ? 'bg-brand-purple text-white shadow' : 'text-muted-foreground'}`}
                     >
                         {p === 'month' ? `${t(`expenses.periodMonth`)}: ${MONTHS[selectedMonth - 1]} ${selectedYear}` : `${t(`expenses.periodYear`)}: ${selectedYear}`}
                     </button>
@@ -201,14 +204,14 @@ export default function ReportsTab() {
                     <select
                         value={selectedMonth}
                         onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                        className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white outline-none"
+                        className="flex-1 px-3 py-2 bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-foreground outline-none"
                     >
                         {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
                     </select>
                     <select
                         value={selectedYear}
                         onChange={(e) => setSelectedYear(Number(e.target.value))}
-                        className="flex-1 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white outline-none"
+                        className="flex-1 px-3 py-2 bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-foreground outline-none"
                     >
                         {[2024, 2025, 2026].map((y) => <option key={y} value={y}>{y}</option>)}
                     </select>
@@ -217,7 +220,7 @@ export default function ReportsTab() {
                 <select
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-white outline-none"
+                    className="w-full px-3 py-2 bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-foreground outline-none"
                 >
                     {[2024, 2025, 2026].map((y) => <option key={y} value={y}>{y}</option>)}
                 </select>
@@ -228,13 +231,13 @@ export default function ReportsTab() {
 
             {!hasData ? (
                 <div className="flex flex-col items-center justify-center py-16 px-4">
-                    <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+                    <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-card border-border flex items-center justify-center mb-4">
                         <span className="text-4xl">📭</span>
                     </div>
-                    <h3 className="text-slate-800 dark:text-white font-bold text-base mb-2">
+                    <h3 className="text-slate-800 dark:text-foreground font-bold text-base mb-2">
                         No data for {period === 'month' ? `${MONTHS[selectedMonth - 1]} ${selectedYear}` : selectedYear}
                     </h3>
-                    <p className="text-slate-500 text-sm text-center leading-relaxed">
+                    <p className="text-muted-foreground text-sm text-center leading-relaxed">
                         No expenses were recorded for this {period === 'month' ? 'month' : 'year'}.<br />
                         Go to the <span className="font-semibold text-brand-purple">Daily tab</span> to add expenses.
                     </p>
@@ -252,7 +255,7 @@ export default function ReportsTab() {
                             <div key={card.label} className={`${card.bg} rounded-2xl p-4`}>
                                 <div className="flex items-center gap-2 mb-2">
                                     <card.icon size={14} className={card.color} />
-                                    <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">{card.label}</span>
+                                    <span className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold">{card.label}</span>
                                 </div>
                                 <p className={`font-extrabold text-lg ${card.color}`}>
                                     {card.label2 || `₹${Math.abs(card.value!).toLocaleString('en-IN')}`}
@@ -278,10 +281,42 @@ export default function ReportsTab() {
                         </div>
                     )}
 
+                    {/* 12-Month Year Grid */}
+                    {period === 'year' && (
+                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.yearlyActivity', 'Yearly Activity')}</h3>
+                            <div className="grid grid-cols-4 gap-2">
+                                {MONTHS.map((monthName, i) => {
+                                    const m = i + 1;
+                                    const mEntries = entries.filter((e) => new Date(e.date).getFullYear() === selectedYear && new Date(e.date).getMonth() + 1 === m);
+                                    const hasEntries = mEntries.length > 0;
+                                    const budgetActive = totalBudgetSet > 0 || subscriptions.length > 0;
+                                    
+                                    let state: 'empty' | 'partial' | 'budgetless' = 'empty';
+                                    if (hasEntries) {
+                                        state = budgetActive ? 'partial' : 'budgetless';
+                                    }
+                                    
+                                    const styles = {
+                                        empty: 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500',
+                                        partial: 'bg-brand-purple/10 border-brand-purple/20 text-brand-purple dark:bg-brand-purple/20 dark:text-brand-purple-light',
+                                        budgetless: 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-orange-600 dark:text-orange-400'
+                                    };
+
+                                    return (
+                                        <div key={monthName} className={`flex flex-col items-center justify-center py-2.5 rounded-xl border ${styles[state]} transition-all`}>
+                                            <span className="text-xs font-bold">{monthName}</span>
+                                            <span className="text-[9px] mt-0.5 opacity-80 capitalize">{t(`expenses.state.${state}`, state)}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
                     {categoryData.length > 0 && (
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.spendingByCategory')}</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.spendingByCategory')}</h3>
                             <div className="flex flex-col items-center gap-4">
                                 <div className="w-full h-56 relative flex items-center justify-center">
                                     <Pie
@@ -301,9 +336,9 @@ export default function ReportsTab() {
                                     {categoryData.map((cat, i) => (
                                         <div key={cat.id} className="flex items-center gap-3">
                                             <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                            <span className="text-slate-600 dark:text-slate-400 text-xs flex-1">{cat.icon} {cat.name}</span>
-                                            <span className="text-slate-800 dark:text-white text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</span>
-                                            <span className="text-slate-400 text-[10px] w-10 text-right">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(0) : 0}%</span>
+                                            <span className="text-slate-600 dark:text-muted-foreground text-xs flex-1">{cat.icon} {cat.name}</span>
+                                            <span className="text-slate-800 dark:text-foreground text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</span>
+                                            <span className="text-muted-foreground text-[10px] w-10 text-right">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(0) : 0}%</span>
                                         </div>
                                     ))}
                                 </div>
@@ -314,7 +349,7 @@ export default function ReportsTab() {
                     {/* Daily Spending Trend - Line Chart */}
                     {period === 'month' && monthEntries.length > 0 && (
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.dailyTrend')}</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.dailyTrend')}</h3>
                             <Line
                                 data={{
                                     labels: dailyTrend.map(d => d.day),
@@ -345,7 +380,7 @@ export default function ReportsTab() {
                     {/* Savings Trend 6-month */}
                     {savingsTrend.filter(t => t.hasData).length > 0 && (
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">Savings Trend (6 Months)</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">Savings Trend (6 Months)</h3>
                             <Bar
                                 data={{
                                     labels: savingsTrend.map(t => t.month),
@@ -371,7 +406,7 @@ export default function ReportsTab() {
                     {/* Budget vs Actual - Bar Chart */}
                     {budgetVsActual.length > 0 && (
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.budgetVsActual')}</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.budgetVsActual')}</h3>
                             <Bar
                                 data={{
                                     labels: budgetVsActual.map((r) => r.category),
@@ -395,15 +430,15 @@ export default function ReportsTab() {
                     {/* Top 5 Categories */}
                     {categoryData.length > 0 && (
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.topCategories')}</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.topCategories')}</h3>
                             <div className="space-y-3">
                                 {categoryData.slice(0, 5).map((cat, i) => (
                                     <div key={cat.id} className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: COLORS[i] }}>
+                                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0" style={{ backgroundColor: COLORS[i] }}>
                                             {i + 1}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-slate-800 dark:text-white text-xs font-semibold truncate">{cat.icon} {cat.name}</p>
+                                            <p className="text-slate-800 dark:text-foreground text-xs font-semibold truncate">{cat.icon} {cat.name}</p>
                                             <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full mt-1 overflow-hidden">
                                                 <motion.div
                                                     initial={{ width: 0 }}
@@ -415,8 +450,8 @@ export default function ReportsTab() {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-slate-800 dark:text-white text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</p>
-                                            <p className="text-slate-400 text-[10px]">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(1) : 0}%</p>
+                                            <p className="text-slate-800 dark:text-foreground text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</p>
+                                            <p className="text-muted-foreground text-[10px]">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(1) : 0}%</p>
                                         </div>
                                     </div>
                                 ))}

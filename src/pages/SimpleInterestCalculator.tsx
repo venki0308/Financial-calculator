@@ -5,7 +5,7 @@ import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
@@ -138,45 +138,45 @@ export default function SimpleInterestCalculator() {
     ];
 
     return (
-        <div className="min-h-dvh bg-slate-50 dark:bg-[#0F172A] animate-fade-in">
+        <div className="min-h-dvh bg-slate-50 dark:bg-background animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-200 dark:border-dark-border">
+            <div className="sticky top-0 z-10 bg-white/95 dark:bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-200 dark:border-border">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
-                            <ArrowLeft size={18} className="text-slate-500 dark:text-slate-400" />
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">
+                            <ArrowLeft size={18} className="text-muted-foreground dark:text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-slate-900 dark:text-white">Interest Calculator</h1>
-                            <p className="text-slate-500 text-xs">Flat ₹ · Simple · Compound</p>
+                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">Interest Calculator</h1>
+                            <p className="text-muted-foreground text-xs">Flat ₹ · Simple · Compound</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
-                            <Info size={16} className="text-slate-400" />
+                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">
+                            <Info size={16} className="text-muted-foreground" />
                         </button>
                         <button
-                            className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border"
+                            className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border"
                             onClick={() => nativeShare('Interest Calculator', 'Check out this Interest Calculator on FinCalix!', window.location.href)}
                         >
-                            <Share2 size={16} className="text-slate-400" />
+                            <Share2 size={16} className="text-muted-foreground" />
                         </button>
                     </div>
                 </div>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent module="general" />
 
             <div className="px-4 pb-28">
                 {/* Mode Selector */}
-                <div className="flex gap-1 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl p-1 my-4">
+                <div className="flex gap-1 bg-white dark:bg-card border border-slate-200 dark:border-border rounded-xl p-1 my-4">
                     {modes.map((m) => (
                         <button
                             key={m.key}
                             onClick={() => setMode(m.key)}
                             className={`flex-1 py-3 rounded-lg text-[11px] font-bold transition-all ${mode === m.key
                                 ? `${m.color} text-white shadow-lg`
-                                : 'text-slate-500'
+                                : 'text-muted-foreground'
                                 }`}
                         >
                             {m.label}
@@ -232,15 +232,15 @@ export default function SimpleInterestCalculator() {
 
                     {mode === 'compound' && (
                         <div>
-                            <label className="text-xs text-slate-500 dark:text-slate-400 mb-2 block font-medium">Compounding Frequency</label>
+                            <label className="text-xs text-muted-foreground dark:text-muted-foreground mb-2 block font-medium">Compounding Frequency</label>
                             <div className="grid grid-cols-4 gap-2">
                                 {freqOptions.map(opt => (
                                     <button
                                         key={opt.val}
                                         onClick={() => setCompoundFreq(opt.val)}
                                         className={`py-3 rounded-xl text-[11px] font-bold transition-all border ${compoundFreq === opt.val
-                                            ? 'bg-brand-purple border-brand-purple text-white'
-                                            : 'bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border text-slate-500'
+                                            ? 'bg-brand-purple border-brand-purple text-foreground'
+                                            : 'bg-white dark:bg-card border-slate-200 dark:border-border text-muted-foreground'
                                             }`}
                                     >
                                         {opt.label}
@@ -252,13 +252,13 @@ export default function SimpleInterestCalculator() {
                 </div>
 
                 {/* Result Card */}
-                <motion.div layout className="p-5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border mb-4 shadow-sm">
+                <motion.div layout className="p-5 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 shadow-sm">
                     {mode === 'flat' && (() => {
                         const r = result as { monthlyInterest: number; equivalentMonthlyPct: number; equivalentAnnualPct: number; totalInterest: number; totalPayable: number };
                         return (
                             <>
                                 <div className="text-center mb-4">
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">Monthly Interest Payable</p>
+                                    <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Monthly Interest Payable</p>
                                     <motion.p key={r.monthlyInterest} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                                         className="text-3xl font-bold text-amber-500">
                                         {formatINR(r.monthlyInterest)}
@@ -268,33 +268,33 @@ export default function SimpleInterestCalculator() {
                                     </p>
                                 </div>
 
-                                <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-dark-border">
+                                <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-border">
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Loan Amount</span>
-                                        <span className="font-semibold text-sm text-slate-900 dark:text-white">{formatINR(principal)}</span>
+                                        <span className="text-muted-foreground text-xs">Loan Amount</span>
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(principal)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Rate</span>
+                                        <span className="text-muted-foreground text-xs">Rate</span>
                                         <span className="font-semibold text-sm text-amber-500">₹{flatRate} per ₹100/month</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Monthly Interest</span>
+                                        <span className="text-muted-foreground text-xs">Monthly Interest</span>
                                         <span className="font-semibold text-sm text-brand-green">{formatINR(r.monthlyInterest)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Equiv. Monthly Rate</span>
+                                        <span className="text-muted-foreground text-xs">Equiv. Monthly Rate</span>
                                         <span className="font-semibold text-sm text-brand-blue">{r.equivalentMonthlyPct.toFixed(2)}%</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Equiv. Annual Rate</span>
+                                        <span className="text-muted-foreground text-xs">Equiv. Annual Rate</span>
                                         <span className="font-semibold text-sm text-brand-purple">{r.equivalentAnnualPct.toFixed(2)}%</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Total Interest ({tenure} months)</span>
+                                        <span className="text-muted-foreground text-xs">Total Interest ({tenure} months)</span>
                                         <span className="font-semibold text-sm text-red-500">{formatINR(r.totalInterest)}</span>
                                     </div>
-                                    <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-dark-border">
-                                        <span className="text-slate-900 dark:text-white text-xs font-bold">Total Payable</span>
+                                    <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-border">
+                                        <span className="text-slate-900 dark:text-foreground text-xs font-bold">Total Payable</span>
                                         <span className="font-bold text-sm text-brand-green">{formatINR(r.totalPayable)}</span>
                                     </div>
                                 </div>
@@ -305,8 +305,8 @@ export default function SimpleInterestCalculator() {
                                     <div className="space-y-1">
                                         {[1, 1.5, 2, 3, 5].map(r => (
                                             <div key={r} className="flex justify-between">
-                                                <span className="text-slate-600 dark:text-slate-400 text-[11px]">₹{r}/₹100 → ₹{((principal / 100) * r).toLocaleString('en-IN')}/month</span>
-                                                <span className="text-slate-500 text-[11px]">= {(r * 12).toFixed(0)}% p.a.</span>
+                                                <span className="text-slate-600 dark:text-muted-foreground text-[11px]">₹{r}/₹100 → ₹{((principal / 100) * r).toLocaleString('en-IN')}/month</span>
+                                                <span className="text-muted-foreground text-[11px]">= {(r * 12).toFixed(0)}% p.a.</span>
                                             </div>
                                         ))}
                                     </div>
@@ -320,39 +320,39 @@ export default function SimpleInterestCalculator() {
                         return (
                             <>
                                 <div className="text-center mb-4">
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">Total Amount</p>
+                                    <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Total Amount</p>
                                     <motion.p key={r.totalAmount} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                                         className="text-3xl font-bold text-brand-blue">
                                         {formatINR(r.totalAmount)}
                                     </motion.p>
                                 </div>
-                                <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-dark-border">
+                                <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-border">
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Principal</span>
-                                        <span className="font-semibold text-sm text-slate-900 dark:text-white">{formatINR(principal)}</span>
+                                        <span className="text-muted-foreground text-xs">Principal</span>
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(principal)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Annual Rate</span>
+                                        <span className="text-muted-foreground text-xs">Annual Rate</span>
                                         <span className="font-semibold text-sm text-brand-blue">{annualRate}%</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Tenure</span>
-                                        <span className="font-semibold text-sm text-slate-900 dark:text-white">{tenure} months ({r.tenureInYears.toFixed(1)} yrs)</span>
+                                        <span className="text-muted-foreground text-xs">Tenure</span>
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{tenure} months ({r.tenureInYears.toFixed(1)} yrs)</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Total Interest (SI)</span>
+                                        <span className="text-muted-foreground text-xs">Total Interest (SI)</span>
                                         <span className="font-semibold text-sm text-brand-green">{formatINR(r.totalInterest)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Monthly Interest Only</span>
+                                        <span className="text-muted-foreground text-xs">Monthly Interest Only</span>
                                         <span className="font-semibold text-sm text-amber-500">{formatINR(r.monthlyInterestOnly)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Village Rate (per ₹100/month)</span>
+                                        <span className="text-muted-foreground text-xs">Village Rate (per ₹100/month)</span>
                                         <span className="font-semibold text-sm text-amber-400">₹{(annualRate / 12).toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-dark-border">
-                                        <span className="text-slate-900 dark:text-white text-xs font-bold">Monthly EMI (P+I)</span>
+                                    <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-border">
+                                        <span className="text-slate-900 dark:text-foreground text-xs font-bold">Monthly EMI (P+I)</span>
                                         <span className="font-bold text-sm text-brand-green">{formatINR(r.monthlyEMI)}</span>
                                     </div>
                                 </div>
@@ -366,39 +366,39 @@ export default function SimpleInterestCalculator() {
                         return (
                             <>
                                 <div className="text-center mb-4">
-                                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">Total Payable</p>
+                                    <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Total Payable</p>
                                     <motion.p key={r.totalPayable} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                                         className="text-3xl font-bold text-brand-purple">
                                         {formatINR(r.totalPayable)}
                                     </motion.p>
                                 </div>
-                                <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-dark-border">
+                                <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-border">
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Principal</span>
-                                        <span className="font-semibold text-sm text-slate-900 dark:text-white">{formatINR(principal)}</span>
+                                        <span className="text-muted-foreground text-xs">Principal</span>
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(principal)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Annual Rate</span>
+                                        <span className="text-muted-foreground text-xs">Annual Rate</span>
                                         <span className="font-semibold text-sm text-brand-purple">{annualRate}%</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Compounding</span>
-                                        <span className="font-semibold text-sm text-slate-900 dark:text-white">{freqLabel}</span>
+                                        <span className="text-muted-foreground text-xs">Compounding</span>
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{freqLabel}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Tenure</span>
-                                        <span className="font-semibold text-sm text-slate-900 dark:text-white">{tenure} months ({r.tenureInYears.toFixed(1)} yrs)</span>
+                                        <span className="text-muted-foreground text-xs">Tenure</span>
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{tenure} months ({r.tenureInYears.toFixed(1)} yrs)</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Compound Interest</span>
+                                        <span className="text-muted-foreground text-xs">Compound Interest</span>
                                         <span className="font-semibold text-sm text-brand-green">{formatINR(r.compoundInterest)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-slate-500 text-xs">Village Rate (per ₹100/month)</span>
+                                        <span className="text-muted-foreground text-xs">Village Rate (per ₹100/month)</span>
                                         <span className="font-semibold text-sm text-amber-400">₹{(annualRate / 12).toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-dark-border">
-                                        <span className="text-slate-900 dark:text-white text-xs font-bold">Monthly EMI</span>
+                                    <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-border">
+                                        <span className="text-slate-900 dark:text-foreground text-xs font-bold">Monthly EMI</span>
                                         <span className="font-bold text-sm text-brand-green">{formatINR(r.monthlyEMI)}</span>
                                     </div>
                                 </div>

@@ -54,11 +54,11 @@ export default function NumberInput({ label, value, onChange, min, max, prefix, 
         <div
             className={`p-4 rounded-2xl border transition-all duration-200 cursor-text ${focused
                 ? 'bg-brand-green/5 border-brand-green/40'
-                : 'bg-white border-slate-200 dark:bg-dark-card dark:border-dark-border shadow-sm dark:shadow-none'
+                : 'bg-white border-slate-200 dark:bg-card dark:border-border shadow-sm dark:shadow-none'
                 }`}
             onClick={() => inputRef.current?.focus()}
         >
-            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">{label}</label>
+            <label className="block text-xs font-medium text-muted-foreground dark:text-muted-foreground mb-2">{label}</label>
             <div className="flex items-center gap-1">
                 {prefix && !focused && <span className="text-slate-600 dark:text-slate-300 text-lg font-semibold">{prefix}</span>}
                 <input
@@ -70,12 +70,12 @@ export default function NumberInput({ label, value, onChange, min, max, prefix, 
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                     step={step}
-                    className="flex-1 bg-transparent text-slate-900 dark:text-white text-lg font-semibold outline-none w-full"
+                    className="flex-1 bg-transparent text-slate-900 dark:text-foreground text-lg font-semibold outline-none w-full"
                     readOnly={!focused}
                 />
-                {suffix && !focused && <span className="text-slate-500 dark:text-slate-400 text-lg font-medium">{suffix}</span>}
+                {suffix && !focused && <span className="text-muted-foreground dark:text-muted-foreground text-lg font-medium">{suffix}</span>}
             </div>
-            {helperText && <p className="text-[11px] text-slate-500 mt-1.5">{helperText}</p>}
+            {helperText && <p className="text-[11px] text-muted-foreground mt-1.5">{helperText}</p>}
         </div>
     );
 }

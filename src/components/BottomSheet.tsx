@@ -35,17 +35,17 @@ export default function BottomSheet({ isOpen, onClose, title, children }: Bottom
                         dragConstraints={{ top: 0 }}
                         dragElastic={0.2}
                         onDragEnd={(_, info) => { if (info.offset.y > 100) onClose(); }}
-                        className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] max-h-[85dvh] bg-dark-card border-t border-dark-border rounded-t-3xl z-[60] flex flex-col"
+                        className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] max-h-[85dvh] bg-card border-t border-border rounded-t-3xl z-[60] flex flex-col"
                     >
                         {/* Drag handle */}
                         <div className="flex justify-center pt-3 pb-2 cursor-grab" onPointerDown={(e) => dragControls.start(e)}>
                             <div className="w-10 h-1 rounded-full bg-slate-600" />
                         </div>
 
-                        <div className="flex items-center justify-between px-5 pb-3 border-b border-dark-border">
-                            <h2 className="text-lg font-semibold text-white">{title}</h2>
+                        <div className="flex items-center justify-between px-5 pb-3 border-b border-border">
+                            <h2 className="text-lg font-semibold text-foreground">{title}</h2>
                             <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-dark-bg transition-colors">
-                                <X size={20} className="text-slate-400" />
+                                <X size={20} className="text-muted-foreground" />
                             </button>
                         </div>
 

@@ -4,7 +4,7 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import BottomSheet from '../components/BottomSheet';
 import { formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -155,57 +155,57 @@ export default function SalaryHikeCalculator() {
     }, [savedCalculations, currentSalary, hikePct, period, periodUnit, mode, result.hikePctComputed]);
 
     return (
-        <div className="min-h-dvh bg-white dark:bg-[#0F172A] animate-fade-in">
+        <div className="min-h-dvh bg-white dark:bg-background animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-200 dark:border-dark-border">
+            <div className="sticky top-0 z-10 bg-white/95 dark:bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-200 dark:border-border">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
-                            <ArrowLeft size={18} className="text-slate-500 dark:text-slate-400" />
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">
+                            <ArrowLeft size={18} className="text-muted-foreground dark:text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-slate-900 dark:text-white">Salary Hike Calculator</h1>
-                            <p className="text-slate-500 text-xs">Plan your increment</p>
+                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">Salary Hike Calculator</h1>
+                            <p className="text-muted-foreground text-xs">Plan your increment</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
-                            <Info size={16} className="text-slate-400" />
+                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">
+                            <Info size={16} className="text-muted-foreground" />
                         </button>
                         <button
-                            className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border"
+                            className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border"
                             onClick={() => nativeShare('Salary Hike Calculator', `My salary after ${result.hikePctComputed.toFixed(1)}% hike: ${formatINR(result.newSalary)}`)}
                         >
-                            <Share2 size={16} className="text-slate-400" />
+                            <Share2 size={16} className="text-muted-foreground" />
                         </button>
                     </div>
                 </div>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent module="general" />
 
             <div className="px-4 pb-28">
                 {/* Mode Selector — matching reference design */}
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border mb-4 mt-2">
-                    <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mb-3 uppercase tracking-wider">Quarter Of Return Filing</p>
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border mb-4 mt-2">
+                    <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold mb-3 uppercase tracking-wider">Quarter Of Return Filing</p>
                     <div className="flex gap-3">
                         <label
-                            className={`flex-1 flex items-center gap-2.5 p-3 rounded-xl cursor-pointer transition-all border ${mode === 'findHike' ? 'bg-brand-green/10 border-brand-green/30 dark:bg-brand-green/5' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-dark-border'}`}
+                            className={`flex-1 flex items-center gap-2.5 p-3 rounded-xl cursor-pointer transition-all border ${mode === 'findHike' ? 'bg-brand-green/10 border-brand-green/30 dark:bg-brand-green/5' : 'bg-white dark:bg-card border-border border-slate-200 dark:border-border'}`}
                             onClick={() => setMode('findHike')}
                         >
                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${mode === 'findHike' ? 'border-brand-green' : 'border-slate-300 dark:border-slate-600'}`}>
                                 {mode === 'findHike' && <div className="w-2.5 h-2.5 rounded-full bg-brand-green" />}
                             </div>
-                            <span className={`text-xs font-medium ${mode === 'findHike' ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>Find Hike Percentage By Salary</span>
+                            <span className={`text-xs font-medium ${mode === 'findHike' ? 'text-slate-900 dark:text-foreground' : 'text-muted-foreground'}`}>Find Hike Percentage By Salary</span>
                         </label>
                         <label
-                            className={`flex-1 flex items-center gap-2.5 p-3 rounded-xl cursor-pointer transition-all border ${mode === 'findSalary' ? 'bg-brand-green/10 border-brand-green/30 dark:bg-brand-green/5' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-dark-border'}`}
+                            className={`flex-1 flex items-center gap-2.5 p-3 rounded-xl cursor-pointer transition-all border ${mode === 'findSalary' ? 'bg-brand-green/10 border-brand-green/30 dark:bg-brand-green/5' : 'bg-white dark:bg-card border-border border-slate-200 dark:border-border'}`}
                             onClick={() => setMode('findSalary')}
                         >
                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${mode === 'findSalary' ? 'border-brand-green' : 'border-slate-300 dark:border-slate-600'}`}>
                                 {mode === 'findSalary' && <div className="w-2.5 h-2.5 rounded-full bg-brand-green" />}
                             </div>
-                            <span className={`text-xs font-medium ${mode === 'findSalary' ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>Find New Salary by Hike Percentage</span>
+                            <span className={`text-xs font-medium ${mode === 'findSalary' ? 'text-slate-900 dark:text-foreground' : 'text-muted-foreground'}`}>Find New Salary by Hike Percentage</span>
                         </label>
                     </div>
                 </div>
@@ -246,7 +246,7 @@ export default function SalaryHikeCalculator() {
                     )}
 
                     <div>
-                        <div className="flex rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border p-1 mb-2">
+                        <div className="flex rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border p-1 mb-2">
                             {(['months', 'years'] as const).map((u) => (
                                 <button
                                     key={u}
@@ -255,7 +255,7 @@ export default function SalaryHikeCalculator() {
                                         if (u === 'months' && periodUnit === 'years') setPeriod(period * 12);
                                         setPeriodUnit(u);
                                     }}
-                                    className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all capitalize ${periodUnit === u ? 'bg-brand-green text-white' : 'text-slate-500'}`}
+                                    className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all capitalize ${periodUnit === u ? 'bg-brand-green text-white' : 'text-muted-foreground'}`}
                                 >
                                     {u}
                                 </button>
@@ -274,11 +274,11 @@ export default function SalaryHikeCalculator() {
                 </div>
 
                 {/* Result Card */}
-                <motion.div layout className="p-5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border mb-4 shadow-sm">
+                <motion.div layout className="p-5 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 shadow-sm">
                     <div className="text-center mb-4">
                         {mode === 'findHike' ? (
                             <>
-                                <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">Hike Percentage</p>
+                                <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Hike Percentage</p>
                                 <motion.p
                                     key={result.hikePctComputed}
                                     initial={{ scale: 0.9, opacity: 0 }}
@@ -291,7 +291,7 @@ export default function SalaryHikeCalculator() {
                             </>
                         ) : (
                             <>
-                                <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">Salary After Hike</p>
+                                <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Salary After Hike</p>
                                 <motion.p
                                     key={result.newSalary}
                                     initial={{ scale: 0.9, opacity: 0 }}
@@ -306,39 +306,39 @@ export default function SalaryHikeCalculator() {
                     </div>
 
                     {/* Breakdown */}
-                    <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-dark-border">
+                    <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-border">
                         <div className="flex items-center justify-between">
-                            <span className="text-slate-500 text-xs">Current Annual Salary</span>
-                            <span className="font-semibold text-sm text-slate-900 dark:text-white">{formatINR(result.currentAnnual)}</span>
+                            <span className="text-muted-foreground text-xs">Current Annual Salary</span>
+                            <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(result.currentAnnual)}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                            <span className="text-slate-500 text-xs">Current Monthly Salary</span>
+                            <span className="text-muted-foreground text-xs">Current Monthly Salary</span>
                             <span className="font-semibold text-sm text-slate-600 dark:text-slate-300">{formatINR(result.currentMonthly)}</span>
                         </div>
                         {mode === 'findHike' && (
                             <div className="flex items-center justify-between">
-                                <span className="text-slate-500 text-xs">New Annual Salary</span>
+                                <span className="text-muted-foreground text-xs">New Annual Salary</span>
                                 <span className="font-semibold text-sm text-brand-blue">{formatINR(newSalaryInput)}</span>
                             </div>
                         )}
                         <div className="flex items-center justify-between">
-                            <span className="text-slate-500 text-xs">Hike Percentage</span>
+                            <span className="text-muted-foreground text-xs">Hike Percentage</span>
                             <span className="font-semibold text-sm text-brand-green">{result.hikePctComputed.toFixed(2)}%</span>
                         </div>
                         <div className="flex items-center justify-between">
-                            <span className="text-slate-500 text-xs">Hike Amount (Annual)</span>
+                            <span className="text-muted-foreground text-xs">Hike Amount (Annual)</span>
                             <span className="font-semibold text-sm text-brand-green">{formatINR(result.hikeAmount)}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                            <span className="text-slate-500 text-xs">Hike Amount (Monthly)</span>
+                            <span className="text-muted-foreground text-xs">Hike Amount (Monthly)</span>
                             <span className="font-semibold text-sm text-brand-green">{formatINR(result.hikeMonthly)}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                            <span className="text-slate-500 text-xs">New Annual Salary</span>
+                            <span className="text-muted-foreground text-xs">New Annual Salary</span>
                             <span className="font-semibold text-sm text-brand-blue">{formatINR(result.newAnnual)}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                            <span className="text-slate-500 text-xs">New Monthly Salary</span>
+                            <span className="text-muted-foreground text-xs">New Monthly Salary</span>
                             <span className="font-semibold text-sm text-brand-blue">{formatINR(result.newMonthly)}</span>
                         </div>
                     </div>
@@ -348,7 +348,7 @@ export default function SalaryHikeCalculator() {
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setShowProjection(true)}
-                    className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 font-semibold text-sm mb-3 active:bg-slate-50 dark:active:bg-dark-card transition-colors"
+                    className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-slate-700 dark:text-slate-300 font-semibold text-sm mb-3 active:bg-slate-50 dark:active:bg-card transition-colors"
                 >
                     📊 View Monthly Projection
                 </motion.button>
@@ -364,7 +364,7 @@ export default function SalaryHikeCalculator() {
 
                 {/* Disclaimer */}
                 <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50 dark:bg-brand-blue/5 border border-blue-100 dark:border-brand-blue/15">
-                    <p className="text-slate-500 dark:text-slate-500 text-[10px] leading-relaxed italic">
+                    <p className="text-muted-foreground dark:text-muted-foreground text-[10px] leading-relaxed italic">
                         📐 This is a projection only. Actual hikes depend on company performance, individual performance, and market conditions. For reference purposes only.
                     </p>
                 </div>
@@ -374,7 +374,7 @@ export default function SalaryHikeCalculator() {
                     <div className="overflow-x-auto">
                         <table className="w-full text-xs">
                             <thead>
-                                <tr className="text-slate-500 border-b border-slate-200 dark:border-dark-border">
+                                <tr className="text-muted-foreground border-b border-slate-200 dark:border-border">
                                     <th className="py-2 text-left font-medium">Month</th>
                                     <th className="py-2 text-right font-medium">Salary</th>
                                     <th className="py-2 text-right font-medium">Cumulative</th>
@@ -392,10 +392,10 @@ export default function SalaryHikeCalculator() {
                                                 </td>
                                             </tr>
                                         )}
-                                        <tr key={row.month} className="border-b border-slate-100 dark:border-dark-border/50">
+                                        <tr key={row.month} className="border-b border-slate-100 dark:border-border/50">
                                             <td className="py-2 text-slate-700 dark:text-slate-300">{row.month}</td>
                                             <td className="py-2 text-right text-brand-green">{formatINR(row.salary)}</td>
-                                            <td className="py-2 text-right text-slate-900 dark:text-white">{formatINR(row.cumulative)}</td>
+                                            <td className="py-2 text-right text-slate-900 dark:text-foreground">{formatINR(row.cumulative)}</td>
                                         </tr>
                                     </>
                                 ))}
@@ -404,7 +404,7 @@ export default function SalaryHikeCalculator() {
                     </div>
 
                     {/* Download buttons */}
-                    <div className="flex gap-3 mt-4 pt-4 border-t border-slate-200 dark:border-dark-border mb-6">
+                    <div className="flex gap-3 mt-4 pt-4 border-t border-slate-200 dark:border-border mb-6">
                         <button
                             onClick={handleDownloadPDF}
                             className="flex-1 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm flex items-center justify-center gap-2"

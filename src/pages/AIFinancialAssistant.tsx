@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Sparkles, Home, GraduationCap, Car, Umbrella, Briefcase, TrendingUp, PiggyBank, Shield, AlertTriangle, CheckCircle, Check, Share2, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
@@ -242,24 +242,24 @@ export default function AIFinancialAssistant() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
+        <div className="min-h-dvh bg-background animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-dark-border">
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                        <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div className="flex items-center gap-2">
-                        <Sparkles size={18} className="text-amber-400" />
+                        <Sparkles size={18} className="text-amber-500" />
                         <div>
-                            <h1 className="text-lg font-bold text-white">{t('advisor.title')}</h1>
-                            <p className="text-slate-500 text-xs">{t('advisor.subtitle')}</p>
+                            <h1 className="text-lg font-bold text-foreground">{t('advisor.title')}</h1>
+                            <p className="text-muted-foreground text-xs">{t('advisor.subtitle')}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent module="general" />
 
             <div className="px-4 pb-28 pt-4">
                 <AnimatePresence mode="wait">
@@ -267,7 +267,7 @@ export default function AIFinancialAssistant() {
                         <motion.div key="inputs" initial={{ opacity: 1 }} exit={{ opacity: 0, x: -50 }}>
                             {/* Income Details */}
                             <div className="mb-5">
-                                <h2 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                                     <span className="w-6 h-6 rounded-lg bg-brand-green/10 flex items-center justify-center text-brand-green text-xs font-bold">1</span>
                                     {t('advisor.step1')}
                                 </h2>
@@ -282,11 +282,11 @@ export default function AIFinancialAssistant() {
 
                             {/* Multi-Goal Selection */}
                             <div className="mb-5">
-                                <h2 className="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                                <h2 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
                                     <span className="w-6 h-6 rounded-lg bg-brand-purple/10 flex items-center justify-center text-brand-purple text-xs font-bold">2</span>
                                     {t('advisor.step2')}
                                 </h2>
-                                <p className="text-slate-500 text-[11px] mb-3 ml-8">{t('advisor.selectGoals')}</p>
+                                <p className="text-muted-foreground text-[11px] mb-3 ml-8">{t('advisor.selectGoals')}</p>
                                 <div className="grid grid-cols-2 gap-2.5">
                                     {goals.map((g) => {
                                         const Icon = g.icon;
@@ -298,16 +298,16 @@ export default function AIFinancialAssistant() {
                                                 onClick={() => toggleGoal(g.id)}
                                                 className={`p-3.5 rounded-xl border text-left transition-all relative ${isSelected
                                                     ? `bg-gradient-to-br ${g.gradient} border-white/20 shadow-lg`
-                                                    : 'bg-dark-card border-dark-border hover:border-slate-600'
+                                                    : 'bg-card border-border hover:border-foreground/30'
                                                     }`}
                                             >
                                                 {isSelected && (
                                                     <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                                                        <Check size={12} className="text-white" />
+                                                        <Check size={12} className="text-foreground" />
                                                     </motion.div>
                                                 )}
-                                                <Icon size={20} className={isSelected ? 'text-white' : 'text-slate-400'} />
-                                                <p className={`text-xs font-bold mt-2 ${isSelected ? 'text-white' : 'text-slate-300'}`}>{g.label}</p>
+                                                <Icon size={20} className={isSelected ? 'text-foreground' : 'text-muted-foreground'} />
+                                                <p className={`text-xs font-bold mt-2 ${isSelected ? 'text-foreground' : 'text-muted-foreground/80'}`}>{g.label}</p>
                                             </motion.button>
                                         );
                                     })}
@@ -326,7 +326,7 @@ export default function AIFinancialAssistant() {
                                 disabled={selectedGoals.length === 0}
                                 className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${selectedGoals.length > 0
                                     ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/20'
-                                    : 'bg-dark-card border border-dark-border text-slate-500'
+                                    : 'bg-card border border-border text-muted-foreground'
                                     }`}
                             >
                                 <Sparkles size={18} />
@@ -336,8 +336,8 @@ export default function AIFinancialAssistant() {
                     ) : plan && (
                         <motion.div key="results" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}>
                             {/* Financial Health Score */}
-                            <div className="p-6 rounded-2xl bg-dark-card border border-dark-border mb-5 text-center">
-                                <p className="text-slate-400 text-sm mb-2">{t('advisor.financialScore')}</p>
+                            <div className="p-6 rounded-2xl bg-card border border-border mb-5 text-center">
+                                <p className="text-muted-foreground text-sm mb-2">{t('advisor.financialScore')}</p>
                                 <div className="relative w-32 h-32 mx-auto mb-3">
                                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
                                         <circle cx="60" cy="60" r="50" stroke="#1E293B" strokeWidth="10" fill="none" />
@@ -354,21 +354,21 @@ export default function AIFinancialAssistant() {
                                     </svg>
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <div>
-                                            <motion.p className="text-3xl font-bold text-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+                                            <motion.p className="text-3xl font-bold text-foreground" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
                                                 {plan.score}
                                             </motion.p>
-                                            <p className="text-[10px] text-slate-500 font-bold">/100</p>
+                                            <p className="text-[10px] text-muted-foreground font-bold">/100</p>
                                         </div>
                                     </div>
                                 </div>
-                                <p className={`text-sm font-bold ${plan.score >= 70 ? 'text-brand-green' : plan.score >= 40 ? 'text-amber-400' : 'text-red-400'}`}>
+                                <p className={`text-sm font-bold ${plan.score >= 70 ? 'text-brand-green' : plan.score >= 40 ? 'text-amber-500' : 'text-red-500'}`}>
                                     {plan.score >= 80 ? 'Excellent!' : plan.score >= 60 ? 'Good' : plan.score >= 40 ? 'Needs Improvement' : 'At Risk'}
                                 </p>
                             </div>
 
                             {/* Monthly Budget Overview */}
-                            <div className="p-4 rounded-2xl bg-dark-card border border-dark-border mb-5">
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t('advisor.monthlyBudget')}</h3>
+                            <div className="p-4 rounded-2xl bg-card border border-border mb-5">
+                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t('advisor.monthlyBudget')}</h3>
                                 <div className="grid grid-cols-2 gap-2.5">
                                     <BudgetCard label={t('advisor.monthlyIncome')} value={formatINR(salary)} color="#10B981" />
                                     <BudgetCard label={t('advisor.expenses')} value={formatINR(expenses)} color="#EF4444" />
@@ -377,8 +377,8 @@ export default function AIFinancialAssistant() {
                                 </div>
                                 <div className="mt-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-xs text-slate-400">Total SIP needed for all goals</span>
-                                        <span className={`text-sm font-bold ${plan.totalMonthlySIP > (salary - expenses - emi) * 0.9 ? 'text-red-400' : 'text-brand-green'}`}>
+                                        <span className="text-xs text-muted-foreground">Total SIP needed for all goals</span>
+                                        <span className={`text-sm font-bold ${plan.totalMonthlySIP > (salary - expenses - emi) * 0.9 ? 'text-red-500' : 'text-brand-green'}`}>
                                             {formatINR(plan.totalMonthlySIP)}/mo
                                         </span>
                                     </div>
@@ -400,10 +400,10 @@ export default function AIFinancialAssistant() {
                                                 }`}
                                         >
                                             {alert.type === 'warning'
-                                                ? <AlertTriangle size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
+                                                ? <AlertTriangle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
                                                 : <CheckCircle size={16} className="text-brand-green mt-0.5 flex-shrink-0" />
                                             }
-                                            <p className="text-xs text-slate-300 leading-relaxed">{alert.text}</p>
+                                            <p className="text-xs text-foreground/80 leading-relaxed">{alert.text}</p>
                                         </motion.div>
                                     ))}
                                 </div>
@@ -411,8 +411,8 @@ export default function AIFinancialAssistant() {
 
                             {/* Goal-wise Plans */}
                             <div className="mb-5">
-                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <Sparkles size={13} className="text-amber-400" />
+                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <Sparkles size={13} className="text-amber-500" />
                                     Goal-wise Financial Plan
                                 </h3>
                                 <div className="space-y-3">
@@ -425,7 +425,7 @@ export default function AIFinancialAssistant() {
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: 0.4 + gi * 0.12 }}
-                                                className="rounded-2xl bg-dark-card border border-dark-border overflow-hidden"
+                                                className="rounded-2xl bg-card border border-border overflow-hidden"
                                             >
                                                 {/* Goal Header */}
                                                 <button
@@ -433,17 +433,17 @@ export default function AIFinancialAssistant() {
                                                     className={`w-full p-4 flex items-center gap-3 bg-gradient-to-r ${gp.gradient}`}
                                                 >
                                                     <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-                                                        <Icon size={20} className="text-white" />
+                                                        <Icon size={20} className="text-foreground" />
                                                     </div>
                                                     <div className="flex-1 text-left">
-                                                        <p className="text-white font-bold text-sm">{gp.goalLabel}</p>
-                                                        <p className="text-white/70 text-[11px]">{gp.timeline}</p>
+                                                        <p className="text-foreground font-bold text-sm">{gp.goalLabel}</p>
+                                                        <p className="text-foreground/70 text-[11px]">{gp.timeline}</p>
                                                     </div>
                                                     <div className="text-right mr-2">
-                                                        <p className="text-white font-bold text-sm">{formatINR(gp.monthlySIP)}/mo</p>
-                                                        <p className="text-white/50 text-[10px]">{t('advisor.monthlySIP')}</p>
+                                                        <p className="text-foreground font-bold text-sm">{formatINR(gp.monthlySIP)}/mo</p>
+                                                        <p className="text-foreground/50 text-[10px]">{t('advisor.monthlySIP')}</p>
                                                     </div>
-                                                    {isExpanded ? <ChevronUp size={16} className="text-white/60" /> : <ChevronDown size={16} className="text-white/60" />}
+                                                    {isExpanded ? <ChevronUp size={16} className="text-foreground/60" /> : <ChevronDown size={16} className="text-foreground/60" />}
                                                 </button>
 
                                                 {/* Expanded Details */}
@@ -456,10 +456,10 @@ export default function AIFinancialAssistant() {
                                                             className="overflow-hidden"
                                                         >
                                                             <div className="p-4 space-y-3">
-                                                                <div className="flex items-center gap-2 pb-2 border-b border-dark-border/40">
-                                                                    <Shield size={14} className="text-amber-400" />
-                                                                    <span className="text-xs text-slate-400">Target Corpus:</span>
-                                                                    <span className="text-sm font-bold text-white">{formatINR(gp.targetCorpus)}</span>
+                                                                <div className="flex items-center gap-2 pb-2 border-b border-border/40">
+                                                                    <Shield size={14} className="text-amber-500" />
+                                                                    <span className="text-xs text-muted-foreground">Target Corpus:</span>
+                                                                    <span className="text-sm font-bold text-foreground">{formatINR(gp.targetCorpus)}</span>
                                                                 </div>
                                                                 {gp.recommendations.map((rec, i) => {
                                                                     const RecIcon = rec.icon;
@@ -469,9 +469,9 @@ export default function AIFinancialAssistant() {
                                                                                 <RecIcon size={16} style={{ color: rec.color }} />
                                                                             </div>
                                                                             <div className="flex-1">
-                                                                                <p className="text-slate-400 text-[10px] uppercase font-bold tracking-wider">{rec.title}</p>
-                                                                                <p className="text-white font-bold text-sm">{rec.value}</p>
-                                                                                <p className="text-slate-500 text-[11px]">{rec.detail}</p>
+                                                                                <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">{rec.title}</p>
+                                                                                <p className="text-foreground font-bold text-sm">{rec.value}</p>
+                                                                                <p className="text-muted-foreground text-[11px]">{rec.detail}</p>
                                                                             </div>
                                                                         </div>
                                                                     );
@@ -489,11 +489,11 @@ export default function AIFinancialAssistant() {
                             {/* Emergency Fund */}
                             <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 mb-5">
                                 <div className="flex items-center gap-3">
-                                    <Shield size={20} className="text-amber-400" />
+                                    <Shield size={20} className="text-amber-500" />
                                     <div>
-                                        <p className="text-xs text-slate-400 uppercase font-bold">Emergency Fund</p>
-                                        <p className="text-white font-bold">{formatINR(expenses * 6)}</p>
-                                        <p className="text-xs text-slate-500">6 months of expenses • You have {(savings / expenses).toFixed(1)} months saved</p>
+                                        <p className="text-xs text-muted-foreground uppercase font-bold">Emergency Fund</p>
+                                        <p className="text-foreground font-bold">{formatINR(expenses * 6)}</p>
+                                        <p className="text-xs text-muted-foreground">6 months of expenses • You have {(savings / expenses).toFixed(1)} months saved</p>
                                     </div>
                                 </div>
                             </div>
@@ -502,7 +502,7 @@ export default function AIFinancialAssistant() {
                             <div className="flex gap-3 mb-3">
                                 <button
                                     onClick={() => setShowResults(false)}
-                                    className="flex-1 py-4 rounded-2xl bg-dark-card border border-dark-border text-slate-300 font-bold text-sm"
+                                    className="flex-1 py-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm"
                                 >
                                     {t('advisor.restart')}
                                 </button>
@@ -532,10 +532,10 @@ export default function AIFinancialAssistant() {
 
 function BudgetCard({ label, value, color }: { label: string; value: string; color: string }) {
     return (
-        <div className="p-3 rounded-xl bg-slate-800/30 text-center">
+        <div className="p-3 rounded-xl bg-muted text-center">
             <div className="w-2 h-2 rounded-full mx-auto mb-1.5" style={{ backgroundColor: color }} />
-            <p className="text-[10px] text-slate-500 uppercase font-bold">{label}</p>
-            <p className="text-white font-bold text-sm">{value}</p>
+            <p className="text-[10px] text-muted-foreground uppercase font-bold">{label}</p>
+            <p className="text-foreground font-bold text-sm">{value}</p>
         </div>
     );
 }

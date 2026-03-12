@@ -8,7 +8,7 @@ import {
 } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import SmartInsight from '../components/SmartInsight';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
@@ -152,22 +152,22 @@ export default function SSYCalculator() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
+        <div className="min-h-dvh bg-background animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-dark-border">
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                        <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div className="flex-1">
-                        <h1 className="text-lg font-bold text-white">Sukanya Samriddhi Yojana</h1>
-                        <p className="text-slate-500 text-xs">Girl Child Savings Scheme</p>
+                        <h1 className="text-lg font-bold text-foreground">Sukanya Samriddhi Yojana</h1>
+                        <p className="text-muted-foreground text-xs">Girl Child Savings Scheme</p>
                     </div>
                     <Heart size={20} className="text-pink-400" />
                 </div>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent module="government" />
 
             <div className="px-4 pb-28 pt-4 space-y-5">
                 {/* Inputs */}
@@ -180,28 +180,28 @@ export default function SSYCalculator() {
                 {/* Result Card */}
                 <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-pink-600/20 to-rose-600/20 border border-pink-500/20">
                     <p className="text-pink-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">Maturity Amount</p>
-                    <p className="text-3xl font-black text-white mb-4">{formatINR(result.maturity)}</p>
+                    <p className="text-3xl font-black text-foreground mb-4">{formatINR(result.maturity)}</p>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-slate-500 text-[10px] uppercase font-bold">Total Invested</p>
-                            <p className="text-white font-bold text-sm">{formatINR(result.invested)}</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Total Invested</p>
+                            <p className="text-foreground font-bold text-sm">{formatINR(result.invested)}</p>
                         </div>
                         <div>
-                            <p className="text-slate-500 text-[10px] uppercase font-bold">Interest Earned</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Interest Earned</p>
                             <p className="text-brand-green font-bold text-sm">{formatINR(result.totalInterest)}</p>
                         </div>
                         <div>
-                            <p className="text-slate-500 text-[10px] uppercase font-bold">Maturity Age</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Maturity Age</p>
                             <p className="text-blue-400 font-bold text-sm">{result.maturityAge} years</p>
                         </div>
                         <div>
-                            <p className="text-slate-500 text-[10px] uppercase font-bold">Returns Multiplier</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Returns Multiplier</p>
                             <p className="text-amber-400 font-bold text-sm">{(result.maturity / result.invested).toFixed(2)}x</p>
                         </div>
                     </div>
 
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-white font-bold text-sm">
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
                         <Save size={16} /> {saved ? '✅ Saved!' : 'Save Calculation'}
                     </motion.button>
                 </motion.div>
@@ -212,8 +212,8 @@ export default function SSYCalculator() {
                         <div className="flex items-start gap-3">
                             <GraduationCap size={20} className="text-blue-400 flex-shrink-0 mt-0.5" />
                             <div>
-                                <h3 className="text-white font-bold text-sm">Education Withdrawal at 18</h3>
-                                <p className="text-slate-400 text-xs mt-1">After your child turns 18, you can withdraw up to <span className="text-blue-400 font-bold">50%</span> of the balance for higher education.</p>
+                                <h3 className="text-foreground font-bold text-sm">Education Withdrawal at 18</h3>
+                                <p className="text-muted-foreground text-xs mt-1">After your child turns 18, you can withdraw up to <span className="text-blue-400 font-bold">50%</span> of the balance for higher education.</p>
                                 <p className="text-blue-400 text-xs font-bold mt-1">Eligible amount: {formatINR(result.withdrawalAmount)}</p>
                             </div>
                         </div>
@@ -225,23 +225,23 @@ export default function SSYCalculator() {
                     <div className="flex items-start gap-3">
                         <AlertCircle size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
                         <div>
-                            <h3 className="text-white font-bold text-xs">Maximum Annual Deposit: ₹1,50,000</h3>
-                            <p className="text-slate-400 text-[11px] mt-1">Minimum ₹250/year required to keep account active. Tax deduction under Section 80C available.</p>
+                            <h3 className="text-foreground font-bold text-xs">Maximum Annual Deposit: ₹1,50,000</h3>
+                            <p className="text-muted-foreground text-[11px] mt-1">Minimum ₹250/year required to keep account active. Tax deduction under Section 80C available.</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Pie Chart */}
-                <div className="p-4 rounded-2xl bg-dark-card border border-dark-border">
-                    <h3 className="text-white font-bold text-sm mb-3">Investment vs Interest</h3>
+                <div className="p-4 rounded-2xl bg-card border border-border">
+                    <h3 className="text-foreground font-bold text-sm mb-3">Investment vs Interest</h3>
                     <div className="w-48 h-48 mx-auto">
                         <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#94A3B8', font: { size: 11 } } } } }} />
                     </div>
                 </div>
 
                 {/* Year-wise Growth Chart */}
-                <div className="p-4 rounded-2xl bg-dark-card border border-dark-border">
-                    <h3 className="text-white font-bold text-sm mb-3">Year-wise Growth</h3>
+                <div className="p-4 rounded-2xl bg-card border border-border">
+                    <h3 className="text-foreground font-bold text-sm mb-3">Year-wise Growth</h3>
                     <div className="h-56">
                         <Bar
                             ref={chartRef}
@@ -263,25 +263,25 @@ export default function SSYCalculator() {
                 <SmartInsight calculatorType="ppf" inputs={{ annual, rate }} results={{ maturity: result.maturity, invested: result.invested }} />
 
                 {/* Year-wise Timeline Toggle */}
-                <button onClick={() => setShowTimeline(!showTimeline)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-dark-card border border-dark-border text-white font-bold text-sm">
-                    <span className="flex items-center gap-2"><Calendar size={16} className="text-slate-400" /> Year-wise Timeline</span>
-                    {showTimeline ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                <button onClick={() => setShowTimeline(!showTimeline)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
+                    <span className="flex items-center gap-2"><Calendar size={16} className="text-muted-foreground" /> Year-wise Timeline</span>
+                    {showTimeline ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
 
                 <AnimatePresence>
                     {showTimeline && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                            <div className="rounded-2xl bg-dark-card border border-dark-border overflow-hidden">
-                                <div className="grid grid-cols-5 text-[9px] font-bold text-slate-500 uppercase p-2 bg-slate-800/50">
+                            <div className="rounded-2xl bg-card border border-border overflow-hidden">
+                                <div className="grid grid-cols-5 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-800/50">
                                     <span>Year</span><span>Age</span><span>Deposit</span><span>Interest</span><span>Balance</span>
                                 </div>
                                 {result.timeline.map((t, i) => (
-                                    <div key={i} className={`grid grid-cols-5 text-[10px] p-2 ${i % 2 === 0 ? 'bg-dark-card' : 'bg-slate-800/20'} ${t.deposit === 0 ? 'text-slate-500' : 'text-slate-300'}`}>
+                                    <div key={i} className={`grid grid-cols-5 text-[10px] p-2 ${i % 2 === 0 ? 'bg-card' : 'bg-slate-800/20'} ${t.deposit === 0 ? 'text-muted-foreground' : 'text-slate-300'}`}>
                                         <span>{t.year}</span>
                                         <span>{t.age}</span>
                                         <span>{t.deposit > 0 ? formatINR(t.deposit) : '—'}</span>
                                         <span className="text-brand-green">{formatINR(t.interest)}</span>
-                                        <span className="font-bold text-white">{formatINR(t.balance)}</span>
+                                        <span className="font-bold text-foreground">{formatINR(t.balance)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -290,15 +290,15 @@ export default function SSYCalculator() {
                 </AnimatePresence>
 
                 {/* Scheme Rules Toggle */}
-                <button onClick={() => setShowRules(!showRules)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-dark-card border border-dark-border text-white font-bold text-sm">
-                    <span className="flex items-center gap-2"><BookOpen size={16} className="text-slate-400" /> SSY Scheme Rules</span>
-                    {showRules ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                <button onClick={() => setShowRules(!showRules)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
+                    <span className="flex items-center gap-2"><BookOpen size={16} className="text-muted-foreground" /> SSY Scheme Rules</span>
+                    {showRules ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
 
                 <AnimatePresence>
                     {showRules && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                            <div className="p-4 rounded-2xl bg-dark-card border border-dark-border space-y-3">
+                            <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
                                 {[
                                     { icon: Shield, title: 'Eligibility', desc: 'Girl child below 10 years. Max 2 accounts per family.' },
                                     { icon: Calendar, title: 'Tenure', desc: 'Deposit for 15 years. Account matures 21 years from opening.' },
@@ -310,8 +310,8 @@ export default function SSYCalculator() {
                                     <div key={i} className="flex items-start gap-3">
                                         <rule.icon size={16} className="text-pink-400 flex-shrink-0 mt-0.5" />
                                         <div>
-                                            <p className="text-white font-bold text-xs">{rule.title}</p>
-                                            <p className="text-slate-400 text-[11px]">{rule.desc}</p>
+                                            <p className="text-foreground font-bold text-xs">{rule.title}</p>
+                                            <p className="text-muted-foreground text-[11px]">{rule.desc}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -322,10 +322,10 @@ export default function SSYCalculator() {
 
                 {/* Export & Share Buttons */}
                 <div className="grid grid-cols-3 gap-3">
-                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium">
+                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium">
                         <Download size={16} /> PDF
                     </button>
-                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium">
+                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium">
                         <Download size={16} /> Excel
                     </button>
                     <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white text-[10px] font-bold">

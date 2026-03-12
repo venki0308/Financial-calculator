@@ -4,7 +4,7 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Delete, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 type CalcMode = 'standard' | 'scientific' | 'programmer';
 
@@ -100,26 +100,26 @@ export default function ScientificCalculator() {
     }, [append, calculate, display, memory]);
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
+        <div className="min-h-dvh bg-background animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-[#0F172A]/95 backdrop-blur-xl border-b border-white/10 pt-14 px-4 py-3 flex items-center gap-3">
+            <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-xl border-b border-white/10 pt-14 px-4 py-3 flex items-center gap-3">
                 <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white/5 border border-white/10">
-                    <ArrowLeft size={18} className="text-white" />
+                    <ArrowLeft size={18} className="text-foreground" />
                 </button>
                 <div>
-                    <h1 className="text-white font-bold text-base">Scientific Calculator</h1>
-                    <p className="text-slate-400 text-[11px]">Standard • Scientific • Programmer</p>
+                    <h1 className="text-foreground font-bold text-base">Scientific Calculator</h1>
+                    <p className="text-muted-foreground text-[11px]">Standard • Scientific • Programmer</p>
                 </div>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent module="general" />
 
             <div className="px-4 pt-4 pb-28 space-y-4">
                 {/* Mode Toggle */}
                 <div className="flex gap-1 bg-white/5 border border-white/10 rounded-xl p-1">
                     {(['standard', 'scientific', 'programmer'] as const).map(m => (
                         <button key={m} onClick={() => setMode(m)}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${mode === m ? 'bg-brand-purple text-white' : 'text-slate-500'}`}>
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${mode === m ? 'bg-brand-purple text-white' : 'text-muted-foreground'}`}>
                             {m.charAt(0).toUpperCase() + m.slice(1)}
                         </button>
                     ))}
@@ -127,8 +127,8 @@ export default function ScientificCalculator() {
 
                 {/* Display */}
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-                    {expression && <p className="text-slate-500 text-xs text-right mb-1 font-mono">{expression}</p>}
-                    <p className="text-white text-right text-3xl font-bold font-mono break-all leading-tight">{display}</p>
+                    {expression && <p className="text-muted-foreground text-xs text-right mb-1 font-mono">{expression}</p>}
+                    <p className="text-foreground text-right text-3xl font-bold font-mono break-all leading-tight">{display}</p>
                     {mode === 'scientific' && (
                         <div className="flex gap-2 mt-3">
                             <button onClick={() => setAngleMode(a => a === 'deg' ? 'rad' : 'deg')}
@@ -137,7 +137,7 @@ export default function ScientificCalculator() {
                             </button>
                             {['MC', 'MR', 'M+', 'M-'].map(m => (
                                 <button key={m} onClick={() => handleButton(m)}
-                                    className="px-2 py-1 rounded-lg bg-white/5 text-slate-400 text-xs font-bold">{m}</button>
+                                    className="px-2 py-1 rounded-lg bg-white/5 text-muted-foreground text-xs font-bold">{m}</button>
                             ))}
                         </div>
                     )}
@@ -148,7 +148,7 @@ export default function ScientificCalculator() {
                     <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
                         {(['DEC', 'HEX', 'BIN', 'OCT'] as const).map(b => (
                             <button key={b} onClick={() => { setProgBase(b); setDisplay(String(parseInt(display) || 0)); }}
-                                className={`w-full flex justify-between p-2.5 rounded-xl text-xs font-mono ${progBase === b ? 'bg-brand-purple/20 text-brand-purple border border-brand-purple/40' : 'bg-white/5 text-slate-400'}`}>
+                                className={`w-full flex justify-between p-2.5 rounded-xl text-xs font-mono ${progBase === b ? 'bg-brand-purple/20 text-brand-purple border border-brand-purple/40' : 'bg-white/5 text-muted-foreground'}`}>
                                 <span className="font-bold">{b}</span>
                                 <span>{progConvert[b]}</span>
                             </button>
@@ -176,7 +176,7 @@ export default function ScientificCalculator() {
                         const bg = btn === '=' ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/30'
                             : isOp ? 'bg-orange-500/20 text-orange-400'
                             : isAction ? 'bg-red-500/20 text-red-400'
-                            : 'bg-white/10 text-white';
+                            : 'bg-white/10 text-foreground';
                         return (
                             <motion.button key={btn} whileTap={{ scale: 0.9 }} onClick={() => handleButton(btn)}
                                 className={btnClass(bg)}>

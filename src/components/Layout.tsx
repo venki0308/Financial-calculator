@@ -23,7 +23,7 @@ export default function Layout() {
                 <Outlet />
             </main>
 
-            <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] bg-[#1E293B]/95 backdrop-blur-xl border-t border-[#334155] z-40 safe-area-bottom">
+            <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] bg-card/95 backdrop-blur-xl border-t border-border z-40 safe-area-bottom">
                 <div className="flex items-center justify-around h-20 px-2">
                     {tabs.map(({ to, icon: Icon, label }) => {
                         const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
@@ -33,9 +33,9 @@ export default function Layout() {
                                     whileTap={{ scale: 0.85 }}
                                     className={`p-2 rounded-xl transition-colors duration-200 ${isActive ? 'bg-brand-green/15' : ''}`}
                                 >
-                                    <Icon size={22} className={isActive ? 'text-brand-green' : 'text-slate-500'} strokeWidth={isActive ? 2.5 : 1.8} />
+                                    <Icon size={22} className={isActive ? 'text-brand-green' : 'text-muted-foreground'} strokeWidth={isActive ? 2.5 : 1.8} />
                                 </motion.div>
-                                <span className={`text-[11px] font-medium ${isActive ? 'text-brand-green' : 'text-slate-500'}`}>{label}</span>
+                                <span className={`text-[11px] font-medium ${isActive ? 'text-brand-green' : 'text-muted-foreground'}`}>{label}</span>
                             </NavLink>
                         );
                     })}

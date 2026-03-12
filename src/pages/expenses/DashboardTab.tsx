@@ -141,11 +141,11 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                         {t('expenses.totalSpentMonth')}
                     </p>
                     <div className="flex items-center gap-2 bg-white/20 rounded-full px-2 py-1">
-                        <button onClick={() => changeMonth(-1)} className="p-0.5 text-white"><ChevronLeft size={14}/></button>
-                        <span className="text-[10px] font-bold text-white min-w-[70px] text-center">
+                        <button onClick={() => changeMonth(-1)} className="p-0.5 text-foreground"><ChevronLeft size={14}/></button>
+                        <span className="text-[10px] font-bold text-foreground min-w-[70px] text-center">
                             {selectedDate.toLocaleString(undefined, { month: 'short', year: 'numeric' })}
                         </span>
-                        <button onClick={() => changeMonth(1)} disabled={selectedDate.getMonth() === new Date().getMonth() && selectedDate.getFullYear() === new Date().getFullYear()} className="p-0.5 text-white disabled:opacity-30"><ChevronRight size={14}/></button>
+                        <button onClick={() => changeMonth(1)} disabled={selectedDate.getMonth() === new Date().getMonth() && selectedDate.getFullYear() === new Date().getFullYear()} className="p-0.5 text-foreground disabled:opacity-30"><ChevronRight size={14}/></button>
                     </div>
                 </div>
                 <h2 className="text-4xl font-extrabold mb-0.5">₹{totalSpent.toLocaleString('en-IN')}</h2>
@@ -169,7 +169,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                 <div className="grid grid-cols-3 gap-3 mt-4">
                     <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center">
                         <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">{t('expenses.income')}</p>
-                        <p className="text-white font-bold text-sm mt-0.5">₹{effectiveIncome.toLocaleString('en-IN')}</p>
+                        <p className="text-foreground font-bold text-sm mt-0.5">₹{effectiveIncome.toLocaleString('en-IN')}</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center">
                         <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">{t('expenses.savings')}</p>
@@ -205,7 +205,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 <span className={`text-[9px] font-bold ${stat.color}`}>{(stat.metric * 100).toFixed(0)}%</span>
                             )}
                         </div>
-                        <p className="text-slate-400 text-[9px] font-semibold uppercase tracking-wider mt-1">{stat.label}</p>
+                        <p className="text-muted-foreground text-[9px] font-semibold uppercase tracking-wider mt-1">{stat.label}</p>
                         <p className={`font-bold text-xs ${stat.color}`}>₹{Math.abs(stat.value).toLocaleString('en-IN')}</p>
                         {/* Mini progress bar */}
                         {stat.metric > 0 && <div className="absolute bottom-0 left-0 h-1 bg-white/20 w-full">
@@ -224,12 +224,12 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                             <path className={`${healthScore.total >= 80 ? 'text-green-500' : healthScore.total >= 50 ? 'text-yellow-500' : 'text-red-500'}`} strokeDasharray={`${healthScore.total}, 100`} strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-lg font-bold text-slate-900 dark:text-white leading-none">{healthScore.total}</span>
+                            <span className="text-lg font-bold text-slate-900 dark:text-foreground leading-none">{healthScore.total}</span>
                         </div>
                     </div>
                     <div>
-                        <h3 className="font-bold text-slate-900 dark:text-white text-sm">Financial Health</h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{healthScore.tips[0] || "Looking good this month!"}</p>
+                        <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Financial Health</h3>
+                        <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-0.5 line-clamp-2">{healthScore.tips[0] || "Looking good this month!"}</p>
                     </div>
                 </div>
             )}
@@ -279,7 +279,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                             ? <Activity className="w-4 h-4 text-blue-400 flex-shrink-0" />
                                             : <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
                                 }
-                                <span className="font-bold text-xs text-slate-800 dark:text-white">{alert.title}</span>
+                                <span className="font-bold text-xs text-slate-800 dark:text-foreground">{alert.title}</span>
                             </div>
                             <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 leading-snug">{alert.message}</p>
                             {alert.actionLabel && (
@@ -303,7 +303,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
             {/* Spending Breakdown Pie Chart */}
             {categoryTotals.length > 0 && (
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.spendingBreakdown')}</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.spendingBreakdown')}</h3>
                     <div className="flex flex-col items-center gap-4">
                         <div style={{ width: 200, height: 200 }}>
                             <Pie
@@ -340,8 +340,8 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                         className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all ${isSelected ? 'bg-brand-purple/10 ring-1 ring-brand-purple scale-105' : 'hover:bg-slate-50 dark:hover:bg-white/5 opacity-80 hover:opacity-100'}`}
                                     >
                                         <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${isSelected ? 'animate-pulse' : ''}`} style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                        <span className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{cat.icon} {t(`expenses.categories.${cat.id}`)}</span>
-                                        <span className={`text-[10px] font-bold ml-auto ${isSelected ? 'text-brand-purple' : 'text-slate-700 dark:text-white'}`}>₹{cat.total.toLocaleString('en-IN')}</span>
+                                        <span className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate">{cat.icon} {t(`expenses.categories.${cat.id}`)}</span>
+                                        <span className={`text-[10px] font-bold ml-auto ${isSelected ? 'text-brand-purple' : 'text-slate-700 dark:text-foreground'}`}>₹{cat.total.toLocaleString('en-IN')}</span>
                                     </div>
                                 );
                             })}
@@ -362,12 +362,12 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 <TrendingUp size={16} />
                             </div>
                             <div className="text-left">
-                                <h3 className="font-bold text-slate-900 dark:text-white text-sm">Net Worth</h3>
-                                <p className="text-[10px] text-slate-500">Assets vs Liabilities</p>
+                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Net Worth</h3>
+                                <p className="text-[10px] text-muted-foreground">Assets vs Liabilities</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="font-bold text-slate-900 dark:text-white">
+                            <span className="font-bold text-slate-900 dark:text-foreground">
                                 ₹{netWorthHistory.length > 0 ? netWorthHistory[netWorthHistory.length - 1].netWorth.toLocaleString('en-IN') : '0'}
                             </span>
                             {netWorthHistory.length > 0 && (
@@ -392,12 +392,12 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                         
                                         setShowNetWorthModal(true);
                                     }}
-                                    className="p-1 text-slate-400 hover:text-brand-purple focus:outline-none"
+                                    className="p-1 text-muted-foreground hover:text-brand-purple focus:outline-none"
                                 >
                                     <Edit2 size={16} />
                                 </button>
                             )}
-                            {isNetWorthOpen ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                            {isNetWorthOpen ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                         </div>
                     </button>
                     
@@ -410,7 +410,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 className="px-4 pb-4 border-t border-slate-100 dark:border-white/5"
                             >
                                 {netWorthHistory.length === 0 ? (
-                                    <div className="text-center py-4 text-slate-500 text-xs">
+                                    <div className="text-center py-4 text-muted-foreground text-xs">
                                         No net worth data added yet. 
                                         <button onClick={() => setShowNetWorthModal(true)} className="text-brand-purple block mx-auto mt-2 font-semibold">Update Net Worth</button>
                                     </div>
@@ -418,11 +418,11 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                     <>
                                         <div className="pt-4 grid grid-cols-2 gap-4">
                                             <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3">
-                                                <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Total Assets</p>
+                                                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Total Assets</p>
                                                 <p className="font-bold text-green-500 text-sm">₹{netWorthHistory[netWorthHistory.length - 1].totalAssets.toLocaleString('en-IN')}</p>
                                             </div>
                                             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
-                                                <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">Total Liabilities</p>
+                                                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Total Liabilities</p>
                                                 <p className="font-bold text-red-500 text-sm">₹{netWorthHistory[netWorthHistory.length - 1].totalLiabilities.toLocaleString('en-IN')}</p>
                                             </div>
                                         </div>
@@ -446,13 +446,13 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 <Repeat size={16} />
                             </div>
                             <div className="text-left">
-                                <h3 className="font-bold text-slate-900 dark:text-white text-sm">Subscriptions</h3>
-                                <p className="text-[10px] text-slate-500">{activeSubs.length} Active • Next: {new Date(nextRenewal.nextDueDate).toLocaleDateString('en-IN')}</p>
+                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Subscriptions</h3>
+                                <p className="text-[10px] text-muted-foreground">{activeSubs.length} Active • Next: {new Date(nextRenewal.nextDueDate).toLocaleDateString('en-IN')}</p>
                             </div>
                         </div>
                         <div className="text-right">
-                            <span className="font-bold text-slate-900 dark:text-white block">
-                                ₹{subMonthlyTotal.toLocaleString('en-IN')}<span className="text-[10px] text-slate-400 font-normal">/mo</span>
+                            <span className="font-bold text-slate-900 dark:text-foreground block">
+                                ₹{subMonthlyTotal.toLocaleString('en-IN')}<span className="text-[10px] text-muted-foreground font-normal">/mo</span>
                             </span>
                             {onViewSubs && (
                                 <button onClick={onViewSubs} className="text-[10px] font-bold text-brand-purple hover:underline mt-0.5">
@@ -467,13 +467,13 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
             {/* Recent Transactions */}
             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm">{t('expenses.recentExpenses')}</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">{t('expenses.recentExpenses')}</h3>
                     <button onClick={onViewAll} className="text-brand-purple text-xs font-semibold">{t('home.viewAll')}</button>
                 </div>
                 {recentExpenses.length === 0 ? (
                     <div className="text-center py-6">
                         <Wallet className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                        <p className="text-slate-400 text-sm">{t('expenses.noExpensesMonth')}</p>
+                        <p className="text-muted-foreground text-sm">{t('expenses.noExpensesMonth')}</p>
                         <button
                             onClick={onAddExpense}
                             className="mt-3 flex items-center gap-1 text-brand-purple text-xs font-semibold mx-auto"
@@ -491,8 +491,8 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                         {cat?.icon || '📌'}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-slate-800 dark:text-white text-xs font-semibold truncate">{exp.description || t(`expenses.categories.${cat?.id || 'others'}`)}</p>
-                                        <p className="text-slate-400 text-[10px]">
+                                        <p className="text-slate-800 dark:text-foreground text-xs font-semibold truncate">{exp.description || t(`expenses.categories.${cat?.id || 'others'}`)}</p>
+                                        <p className="text-muted-foreground text-[10px]">
                                             {new Date(exp.date).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
                                         </p>
                                     </div>
@@ -515,11 +515,11 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                         <div className="space-y-2">
                             {ASSET_FIELDS.map(f => (
                                 <div key={f.key} className="flex items-center gap-3">
-                                    <span className="text-slate-400 text-xs w-28 flex-shrink-0">{f.label}</span>
+                                    <span className="text-muted-foreground text-xs w-28 flex-shrink-0">{f.label}</span>
                                     <div className="flex-1 relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">₹</span>
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₹</span>
                                         <input type="number" value={nwAssets[f.key] || ''} onChange={e => setNwAssets(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                            className="w-full pl-7 pr-3 py-2.5 bg-slate-800 border border-slate-600 rounded-xl text-white text-sm focus:outline-none focus:border-green-500" placeholder="0" />
+                                            className="w-full pl-7 pr-3 py-2.5 bg-card border-border border border-slate-600 rounded-xl text-foreground text-sm focus:outline-none focus:border-green-500" placeholder="0" />
                                     </div>
                                 </div>
                             ))}
@@ -532,11 +532,11 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                         <div className="space-y-2">
                             {LIABILITY_FIELDS.map(f => (
                                 <div key={f.key} className="flex items-center gap-3">
-                                    <span className="text-slate-400 text-xs w-28 flex-shrink-0">{f.label}</span>
+                                    <span className="text-muted-foreground text-xs w-28 flex-shrink-0">{f.label}</span>
                                     <div className="flex-1 relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">₹</span>
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₹</span>
                                         <input type="number" value={nwLiabilities[f.key] || ''} onChange={e => setNwLiabilities(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                            className="w-full pl-7 pr-3 py-2.5 bg-slate-800 border border-slate-600 rounded-xl text-white text-sm focus:outline-none focus:border-red-500" placeholder="0" />
+                                            className="w-full pl-7 pr-3 py-2.5 bg-card border-border border border-slate-600 rounded-xl text-foreground text-sm focus:outline-none focus:border-red-500" placeholder="0" />
                                     </div>
                                 </div>
                             ))}

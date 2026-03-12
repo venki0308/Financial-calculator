@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 interface SettingsState {
     darkMode: boolean;
     language: string;
-    notifications: { priceAlerts: boolean; newSchemes: boolean; calcReminders: boolean; appUpdates: boolean };
+    notifications: { priceAlerts: boolean; newSchemes: boolean; calcReminders: boolean; appUpdates: boolean; dailyQuotes: boolean };
     toggleDarkMode: () => void;
     setLanguage: (lang: string) => void;
     setNotification: (key: keyof SettingsState['notifications'], val: boolean) => void;
@@ -15,7 +15,7 @@ export const useSettingsStore = create<SettingsState>()(
         (set) => ({
             darkMode: true,
             language: 'English',
-            notifications: { priceAlerts: true, newSchemes: true, calcReminders: false, appUpdates: true },
+            notifications: { priceAlerts: true, newSchemes: true, calcReminders: false, appUpdates: true, dailyQuotes: true },
             toggleDarkMode: () =>
                 set((s) => {
                     const next = !s.darkMode;

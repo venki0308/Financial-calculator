@@ -15,28 +15,51 @@ function Section({ number, title, icon: Icon, children }: { number: number; titl
                 <div className="w-7 h-7 rounded-lg bg-brand-purple/15 flex items-center justify-center flex-shrink-0">
                     <Icon size={14} className="text-brand-purple" />
                 </div>
-                <h2 className="text-white font-bold text-sm">{number}. {title}</h2>
+                <h2 className="text-foreground font-bold text-sm">{number}. {title}</h2>
             </div>
-            <div className="pl-9 space-y-2 text-slate-400 text-xs leading-relaxed">
+            <div className="pl-9 space-y-2 text-muted-foreground text-xs leading-relaxed">
                 {children}
             </div>
         </motion.section>
     );
 }
 
+const languages = [
+    { code: 'en', name: 'English', nativeName: 'English' },
+    { code: 'hi', name: 'Hindi', nativeName: 'हिंदी' },
+    { code: 'te', name: 'Telugu', nativeName: 'తెలుగు' },
+    { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்' },
+    { code: 'kn', name: 'Kannada', nativeName: 'ಕನ್ನಡ' },
+    { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം' },
+];
+
 export default function PrivacyPolicy() {
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] pb-10" style={{ maxWidth: 428, margin: '0 auto' }}>
+        <div className="min-h-dvh bg-background pb-10" style={{ maxWidth: 428, margin: '0 auto' }}>
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-dark-border">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
-                    </button>
-                    <h1 className="text-lg font-bold text-white">{t('privacyPolicy.title')}</h1>
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                            <ArrowLeft size={18} className="text-muted-foreground" />
+                        </button>
+                        <h1 className="text-lg font-bold text-foreground">{t('privacyPolicy.title')}</h1>
+                    </div>
+                    <select
+                        value={i18n.language.substring(0, 2)}
+                        onChange={(e) => {
+                            i18n.changeLanguage(e.target.value);
+                            localStorage.setItem('language', e.target.value);
+                        }}
+                        className="bg-card border border-border text-foreground text-xs rounded-lg px-2 py-1.5 outline-none custom-select-arrow"
+                    >
+                        {languages.map(l => (
+                            <option key={l.code} value={l.code}>{l.nativeName}</option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
@@ -50,9 +73,9 @@ export default function PrivacyPolicy() {
                     <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-brand-purple/20 flex items-center justify-center">
                         <Shield size={28} className="text-brand-purple" />
                     </div>
-                    <h2 className="text-white font-bold text-base mb-1">{t('privacyPolicy.heroTitle')}</h2>
-                    <p className="text-slate-400 text-xs leading-relaxed" dangerouslySetInnerHTML={{ __html: t('privacyPolicy.heroDesc') }}></p>
-                    <p className="text-slate-500 text-[10px] mt-3 font-medium">{t('privacyPolicy.lastUpdated')}</p>
+                    <h2 className="text-foreground font-bold text-base mb-1">{t('privacyPolicy.heroTitle')}</h2>
+                    <p className="text-muted-foreground text-xs leading-relaxed" dangerouslySetInnerHTML={{ __html: t('privacyPolicy.heroDesc') }}></p>
+                    <p className="text-muted-foreground text-[10px] mt-3 font-medium">{t('privacyPolicy.lastUpdated')}</p>
                 </motion.div>
 
                 {/* Section 1 */}
@@ -120,12 +143,12 @@ export default function PrivacyPolicy() {
                     <p>{t('privacyPolicy.sec4Desc')}</p>
                     <div className="space-y-2 mt-1">
                         <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-white text-[11px] font-bold">{t('privacyPolicy.gaTitle')}</p>
-                            <p className="text-slate-500 text-[10px]">{t('privacyPolicy.gaDesc')}</p>
+                            <p className="text-foreground text-[11px] font-bold">{t('privacyPolicy.gaTitle')}</p>
+                            <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.gaDesc')}</p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-white text-[11px] font-bold">{t('privacyPolicy.vercelTitle')}</p>
-                            <p className="text-slate-500 text-[10px]">{t('privacyPolicy.vercelDesc')}</p>
+                            <p className="text-foreground text-[11px] font-bold">{t('privacyPolicy.vercelTitle')}</p>
+                            <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.vercelDesc')}</p>
                         </div>
                     </div>
                     <p className="mt-1">{t('privacyPolicy.sec4End')}</p>
@@ -164,16 +187,16 @@ export default function PrivacyPolicy() {
                 <Section number={8} title={t('privacyPolicy.sec8Title')} icon={FileText}>
                     <div className="space-y-2">
                         <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-white text-[11px] font-bold">{t('privacyPolicy.accessTitle')}</p>
-                            <p className="text-slate-500 text-[10px]">{t('privacyPolicy.accessDesc')}</p>
+                            <p className="text-foreground text-[11px] font-bold">{t('privacyPolicy.accessTitle')}</p>
+                            <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.accessDesc')}</p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-white text-[11px] font-bold">{t('privacyPolicy.deleteTitle')}</p>
-                            <p className="text-slate-500 text-[10px]">{t('privacyPolicy.deleteDesc')}</p>
+                            <p className="text-foreground text-[11px] font-bold">{t('privacyPolicy.deleteTitle')}</p>
+                            <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.deleteDesc')}</p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-white text-[11px] font-bold">{t('privacyPolicy.portabilityTitle')}</p>
-                            <p className="text-slate-500 text-[10px]">{t('privacyPolicy.portabilityDesc')}</p>
+                            <p className="text-foreground text-[11px] font-bold">{t('privacyPolicy.portabilityTitle')}</p>
+                            <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.portabilityDesc')}</p>
                         </div>
                     </div>
                 </Section>
@@ -203,7 +226,7 @@ export default function PrivacyPolicy() {
                 <div className="pt-2">
                     <button
                         onClick={() => navigate('/data-safety')}
-                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-dark-card border border-dark-border text-white font-bold text-xs"
+                        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-card border border-border text-foreground font-bold text-xs"
                     >
                         <Shield size={16} className="text-brand-green" />
                         {t('privacyPolicy.viewDataSafety')}
@@ -211,8 +234,8 @@ export default function PrivacyPolicy() {
                 </div>
 
                 {/* Footer */}
-                <div className="pt-6 pb-4 border-t border-dark-border text-center space-y-2">
-                    <p className="text-slate-500 text-[11px] font-semibold">{t('privacyPolicy.footerTitle')}</p>
+                <div className="pt-6 pb-4 border-t border-border text-center space-y-2">
+                    <p className="text-muted-foreground text-[11px] font-semibold">{t('privacyPolicy.footerTitle')}</p>
                     <p className="text-slate-600 text-[10px]">{t('privacyPolicy.footerMade')}</p>
                     <p className="text-slate-600 text-[10px]">&copy; {new Date().getFullYear()} FinCalix. All rights reserved.</p>
                 </div>

@@ -160,18 +160,18 @@ export default function ValidatorPage() {
     const categories = [...new Set(tests.map(t => t.category))];
 
     return (
-        <div className="min-h-dvh bg-slate-50 dark:bg-[#0F172A]">
-            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="min-h-dvh bg-slate-50 dark:bg-background">
+            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-600 dark:text-slate-400" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-card border border-slate-200 dark:border-border">
+                        <ArrowLeft size={18} className="text-slate-600 dark:text-muted-foreground" />
                     </button>
                     <div className="flex-1">
                         <div className="flex items-center gap-2">
                             <Beaker size={16} className="text-indigo-500" />
-                            <h1 className="text-base font-bold text-slate-900 dark:text-white">Financial Formula Validator</h1>
+                            <h1 className="text-base font-bold text-slate-900 dark:text-foreground">Financial Formula Validator</h1>
                         </div>
-                        <p className="text-slate-500 text-xs">Dev Tool · Internal Testing Only</p>
+                        <p className="text-muted-foreground text-xs">Dev Tool · Internal Testing Only</p>
                     </div>
                 </div>
             </div>
@@ -196,10 +196,10 @@ export default function ValidatorPage() {
                     </div>
                 </div>
 
-                <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                <div className="h-2 rounded-full bg-slate-200 dark:bg-card border-border overflow-hidden">
                     <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${(passed / tests.length) * 100}%` }} />
                 </div>
-                <p className="text-center text-xs text-slate-500">{passed}/{tests.length} tests passing ({Math.round(passed / tests.length * 100)}%)</p>
+                <p className="text-center text-xs text-muted-foreground">{passed}/{tests.length} tests passing ({Math.round(passed / tests.length * 100)}%)</p>
 
                 {/* Tests by Category */}
                 {categories.map(cat => {
@@ -218,30 +218,30 @@ export default function ValidatorPage() {
                                             'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20'
                                         }`}>
                                             <div className="flex items-center justify-between mb-2">
-                                                <p className="text-sm font-semibold text-slate-900 dark:text-white">{test.name}</p>
+                                                <p className="text-sm font-semibold text-slate-900 dark:text-foreground">{test.name}</p>
                                                 {status === 'pass' ? <CheckCircle size={16} className="text-emerald-500" /> :
                                                  status === 'warn' ? <AlertCircle size={16} className="text-amber-500" /> :
                                                  <XCircle size={16} className="text-red-500" />}
                                             </div>
                                             <div className="grid grid-cols-3 gap-2 text-xs">
                                                 <div>
-                                                    <p className="text-slate-500">Expected</p>
-                                                    <p className="font-mono font-bold text-slate-900 dark:text-white">₹{test.expected.toLocaleString('en-IN')}</p>
+                                                    <p className="text-muted-foreground">Expected</p>
+                                                    <p className="font-mono font-bold text-slate-900 dark:text-foreground">₹{test.expected.toLocaleString('en-IN')}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-slate-500">Actual</p>
+                                                    <p className="text-muted-foreground">Actual</p>
                                                     <p className={`font-mono font-bold ${status === 'pass' ? 'text-emerald-600' : status === 'warn' ? 'text-amber-600' : 'text-red-600'}`}>
                                                         ₹{test.actual.toLocaleString('en-IN')}
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-slate-500">Δ Diff</p>
+                                                    <p className="text-muted-foreground">Δ Diff</p>
                                                     <p className={`font-mono font-bold ${status === 'pass' ? 'text-emerald-600' : status === 'warn' ? 'text-amber-600' : 'text-red-600'}`}>
                                                         {diff}%
                                                     </p>
                                                 </div>
                                             </div>
-                                            <p className="text-[10px] text-slate-400 mt-1">Tolerance: ±{test.tolerance}%</p>
+                                            <p className="text-[10px] text-muted-foreground mt-1">Tolerance: ±{test.tolerance}%</p>
                                         </div>
                                     );
                                 })}

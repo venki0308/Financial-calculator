@@ -51,12 +51,12 @@ export default function CalculatorInfoModal({ isOpen, onClose, calculatorTitle }
 
     return (
         <BottomSheet isOpen={isOpen} onClose={onClose} title="About This Calculator">
-            <div className="p-4 bg-slate-50 dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl">
+            <div className="p-4 bg-slate-50 dark:bg-card border border-slate-200 dark:border-border rounded-xl">
                 <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
                     {infoText}
                 </p>
                 <div className="mt-4 p-3 bg-brand-blue/5 border border-brand-blue/15 rounded-lg">
-                    <p className="text-slate-500 text-xs italic">
+                    <p className="text-muted-foreground text-xs italic">
                         Note: Projections are illustrative. Please consult a financial advisor for official advice.
                     </p>
                 </div>

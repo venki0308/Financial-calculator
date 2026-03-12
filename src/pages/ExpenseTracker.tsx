@@ -42,25 +42,25 @@ export default function ExpenseTracker() {
     };
 
     return (
-        <div className="min-h-dvh bg-slate-50 dark:bg-[#0F172A] animate-fade-in">
+        <div className="min-h-dvh bg-slate-50 dark:bg-background animate-fade-in">
 
             {/* ── Sticky header with safe-area-inset-top ── */}
             <div
-                className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10"
+                className="sticky top-0 z-30 bg-slate-50/95 dark:bg-background/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10"
                 style={{ paddingTop: 'calc(env(safe-area-inset-top, 24px) + 0px)' }}
             >
                 <div className="flex items-center gap-4 px-4 pt-3 pb-2">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white"
+                        className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-foreground"
                     >
                         <ArrowLeft size={18} />
                     </button>
                     <div className="flex-1">
-                        <h1 className="text-slate-900 dark:text-white font-bold text-base">
+                        <h1 className="text-slate-900 dark:text-foreground font-bold text-base">
                             {t('expenses.title')}
                         </h1>
-                        <p className="text-slate-400 text-[11px]">{t(TAB_SUBTITLES[activeTab])}</p>
+                        <p className="text-muted-foreground text-[11px]">{t(TAB_SUBTITLES[activeTab])}</p>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-brand-purple/10 flex items-center justify-center text-xl">💰</div>
                 </div>
@@ -76,7 +76,7 @@ export default function ExpenseTracker() {
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl transition-all text-center ${isActive
                                     ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/30'
-                                    : 'text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-white/5'
+                                    : 'text-muted-foreground dark:text-muted-foreground hover:bg-white dark:hover:bg-white/5'
                                     }`}
                             >
                                 <Icon size={16} />

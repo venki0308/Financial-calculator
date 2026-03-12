@@ -151,14 +151,14 @@ export default function DailyTab() {
             <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setShowAddForm(true)}
-                className="w-full bg-gradient-to-r from-brand-purple to-purple-700 hover:from-purple-700 hover:to-brand-purple text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/30"
+                className="w-full bg-gradient-to-r from-brand-purple to-purple-700 hover:from-purple-700 hover:to-brand-purple text-foreground font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/30"
             >
                 <Plus size={20} /> {t('expenses.addNewExpense')}
             </motion.button>
 
             {/* Quick Add Shortcuts */}
             <div>
-                <p className="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider mb-2 flex justify-between">
+                <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-2 flex justify-between">
                     {t('expenses.quickAddLabel')}
                     <span className="text-[9px] lowercase font-normal opacity-60">(long press to edit)</span>
                 </p>
@@ -197,22 +197,22 @@ export default function DailyTab() {
                     >
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-                            className="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-3xl p-6"
+                            className="w-full max-w-sm bg-background border border-slate-700 rounded-3xl p-6"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <h3 className="text-white font-bold text-lg mb-4">Edit Quick Add</h3>
+                            <h3 className="text-foreground font-bold text-lg mb-4">Edit Quick Add</h3>
                             <div className="space-y-3 mb-6">
                                 <div>
-                                    <label className="text-slate-400 text-xs mb-1 block">Label</label>
-                                    <input type="text" value={qaLabel} onChange={(e) => setQaLabel(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-purple" />
+                                    <label className="text-muted-foreground text-xs mb-1 block">Label</label>
+                                    <input type="text" value={qaLabel} onChange={(e) => setQaLabel(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple" />
                                 </div>
                                 <div>
-                                    <label className="text-slate-400 text-xs mb-1 block">Amount (₹)</label>
-                                    <input type="number" value={qaAmount} onChange={(e) => setQaAmount(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-purple" />
+                                    <label className="text-muted-foreground text-xs mb-1 block">Amount (₹)</label>
+                                    <input type="number" value={qaAmount} onChange={(e) => setQaAmount(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple" />
                                 </div>
                                 <div>
-                                    <label className="text-slate-400 text-xs mb-1 block">Emoji</label>
-                                    <input type="text" maxLength={2} value={qaEmoji} onChange={(e) => setQaEmoji(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-purple" />
+                                    <label className="text-muted-foreground text-xs mb-1 block">Emoji</label>
+                                    <input type="text" maxLength={2} value={qaEmoji} onChange={(e) => setQaEmoji(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple" />
                                 </div>
                             </div>
                             <div className="flex gap-3">
@@ -227,7 +227,7 @@ export default function DailyTab() {
             {/* Date Navigator */}
             <div className="flex items-center gap-2">
                 <button onClick={() => shiftDate(-1)} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10">
-                    <ChevronLeft size={18} className="text-slate-500" />
+                    <ChevronLeft size={18} className="text-muted-foreground" />
                 </button>
                 <div className="relative flex-1">
                     <input
@@ -235,12 +235,12 @@ export default function DailyTab() {
                         value={selectedDate}
                         max={toDateInput(new Date())}
                         onChange={(e) => setSelectedDate(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-white text-sm font-semibold outline-none"
+                        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-foreground text-sm font-semibold outline-none"
                     />
                     {!isToday && <div className="absolute top-2 right-4 w-2 h-2 rounded-full border-2 border-white dark:border-slate-800 bg-brand-purple" />}
                 </div>
                 <button onClick={() => shiftDate(1)} disabled={isToday} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 disabled:opacity-30">
-                    <ChevronRight size={18} className="text-slate-500" />
+                    <ChevronRight size={18} className="text-muted-foreground" />
                 </button>
             </div>
 
@@ -248,11 +248,11 @@ export default function DailyTab() {
             <div className="bg-gradient-to-r from-brand-purple/10 to-blue-600/10 border border-brand-purple/20 rounded-2xl p-4 flex flex-col gap-3">
                 <div className="flex justify-between items-center">
                     <div>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">
+                        <p className="text-muted-foreground dark:text-muted-foreground text-xs font-medium">
                             {isToday ? t('expenses.todaySpending') : t('expenses.selectedDaySpending')}
                         </p>
                         <p className="text-2xl font-extrabold text-brand-purple mt-0.5">₹{todayTotal.toLocaleString('en-IN')}</p>
-                        <p className="text-slate-400 text-xs mt-0.5">{dayEntries.length} {dayEntries.length === 1 ? t('expenses.transaction') : t('expenses.transactions')}</p>
+                        <p className="text-muted-foreground text-xs mt-0.5">{dayEntries.length} {dayEntries.length === 1 ? t('expenses.transaction') : t('expenses.transactions')}</p>
                     </div>
                     <div className="text-4xl">💸</div>
                 </div>
@@ -269,11 +269,11 @@ export default function DailyTab() {
 
             {/* Expenses List */}
             <div>
-                <h3 className="text-slate-900 dark:text-white font-bold text-sm mb-3">{t('expenses.expenses')}</h3>
+                <h3 className="text-slate-900 dark:text-foreground font-bold text-sm mb-3">{t('expenses.expenses')}</h3>
                 {dayEntries.length === 0 && (
                     <div className="text-center py-10 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
                         <p className="text-4xl mb-2">🌿</p>
-                        <p className="text-slate-400 text-sm">{t('expenses.noExpensesDay')}</p>
+                        <p className="text-muted-foreground text-sm">{t('expenses.noExpensesDay')}</p>
                         <button onClick={() => setShowAddForm(true)} className="mt-3 text-brand-purple text-xs font-semibold">+ {t('expenses.addExpense')}</button>
                     </div>
                 )}
@@ -282,7 +282,7 @@ export default function DailyTab() {
                         const cat = EXPENSE_CATEGORIES.find((c) => c.id === exp.categoryId);
                         return (
                             <div key={exp.id} className="relative rounded-2xl bg-red-500 overflow-hidden mb-2">
-                                <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center text-white">
+                                <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center text-foreground">
                                     <Trash2 size={20} />
                                 </div>
                                 <motion.div
@@ -296,8 +296,8 @@ export default function DailyTab() {
                                         {cat?.icon || '📌'}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-slate-800 dark:text-white text-sm font-semibold truncate">{exp.description}</p>
-                                        <p className="text-slate-400 text-[10px]">
+                                        <p className="text-slate-800 dark:text-foreground text-sm font-semibold truncate">{exp.description}</p>
+                                        <p className="text-muted-foreground text-[10px]">
                                             {t(`expenses.categories.${cat?.id || 'others'}`)} · {formatDate(exp.date)}
                                             {exp.paymentMethod && (
                                                 <span className="ml-1 px-1.5 py-0.5 bg-brand-purple/10 text-brand-purple rounded text-[9px] font-bold">{t(`expenses.paymentMethods.${exp.paymentMethod}`)}</span>
@@ -331,23 +331,23 @@ export default function DailyTab() {
                         <motion.div
                             initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }}
                             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                            className="w-full max-w-md bg-slate-900 border-t border-slate-700 rounded-t-3xl p-6 pb-10"
+                            className="w-full max-w-md bg-background border-t border-slate-700 rounded-t-3xl p-6 pb-10"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5" />
-                            <h3 className="text-white font-bold text-lg mb-4">
+                            <h3 className="text-foreground font-bold text-lg mb-4">
                                 {editingId ? t('expenses.editExpenseTitle', 'Edit Expense') : t('expenses.addExpenseTitle')}
                             </h3>
                             <div className="space-y-3">
                                 {/* Category */}
                                 <div>
-                                    <label className="text-slate-400 text-xs mb-1 block">{t('expenses.category')}</label>
+                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.category')}</label>
                                     <div className="grid grid-cols-3 gap-2">
                                         {EXPENSE_CATEGORIES.map((cat) => (
                                             <button
                                                 key={cat.id}
                                                 onClick={() => setFCategory(cat.id)}
-                                                className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fCategory === cat.id ? 'bg-brand-purple text-white' : 'bg-slate-800 text-slate-300'}`}
+                                                className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fCategory === cat.id ? 'bg-brand-purple text-white' : 'bg-card border-border text-slate-300'}`}
                                             >
                                                 {cat.icon}<br />{t(`expenses.categories.${cat.id}`).split(' ')[0]}
                                             </button>
@@ -365,32 +365,32 @@ export default function DailyTab() {
 
                                 {/* Amount */}
                                 <div>
-                                    <label className="text-slate-400 text-xs mb-1 block">{t('expenses.amountLabel')} *</label>
+                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.amountLabel')} *</label>
                                     <input
                                         type="number"
                                         value={fAmount}
                                         onChange={(e) => setFAmount(e.target.value)}
                                         placeholder="0"
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-600 text-white text-lg font-bold focus:outline-none focus:border-brand-purple"
+                                        className="w-full px-4 py-3 rounded-xl bg-card border-border border border-slate-600 text-foreground text-lg font-bold focus:outline-none focus:border-brand-purple"
                                         autoFocus
                                     />
                                 </div>
 
                                 {/* Description */}
                                 <div>
-                                    <label className="text-slate-400 text-xs mb-1 block">{t('expenses.descriptionLabel')}</label>
+                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.descriptionLabel')}</label>
                                     <input
                                         type="text"
                                         value={fDesc}
                                         onChange={(e) => setFDesc(e.target.value)}
                                         placeholder={t('expenses.descriptionPlaceholder')}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-600 text-white text-sm focus:outline-none focus:border-brand-purple"
+                                        className="w-full px-4 py-3 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple"
                                     />
                                 </div>
 
                                 {/* Payment Method */}
                                 <div>
-                                    <label className="text-slate-400 text-xs mb-2 flex items-center gap-1.5 block">
+                                    <label className="text-muted-foreground text-xs mb-2 flex items-center gap-1.5 block">
                                         <CreditCard size={12} /> {t('expenses.paymentMethodLabel')}
                                     </label>
                                     <div className="grid grid-cols-4 gap-1.5">
@@ -400,7 +400,7 @@ export default function DailyTab() {
                                                 onClick={() => setFPayment(pm.id)}
                                                 className={`p-2 rounded-xl text-center transition-all ${fPayment === pm.id
                                                     ? 'bg-brand-purple text-white'
-                                                    : 'bg-slate-800 text-slate-300'
+                                                    : 'bg-card border-border text-slate-300'
                                                     }`}
                                             >
                                                 <span className="text-base block">{pm.icon}</span>

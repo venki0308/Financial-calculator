@@ -96,8 +96,8 @@ const InputRow = memo(({ label, k, value, onChange, prefix = '₹', hint, warnin
     warning?: string;
 }) => (
     <div className="space-y-1">
-        <label className="text-slate-500 dark:text-slate-400 text-xs font-semibold">{label}</label>
-        <div className={`flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border rounded-xl px-3 py-2.5 transition-colors ${warning ? 'border-amber-400 dark:border-amber-500' : 'border-slate-200 dark:border-slate-700 focus-within:border-brand-purple'}`}>
+        <label className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold">{label}</label>
+        <div className={`flex items-center gap-2 bg-slate-50 dark:bg-card border-border border rounded-xl px-3 py-2.5 transition-colors ${warning ? 'border-amber-400 dark:border-amber-500' : 'border-slate-200 dark:border-slate-700 focus-within:border-brand-purple'}`}>
             {prefix && <span className="text-brand-purple font-bold text-sm flex-shrink-0">{prefix}</span>}
             <input
                 type="number"
@@ -105,7 +105,7 @@ const InputRow = memo(({ label, k, value, onChange, prefix = '₹', hint, warnin
                 value={value}
                 onChange={(e) => onChange(k, e.target.value)}
                 placeholder="0"
-                className="flex-1 bg-transparent text-slate-900 dark:text-white text-sm font-semibold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="flex-1 bg-transparent text-slate-900 dark:text-foreground text-sm font-semibold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
         </div>
         {warning && (
@@ -114,7 +114,7 @@ const InputRow = memo(({ label, k, value, onChange, prefix = '₹', hint, warnin
                 <p className="text-amber-600 dark:text-amber-400 text-[10px] leading-tight">{warning}</p>
             </div>
         )}
-        {hint && !warning && <p className="text-slate-400 text-[10px]">{hint}</p>}
+        {hint && !warning && <p className="text-muted-foreground text-[10px]">{hint}</p>}
     </div>
 ));
 
@@ -125,7 +125,7 @@ function CollapsibleSection({ title, children, defaultOpen = true }: { title: st
         <div>
             <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-2">
                 <span className="text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider">{title}</span>
-                {open ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
+                {open ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
             </button>
             <AnimatePresence initial={false}>
                 {open && (
@@ -426,15 +426,15 @@ export default function IncomeTaxCalculator() {
     // RENDER
     // ══════════════════════════════════════════════════════════════════════════
     return (
-        <div className="min-h-dvh bg-slate-50 dark:bg-[#0F172A]">
+        <div className="min-h-dvh bg-slate-50 dark:bg-background">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 pt-14 px-4 py-3 flex items-center gap-3">
+            <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-background/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 pt-14 px-4 py-3 flex items-center gap-3">
                 <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10">
-                    <ArrowLeft size={18} className="text-slate-700 dark:text-white" />
+                    <ArrowLeft size={18} className="text-slate-700 dark:text-foreground" />
                 </button>
                 <div className="flex-1">
-                    <h1 className="text-slate-900 dark:text-white font-bold text-base">Income Tax Calculator</h1>
-                    <p className="text-slate-400 text-[11px]">FY {fy} (AY {fy === '2026-27' ? '2027-28' : '2026-27'}) {fy === '2026-27' ? '• Union Budget 2026' : ''}</p>
+                    <h1 className="text-slate-900 dark:text-foreground font-bold text-base">Income Tax Calculator</h1>
+                    <p className="text-muted-foreground text-[11px]">FY {fy} (AY {fy === '2026-27' ? '2027-28' : '2026-27'}) {fy === '2026-27' ? '• Union Budget 2026' : ''}</p>
                 </div>
             </div>
 
@@ -445,7 +445,7 @@ export default function IncomeTaxCalculator() {
                         <motion.button
                             key={y}
                             onClick={() => setFy(y)}
-                            className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all ${fy === y ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'text-slate-400 dark:text-slate-500'}`}
+                            className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all ${fy === y ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'text-muted-foreground dark:text-muted-foreground'}`}
                         >
                             FY {y} {y === '2026-27' ? '(Current)' : ''}
                         </motion.button>
@@ -473,7 +473,7 @@ export default function IncomeTaxCalculator() {
                         <motion.button
                             key={r}
                             onClick={() => setRegime(r)}
-                            className={`flex-1 py-3 text-xs font-bold rounded-lg transition-all ${regime === r ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/30' : 'text-slate-400 dark:text-slate-500'}`}
+                            className={`flex-1 py-3 text-xs font-bold rounded-lg transition-all ${regime === r ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/30' : 'text-muted-foreground dark:text-muted-foreground'}`}
                         >
                             {r === 'new' ? 'New Regime' : 'Old Regime'}
                             <br />
@@ -484,7 +484,7 @@ export default function IncomeTaxCalculator() {
 
                 {/* Salary Input Mode Toggle */}
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mb-2">Input Mode</p>
+                    <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold mb-2">Input Mode</p>
                     <div className="grid grid-cols-2 gap-2">
                         {([
                             { key: 'monthly' as const, label: 'Monthly Salary' },
@@ -495,14 +495,14 @@ export default function IncomeTaxCalculator() {
                             <button
                                 key={m.key}
                                 onClick={() => setInputMode(m.key)}
-                                className={`py-2.5 rounded-xl text-xs font-bold transition-all ${inputMode === m.key ? 'bg-brand-purple/10 text-brand-purple border-2 border-brand-purple' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 border-2 border-transparent'}`}
+                                className={`py-2.5 rounded-xl text-xs font-bold transition-all ${inputMode === m.key ? 'bg-brand-purple/10 text-brand-purple border-2 border-brand-purple' : 'bg-slate-50 dark:bg-card border-border text-muted-foreground border-2 border-transparent'}`}
                             >
                                 <span className={`inline-block w-3 h-3 rounded-full mr-1.5 align-middle ${inputMode === m.key ? 'bg-brand-purple' : 'bg-slate-300 dark:bg-slate-600'}`} />
                                 {m.label}
                             </button>
                         ))}
                     </div>
-                    <p className="text-slate-400 text-[10px] mt-2">
+                    <p className="text-muted-foreground text-[10px] mt-2">
                         {inputMode === 'monthly' ? 'Enter monthly values. Annual = Monthly × 12' : inputMode === 'annual' ? 'Enter annual (yearly) values directly.' : inputMode === 'ctc' ? 'Enter total CTC. Auto-computes employer PF, gratuity, and in-hand salary.' : 'Enter exact payslip values (monthly earnings & deductions).'}
                     </p>
                 </div>
@@ -510,11 +510,11 @@ export default function IncomeTaxCalculator() {
                 {/* Income Inputs */}
                 {inputMode === 'ctc' ? (
                     <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
-                        <h3 className="font-bold text-slate-900 dark:text-white text-sm">CTC Details</h3>
+                        <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">CTC Details</h3>
                         <InputRow label="Annual CTC" k="ctcAmount" value={inputs.ctcAmount} onChange={set} />
                         {num('ctcAmount') > 0 && (
                             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 space-y-2">
-                                <p className="text-slate-500 text-xs font-semibold">Auto-computed Breakdown</p>
+                                <p className="text-muted-foreground text-xs font-semibold">Auto-computed Breakdown</p>
                                 {[
                                     { label: 'Basic (40%)', val: num('ctcAmount') * 0.4 },
                                     { label: 'Employer PF (12%)', val: Math.min(num('ctcAmount') * 0.4 * 0.12, 21600) },
@@ -522,8 +522,8 @@ export default function IncomeTaxCalculator() {
                                     { label: 'Gross Salary (In-hand)', val: ctcGross },
                                 ].map(r => (
                                     <div key={r.label} className={`flex justify-between ${r.label.includes('Gross') ? 'border-t border-slate-200 dark:border-white/10 pt-2 font-bold' : ''}`}>
-                                        <span className="text-slate-500 dark:text-slate-400 text-xs">{r.label}</span>
-                                        <span className={`text-xs font-semibold ${r.label.includes('Gross') ? 'text-brand-purple' : 'text-slate-700 dark:text-white'}`}>{fmt(r.val)}</span>
+                                        <span className="text-muted-foreground dark:text-muted-foreground text-xs">{r.label}</span>
+                                        <span className={`text-xs font-semibold ${r.label.includes('Gross') ? 'text-brand-purple' : 'text-slate-700 dark:text-foreground'}`}>{fmt(r.val)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -533,7 +533,7 @@ export default function IncomeTaxCalculator() {
                 ) : (
                     <>
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
-                            <h3 className="font-bold text-slate-900 dark:text-white text-sm">
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">
                                 {inputMode === 'monthly' ? 'Monthly' : inputMode === 'payslip' ? 'Payslip' : 'Annual'} Income Details
                             </h3>
                             <InputRow label="Basic Salary" k="basicSalary" value={inputs.basicSalary} onChange={set} />
@@ -567,18 +567,18 @@ export default function IncomeTaxCalculator() {
 
                 {/* Salary Summary Card */}
                 <div className="bg-gradient-to-br from-brand-purple/5 to-blue-500/5 border border-brand-purple/20 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">Salary Summary</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">Salary Summary</h3>
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                            <span className="text-slate-500 dark:text-slate-400 text-xs">Gross Annual Income</span>
-                            <span className="font-extrabold text-slate-900 dark:text-white text-base">{fmt(grossSalary)}</span>
+                            <span className="text-muted-foreground dark:text-muted-foreground text-xs">Gross Annual Income</span>
+                            <span className="font-extrabold text-slate-900 dark:text-foreground text-base">{fmt(grossSalary)}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="text-slate-500 dark:text-slate-400 text-xs">Standard Deduction</span>
+                            <span className="text-muted-foreground dark:text-muted-foreground text-xs">Standard Deduction</span>
                             <span className="font-bold text-blue-500 text-sm">-{fmt(regime === 'new' ? newStdDed : 50000)}</span>
                         </div>
                         <div className="border-t border-slate-100 dark:border-white/10 pt-2 flex justify-between items-center">
-                            <span className="text-slate-700 dark:text-white text-xs font-bold">Taxable Income</span>
+                            <span className="text-slate-700 dark:text-foreground text-xs font-bold">Taxable Income</span>
                             <span className="font-extrabold text-brand-purple text-base">{fmt(activeTaxableIncome)}</span>
                         </div>
                     </div>
@@ -606,7 +606,7 @@ export default function IncomeTaxCalculator() {
                                 <InputRow label={`Rent Paid (${inputMode === 'monthly' ? 'Monthly' : 'Annual'})`} k="rentPaid" value={inputs.rentPaid} onChange={set} />
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" checked={inputs.isMetro === 'true'} onChange={(e) => set('isMetro', e.target.checked ? 'true' : 'false')} className="w-4 h-4 accent-brand-purple" />
-                                    <span className="text-slate-600 dark:text-slate-400 text-xs">Metro city (Mumbai, Delhi, Kolkata, Chennai)</span>
+                                    <span className="text-slate-600 dark:text-muted-foreground text-xs">Metro city (Mumbai, Delhi, Kolkata, Chennai)</span>
                                 </label>
                                 <div className="bg-brand-green/10 border border-brand-green/20 rounded-xl p-3 flex justify-between">
                                     <span className="text-brand-green text-xs font-semibold">HRA Exemption</span>
@@ -618,9 +618,9 @@ export default function IncomeTaxCalculator() {
 
                         {/* Section Deductions */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-1">
-                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-2">Deductions (Old Regime)</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-2">Deductions (Old Regime)</h3>
                             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 flex justify-between items-center">
-                                <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">Standard Deduction</span>
+                                <span className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold">Standard Deduction</span>
                                 <span className="font-bold text-brand-purple text-sm">{fmt(50000)}</span>
                             </div>
 
@@ -639,7 +639,7 @@ export default function IncomeTaxCalculator() {
                             </CollapsibleSection>
 
                             <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex justify-between items-center">
-                                <span className="text-slate-600 dark:text-slate-400 text-sm font-medium">Total Deductions</span>
+                                <span className="text-slate-600 dark:text-muted-foreground text-sm font-medium">Total Deductions</span>
                                 <span className="font-extrabold text-brand-green text-base">-{fmt(oldDeductions)}</span>
                             </div>
                         </div>
@@ -653,7 +653,7 @@ export default function IncomeTaxCalculator() {
                             <Info size={18} className="text-brand-purple flex-shrink-0 mt-0.5" />
                             <div>
                                 <p className="text-brand-purple font-semibold text-sm">New Regime — FY {fy}</p>
-                                <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
+                                <p className="text-muted-foreground dark:text-muted-foreground text-xs mt-1">
                                     Standard deduction of Rs 75,000 applied automatically. No manual deductions (HRA, 80C, 80D, etc.) available in the new regime.
                                 </p>
                                 <p className="text-brand-purple text-[10px] mt-1 font-semibold">
@@ -675,11 +675,11 @@ export default function IncomeTaxCalculator() {
                             animate={{ opacity: 1, y: 0 }}
                             className={`rounded-3xl p-6 text-white shadow-xl ${activeTotalTax === 0 ? 'bg-gradient-to-br from-emerald-500 to-teal-600' : 'bg-gradient-to-br from-red-500 to-orange-600'}`}
                         >
-                            <p className="text-white/70 text-xs font-semibold uppercase tracking-wider mb-1">
+                            <p className="text-foreground/70 text-xs font-semibold uppercase tracking-wider mb-1">
                                 {regime === 'old' ? 'Old Regime' : 'New Regime'} — Total Tax
                             </p>
                             <h2 className="text-4xl font-extrabold">{activeTotalTax === 0 ? 'NIL' : fmt(activeTotalTax)}</h2>
-                            <p className="text-white/60 text-sm mt-1">
+                            <p className="text-foreground/60 text-sm mt-1">
                                 {activeTotalTax === 0 ? 'No tax payable — within exemption limit' : 'Annual Tax Liability'}
                             </p>
                             <div className="grid grid-cols-3 gap-3 mt-4">
@@ -689,8 +689,8 @@ export default function IncomeTaxCalculator() {
                                     { label: 'Taxable', value: fmt(activeTaxableIncome) },
                                 ].map((s) => (
                                     <div key={s.label} className="bg-white/10 rounded-xl p-2.5 text-center">
-                                        <p className="text-white/60 text-[9px] uppercase font-bold tracking-wider mb-0.5">{s.label}</p>
-                                        <p className="text-white font-bold text-xs">{s.value}</p>
+                                        <p className="text-foreground/60 text-[9px] uppercase font-bold tracking-wider mb-0.5">{s.label}</p>
+                                        <p className="text-foreground font-bold text-xs">{s.value}</p>
                                     </div>
                                 ))}
                             </div>
@@ -698,12 +698,12 @@ export default function IncomeTaxCalculator() {
 
                         {/* Step-by-Step Breakdown */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-2">
-                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">Step-by-Step Tax Breakdown</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">Step-by-Step Tax Breakdown</h3>
                             {[
                                 { label: 'Gross Annual Income', val: grossSalary, color: 'text-brand-green' },
                                 { label: `Less: ${regime === 'new' ? 'Standard Deduction' : 'Total Deductions'}`, val: -activeDeductions, color: 'text-blue-400' },
                                 { label: 'Taxable Income', val: activeTaxableIncome, color: 'text-brand-purple', bold: true },
-                                { label: 'Income Tax (slab-wise)', val: activeRawTax, color: 'text-slate-500' },
+                                { label: 'Income Tax (slab-wise)', val: activeRawTax, color: 'text-muted-foreground' },
                                 ...(activeRawTax !== activeAfterRebate ? [{ label: 'Less: Rebate u/s 87A', val: -(activeRawTax - activeAfterRebate), color: 'text-emerald-500' }] : []),
                                 { label: 'Income Tax (after rebate)', val: activeAfterRebate, color: 'text-red-400' },
                                 ...(activeSurcharge > 0 ? [{ label: 'Surcharge', val: activeSurcharge, color: 'text-amber-500' }] : []),
@@ -711,7 +711,7 @@ export default function IncomeTaxCalculator() {
                                 { label: 'Final Tax Liability', val: activeTotalTax, color: 'text-red-500', bold: true },
                             ].map((row) => (
                                 <div key={row.label} className={`flex justify-between items-center py-2 ${row.bold ? 'border-t border-slate-100 dark:border-white/10 mt-1' : ''}`}>
-                                    <span className={`text-slate-500 dark:text-slate-400 text-xs ${row.bold ? 'font-bold text-slate-700 dark:text-white' : ''}`}>{row.label}</span>
+                                    <span className={`text-muted-foreground dark:text-muted-foreground text-xs ${row.bold ? 'font-bold text-slate-700 dark:text-foreground' : ''}`}>{row.label}</span>
                                     <span className={`font-bold text-sm ${row.color}`}>{row.val < 0 ? '-' : ''}{fmt(Math.abs(row.val))}</span>
                                 </div>
                             ))}
@@ -720,7 +720,7 @@ export default function IncomeTaxCalculator() {
                         {/* Slab Breakdown */}
                         {activeTaxableIncome > 0 && (
                             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                                <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">Tax Slab Computation</h3>
+                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">Tax Slab Computation</h3>
                                 <div className="space-y-2">
                                     {activeSlabs.map((slab, i) => {
                                         if (activeTaxableIncome <= slab.min) return null;
@@ -730,13 +730,13 @@ export default function IncomeTaxCalculator() {
                                         return (
                                             <div key={i} className={`p-3 rounded-xl ${slab.rate === 0 ? 'bg-green-50 dark:bg-green-900/10' : slab.rate >= 25 ? 'bg-red-50 dark:bg-red-900/10' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                                                    <span className="text-xs text-slate-600 dark:text-muted-foreground font-medium">
                                                         {slab.max === Infinity ? `Above ${fmt(slab.min)}` : `${fmt(slab.min)} – ${fmt(slab.max)}`}
                                                     </span>
-                                                    <span className="text-xs font-bold text-slate-800 dark:text-white">{slab.rate}%</span>
+                                                    <span className="text-xs font-bold text-slate-800 dark:text-foreground">{slab.rate}%</span>
                                                 </div>
                                                 <div className="flex justify-between items-center mt-1">
-                                                    <span className="text-[10px] text-slate-400">On {fmt(slabAmount)}</span>
+                                                    <span className="text-[10px] text-muted-foreground">On {fmt(slabAmount)}</span>
                                                     <span className="text-xs font-bold text-brand-purple">{slab.rate === 0 ? 'Nil' : `Tax: ${fmt(slabTax)}`}</span>
                                                 </div>
                                             </div>
@@ -775,7 +775,7 @@ export default function IncomeTaxCalculator() {
 
                         {/* Regime Comparison */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-3">Old vs New Regime</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">Old vs New Regime</h3>
                             <div className="space-y-2 mb-4">
                                 {[
                                     { label: 'Old Regime', tax: oldTotalTax, better: betterRegime === 'Old' && !bothZero },
@@ -783,10 +783,10 @@ export default function IncomeTaxCalculator() {
                                 ].map((r) => (
                                     <div key={r.label} className={`flex items-center justify-between p-3 rounded-xl border-2 ${r.better ? 'border-brand-green bg-brand-green/5' : 'border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50'}`}>
                                         <div className="flex items-center gap-2">
-                                            {r.better && <span className="w-5 h-5 rounded-full bg-brand-green flex items-center justify-center text-white text-[10px] font-bold">✓</span>}
+                                            {r.better && <span className="w-5 h-5 rounded-full bg-brand-green flex items-center justify-center text-foreground text-[10px] font-bold">✓</span>}
                                             <span className="text-slate-700 dark:text-slate-300 text-sm font-medium">{r.label}</span>
                                         </div>
-                                        <span className={`font-extrabold text-sm ${r.better ? 'text-brand-green' : 'text-slate-700 dark:text-white'}`}>
+                                        <span className={`font-extrabold text-sm ${r.better ? 'text-brand-green' : 'text-slate-700 dark:text-foreground'}`}>
                                             {r.tax === 0 ? 'NIL' : fmt(r.tax)}
                                         </span>
                                     </div>
@@ -800,7 +800,7 @@ export default function IncomeTaxCalculator() {
                                         { tax: oldTotalTax, better: betterRegime === 'Old' },
                                         { tax: newTotalTax, better: betterRegime === 'New' },
                                     ].map((bar, i) => (
-                                        <div key={i} className="h-5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                        <div key={i} className="h-5 bg-slate-100 dark:bg-card border-border rounded-full overflow-hidden">
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${Math.max((bar.tax / maxTax) * 100, 3)}%` }}
@@ -814,7 +814,7 @@ export default function IncomeTaxCalculator() {
 
                             {/* Recommendation */}
                             <div className={`p-4 rounded-xl text-center ${bothZero ? 'bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-700/30' : 'bg-brand-green/10 border border-brand-green/20'}`}>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Recommended Regime</p>
+                                <p className="text-xs text-muted-foreground dark:text-muted-foreground mb-1">Recommended Regime</p>
                                 {bothZero ? (
                                     <>
                                         <p className="font-extrabold text-lg text-emerald-600 dark:text-emerald-400">NO TAX DUE</p>
@@ -825,7 +825,7 @@ export default function IncomeTaxCalculator() {
                                         <p className="font-extrabold text-lg text-brand-green">{betterRegime.toUpperCase()} REGIME</p>
                                         <p className="text-brand-green text-xs mt-1">Estimated Tax Saving: {fmt(saving)}</p>
                                         {regimeExplanation && (
-                                            <p className="text-slate-500 dark:text-slate-400 text-[10px] mt-2 leading-relaxed text-left">{regimeExplanation}</p>
+                                            <p className="text-muted-foreground dark:text-muted-foreground text-[10px] mt-2 leading-relaxed text-left">{regimeExplanation}</p>
                                         )}
                                     </>
                                 )}

@@ -33,14 +33,14 @@ export default function TermsOfService() {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] pb-10 animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
+        <div className="min-h-dvh bg-background pb-10 animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
             {/* ─── Header ─── */}
-            <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-4">
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-4">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                        <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
-                    <h1 className="text-lg font-bold text-white">Terms of Service</h1>
+                    <h1 className="text-lg font-bold text-foreground">Terms of Service</h1>
                 </div>
             </div>
 
@@ -52,7 +52,7 @@ export default function TermsOfService() {
                     className="flex items-center gap-2.5"
                 >
                     <Gavel size={16} className="text-brand-gold" />
-                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Usage Agreement</span>
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Usage Agreement</span>
                 </motion.div>
 
                 {/* ─── Sections ─── */}
@@ -66,14 +66,14 @@ export default function TermsOfService() {
                     >
                         <div className="flex items-center gap-3">
                             <span
-                                className="flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold text-white flex-shrink-0"
+                                className="flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold text-foreground flex-shrink-0"
                                 style={{ background: sec.accent }}
                             >
                                 {sec.num}
                             </span>
-                            <h2 className="text-white font-bold text-sm">{sec.title}</h2>
+                            <h2 className="text-foreground font-bold text-sm">{sec.title}</h2>
                         </div>
-                        <p className="text-slate-400 text-xs leading-relaxed pl-10">{sec.body}</p>
+                        <p className="text-muted-foreground text-xs leading-relaxed pl-10">{sec.body}</p>
 
                         {/* Divider (except after last) */}
                         {idx < sections.length - 1 && (
@@ -92,11 +92,11 @@ export default function TermsOfService() {
                     className="pt-6 space-y-4"
                 >
                     <div className="h-px bg-slate-800/80" />
-                    <p className="text-slate-500 text-xs leading-relaxed">
+                    <p className="text-muted-foreground text-xs leading-relaxed">
                         By using this app, you acknowledge and agree to the terms outlined above.
                     </p>
                     <div className="flex justify-center">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/50 text-[10px] text-slate-500 font-medium">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/50 text-[10px] text-muted-foreground font-medium">
                             Last updated · March 2026
                         </span>
                     </div>

@@ -48,17 +48,17 @@ export default function BudgetTab() {
         <div className="space-y-4 pb-6">
             {/* Monthly Income */}
             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                <label className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2 block">
+                <label className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-2 block">
                     💰 {t('expenses.monthlyIncome')}
                 </label>
-                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 focus-within:border-brand-purple transition-colors">
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 focus-within:border-brand-purple transition-colors">
                     <span className="text-brand-purple font-bold text-lg">₹</span>
                     <input
                         type="number"
                         value={monthlyIncome || ''}
                         onChange={(e) => setMonthlyIncome(Number(e.target.value))}
                         placeholder="0"
-                        className="flex-1 bg-transparent text-slate-900 dark:text-white text-lg font-bold outline-none"
+                        className="flex-1 bg-transparent text-slate-900 dark:text-foreground text-lg font-bold outline-none"
                     />
                 </div>
             </div>
@@ -70,12 +70,12 @@ export default function BudgetTab() {
                     className="w-full flex items-center justify-between p-4"
                 >
                     <div>
-                        <p className="font-bold text-slate-900 dark:text-white text-sm text-left">{t('expenses.fixedExpenses')}</p>
-                        <p className="text-slate-400 text-xs mt-0.5 text-left">{t('expenses.fixedExpensesSubtitle')}</p>
+                        <p className="font-bold text-slate-900 dark:text-foreground text-sm text-left">{t('expenses.fixedExpenses')}</p>
+                        <p className="text-muted-foreground text-xs mt-0.5 text-left">{t('expenses.fixedExpensesSubtitle')}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-brand-purple font-bold text-sm">₹{totalFixed.toLocaleString('en-IN')}</span>
-                        {showFixed ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                        {showFixed ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                     </div>
                 </button>
 
@@ -93,14 +93,14 @@ export default function BudgetTab() {
                                         <span className="text-xl w-8 text-center">{field.icon}</span>
                                         <div className="flex-1">
                                             <p className="text-slate-700 dark:text-slate-300 text-xs font-medium mb-1">{t(`expenses.${field.key}`)}</p>
-                                            <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2">
-                                                <span className="text-slate-400 text-sm">₹</span>
+                                            <div className="flex items-center gap-1 bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2">
+                                                <span className="text-muted-foreground text-sm">₹</span>
                                                 <input
                                                     type="number"
                                                     value={fixedExpenses[field.key] || ''}
                                                     onChange={(e) => setFixedExpenses({ [field.key]: Number(e.target.value) })}
                                                     placeholder="0"
-                                                    className="flex-1 bg-transparent text-slate-900 dark:text-white text-sm font-semibold outline-none"
+                                                    className="flex-1 bg-transparent text-slate-900 dark:text-foreground text-sm font-semibold outline-none"
                                                 />
                                             </div>
                                         </div>
@@ -113,7 +113,7 @@ export default function BudgetTab() {
                                         <span className="text-xl w-8">📋</span>
                                         <div className="flex-1">
                                             <p className="text-slate-700 dark:text-slate-300 text-xs font-medium mb-1">{o.label}</p>
-                                            <p className="text-sm font-semibold text-slate-700 dark:text-white">₹{o.amount.toLocaleString('en-IN')}</p>
+                                            <p className="text-sm font-semibold text-slate-700 dark:text-foreground">₹{o.amount.toLocaleString('en-IN')}</p>
                                         </div>
                                         <button onClick={() => removeCustomFixed(o.id)} className="text-red-400">
                                             <Trash2 size={14} />
@@ -129,17 +129,17 @@ export default function BudgetTab() {
                                             value={newFixedLabel}
                                             onChange={(e) => setNewFixedLabel(e.target.value)}
                                             placeholder="Label (e.g. Gym)"
-                                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none text-slate-900 dark:text-white"
+                                            className="w-full px-3 py-2 bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none text-slate-900 dark:text-foreground"
                                         />
                                         <input
                                             type="number"
                                             value={newFixedAmount}
                                             onChange={(e) => setNewFixedAmount(e.target.value)}
                                             placeholder="Amount (₹)"
-                                            className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none text-slate-900 dark:text-white"
+                                            className="w-full px-3 py-2 bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none text-slate-900 dark:text-foreground"
                                         />
                                         <div className="flex gap-2">
-                                            <button onClick={() => setShowAddFixed(false)} className="flex-1 py-2 rounded-lg text-slate-500 text-sm font-medium bg-slate-100 dark:bg-slate-700">{t('common.cancel')}</button>
+                                            <button onClick={() => setShowAddFixed(false)} className="flex-1 py-2 rounded-lg text-muted-foreground text-sm font-medium bg-slate-100 dark:bg-slate-700">{t('common.cancel')}</button>
                                             <button
                                                 onClick={() => { if (newFixedLabel && newFixedAmount) { addCustomFixed(newFixedLabel, Number(newFixedAmount)); setNewFixedLabel(''); setNewFixedAmount(''); setShowAddFixed(false); } }}
                                                 className="flex-1 py-2 rounded-lg bg-brand-purple text-white text-sm font-bold"
@@ -167,12 +167,12 @@ export default function BudgetTab() {
                     className="w-full flex items-center justify-between p-4"
                 >
                     <div>
-                        <p className="font-bold text-slate-900 dark:text-white text-sm text-left">{t('expenses.categoryBudgetLimits')}</p>
-                        <p className="text-slate-400 text-xs mt-0.5 text-left">{t('expenses.categoryBudgetSubtitle')}</p>
+                        <p className="font-bold text-slate-900 dark:text-foreground text-sm text-left">{t('expenses.categoryBudgetLimits')}</p>
+                        <p className="text-muted-foreground text-xs mt-0.5 text-left">{t('expenses.categoryBudgetSubtitle')}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-brand-green font-bold text-sm">₹{totalCategoryBudgets.toLocaleString('en-IN')}</span>
-                        {showCategories ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                        {showCategories ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                     </div>
                 </button>
 
@@ -195,14 +195,14 @@ export default function BudgetTab() {
                                                     <span className="text-xl w-6 text-center">{cat.icon}</span>
                                                     <p className="text-slate-700 dark:text-slate-300 text-xs font-medium">{t(`expenses.categories.${cat.id}`)}</p>
                                                 </div>
-                                                <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 flex items-center min-w-[80px]">
-                                                    <span className="text-slate-400 text-xs px-1">₹</span>
+                                                <div className="bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 flex items-center min-w-[80px]">
+                                                    <span className="text-muted-foreground text-xs px-1">₹</span>
                                                     <input
                                                         type="number"
                                                         value={limit || ''}
                                                         onChange={(e) => setCategoryBudgets({ [key]: Number(e.target.value) })}
                                                         placeholder="0"
-                                                        className="w-full bg-transparent text-slate-900 dark:text-white text-xs font-bold outline-none text-right placeholder:text-slate-400"
+                                                        className="w-full bg-transparent text-slate-900 dark:text-foreground text-xs font-bold outline-none text-right placeholder:text-muted-foreground"
                                                     />
                                                 </div>
                                             </div>
@@ -228,7 +228,7 @@ export default function BudgetTab() {
 
             {/* Summary */}
             <div className="bg-gradient-to-br from-brand-purple/10 to-blue-600/10 border border-brand-purple/20 rounded-2xl p-4 flex flex-col items-center">
-                <h3 className="w-full font-bold text-slate-900 dark:text-white text-sm mb-4">{t('expenses.monthlySummary')}</h3>
+                <h3 className="w-full font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.monthlySummary')}</h3>
                 <div className="flex items-center w-full gap-4">
                     <div className="w-24 h-24 flex-shrink-0 relative">
                         <Doughnut 
@@ -247,8 +247,8 @@ export default function BudgetTab() {
                             }}
                         />
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                            <span className="text-[10px] text-slate-500 uppercase font-bold">Total</span>
-                            <span className="text-xs font-bold text-slate-800 dark:text-white">₹{monthlyIncome.toLocaleString('en-IN')}</span>
+                            <span className="text-[10px] text-muted-foreground uppercase font-bold">Total</span>
+                            <span className="text-xs font-bold text-slate-800 dark:text-foreground">₹{monthlyIncome.toLocaleString('en-IN')}</span>
                         </div>
                     </div>
                     <div className="flex flex-col gap-2 flex-1 pt-1 border-brand-purple/20">

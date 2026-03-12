@@ -9,7 +9,7 @@ import {
 } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
@@ -133,22 +133,22 @@ export default function FDCalculator() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
-            <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-dark-border">
+        <div className="min-h-dvh bg-background animate-fade-in">
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border"><ArrowLeft size={18} className="text-slate-400" /></button>
-                    <div><h1 className="text-lg font-bold text-white">FD Calculator</h1><p className="text-slate-500 text-xs">Fixed Deposit returns</p></div>
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border"><ArrowLeft size={18} className="text-muted-foreground" /></button>
+                    <div><h1 className="text-lg font-bold text-foreground">FD Calculator</h1><p className="text-muted-foreground text-xs">Fixed Deposit returns</p></div>
                 </div>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent module="investment" />
 
             <div className="px-4 pb-28 pt-4 space-y-5">
                 {/* Compounding Tabs */}
-                <div className="flex rounded-2xl bg-dark-card border border-dark-border p-1">
+                <div className="flex rounded-2xl bg-card border border-border p-1">
                     {([{ label: 'Quarterly', val: 4 }, { label: 'Monthly', val: 12 }, { label: 'Yearly', val: 1 }] as const).map((opt) => (
                         <button key={opt.val} onClick={() => setCompounding(opt.val)}
-                            className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${compounding === opt.val ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20' : 'text-slate-500'}`}>
+                            className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${compounding === opt.val ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20' : 'text-muted-foreground'}`}>
                             {opt.label}
                         </button>
                     ))}
@@ -163,17 +163,17 @@ export default function FDCalculator() {
                 {/* Result Card */}
                 <motion.div layout className="p-5 rounded-2xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-purple-500/20">
                     <p className="text-purple-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">Maturity Amount</p>
-                    <motion.p key={result.amount} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-3xl font-black text-white mb-4">
+                    <motion.p key={result.amount} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-3xl font-black text-foreground mb-4">
                         {formatINR(result.amount)}
                     </motion.p>
 
                     <div className="grid grid-cols-2 gap-3 mb-4">
                         <div className="p-2.5 rounded-xl bg-slate-800/50 text-center">
-                            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-1">Invested</p>
-                            <p className="text-white font-bold text-sm">{formatINR(principal)}</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Invested</p>
+                            <p className="text-foreground font-bold text-sm">{formatINR(principal)}</p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-800/50 text-center">
-                            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-1">Interest</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Interest</p>
                             <p className="text-brand-green font-bold text-sm">{formatINR(result.interest)}</p>
                         </div>
                     </div>
@@ -194,32 +194,32 @@ export default function FDCalculator() {
                     <div className="flex items-start gap-3">
                         <TrendingUp size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
                         <div>
-                            <h3 className="text-white font-bold text-xs">Inflation-Adjusted Return</h3>
-                            <p className="text-slate-400 text-[11px] mt-1">After accounting for ~{inflationAdj.inflation}% inflation:</p>
+                            <h3 className="text-foreground font-bold text-xs">Inflation-Adjusted Return</h3>
+                            <p className="text-muted-foreground text-[11px] mt-1">After accounting for ~{inflationAdj.inflation}% inflation:</p>
                             <div className="grid grid-cols-2 gap-2 mt-2">
-                                <div><p className="text-slate-500 text-[9px] uppercase font-bold">Nominal Return</p><p className="text-white font-bold text-xs">{inflationAdj.nominalReturn}%</p></div>
-                                <div><p className="text-slate-500 text-[9px] uppercase font-bold">Real Return</p><p className={`font-bold text-xs ${Number(inflationAdj.realReturn) > 0 ? 'text-brand-green' : 'text-red-400'}`}>{inflationAdj.realReturn}%</p></div>
-                                <div className="col-span-2"><p className="text-slate-500 text-[9px] uppercase font-bold">Real Value (Today's ₹)</p><p className="text-amber-400 font-bold text-sm">{formatINR(inflationAdj.realValue)}</p></div>
+                                <div><p className="text-muted-foreground text-[9px] uppercase font-bold">Nominal Return</p><p className="text-foreground font-bold text-xs">{inflationAdj.nominalReturn}%</p></div>
+                                <div><p className="text-muted-foreground text-[9px] uppercase font-bold">Real Return</p><p className={`font-bold text-xs ${Number(inflationAdj.realReturn) > 0 ? 'text-brand-green' : 'text-red-400'}`}>{inflationAdj.realReturn}%</p></div>
+                                <div className="col-span-2"><p className="text-muted-foreground text-[9px] uppercase font-bold">Real Value (Today's ₹)</p><p className="text-amber-400 font-bold text-sm">{formatINR(inflationAdj.realValue)}</p></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Compounding Comparison */}
-                <button onClick={() => setShowCompare(!showCompare)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-dark-card border border-dark-border text-white font-bold text-sm">
-                    <span className="flex items-center gap-2"><Info size={16} className="text-slate-400" /> Compounding Comparison</span>
-                    {showCompare ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                <button onClick={() => setShowCompare(!showCompare)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
+                    <span className="flex items-center gap-2"><Info size={16} className="text-muted-foreground" /> Compounding Comparison</span>
+                    {showCompare ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
                     {showCompare && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                            <div className="rounded-2xl bg-dark-card border border-dark-border overflow-hidden">
-                                <div className="grid grid-cols-3 text-[9px] font-bold text-slate-500 uppercase p-2 bg-slate-800/50"><span>Frequency</span><span>Interest</span><span>Maturity</span></div>
+                            <div className="rounded-2xl bg-card border border-border overflow-hidden">
+                                <div className="grid grid-cols-3 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-800/50"><span>Frequency</span><span>Interest</span><span>Maturity</span></div>
                                 {compoundingComparison.map((c, i) => (
-                                    <div key={i} className={`grid grid-cols-3 text-[11px] p-2.5 ${c.freq === compounding ? 'bg-brand-purple/10 border-l-2 border-brand-purple' : i % 2 === 0 ? 'bg-dark-card' : 'bg-slate-800/20'}`}>
+                                    <div key={i} className={`grid grid-cols-3 text-[11px] p-2.5 ${c.freq === compounding ? 'bg-brand-purple/10 border-l-2 border-brand-purple' : i % 2 === 0 ? 'bg-card' : 'bg-slate-800/20'}`}>
                                         <span className={`${c.freq === compounding ? 'text-brand-purple font-bold' : 'text-slate-300'}`}>{c.label}</span>
                                         <span className="text-brand-green">{formatINR(c.interest)}</span>
-                                        <span className="text-white font-bold">{formatINR(c.maturity)}</span>
+                                        <span className="text-foreground font-bold">{formatINR(c.maturity)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -228,14 +228,14 @@ export default function FDCalculator() {
                 </AnimatePresence>
 
                 {/* Growth Chart */}
-                <button onClick={() => setShowGrowth(!showGrowth)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-dark-card border border-dark-border text-white font-bold text-sm">
-                    <span className="flex items-center gap-2"><TrendingUp size={16} className="text-slate-400" /> Maturity Growth Chart</span>
-                    {showGrowth ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                <button onClick={() => setShowGrowth(!showGrowth)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
+                    <span className="flex items-center gap-2"><TrendingUp size={16} className="text-muted-foreground" /> Maturity Growth Chart</span>
+                    {showGrowth ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
                     {showGrowth && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                            <div className="p-4 rounded-2xl bg-dark-card border border-dark-border">
+                            <div className="p-4 rounded-2xl bg-card border border-border">
                                 <div className="h-56">
                                     <Bar data={growthBarData} options={{
                                         responsive: true, maintainAspectRatio: false,
@@ -267,8 +267,8 @@ export default function FDCalculator() {
 
                 {/* Export & Share */}
                 <div className="grid grid-cols-3 gap-3">
-                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium"><Download size={16} /> PDF</button>
-                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium"><Download size={16} /> Excel</button>
+                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> PDF</button>
+                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> Excel</button>
                     <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-[10px] font-bold"><Share2 size={16} /> Share</button>
                 </div>
 

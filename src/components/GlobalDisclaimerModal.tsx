@@ -90,7 +90,7 @@ export default function GlobalDisclaimerModal() {
                 {/* Accept Button */}
                 <button
                     onClick={handleAccept}
-                    className="w-full py-3 rounded-xl font-bold text-white text-sm mt-4 transition-all active:scale-[0.97]"
+                    className="w-full py-3 rounded-xl font-bold text-foreground text-sm mt-4 transition-all active:scale-[0.97]"
                     style={{ backgroundColor: '#7C3AED' }}
                 >
                     {t('globalDisclaimer.button', 'I Understand, Continue')}

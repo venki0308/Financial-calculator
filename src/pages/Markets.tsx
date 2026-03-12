@@ -62,19 +62,19 @@ export default function Markets() {
     return (
         <div className="px-4 pt-14 animate-fade-in">
             <div className="flex items-start justify-between mb-2">
-                <div><h1 className="text-2xl font-bold text-white">Metal Prices</h1><p className="text-slate-500 text-sm mt-1">Gold, Silver, Copper & Bronze</p></div>
-                <button className="p-2.5 rounded-xl bg-dark-card border border-dark-border"><RefreshCcw size={18} className="text-slate-400" /></button>
+                <div><h1 className="text-2xl font-bold text-foreground">Metal Prices</h1><p className="text-muted-foreground text-sm mt-1">Gold, Silver, Copper & Bronze</p></div>
+                <button className="p-2.5 rounded-xl bg-card border border-border"><RefreshCcw size={18} className="text-muted-foreground" /></button>
             </div>
             <div className="flex items-center gap-2 mb-6">
-                <span className="w-2 h-2 bg-brand-green rounded-full animate-pulse" /><span className="text-slate-500 text-xs">Live</span>
+                <span className="w-2 h-2 bg-brand-green rounded-full animate-pulse" /><span className="text-muted-foreground text-xs">Live</span>
                 <span className="text-slate-600 text-xs ml-auto">Updated {now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
 
             {/* Metal Cards */}
             <div className="space-y-3 mb-6">
                 {metals.map((m) => (
-                    <div key={m.name} className="flex items-center justify-between p-4 rounded-2xl bg-dark-card border border-dark-border">
-                        <div><p className="text-xs text-slate-400">{m.name}</p><p className="text-lg font-bold text-white mt-0.5">₹{m.price.toLocaleString('en-IN')}</p></div>
+                    <div key={m.name} className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border">
+                        <div><p className="text-xs text-muted-foreground">{m.name}</p><p className="text-lg font-bold text-foreground mt-0.5">₹{m.price.toLocaleString('en-IN')}</p></div>
                         <div className={`flex items-center gap-1 ${m.up ? 'text-brand-green' : 'text-brand-red'}`}>
                             {m.up ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                             <span className="text-sm font-semibold">{m.change > 0 ? '+' : ''}{m.change}%</span>
@@ -84,15 +84,15 @@ export default function Markets() {
             </div>
 
             {/* Chart */}
-            <div className="p-5 rounded-2xl bg-dark-card border border-dark-border mb-6">
+            <div className="p-5 rounded-2xl bg-card border border-border mb-6">
                 <div className="flex items-start justify-between mb-1">
-                    <div><h2 className="text-white font-semibold">Gold Price</h2><p className="text-slate-500 text-xs mt-0.5">10 grams, 24K</p></div>
-                    <div className="text-right"><p className="text-white font-bold text-lg">₹62,450</p><p className="text-brand-green text-xs font-medium">+0.45%</p></div>
+                    <div><h2 className="text-foreground font-semibold">Gold Price</h2><p className="text-muted-foreground text-xs mt-0.5">10 grams, 24K</p></div>
+                    <div className="text-right"><p className="text-foreground font-bold text-lg">₹62,450</p><p className="text-brand-green text-xs font-medium">+0.45%</p></div>
                 </div>
                 <div className="flex gap-1.5 my-4">
                     {timeframes.map((t) => (
                         <button key={t} onClick={() => setTf(t)}
-                            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${tf === t ? 'bg-brand-green text-white' : 'bg-[#0F172A] text-slate-500'}`}>{t}</button>
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${tf === t ? 'bg-brand-green text-white' : 'bg-background text-muted-foreground'}`}>{t}</button>
                     ))}
                 </div>
                 <div className="h-48"><Line data={chartData} options={chartOpts} /></div>

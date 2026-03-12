@@ -9,7 +9,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import { formatINR, calculateSIP } from '../utils/calculations';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import { AnalyticsService } from '../lib/analytics';
 import { exportComparisonPDF, exportSIPComparisonPDF, exportFDComparisonPDF } from '../utils/exportUtils';
 
@@ -166,20 +166,20 @@ export default function CompareCalculator() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
-            <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-dark-border">
+        <div className="min-h-dvh bg-background animate-fade-in">
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                        <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-white">Compare Scenarios</h1>
-                        <p className="text-slate-500 text-xs">Side-by-side financial comparison</p>
+                        <h1 className="text-lg font-bold text-foreground">Compare Scenarios</h1>
+                        <p className="text-muted-foreground text-xs">Side-by-side financial comparison</p>
                     </div>
                 </div>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent module="investment" />
 
             <div className="px-4 pb-28 pt-4">
                 {/* Type Selector */}
@@ -192,7 +192,7 @@ export default function CompareCalculator() {
                             className={`flex-1 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                                 selectedType === tp.key
                                     ? `bg-gradient-to-br ${tp.gradient} text-white shadow-lg`
-                                    : 'bg-dark-card border border-dark-border text-slate-400'
+                                    : 'bg-card border border-border text-muted-foreground'
                             }`}
                         >
                             <tp.icon size={14} />
@@ -285,7 +285,7 @@ export default function CompareCalculator() {
 
                 {/* Result Comparison Cards */}
                 <div className="grid grid-cols-2 gap-3 mb-5">
-                    <motion.div className={`p-4 rounded-2xl border ${winner === 'A' ? 'bg-brand-green/5 border-brand-green/30' : 'bg-dark-card border-dark-border'}`} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+                    <motion.div className={`p-4 rounded-2xl border ${winner === 'A' ? 'bg-brand-green/5 border-brand-green/30' : 'bg-card border-border'}`} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
                         <p className="text-blue-400 text-[10px] font-bold uppercase mb-3">Scenario A</p>
                         {selectedType === 'emi' && (
                             <div className="space-y-2">
@@ -310,7 +310,7 @@ export default function CompareCalculator() {
                         {winner === 'A' && <p className="text-brand-green text-[10px] font-bold mt-2">★ Better</p>}
                     </motion.div>
 
-                    <motion.div className={`p-4 rounded-2xl border ${winner === 'B' ? 'bg-brand-green/5 border-brand-green/30' : 'bg-dark-card border-dark-border'}`} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
+                    <motion.div className={`p-4 rounded-2xl border ${winner === 'B' ? 'bg-brand-green/5 border-brand-green/30' : 'bg-card border-border'}`} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
                         <p className="text-amber-400 text-[10px] font-bold uppercase mb-3">Scenario B</p>
                         {selectedType === 'emi' && (
                             <div className="space-y-2">
@@ -338,8 +338,8 @@ export default function CompareCalculator() {
 
                 {/* EMI Difference Summary (only for EMI mode) */}
                 {selectedType === 'emi' && (
-                    <div className="p-4 rounded-2xl bg-dark-card border border-dark-border mb-5">
-                        <h3 className="text-white font-bold text-sm mb-3">📊 Detailed Comparison</h3>
+                    <div className="p-4 rounded-2xl bg-card border border-border mb-5">
+                        <h3 className="text-foreground font-bold text-sm mb-3">📊 Detailed Comparison</h3>
                         <div className="space-y-2.5">
                             <CompareRow label="Monthly EMI Difference" value={formatINR(Math.abs(emiResultA.emi - emiResultB.emi))} />
                             <CompareRow label="Total Interest Savings" value={formatINR(Math.abs(emiResultA.totalInterest - emiResultB.totalInterest))} highlight />
@@ -349,8 +349,8 @@ export default function CompareCalculator() {
                 )}
 
                 {/* Visual Bar Chart */}
-                <div className="p-4 rounded-2xl bg-dark-card border border-dark-border mb-5">
-                    <h3 className="text-white font-bold text-sm mb-4">Visual Comparison</h3>
+                <div className="p-4 rounded-2xl bg-card border border-border mb-5">
+                    <h3 className="text-foreground font-bold text-sm mb-4">Visual Comparison</h3>
                     <div className="h-52">
                         <Bar
                             ref={chartRef}
@@ -369,8 +369,8 @@ export default function CompareCalculator() {
                 </div>
 
                 {/* Animated Bar Comparison */}
-                <div className="p-4 rounded-2xl bg-dark-card border border-dark-border mb-5">
-                    <h3 className="text-white font-bold text-sm mb-4">Head-to-Head</h3>
+                <div className="p-4 rounded-2xl bg-card border border-border mb-5">
+                    <h3 className="text-foreground font-bold text-sm mb-4">Head-to-Head</h3>
                     {selectedType === 'emi' && (
                         <div className="space-y-4">
                             <CompareBar labelA="A EMI" labelB="B EMI" valA={emiResultA.emi} valB={emiResultB.emi} />
@@ -398,8 +398,8 @@ export default function CompareCalculator() {
 function ResultRow({ label, value, highlight, green }: { label: string; value: string; highlight?: boolean; green?: boolean }) {
     return (
         <div>
-            <p className="text-slate-500 text-[10px] uppercase font-bold">{label}</p>
-            <p className={`font-bold ${highlight ? 'text-white text-sm' : green ? 'text-brand-green text-xs' : 'text-slate-300 text-xs'}`}>{value}</p>
+            <p className="text-muted-foreground text-[10px] uppercase font-bold">{label}</p>
+            <p className={`font-bold ${highlight ? 'text-foreground text-sm' : green ? 'text-brand-green text-xs' : 'text-slate-300 text-xs'}`}>{value}</p>
         </div>
     );
 }
@@ -407,8 +407,8 @@ function ResultRow({ label, value, highlight, green }: { label: string; value: s
 function CompareRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
     return (
         <div className="flex justify-between items-center">
-            <span className="text-slate-400 text-xs">{label}</span>
-            <span className={`font-bold ${highlight ? 'text-brand-green text-sm' : 'text-white text-xs'}`}>{value}</span>
+            <span className="text-muted-foreground text-xs">{label}</span>
+            <span className={`font-bold ${highlight ? 'text-brand-green text-sm' : 'text-foreground text-xs'}`}>{value}</span>
         </div>
     );
 }
@@ -423,18 +423,18 @@ function CompareBar({ labelA, labelB, valA, valB }: { labelA: string; labelB: st
             <div>
                 <div className="flex justify-between text-xs mb-1">
                     <span className="text-blue-400 font-medium">{labelA}</span>
-                    <span className="text-white font-bold">{formatINR(valA)}</span>
+                    <span className="text-foreground font-bold">{formatINR(valA)}</span>
                 </div>
-                <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-3 bg-card border-border rounded-full overflow-hidden">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${pctA}%` }} transition={{ duration: 0.8, ease: 'easeOut' }} className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full" />
                 </div>
             </div>
             <div>
                 <div className="flex justify-between text-xs mb-1">
                     <span className="text-amber-400 font-medium">{labelB}</span>
-                    <span className="text-white font-bold">{formatINR(valB)}</span>
+                    <span className="text-foreground font-bold">{formatINR(valB)}</span>
                 </div>
-                <div className="h-3 bg-slate-800 rounded-full overflow-hidden">
+                <div className="h-3 bg-card border-border rounded-full overflow-hidden">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${pctB}%` }} transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }} className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" />
                 </div>
             </div>

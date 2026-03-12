@@ -56,18 +56,18 @@ export default function ShareableCard({ title, highlight, subtitle, details, gra
                 <div className="relative z-10">
                     <div className="flex items-center gap-2 mb-3">
                         <img src="/icons/fincalix-logo.jpg" alt="FinCalix" className="w-6 h-6 rounded-lg" />
-                        <span className="text-white/60 text-[10px] font-bold uppercase tracking-wider">FinCalix</span>
+                        <span className="text-foreground/60 text-[10px] font-bold uppercase tracking-wider">FinCalix</span>
                     </div>
 
-                    <p className="text-white/70 text-xs font-medium mb-1">{title}</p>
-                    <p className="text-2xl font-black text-white mb-1">{highlight}</p>
-                    {subtitle && <p className="text-white/50 text-[10px] mb-3">{subtitle}</p>}
+                    <p className="text-foreground/70 text-xs font-medium mb-1">{title}</p>
+                    <p className="text-2xl font-black text-foreground mb-1">{highlight}</p>
+                    {subtitle && <p className="text-foreground/50 text-[10px] mb-3">{subtitle}</p>}
 
                     <div className="grid grid-cols-2 gap-2 mt-3">
                         {details.map((d, i) => (
                             <div key={i}>
-                                <p className="text-white/40 text-[9px] uppercase font-bold">{d.label}</p>
-                                <p className="text-white text-xs font-bold">{d.value}</p>
+                                <p className="text-foreground/40 text-[9px] uppercase font-bold">{d.label}</p>
+                                <p className="text-foreground text-xs font-bold">{d.value}</p>
                             </div>
                         ))}
                     </div>
@@ -84,7 +84,7 @@ export default function ShareableCard({ title, highlight, subtitle, details, gra
                 </button>
                 <button
                     onClick={handleCopy}
-                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-dark-card border border-dark-border text-slate-400 text-xs font-medium"
+                    className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-card border border-border text-muted-foreground text-xs font-medium"
                 >
                     {copied ? <Check size={14} className="text-brand-green" /> : <Copy size={14} />}
                     {copied ? 'Copied!' : 'Copy'}

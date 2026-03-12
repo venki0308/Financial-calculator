@@ -160,11 +160,11 @@ export default function Home() {
                 <div className="flex items-center gap-3">
                     <img src="/icons/fincalix-logo.jpg" alt="FinCalix" className="w-10 h-10 rounded-xl" />
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('home.welcome')}</h1>
-                        <p className="text-slate-400 text-sm mt-0">{t('home.tagline')}</p>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">{t('home.welcome')}</h1>
+                        <p className="text-muted-foreground text-sm mt-0">{t('home.tagline')}</p>
                     </div>
                 </div>
-                <button onClick={() => navigate('/notifications')} className="relative p-2.5 rounded-xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-400 shadow-lg">
+                <button onClick={() => navigate('/notifications')} className="relative p-2.5 rounded-xl bg-white dark:bg-card border border-slate-200 dark:border-border text-muted-foreground shadow-lg">
                     <Bell size={20} />
                     {unreadCount > 0 && (
                         <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">{unreadCount > 9 ? '9+' : unreadCount}</span>
@@ -174,18 +174,18 @@ export default function Home() {
 
             {/* Global Search Bar */}
             <div className="relative z-50 mb-8">
-                <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl border transition-all ${isSearching ? 'bg-white dark:bg-dark-card border-violet-500 shadow-lg shadow-violet-500/10' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-dark-border text-slate-400'}`}>
-                    <Search size={18} className={isSearching ? 'text-violet-500' : 'text-slate-400'} />
+                <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl border transition-all ${isSearching ? 'bg-white dark:bg-card border-violet-500 shadow-lg shadow-violet-500/10' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-border text-muted-foreground'}`}>
+                    <Search size={18} className={isSearching ? 'text-violet-500' : 'text-muted-foreground'} />
                     <input 
                         type="text" 
                         placeholder={t('home.searchTools', 'Search any calculator...')} 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onFocus={() => setIsSearching(true)}
-                        className="flex-1 bg-transparent border-none outline-none text-sm text-slate-900 dark:text-white placeholder-slate-400"
+                        className="flex-1 bg-transparent border-none outline-none text-sm text-slate-900 dark:text-foreground placeholder-slate-400"
                     />
                     {isSearching && (
-                        <button onClick={() => { setIsSearching(false); setSearchQuery(''); }} className="p-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
+                        <button onClick={() => { setIsSearching(false); setSearchQuery(''); }} className="p-1 rounded-full bg-slate-100 dark:bg-slate-700 text-muted-foreground dark:text-muted-foreground">
                             <X size={14} />
                         </button>
                     )}
@@ -201,11 +201,11 @@ export default function Home() {
                         >
                             {!searchQuery.trim() ? (
                                 <div className="p-6 text-center">
-                                    <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
-                                        <Search size={20} className="text-slate-400" />
+                                    <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-card border-border flex items-center justify-center mx-auto mb-3">
+                                        <Search size={20} className="text-muted-foreground" />
                                     </div>
                                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">What are you looking for?</p>
-                                    <p className="text-xs text-slate-500 mt-1">Try "home loan", "tax", "sip" or "ppf"</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Try "home loan", "tax", "sip" or "ppf"</p>
                                 </div>
                             ) : searchResults && searchResults.all && searchResults.all.length > 0 ? (
                                 <div className="py-2">
@@ -217,14 +217,14 @@ export default function Home() {
                                                 <button
                                                     key={i}
                                                     onClick={() => { setIsSearching(false); setSearchQuery(''); navigate(result.path); }}
-                                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-card border-border transition-colors text-left"
                                                 >
                                                     <div className="w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${result.color}15` }}>
                                                         <result.icon size={18} style={{ color: result.color }} />
                                                     </div>
                                                     <div>
-                                                        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{result.title}</h3>
-                                                        <p className="text-xs text-slate-500 truncate">{result.subtitle}</p>
+                                                        <h3 className="text-sm font-semibold text-slate-900 dark:text-foreground">{result.title}</h3>
+                                                        <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
                                                     </div>
                                                 </button>
                                             ))}
@@ -238,17 +238,17 @@ export default function Home() {
                                                 <button
                                                     key={i}
                                                     onClick={() => { setIsSearching(false); setSearchQuery(''); navigate(result.path); }}
-                                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-card border-border transition-colors text-left"
                                                 >
                                                     <div className="w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center bg-violet-50 dark:bg-violet-500/10">
                                                         <result.icon size={18} className="text-violet-500" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2">
-                                                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate">{result.title}</h3>
+                                                            <h3 className="text-sm font-semibold text-slate-900 dark:text-foreground truncate">{result.title}</h3>
                                                             <span className="text-[9px] bg-violet-100 dark:bg-violet-500/10 text-violet-600 px-1.5 py-0.5 rounded font-bold uppercase flex-shrink-0">Scheme</span>
                                                         </div>
-                                                        <p className="text-xs text-slate-500 truncate">{result.subtitle}</p>
+                                                        <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
                                                     </div>
                                                 </button>
                                             ))}
@@ -262,17 +262,17 @@ export default function Home() {
                                                 <button
                                                     key={i}
                                                     onClick={() => { setIsSearching(false); setSearchQuery(''); navigate(result.path); }}
-                                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-card border-border transition-colors text-left"
                                                 >
                                                     <div className="w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${result.color}15` }}>
                                                         <result.icon size={18} style={{ color: result.color }} />
                                                     </div>
                                                     <div>
                                                         <div className="flex items-center gap-2">
-                                                            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{result.title}</h3>
+                                                            <h3 className="text-sm font-semibold text-slate-900 dark:text-foreground">{result.title}</h3>
                                                             <span className="text-[9px] bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded font-bold uppercase">Tool</span>
                                                         </div>
-                                                        <p className="text-xs text-slate-500 truncate">{result.subtitle}</p>
+                                                        <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
                                                     </div>
                                                 </button>
                                             ))}
@@ -286,7 +286,7 @@ export default function Home() {
                                         <span className="text-5xl relative">🔍</span>
                                     </div>
                                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No results found</p>
-                                    <p className="text-xs text-slate-500 mt-1">Try "home loan", "tax", "sip" or "ppf"</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Try "home loan", "tax", "sip" or "ppf"</p>
                                 </div>
                             )}
                         </motion.div>
@@ -302,7 +302,7 @@ export default function Home() {
                         animate={{ opacity: 0.5 }} 
                         exit={{ opacity: 0 }} 
                         onClick={() => setIsSearching(false)}
-                        className="fixed inset-0 bg-slate-900 z-40" 
+                        className="fixed inset-0 bg-background z-40" 
                     />
                 )}
             </AnimatePresence>
@@ -310,29 +310,29 @@ export default function Home() {
 
             <section className="mb-8">
                 <div className="flex items-center justify-between mb-3 px-1">
-                    <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('home.myBudget')}</h2>
+                    <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('home.myBudget')}</h2>
                     <button onClick={() => navigate('/expenses')} className="text-brand-purple text-xs font-bold">{t('home.viewAll')}</button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                    <div className="p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border group active:scale-95 transition-transform cursor-pointer" onClick={() => navigate('/expenses')}>
+                    <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border group active:scale-95 transition-transform cursor-pointer" onClick={() => navigate('/expenses')}>
                         <div className="flex items-center justify-between mb-2">
                             <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-brand-purple/10 flex items-center justify-center text-brand-purple">
                                 <Wallet size={14} />
                             </div>
                             <ChevronRight size={14} className="text-slate-600" />
                         </div>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">{t('home.currentBalance')}</p>
-                        <p className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">{formatINR(effectiveBalance)}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">{t('home.currentBalance')}</p>
+                        <p className="text-lg font-bold text-slate-900 dark:text-foreground mt-0.5">{formatINR(effectiveBalance)}</p>
                     </div>
-                    <div className="p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border group active:scale-95 transition-transform cursor-pointer" onClick={() => navigate('/expenses')}>
+                    <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border group active:scale-95 transition-transform cursor-pointer" onClick={() => navigate('/expenses')}>
                         <div className="flex items-center justify-between mb-2">
                             <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-brand-green/10 flex items-center justify-center text-brand-green">
                                 <TrendingUp size={14} />
                             </div>
                             <ChevronRight size={14} className="text-slate-600" />
                         </div>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">{t('home.monthlyIncome')}</p>
-                        <p className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">{formatINR(monthlyIncome)}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">{t('home.monthlyIncome')}</p>
+                        <p className="text-lg font-bold text-slate-900 dark:text-foreground mt-0.5">{formatINR(monthlyIncome)}</p>
                     </div>
                 </div>
             </section>
@@ -344,17 +344,17 @@ export default function Home() {
                     className="w-full p-6 rounded-3xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-700 border border-indigo-400/40 shadow-xl overflow-hidden relative group"
                 >
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                        <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-foreground group-hover:scale-110 transition-transform">
                             <HistoryIcon size={24} />
                         </div>
                         <div className="text-left">
-                            <h3 className="text-white font-bold">{t('home.govSchemes')}</h3>
+                            <h3 className="text-foreground font-bold">{t('home.govSchemes')}</h3>
                             <p className="text-indigo-100 text-xs mt-0.5">{t('home.explore')}</p>
                         </div>
                     </div>
                     <div className="mt-4 flex gap-2">
-                        <span className="px-3 py-1.5 rounded-lg bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">{t('home.new2026')}</span>
-                        <span className="px-3 py-1.5 rounded-lg bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">Central Govt</span>
+                        <span className="px-3 py-1.5 rounded-lg bg-white/20 text-foreground text-[10px] font-bold uppercase tracking-wider">{t('home.new2026')}</span>
+                        <span className="px-3 py-1.5 rounded-lg bg-white/20 text-foreground text-[10px] font-bold uppercase tracking-wider">Central Govt</span>
                     </div>
                 </motion.button>
             </section>
@@ -370,10 +370,10 @@ export default function Home() {
                     transition={{ delay: 0.2 }}
                 >
                     <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
-                        <Sparkles size={18} className="text-white" />
+                        <Sparkles size={18} className="text-foreground" />
                     </div>
-                    <h3 className="text-white font-bold text-sm">Financial Advisor</h3>
-                    <p className="text-white/60 text-[10px] mt-0.5">Personal financial plan</p>
+                    <h3 className="text-foreground font-bold text-sm">Financial Advisor</h3>
+                    <p className="text-foreground/60 text-[10px] mt-0.5">Personal financial plan</p>
                 </motion.button>
                 <motion.button
                     whileTap={{ scale: 0.95 }}
@@ -384,10 +384,10 @@ export default function Home() {
                     transition={{ delay: 0.3 }}
                 >
                     <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
-                        <Target size={18} className="text-white" />
+                        <Target size={18} className="text-foreground" />
                     </div>
-                    <h3 className="text-white font-bold text-sm">Goal Planner</h3>
-                    <p className="text-white/60 text-[10px] mt-0.5">Plan your milestones</p>
+                    <h3 className="text-foreground font-bold text-sm">Goal Planner</h3>
+                    <p className="text-foreground/60 text-[10px] mt-0.5">Plan your milestones</p>
                 </motion.button>
             </section>
 
@@ -402,13 +402,13 @@ export default function Home() {
                     transition={{ delay: 0.35 }}
                 >
                     <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                        <GitCompare size={18} className="text-white" />
+                        <GitCompare size={18} className="text-foreground" />
                     </div>
                     <div className="text-left flex-1">
-                        <h3 className="text-white font-bold text-sm">Compare Scenarios</h3>
-                        <p className="text-white/60 text-[10px] mt-0.5">Loan A vs B, SIP rates, FD tenures</p>
+                        <h3 className="text-foreground font-bold text-sm">Compare Scenarios</h3>
+                        <p className="text-foreground/60 text-[10px] mt-0.5">Loan A vs B, SIP rates, FD tenures</p>
                     </div>
-                    <ChevronRight size={16} className="text-white/40" />
+                    <ChevronRight size={16} className="text-foreground/40" />
                 </motion.button>
             </section>
 
@@ -423,10 +423,10 @@ export default function Home() {
                     transition={{ delay: 0.4 }}
                 >
                     <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
-                        <Globe size={18} className="text-white" />
+                        <Globe size={18} className="text-foreground" />
                     </div>
-                    <h3 className="text-white font-bold text-sm">World Clock</h3>
-                    <p className="text-white/60 text-[10px] mt-0.5">Compare time zones</p>
+                    <h3 className="text-foreground font-bold text-sm">World Clock</h3>
+                    <p className="text-foreground/60 text-[10px] mt-0.5">Compare time zones</p>
                 </motion.button>
                 <motion.button
                     whileTap={{ scale: 0.95 }}
@@ -437,15 +437,15 @@ export default function Home() {
                     transition={{ delay: 0.45 }}
                 >
                     <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
-                        <Calendar size={18} className="text-white" />
+                        <Calendar size={18} className="text-foreground" />
                     </div>
-                    <h3 className="text-white font-bold text-sm">Age Calculator</h3>
-                    <p className="text-white/60 text-[10px] mt-0.5">Know your exact age</p>
+                    <h3 className="text-foreground font-bold text-sm">Age Calculator</h3>
+                    <p className="text-foreground/60 text-[10px] mt-0.5">Know your exact age</p>
                 </motion.button>
             </section>
 
             <section className="pb-6">
-                <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 px-1">
+                <h2 className="text-xs font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-3 px-1">
                     {recentPaths.length > 0 ? t('home.recentlyUsed') : t('home.quickCalculate')}
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
@@ -454,7 +454,7 @@ export default function Home() {
                             key={item.path}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => navigate(item.path)}
-                            className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm"
+                            className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.1 }}
@@ -462,7 +462,7 @@ export default function Home() {
                             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${item.color}15` }}>
                                 <item.icon size={22} style={{ color: item.color }} />
                             </div>
-                            <span className="text-slate-900 dark:text-white font-semibold text-sm truncate">{item.label}</span>
+                            <span className="text-slate-900 dark:text-foreground font-semibold text-sm truncate">{item.label}</span>
                         </motion.button>
                     ))}
                 </div>

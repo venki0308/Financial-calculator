@@ -53,27 +53,27 @@ export function UpdateChecker() {
     if (updateState.status === 'required') {
         return (
             <div className="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center p-6">
-                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
+                <div className="bg-white dark:bg-card border-border rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
                     <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
                         <AlertCircle className="w-10 h-10 text-red-500" />
                     </div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-foreground mb-2">
                         Update Required
                     </h2>
-                    <p className="text-slate-600 dark:text-slate-400 mb-2 text-sm font-medium">
+                    <p className="text-slate-600 dark:text-muted-foreground mb-2 text-sm font-medium">
                         {updateState.title}
                     </p>
-                    <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm">
+                    <p className="text-muted-foreground dark:text-muted-foreground mb-8 text-sm">
                         {updateState.message}
                     </p>
                     <button
                         onClick={handleUpdate}
-                        className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg"
+                        className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-foreground font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg"
                     >
                         <Download className="w-5 h-5" />
                         Update Now — It's Free
                     </button>
-                    <p className="text-xs text-slate-400 mt-4">
+                    <p className="text-xs text-muted-foreground mt-4">
                         You must update to continue using FinCalix
                     </p>
                 </div>
@@ -88,7 +88,7 @@ export function UpdateChecker() {
                 <div className="bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-2xl p-4 shadow-2xl">
                     <div className="flex items-start gap-3">
                         <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <Sparkles className="w-5 h-5 text-white" />
+                            <Sparkles className="w-5 h-5 text-foreground" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="font-semibold text-sm">{updateState.title}</p>
@@ -96,14 +96,14 @@ export function UpdateChecker() {
                         </div>
                         <button
                             onClick={() => setDismissed(true)}
-                            className="text-white/70 hover:text-white flex-shrink-0 p-1"
+                            className="text-foreground/70 hover:text-foreground flex-shrink-0 p-1"
                         >
                             <X className="w-4 h-4" />
                         </button>
                     </div>
                     <button
                         onClick={handleUpdate}
-                        className="mt-3 w-full bg-white/20 hover:bg-white/30 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors"
+                        className="mt-3 w-full bg-white/20 hover:bg-white/30 text-foreground font-semibold py-2.5 rounded-xl text-sm transition-colors"
                     >
                         Update Now
                     </button>

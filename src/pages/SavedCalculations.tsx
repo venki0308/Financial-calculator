@@ -135,13 +135,13 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-white font-bold text-sm">{meta.label}</h3>
+                            <h3 className="text-foreground font-bold text-sm">{meta.label}</h3>
                             <div className="flex items-center gap-2">
-                                {expanded ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+                                {expanded ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                             </div>
                         </div>
                         <p className="text-2xl font-black mt-1" style={{ color: meta.color }}>{formatINR(primaryValue)}</p>
-                        <p className="text-[10px] text-slate-500 mt-1">{new Date(calc.timestamp).toLocaleString('en-IN')}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{new Date(calc.timestamp).toLocaleString('en-IN')}</p>
                     </div>
                 </div>
             </button>
@@ -153,12 +153,12 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
                             {/* Inputs Section */}
                             {inputEntries.length > 0 && (
                                 <div className="mb-3">
-                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-2">📥 Inputs</p>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-2">📥 Inputs</p>
                                     <div className="grid grid-cols-2 gap-2">
                                         {inputEntries.map(([key, val]) => (
                                             <div key={key} className="p-2 rounded-lg bg-slate-800/50">
-                                                <p className="text-[9px] text-slate-500 uppercase font-bold">{labelMap[key] || key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                                                <p className="text-white font-bold text-xs mt-0.5">{formatValue(key, val)}</p>
+                                                <p className="text-[9px] text-muted-foreground uppercase font-bold">{labelMap[key] || key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                                                <p className="text-foreground font-bold text-xs mt-0.5">{formatValue(key, val)}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -168,11 +168,11 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
                             {/* Results Section */}
                             {resultEntries.length > 0 && (
                                 <div className="mb-3">
-                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-2">📊 Results</p>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-2">📊 Results</p>
                                     <div className="grid grid-cols-2 gap-2">
                                         {resultEntries.map(([key, val]) => (
                                             <div key={key} className="p-2 rounded-lg bg-slate-800/50">
-                                                <p className="text-[9px] text-slate-500 uppercase font-bold">{labelMap[key] || key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                                                <p className="text-[9px] text-muted-foreground uppercase font-bold">{labelMap[key] || key.replace(/([A-Z])/g, ' $1').trim()}</p>
                                                 <p className="text-brand-green font-bold text-xs mt-0.5">{formatValue(key, val)}</p>
                                             </div>
                                         ))}
@@ -198,15 +198,15 @@ export default function SavedCalculations() {
     const { savedCalculations, removeSaved } = useCalculatorStore();
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] pb-10 animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
-            <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-4 border-b border-dark-border">
+        <div className="min-h-dvh bg-background pb-10 animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-4 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                        <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div className="flex-1">
-                        <h1 className="text-lg font-bold text-white">Saved Calculations</h1>
-                        <p className="text-slate-500 text-xs">{savedCalculations.length} saved plan{savedCalculations.length !== 1 ? 's' : ''}</p>
+                        <h1 className="text-lg font-bold text-foreground">Saved Calculations</h1>
+                        <p className="text-muted-foreground text-xs">{savedCalculations.length} saved plan{savedCalculations.length !== 1 ? 's' : ''}</p>
                     </div>
                 </div>
             </div>
@@ -215,7 +215,7 @@ export default function SavedCalculations() {
                 {savedCalculations.length === 0 ? (
                     <div className="text-center py-20">
                         <Bookmark size={48} className="text-slate-700 mx-auto mb-4" />
-                        <p className="text-slate-500 text-sm">No saved calculations yet</p>
+                        <p className="text-muted-foreground text-sm">No saved calculations yet</p>
                         <p className="text-slate-600 text-xs mt-2">Save from any calculator to track your plans</p>
                     </div>
                 ) : (

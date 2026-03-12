@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type NotificationType = 'emi_reminder' | 'sip_reminder' | 'tax_alert' | 'savings_insight' | 'bill_payment' | 'general';
+export type NotificationType = 'emi_reminder' | 'sip_reminder' | 'tax_alert' | 'savings_insight' | 'bill_payment' | 'general' | 'budget_alert';
 
 export interface AppNotification {
     id: string;

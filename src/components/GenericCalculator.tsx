@@ -16,7 +16,7 @@ import {
 } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -168,33 +168,33 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
-            <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-dark-border">
+        <div className="min-h-dvh bg-background animate-fade-in">
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                            <ArrowLeft size={18} className="text-slate-400" />
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                            <ArrowLeft size={18} className="text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-white">{config.title}</h1>
-                            <p className="text-slate-500 text-xs">{config.subtitle}</p>
+                            <h1 className="text-lg font-bold text-foreground">{config.title}</h1>
+                            <p className="text-muted-foreground text-xs">{config.subtitle}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                            <Info size={16} className="text-slate-400" />
+                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-card border border-border">
+                            <Info size={16} className="text-muted-foreground" />
                         </button>
                         <button
-                            className="p-2 rounded-xl bg-dark-card border border-dark-border"
+                            className="p-2 rounded-xl bg-card border border-border"
                             onClick={() => nativeShare(config.title, `Check out this ${config.title} calculation!`, window.location.href)}
                         >
-                            <Share2 size={16} className="text-slate-400" />
+                            <Share2 size={16} className="text-muted-foreground" />
                         </button>
                     </div>
                 </div>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent />
 
             <div className="px-4 pt-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 7rem)' }}>
                 <div className="space-y-3 mb-5">
@@ -215,9 +215,9 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
                 </div>
 
                 {result && (
-                    <motion.div layout className="p-5 rounded-2xl bg-dark-card border border-dark-border mb-4">
+                    <motion.div layout className="p-5 rounded-2xl bg-card border border-border mb-4">
                         <div className="text-center mb-6">
-                            <p className="text-slate-400 text-sm mb-1">{result.label}</p>
+                            <p className="text-muted-foreground text-sm mb-1">{result.label}</p>
                             <motion.p
                                 key={result.primary}
                                 initial={{ scale: 0.9, opacity: 0 }}
@@ -248,12 +248,12 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
 
                         <div className="space-y-3 mb-6">
                             {result.rows.map((r, i) => (
-                                <div key={i} className="flex items-center justify-between py-1.5 border-b border-dark-border/40 last:border-0 font-medium">
+                                <div key={i} className="flex items-center justify-between py-1.5 border-b border-border/40 last:border-0 font-medium">
                                     <div className="flex items-center gap-2">
                                         {r.color && <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: r.color }} />}
-                                        <span className="text-slate-500 text-xs">{r.label}</span>
+                                        <span className="text-muted-foreground text-xs">{r.label}</span>
                                     </div>
-                                    <span className={`text-sm ${r.color || 'text-white'}`}>{r.value}</span>
+                                    <span className={`text-sm ${r.color || 'text-foreground'}`}>{r.value}</span>
                                 </div>
                             ))}
                         </div>

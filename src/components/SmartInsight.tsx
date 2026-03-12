@@ -312,7 +312,7 @@ export default function SmartInsight({ calculatorType, inputs, results }: SmartI
         <div className="space-y-2.5 mt-4">
             <div className="flex items-center gap-1.5 px-1">
                 <Lightbulb size={13} className="text-amber-400" />
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Smart Insights</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Smart Insights</span>
             </div>
             {regular.map((insight, i) => {
                 const Icon = iconMap[insight.type];

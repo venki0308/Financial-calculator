@@ -3,7 +3,12 @@
  * Evaluates user financial data daily and triggers smart notifications.
  */
 
+import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { useNotificationStore, AppNotification } from '../store/useNotificationStore';
+import { useSettingsStore } from '../store/useSettingsStore';
+import { useCalculatorStore } from '../store/useCalculatorStore';
+import { dailyQuotes } from '../data/quotes';
 
 const LAST_RUN_KEY = 'fincalix_scheduler_last_run';
 const MIN_INTERVAL_MS = 23 * 60 * 60 * 1000; // 23 hours
@@ -21,8 +26,26 @@ function shouldRun(): boolean {
 function checkEMIReminders() {
     const today = new Date();
     const dayOfMonth = today.getDate();
-    // EMI reminders on 1st, 5th, and 15th
-    if ([1, 5, 15].includes(dayOfMonth)) {
+    
+    // Check saved EMI calculations
+    const saved = useCalculatorStore.getState().savedCalculations;
+    const emiReminders = saved.filter(
+        c => c.calculatorType === 'Loan EMI Calculator' && c.inputValues.enableReminder && c.inputValues.reminderDate === dayOfMonth
+    );
+
+    if (emiReminders.length > 0) {
+        emiReminders.forEach((calc) => {
+            const amount = Math.round(calc.resultValues?.emi || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+            addNotif({
+                type: 'emi_reminder',
+                title: `💳 EMI Due: ${calc.inputValues.name || 'Loan'}`,
+                body: `Your EMI of ${amount} is due today. Make sure your account is funded.`,
+                icon: '💳',
+                route: '/calculator/loan-emi', // Or to saved items
+            });
+        });
+    } else if ([1, 5, 15].includes(dayOfMonth)) {
+        // Fallback generic reminder if no custom ones matched today
         addNotif({
             type: 'emi_reminder',
             title: '💳 EMI Reminder',
@@ -51,13 +74,22 @@ function checkSIPReminders() {
 function checkTaxAlerts() {
     const today = new Date();
     const month = today.getMonth() + 1; // 1-12
+    const day = today.getDate();
 
-    // Advance tax deadlines
-    if (month === 3) {
+    // Specific Annual Tax Filing Reminder (March 25th)
+    if (month === 3 && day === 25) {
         addNotif({
             type: 'tax_alert',
-            title: '⚠️ Tax Year Ending',
-            body: 'Financial year ends March 31. Ensure your tax-saving investments (PPF, ELSS) are complete.',
+            title: '⚠️ Annual Tax Reminder',
+            body: 'Today is March 25th! Ensure your tax-saving investments (PPF, ELSS) are complete before year-end.',
+            icon: '⚠️',
+            route: '/calculator/income-tax',
+        });
+    } else if (month === 3 && day === 31) {
+        addNotif({
+            type: 'tax_alert',
+            title: '⚠️ Tax Year Ending Today',
+            body: 'Financial year ends today, March 31. Last chance for tax-saving investments.',
             icon: '⚠️',
             route: '/calculator/income-tax',
         });
@@ -99,6 +131,83 @@ function checkSavingsInsight() {
         icon: '💡',
         route: '/calculator/sip',
     });
+}
+
+async function checkDailyQuote() {
+    const settings = useSettingsStore.getState();
+    if (!settings.notifications.dailyQuotes) return;
+
+    // Build a type-safe record to avoid indexing issues
+    const langMap: Record<string, 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml'> = {
+        'English': 'en', 'Hindi': 'hi', 'Telugu': 'te', 'Tamil': 'ta', 'Kannada': 'kn', 'Malayalam': 'ml'
+    };
+    const langKey = langMap[settings.language] || 'en';
+
+    if (Capacitor.isNativePlatform()) {
+        try {
+            const hasPerms = await LocalNotifications.checkPermissions();
+            if (hasPerms.display === 'granted') {
+                const pending = await LocalNotifications.getPending();
+                const quoteNotifIds = pending.notifications.filter(n => n.id >= 1000 && n.id < 1100).map(n => ({ id: n.id }));
+                if (quoteNotifIds.length > 0) {
+                    await LocalNotifications.cancel({ notifications: quoteNotifIds });
+                }
+
+                const notifications = [];
+                const now = new Date();
+                // Schedule next 14 days
+                for (let i = 0; i < 14; i++) {
+                    const targetDate = new Date(now);
+                    targetDate.setDate(now.getDate() + i);
+                    targetDate.setHours(8, 0, 0, 0);
+
+                    if (i === 0 && now.getTime() > targetDate.getTime()) {
+                        continue;
+                    }
+
+                    const dayOfYear = Math.floor((targetDate.getTime() - new Date(targetDate.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+                    const quoteIndex = dayOfYear % dailyQuotes.length;
+                    const quote = dailyQuotes[quoteIndex];
+
+                    notifications.push({
+                        id: 1000 + quoteIndex,
+                        title: '💡 FinCalix Daily Quote',
+                        body: String(quote[langKey]),
+                        schedule: { at: targetDate }
+                    });
+                }
+                await LocalNotifications.schedule({ notifications });
+            }
+        } catch (e) {
+            console.error('Failed to schedule local notifications', e);
+        }
+    } else {
+        const todayStr = new Date().toDateString();
+        const lastQuoteDate = localStorage.getItem('fincalix_last_quote_date');
+        const now = new Date();
+
+        if (now.getHours() >= 8 && lastQuoteDate !== todayStr) {
+            const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+            const quoteIndex = dayOfYear % dailyQuotes.length;
+            const quote = dailyQuotes[quoteIndex];
+
+            addNotif({
+                type: 'savings_insight',
+                title: '💡 Daily Financial Quote',
+                body: String(quote[langKey]),
+                icon: '💡',
+                route: '/',
+            });
+
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('💡 FinCalix Daily Quote', {
+                    body: String(quote[langKey]),
+                    icon: '/icon-192x192.png'
+                });
+            }
+            localStorage.setItem('fincalix_last_quote_date', todayStr);
+        }
+    }
 }
 
 /** DEV MODE: Simulate all notification types for testing */
@@ -150,5 +259,6 @@ export const NotificationScheduler = {
         checkSIPReminders();
         checkTaxAlerts();
         checkSavingsInsight();
+        checkDailyQuote();
     },
 };

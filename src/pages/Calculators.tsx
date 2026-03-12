@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { AnalyticsService } from '../lib/analytics';
 
 import { allCalcs, CalcItem } from '../data/calculatorList';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 // Most Used calculators (featured)
 const mostUsed = [
@@ -77,21 +77,21 @@ export default function Calculators() {
         <div className="px-4 pt-14 animate-fade-in pb-24">
             {/* Header */}
             <div className="mb-4">
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{t('calculators.title')}</h1>
-                <p className="text-slate-500 text-sm mt-1">{t('calculators.subtitle')}</p>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">{t('calculators.title')}</h1>
+                <p className="text-muted-foreground text-sm mt-1">{t('calculators.subtitle')}</p>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent module="general" />
 
             {/* Search */}
             <div className="relative mb-4 sticky top-12 z-10">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
                     type="text"
                     placeholder={t('calculators.search')}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:border-brand-green/50 transition-colors"
+                    className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border text-slate-900 dark:text-foreground placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:border-brand-green/50 transition-colors"
                 />
             </div>
 
@@ -100,7 +100,7 @@ export default function Calculators() {
                 <section className="mb-6">
                     <div className="flex items-center gap-2 mb-3 px-1">
                         <Sparkles size={14} className="text-amber-400" />
-                        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Most Used</h2>
+                        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Most Used</h2>
                     </div>
                     <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1 -mx-1 px-1">
                         {mostUsed.map((mu, i) => {
@@ -118,10 +118,10 @@ export default function Calculators() {
                                     transition={{ delay: i * 0.08 }}
                                 >
                                     <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-3">
-                                        <Icon size={20} className="text-white" />
+                                        <Icon size={20} className="text-foreground" />
                                     </div>
-                                    <p className="text-white font-bold text-sm text-left leading-tight">{t(calc.nameKey as any)}</p>
-                                    <p className="text-white/60 text-[10px] mt-1 text-left">{t(calc.descKey as any)}</p>
+                                    <p className="text-foreground font-bold text-sm text-left leading-tight">{t(calc.nameKey as any)}</p>
+                                    <p className="text-foreground/60 text-[10px] mt-1 text-left">{t(calc.descKey as any)}</p>
                                 </motion.button>
                             );
                         })}
@@ -134,7 +134,7 @@ export default function Calculators() {
                 <section className="mb-6">
                     <div className="flex items-center gap-2 mb-3 px-1">
                         <History size={14} className="text-blue-400" />
-                        <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Recently Used</h2>
+                        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recently Used</h2>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
                         {recentCalcs.slice(0, 4).map((item, i) => (
@@ -142,7 +142,7 @@ export default function Calculators() {
                                 key={item.path}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => navigate(item.path)}
-                                className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600 transition-all"
+                                className="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border hover:border-slate-300 dark:hover:border-slate-600 transition-all"
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.06 }}
@@ -150,7 +150,7 @@ export default function Calculators() {
                                 <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${item.color}15` }}>
                                     <item.icon size={18} style={{ color: item.color }} />
                                 </div>
-                                <span className="text-slate-900 dark:text-white font-medium text-xs truncate">{t(item.nameKey as any)}</span>
+                                <span className="text-slate-900 dark:text-foreground font-medium text-xs truncate">{t(item.nameKey as any)}</span>
                             </motion.button>
                         ))}
                     </div>
@@ -168,13 +168,13 @@ export default function Calculators() {
                         animate={{ opacity: 1, y: 0 }}
                     >
                         <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                            <GitCompare size={20} className="text-white" />
+                            <GitCompare size={20} className="text-foreground" />
                         </div>
                         <div className="text-left flex-1">
-                            <h3 className="text-white font-bold text-sm">Compare Scenarios</h3>
-                            <p className="text-white/60 text-[10px] mt-0.5">Loan A vs B, SIP rates, FD tenures</p>
+                            <h3 className="text-foreground font-bold text-sm">Compare Scenarios</h3>
+                            <p className="text-foreground/60 text-[10px] mt-0.5">Loan A vs B, SIP rates, FD tenures</p>
                         </div>
-                        <ChevronRight size={18} className="text-white/40" />
+                        <ChevronRight size={18} className="text-foreground/40" />
                     </motion.button>
                 </section>
             )}
@@ -194,7 +194,7 @@ export default function Calculators() {
                                 onClick={() => setSelectedCategory(cat)}
                                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${isActive
                                         ? 'bg-brand-green text-black shadow-lg shadow-brand-green/20'
-                                        : 'bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'
+                                        : 'bg-white dark:bg-card border border-slate-200 dark:border-border text-slate-600 dark:text-muted-foreground hover:border-slate-300 dark:hover:border-slate-600'
                                     }`}
                             >
                                 {cat === 'all' ? (
@@ -210,7 +210,7 @@ export default function Calculators() {
             </div>
 
             {/* Count */}
-            <p className="text-slate-500 text-xs mb-3 px-1">{filtered.length} calculators</p>
+            <p className="text-muted-foreground text-xs mb-3 px-1">{filtered.length} calculators</p>
 
             {/* Calculator Cards */}
             <div className="space-y-7 mb-6">
@@ -227,7 +227,7 @@ export default function Calculators() {
                                         <CatIcon size={13} style={{ color: meta.color }} />
                                     </div>
                                 )}
-                                <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                     {categoryLabel} ({items.length})
                                 </h2>
                             </div>
@@ -237,15 +237,15 @@ export default function Calculators() {
                                         key={item.nameKey + item.category}
                                         whileTap={{ scale: 0.97 }}
                                         onClick={() => navigate(item.path)}
-                                        className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border hover:border-slate-300 dark:hover:border-slate-600 transition-colors animate-slide-up"
+                                        className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border hover:border-slate-300 dark:hover:border-slate-600 transition-colors animate-slide-up"
                                         style={{ animationDelay: `${i * 40}ms` }}
                                     >
                                         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${item.color}15` }}>
                                             <item.icon size={20} style={{ color: item.color }} />
                                         </div>
                                         <div className="flex-1 text-left">
-                                            <h3 className="text-slate-800 dark:text-white font-medium text-sm">{t(item.nameKey as any)}</h3>
-                                            <p className="text-slate-500 text-xs mt-0.5">{t(item.descKey as any)}</p>
+                                            <h3 className="text-slate-800 dark:text-foreground font-medium text-sm">{t(item.nameKey as any)}</h3>
+                                            <p className="text-muted-foreground text-xs mt-0.5">{t(item.descKey as any)}</p>
                                         </div>
                                         <ChevronRight size={16} className="text-slate-600 flex-shrink-0" />
                                     </motion.button>
@@ -260,7 +260,7 @@ export default function Calculators() {
             {filtered.length === 0 && (
                 <div className="text-center py-16">
                     <Calculator size={48} className="text-slate-600 mx-auto mb-3" />
-                    <p className="text-slate-400 text-sm">{t('calculators.search')} — no results</p>
+                    <p className="text-muted-foreground text-sm">{t('calculators.search')} — no results</p>
                 </div>
             )}
         </div>

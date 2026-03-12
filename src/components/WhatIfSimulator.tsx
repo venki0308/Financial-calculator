@@ -43,7 +43,7 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
         <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/5 to-purple-500/5 border border-indigo-500/20">
             <div className="flex items-center gap-2 mb-4">
                 <Sliders size={16} className="text-indigo-400" />
-                <h3 className="text-white font-bold text-sm">{title}</h3>
+                <h3 className="text-foreground font-bold text-sm">{title}</h3>
             </div>
 
             {/* Sliders */}
@@ -57,12 +57,12 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
                     return (
                         <div key={slider.key}>
                             <div className="flex items-center justify-between mb-1.5">
-                                <span className="text-slate-400 text-xs font-medium">{slider.label}</span>
+                                <span className="text-muted-foreground text-xs font-medium">{slider.label}</span>
                                 <div className="flex items-center gap-2">
                                     {changed && (
-                                        <span className="text-slate-500 text-[10px] line-through">{formatFn(currentVal)}</span>
+                                        <span className="text-muted-foreground text-[10px] line-through">{formatFn(currentVal)}</span>
                                     )}
-                                    <span className={`text-xs font-bold ${changed ? 'text-indigo-400' : 'text-white'}`}>
+                                    <span className={`text-xs font-bold ${changed ? 'text-indigo-400' : 'text-foreground'}`}>
                                         {formatFn(adjVal)}
                                     </span>
                                 </div>
@@ -91,11 +91,11 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
             {/* Result comparison */}
             {hasChanges && (
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <p className="text-slate-500 text-[9px] uppercase font-bold tracking-wider mb-2">{resultLabel}</p>
+                    <p className="text-muted-foreground text-[9px] uppercase font-bold tracking-wider mb-2">{resultLabel}</p>
                     <div className="flex items-center gap-2">
-                        <span className="text-slate-400 text-sm line-through">{resultPrefix}{currentResult >= 1000 ? formatINR(currentResult) : currentResult.toLocaleString('en-IN')}</span>
+                        <span className="text-muted-foreground text-sm line-through">{resultPrefix}{currentResult >= 1000 ? formatINR(currentResult) : currentResult.toLocaleString('en-IN')}</span>
                         <ArrowRight size={14} className="text-slate-600" />
-                        <span className="text-white font-bold text-lg">{resultPrefix}{adjustedResult >= 1000 ? formatINR(adjustedResult) : adjustedResult.toLocaleString('en-IN')}</span>
+                        <span className="text-foreground font-bold text-lg">{resultPrefix}{adjustedResult >= 1000 ? formatINR(adjustedResult) : adjustedResult.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex items-center gap-1.5 mt-1.5">
                         {diff > 0 ? (
@@ -105,7 +105,7 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
                         )}
                         <span className={`text-xs font-bold ${diff > 0 ? 'text-brand-green' : 'text-red-400'}`}>
                             {diff > 0 ? '+' : ''}{diff >= 1000 ? formatINR(Math.abs(diff)) : diff.toLocaleString('en-IN')}
-                            <span className="text-slate-500 font-normal ml-1">({pctChange > 0 ? '+' : ''}{pctChange.toFixed(1)}%)</span>
+                            <span className="text-muted-foreground font-normal ml-1">({pctChange > 0 ? '+' : ''}{pctChange.toFixed(1)}%)</span>
                         </span>
                     </div>
                 </motion.div>

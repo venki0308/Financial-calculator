@@ -41,14 +41,14 @@ export default function About() {
     ];
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] pb-10 flex flex-col items-center animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
+        <div className="min-h-dvh bg-background pb-10 flex flex-col items-center animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
             {/* ─── Header ─── */}
-            <div className="sticky top-0 z-10 w-full bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-4">
+            <div className="sticky top-0 z-10 w-full bg-background/95 backdrop-blur-lg px-4 pt-14 pb-4">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                        <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
-                    <h1 className="text-lg font-bold text-white">{t('about.title')}</h1>
+                    <h1 className="text-lg font-bold text-foreground">{t('about.title')}</h1>
                 </div>
             </div>
 
@@ -58,7 +58,7 @@ export default function About() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="relative p-8 rounded-3xl bg-dark-card border border-dark-border text-center overflow-hidden"
+                    className="relative p-8 rounded-3xl bg-card border border-border text-center overflow-hidden"
                 >
                     {/* Green glow behind the logo */}
                     <div
@@ -70,7 +70,7 @@ export default function About() {
                         alt="FinCalix"
                         className="relative w-24 h-24 rounded-3xl mx-auto mb-5 shadow-lg ring-2 ring-green-500/30"
                     />
-                    <h2 className="relative text-2xl font-extrabold text-white tracking-tight">FinCalix</h2>
+                    <h2 className="relative text-2xl font-extrabold text-foreground tracking-tight">FinCalix</h2>
                     {/* Version badge with pulsing dot */}
                     <div className="relative inline-flex items-center gap-2 mt-3 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60">
                         <span className="relative flex h-2 w-2">
@@ -89,7 +89,7 @@ export default function About() {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.4, delay: 0.15 * idx }}
-                            className="flex gap-4 p-4 rounded-2xl bg-dark-card border border-dark-border overflow-hidden"
+                            className="flex gap-4 p-4 rounded-2xl bg-card border border-border overflow-hidden"
                             style={{ borderLeftWidth: 4, borderLeftColor: card.accent }}
                         >
                             <div
@@ -99,8 +99,8 @@ export default function About() {
                                 <card.icon size={20} style={{ color: card.accent }} />
                             </div>
                             <div>
-                                <h3 className="text-white font-bold text-sm">{t(card.titleKey)}</h3>
-                                <p className="text-slate-400 text-xs leading-relaxed mt-1">{t(card.descKey)}</p>
+                                <h3 className="text-foreground font-bold text-sm">{t(card.titleKey)}</h3>
+                                <p className="text-muted-foreground text-xs leading-relaxed mt-1">{t(card.descKey)}</p>
                             </div>
                         </motion.div>
                     ))}
@@ -111,9 +111,9 @@ export default function About() {
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.5 }}
-                    className="p-5 rounded-2xl bg-dark-card border border-dark-border"
+                    className="p-5 rounded-2xl bg-card border border-border"
                 >
-                    <h3 className="text-white font-bold text-sm mb-4">{t('about.keyResources')}</h3>
+                    <h3 className="text-foreground font-bold text-sm mb-4">{t('about.keyResources')}</h3>
                     <div className="space-y-2.5">
                         {resources.map((res) => (
                             <a
@@ -121,11 +121,11 @@ export default function About() {
                                 href={res.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-between p-3.5 rounded-xl bg-[#0F172A] border border-dark-border group hover:border-slate-600 transition-colors"
+                                className="flex items-center justify-between p-3.5 rounded-xl bg-background border border-border group hover:border-slate-600 transition-colors"
                             >
                                 <div className="flex items-center gap-3">
                                     <span className="block w-2 h-2 rounded-full flex-shrink-0" style={{ background: res.dot }} />
-                                    <span className="text-xs text-slate-300 font-medium group-hover:text-white transition-colors">{res.label}</span>
+                                    <span className="text-xs text-slate-300 font-medium group-hover:text-foreground transition-colors">{res.label}</span>
                                 </div>
                                 <ExternalLink size={14} className="text-slate-600 group-hover:text-brand-green transition-colors" />
                             </a>

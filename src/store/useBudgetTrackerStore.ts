@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useNotificationStore } from './useNotificationStore';
 
 export interface BudgetCategory {
     id: string;
@@ -215,9 +216,22 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
                 entries: s.entries.filter((e) => e.categoryId !== id),
             })),
 
-            addEntry: (entry) => set((s) => ({
-                entries: [...s.entries, { ...entry, id: Date.now().toString() }],
-            })),
+            addEntry: (entry) => {
+                set((s) => ({
+                    entries: [...s.entries, { ...entry, id: Date.now().toString() }],
+                }));
+                const state = get();
+                const totalSpent = state.getTotalSpent();
+                const budget = state.monthlyIncome;
+                if (budget > 0 && entry.amount > 0) {
+                    const prevSpent = totalSpent - entry.amount;
+                    if (totalSpent >= budget && prevSpent < budget) {
+                        useNotificationStore.getState().addNotification({ type: 'budget_alert', title: '🚨 Budget Exceeded', body: 'You have exceeded your overall monthly budget!', icon: '🚨', route: '/expenses' });
+                    } else if (totalSpent >= budget * 0.8 && prevSpent < budget * 0.8) {
+                        useNotificationStore.getState().addNotification({ type: 'budget_alert', title: '⚠️ Budget Alert', body: 'You have used 80% of your monthly budget.', icon: '⚠️', route: '/expenses' });
+                    }
+                }
+            },
 
             deleteEntry: (id) => set((s) => ({
                 entries: s.entries.filter((e) => e.id !== id),

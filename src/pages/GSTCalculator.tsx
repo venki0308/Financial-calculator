@@ -8,7 +8,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import NumberInput from '../components/NumberInput';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import {
     Chart as ChartJS,
@@ -321,23 +321,23 @@ export default function GSTCalculator() {
     }, [mode, stdResult, profitResult, itcResult, stdRate]);
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
+        <div className="min-h-dvh bg-background animate-fade-in">
             <div className="px-4 pt-14 pb-28">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-4">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                        <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-white">GST Calculator</h1>
-                        <p className="text-slate-500 text-xs">Advanced tax calculations</p>
+                        <h1 className="text-lg font-bold text-foreground">GST Calculator</h1>
+                        <p className="text-muted-foreground text-xs">Advanced tax calculations</p>
                     </div>
-                    <button onClick={() => setShowInfo(true)} className="ml-auto p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <Info size={16} className="text-slate-400" />
+                    <button onClick={() => setShowInfo(true)} className="ml-auto p-2 rounded-xl bg-card border border-border">
+                        <Info size={16} className="text-muted-foreground" />
                     </button>
                 </div>
 
-                <DisclaimerBanner type="calculator" />
+                <DisclaimerComponent module="tax" />
 
                 {/* Mode Selector */}
                 <div className="flex gap-1.5 overflow-x-auto pb-1 mb-5 scrollbar-hide">
@@ -350,7 +350,7 @@ export default function GSTCalculator() {
                                 onClick={() => { setMode(m.key); setSaved(false); }}
                                 className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border ${active
                                     ? 'bg-brand-purple border-brand-purple text-white shadow-lg shadow-brand-purple/20'
-                                    : 'bg-dark-card border-dark-border text-slate-500 hover:text-slate-300'
+                                    : 'bg-card border-border text-muted-foreground hover:text-slate-300'
                                     }`}
                             >
                                 <Icon size={14} />
@@ -363,18 +363,18 @@ export default function GSTCalculator() {
                 {/* ─── STANDARD MODE ─── */}
                 {mode === 'standard' && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                        <div className="flex gap-1 bg-dark-card border border-dark-border rounded-xl p-1 mb-5">
-                            <button onClick={() => setStdDirection('add')} className={`flex-1 py-3 rounded-lg text-xs font-bold transition-all ${stdDirection === 'add' ? 'bg-brand-purple text-white shadow-lg' : 'text-slate-500'}`}>Add GST</button>
-                            <button onClick={() => setStdDirection('remove')} className={`flex-1 py-3 rounded-lg text-xs font-bold transition-all ${stdDirection === 'remove' ? 'bg-brand-gold text-black' : 'text-slate-500'}`}>Remove GST</button>
+                        <div className="flex gap-1 bg-card border border-border rounded-xl p-1 mb-5">
+                            <button onClick={() => setStdDirection('add')} className={`flex-1 py-3 rounded-lg text-xs font-bold transition-all ${stdDirection === 'add' ? 'bg-brand-purple text-white shadow-lg' : 'text-muted-foreground'}`}>Add GST</button>
+                            <button onClick={() => setStdDirection('remove')} className={`flex-1 py-3 rounded-lg text-xs font-bold transition-all ${stdDirection === 'remove' ? 'bg-brand-gold text-black' : 'text-muted-foreground'}`}>Remove GST</button>
                         </div>
 
-                        <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-4 mb-5">
+                        <div className="bg-card border border-border rounded-2xl p-4 space-y-4 mb-5">
                             <NumberInput label={stdDirection === 'add' ? 'Base Amount (excl. GST)' : 'Total Amount (incl. GST)'} value={stdAmount} onChange={setStdAmount} prefix="₹" min={0} max={999999999} />
                             <div>
-                                <label className="text-xs text-slate-400 mb-2 block">GST Rate</label>
+                                <label className="text-xs text-muted-foreground mb-2 block">GST Rate</label>
                                 <div className="grid grid-cols-5 gap-2">
                                     {gstRates.map(r => (
-                                        <button key={r} onClick={() => setStdRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${stdRate === r ? 'bg-brand-purple border-brand-purple text-white' : 'bg-dark-bg border-dark-border text-slate-500'}`}>{r}%</button>
+                                        <button key={r} onClick={() => setStdRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${stdRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
                                     ))}
                                 </div>
                             </div>
@@ -388,13 +388,13 @@ export default function GSTCalculator() {
                 {/* ─── REVERSE MODE ─── */}
                 {mode === 'reverse' && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                        <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-4 mb-5">
+                        <div className="bg-card border border-border rounded-2xl p-4 space-y-4 mb-5">
                             <NumberInput label="Total Amount (incl. GST)" value={stdAmount} onChange={setStdAmount} prefix="₹" min={0} max={999999999} />
                             <div>
-                                <label className="text-xs text-slate-400 mb-2 block">GST Rate</label>
+                                <label className="text-xs text-muted-foreground mb-2 block">GST Rate</label>
                                 <div className="grid grid-cols-5 gap-2">
                                     {gstRates.map(r => (
-                                        <button key={r} onClick={() => setStdRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${stdRate === r ? 'bg-brand-purple border-brand-purple text-white' : 'bg-dark-bg border-dark-border text-slate-500'}`}>{r}%</button>
+                                        <button key={r} onClick={() => setStdRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${stdRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
                                     ))}
                                 </div>
                             </div>
@@ -402,13 +402,13 @@ export default function GSTCalculator() {
                         </div>
 
                         {reverseResult && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-dark-card border border-dark-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
                                 <div className="text-center mb-4">
-                                    <p className="text-slate-400 text-xs mb-1">Original Base Price</p>
+                                    <p className="text-muted-foreground text-xs mb-1">Original Base Price</p>
                                     <p className="text-3xl font-bold text-brand-green">{formatINR(reverseResult.base)}</p>
                                 </div>
                                 <div className="space-y-2">
-                                    <Row label="Total (incl. GST)" value={stdAmount} color="text-white" />
+                                    <Row label="Total (incl. GST)" value={stdAmount} color="text-foreground" />
                                     <Row label="Base Price" value={reverseResult.base} color="text-brand-green" dot="bg-brand-green" />
                                     {isIGST ? (
                                         <Row label={`IGST (${stdRate}%)`} value={reverseResult.igst} color="text-brand-purple" dot="bg-brand-purple" />
@@ -418,7 +418,7 @@ export default function GSTCalculator() {
                                             <Row label={`SGST (${stdRate / 2}%)`} value={reverseResult.sgst} color="text-brand-gold" dot="bg-brand-gold" />
                                         </>
                                     )}
-                                    <div className="pt-2 border-t border-dark-border/40">
+                                    <div className="pt-2 border-t border-border/40">
                                         <Row label="Total GST" value={reverseResult.gst} color="text-amber-400" dot="bg-amber-400" isBold />
                                     </div>
                                 </div>
@@ -430,43 +430,43 @@ export default function GSTCalculator() {
                 {/* ─── PROFIT MARGIN MODE ─── */}
                 {mode === 'profit' && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                        <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-4 mb-5">
+                        <div className="bg-card border border-border rounded-2xl p-4 space-y-4 mb-5">
                             <NumberInput label="Cost Price (Purchase)" value={costPrice} onChange={setCostPrice} prefix="₹" min={0} max={999999999} />
                             <NumberInput label="Selling Price" value={sellingPrice} onChange={setSellingPrice} prefix="₹" min={0} max={999999999} />
                             <div>
-                                <label className="text-xs text-slate-400 mb-2 block">GST Rate on Sale</label>
+                                <label className="text-xs text-muted-foreground mb-2 block">GST Rate on Sale</label>
                                 <div className="grid grid-cols-5 gap-2">
                                     {gstRates.map(r => (
-                                        <button key={r} onClick={() => setProfitGstRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${profitGstRate === r ? 'bg-brand-purple border-brand-purple text-white' : 'bg-dark-bg border-dark-border text-slate-500'}`}>{r}%</button>
+                                        <button key={r} onClick={() => setProfitGstRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${profitGstRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
                                     ))}
                                 </div>
                             </div>
                         </div>
 
                         {profitResult && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-dark-card border border-dark-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
                                 <div className="text-center mb-5">
-                                    <p className="text-slate-400 text-xs mb-1">Total Amount (incl. GST)</p>
-                                    <p className="text-3xl font-bold text-white">{formatINR(profitResult.totalWithGst)}</p>
+                                    <p className="text-muted-foreground text-xs mb-1">Total Amount (incl. GST)</p>
+                                    <p className="text-3xl font-bold text-foreground">{formatINR(profitResult.totalWithGst)}</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3 mb-4">
                                     <div className="p-3 rounded-xl bg-slate-800/30 text-center">
-                                        <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Profit</p>
+                                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Profit</p>
                                         <p className="text-brand-green font-bold text-sm">{formatINR(profitResult.profit)}</p>
-                                        <p className="text-[10px] text-slate-500">{profitResult.profitPct.toFixed(1)}%</p>
+                                        <p className="text-[10px] text-muted-foreground">{profitResult.profitPct.toFixed(1)}%</p>
                                     </div>
                                     <div className="p-3 rounded-xl bg-slate-800/30 text-center">
-                                        <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Net GST</p>
+                                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Net GST</p>
                                         <p className="text-amber-400 font-bold text-sm">{formatINR(profitResult.netGst)}</p>
-                                        <p className="text-[10px] text-slate-500">payable to govt</p>
+                                        <p className="text-[10px] text-muted-foreground">payable to govt</p>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Row label="Cost Price" value={costPrice} color="text-slate-400" />
-                                    <Row label="Selling Price" value={sellingPrice} color="text-white" />
+                                    <Row label="Cost Price" value={costPrice} color="text-muted-foreground" />
+                                    <Row label="Selling Price" value={sellingPrice} color="text-foreground" />
                                     <Row label="GST on Sale" value={profitResult.gstOnSale} color="text-red-400" dot="bg-red-400" />
                                     <Row label="GST on Purchase (ITC)" value={profitResult.gstOnCost} color="text-brand-green" dot="bg-brand-green" />
-                                    <div className="pt-2 border-t border-dark-border/40">
+                                    <div className="pt-2 border-t border-border/40">
                                         <Row label="Net GST Payable" value={profitResult.netGst} color="text-amber-400" isBold />
                                     </div>
                                 </div>
@@ -478,15 +478,15 @@ export default function GSTCalculator() {
                 {/* ─── ITC MODE ─── */}
                 {mode === 'itc' && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                        <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-4 mb-5">
+                        <div className="bg-card border border-border rounded-2xl p-4 space-y-4 mb-5">
                             <NumberInput label="GST Paid on Purchases (Input Tax)" value={purchaseGst} onChange={setPurchaseGst} prefix="₹" min={0} max={999999999} helperText="Total GST paid on your purchases" />
                             <NumberInput label="GST Collected on Sales (Output Tax)" value={salesGst} onChange={setSalesGst} prefix="₹" min={0} max={999999999} helperText="Total GST collected from customers" />
                         </div>
 
                         {itcResult && (
-                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-dark-card border border-dark-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
                                 <div className="text-center mb-5">
-                                    <p className="text-slate-400 text-xs mb-1">{itcResult.refund > 0 ? 'ITC Refund Available' : 'Net GST Payable'}</p>
+                                    <p className="text-muted-foreground text-xs mb-1">{itcResult.refund > 0 ? 'ITC Refund Available' : 'Net GST Payable'}</p>
                                     <p className={`text-3xl font-bold ${itcResult.refund > 0 ? 'text-brand-green' : 'text-amber-400'}`}>
                                         {formatINR(itcResult.refund > 0 ? itcResult.refund : itcResult.netPayable)}
                                     </p>
@@ -501,7 +501,7 @@ export default function GSTCalculator() {
                                 <div className="space-y-2">
                                     <Row label="Input Tax (Purchases)" value={itcResult.itc} color="text-blue-400" dot="bg-blue-400" />
                                     <Row label="Output Tax (Sales)" value={itcResult.liability} color="text-red-400" dot="bg-red-400" />
-                                    <div className="pt-2 border-t border-dark-border/40">
+                                    <div className="pt-2 border-t border-border/40">
                                         {itcResult.refund > 0 ? (
                                             <Row label="Refund Claimable" value={itcResult.refund} color="text-brand-green" dot="bg-brand-green" isBold />
                                         ) : (
@@ -521,9 +521,9 @@ export default function GSTCalculator() {
 
                         <div className="space-y-3 mt-4 mb-5">
                             {invoiceItems.map((item, idx) => (
-                                <div key={item.id} className="bg-dark-card border border-dark-border rounded-2xl p-4">
+                                <div key={item.id} className="bg-card border border-border rounded-2xl p-4">
                                     <div className="flex items-center justify-between mb-3">
-                                        <span className="text-xs font-bold text-slate-400">Item #{idx + 1}</span>
+                                        <span className="text-xs font-bold text-muted-foreground">Item #{idx + 1}</span>
                                         {invoiceItems.length > 1 && (
                                             <button onClick={() => removeInvoiceItem(item.id)} className="text-red-400 text-xs font-bold">Remove</button>
                                         )}
@@ -532,45 +532,45 @@ export default function GSTCalculator() {
                                         <input
                                             value={item.name}
                                             onChange={e => updateInvoiceItem(item.id, 'name', e.target.value)}
-                                            className="w-full px-3.5 py-3 rounded-xl bg-dark-bg border border-dark-border text-white text-sm"
+                                            className="w-full px-3.5 py-3 rounded-xl bg-dark-bg border border-border text-foreground text-sm"
                                             placeholder="Item name"
                                         />
                                         <div className="grid grid-cols-3 gap-2">
                                             <NumberInput label="Qty" value={item.qty} onChange={v => updateInvoiceItem(item.id, 'qty', v)} min={1} max={99999} />
                                             <NumberInput label="Price" value={item.price} onChange={v => updateInvoiceItem(item.id, 'price', v)} prefix="₹" min={0} max={999999999} />
                                             <div>
-                                                <label className="text-[10px] text-slate-400 mb-1 block">GST %</label>
+                                                <label className="text-[10px] text-muted-foreground mb-1 block">GST %</label>
                                                 <select
                                                     value={item.rate}
                                                     onChange={e => updateInvoiceItem(item.id, 'rate', Number(e.target.value))}
-                                                    className="w-full px-2 py-3 rounded-xl bg-dark-bg border border-dark-border text-white text-xs"
+                                                    className="w-full px-2 py-3 rounded-xl bg-dark-bg border border-border text-foreground text-xs"
                                                 >
                                                     {gstRates.map(r => <option key={r} value={r}>{r}%</option>)}
                                                 </select>
                                             </div>
                                         </div>
                                         <div className="flex justify-between text-xs pt-1">
-                                            <span className="text-slate-500">Amount: <span className="text-white font-bold">{formatINR(item.qty * item.price)}</span></span>
-                                            <span className="text-slate-500">GST: <span className="text-brand-green font-bold">{formatINR(item.qty * item.price * item.rate / 100)}</span></span>
+                                            <span className="text-muted-foreground">Amount: <span className="text-foreground font-bold">{formatINR(item.qty * item.price)}</span></span>
+                                            <span className="text-muted-foreground">GST: <span className="text-brand-green font-bold">{formatINR(item.qty * item.price * item.rate / 100)}</span></span>
                                         </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        <button onClick={addInvoiceItem} className="w-full py-3 mb-5 rounded-xl border-2 border-dashed border-dark-border text-slate-500 text-xs font-bold hover:border-brand-purple hover:text-brand-purple transition-all">
+                        <button onClick={addInvoiceItem} className="w-full py-3 mb-5 rounded-xl border-2 border-dashed border-border text-muted-foreground text-xs font-bold hover:border-brand-purple hover:text-brand-purple transition-all">
                             + Add Item
                         </button>
 
                         {/* Invoice Totals */}
-                        <motion.div layout className="bg-dark-card border border-dark-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
-                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Invoice Summary</h3>
+                        <motion.div layout className="bg-card border border-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
+                            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Invoice Summary</h3>
 
                             {/* Items table */}
                             <div className="overflow-x-auto mb-4">
                                 <table className="w-full text-xs">
                                     <thead>
-                                        <tr className="text-slate-500 border-b border-dark-border/40">
+                                        <tr className="text-muted-foreground border-b border-border/40">
                                             <th className="text-left py-2 font-medium">Item</th>
                                             <th className="text-right py-2 font-medium">Amt</th>
                                             <th className="text-right py-2 font-medium">GST</th>
@@ -579,19 +579,19 @@ export default function GSTCalculator() {
                                     </thead>
                                     <tbody>
                                         {invoiceResult.map(item => (
-                                            <tr key={item.id} className="border-b border-dark-border/20">
+                                            <tr key={item.id} className="border-b border-border/20">
                                                 <td className="py-2 text-slate-300">{item.name}</td>
-                                                <td className="py-2 text-right text-white">{formatINR(item.amount)}</td>
+                                                <td className="py-2 text-right text-foreground">{formatINR(item.amount)}</td>
                                                 <td className="py-2 text-right text-brand-green">{formatINR(item.gst)}</td>
-                                                <td className="py-2 text-right text-white font-bold">{formatINR(item.total)}</td>
+                                                <td className="py-2 text-right text-foreground font-bold">{formatINR(item.total)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
 
-                            <div className="space-y-2 pt-3 border-t border-dark-border/40">
-                                <Row label="Taxable Amount" value={invoiceTotals.amount} color="text-white" />
+                            <div className="space-y-2 pt-3 border-t border-border/40">
+                                <Row label="Taxable Amount" value={invoiceTotals.amount} color="text-foreground" />
                                 {invoiceIsIGST ? (
                                     <Row label="IGST" value={invoiceTotals.igst} color="text-brand-purple" dot="bg-brand-purple" />
                                 ) : (
@@ -600,7 +600,7 @@ export default function GSTCalculator() {
                                         <Row label="SGST" value={invoiceTotals.sgst} color="text-brand-gold" dot="bg-brand-gold" />
                                     </>
                                 )}
-                                <div className="pt-2 border-t border-dark-border/40">
+                                <div className="pt-2 border-t border-border/40">
                                     <Row label="Grand Total" value={invoiceTotals.total} color="text-brand-green" isBold />
                                 </div>
                             </div>
@@ -646,10 +646,10 @@ export default function GSTCalculator() {
 
 function ToggleIGST({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
     return (
-        <div className="flex items-center justify-between p-3.5 rounded-xl bg-dark-card border border-dark-border">
+        <div className="flex items-center justify-between p-3.5 rounded-xl bg-card border border-border">
             <div className="flex items-center gap-2">
-                <Info size={14} className="text-slate-500" />
-                <span className="text-white text-xs font-medium">Interstate (IGST)</span>
+                <Info size={14} className="text-muted-foreground" />
+                <span className="text-foreground text-xs font-medium">Interstate (IGST)</span>
             </div>
             <button onClick={() => onChange(!value)} className={`w-11 h-6 rounded-full p-1 transition-colors ${value ? 'bg-brand-purple' : 'bg-slate-700'}`}>
                 <motion.div animate={{ x: value ? 20 : 0 }} className="w-4 h-4 rounded-full bg-white shadow-sm" />
@@ -664,10 +664,10 @@ function ResultCard({ result, rate, isIGST, chartData, chartRef, showBreakdown, 
     showBreakdown: boolean; setShowBreakdown: (v: boolean) => void;
 }) {
     return (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-dark-card border border-dark-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
             <div className="text-center mb-5">
-                <p className="text-slate-400 text-xs mb-1">Final Amount</p>
-                <p className="text-3xl font-bold text-white">{formatINR(result.total)}</p>
+                <p className="text-muted-foreground text-xs mb-1">Final Amount</p>
+                <p className="text-3xl font-bold text-foreground">{formatINR(result.total)}</p>
             </div>
 
             {chartData && (
@@ -677,7 +677,7 @@ function ResultCard({ result, rate, isIGST, chartData, chartRef, showBreakdown, 
             )}
 
             <div className="space-y-2 mb-4">
-                <Row label="Base Amount" value={result.base} color="text-slate-400" />
+                <Row label="Base Amount" value={result.base} color="text-muted-foreground" />
                 {isIGST ? (
                     <Row label={`IGST (${rate}%)`} value={result.igst} color="text-brand-purple" dot="bg-brand-purple" />
                 ) : (
@@ -686,7 +686,7 @@ function ResultCard({ result, rate, isIGST, chartData, chartRef, showBreakdown, 
                         <Row label={`SGST (${rate / 2}%)`} value={result.sgst} color="text-brand-gold" dot="bg-brand-gold" />
                     </>
                 )}
-                <div className="pt-2 border-t border-dark-border/40">
+                <div className="pt-2 border-t border-border/40">
                     <Row label="Total GST" value={result.gst} color="text-brand-green" dot="bg-brand-green" isBold />
                 </div>
             </div>
@@ -703,10 +703,10 @@ function ResultCard({ result, rate, isIGST, chartData, chartRef, showBreakdown, 
                                 const g = result.base * (r / 100);
                                 return (
                                     <div key={r} className={`flex justify-between items-center py-2 px-3 rounded-lg ${r === rate ? 'bg-brand-purple/10 border border-brand-purple/30' : 'bg-slate-800/20'}`}>
-                                        <span className="text-xs text-slate-400">{r}% GST</span>
+                                        <span className="text-xs text-muted-foreground">{r}% GST</span>
                                         <div className="text-right">
-                                            <span className="text-xs text-white font-bold">{formatINR(result.base + g)}</span>
-                                            <span className="text-[10px] text-slate-500 ml-2">(GST: {formatINR(g)})</span>
+                                            <span className="text-xs text-foreground font-bold">{formatINR(result.base + g)}</span>
+                                            <span className="text-[10px] text-muted-foreground ml-2">(GST: {formatINR(g)})</span>
                                         </div>
                                     </div>
                                 );
@@ -724,9 +724,9 @@ function Row({ label, value, color, dot, isBold }: { label: string; value: numbe
         <div className="flex justify-between items-center py-1">
             <div className="flex items-center gap-2">
                 {dot && <div className={`w-2 h-2 rounded-full ${dot}`} />}
-                <span className="text-slate-500 text-[11px] font-medium">{label}</span>
+                <span className="text-muted-foreground text-[11px] font-medium">{label}</span>
             </div>
-            <span className={`text-sm ${isBold ? 'font-bold' : 'font-semibold'} ${color || 'text-white'}`}>{formatINR(value)}</span>
+            <span className={`text-sm ${isBold ? 'font-bold' : 'font-semibold'} ${color || 'text-foreground'}`}>{formatINR(value)}</span>
         </div>
     );
 }

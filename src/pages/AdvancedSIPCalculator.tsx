@@ -20,7 +20,7 @@ import {
     ArcElement
 } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import { AnalyticsService } from '../lib/analytics';
 
 ChartJS.register(
@@ -125,29 +125,29 @@ export default function AdvancedSIPCalculator() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
+        <div className="min-h-dvh bg-background animate-fade-in">
             <div className="px-4 pt-14 pb-8">
                 <div className="flex items-center gap-3 mb-5">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                        <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-white">Advanced SIP</h1>
-                        <p className="text-slate-500 text-xs">Mutual Fund growth with yearly breakdown</p>
+                        <h1 className="text-lg font-bold text-foreground">Advanced SIP</h1>
+                        <p className="text-muted-foreground text-xs">Mutual Fund growth with yearly breakdown</p>
                     </div>
                 </div>
 
-                <DisclaimerBanner type="calculator" />
+                <DisclaimerComponent module="sip" />
 
                 {/* Tab bar */}
-                <div className="flex gap-1 bg-dark-card border border-dark-border rounded-xl p-1 mb-5">
+                <div className="flex gap-1 bg-card border border-border rounded-xl p-1 mb-5">
                     {[
                         { key: 'input', label: 'Inputs', icon: TrendingUp },
                         { key: 'report', label: 'Report', icon: FileText },
                         { key: 'graph', label: 'Growth', icon: BarChart3 },
                     ].map(tab => (
                         <button key={tab.key} onClick={() => setActiveTab(tab.key as any)}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold rounded-lg transition-all ${activeTab === tab.key ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20' : 'text-slate-400'}`}>
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold rounded-lg transition-all ${activeTab === tab.key ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20' : 'text-muted-foreground'}`}>
                             <tab.icon size={14} />{tab.label}
                         </button>
                     ))}
@@ -155,7 +155,7 @@ export default function AdvancedSIPCalculator() {
 
                 {activeTab === 'input' && (
                     <div className="space-y-4">
-                        <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-4">
+                        <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
                             <InputField label="Monthly Investment" value={monthly} onChange={setMonthly} prefix="₹" />
                             <InputField label="Expected Return (p.a)" value={rate} onChange={setRate} suffix="%" />
                             <InputField label="Time Period" value={years} onChange={setYears} suffix="Years" />
@@ -165,16 +165,16 @@ export default function AdvancedSIPCalculator() {
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                                 className="bg-gradient-to-br from-brand-purple/10 to-brand-blue/10 border border-brand-purple/20 rounded-2xl p-5">
                                 <div className="text-center mb-6">
-                                    <p className="text-white/60 text-xs mb-1">Estimated Future Value</p>
-                                    <p className="text-3xl font-bold text-white">{formatINR(result.totalValue)}</p>
+                                    <p className="text-foreground/60 text-xs mb-1">Estimated Future Value</p>
+                                    <p className="text-3xl font-bold text-foreground">{formatINR(result.totalValue)}</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-3 rounded-xl bg-black/20 text-center">
-                                        <p className="text-white/40 text-[10px] uppercase font-bold mb-1">Invested</p>
-                                        <p className="text-white font-bold text-sm">{formatINR(result.invested)}</p>
+                                        <p className="text-foreground/40 text-[10px] uppercase font-bold mb-1">Invested</p>
+                                        <p className="text-foreground font-bold text-sm">{formatINR(result.invested)}</p>
                                     </div>
                                     <div className="p-3 rounded-xl bg-black/20 text-center">
-                                        <p className="text-white/40 text-[10px] uppercase font-bold mb-1">Returns</p>
+                                        <p className="text-foreground/40 text-[10px] uppercase font-bold mb-1">Returns</p>
                                         <p className="text-brand-green font-bold text-sm">{formatINR(result.returns)}</p>
                                     </div>
                                 </div>
@@ -206,12 +206,12 @@ export default function AdvancedSIPCalculator() {
                 )}
 
                 {activeTab === 'report' && result && (
-                    <div className="bg-dark-card border border-dark-border rounded-2xl p-4 overflow-hidden">
-                        <h3 className="text-white font-bold text-sm mb-4">Yearly Breakdown</h3>
+                    <div className="bg-card border border-border rounded-2xl p-4 overflow-hidden">
+                        <h3 className="text-foreground font-bold text-sm mb-4">Yearly Breakdown</h3>
                         <div className="overflow-x-auto">
                             <table className="w-full text-xs">
                                 <thead>
-                                    <tr className="text-slate-500 border-b border-dark-border text-left">
+                                    <tr className="text-muted-foreground border-b border-border text-left">
                                         <th className="py-2">Year</th>
                                         <th className="py-2 text-right">Invested</th>
                                         <th className="py-2 text-right">Returns</th>
@@ -220,11 +220,11 @@ export default function AdvancedSIPCalculator() {
                                 </thead>
                                 <tbody>
                                     {result.yearlyData.map((row) => (
-                                        <tr key={row.year} className="border-b border-dark-border/30">
-                                            <td className="py-2.5 text-slate-400">{row.year}</td>
-                                            <td className="py-2.5 text-right text-white">{formatINR(row.invested).replace('₹', '')}</td>
+                                        <tr key={row.year} className="border-b border-border/30">
+                                            <td className="py-2.5 text-muted-foreground">{row.year}</td>
+                                            <td className="py-2.5 text-right text-foreground">{formatINR(row.invested).replace('₹', '')}</td>
                                             <td className="py-2.5 text-right text-brand-green">{formatINR(row.returns).replace('₹', '')}</td>
-                                            <td className="py-2.5 text-right text-white font-bold">{formatINR(row.value).replace('₹', '')}</td>
+                                            <td className="py-2.5 text-right text-foreground font-bold">{formatINR(row.value).replace('₹', '')}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -234,8 +234,8 @@ export default function AdvancedSIPCalculator() {
                 )}
 
                 {activeTab === 'graph' && result && (
-                    <div className="bg-dark-card border border-dark-border rounded-2xl p-4">
-                        <h3 className="text-white font-bold text-sm mb-6">Growth Visualization</h3>
+                    <div className="bg-card border border-border rounded-2xl p-4">
+                        <h3 className="text-foreground font-bold text-sm mb-6">Growth Visualization</h3>
                         <div className="h-64">
                             <Bar
                                 ref={chartRef}
@@ -252,10 +252,10 @@ export default function AdvancedSIPCalculator() {
                             />
                         </div>
                         <div className="flex gap-4 mt-6 justify-center">
-                            <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                 <span className="w-2.5 h-2.5 bg-brand-blue rounded-full" /> Invested
                             </span>
-                            <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                 <span className="w-2.5 h-2.5 bg-brand-green rounded-full" /> Returns
                             </span>
                         </div>
@@ -272,12 +272,12 @@ export default function AdvancedSIPCalculator() {
 function InputField({ label, value, onChange, prefix, suffix }: { label: string; value: string; onChange: (v: string) => void; prefix?: string; suffix?: string }) {
     return (
         <div>
-            <label className="text-xs text-slate-400 mb-2 block">{label}</label>
+            <label className="text-xs text-muted-foreground mb-2 block">{label}</label>
             <div className="relative">
-                {prefix && <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-medium">{prefix}</span>}
+                {prefix && <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">{prefix}</span>}
                 <input type="number" value={value} onChange={e => onChange(e.target.value)}
-                    className={`w-full bg-dark-bg border border-dark-border rounded-xl py-3.5 text-white text-sm focus:outline-none focus:border-brand-purple transition-all ${prefix ? 'pl-9 pr-4' : suffix ? 'pl-4 pr-16' : 'px-4'}`} />
-                {suffix && <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-medium">{suffix}</span>}
+                    className={`w-full bg-dark-bg border border-border rounded-xl py-3.5 text-foreground text-sm focus:outline-none focus:border-brand-purple transition-all ${prefix ? 'pl-9 pr-4' : suffix ? 'pl-4 pr-16' : 'px-4'}`} />
+                {suffix && <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-medium">{suffix}</span>}
             </div>
         </div>
     );

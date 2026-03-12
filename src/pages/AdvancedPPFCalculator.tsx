@@ -4,7 +4,7 @@ import { ArrowLeft, Info, Share2, Save, Check, Download, FileText, Landmark, Che
 import { motion, AnimatePresence } from 'framer-motion';
 import { nativeShare } from '../utils/nativeShare';
 import NumberInput from '../components/NumberInput';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR, formatINRWords } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
@@ -125,31 +125,31 @@ export default function AdvancedPPFCalculator() {
     };
 
     return (
-        <div className="min-h-dvh bg-white dark:bg-[#0F172A] animate-fade-in">
-            <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3">
+        <div className="min-h-dvh bg-white dark:bg-background animate-fade-in">
+            <div className="sticky top-0 z-10 bg-white/95 dark:bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
-                            <ArrowLeft size={18} className="text-slate-600 dark:text-slate-400" />
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">
+                            <ArrowLeft size={18} className="text-slate-600 dark:text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-slate-900 dark:text-white">PPF Calculator</h1>
-                            <p className="text-slate-500 text-xs">Public Provident Fund</p>
+                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">PPF Calculator</h1>
+                            <p className="text-muted-foreground text-xs">Public Provident Fund</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border">
-                            <Info size={16} className="text-slate-600 dark:text-slate-400" />
+                        <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">
+                            <Info size={16} className="text-slate-600 dark:text-muted-foreground" />
                         </button>
-                        <button className="p-2 rounded-xl bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border"
+                        <button className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border"
                             onClick={() => nativeShare('PPF Calculator', 'Calculate PPF maturity with FinCalix!', window.location.href)}>
-                            <Share2 size={16} className="text-slate-600 dark:text-slate-400" />
+                            <Share2 size={16} className="text-slate-600 dark:text-muted-foreground" />
                         </button>
                     </div>
                 </div>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent module="government" />
 
             <div className="px-4 pb-28">
                 {/* Frequency Toggle */}
@@ -161,7 +161,7 @@ export default function AdvancedPPFCalculator() {
                         }}
                             className={`px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${frequency === f.key
                                 ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20'
-                                : 'bg-slate-100 dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-400'
+                                : 'bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-slate-600 dark:text-muted-foreground'
                             }`}>
                             {f.label}
                         </button>
@@ -193,23 +193,23 @@ export default function AdvancedPPFCalculator() {
                 </div>
 
                 {/* Result Card */}
-                <motion.div layout className="p-5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border shadow-lg dark:shadow-none mb-4">
+                <motion.div layout className="p-5 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-lg dark:shadow-none mb-4">
                     <div className="text-center mb-4">
-                        <p className="text-slate-500 text-sm mb-1">Maturity Value</p>
+                        <p className="text-muted-foreground text-sm mb-1">Maturity Value</p>
                         <motion.p key={maturityValue} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                             className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">
                             {formatINR(maturityValue)}
                         </motion.p>
-                        {maturityValue >= 100000 && <p className="text-slate-400 text-[10px] mt-1">({formatINRWords(maturityValue)})</p>}
+                        {maturityValue >= 100000 && <p className="text-muted-foreground text-[10px] mt-1">({formatINRWords(maturityValue)})</p>}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30">
-                            <p className="text-slate-500 text-[10px] uppercase font-bold mb-1">Total Invested</p>
-                            <p className="text-slate-900 dark:text-white font-bold text-sm">{formatINR(totalInvested)}</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Total Invested</p>
+                            <p className="text-slate-900 dark:text-foreground font-bold text-sm">{formatINR(totalInvested)}</p>
                         </div>
                         <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30">
-                            <p className="text-slate-500 text-[10px] uppercase font-bold mb-1">Interest Earned</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Interest Earned</p>
                             <p className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">{formatINR(totalInterest)}</p>
                         </div>
                     </div>
@@ -219,7 +219,7 @@ export default function AdvancedPPFCalculator() {
                 <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-1.5 px-1 mb-1">
                         <Landmark size={13} className="text-emerald-500" />
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">PPF Rules & Benefits</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">PPF Rules & Benefits</span>
                     </div>
                     {[
                         { icon: '🔒', text: `Lock-in period: ${PPF_LOCK_IN_YEARS} years (extendable in ${PPF_EXTENSION_YEARS}-year blocks)`, type: 'info' },
@@ -237,7 +237,7 @@ export default function AdvancedPPFCalculator() {
                             <p className={`text-xs font-medium leading-relaxed ${
                                 item.type === 'positive' ? 'text-emerald-700 dark:text-emerald-400' :
                                 item.type === 'tip' ? 'text-blue-700 dark:text-blue-400' :
-                                'text-slate-600 dark:text-slate-400'
+                                'text-slate-600 dark:text-muted-foreground'
                             }`}>{item.text}</p>
                         </div>
                     ))}
@@ -245,7 +245,7 @@ export default function AdvancedPPFCalculator() {
 
                 {/* Year-by-Year Table */}
                 <button onClick={() => setShowTable(!showTable)}
-                    className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 font-bold text-sm bg-white dark:bg-dark-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
+                    className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-slate-700 dark:text-slate-300 font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
                     {showTable ? 'Hide' : 'View'} Year-by-Year Breakdown
                     {showTable ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
@@ -254,10 +254,10 @@ export default function AdvancedPPFCalculator() {
                     {showTable && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-4">
-                            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-2xl p-3 overflow-x-auto shadow-sm dark:shadow-none">
+                            <div className="bg-white dark:bg-card border border-slate-200 dark:border-border rounded-2xl p-3 overflow-x-auto shadow-sm dark:shadow-none">
                                 <table className="w-full text-[10px] min-w-[450px]">
                                     <thead>
-                                        <tr className="text-slate-500 border-b border-slate-200 dark:border-dark-border">
+                                        <tr className="text-muted-foreground border-b border-slate-200 dark:border-border">
                                             <th className="py-2 text-left font-semibold">Year</th>
                                             <th className="py-2 text-right font-semibold">Deposit</th>
                                             <th className="py-2 text-right font-semibold">Opening</th>
@@ -267,17 +267,17 @@ export default function AdvancedPPFCalculator() {
                                     </thead>
                                     <tbody>
                                         {schedule.map(row => (
-                                            <tr key={row.year} className={`border-b border-slate-100 dark:border-dark-border/30 ${
+                                            <tr key={row.year} className={`border-b border-slate-100 dark:border-border/30 ${
                                                 row.year === PPF_LOCK_IN_YEARS ? 'bg-emerald-50 dark:bg-emerald-500/5' : ''
                                             }`}>
                                                 <td className="py-1.5 text-slate-700 dark:text-slate-300 font-medium">
                                                     {row.year}
                                                     {row.year === PPF_LOCK_IN_YEARS && <span className="text-[8px] text-emerald-500 ml-1">Maturity</span>}
                                                 </td>
-                                                <td className="py-1.5 text-right text-slate-600 dark:text-slate-400">{formatINR(row.contribution)}</td>
-                                                <td className="py-1.5 text-right text-slate-500 dark:text-slate-400">{formatINR(row.opening)}</td>
+                                                <td className="py-1.5 text-right text-slate-600 dark:text-muted-foreground">{formatINR(row.contribution)}</td>
+                                                <td className="py-1.5 text-right text-muted-foreground dark:text-muted-foreground">{formatINR(row.opening)}</td>
                                                 <td className="py-1.5 text-right text-emerald-600 dark:text-emerald-400">{formatINR(row.interest)}</td>
-                                                <td className="py-1.5 text-right text-slate-800 dark:text-white font-medium">{formatINR(row.closing)}</td>
+                                                <td className="py-1.5 text-right text-slate-800 dark:text-foreground font-medium">{formatINR(row.closing)}</td>
                                             </tr>
                                         ))}
                                     </tbody>

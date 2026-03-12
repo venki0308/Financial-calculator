@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import BottomSheet from '../components/BottomSheet';
 import { AnalyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 
 const languages = [
@@ -59,20 +60,20 @@ export default function Settings() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
+        <div className="min-h-dvh bg-background animate-fade-in">
             <div className="px-4 pt-14 pb-8">
                 <div className="flex items-center gap-3 mb-6">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border"><ArrowLeft size={18} className="text-slate-400" /></button>
-                    <h1 className="text-xl font-bold text-white">{t('settings.title')}</h1>
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border"><ArrowLeft size={18} className="text-muted-foreground" /></button>
+                    <h1 className="text-xl font-bold text-foreground">{t('settings.title')}</h1>
                 </div>
 
                 {/* Appearance */}
-                <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.appearance')}</p>
-                <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden mb-6">
+                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.appearance')}</p>
+                <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
                     <div className="flex items-center justify-between p-4">
                         <div className="flex items-center gap-3">
                             {darkMode ? <Moon size={20} className="text-brand-purple" /> : <Sun size={20} className="text-amber-400" />}
-                            <span className="text-white font-medium text-sm">{t('settings.darkMode')}</span>
+                            <span className="text-foreground font-medium text-sm">{t('settings.darkMode')}</span>
                         </div>
                         <button onClick={toggleDarkMode} className={`w-12 h-7 rounded-full p-0.5 transition-colors ${darkMode ? 'bg-brand-purple' : 'bg-slate-600'}`}>
                             <motion.div layout className={`w-6 h-6 rounded-full bg-white shadow-md ${darkMode ? 'ml-auto' : 'ml-0'}`} />
@@ -81,31 +82,31 @@ export default function Settings() {
                 </div>
 
                 {/* Language */}
-                <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.language')}</p>
-                <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden mb-6">
+                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.language')}</p>
+                <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
                     <button onClick={() => setShowLangPicker(true)} className="w-full flex items-center gap-4 p-4">
                         <Globe size={20} className="text-brand-blue" />
                         <div className="flex-1 text-left">
-                            <p className="text-white font-medium text-sm">{t('settings.language')}</p>
-                            <p className="text-slate-500 text-xs">{currentLang.nativeName}</p>
+                            <p className="text-foreground font-medium text-sm">{t('settings.language')}</p>
+                            <p className="text-muted-foreground text-xs">{currentLang.nativeName}</p>
                         </div>
                         <ChevronRight size={16} className="text-slate-600" />
                     </button>
                 </div>
 
                 {/* Notifications */}
-                <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.notifications')}</p>
-                <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden mb-6">
+                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.notifications')}</p>
+                <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
                     <button onClick={() => setShowNotif(true)} className="w-full flex items-center gap-4 p-4">
                         <Bell size={20} className="text-brand-purple" />
-                        <span className="text-white font-medium text-sm flex-1 text-left">{t('settings.notifications')}</span>
+                        <span className="text-foreground font-medium text-sm flex-1 text-left">{t('settings.notifications')}</span>
                         <ChevronRight size={16} className="text-slate-600" />
                     </button>
                 </div>
 
                 {/* About & Sharing */}
-                <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.about')}</p>
-                <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden mb-6">
+                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.about')}</p>
+                <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
                     <MenuItem icon={Info} label={t('settings.about')} color="#10B981" onClick={() => navigate('/about')} />
                     <div className="h-px bg-dark-border mx-4" />
                     <MenuItem icon={FileText} label={t('settings.privacyPolicy')} color="#3B82F6" onClick={() => navigate('/privacy-policy')} />
@@ -174,8 +175,8 @@ export default function Settings() {
                 </div>
 
                 {/* Data Management */}
-                <p className="text-slate-500 text-xs font-semibold uppercase tracking-widest mb-3">Data</p>
-                <div className="bg-dark-card border border-dark-border rounded-2xl overflow-hidden mb-6">
+                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">Data</p>
+                <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
                     <button onClick={() => setShowClearConfirm(true)} className="w-full flex items-center gap-4 p-4">
                         <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
                             <Trash2 size={20} className="text-red-400" />
@@ -199,10 +200,10 @@ export default function Settings() {
                 <div className="space-y-2">
                     {languages.map(lang => (
                         <button key={lang.code} onClick={() => changeLanguage(lang.code)}
-                            className={`w-full flex items-center justify-between p-4 rounded-xl transition-colors ${i18n.language.startsWith(lang.code) ? 'bg-brand-green/10 border-2 border-brand-green' : 'bg-dark-bg border-2 border-transparent hover:bg-dark-card'}`}>
+                            className={`w-full flex items-center justify-between p-4 rounded-xl transition-colors ${i18n.language.startsWith(lang.code) ? 'bg-brand-green/10 border-2 border-brand-green' : 'bg-dark-bg border-2 border-transparent hover:bg-card'}`}>
                             <div className="flex flex-col items-start">
-                                <span className="text-white font-medium text-sm">{lang.nativeName}</span>
-                                <span className="text-slate-500 text-xs">{lang.name}</span>
+                                <span className="text-foreground font-medium text-sm">{lang.nativeName}</span>
+                                <span className="text-muted-foreground text-xs">{lang.name}</span>
                             </div>
                             {i18n.language.startsWith(lang.code) && <Check size={18} className="text-brand-green" />}
                         </button>
@@ -213,10 +214,20 @@ export default function Settings() {
             {/* Notification Sheet */}
             <BottomSheet isOpen={showNotif} onClose={() => setShowNotif(false)} title={t('settings.notifications')}>
                 <div className="space-y-3">
-                    {([['priceAlerts', t('settings.priceAlerts')], ['newSchemes', t('settings.newSchemes')], ['calcReminders', t('settings.calcReminders')], ['appUpdates', t('settings.appUpdates')]] as const).map(([key, label]) => (
-                        <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-dark-bg">
-                            <span className="text-white text-sm">{label}</span>
-                            <button onClick={() => setNotification(key, !notifications[key])} className={`w-12 h-7 rounded-full p-0.5 transition-colors ${notifications[key] ? 'bg-brand-green' : 'bg-slate-600'}`}>
+                    {([['dailyQuotes', 'Daily Financial Quotes'], ['priceAlerts', t('settings.priceAlerts')], ['newSchemes', t('settings.newSchemes')], ['calcReminders', t('settings.calcReminders')], ['appUpdates', t('settings.appUpdates')]] as const).map(([key, label]) => (
+                        <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-muted">
+                            <span className="text-foreground text-sm">{label}</span>
+                            <button onClick={async () => {
+                                const nextVal = !notifications[key];
+                                setNotification(key, nextVal);
+                                if (key === 'dailyQuotes' && nextVal) {
+                                    if (Capacitor.isNativePlatform()) {
+                                        await LocalNotifications.requestPermissions();
+                                    } else if ('Notification' in window) {
+                                        await Notification.requestPermission();
+                                    }
+                                }
+                            }} className={`w-12 h-7 rounded-full p-0.5 transition-colors ${notifications[key] ? 'bg-brand-green' : 'bg-slate-600'}`}>
                                 <motion.div layout className={`w-6 h-6 rounded-full bg-white shadow-md ${notifications[key] ? 'ml-auto' : 'ml-0'}`} />
                             </button>
                         </div>
@@ -230,14 +241,14 @@ export default function Settings() {
                     <>
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[100]" onClick={() => setShowClearConfirm(false)} />
                         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none">
-                            <div className="bg-slate-800 border-2 border-slate-600 rounded-2xl w-full max-w-sm shadow-2xl pointer-events-auto p-6">
+                            <div className="bg-card border-border border-2 border-slate-600 rounded-2xl w-full max-w-sm shadow-2xl pointer-events-auto p-6">
                                 <div className="flex justify-center mb-4">
                                     <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center"><Trash2 size={32} className="text-red-500" /></div>
                                 </div>
-                                <h3 className="text-xl font-bold text-white text-center mb-2">Clear All Data?</h3>
+                                <h3 className="text-xl font-bold text-foreground text-center mb-2">Clear All Data?</h3>
                                 <p className="text-slate-300 text-center text-sm mb-6">This will erase ALL data — bookmarks, saved calculations, expense entries, budgets, and settings. The app will restart like a fresh installation.</p>
                                 <div className="flex gap-3">
-                                    <button onClick={() => setShowClearConfirm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-white font-semibold text-sm border-2 border-slate-500">Cancel</button>
+                                    <button onClick={() => setShowClearConfirm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-foreground font-semibold text-sm border-2 border-slate-500">Cancel</button>
                                     <button onClick={handleClearData} className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold text-sm border-2 border-red-500">Clear</button>
                                 </div>
                             </div>
@@ -251,9 +262,9 @@ export default function Settings() {
 
 function MenuItem({ icon: Icon, label, color, onClick }: { icon: React.ElementType; label: string; color: string; onClick?: () => void }) {
     return (
-        <button onClick={onClick} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-dark-card border border-dark-border">
+        <button onClick={onClick} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-card border border-border">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15` }}><Icon size={20} style={{ color }} /></div>
-            <span className="text-white font-medium text-sm flex-1 text-left">{label}</span>
+            <span className="text-foreground font-medium text-sm flex-1 text-left">{label}</span>
             <ChevronRight size={16} className="text-slate-600" />
         </button>
     );

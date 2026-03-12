@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useNotificationStore } from './useNotificationStore';
 
 export interface Calculation {
     id: string;
@@ -24,7 +25,16 @@ export const useCalculatorStore = create<CalculatorState>()(
         (set) => ({
             savedCalculations: [],
             history: [],
-            addSaved: (calc) => set((s) => ({ savedCalculations: [calc, ...s.savedCalculations] })),
+            addSaved: (calc) => {
+                useNotificationStore.getState().addNotification({
+                    type: 'savings_insight',
+                    title: '💾 Calculation Saved',
+                    body: `Your ${calc.calculatorType} calculation was saved.`,
+                    icon: '💾',
+                    route: '/profile/saved',
+                });
+                set((s) => ({ savedCalculations: [calc, ...s.savedCalculations] }));
+            },
             updateSaved: (id, inputValues, resultValues) => set((s) => ({
                 savedCalculations: s.savedCalculations.map((c) =>
                     c.id === id ? { ...c, inputValues, resultValues, timestamp: Date.now() } : c

@@ -9,7 +9,7 @@ import {
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { formatINR } from '../utils/calculations';
@@ -99,15 +99,15 @@ export default function BreakEvenCalculator() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
-            <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-dark-border">
+        <div className="min-h-dvh bg-background animate-fade-in">
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border"><ArrowLeft size={18} className="text-slate-400" /></button>
-                    <div><h1 className="text-lg font-bold text-white">Break-even Calculator</h1><p className="text-slate-500 text-xs">Business planning</p></div>
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border"><ArrowLeft size={18} className="text-muted-foreground" /></button>
+                    <div><h1 className="text-lg font-bold text-foreground">Break-even Calculator</h1><p className="text-muted-foreground text-xs">Business planning</p></div>
                 </div>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent module="general" />
 
             <div className="px-4 pb-28 pt-4 space-y-5">
                 <div className="space-y-3">
@@ -119,21 +119,21 @@ export default function BreakEvenCalculator() {
                 {/* Result Card */}
                 <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/20">
                     <p className="text-emerald-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">Units to Break Even</p>
-                    <p className="text-3xl font-black text-white mb-4">{result.breakEvenUnits.toLocaleString('en-IN')}</p>
+                    <p className="text-3xl font-black text-foreground mb-4">{result.breakEvenUnits.toLocaleString('en-IN')}</p>
                     <div className="grid grid-cols-2 gap-3">
-                        <div><p className="text-slate-500 text-[10px] uppercase font-bold">Break Even Revenue</p><p className="text-brand-green font-bold text-sm">{formatINR(result.breakEvenSales)}</p></div>
-                        <div><p className="text-slate-500 text-[10px] uppercase font-bold">Margin per Unit</p><p className="text-blue-400 font-bold text-sm">{formatINR(result.contribution)}</p></div>
-                        <div><p className="text-slate-500 text-[10px] uppercase font-bold">Contribution Margin</p><p className="text-amber-400 font-bold text-sm">{result.marginPct}%</p></div>
-                        <div><p className="text-slate-500 text-[10px] uppercase font-bold">Fixed Cost Recovery</p><p className="text-white font-bold text-sm">{formatINR(fixed)}</p></div>
+                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">Break Even Revenue</p><p className="text-brand-green font-bold text-sm">{formatINR(result.breakEvenSales)}</p></div>
+                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">Margin per Unit</p><p className="text-blue-400 font-bold text-sm">{formatINR(result.contribution)}</p></div>
+                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">Contribution Margin</p><p className="text-amber-400 font-bold text-sm">{result.marginPct}%</p></div>
+                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">Fixed Cost Recovery</p><p className="text-foreground font-bold text-sm">{formatINR(fixed)}</p></div>
                     </div>
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-white font-bold text-sm">
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
                         <Save size={16} /> {saved ? '✅ Saved!' : 'Save Calculation'}
                     </motion.button>
                 </motion.div>
 
                 {/* Revenue vs Cost Chart */}
-                <div className="p-4 rounded-2xl bg-dark-card border border-dark-border">
-                    <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2"><TrendingUp size={16} className="text-green-400" /> Revenue vs Cost</h3>
+                <div className="p-4 rounded-2xl bg-card border border-border">
+                    <h3 className="text-foreground font-bold text-sm mb-3 flex items-center gap-2"><TrendingUp size={16} className="text-green-400" /> Revenue vs Cost</h3>
                     <div className="h-52">
                         <Line ref={chartRef} data={chartData} options={{
                             responsive: true, maintainAspectRatio: false,
@@ -144,12 +144,12 @@ export default function BreakEvenCalculator() {
                             plugins: { legend: { labels: { color: '#94A3B8', font: { size: 10 } } } }
                         }} />
                     </div>
-                    <p className="text-slate-500 text-[10px] mt-2 text-center">Green & Red lines cross at the break-even point ({result.breakEvenUnits} units)</p>
+                    <p className="text-muted-foreground text-[10px] mt-2 text-center">Green & Red lines cross at the break-even point ({result.breakEvenUnits} units)</p>
                 </div>
 
                 {/* Profit/Loss Bar Chart */}
-                <div className="p-4 rounded-2xl bg-dark-card border border-dark-border">
-                    <h3 className="text-white font-bold text-sm mb-3 flex items-center gap-2"><DollarSign size={16} className="text-emerald-400" /> Profit Projection</h3>
+                <div className="p-4 rounded-2xl bg-card border border-border">
+                    <h3 className="text-foreground font-bold text-sm mb-3 flex items-center gap-2"><DollarSign size={16} className="text-emerald-400" /> Profit Projection</h3>
                     <div className="h-48">
                         <Bar data={profitChart} options={{
                             responsive: true, maintainAspectRatio: false,
@@ -163,17 +163,17 @@ export default function BreakEvenCalculator() {
                 </div>
 
                 {/* Projection Table */}
-                <button onClick={() => setShowProjection(!showProjection)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-dark-card border border-dark-border text-white font-bold text-sm">
-                    <span className="flex items-center gap-2"><Target size={16} className="text-slate-400" /> Profit Projection Table</span>
-                    {showProjection ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                <button onClick={() => setShowProjection(!showProjection)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
+                    <span className="flex items-center gap-2"><Target size={16} className="text-muted-foreground" /> Profit Projection Table</span>
+                    {showProjection ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
                     {showProjection && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                            <div className="rounded-2xl bg-dark-card border border-dark-border overflow-hidden">
-                                <div className="grid grid-cols-4 text-[9px] font-bold text-slate-500 uppercase p-2 bg-slate-800/50"><span>Units</span><span>Revenue</span><span>Cost</span><span>Profit</span></div>
+                            <div className="rounded-2xl bg-card border border-border overflow-hidden">
+                                <div className="grid grid-cols-4 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-800/50"><span>Units</span><span>Revenue</span><span>Cost</span><span>Profit</span></div>
                                 {result.projection.map((p, i) => (
-                                    <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${p.units === result.breakEvenUnits ? 'bg-green-500/10 border-l-2 border-green-500' : i % 2 === 0 ? 'bg-dark-card' : 'bg-slate-800/20'}`}>
+                                    <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${p.units === result.breakEvenUnits ? 'bg-green-500/10 border-l-2 border-green-500' : i % 2 === 0 ? 'bg-card' : 'bg-slate-800/20'}`}>
                                         <span className="text-slate-300">{p.units}</span>
                                         <span className="text-blue-400">{formatINR(p.revenue)}</span>
                                         <span className="text-orange-400">{formatINR(p.totalCost)}</span>
@@ -187,8 +187,8 @@ export default function BreakEvenCalculator() {
 
                 {/* Export & Share */}
                 <div className="grid grid-cols-3 gap-3">
-                    <button onClick={handlePDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium"><Download size={16} /> PDF</button>
-                    <button onClick={handleExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium"><Download size={16} /> Excel</button>
+                    <button onClick={handlePDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> PDF</button>
+                    <button onClick={handleExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> Excel</button>
                     <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 text-white text-[10px] font-bold"><Share2 size={16} /> Share</button>
                 </div>
 

@@ -17,7 +17,7 @@ import {
 } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
-import DisclaimerBanner from '../components/DisclaimerBanner';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import { calculateSIP, formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -232,36 +232,36 @@ export default function SIPCalculator() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in">
-            <div className="sticky top-0 z-10 bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-dark-border">
+        <div className="min-h-dvh bg-background animate-fade-in">
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                            <ArrowLeft size={18} className="text-slate-400" />
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                            <ArrowLeft size={18} className="text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-white">SIP Calculator</h1>
-                            <p className="text-slate-500 text-xs">Mutual Fund wealth planner</p>
+                            <h1 className="text-lg font-bold text-foreground">SIP Calculator</h1>
+                            <p className="text-muted-foreground text-xs">Mutual Fund wealth planner</p>
                         </div>
                     </div>
-                    <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <Info size={16} className="text-slate-400" />
+                    <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-card border border-border">
+                        <Info size={16} className="text-muted-foreground" />
                     </button>
                 </div>
             </div>
 
-            <DisclaimerBanner type="calculator" />
+            <DisclaimerComponent module="sip" />
 
             <div className="px-4 pb-28 pt-4">
                 {/* SIP Type Tabs */}
-                <div className="flex gap-1 bg-dark-card border border-dark-border rounded-xl p-1 mb-5">
+                <div className="flex gap-1 bg-card border border-border rounded-xl p-1 mb-5">
                     {tabConfig.map(tab => (
                         <button
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key)}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-semibold rounded-lg transition-all ${activeTab === tab.key
                                     ? 'bg-brand-green text-black shadow-lg shadow-brand-green/20'
-                                    : 'text-slate-400 hover:text-slate-300'
+                                    : 'text-muted-foreground hover:text-slate-300'
                                 }`}
                         >
                             <tab.icon size={13} />
@@ -297,10 +297,10 @@ export default function SIPCalculator() {
                 </div>
 
                 {/* Result Card */}
-                <motion.div layout className="p-5 rounded-2xl bg-dark-card border border-dark-border mb-6">
+                <motion.div layout className="p-5 rounded-2xl bg-card border border-border mb-6">
                     <div className="text-center mb-6">
-                        <p className="text-slate-400 text-sm mb-1">{displayValues.label}</p>
-                        <motion.p key={displayValues.primary} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-3xl font-bold text-white">
+                        <p className="text-muted-foreground text-sm mb-1">{displayValues.label}</p>
+                        <motion.p key={displayValues.primary} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-3xl font-bold text-foreground">
                             {formatINR(displayValues.primary)}
                         </motion.p>
                     </div>
@@ -320,11 +320,11 @@ export default function SIPCalculator() {
 
                     <div className="grid grid-cols-2 gap-3 mb-6">
                         <div className="p-3 rounded-xl bg-slate-800/20 text-center">
-                            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-1">Invested</p>
-                            <p className="text-white font-bold text-sm">{formatINR(displayValues.invested)}</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Invested</p>
+                            <p className="text-foreground font-bold text-sm">{formatINR(displayValues.invested)}</p>
                         </div>
                         <div className="p-3 rounded-xl bg-slate-800/20 text-center">
-                            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-1">Returns</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Returns</p>
                             <p className="text-brand-green font-bold text-sm">{formatINR(displayValues.returns)}</p>
                         </div>
                     </div>
@@ -332,7 +332,7 @@ export default function SIPCalculator() {
                     {/* Goal SIP: extra row */}
                     {activeTab === 'goal' && (
                         <div className="p-3 rounded-xl bg-brand-green/5 border border-brand-green/20 text-center mb-4">
-                            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-1">Target Amount</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Target Amount</p>
                             <p className="text-brand-green font-bold text-sm">{formatINR(goalTarget)}</p>
                         </div>
                     )}
@@ -352,8 +352,8 @@ export default function SIPCalculator() {
 
                 {/* Growth Chart (Basic & Step-Up only) */}
                 {barChartData && (
-                    <div className="bg-dark-card border border-dark-border rounded-2xl p-4 mb-6">
-                        <h3 className="text-white font-bold text-sm mb-4">Year-wise Growth</h3>
+                    <div className="bg-card border border-border rounded-2xl p-4 mb-6">
+                        <h3 className="text-foreground font-bold text-sm mb-4">Year-wise Growth</h3>
                         <div className="h-56">
                             <Bar
                                 data={barChartData}
@@ -369,8 +369,8 @@ export default function SIPCalculator() {
                             />
                         </div>
                         <div className="flex gap-4 mt-3 justify-center">
-                            <span className="flex items-center gap-1.5 text-xs text-slate-400"><span className="w-2.5 h-2.5 bg-[#3B82F6] rounded-full" /> Invested</span>
-                            <span className="flex items-center gap-1.5 text-xs text-slate-400"><span className="w-2.5 h-2.5 bg-brand-green rounded-full" /> Returns</span>
+                            <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><span className="w-2.5 h-2.5 bg-[#3B82F6] rounded-full" /> Invested</span>
+                            <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><span className="w-2.5 h-2.5 bg-brand-green rounded-full" /> Returns</span>
                         </div>
                     </div>
                 )}
@@ -400,10 +400,10 @@ export default function SIPCalculator() {
                 )}
 
                 <div className="grid grid-cols-3 gap-3 mb-5 mt-4">
-                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium">
+                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium">
                         <Download size={16} /> PDF
                     </button>
-                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-dark-card border border-dark-border text-slate-400 text-[10px] font-medium">
+                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium">
                         <Download size={16} /> Excel
                     </button>
                     <button onClick={async () => {
@@ -420,8 +420,8 @@ export default function SIPCalculator() {
                         <div className="flex items-start gap-3">
                             <TrendingUp size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
                             <div>
-                                <h3 className="text-white font-bold text-xs">Inflation-Adjusted Value</h3>
-                                <p className="text-slate-400 text-[11px] mt-1">Assuming ~6% inflation, your {formatINR(displayValues.primary)} will be worth approximately:</p>
+                                <h3 className="text-foreground font-bold text-xs">Inflation-Adjusted Value</h3>
+                                <p className="text-muted-foreground text-[11px] mt-1">Assuming ~6% inflation, your {formatINR(displayValues.primary)} will be worth approximately:</p>
                                 <p className="text-amber-400 font-bold text-sm mt-1">{formatINR(Math.round(displayValues.primary / Math.pow(1.06, activeTab === 'basic' ? years : suYears)))} in today's money</p>
                             </div>
                         </div>

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { AnalyticsService } from '../lib/analytics';
 import { exportToPDF } from '../utils/exportUtils';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { 
     UNIT_CONV, UNIT_LABELS, UNIT_SHORT, UNIT_KEYS, REF_UNITS, 
@@ -356,26 +357,20 @@ export default function PropertyCalculator() {
     };
 
     return (
-        <div className="min-h-dvh bg-[#0F172A] animate-fade-in relative pb-[env(safe-area-inset-bottom,40px)]" style={{ maxWidth: 428, margin: '0 auto' }}>
+        <div className="min-h-dvh bg-background animate-fade-in relative pb-[env(safe-area-inset-bottom,40px)]" style={{ maxWidth: 428, margin: '0 auto' }}>
             <div className="px-4 pt-14 pb-32">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-dark-card border border-dark-border">
-                        <ArrowLeft size={18} className="text-slate-400" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                        <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-white">Property Calculator</h1>
-                        <p className="text-slate-500 text-xs">Real Estate Financial Toolkit</p>
+                        <h1 className="text-lg font-bold text-foreground">Property Calculator</h1>
+                        <p className="text-muted-foreground text-xs">Real Estate Financial Toolkit</p>
                     </div>
                 </div>
 
-                {/* Disclaimer */}
-                <div className="mb-4 p-3 bg-amber-100/40 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/25 rounded-xl flex gap-2 items-start">
-                    <Info size={16} className="text-amber-700 dark:text-amber-500/80 mt-0.5 flex-shrink-0" />
-                    <p className="text-amber-900 dark:text-amber-300/90 text-[11px] leading-relaxed font-medium">
-                        Disclaimer: This calculation is an estimate. Government rates, stamp duties, and registration charges vary by state, location, and owner category. Please verify with local authorities.
-                    </p>
-                </div>
+                <DisclaimerComponent module="property" />
 
                 {/* Mode Tabs */}
                 <div className="flex gap-1.5 mb-5 overflow-x-auto pb-1">
@@ -390,7 +385,7 @@ export default function PropertyCalculator() {
                             onClick={() => { setMode(key); }}
                             className={`flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap min-w-[65px] ${mode === key
                                 ? 'bg-brand-green text-black shadow-lg shadow-brand-green/20'
-                                : 'bg-dark-card border border-dark-border text-slate-400'
+                                : 'bg-card border border-border text-muted-foreground'
                                 }`}
                         >
                             <Icon size={12} />
@@ -410,15 +405,15 @@ export default function PropertyCalculator() {
                         {/* ══ LAND TAB ══════════════════════════════════════════════ */}
                         {mode === 'land' && (
                             <div className="space-y-4">
-                                <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-4">
-                                    <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                                <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
+                                    <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
                                         <MapPin size={15} className="text-brand-green" /> Land Value Calculator
                                     </h3>
 
                                     {/* Area + Unit selector */}
                                     <Field label="Area" value={landArea} onChange={setLandArea} type="number" placeholder="e.g. 2000" />
                                     <div>
-                                        <label className="text-xs text-slate-400 mb-2 block">Unit</label>
+                                        <label className="text-xs text-muted-foreground mb-2 block">Unit</label>
                                         <div className="grid grid-cols-4 gap-1.5">
                                             {UNIT_KEYS.map((u: string) => (
                                                 <button
@@ -426,7 +421,7 @@ export default function PropertyCalculator() {
                                                     onClick={() => setLandUnit(u)}
                                                     className={`py-2 rounded-lg text-[10px] font-semibold transition-all ${landUnit === u
                                                         ? 'bg-brand-green text-black'
-                                                        : 'bg-dark-bg border border-dark-border text-slate-400'
+                                                        : 'bg-dark-bg border border-border text-muted-foreground'
                                                         }`}
                                                 >
                                                     {UNIT_SHORT_LABELS[u]}
@@ -437,13 +432,13 @@ export default function PropertyCalculator() {
 
                                     <Field label="Price per Unit (₹)" value={landPrice} onChange={setLandPrice} type="number" prefix="₹" placeholder="e.g. 3000" />
                                     
-                                    <div className="pt-2 border-t border-dark-border/50">
+                                    <div className="pt-2 border-t border-border/50">
                                         <button 
                                             onClick={() => setShowPlotPremium(!showPlotPremium)}
                                             className="flex items-center justify-between w-full py-2 group"
                                         >
-                                            <span className="text-xs font-bold text-slate-400 group-hover:text-white transition-colors">PLOT PREMIUM OPTIONS (OPTIONAL)</span>
-                                            {showPlotPremium ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
+                                            <span className="text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors">PLOT PREMIUM OPTIONS (OPTIONAL)</span>
+                                            {showPlotPremium ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                                         </button>
                                         
                                         <AnimatePresence>
@@ -464,7 +459,7 @@ export default function PropertyCalculator() {
                                                             id="dtcp_rera" 
                                                             checked={isDTCP} 
                                                             onChange={e => setIsDTCP(e.target.checked)}
-                                                            className="w-5 h-5 rounded border-dark-border bg-dark-bg accent-brand-green"
+                                                            className="w-5 h-5 rounded border-border bg-dark-bg accent-brand-green"
                                                         />
                                                         <label htmlFor="dtcp_rera" className="text-xs text-slate-300 font-medium select-none">DTCP / RERA Approved</label>
                                                     </div>
@@ -490,11 +485,11 @@ export default function PropertyCalculator() {
                                     >
                                         {/* Main result */}
                                         <div className="bg-gradient-to-br from-brand-green/15 to-emerald-900/10 border border-brand-green/30 rounded-2xl p-5 text-center relative overflow-hidden">
-                                            <p className="text-slate-400 text-xs mb-1">Estimated Land Value</p>
+                                            <p className="text-muted-foreground text-xs mb-1">Estimated Land Value</p>
                                             <p className="text-3xl font-extrabold text-brand-green">
                                                 {fmt(landResult.totalValue)}
                                             </p>
-                                            <p className="text-slate-500 text-xs mt-2">
+                                            <p className="text-muted-foreground text-xs mt-2">
                                                 {landArea} {UNIT_LABELS[landUnit]} × {fmt(Number(landPrice))} per unit
                                             </p>
                                             {landResult.premiumValue > 0 && (
@@ -512,13 +507,13 @@ export default function PropertyCalculator() {
                                         </div>
 
                                         {/* Converted areas */}
-                                        <div className="bg-dark-card border border-dark-border rounded-2xl p-4">
-                                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">Area Conversions</p>
+                                        <div className="bg-card border border-border rounded-2xl p-4">
+                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3">Area Conversions</p>
                                             <div className="space-y-2">
                                                 {landResult.conversions.map(c => (
                                                     <div key={c.key} className="flex justify-between items-center">
-                                                        <span className="text-slate-500 text-xs">{landArea} {UNIT_LABELS[landUnit]} =</span>
-                                                        <span className="text-white text-xs font-semibold">{c.value}</span>
+                                                        <span className="text-muted-foreground text-xs">{landArea} {UNIT_LABELS[landUnit]} =</span>
+                                                        <span className="text-foreground text-xs font-semibold">{c.value}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -566,8 +561,8 @@ export default function PropertyCalculator() {
                         {/* ══ FLAT / APARTMENT TAB ══════════════════════════════════ */}
                         {mode === 'flat' && (
                             <div className="space-y-4">
-                                <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
-                                    <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                                <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+                                    <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
                                         <Building2 size={15} className="text-brand-green" /> Flat / Apartment Price
                                     </h3>
                                     <Field label="Built-up Area (sq.ft)" value={builtUp} onChange={setBuiltUp} type="number" placeholder="e.g. 1200" />
@@ -579,11 +574,11 @@ export default function PropertyCalculator() {
                                         <Field label="Maintenance (₹)" value={maint} onChange={setMaint} type="number" prefix="₹" placeholder="0" />
                                     </div>
                                     <div>
-                                        <label className="text-xs text-slate-400 mb-2 block">GST Rate</label>
+                                        <label className="text-xs text-muted-foreground mb-2 block">GST Rate</label>
                                         <div className="flex gap-2">
                                             {['5', '12', '18', '28'].map(g => (
                                                 <button key={g} onClick={() => setGstPct(g)}
-                                                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${gstPct === g ? 'bg-brand-green text-black' : 'bg-dark-bg border border-dark-border text-slate-400'}`}>
+                                                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${gstPct === g ? 'bg-brand-green text-black' : 'bg-dark-bg border border-border text-muted-foreground'}`}>
                                                     {g}%
                                                 </button>
                                             ))}
@@ -599,8 +594,8 @@ export default function PropertyCalculator() {
                                 {flatResult && (
                                     <motion.div ref={resultRef} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
                                         {/* Breakdown card */}
-                                        <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-2.5 relative overflow-hidden">
-                                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Cost Breakdown</p>
+                                        <div className="bg-card border border-border rounded-2xl p-4 space-y-2.5 relative overflow-hidden">
+                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-1">Cost Breakdown</p>
                                             <CostRow label={`Base Price (${builtUp} × ${fmt(Number(ppsf))})`} value={flatResult.basePrice} />
                                             {flatResult.parkingAmt > 0 && <CostRow label="Parking Charges" value={flatResult.parkingAmt} />}
                                             {flatResult.amenitiesAmt > 0 && <CostRow label="Club / Amenities" value={flatResult.amenitiesAmt} />}
@@ -611,7 +606,7 @@ export default function PropertyCalculator() {
                                             <CostRow label={`GST (${gstPct}%)`} value={flatResult.gstAmt} accent="text-yellow-400" />
                                             <div className="border-t border-brand-green/30 pt-2">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-white text-sm font-bold">Total Property Cost</span>
+                                                    <span className="text-foreground text-sm font-bold">Total Property Cost</span>
                                                     <span className="text-brand-green text-xl font-extrabold">{fmt(flatResult.totalCost)}</span>
                                                 </div>
                                             </div>
@@ -625,8 +620,8 @@ export default function PropertyCalculator() {
 
                                         {/* Carpet vs Builtup efficiency */}
                                         {carpet && Number(carpet) > 0 && (
-                                            <div className="bg-dark-card border border-dark-border rounded-2xl p-4">
-                                                <p className="text-slate-400 text-xs mb-2">Carpet Efficiency</p>
+                                            <div className="bg-card border border-border rounded-2xl p-4">
+                                                <p className="text-muted-foreground text-xs mb-2">Carpet Efficiency</p>
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
                                                         <motion.div
@@ -640,7 +635,7 @@ export default function PropertyCalculator() {
                                                         {((Number(carpet) / Number(builtUp)) * 100).toFixed(0)}%
                                                     </span>
                                                 </div>
-                                                <p className="text-slate-500 text-xs mt-1">{carpet} sq.ft carpet of {builtUp} sq.ft built-up</p>
+                                                <p className="text-muted-foreground text-xs mt-1">{carpet} sq.ft carpet of {builtUp} sq.ft built-up</p>
                                             </div>
                                         )}
 
@@ -661,46 +656,46 @@ export default function PropertyCalculator() {
                         {/* ══ VILLA / INDEPENDENT HOUSE TAB ══════════════════════════ */}
                         {mode === 'villa' && (
                             <div className="space-y-4">
-                                <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
-                                    <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                                <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+                                    <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
                                         <Landmark size={15} className="text-brand-green" /> Villa / Independent House
                                     </h3>
                                     <div className="grid grid-cols-2 gap-3">
                                         <Field label="Plot Area" value={villaPlotArea} onChange={setVillaPlotArea} type="number" placeholder="e.g. 2400" />
                                         <div>
-                                            <label className="text-xs text-slate-400 mb-1 block">Plot Unit</label>
+                                            <label className="text-xs text-muted-foreground mb-1 block">Plot Unit</label>
                                             <select value={villaPlotUnit} onChange={e => setVillaPlotUnit(e.target.value)}
-                                                className="w-full bg-dark-bg border border-dark-border rounded-xl py-3 px-3 text-white text-sm focus:outline-none focus:border-brand-green">
+                                                className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
                                                 {['sqft', 'sqyard', 'sqm'].map((u: string) => <option key={u} value={u}>{UNIT_SHORT_LABELS[u]}</option>)}
                                             </select>
                                         </div>
                                     </div>
 
-                                    <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-2">Built-up Area (sq.ft)</p>
+                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">Built-up Area (sq.ft)</p>
                                     <div className="grid grid-cols-3 gap-2">
                                         <Field label="Ground Floor" value={groundFloor} onChange={setGroundFloor} type="number" placeholder="1200" />
                                         <Field label="First Floor" value={firstFloor} onChange={setFirstFloor} type="number" placeholder="800" />
                                         <Field label="Second Floor" value={secondFloor} onChange={setSecondFloor} type="number" placeholder="0" />
                                     </div>
 
-                                    <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-2">Construction Grade</p>
+                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">Construction Grade</p>
                                     <div className="grid grid-cols-4 gap-1.5">
                                         {CONSTRUCTION_GRADES.map((g: any) => (
                                             <button key={g.key} onClick={() => { setConstGrade(g.key); setConstRate(g.rate.toString()); }}
-                                                className={`py-2 rounded-lg text-[10px] font-semibold transition-all ${constGrade === g.key ? 'bg-brand-green text-black' : 'bg-dark-bg border border-dark-border text-slate-400'}`}>
+                                                className={`py-2 rounded-lg text-[10px] font-semibold transition-all ${constGrade === g.key ? 'bg-brand-green text-black' : 'bg-dark-bg border border-border text-muted-foreground'}`}>
                                                 {g.label}
                                             </button>
                                         ))}
                                     </div>
                                     <Field label="Rate per sq.ft (₹) — editable" value={constRate} onChange={setConstRate} type="number" prefix="₹" />
 
-                                    <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-2">Compound Wall</p>
+                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">Compound Wall</p>
                                     <div className="grid grid-cols-2 gap-2">
                                         <Field label="Perimeter (feet)" value={wallPerimeter} onChange={setWallPerimeter} type="number" placeholder="200" />
                                         <Field label="Rate (₹/ft)" value={wallRate} onChange={setWallRate} type="number" prefix="₹" />
                                     </div>
 
-                                    <p className="text-slate-500 text-[10px] uppercase font-bold tracking-wider mt-2">Overhead %</p>
+                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">Overhead %</p>
                                     {[
                                         { label: 'Electrical', val: ohElectrical, set: setOhElectrical },
                                         { label: 'Plumbing', val: ohPlumbing, set: setOhPlumbing },
@@ -708,7 +703,7 @@ export default function PropertyCalculator() {
                                         { label: 'Miscellaneous', val: ohMisc, set: setOhMisc },
                                     ].map(oh => (
                                         <div key={oh.label} className="flex items-center gap-3">
-                                            <span className="text-slate-400 text-xs w-24">{oh.label}</span>
+                                            <span className="text-muted-foreground text-xs w-24">{oh.label}</span>
                                             <input type="range" min={0} max={25} step={1} value={oh.val} onChange={e => oh.set(Number(e.target.value))}
                                                 className="flex-1 accent-brand-green h-1" />
                                             <span className="text-brand-green font-bold text-xs w-8 text-right">{oh.val}%</span>
@@ -724,11 +719,11 @@ export default function PropertyCalculator() {
                                 {villaResult && (
                                     <motion.div ref={resultRef} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
                                         {/* Floor-wise breakdown */}
-                                        <div className="bg-dark-card border border-dark-border rounded-2xl p-4">
-                                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-3">Floor-wise Cost</p>
+                                        <div className="bg-card border border-border rounded-2xl p-4">
+                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3">Floor-wise Cost</p>
                                             <table className="w-full text-xs">
                                                 <thead>
-                                                    <tr className="text-slate-500 border-b border-dark-border">
+                                                    <tr className="text-muted-foreground border-b border-border">
                                                         <th className="py-2 text-left font-medium">Floor</th>
                                                         <th className="py-2 text-right font-medium">Area (sq.ft)</th>
                                                         <th className="py-2 text-right font-medium">Cost</th>
@@ -736,8 +731,8 @@ export default function PropertyCalculator() {
                                                 </thead>
                                                 <tbody>
                                                     {villaResult.floors.map((f: any) => (
-                                                        <tr key={f.name} className="border-b border-dark-border/30">
-                                                            <td className="py-2.5 text-white font-medium">{f.name}</td>
+                                                        <tr key={f.name} className="border-b border-border/30">
+                                                            <td className="py-2.5 text-foreground font-medium">{f.name}</td>
                                                             <td className="py-2.5 text-right text-slate-300">{f.area.toLocaleString('en-IN')}</td>
                                                             <td className="py-2.5 text-right text-brand-green font-medium">{fmt(f.cost)}</td>
                                                         </tr>
@@ -747,8 +742,8 @@ export default function PropertyCalculator() {
                                         </div>
 
                                         {/* Overhead breakdown */}
-                                        <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-2 relative overflow-hidden">
-                                            <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Cost Breakdown</p>
+                                        <div className="bg-card border border-border rounded-2xl p-4 space-y-2 relative overflow-hidden">
+                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-1">Cost Breakdown</p>
                                             <CostRow label="Construction" value={villaResult.constructionCost} />
                                             {villaResult.wallCost > 0 && <CostRow label="Compound Wall" value={villaResult.wallCost} />}
                                             <CostRow label={`Electrical (${ohElectrical}%)`} value={villaResult.electrical} accent="text-yellow-400" />
@@ -757,10 +752,10 @@ export default function PropertyCalculator() {
                                             <CostRow label={`Miscellaneous (${ohMisc}%)`} value={villaResult.misc} accent="text-slate-300" />
                                             <div className="border-t border-brand-green/30 pt-2 mt-2">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-white text-sm font-bold">Total Construction Cost</span>
+                                                    <span className="text-foreground text-sm font-bold">Total Construction Cost</span>
                                                     <span className="text-brand-green text-xl font-extrabold">{fmt(villaResult.totalCost)}</span>
                                                 </div>
-                                                <p className="text-slate-500 text-xs mt-1 text-right">₹{villaResult.costPerSqft.toLocaleString('en-IN')} / sq.ft</p>
+                                                <p className="text-muted-foreground text-xs mt-1 text-right">₹{villaResult.costPerSqft.toLocaleString('en-IN')} / sq.ft</p>
                                             </div>
                                             <button 
                                                 onClick={() => copyResult(villaResult.totalCost, 'Villa Cost')}
@@ -788,23 +783,23 @@ export default function PropertyCalculator() {
                         {mode === 'convert' && (
                             <div className="space-y-4">
                                 {/* Converter */}
-                                <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
-                                    <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                                <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+                                    <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
                                         <ArrowRightLeft size={15} className="text-brand-green" /> Unit Converter
                                     </h3>
                                     <Field label="Value" value={convVal} onChange={setConvVal} type="number" placeholder="e.g. 1" />
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="text-xs text-slate-400 mb-1 block">From</label>
+                                            <label className="text-xs text-muted-foreground mb-1 block">From</label>
                                             <select value={fromUnit} onChange={e => setFromUnit(e.target.value)}
-                                                className="w-full bg-dark-bg border border-dark-border rounded-xl py-3 px-3 text-white text-sm focus:outline-none focus:border-brand-green">
+                                                className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
                                                 {UNIT_KEYS.map(u => <option key={u} value={u}>{UNIT_LABELS[u]}</option>)}
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="text-xs text-slate-400 mb-1 block">To</label>
+                                            <label className="text-xs text-muted-foreground mb-1 block">To</label>
                                             <select value={toUnit} onChange={e => setToUnit(e.target.value)}
-                                                className="w-full bg-dark-bg border border-dark-border rounded-xl py-3 px-3 text-white text-sm focus:outline-none focus:border-brand-green">
+                                                className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
                                                 {UNIT_KEYS.map(u => <option key={u} value={u}>{UNIT_LABELS[u]}</option>)}
                                             </select>
                                         </div>
@@ -812,12 +807,12 @@ export default function PropertyCalculator() {
                                     {convVal && (
                                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                                             className="p-4 rounded-xl bg-gradient-to-r from-brand-green/10 to-brand-blue/10 border border-brand-green/30 text-center">
-                                            <p className="text-slate-400 text-xs mb-1">{convVal} {UNIT_LABELS[fromUnit]} =</p>
+                                            <p className="text-muted-foreground text-xs mb-1">{convVal} {UNIT_LABELS[fromUnit]} =</p>
                                             <p className="text-2xl font-bold text-brand-green">{convertedVal()}</p>
-                                            <p className="text-slate-400 text-xs mt-1">{UNIT_LABELS[toUnit]}</p>
+                                            <p className="text-muted-foreground text-xs mt-1">{UNIT_LABELS[toUnit]}</p>
                                             <button
                                                 onClick={() => copyText(`${convVal} ${UNIT_LABELS[fromUnit]} = ${convertedVal()} ${UNIT_LABELS[toUnit]}`, 'conv')}
-                                                className="mt-3 flex items-center gap-1 text-xs text-slate-400 mx-auto"
+                                                className="mt-3 flex items-center gap-1 text-xs text-muted-foreground mx-auto"
                                             >
                                                 {copied === 'conv' ? <Check size={12} className="text-brand-green" /> : <Copy size={12} />}
                                                 {copied === 'conv' ? 'Copied!' : 'Copy'}
@@ -827,9 +822,9 @@ export default function PropertyCalculator() {
                                 </div>
 
                                 {/* Quick Reference Table */}
-                                <div className="bg-dark-card border border-dark-border rounded-2xl p-4">
-                                    <h3 className="text-white font-semibold text-sm mb-1">Quick Reference</h3>
-                                    <p className="text-slate-500 text-xs mb-3">Tap any row to copy</p>
+                                <div className="bg-card border border-border rounded-2xl p-4">
+                                    <h3 className="text-foreground font-semibold text-sm mb-1">Quick Reference</h3>
+                                    <p className="text-muted-foreground text-xs mb-3">Tap any row to copy</p>
                                     <div className="space-y-0">
                                         {REF_UNITS.map((u: string) => {
                                             const sqftVal = UNIT_CONV[u].toLocaleString('en-IN');
@@ -839,11 +834,11 @@ export default function PropertyCalculator() {
                                                     key={u}
                                                     whileTap={{ scale: 0.98 }}
                                                     onClick={() => copyText(`1 ${UNIT_LABELS[u]} = ${sqftVal} sq.ft`, copyKey)}
-                                                    className="w-full flex justify-between items-center py-3 border-b border-dark-border last:border-0 text-left"
+                                                    className="w-full flex justify-between items-center py-3 border-b border-border last:border-0 text-left"
                                                 >
-                                                    <span className="text-slate-400 text-sm">1 {UNIT_LABELS[u]}</span>
+                                                    <span className="text-muted-foreground text-sm">1 {UNIT_LABELS[u]}</span>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-white text-sm font-semibold">{sqftVal} sq.ft</span>
+                                                        <span className="text-foreground text-sm font-semibold">{sqftVal} sq.ft</span>
                                                         {copied === copyKey
                                                             ? <Check size={13} className="text-brand-green" />
                                                             : <Copy size={12} className="text-slate-600" />
@@ -856,9 +851,9 @@ export default function PropertyCalculator() {
                                 </div>
 
                                 {/* All conversions from sq.ft */}
-                                <div className="bg-dark-card border border-dark-border rounded-2xl p-4">
-                                    <h3 className="text-white font-semibold text-sm mb-3">Complete Conversion Chart</h3>
-                                    <p className="text-slate-500 text-[10px] mb-2">From → Square Feet</p>
+                                <div className="bg-card border border-border rounded-2xl p-4">
+                                    <h3 className="text-foreground font-semibold text-sm mb-3">Complete Conversion Chart</h3>
+                                    <p className="text-muted-foreground text-[10px] mb-2">From → Square Feet</p>
                                     <div className="space-y-1">
                                         {UNIT_KEYS.map(u => {
                                             const sqftVal = UNIT_CONV[u];
@@ -866,9 +861,9 @@ export default function PropertyCalculator() {
                                                 ? sqftVal.toLocaleString('en-IN')
                                                 : sqftVal.toLocaleString('en-IN', { maximumFractionDigits: 4 });
                                             return (
-                                                <div key={u} className="flex justify-between py-1.5 border-b border-dark-border/60 last:border-0">
-                                                    <span className="text-slate-400 text-xs">1 {UNIT_LABELS[u]}</span>
-                                                    <span className="text-white text-xs font-medium">{display} sq.ft</span>
+                                                <div key={u} className="flex justify-between py-1.5 border-b border-border/60 last:border-0">
+                                                    <span className="text-muted-foreground text-xs">1 {UNIT_LABELS[u]}</span>
+                                                    <span className="text-foreground text-xs font-medium">{display} sq.ft</span>
                                                 </div>
                                             );
                                         })}
@@ -880,8 +875,8 @@ export default function PropertyCalculator() {
                 </AnimatePresence>
 
                 {/* ── Rental Yield Estimation ──────────────────────────────────── */}
-                <div className="mt-6 bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
-                    <h3 className="font-bold text-white text-sm flex items-center gap-2">📊 Rental Yield Estimation</h3>
+                <div className="mt-6 bg-card border border-border rounded-2xl p-4 space-y-3">
+                    <h3 className="font-bold text-foreground text-sm flex items-center gap-2">📊 Rental Yield Estimation</h3>
                     <div className="grid grid-cols-2 gap-3">
                         <Field label="Property Value" value={ryPropertyValue} onChange={setRyPropertyValue} prefix="₹" type="number" />
                         <Field label="Monthly Rent" value={ryMonthlyRent} onChange={setRyMonthlyRent} prefix="₹" type="number" />
@@ -902,7 +897,7 @@ export default function PropertyCalculator() {
                                     { label: 'Payback Period', value: `${ryResult.paybackYears.toFixed(1)} yrs`, color: 'text-brand-purple' },
                                 ].map(s => (
                                     <div key={s.label} className="text-center p-3 rounded-xl bg-slate-800/30">
-                                        <p className="text-slate-500 text-[9px] uppercase font-bold">{s.label}</p>
+                                        <p className="text-muted-foreground text-[9px] uppercase font-bold">{s.label}</p>
                                         <p className={`font-bold text-sm mt-1 ${s.color}`}>{s.value}</p>
                                     </div>
                                 ))}
@@ -916,8 +911,8 @@ export default function PropertyCalculator() {
                 </div>
 
                 {/* ── Property Appreciation Forecast ───────────────────────────── */}
-                <div className="mt-4 bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3 mb-10">
-                    <h3 className="font-bold text-white text-sm flex items-center gap-2">📈 Appreciation Forecast</h3>
+                <div className="mt-4 bg-card border border-border rounded-2xl p-4 space-y-3 mb-10">
+                    <h3 className="font-bold text-foreground text-sm flex items-center gap-2">📈 Appreciation Forecast</h3>
                     <div className="grid grid-cols-2 gap-3">
                         <Field label="Current Property Value" value={apCurrentValue} onChange={setApCurrentValue} prefix="₹" type="number" />
                         <Field label="Annual Appreciation %" value={apRate} onChange={setApRate} suffix="%" type="number" />
@@ -931,8 +926,8 @@ export default function PropertyCalculator() {
                             {apResult.projections.map((p: { years: number; value: number; gain: number }) => (
                                 <div key={p.years} className="flex justify-between items-center p-3 rounded-xl bg-slate-800/30">
                                     <div>
-                                        <p className="text-white font-bold text-sm">{p.years} Years</p>
-                                        <p className="text-slate-500 text-[10px]">Gain: {fmt(p.gain)}</p>
+                                        <p className="text-foreground font-bold text-sm">{p.years} Years</p>
+                                        <p className="text-muted-foreground text-[10px]">Gain: {fmt(p.gain)}</p>
                                     </div>
                                     <p className="text-brand-green font-extrabold text-sm">{fmt(p.value)}</p>
                                 </div>
@@ -951,12 +946,12 @@ export default function PropertyCalculator() {
                 <motion.div 
                     initial={{ y: 100 }}
                     animate={{ y: 0 }}
-                    className="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-brand-green/20 px-4 pt-4 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] pb-[calc(env(safe-area-inset-bottom,20px)+2rem)] sm:pb-8"
+                    className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-md border-t border-brand-green/20 px-4 pt-4 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] pb-[calc(env(safe-area-inset-bottom,20px)+2rem)] sm:pb-8"
                     style={{ maxWidth: 428, margin: '0 auto' }}
                 >
                     <div className="max-w-2xl mx-auto space-y-3">
                         <div className="flex justify-between items-center mb-1">
-                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Total Cost Summary</span>
+                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Total Cost Summary</span>
                             <button onClick={() => { setLandResult(null); setFlatResult(null); setVillaResult(null); setSdResult(null); setEmiResult(null); }} 
                                 className="text-[10px] text-red-400 font-bold px-2 py-1 rounded bg-red-400/10 hover:bg-red-400/20 transition-colors uppercase">Reset All</button>
                         </div>
@@ -970,7 +965,7 @@ export default function PropertyCalculator() {
                         
                         <div className="flex justify-between items-center pt-2 border-t border-slate-700">
                             <div>
-                                <p className="text-slate-500 text-[10px] font-medium uppercase">Grand Total Cost</p>
+                                <p className="text-muted-foreground text-[10px] font-medium uppercase">Grand Total Cost</p>
                                 <p className="text-brand-green text-xl font-black">
                                     {fmt((mode === 'land' ? (landResult?.totalValue || 0) : mode === 'flat' ? (flatResult?.totalCost || 0) : (villaResult?.totalCost || 0)) + (sdResult?.total || 0))}
                                 </p>
@@ -991,7 +986,7 @@ export default function PropertyCalculator() {
 function SummaryPill({ label, val, color, isMonthly }: { label: string; val: number; color: string; isMonthly?: boolean }) {
     return (
         <div className="flex-shrink-0 bg-slate-800/80 rounded-xl px-3 py-2 border border-slate-700 min-w-[100px]">
-            <p className="text-[9px] text-slate-500 font-bold uppercase text-center mb-0.5">{label}</p>
+            <p className="text-[9px] text-muted-foreground font-bold uppercase text-center mb-0.5">{label}</p>
             <p className={`text-xs font-black text-center ${color}`}>{fmt(val)}{isMonthly && '/mo'}</p>
         </div>
     );
@@ -1026,9 +1021,9 @@ function StampDutySection({
     };
 
     return (
-        <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-                <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
                     <FileText size={15} className="text-yellow-400" /> Stamp Duty Calculator
                 </h3>
                 <span className="text-[10px] text-yellow-400/70 bg-yellow-400/10 rounded px-1.5 py-0.5">Rates Editable</span>
@@ -1045,9 +1040,9 @@ function StampDutySection({
 
             {/* State selector */}
             <div>
-                <label className="text-xs text-slate-400 mb-1 block">State (pre-fills standard rates)</label>
+                <label className="text-xs text-muted-foreground mb-1 block">State (pre-fills standard rates)</label>
                 <select value={sdState} onChange={e => handleStateChange(e.target.value)}
-                    className="w-full bg-dark-bg border border-dark-border rounded-xl py-3 px-3 text-white text-sm focus:outline-none focus:border-brand-green">
+                    className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
                     {Object.entries(STATE_RATES).map(([k, v]) => (
                         <option key={k} value={k}>{v.name}</option>
                     ))}
@@ -1057,27 +1052,27 @@ function StampDutySection({
             {/* Editable rate fields */}
             <div className="grid grid-cols-3 gap-2">
                 <div>
-                    <label className="text-[10px] text-slate-400 mb-1 block">Stamp Duty %</label>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">Stamp Duty %</label>
                     <div className="relative">
                         <input type="number" value={sdStampPct} onChange={e => setSdStampPct(e.target.value)}
-                            className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-white text-sm focus:outline-none focus:border-yellow-400" />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs">%</span>
+                            className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-foreground text-sm focus:outline-none focus:border-yellow-400" />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">%</span>
                     </div>
                 </div>
                 <div>
-                    <label className="text-[10px] text-slate-400 mb-1 block">Reg. Charges %</label>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">Reg. Charges %</label>
                     <div className="relative">
                         <input type="number" value={sdRegPct} onChange={e => setSdRegPct(e.target.value)}
-                            className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-white text-sm focus:outline-none focus:border-yellow-400" />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs">%</span>
+                            className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-foreground text-sm focus:outline-none focus:border-yellow-400" />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">%</span>
                     </div>
                 </div>
                 <div>
-                    <label className="text-[10px] text-slate-400 mb-1 block">Transfer Duty %</label>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">Transfer Duty %</label>
                     <div className="relative">
                         <input type="number" value={sdTransferPct} onChange={e => setSdTransferPct(e.target.value)}
-                            className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-white text-sm focus:outline-none focus:border-yellow-400" />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-xs">%</span>
+                            className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-foreground text-sm focus:outline-none focus:border-yellow-400" />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">%</span>
                     </div>
                 </div>
             </div>
@@ -1093,7 +1088,7 @@ function StampDutySection({
                     <CostRow label={`Registration Charges (${sdRegPct}%)`} value={sdResult.reg} />
                     {sdResult.transfer > 0 && <CostRow label={`Transfer Duty (${sdTransferPct}%)`} value={sdResult.transfer} />}
                     <div className="border-t border-yellow-400/30 pt-2 flex justify-between items-center">
-                        <span className="text-white text-sm font-bold">Total Registration Cost</span>
+                        <span className="text-foreground text-sm font-bold">Total Registration Cost</span>
                         <span className="text-yellow-400 text-lg font-extrabold">₹{Math.round(sdResult.total).toLocaleString('en-IN')}</span>
                     </div>
                     <button onClick={onDownloadPDF}
@@ -1124,8 +1119,8 @@ function HomeLoanSection({
     const schedule = (showAmortization && getAmortization) ? getAmortization() : [];
 
     return (
-        <div className="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3">
-            <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+        <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
+            <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
                 <Home size={15} className="text-brand-purple" /> Home Loan EMI
             </h3>
             <Field label="Loan Amount (₹)" value={loanAmt} onChange={setLoanAmt} type="number" prefix="₹" placeholder="e.g. 6000000" />
@@ -1140,7 +1135,7 @@ function HomeLoanSection({
             {emiResult && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <div className="p-4 bg-brand-purple/10 border border-brand-purple/20 rounded-xl text-center mb-3">
-                        <p className="text-slate-400 text-xs mb-1">Monthly EMI</p>
+                        <p className="text-muted-foreground text-xs mb-1">Monthly EMI</p>
                         <p className="text-2xl font-extrabold text-brand-purple">₹{Math.round(emiResult.emi).toLocaleString('en-IN')}</p>
                     </div>
                     <div className="space-y-2">
@@ -1152,13 +1147,13 @@ function HomeLoanSection({
                     </div>
 
                     {setShowAmortization && (
-                        <div className="mt-4 pt-4 border-t border-dark-border">
+                        <div className="mt-4 pt-4 border-t border-border">
                             <button 
                                 onClick={() => setShowAmortization(!showAmortization)}
                                 className="flex items-center justify-between w-full py-2 group"
                             >
-                                <span className="text-xs font-bold text-slate-400 group-hover:text-brand-purple transition-colors">VIEW AMORTIZATION SCHEDULE</span>
-                                {showAmortization ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
+                                <span className="text-xs font-bold text-muted-foreground group-hover:text-brand-purple transition-colors">VIEW AMORTIZATION SCHEDULE</span>
+                                {showAmortization ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                             </button>
 
                             <AnimatePresence>
@@ -1171,7 +1166,7 @@ function HomeLoanSection({
                                     >
                                         <table className="w-full text-[10px] text-left">
                                             <thead>
-                                                <tr className="text-slate-500 border-b border-dark-border">
+                                                <tr className="text-muted-foreground border-b border-border">
                                                     <th className="py-2">Year</th>
                                                     <th className="py-2">Principal</th>
                                                     <th className="py-2">Interest</th>
@@ -1180,10 +1175,10 @@ function HomeLoanSection({
                                             </thead>
                                             <tbody>
                                                 {schedule.map(row => (
-                                                    <tr key={row.year} className="border-b border-dark-border/30 last:border-0">
-                                                        <td className="py-2 text-white">{row.year}</td>
-                                                        <td className="py-2 text-slate-400">₹{Math.round(row.principalPaid).toLocaleString('en-IN')}</td>
-                                                        <td className="py-2 text-slate-400">₹{Math.round(row.interestPaid).toLocaleString('en-IN')}</td>
+                                                    <tr key={row.year} className="border-b border-border/30 last:border-0">
+                                                        <td className="py-2 text-foreground">{row.year}</td>
+                                                        <td className="py-2 text-muted-foreground">₹{Math.round(row.principalPaid).toLocaleString('en-IN')}</td>
+                                                        <td className="py-2 text-muted-foreground">₹{Math.round(row.interestPaid).toLocaleString('en-IN')}</td>
                                                         <td className="py-2 text-brand-green font-medium text-right">₹{Math.round(row.balance).toLocaleString('en-IN')}</td>
                                                     </tr>
                                                 ))}
@@ -1212,17 +1207,17 @@ function Field({ label, value, onChange, type = 'text', prefix, suffix, placehol
 }) {
     return (
         <div>
-            <label className="text-xs text-slate-400 mb-1 block">{label}</label>
+            <label className="text-xs text-muted-foreground mb-1 block">{label}</label>
             <div className="relative">
-                {prefix && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">{prefix}</span>}
+                {prefix && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{prefix}</span>}
                 <input
                     type={type}
                     value={value}
                     onChange={e => onChange(e.target.value)}
                     placeholder={placeholder}
-                    className={`w-full bg-dark-bg border border-dark-border rounded-xl py-3 text-white text-sm focus:outline-none focus:border-brand-green transition-colors ${prefix ? 'pl-8 pr-4' : suffix ? 'pl-4 pr-8' : 'px-4'}`}
+                    className={`w-full bg-dark-bg border border-border rounded-xl py-3 text-foreground text-sm focus:outline-none focus:border-brand-green transition-colors ${prefix ? 'pl-8 pr-4' : suffix ? 'pl-4 pr-8' : 'px-4'}`}
                 />
-                {suffix && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">{suffix}</span>}
+                {suffix && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{suffix}</span>}
             </div>
         </div>
     );
@@ -1232,8 +1227,8 @@ function Field({ label, value, onChange, type = 'text', prefix, suffix, placehol
 function CostRow({ label, value, accent }: { label: string; value: number; accent?: string }) {
     return (
         <div className="flex justify-between items-center">
-            <span className="text-slate-400 text-xs">{label}</span>
-            <span className={`font-semibold text-sm ${accent || 'text-white'}`}>
+            <span className="text-muted-foreground text-xs">{label}</span>
+            <span className={`font-semibold text-sm ${accent || 'text-foreground'}`}>
                 ₹{Math.round(value).toLocaleString('en-IN')}
             </span>
         </div>
