@@ -30,8 +30,8 @@ function groupNotifications(notifications: AppNotification[]) {
     const week: AppNotification[] = [];
     const older: AppNotification[] = [];
 
-    notifications.filter(n => !n.dismissed).forEach(n => {
-        const diff = now - new Date(n.createdAt).getTime();
+    notifications.forEach(n => {
+        const diff = now - n.createdAt;
         if (diff < 86400000) today.push(n);
         else if (diff < 7 * 86400000) week.push(n);
         else older.push(n);
@@ -49,7 +49,7 @@ interface NotifCardProps {
 
 function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
     const meta = TYPE_META[n.type] || TYPE_META.general;
-    const isUnread = !n.readAt;
+    const isUnread = !n.isRead;
 
     return (
         <motion.div
@@ -75,7 +75,7 @@ function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
                             {n.title}
                         </h4>
                         <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed line-clamp-2">{n.body}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1.5">{timeAgo(n.createdAt)}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1.5">{timeAgo(new Date(n.createdAt).toISOString())}</p>
                     </div>
                 </div>
             </button>
@@ -93,14 +93,14 @@ function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
 export default function Notifications() {
     useEffect(() => { AnalyticsService.trackScreen('Notifications'); }, []);
     const navigate = useNavigate();
-    const { notifications, markRead, markAllRead, dismiss, clearAll } = useNotificationStore();
-    const unreadCount = useNotificationStore(s => s.notifications.filter(n => !n.readAt && !n.dismissed).length);
+    const { notifications, markRead, markAllRead, deleteNotification, clearAll } = useNotificationStore();
+    const unreadCount = useNotificationStore(s => s.getUnreadCount());
 
     const groups = useMemo(() => groupNotifications(notifications), [notifications]);
     const hasAny = groups.today.length + groups.week.length + groups.older.length > 0;
 
     const handleClick = (n: AppNotification) => {
-        if (n.route) navigate(n.route);
+        if (n.actionRoute) navigate(n.actionRoute);
     };
 
     return (
@@ -158,7 +158,7 @@ export default function Notifications() {
                                         {groups.today.map(n => (
                                             <NotifCard key={n.id} n={n}
                                                 onRead={() => markRead(n.id)}
-                                                onDismiss={() => dismiss(n.id)}
+                                                onDismiss={() => deleteNotification(n.id)}
                                                 onClick={() => handleClick(n)}
                                             />
                                         ))}
@@ -175,7 +175,7 @@ export default function Notifications() {
                                         {groups.week.map(n => (
                                             <NotifCard key={n.id} n={n}
                                                 onRead={() => markRead(n.id)}
-                                                onDismiss={() => dismiss(n.id)}
+                                                onDismiss={() => deleteNotification(n.id)}
                                                 onClick={() => handleClick(n)}
                                             />
                                         ))}
@@ -192,7 +192,7 @@ export default function Notifications() {
                                         {groups.older.map(n => (
                                             <NotifCard key={n.id} n={n}
                                                 onRead={() => markRead(n.id)}
-                                                onDismiss={() => dismiss(n.id)}
+                                                onDismiss={() => deleteNotification(n.id)}
                                                 onClick={() => handleClick(n)}
                                             />
                                         ))}

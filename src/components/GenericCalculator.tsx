@@ -42,6 +42,7 @@ interface CalcConfig {
     title: string;
     subtitle: string;
     color: string;
+    module?: any;
     fields: FieldConfig[];
     compute: (vals: Record<string, number>) => {
         primary: number | string;
@@ -196,7 +197,7 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
             </div>
 
             <FinancialQuote />
-            <DisclaimerComponent />
+            <DisclaimerComponent module={config.module} />
 
             <div className="px-4 pt-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 7rem)' }}>
                 <div className="space-y-3 mb-5">

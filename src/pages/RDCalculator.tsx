@@ -7,6 +7,7 @@ const config = {
     title: 'Recurring Deposit',
     subtitle: 'RD returns calculator',
     color: 'brand-blue',
+    module: 'rd',
     fields: [
         { key: 'monthly', label: 'Monthly Deposit', defaultVal: 5000, min: 100, max: 1000000, prefix: '₹' },
         { key: 'rate', label: 'Interest Rate (p.a.)', defaultVal: 6.7, min: 1, max: 15, suffix: '%', step: 0.1 },

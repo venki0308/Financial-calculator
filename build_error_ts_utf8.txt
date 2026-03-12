@@ -1,0 +1,16 @@
+﻿src/pages/FDCalculator.tsx(45,43): error TS2554: Expected 1 arguments, but got 2.
+src/pages/GoalPlanner.tsx(59,21): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt" | "isRead">'.
+src/pages/Home.tsx(119,82): error TS2339: Property 'readAt' does not exist on type 'AppNotification'.
+src/pages/Home.tsx(119,95): error TS2339: Property 'dismissed' does not exist on type 'AppNotification'.
+src/pages/IncomeTaxCalculator.tsx(325,44): error TS2554: Expected 1 arguments, but got 2.
+src/pages/Notifications.tsx(33,34): error TS2339: Property 'dismissed' does not exist on type 'AppNotification'.
+src/pages/Notifications.tsx(52,25): error TS2339: Property 'readAt' does not exist on type 'AppNotification'.
+src/pages/Notifications.tsx(96,51): error TS2339: Property 'dismiss' does not exist on type 'NotificationStore'.
+src/pages/Notifications.tsx(97,82): error TS2339: Property 'readAt' does not exist on type 'AppNotification'.
+src/pages/Notifications.tsx(97,95): error TS2339: Property 'dismissed' does not exist on type 'AppNotification'.
+src/pages/Notifications.tsx(103,15): error TS2339: Property 'route' does not exist on type 'AppNotification'.
+src/pages/Notifications.tsx(103,33): error TS2339: Property 'route' does not exist on type 'AppNotification'.
+src/pages/SIPCalculator.tsx(90,44): error TS2554: Expected 1 arguments, but got 2.
+src/store/useBudgetTrackerStore.ts(229,194): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt" | "isRead">'.
+src/store/useBudgetTrackerStore.ts(231,186): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt" | "isRead">'.
+src/store/useCalculatorStore.ts(34,21): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt" | "isRead">'.

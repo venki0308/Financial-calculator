@@ -104,14 +104,7 @@ export default function EMICalculator() {
         return calculatePrepaymentSavings(principal, rate, months, result.emi);
     }, [principal, rate, months, result.emi, method]);
 
-    // ─── Notification trigger ────────────────────────────────────────────
-    useEffect(() => {
-        if (!result.emi) return;
-        const t = setTimeout(() => {
-            triggerCalcNotification('emi', `EMI ₹${Math.round(result.emi).toLocaleString('en-IN')}/mo`);
-        }, 2000);
-        return () => clearTimeout(t);
-    }, [result.emi]);
+
 
     // ─── Amortization pagination ────────────────────────────────────────
     const totalPages = Math.ceil((result.schedule?.length || 0) / ROWS_PER_PAGE);
@@ -197,6 +190,19 @@ export default function EMICalculator() {
             setSavedId(newId);
         }
         setIsSaved(true);
+
+        triggerCalcNotification({
+            type: 'emi_saved',
+            metadata: {
+                calcId: savedId || `EMI-Save-${Date.now()}`,
+                loanName: name,
+                loanType: loanType,
+                principal: principal,
+                rate: rate,
+                tenureYears: tenureYears,
+                emi: result.emi
+            }
+        });
     };
 
     const isAlreadySaved = useMemo(() => {

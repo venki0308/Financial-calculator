@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { exportToPDF } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
 import { triggerCalcNotification } from '../services/calcNotifications';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 
 // ─── Tax Slab Tables ──────────────────────────────────────────────────────────
@@ -163,7 +164,6 @@ export default function IncomeTaxCalculator() {
     const [regime, setRegime] = useState<'old' | 'new'>('new');
     const [fy, setFy] = useState<'2026-27' | '2025-26'>('2026-27');
     const [inputMode, setInputMode] = useState<'monthly' | 'annual' | 'ctc' | 'payslip'>('monthly');
-    const [showDisclaimer, setShowDisclaimer] = useState(false);
     const [inputs, setInputs] = useState<Inputs>({
         basicSalary: '',
         hra: '',
@@ -318,14 +318,7 @@ export default function IncomeTaxCalculator() {
         return t;
     }, [inputs, grossSalary, num]);
 
-    // ─── Notification trigger ────────────────────────────────────────────────
-    useEffect(() => {
-        if (grossSalary <= 0) return;
-        const t = setTimeout(() => {
-            triggerCalcNotification('tax', `Tax ₹${Math.round(activeTotalTax).toLocaleString('en-IN')}/yr`);
-        }, 2000);
-        return () => clearTimeout(t);
-    }, [activeTotalTax, grossSalary]);
+    // Removed automatic notification trigger
 
     // ─── PDF Handler ──────────────────────────────────────────────────────────
     const handleDownloadPDF = async () => {
@@ -859,33 +852,7 @@ export default function IncomeTaxCalculator() {
 
                 
 
-                {/* Collapsible Disclaimer */}
-                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-700/40 rounded-2xl overflow-hidden">
-                    <button onClick={() => setShowDisclaimer(!showDisclaimer)} className="w-full flex items-center justify-between p-4">
-                        <div className="flex items-center gap-2">
-                            <Info size={16} className="text-amber-600" />
-                            <span className="font-bold text-amber-800 dark:text-amber-400 text-sm">Important Disclaimer</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <span className="text-amber-500 text-[10px]">Tap to View</span>
-                            {showDisclaimer ? <ChevronUp size={14} className="text-amber-500" /> : <ChevronDown size={14} className="text-amber-500" />}
-                        </div>
-                    </button>
-                    <AnimatePresence>
-                        {showDisclaimer && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                                <div className="px-4 pb-4">
-                                    <p className="text-amber-700 dark:text-amber-300 text-xs leading-relaxed">
-                                        <strong>⚠️ This calculator is for estimation purposes only.</strong> Actual tax liability may vary depending on your complete financial profile, surcharges, additional income sources, or special circumstances. Tax laws are subject to change. Please consult a <strong>Chartered Accountant (CA)</strong> or qualified tax professional for actual tax filing and planning. All calculations are based on FY {fy} tax rules as per publicly available budget documents.
-                                    </p>
-                                    <a href="https://www.incometax.gov.in" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-amber-700 dark:text-amber-400 text-xs font-semibold mt-2">
-                                        <ExternalLink size={12} /> incometax.gov.in (Official Portal)
-                                    </a>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                <DisclaimerComponent module="tax" />
             </div>
         </div>
     );

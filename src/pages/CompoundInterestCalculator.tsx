@@ -77,7 +77,7 @@ export default function CompoundInterestCalculator() {
             </div>
 
             
-            <DisclaimerComponent module="investment" />
+            <DisclaimerComponent module="general" />
 
             <div className="px-4 pb-28">
                 <div className="flex rounded-2xl bg-card border border-border p-1 my-5">

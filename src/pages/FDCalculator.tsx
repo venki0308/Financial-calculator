@@ -38,14 +38,7 @@ export default function FDCalculator() {
 
     const result = useMemo(() => calculateFD(principal, rate, years, compounding), [principal, rate, years, compounding]);
 
-    // ─── Notification trigger ────────────────────────────────────────────
-    useEffect(() => {
-        if (!result.amount) return;
-        const t = setTimeout(() => {
-            triggerCalcNotification('fd', `Maturity ₹${Math.round(result.amount).toLocaleString('en-IN')}`);
-        }, 2000);
-        return () => clearTimeout(t);
-    }, [result.amount]);
+    // Removed automatic notification trigger
 
     // Compounding comparison
     const compoundingComparison = useMemo(() => {
@@ -94,8 +87,17 @@ export default function FDCalculator() {
     }), [yearWise, principal]);
 
     const handleSave = () => {
-        addSaved({ id: `FD-${Date.now()}`, calculatorType: 'FD Calculator', inputValues: { principal, rate, years, compounding }, resultValues: { primary: result.amount, ...result }, timestamp: Date.now() });
+        const calcId = `FD-${Date.now()}`;
+        addSaved({ id: calcId, calculatorType: 'FD Calculator', inputValues: { principal, rate, years, compounding }, resultValues: { primary: result.amount, ...result }, timestamp: Date.now() });
         setSaved(true);
+        triggerCalcNotification({
+            type: 'fd_maturity',
+            metadata: {
+                amount: result.amount,
+                rate: rate,
+                date: new Date(Date.now() + years * 31536000000).toISOString().split('T')[0]
+            }
+        });
     };
 
     const isAlreadySaved = useMemo(() => {
@@ -143,7 +145,7 @@ export default function FDCalculator() {
             </div>
 
             
-            <DisclaimerComponent module="investment" />
+            <DisclaimerComponent module="fd" />
 
             <div className="px-4 pb-28 pt-4 space-y-5">
                 {/* Compounding Tabs */}

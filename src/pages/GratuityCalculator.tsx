@@ -7,6 +7,7 @@ const config = {
     title: 'Gratuity Calculator',
     subtitle: 'Service gratuity estimate',
     color: 'brand-blue',
+    module: 'gratuity',
     fields: [
         { key: 'salary', label: 'Last Drawn Salary (Basic + DA)', defaultVal: 50000, min: 0, max: 10000000, prefix: '₹', helperText: 'Monthly Basic + DA' },
         { key: 'years', label: 'Years of Service', defaultVal: 5, min: 5, max: 50, suffix: ' years', helperText: 'Min 5 years for eligibility' },

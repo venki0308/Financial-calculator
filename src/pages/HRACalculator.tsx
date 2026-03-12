@@ -7,6 +7,7 @@ const config = {
     title: 'HRA Calculator',
     subtitle: 'House Rent Allowance exemption',
     color: 'brand-gold',
+    module: 'hra',
     fields: [
         { key: 'basic', label: 'Basic Salary (Monthly)', defaultVal: 40000, min: 0, max: 1000000, prefix: '₹' },
         { key: 'hra', label: 'HRA Received (Monthly)', defaultVal: 20000, min: 0, max: 1000000, prefix: '₹' },

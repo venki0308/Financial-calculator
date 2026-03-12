@@ -57,4 +57,5 @@ export const allCalcs: CalcItem[] = [
 
     // Tools
     { nameKey: 'Age Calculator', descKey: 'Exact age & generation', icon: Calendar, color: '#F97316', path: '/calculator/age', category: 'tools', keywords: ['age', 'date', 'birth', 'generation'] },
+    { nameKey: 'Scientific', descKey: 'Advanced mathematical functions', icon: Calculator, color: '#3B82F6', path: '/calculator/scientific', category: 'tools', keywords: ['scientific', 'calculator', 'math', 'log', 'sin'] },
 ];

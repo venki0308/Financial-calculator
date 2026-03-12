@@ -83,14 +83,7 @@ export default function SIPCalculator() {
     // ---- Basic SIP calculation ----
     const basicResult = useMemo(() => calculateSIP(monthly, rate, years), [monthly, rate, years]);
 
-    // ─── Notification trigger ────
-    useEffect(() => {
-        if (!basicResult.futureValue) return;
-        const t = setTimeout(() => {
-            triggerCalcNotification('sip', `Future value ₹${Math.round(basicResult.futureValue).toLocaleString('en-IN')}`);
-        }, 2000);
-        return () => clearTimeout(t);
-    }, [basicResult.futureValue]);
+    // Removed automatic notification trigger
 
 
     // ---- Step-Up SIP calculation ----
@@ -183,14 +176,23 @@ export default function SIPCalculator() {
     }, [displayValues.primary]);
 
     const handleSave = () => {
+        const calcId = `SIP-Save-${Date.now()}`;
         addSaved({
-            id: `SIP-Save-${Date.now()}`,
+            id: calcId,
             calculatorType: 'SIP Calculator',
             inputValues: activeTab === 'basic' ? { monthly, rate, years } : activeTab === 'stepup' ? { initial: suInitial, stepUp: suStepUp, rate: suRate, years: suYears } : { target: goalTarget, years: goalYears, rate: goalRate },
             resultValues: { primary: displayValues.primary, invested: displayValues.invested, returns: displayValues.returns, label: displayValues.label },
             timestamp: Date.now()
         });
         setIsSaved(true);
+        triggerCalcNotification({
+            type: 'sip_due',
+            metadata: {
+                fundName: 'SIP Investment',
+                amount: displayValues.primary,
+                isTomorrow: false
+            }
+        });
     };
 
     const isAlreadySaved = useMemo(() => {

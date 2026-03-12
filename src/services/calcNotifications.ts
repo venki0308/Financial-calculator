@@ -1,196 +1,151 @@
-/**
- * FinCalix Notification Helper
- * Call from any calculator/module after a successful calculation.
- * Adds a contextual in-app notification and schedules a follow-up.
- */
+import { useNotificationStore, NotificationCategory, AppNotification } from '../store/useNotificationStore';
 
-import { useNotificationStore } from '../store/useNotificationStore';
+export type CalcNotifData =
+    | { type: 'emi_saved'; metadata: { calcId: string; loanName: string; loanType: string; principal: number; rate: number; tenureYears: number; emi: number } }
+    | { type: 'tax_reminder'; metadata: { monthYear: string } }
+    | { type: 'budget_alert_80'; metadata: { monthYear: string; spent: number; budget: number; remaining: number } }
+    | { type: 'budget_exceeded'; metadata: { month: string; overage: number; total: number } }
+    | { type: 'goal_achieved'; metadata: { goalName: string; target: number } }
+    | { type: 'goal_milestone'; metadata: { goalName: string; milestonePercent: number; saved: number; target: number } }
+    | { type: 'sip_due'; metadata: { fundName: string; amount: number; isTomorrow: boolean } }
+    | { type: 'fd_maturity'; metadata: { amount: number; rate: number; date: string } }
+    | { type: 'od_saved'; metadata: { calcId: string; utilized: number; limit: number; rate: number; daily: number } }
+    | { type: 'daily_quote'; metadata: { quote: string } }
+    | { type: 'ppf_reminder'; metadata: {} }
+    | { type: 'tax_opportunity'; metadata: { remaining80c: number } }
+    // generic backward compatible
+    | { type: 'general'; metadata: { calcId: string; summary: string; route: string; title: string; icon: string } };
 
-interface CalcNotifOptions {
-    type: 'emi' | 'sip' | 'ppf' | 'fd' | 'rd' | 'nps' | 'epf' | 'tax' | 'gst' | 'ssy' | 'scss' | 'kvp' | 'nsc' | 'pomis' | 'swp' | 'lumpsum' | 'cagr' | 'step_sip' | 'goal_sip' | 'hra' | 'gratuity' | 'salary' | 'breakeven' | 'property' | 'age' | 'general';
-    resultSummary?: string; // E.g. "EMI: ₹24,500/mo"
+function formatINR(amount: number): string {
+    return amount.toLocaleString('en-IN');
 }
 
-const NOTIF_TEMPLATES: Record<string, (summary?: string) => { title: string; body: string; icon: string }> = {
-    emi: (s) => ({
-        title: '💳 EMI Saved',
-        body: `Your loan calculation${s ? ` (${s})` : ''} is saved. Set a reminder to keep monthly EMI funds ready!`,
-        icon: '💳',
-    }),
-    sip: (s) => ({
-        title: '📈 SIP Planned',
-        body: `Your SIP plan${s ? ` (${s})` : ''} is ready. Consider setting up an auto-debit to stay consistent.`,
-        icon: '📈',
-    }),
-    ppf: (s) => ({
-        title: '🏦 PPF Projection Ready',
-        body: `Your PPF calculation${s ? ` — ${s}` : ''} is done. PPF deposits by April 5 earn interest for the full month!`,
-        icon: '🏦',
-    }),
-    fd: (s) => ({
-        title: '🏛️ FD Maturity Noted',
-        body: `Your Fixed Deposit projection${s ? ` (${s})` : ''} is calculated. Review on maturity for reinvestment options.`,
-        icon: '🏛️',
-    }),
-    rd: (s) => ({
-        title: '📅 RD Plan Ready',
-        body: `Your Recurring Deposit plan${s ? ` (${s})` : ''} is set. Keep deposits on time to avoid penalty.`,
-        icon: '📅',
-    }),
-    nps: (s) => ({
-        title: '🎯 NPS Projection Done',
-        body: `NPS calculation complete${s ? ` — ${s}` : ''}. NPS contributions qualify for additional ₹50,000 tax deduction under 80CCD(1B).`,
-        icon: '🎯',
-    }),
-    epf: (s) => ({
-        title: '🏢 EPF Projection Done',
-        body: `EPF calculation complete${s ? ` — ${s}` : ''}. Ensure your employer matches contributions correctly.`,
-        icon: '🏢',
-    }),
-    tax: (s) => ({
-        title: '📋 Tax Estimate Ready',
-        body: `Your income tax estimate${s ? ` (${s})` : ''} is calculated. Compare Old vs New regime for best savings.`,
-        icon: '📋',
-    }),
-    gst: (s) => ({
-        title: '🧾 GST Calculated',
-        body: `GST calculation done${s ? ` — ${s}` : ''}. Save this for invoicing purposes.`,
-        icon: '🧾',
-    }),
-    ssy: (s) => ({
-        title: '👧 SSY Projection Ready',
-        body: `Sukanya Samriddhi${s ? ` (${s})` : ''} calculated. Deposits by April 5 earn interest for the whole month!`,
-        icon: '👧',
-    }),
-    scss: (s) => ({
-        title: '👴 SCSS Calculation Done',
-        body: `Senior Citizen Savings${s ? ` (${s})` : ''} calculated. Quarterly interest is credited in April, July, October, January.`,
-        icon: '👴',
-    }),
-    kvp: (s) => ({
-        title: '💰 KVP Maturity Calculated',
-        body: `Kisan Vikas Patra${s ? ` — ${s}` : ''} maturity projected. Money doubles in about 115 months at current rates.`,
-        icon: '💰',
-    }),
-    nsc: (s) => ({
-        title: '📜 NSC Calculation Done',
-        body: `National Savings Certificate${s ? ` (${s})` : ''} calculated. Interest is reinvested and qualifies for 80C deduction.`,
-        icon: '📜',
-    }),
-    pomis: (s) => ({
-        title: '📮 PO MIS Plan Ready',
-        body: `PO Monthly Income Scheme${s ? ` (${s})` : ''} projected. Monthly interest helps manage regular expenses.`,
-        icon: '📮',
-    }),
-    swp: (s) => ({
-        title: '💸 SWP Plan Calculated',
-        body: `Systematic Withdrawal Plan${s ? ` — ${s}` : ''} is ready. Ensure corpus is large enough to sustain withdrawals.`,
-        icon: '💸',
-    }),
-    lumpsum: (s) => ({
-        title: '📊 Lumpsum Projection Done',
-        body: `Lumpsum investment${s ? ` (${s})` : ''} projected. Consider STPs for large amounts to reduce timing risk.`,
-        icon: '📊',
-    }),
-    cagr: (s) => ({
-        title: '📉 CAGR Calculated',
-        body: `CAGR analysis${s ? ` — ${s}` : ''} done. Compare across asset classes for informed decisions.`,
-        icon: '📉',
-    }),
-    step_sip: (s) => ({
-        title: '📈 Step-Up SIP Planned',
-        body: `Step-Up SIP plan${s ? ` (${s})` : ''} calculated. Increasing SIP annually by 10% significantly boosts wealth.`,
-        icon: '📈',
-    }),
-    goal_sip: (s) => ({
-        title: '🎯 Goal SIP Set',
-        body: `Goal-based SIP${s ? ` (${s})` : ''} is calculated. Align your goal timeline with your investment horizon.`,
-        icon: '🎯',
-    }),
-    hra: (s) => ({
-        title: '🏠 HRA Exemption Calculated',
-        body: `HRA exemption${s ? ` — ${s}` : ''} calculated. Collect rent receipts and PAN of landlord for amounts above ₹1L/yr.`,
-        icon: '🏠',
-    }),
-    gratuity: (s) => ({
-        title: '🎁 Gratuity Estimated',
-        body: `Gratuity calculation${s ? ` (${s})` : ''} done. Gratuity is tax-free up to ₹20 Lakhs for private employees.`,
-        icon: '🎁',
-    }),
-    salary: (s) => ({
-        title: '💼 Salary Hike Calculated',
-        body: `Salary hike projection${s ? ` — ${s}` : ''} ready. Review your revised CTC and tax implications.`,
-        icon: '💼',
-    }),
-    breakeven: (s) => ({
-        title: '⚖️ Break-Even Analysed',
-        body: `Break-even analysis${s ? ` (${s})` : ''} complete. Factor in all fixed and variable costs for accuracy.`,
-        icon: '⚖️',
-    }),
-    property: (s) => ({
-        title: '🏗️ Property Cost Estimated',
-        body: `Property calculation${s ? ` — ${s}` : ''} done. Don't forget stamp duty, registration and GST when planning budget.`,
-        icon: '🏗️',
-    }),
-    age: (s) => ({
-        title: '🎂 Age Calculated',
-        body: `Age calculation done${s ? ` — ${s}` : ''}. Knowing your exact age helps in planning insurance and retirement timelines.`,
-        icon: '🎂',
-    }),
-    general: (s) => ({
-        title: '✅ Calculation Complete',
-        body: `Your financial calculation${s ? ` (${s})` : ''} is saved. Tap to review anytime.`,
-        icon: '✅',
-    }),
-};
+export function triggerCalcNotification(data: CalcNotifData) {
+    const store = useNotificationStore.getState();
 
-// Throttle per calc type — don't spam same notification within 5 minutes
-const lastNotifTime: Record<string, number> = {};
+    let title = '';
+    let body = '';
+    let icon = '🔔';
+    let category: NotificationCategory = 'calculator';
+    let actionRoute = '';
+    let actionLabel = '';
 
-export function triggerCalcNotification(type: CalcNotifOptions['type'], resultSummary?: string) {
-    const now = Date.now();
-    const key = type;
-    if (lastNotifTime[key] && now - lastNotifTime[key] < 5 * 60 * 1000) return;
-    lastNotifTime[key] = now;
+    switch (data.type) {
+        case 'emi_saved':
+            title = `Loan Saved — ${data.metadata.loanName}`;
+            body = `${data.metadata.loanType} of ₹${formatINR(data.metadata.principal)} @ ${data.metadata.rate}% for ${data.metadata.tenureYears} years | EMI: ₹${formatINR(data.metadata.emi)}/month`;
+            icon = '🏦';
+            category = 'calculator';
+            actionRoute = '/calculator/loan-emi';
+            actionLabel = 'View Calculation';
+            break;
+        case 'tax_reminder':
+            title = `Tax Filing Season — ${data.metadata.monthYear}`;
+            body = `FY 2026-27 ends March 31. Check your tax liability and complete 80C investments.`;
+            icon = '📋';
+            category = 'reminder';
+            actionRoute = '/calculator/income-tax';
+            actionLabel = 'Open Tax Calculator';
+            break;
+        case 'budget_alert_80':
+            title = `Budget Alert — ${data.metadata.monthYear}`;
+            body = `You've used ₹${formatINR(data.metadata.spent)} of your ₹${formatINR(data.metadata.budget)} ${data.metadata.monthYear} budget. ₹${formatINR(data.metadata.remaining)} remaining.`;
+            icon = '⚠️';
+            category = 'alert';
+            actionRoute = '/expenses';
+            actionLabel = 'View Expenses';
+            break;
+        case 'budget_exceeded':
+            title = `Budget Exceeded — ${data.metadata.month}`;
+            body = `You've exceeded your ${data.metadata.month} budget by ₹${formatINR(data.metadata.overage)}. Total spent: ₹${formatINR(data.metadata.total)}.`;
+            icon = '🚨';
+            category = 'alert';
+            actionRoute = '/expenses';
+            actionLabel = 'View Expenses';
+            break;
+        case 'goal_achieved':
+            title = `Goal Reached! 🎉 ${data.metadata.goalName}`;
+            body = `Congratulations! You've successfully reached your goal: ${data.metadata.goalName} — ₹${formatINR(data.metadata.target)}`;
+            icon = '🎯';
+            category = 'insight';
+            actionRoute = '/goal-planner';
+            actionLabel = 'View Goals';
+            break;
+        case 'goal_milestone':
+            title = `${data.metadata.goalName} — ${data.metadata.milestonePercent}% Complete!`;
+            body = `You're halfway to ${data.metadata.goalName}. ₹${formatINR(data.metadata.saved)} saved of ₹${formatINR(data.metadata.target)} target. Keep going!`;
+            icon = '🏆';
+            category = 'insight';
+            actionRoute = '/goal-planner';
+            actionLabel = 'View Goals';
+            break;
+        case 'sip_due':
+            title = `SIP Due — ${data.metadata.fundName}`;
+            body = `Your monthly SIP of ₹${formatINR(data.metadata.amount)} is due ${data.metadata.isTomorrow ? 'tomorrow' : 'today'}. Ensure funds are available.`;
+            icon = '📈';
+            category = 'reminder';
+            actionRoute = '/calculator/sip';
+            actionLabel = 'Open SIP Calculator';
+            break;
+        case 'fd_maturity':
+            title = `FD Matures in 7 Days`;
+            body = `Your FD of ₹${formatINR(data.metadata.amount)} @ ${data.metadata.rate}% matures on ${data.metadata.date}. Plan your reinvestment.`;
+            icon = '🏛️';
+            category = 'reminder';
+            actionRoute = '/calculator/fd';
+            actionLabel = 'Open FD Calculator';
+            break;
+        case 'od_saved':
+            title = `OD Calculation Saved`;
+            body = `OD of ₹${formatINR(data.metadata.utilized)} against ₹${formatINR(data.metadata.limit)} limit @ ${data.metadata.rate}% | Daily cost: ₹${data.metadata.daily}/day`;
+            icon = '💳';
+            category = 'calculator';
+            actionRoute = '/calculator/overdraft';
+            actionLabel = 'View OD Calculation';
+            break;
+        case 'daily_quote':
+            title = `FinCalix Daily Insight 💡`;
+            body = data.metadata.quote;
+            icon = '💡';
+            category = 'insight';
+            actionRoute = ''; // Cannot be actionable
+            actionLabel = '';
+            break;
+        case 'ppf_reminder':
+            title = `PPF Contribution Due`;
+            body = `Invest in PPF before March 31 to claim 80C deduction. Maximum: ₹1,50,000/year.`;
+            icon = '🛡️';
+            category = 'reminder';
+            actionRoute = '/calculator/ppf-advanced';
+            actionLabel = 'Open PPF Calculator';
+            break;
+        case 'tax_opportunity':
+            title = `Tax Saving Opportunity`;
+            body = `You have ₹${formatINR(data.metadata.remaining80c)} left in 80C limit. Invest in ELSS, PPF, or insurance before March 31.`;
+            icon = '💰';
+            category = 'insight';
+            actionRoute = '/calculator/income-tax';
+            actionLabel = 'Open Tax Calculator';
+            break;
+        case 'general':
+            title = data.metadata.title || `Calculation Complete`;
+            body = data.metadata.summary;
+            icon = data.metadata.icon || '✅';
+            category = 'calculator';
+            actionRoute = data.metadata.route || '/';
+            actionLabel = 'View Calculation';
+            break;
+    }
 
-    const template = NOTIF_TEMPLATES[type] || NOTIF_TEMPLATES.general;
-    const { title, body, icon } = template(resultSummary);
-    const routeMap: Record<string, string> = {
-        emi: '/calculator/loan-emi',
-        sip: '/calculator/sip',
-        ppf: '/calculator/ppf-advanced',
-        fd: '/calculator/fd',
-        rd: '/calculator/rd',
-        nps: '/calculator/nps',
-        epf: '/calculator/epf',
-        tax: '/calculator/income-tax',
-        gst: '/calculator/gst',
-        ssy: '/calculator/ssy',
-        scss: '/calculator/scss',
-        kvp: '/calculator/kvp',
-        nsc: '/calculator/nsc',
-        pomis: '/calculator/pomis',
-        swp: '/calculator/swp',
-        lumpsum: '/calculator/lumpsum',
-        cagr: '/calculator/cagr',
-        step_sip: '/calculator/step-up-sip',
-        goal_sip: '/calculator/goal-sip',
-        hra: '/calculator/hra',
-        gratuity: '/calculator/gratuity',
-        salary: '/calculator/salary-hike',
-        breakeven: '/calculator/break-even',
-        property: '/calculator/property',
-        age: '/calculator/age',
-    };
-
-    useNotificationStore.getState().addNotification({
-        type: type === 'emi' ? 'emi_reminder' :
-              type === 'sip' || type === 'step_sip' || type === 'goal_sip' ? 'sip_reminder' :
-              type === 'tax' ? 'tax_alert' :
-              'savings_insight',
+    store.addNotification({
+        type: data.type,
+        category,
         title,
         body,
         icon,
-        route: routeMap[type] || undefined,
+        isActionable: !!actionRoute,
+        actionRoute: actionRoute || undefined,
+        actionLabel: actionLabel || undefined,
+        metadata: data.metadata,
     });
 }

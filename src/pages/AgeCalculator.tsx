@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Star, Clock, Cake, Info, Activity, Wind, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
-import DisclaimerComponent from '../components/DisclaimerComponent';
+
 
 import { triggerCalcNotification } from '../services/calcNotifications';
 

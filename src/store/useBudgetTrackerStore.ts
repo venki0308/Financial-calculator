@@ -226,9 +226,9 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
                 if (budget > 0 && entry.amount > 0) {
                     const prevSpent = totalSpent - entry.amount;
                     if (totalSpent >= budget && prevSpent < budget) {
-                        useNotificationStore.getState().addNotification({ type: 'budget_alert', title: '🚨 Budget Exceeded', body: 'You have exceeded your overall monthly budget!', icon: '🚨', route: '/expenses' });
+                        useNotificationStore.getState().addNotification({ type: 'budget_exceeded', category: 'alert', title: '🚨 Budget Exceeded', body: 'You have exceeded your overall monthly budget!', icon: '🚨', isActionable: true, actionRoute: '/expenses', metadata: {} });
                     } else if (totalSpent >= budget * 0.8 && prevSpent < budget * 0.8) {
-                        useNotificationStore.getState().addNotification({ type: 'budget_alert', title: '⚠️ Budget Alert', body: 'You have used 80% of your monthly budget.', icon: '⚠️', route: '/expenses' });
+                        useNotificationStore.getState().addNotification({ type: 'budget_alert_80', category: 'alert', title: '⚠️ Budget Alert', body: 'You have used 80% of your monthly budget.', icon: '⚠️', isActionable: true, actionRoute: '/expenses', metadata: {} });
                     }
                 }
             },

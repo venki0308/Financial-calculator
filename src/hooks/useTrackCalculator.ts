@@ -14,9 +14,9 @@ export function useTrackCalculator() {
         if (!path.startsWith('/calculator/')) return;
 
         try {
-            const recent: string[] = JSON.parse(localStorage.getItem('recentCalculators') || '[]');
-            const updated = [path, ...recent.filter(p => p !== path)].slice(0, 10);
-            localStorage.setItem('recentCalculators', JSON.stringify(updated));
+            const recent: string[] = JSON.parse(localStorage.getItem('fincalix_recently_used') || '[]');
+            const updated = [path, ...recent.filter(p => p !== path)].slice(0, 6);
+            localStorage.setItem('fincalix_recently_used', JSON.stringify(updated));
         } catch { /* ignore */ }
     }, [location.pathname]);
 }

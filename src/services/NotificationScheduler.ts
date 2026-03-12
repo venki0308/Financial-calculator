@@ -13,8 +13,18 @@ import { dailyQuotes } from '../data/quotes';
 const LAST_RUN_KEY = 'fincalix_scheduler_last_run';
 const MIN_INTERVAL_MS = 23 * 60 * 60 * 1000; // 23 hours
 
-function addNotif(n: Omit<AppNotification, 'id' | 'createdAt'>) {
-    useNotificationStore.getState().addNotification(n);
+function addNotif(n: { type: string, title: string, body: string, icon: string, route?: string }) {
+    useNotificationStore.getState().addNotification({
+        type: n.type,
+        category: n.type.includes('alert') ? 'alert' : n.type.includes('insight') ? 'insight' : 'reminder',
+        title: n.title,
+        body: n.body,
+        icon: n.icon,
+        isActionable: !!n.route,
+        actionRoute: n.route,
+        actionLabel: n.route ? 'Open' : undefined,
+        metadata: {}
+    });
 }
 
 function shouldRun(): boolean {

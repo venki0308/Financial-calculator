@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Share2, FileText, Download, Wallet, Info, ChevronDown, ChevronUp, AlertCircle, Building2, User, CreditCard, Landmark, Pickaxe, Lightbulb, Scale } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { jsPDF } from 'jspdf';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR } from '../utils/calculations';
-import { exportToExcel as utilsExportToExcel } from '../utils/exportUtils';
+import { exportOverdraftPDF, exportOverdraftExcel } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
 import NumberInput from '../components/NumberInput';
 
@@ -129,43 +128,33 @@ export default function OverdraftCalculator() {
   const preclosureCharges = (utilizedNum * penaltyPct) / 100;
   const totalToClose = utilizedNum + totalInterest + preclosureCharges;
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.text('Overdraft Calculator Report', 14, 22);
+  const getExportData = () => ({
+    limitNum,
+    utilizedNum,
+    rateNum,
+    daysNum,
+    utilPct,
+    totalInterest,
+    totalFees,
+    totalPayableAmount,
+    dailyInterest,
+    isOverLimit,
+    excess,
+    monthsRemaining: mos,
+    penaltyPct,
+    preclosureCharges,
+    totalToClose,
+    effectiveCost,
+    odType
+  });
 
-    doc.setFontSize(12);
-    doc.text(`Overdraft Limit: ${formatINR(limitNum)}`, 14, 32);
-    doc.text(`Utilized Amount: ${formatINR(utilizedNum)}`, 14, 40);
-    doc.text(`Interest Rate: ${rateNum}% p.a.`, 14, 48);
-    doc.text(`Days Utilized: ${daysNum} days`, 14, 56);
-    
-    doc.setFontSize(14);
-    doc.text(`Assessment Summary:`, 14, 70);
-    doc.setFontSize(12);
-    doc.text(`Total Payable: ${formatINR(totalPayableAmount)}`, 14, 78);
-    doc.text(`Total Interest: ${formatINR(totalInterest)}`, 14, 86);
-    doc.text(`Total Fees: ${formatINR(totalFees)}`, 14, 94);
-    
-    doc.save(`FinCalix_Overdraft_${new Date().toISOString().slice(0, 10)}.pdf`);
+  const exportToPDF = () => {
+    exportOverdraftPDF(getExportData());
     AnalyticsService.trackFileDownload('pdf', 'overdraft_calculator');
   };
 
   const exportToExcel = () => {
-    const headers = ['Detail', 'Value'];
-    const data = [
-      ['Overdraft Limit', limitNum],
-      ['Utilized Amount', utilizedNum],
-      ['Interest Rate (%)', rateNum],
-      ['Days Utilized', daysNum],
-      ['Utilization (%)', utilPct.toFixed(2) + '%'],
-      ['Total Interest', totalInterest],
-      ['Total Fees', totalFees],
-      ['Total Amount Payable', totalPayableAmount],
-      ['Effective Cost (%)', effectiveCost.toFixed(2) + '%'],
-      ['Preclosure Penalty (if applied)', preclosureCharges]
-    ];
-    utilsExportToExcel(headers, data, `FinCalix_Overdraft_${new Date().toISOString().slice(0, 10)}`);
+    exportOverdraftExcel(getExportData());
     AnalyticsService.trackFileDownload('excel', 'overdraft_calculator');
   };
 

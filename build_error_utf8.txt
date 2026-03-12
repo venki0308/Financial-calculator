@@ -1,54 +1,35 @@
-﻿src/pages/OverdraftCalculator.tsx(1,3): error TS1443: Module declaration names may only use ' or " quoted strings.
-src/pages/OverdraftCalculator.tsx(96,15): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(96,32): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(97,15): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(97,30): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(97,37): error TS1109: Expression expected.
-src/pages/OverdraftCalculator.tsx(97,43): error TS1003: Identifier expected.
-src/pages/OverdraftCalculator.tsx(98,15): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(98,32): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(99,15): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(99,30): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(99,42): error TS1443: Module declaration names may only use ' or " quoted strings.
-src/pages/OverdraftCalculator.tsx(102,15): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(102,21): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(102,39): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(103,15): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(103,21): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(103,37): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(105,15): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(105,74): error TS1128: Declaration or statement expected.
-src/pages/OverdraftCalculator.tsx(105,78): error TS1443: Module declaration names may only use ' or " quoted strings.
-src/pages/OverdraftCalculator.tsx(124,40): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(133,18): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(133,35): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(133,45): error TS1127: Invalid character.
-src/pages/OverdraftCalculator.tsx(133,57): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(133,74): error TS1127: Invalid character.
-src/pages/OverdraftCalculator.tsx(133,75): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(133,94): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(133,121): error TS1127: Invalid character.
-src/pages/OverdraftCalculator.tsx(133,122): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(133,133): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(133,139): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(133,151): error TS1443: Module declaration names may only use ' or " quoted strings.
-src/pages/OverdraftCalculator.tsx(259,40): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(259,45): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(259,50): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(259,55): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(259,67): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(259,86): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(259,93): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(259,268): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(259,281): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(259,296): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(259,311): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(259,332): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(322,30): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(322,38): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(322,49): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(322,59): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(322,68): error TS1434: Unexpected keyword or identifier.
-src/pages/OverdraftCalculator.tsx(354,38): error TS1005: ';' expected.
-src/pages/OverdraftCalculator.tsx(354,54): error TS1128: Declaration or statement expected.
-src/pages/OverdraftCalculator.tsx(354,56): error TS1434: Unexpected keyword or identifier.
+﻿src/pages/FDCalculator.tsx(45,43): error TS2554: Expected 1 arguments, but got 2.
+src/pages/GoalPlanner.tsx(59,21): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt" | "isRead">'.
+src/pages/GSTCalculator.tsx(105,44): error TS2554: Expected 1 arguments, but got 2.
+src/pages/Home.tsx(119,82): error TS2339: Property 'readAt' does not exist on type 'AppNotification'.
+src/pages/Home.tsx(119,95): error TS2339: Property 'dismissed' does not exist on type 'AppNotification'.
+src/pages/IncomeTaxCalculator.tsx(325,44): error TS2554: Expected 1 arguments, but got 2.
+src/pages/Notifications.tsx(33,34): error TS2339: Property 'dismissed' does not exist on type 'AppNotification'.
+src/pages/Notifications.tsx(52,25): error TS2339: Property 'readAt' does not exist on type 'AppNotification'.
+src/pages/Notifications.tsx(96,51): error TS2339: Property 'dismiss' does not exist on type 'NotificationStore'.
+src/pages/Notifications.tsx(97,82): error TS2339: Property 'readAt' does not exist on type 'AppNotification'.
+src/pages/Notifications.tsx(97,95): error TS2339: Property 'dismissed' does not exist on type 'AppNotification'.
+src/pages/Notifications.tsx(103,15): error TS2339: Property 'route' does not exist on type 'AppNotification'.
+src/pages/Notifications.tsx(103,33): error TS2339: Property 'route' does not exist on type 'AppNotification'.
+src/pages/SIPCalculator.tsx(90,44): error TS2554: Expected 1 arguments, but got 2.
+src/services/NotificationScheduler.ts(44,17): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(54,13): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(69,13): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(86,13): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(94,13): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(102,13): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(110,13): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(118,13): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(132,9): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(199,17): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(220,9): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(227,9): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(234,9): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(241,9): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(248,9): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(268,9): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(282,9): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/services/NotificationScheduler.ts(291,9): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt">'.
+src/store/useBudgetTrackerStore.ts(229,194): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt" | "isRead">'.
+src/store/useBudgetTrackerStore.ts(231,186): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt" | "isRead">'.
+src/store/useCalculatorStore.ts(34,21): error TS2353: Object literal may only specify known properties, and 'route' does not exist in type 'Omit<AppNotification, "id" | "createdAt" | "isRead">'.

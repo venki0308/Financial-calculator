@@ -9,6 +9,7 @@ import BudgetTab from './expenses/BudgetTab';
 import DailyTab from './expenses/DailyTab';
 import ReportsTab from './expenses/ReportsTab';
 import SubscriptionsTab from './expenses/SubscriptionsTab';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 
 const TABS = [
@@ -110,6 +111,10 @@ export default function ExpenseTracker() {
                         {activeTab === 'subs' && <SubscriptionsTab />}
                     </motion.div>
                 </AnimatePresence>
+
+                <div className="mt-6">
+                    <DisclaimerComponent module="expense" />
+                </div>
             </div>
         </div>
     );

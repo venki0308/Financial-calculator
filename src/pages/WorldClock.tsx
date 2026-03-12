@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, X, Search, ChevronLeft, Sun, Sunrise, MapPin, DollarSign, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
-import DisclaimerComponent from '../components/DisclaimerComponent';
+
 import { getCountryMeta, getSunTimes } from '../data/countryData';
 
 import { WORLD_TIMEZONES, POPULAR_IANA, TimezoneInfo } from '../data/timezones';

@@ -85,7 +85,7 @@ export default function Schemes() {
             </div>
 
             <div className="pb-32">
-                
+                <DisclaimerComponent module="schemes" />
             </div>
         </div>
     );

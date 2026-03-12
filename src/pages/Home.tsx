@@ -45,6 +45,7 @@ const calcCatalog: Record<string, { icon: React.ElementType; color: string; labe
     '/calculator/age': { icon: Calendar, color: '#F97316', label: 'Age Calculator' },
     '/world-clock': { icon: Globe, color: '#3B82F6', label: 'World Clock' },
     '/calculator/ppf-advanced': { icon: Landmark, color: '#10B981', label: 'PPF Advanced' },
+    '/calculator/overdraft': { icon: Wallet, color: '#3B82F6', label: 'Overdraft Calculator' },
 };
 
 // Default items if history is empty
@@ -71,7 +72,7 @@ export default function Home() {
 
     useEffect(() => {
         try {
-            const stored = JSON.parse(localStorage.getItem('recentCalculators') || '[]');
+            const stored = JSON.parse(localStorage.getItem('fincalix_recently_used') || '[]');
             setRecentPaths(stored);
         } catch { }
     }, []);
@@ -116,7 +117,7 @@ export default function Home() {
         return { calcOnly: calcOnly.slice(0, 6), schemeResults: schemeResults.slice(0, 4), utilityResults: utilityResults.slice(0, 4), all: [...calcOnly, ...schemeResults, ...utilityResults] };
     }, [searchQuery, t]);
 
-    const unreadCount = useNotificationStore(s => s.notifications.filter(n => !n.readAt && !n.dismissed).length);
+    const unreadCount = useNotificationStore(s => s.getUnreadCount());
 
     // Compute effective current balance: if user hasn't set one, derive from income - expenses
     const effectiveBalance = useMemo(() => {
@@ -142,7 +143,7 @@ export default function Home() {
                     icon: info.icon,
                     color: info.color,
                 };
-            }).slice(0, 4);
+            }).slice(0, 6);
     }, [recentPaths]);
 
     // If no valid recent items after filtering, fall back to defaults

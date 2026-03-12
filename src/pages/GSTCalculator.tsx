@@ -98,14 +98,7 @@ export default function GSTCalculator() {
         }
     }, [stdAmount, stdRate, stdDirection, isIGST]);
 
-    // ─── Notification trigger ────
-    useEffect(() => {
-        if (!stdResult?.total) return;
-        const t = setTimeout(() => {
-            triggerCalcNotification('gst', `Total ₹${Math.round(stdResult.total).toLocaleString('en-IN')} @${stdRate}%`);
-        }, 2000);
-        return () => clearTimeout(t);
-    }, [stdResult?.total, stdRate]);
+
 
 
     // ── Reverse calculation (explicit) ──
@@ -208,8 +201,20 @@ export default function GSTCalculator() {
         else if (mode === 'itc' && itcResult) { inputValues = { purchaseGst, salesGst }; resultValues = { primary: itcResult.netPayable, ...itcResult }; }
         else if (mode === 'invoice') { inputValues = { items: invoiceItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, rate: i.rate })), invoiceIsIGST }; resultValues = { primary: invoiceTotals.total, ...invoiceTotals }; }
 
-        addSaved({ id: `GST-${mode}-${Date.now()}`, calculatorType: `GST Calculator (${mode})`, inputValues, resultValues, timestamp: Date.now() });
+        const calcId = `GST-${mode}-${Date.now()}`;
+        addSaved({ id: calcId, calculatorType: `GST Calculator (${mode})`, inputValues, resultValues, timestamp: Date.now() });
         setSaved(true);
+
+        triggerCalcNotification({
+            type: 'general',
+            metadata: {
+                calcId,
+                title: `GST Calculation Saved (${mode})`,
+                summary: `Successfully saved your GST ${mode} calculation.`,
+                route: '/calculator/gst',
+                icon: '🧾'
+            }
+        });
     };
 
     const handleDownloadPDF = async () => {
@@ -636,7 +641,7 @@ export default function GSTCalculator() {
                 </div>
 
                 
-                <DisclaimerComponent module="tax" />
+                <DisclaimerComponent module="gst" />
 
                 <CalculatorInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} calculatorTitle="GST Calculator" />
             </div>

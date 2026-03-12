@@ -26,13 +26,6 @@ export const useCalculatorStore = create<CalculatorState>()(
             savedCalculations: [],
             history: [],
             addSaved: (calc) => {
-                useNotificationStore.getState().addNotification({
-                    type: 'savings_insight',
-                    title: '💾 Calculation Saved',
-                    body: `Your ${calc.calculatorType} calculation was saved.`,
-                    icon: '💾',
-                    route: '/profile/saved',
-                });
                 set((s) => ({ savedCalculations: [calc, ...s.savedCalculations] }));
             },
             updateSaved: (id, inputValues, resultValues) => set((s) => ({

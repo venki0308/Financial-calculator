@@ -200,9 +200,7 @@ export default function SchemeDetail() {
                 )}
 
                 {/* Disclaimer */}
-                <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-200 text-[11px] leading-relaxed mb-4 italic">
-                    âš ï¸ {t('schemes.disclaimerNote')}
-                </div>
+                <DisclaimerComponent module="schemes" />
 
                 {/* Verification Badge */}
                 {scheme.lastVerified && (
@@ -261,3 +259,4 @@ function CheckItem({ text }: { text: string }) {
 function Row({ label, value, green }: { label: string; value: string; green?: boolean }) {
     return <div className="flex items-start gap-2"><span className="text-muted-foreground text-xs font-medium min-w-[70px]">{label}</span><span className={`text-xs ${green ? 'text-brand-green font-medium' : 'text-muted-foreground'}`}>{value}</span></div>;
 }
+

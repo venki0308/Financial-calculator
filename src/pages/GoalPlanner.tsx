@@ -52,11 +52,14 @@ export default function GoalPlanner() {
         if (selectedGoal && targetAmount > 0 && currentSavings >= targetAmount) {
             if (notifiedGoalRef.current !== selectedGoal.id) {
                 useNotificationStore.getState().addNotification({
-                    type: 'savings_insight',
+                    type: 'saving_insight',
+                    category: 'insight',
                     title: '🎉 Goal Reached!',
                     body: `Congratulations! You have reached your target of ${formatINR(targetAmount)} for ${selectedGoal.label}.`,
                     icon: '🎉',
-                    route: '/goal-planner',
+                    actionRoute: '/goal-planner',
+                    isActionable: true,
+                    metadata: { calcId: `Goal-${Date.now()}` }
                 });
                 notifiedGoalRef.current = selectedGoal.id;
             }
