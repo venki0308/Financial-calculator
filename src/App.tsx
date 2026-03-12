@@ -76,162 +76,163 @@ import ValidatorPage from './pages/ValidatorPage';
 
 // Toast component for back-press notification
 function BackToast({ visible }: { visible: boolean }) {
- if (!visible) return null;
- return (
- <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
- <div className="px-5 py-2.5 rounded-full bg-card border-border border border-slate-700 shadow-xl">
- <p className="text-foreground text-xs font-medium whitespace-nowrap">Press back again to exit FinCalix</p>
- </div>
- </div>
- );
+    if (!visible) return null;
+    return (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
+            <div className="px-5 py-2.5 rounded-full bg-card border-border border border-slate-700 shadow-xl">
+                <p className="text-foreground text-xs font-medium whitespace-nowrap">Press back again to exit FinCalix</p>
+            </div>
+        </div>
+    );
 }
 
 function AppContent() {
- const darkMode = useSettingsStore((s) => s.darkMode);
- const navigate = useNavigate();
- const location = useLocation();
- const lastBackPress = useRef<number>(0);
- const [showBackToast, setShowBackToast] = useState(false);
- const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const darkMode = useSettingsStore((s) => s.darkMode);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const lastBackPress = useRef<number>(0);
+    const [showBackToast, setShowBackToast] = useState(false);
+    const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
- useEffect(() => {
- document.documentElement.classList.toggle('dark', darkMode);
- document.documentElement.classList.toggle('light', !darkMode);
- }, [darkMode]);
+    useEffect(() => {
+        document.documentElement.classList.toggle('dark', darkMode);
+        document.documentElement.classList.toggle('light', !darkMode);
+    }, [darkMode]);
 
- // Analytics + Crashlytics + Feature Flags init
- useEffect(() => {
- const initAnalytics = async () => {
- setupErrorHandling();
- await CrashlyticsService.initialize();
- await CrashlyticsService.setCustomKey('app_version', APP_VERSION);
- await CrashlyticsService.setCustomKey('platform', Capacitor.getPlatform());
- await FeatureFlagService.load();
- await AnalyticsService.trackAppOpened();
- await AnalyticsService.setUserProperties({
- app_version: APP_VERSION,
- platform: Capacitor.getPlatform(),
- });
- };
- initAnalytics();
- // Run notification scheduler (at most once every 23h)
- NotificationScheduler.initialize();
- }, []);
+    // Analytics + Crashlytics + Feature Flags init
+    useEffect(() => {
+        const initAnalytics = async () => {
+            setupErrorHandling();
+            await CrashlyticsService.initialize();
+            await CrashlyticsService.setCustomKey('app_version', APP_VERSION);
+            await CrashlyticsService.setCustomKey('platform', Capacitor.getPlatform());
+            await FeatureFlagService.load();
+            await AnalyticsService.trackAppOpened();
+            await AnalyticsService.setUserProperties({
+                app_version: APP_VERSION,
+                platform: Capacitor.getPlatform(),
+            });
+        };
+        initAnalytics();
+        // Run notification scheduler (at most once every 23h)
+        NotificationScheduler.initialize();
+    }, []);
 
- // Android hardware back button — double-tap to exit on home, navigate back elsewhere
- useEffect(() => {
- if (!Capacitor.isNativePlatform()) return;
+    // Android hardware back button — double-tap to exit on home, navigate back elsewhere
+    useEffect(() => {
+        if (!Capacitor.isNativePlatform()) return;
 
- const backHandler = CapApp.addListener('backButton', () => {
- if (location.pathname === '/') {
- const now = Date.now();
- if (now - lastBackPress.current < 2000) {
- // Second press within 2 seconds — exit app
- CapApp.exitApp();
- } else {
- // First press — show toast
- lastBackPress.current = now;
- setShowBackToast(true);
- if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
- toastTimerRef.current = setTimeout(() => setShowBackToast(false), 2000);
- }
- } else {
- navigate(-1);
- }
- });
+        const backHandler = CapApp.addListener('backButton', () => {
+            if (location.pathname === '/') {
+                const now = Date.now();
+                if (now - lastBackPress.current < 2000) {
+                    // Second press within 2 seconds — exit app
+                    CapApp.exitApp();
+                } else {
+                    // First press — show toast
+                    lastBackPress.current = now;
+                    setShowBackToast(true);
+                    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+                    toastTimerRef.current = setTimeout(() => setShowBackToast(false), 2000);
+                }
+            } else {
+                navigate(-1);
+            }
+        });
 
- return () => {
- backHandler.then((h: { remove: () => void }) => h.remove());
- if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
- };
- }, [location, navigate]);
+        return () => {
+            backHandler.then((h: { remove: () => void }) => h.remove());
+            if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        };
+    }, [location, navigate]);
 
- return (
- <>
- <GlobalDisclaimerModal />
- <BackToast visible={showBackToast} />
- <UpdateChecker />
- <Routes>
- {/* Support pages (no nav bar) */}
- <Route path="/privacy-policy" element={<PrivacyPolicy />} />
- <Route path="/terms-of-service" element={<TermsOfService />} />
- <Route path="/data-safety" element={<DataSafety />} />
+    return (
+        <>
+            <GlobalDisclaimerModal />
+            <BackToast visible={showBackToast} />
+            <UpdateChecker />
+            <Routes>
+                {/* Support pages (no nav bar) */}
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/data-safety" element={<DataSafety />} />
 
- {/* Main app — all routes public, no auth required */}
- <Route element={<Layout />}>
- <Route path="/" element={<Home />} />
- <Route path="/calculators" element={<Calculators />} />
- <Route path="/schemes" element={<Schemes />} />
- <Route path="/scheme/:id" element={<SchemeDetail />} />
- <Route path="/expenses" element={<ExpenseTracker />} />
- <Route path="/profile" element={<Profile />} />
- <Route path="/profile/saved" element={<SavedCalculations />} />
- <Route path="/profile/history" element={<CalculationHistory />} />
- <Route path="/profile/bookmarks" element={<BookmarkedSchemes />} />
- <Route path="/settings" element={<Settings />} />
- <Route path="/notifications" element={<Notifications />} />
- <Route path="/about" element={<About />} />
+                {/* Main app — all routes public, no auth required */}
+                <Route element={<Layout />}>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/calculators" element={<Calculators />} />
+                    <Route path="/schemes" element={<Schemes />} />
+                    <Route path="/scheme/:id" element={<SchemeDetail />} />
+                    <Route path="/expenses" element={<ExpenseTracker />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/profile/saved" element={<SavedCalculations />} />
+                    <Route path="/profile/history" element={<CalculationHistory />} />
+                    <Route path="/profile/bookmarks" element={<BookmarkedSchemes />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/notifications" element={<Notifications />} />
+                    <Route path="/about" element={<About />} />
 
- {/* Calculators */}
- <Route path="/calculator/loan-emi" element={<EMICalculator />} />
- <Route path="/calculator/sip" element={<SIPCalculator />} />
- <Route path="/calculator/fixed-deposit" element={<FDCalculator />} />
- <Route path="/calculator/compound-interest" element={<CompoundInterestCalculator />} />
- <Route path="/calculator/income-tax" element={<IncomeTaxCalculator />} />
- <Route path="/calculator/salary-hike" element={<SalaryHikeCalculator />} />
- <Route path="/calculator/hra" element={<HRACalculator />} />
- <Route path="/calculator/recurring-deposit" element={<RDCalculator />} />
- <Route path="/calculator/simple-interest" element={<SimpleInterestCalculator />} />
- <Route path="/calculator/lumpsum" element={<LumpsumCalculator />} />
- <Route path="/calculator/swp" element={<SWPCalculator />} />
- <Route path="/calculator/cagr" element={<CAGRCalculator />} />
- <Route path="/calculator/step-up-sip" element={<Navigate to="/calculator/sip" replace />} />
- <Route path="/calculator/goal-sip" element={<Navigate to="/calculator/sip" replace />} />
- <Route path="/calculator/ppf" element={<AdvancedPPFCalculator />} />
- <Route path="/calculator/nps" element={<NPSCalculator />} />
- <Route path="/calculator/epf" element={<EPFCalculator />} />
- <Route path="/calculator/gratuity" element={<GratuityCalculator />} />
- <Route path="/calculator/sukanya-samriddhi" element={<SSYCalculator />} />
- <Route path="/calculator/nsc" element={<NSCCalculator />} />
- <Route path="/calculator/kvp" element={<KVPCalculator />} />
- <Route path="/calculator/post-office-mis" element={<POMISCalculator />} />
- <Route path="/calculator/senior-citizen-savings" element={<SCSSCalculator />} />
- <Route path="/calculator/post-office-td" element={<POTDCalculator />} />
- <Route path="/calculator/break-even" element={<BreakEvenCalculator />} />
- <Route path="/calculator/overdraft" element={<OverdraftCalculator />} />
- <Route path="/calculator/cagr" element={<CAGRCalculator />} />
+                    {/* Calculators */}
+                    <Route path="/calculator/loan-emi" element={<EMICalculator />} />
+                    <Route path="/calculator/sip" element={<SIPCalculator />} />
+                    <Route path="/calculator/fixed-deposit" element={<FDCalculator />} />
+                    <Route path="/calculator/compound-interest" element={<CompoundInterestCalculator />} />
+                    <Route path="/calculator/income-tax" element={<IncomeTaxCalculator />} />
+                    <Route path="/calculator/salary-hike" element={<SalaryHikeCalculator />} />
+                    <Route path="/calculator/hra" element={<HRACalculator />} />
+                    <Route path="/calculator/recurring-deposit" element={<RDCalculator />} />
+                    <Route path="/calculator/simple-interest" element={<SimpleInterestCalculator />} />
+                    <Route path="/calculator/lumpsum" element={<LumpsumCalculator />} />
+                    <Route path="/calculator/swp" element={<SWPCalculator />} />
+                    <Route path="/calculator/cagr" element={<CAGRCalculator />} />
+                    <Route path="/calculator/step-up-sip" element={<Navigate to="/calculator/sip" replace />} />
+                    <Route path="/calculator/goal-sip" element={<Navigate to="/calculator/sip" replace />} />
+                    <Route path="/calculator/ppf" element={<AdvancedPPFCalculator />} />
+                    <Route path="/calculator/nps" element={<NPSCalculator />} />
+                    <Route path="/calculator/epf" element={<EPFCalculator />} />
+                    <Route path="/calculator/gratuity" element={<GratuityCalculator />} />
+                    <Route path="/calculator/sukanya-samriddhi" element={<SSYCalculator />} />
+                    <Route path="/calculator/nsc" element={<NSCCalculator />} />
+                    <Route path="/calculator/kvp" element={<KVPCalculator />} />
+                    <Route path="/calculator/post-office-mis" element={<POMISCalculator />} />
+                    <Route path="/calculator/senior-citizen-savings" element={<SCSSCalculator />} />
+                    <Route path="/calculator/post-office-td" element={<POTDCalculator />} />
+                    
+                    <Route path="/calculator/break-even" element={<BreakEvenCalculator />} />
+                    <Route path="/calculator/overdraft" element={<OverdraftCalculator />} />
+                    <Route path="/calculator/cagr" element={<CAGRCalculator />} />
 
- {/* New Calculators */}
- <Route path="/calculator/property" element={<PropertyCalculator />} />
- <Route path="/calculator/advanced-sip" element={<Navigate to="/calculator/sip" replace />} />
- <Route path="/calculator/gst" element={<GSTCalculator />} />
- <Route path="/calculator/car-loan" element={<EMICalculator />} />
- <Route path="/calculator/personal-loan" element={<EMICalculator />} />
- <Route path="/calculator/education-loan" element={<EMICalculator />} />
- <Route path="/budget-tracker" element={<BudgetTracker />} />
- <Route path="/goal-planner" element={<GoalPlanner />} />
- <Route path="/financial-advisor" element={<AIFinancialAssistant />} />
- <Route path="/ai-advisor" element={<Navigate to="/financial-advisor" replace />} />
- <Route path="/compare" element={<CompareCalculator />} />
- <Route path="/calculator/scientific" element={<ScientificCalculator />} />
- <Route path="/calculator/age" element={<AgeCalculator />} />
- <Route path="/world-clock" element={<WorldClock />} />
- <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
- <Route path="/dev/validator" element={<ValidatorPage />} />
- </Route>
+                    {/* New Calculators */}
+                    <Route path="/calculator/property" element={<PropertyCalculator />} />
+                    <Route path="/calculator/advanced-sip" element={<Navigate to="/calculator/sip" replace />} />
+                    <Route path="/calculator/gst" element={<GSTCalculator />} />
+                    <Route path="/calculator/car-loan" element={<EMICalculator />} />
+                    <Route path="/calculator/personal-loan" element={<EMICalculator />} />
+                    <Route path="/calculator/education-loan" element={<EMICalculator />} />
+                    <Route path="/budget-tracker" element={<BudgetTracker />} />
+                    <Route path="/goal-planner" element={<GoalPlanner />} />
+                    <Route path="/financial-advisor" element={<AIFinancialAssistant />} />
+                    <Route path="/ai-advisor" element={<Navigate to="/financial-advisor" replace />} />
+                    <Route path="/compare" element={<CompareCalculator />} />
+                    <Route path="/calculator/scientific" element={<ScientificCalculator />} />
+                    <Route path="/calculator/age" element={<AgeCalculator />} />
+                    <Route path="/world-clock" element={<WorldClock />} />
+                    <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
+                    <Route path="/dev/validator" element={<ValidatorPage />} />
+                </Route>
 
- <Route path="*" element={<Navigate to="/" replace />} />
- </Routes>
- </>
- );
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </>
+    );
 }
 
 export default function App() {
- return (
- <ErrorBoundary>
- <BrowserRouter>
- <AppContent />
- </BrowserRouter>
- </ErrorBoundary>
- );
+    return (
+        <ErrorBoundary>
+            <BrowserRouter>
+                <AppContent />
+            </BrowserRouter>
+        </ErrorBoundary>
+    );
 }

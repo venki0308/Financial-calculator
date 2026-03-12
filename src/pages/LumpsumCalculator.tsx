@@ -4,26 +4,26 @@ import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
 
 const config = {
- title: 'Lumpsum Calculator',
- subtitle: 'One-time investment growth',
- color: 'brand-blue',
- fields: [
- { key: 'principal', label: 'Total Investment', defaultVal: 100000, min: 1000, max: 100000000, prefix: '₹' },
- { key: 'rate', label: 'Expected Return (p.a.)', defaultVal: 12, min: 1, max: 30, suffix: '%' },
- { key: 'years', label: 'Time Period (years)', defaultVal: 10, min: 1, max: 40, suffix: ' years' },
- ],
- compute: (v: Record<string, number>) => {
- const fv = v.principal * Math.pow(1 + v.rate / 100, v.years);
- return {
- primary: fv, label: 'Estimated Maturity Value',
- rows: [
- { label: 'Total Invested', value: formatINR(v.principal) },
- { label: 'Wealth Gained', value: formatINR(fv - v.principal), color: 'text-brand-green' },
- ],
- };
- },
+    title: 'Lumpsum Calculator',
+    subtitle: 'One-time investment growth',
+    color: 'brand-blue',
+    fields: [
+        { key: 'principal', label: 'Total Investment', defaultVal: 100000, min: 1000, max: 100000000, prefix: '₹' },
+        { key: 'rate', label: 'Expected Return (p.a.)', defaultVal: 12, min: 1, max: 30, suffix: '%' },
+        { key: 'years', label: 'Time Period (years)', defaultVal: 10, min: 1, max: 40, suffix: ' years' },
+    ],
+    compute: (v: Record<string, number>) => {
+        const fv = v.principal * Math.pow(1 + v.rate / 100, v.years);
+        return {
+            primary: fv, label: 'Estimated Maturity Value',
+            rows: [
+                { label: 'Total Invested', value: formatINR(v.principal) },
+                { label: 'Wealth Gained', value: formatINR(fv - v.principal), color: 'text-brand-green' },
+            ],
+        };
+    },
 };
 
 export default function LumpsumCalculator() {
- useEffect(() => { AnalyticsService.trackScreen('Lumpsum'); }, []); return <GenericCalculator config={config} />;
+    useEffect(() => { AnalyticsService.trackScreen('Lumpsum'); }, []); return <GenericCalculator config={config} />;
 }

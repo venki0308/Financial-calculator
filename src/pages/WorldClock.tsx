@@ -9,594 +9,600 @@ import { getCountryMeta, getSunTimes } from '../data/countryData';
 import { WORLD_TIMEZONES, POPULAR_IANA, TimezoneInfo } from '../data/timezones';
 
 interface SavedClock {
- id: string;
- cityName: string;
- countryName: string;
- timezone: string;
- addedAt: string;
- isPinned?: boolean;
+    id: string;
+    cityName: string;
+    countryName: string;
+    timezone: string;
+    addedAt: string;
+    isPinned?: boolean;
 }
 
 const DEFAULT_CLOCKS: SavedClock[] = [
- {
- id: 'clock_ist_default',
- cityName: 'Kolkata / Mumbai / Delhi',
- countryName: 'India',
- timezone: 'Asia/Kolkata',
- addedAt: new Date().toISOString(),
- isPinned: true
- },
- {
- id: 'clock_lon_default',
- cityName: 'London',
- countryName: 'United Kingdom',
- timezone: 'Europe/London',
- addedAt: new Date().toISOString()
- },
- {
- id: 'clock_nyc_default',
- cityName: 'New York (EST)',
- countryName: 'United States',
- timezone: 'America/New_York',
- addedAt: new Date().toISOString()
- },
- {
- id: 'clock_dxb_default',
- cityName: 'Dubai / Abu Dhabi',
- countryName: 'UAE',
- timezone: 'Asia/Dubai',
- addedAt: new Date().toISOString()
- }
+    {
+        id: 'clock_ist_default',
+        cityName: 'Kolkata / Mumbai / Delhi',
+        countryName: 'India',
+        timezone: 'Asia/Kolkata',
+        addedAt: new Date().toISOString(),
+        isPinned: true
+    },
+    {
+        id: 'clock_lon_default',
+        cityName: 'London',
+        countryName: 'United Kingdom',
+        timezone: 'Europe/London',
+        addedAt: new Date().toISOString()
+    },
+    {
+        id: 'clock_nyc_default',
+        cityName: 'New York (EST)',
+        countryName: 'United States',
+        timezone: 'America/New_York',
+        addedAt: new Date().toISOString()
+    },
+    {
+        id: 'clock_dxb_default',
+        cityName: 'Dubai / Abu Dhabi',
+        countryName: 'UAE',
+        timezone: 'Asia/Dubai',
+        addedAt: new Date().toISOString()
+    }
 ];
 
 function getTimeData(iana: string, now: Date) {
- try {
- const parts = new Intl.DateTimeFormat('en-US', {
- timeZone: iana, hour: '2-digit', minute: '2-digit', second: '2-digit',
- hour12: false, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
- }).formatToParts(now);
+    try {
+        const parts = new Intl.DateTimeFormat('en-US', {
+            timeZone: iana, hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+        }).formatToParts(now);
 
- const get = (type: string) => parts.find(p => p.type === type)?.value || '';
- const hour = parseInt(get('hour')) || 0;
- const minute = parseInt(get('minute')) || 0;
- const second = parseInt(get('second')) || 0;
+        const get = (type: string) => parts.find(p => p.type === type)?.value || '';
+        const hour = parseInt(get('hour')) || 0;
+        const minute = parseInt(get('minute')) || 0;
+        const second = parseInt(get('second')) || 0;
 
- const displayParts = new Intl.DateTimeFormat('en-IN', {
- timeZone: iana, hour: '2-digit', minute: '2-digit', hour12: true,
- }).formatToParts(now);
- const displayHour = displayParts.find(p => p.type === 'hour')?.value || '12';
- const displayMin = displayParts.find(p => p.type === 'minute')?.value || '00';
- const ampm = displayParts.find(p => p.type === 'dayPeriod')?.value?.toUpperCase() || 'AM';
+        const displayParts = new Intl.DateTimeFormat('en-IN', {
+            timeZone: iana, hour: '2-digit', minute: '2-digit', hour12: true,
+        }).formatToParts(now);
+        const displayHour = displayParts.find(p => p.type === 'hour')?.value || '12';
+        const displayMin = displayParts.find(p => p.type === 'minute')?.value || '00';
+        const ampm = displayParts.find(p => p.type === 'dayPeriod')?.value?.toUpperCase() || 'AM';
 
- const offsetStr = new Intl.DateTimeFormat('en-US', {
- timeZone: iana, timeZoneName: 'shortOffset',
- }).formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'UTC';
+        const offsetStr = new Intl.DateTimeFormat('en-US', {
+            timeZone: iana, timeZoneName: 'shortOffset',
+        }).formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'UTC';
 
- const jan = new Date(now.getFullYear(), 0, 1);
- const jul = new Date(now.getFullYear(), 6, 1);
- const getOff = (d: Date) => {
- try { return new Date(d.toLocaleString('en-US', { timeZone: iana })).getTimezoneOffset(); } catch { return 0; }
- };
- const janOff = getOff(jan);
- const julOff = getOff(jul);
- const isDST = janOff !== julOff;
- const currentlyDST = isDST && getOff(now) === Math.min(janOff, julOff);
+        const jan = new Date(now.getFullYear(), 0, 1);
+        const jul = new Date(now.getFullYear(), 6, 1);
+        const getOff = (d: Date) => {
+            try { return new Date(d.toLocaleString('en-US', { timeZone: iana })).getTimezoneOffset(); } catch { return 0; }
+        };
+        const janOff = getOff(jan);
+        const julOff = getOff(jul);
+        const isDST = janOff !== julOff;
+        const currentlyDST = isDST && getOff(now) === Math.min(janOff, julOff);
 
- const weekday = new Intl.DateTimeFormat('en-IN', { timeZone: iana, weekday: 'short' }).format(now);
- const day = get('day');
- const month = new Intl.DateTimeFormat('en-IN', { timeZone: iana, month: 'short' }).format(now);
+        const weekday = new Intl.DateTimeFormat('en-IN', { timeZone: iana, weekday: 'short' }).format(now);
+        const day = get('day');
+        const month = new Intl.DateTimeFormat('en-IN', { timeZone: iana, month: 'short' }).format(now);
 
- // Diff to IST
- const istOff = getOff(new Date()) - getOff(new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })));
- const tzOff = getOff(now);
- const diffMins = tzOff - (-330); // IST is -330 mins offset from UTC
- let diffStr = 'Same as IST';
- if (diffMins !== 0) {
- const h = Math.floor(Math.abs(diffMins) / 60);
- const m = Math.abs(diffMins) % 60;
- const dir = diffMins > 0 ? "behind" : "ahead of";
- diffStr = `${h}h${m > 0 ? ` ${m}m` : ''} ${dir} IST`;
- }
+        // Diff to IST
+        const istOff = getOff(new Date()) - getOff(new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })));
+        const tzOff = getOff(now);
+        const diffMins = tzOff - (-330); // IST is -330 mins offset from UTC
+        let diffStr = 'Same as IST';
+        if (diffMins !== 0) {
+            const h = Math.floor(Math.abs(diffMins) / 60);
+            const m = Math.abs(diffMins) % 60;
+            const dir = diffMins > 0 ? "behind" : "ahead of";
+            diffStr = `${h}h${m > 0 ? ` ${m}m` : ''} ${dir} IST`;
+        }
 
- return { hour, minute, second, displayHour, displayMin, ampm, offsetStr, isDST, currentlyDST, weekday, day, month, diffStr };
- } catch {
- return { hour: 0, minute: 0, second: 0, displayHour: '12', displayMin: '00', ampm: 'AM', offsetStr: 'UTC', isDST: false, currentlyDST: false, weekday: '', day: '', month: '', diffStr: 'Same as IST' };
- }
+        return { hour, minute, second, displayHour, displayMin, ampm, offsetStr, isDST, currentlyDST, weekday, day, month, diffStr };
+    } catch {
+        return { hour: 0, minute: 0, second: 0, displayHour: '12', displayMin: '00', ampm: 'AM', offsetStr: 'UTC', isDST: false, currentlyDST: false, weekday: '', day: '', month: '', diffStr: 'Same as IST' };
+    }
 }
 
 function AnalogClock({ hour, minute, second }: { hour: number; minute: number; second: number }) {
- const cx = 50; const cy = 50; const r = 42;
- const hourAngle = ((hour % 12) + minute / 60) * 30 - 90;
- const minAngle = (minute + second / 60) * 6 - 90;
- const secAngle = second * 6 - 90;
- const toRad = (a: number) => (a * Math.PI) / 180;
- const hand = (angle: number, len: number) => ({
- x2: cx + len * Math.cos(toRad(angle)),
- y2: cy + len * Math.sin(toRad(angle)),
- });
+    const cx = 50; const cy = 50; const r = 42;
+    const hourAngle = ((hour % 12) + minute / 60) * 30 - 90;
+    const minAngle = (minute + second / 60) * 6 - 90;
+    const secAngle = second * 6 - 90;
+    const toRad = (a: number) => (a * Math.PI) / 180;
+    const hand = (angle: number, len: number) => ({
+        x2: cx + len * Math.cos(toRad(angle)),
+        y2: cy + len * Math.sin(toRad(angle)),
+    });
 
- return (
- <svg viewBox="0 0 100 100" className="w-24 h-24 flex-shrink-0" style={{ filter: 'drop-shadow(0 4px 12px rgba(100,80,255,0.3))' }}>
- <circle cx={cx} cy={cy} r={r + 3} fill="#3730a3" opacity="0.3" />
- <circle cx={cx} cy={cy} r={r} fill="white" />
- {Array.from({ length: 12 }).map((_, i) => {
- const a = toRad(i * 30 - 90);
- return (
- <line key={i}
- x1={cx + (r - 6) * Math.cos(a)} y1={cy + (r - 6) * Math.sin(a)}
- x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)}
- stroke="#6366f1" strokeWidth={i % 3 === 0 ? 2 : 1}
- />
- );
- })}
- <line x1={cx} y1={cy} {...hand(hourAngle, 26)} stroke="#1e1b4b" strokeWidth={3} strokeLinecap="round" />
- <line x1={cx} y1={cy} {...hand(minAngle, 35)} stroke="#1e1b4b" strokeWidth={2} strokeLinecap="round" />
- <line x1={cx} y1={cy} {...hand(secAngle, 38)} stroke="#ef4444" strokeWidth={1.5} strokeLinecap="round" />
- <circle cx={cx} cy={cy} r={2.5} fill="#6366f1" />
- </svg>
- );
+    return (
+        <svg viewBox="0 0 100 100" className="w-24 h-24 flex-shrink-0" style={{ filter: 'drop-shadow(0 4px 12px rgba(100,80,255,0.3))' }}>
+            <circle cx={cx} cy={cy} r={r + 3} fill="#3730a3" opacity="0.3" />
+            <circle cx={cx} cy={cy} r={r} fill="white" />
+            {Array.from({ length: 12 }).map((_, i) => {
+                const a = toRad(i * 30 - 90);
+                return (
+                    <line key={i}
+                        x1={cx + (r - 6) * Math.cos(a)} y1={cy + (r - 6) * Math.sin(a)}
+                        x2={cx + r * Math.cos(a)} y2={cy + r * Math.sin(a)}
+                        stroke="#6366f1" strokeWidth={i % 3 === 0 ? 2 : 1}
+                    />
+                );
+            })}
+            <line x1={cx} y1={cy} {...hand(hourAngle, 26)} stroke="#1e1b4b" strokeWidth={3} strokeLinecap="round" />
+            <line x1={cx} y1={cy} {...hand(minAngle, 35)} stroke="#1e1b4b" strokeWidth={2} strokeLinecap="round" />
+            <line x1={cx} y1={cy} {...hand(secAngle, 38)} stroke="#ef4444" strokeWidth={1.5} strokeLinecap="round" />
+            <circle cx={cx} cy={cy} r={2.5} fill="#6366f1" />
+        </svg>
+    );
 }
 
 function CityDetailView({ clock, now, onBack }: { clock: SavedClock; now: Date; onBack: () => void }) {
- const td = getTimeData(clock.timezone, now);
- const meta = getCountryMeta(clock.timezone);
- const sun = getSunTimes(clock.timezone, now);
+    const td = getTimeData(clock.timezone, now);
+    const meta = getCountryMeta(clock.timezone);
+    const sun = getSunTimes(clock.timezone, now);
 
- return (
- <motion.div
- initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
- transition={{ type: 'spring', damping: 25, stiffness: 200 }}
- className="absolute inset-0 z-40 bg-background overflow-y-auto pb-24"
- >
- <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
- <div className="flex items-center gap-3">
- <button onClick={onBack} className="p-2 rounded-xl bg-card border border-border text-muted-foreground">
- <ChevronLeft size={18} />
- </button>
- <h2 className="text-base font-bold text-foreground">DETAILS</h2>
- </div>
- </div>
+    return (
+        <motion.div
+            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="absolute inset-0 z-40 bg-background overflow-y-auto pb-24"
+        >
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
+                <div className="flex items-center gap-3">
+                    <button onClick={onBack} className="p-2 rounded-xl bg-card border border-border text-muted-foreground">
+                        <ChevronLeft size={18} />
+                    </button>
+                    <h2 className="text-base font-bold text-foreground">DETAILS</h2>
+                </div>
+            </div>
 
- <div className="px-4 pt-4 space-y-4">
- {/* TIME */}
- <div>
- <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Time</p>
- <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 p-4 relative overflow-hidden shadow-xl">
- <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-[var(--bg-primary)]/5" />
- <div className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full bg-black/10" />
- <div className="relative">
- <h3 className="text-foreground font-bold text-xl">{clock.cityName}</h3>
- <p className="text-indigo-200 text-xs uppercase tracking-wider mb-4">{clock.countryName.toUpperCase()}</p>
- <div className="flex items-center gap-4">
- <AnalogClock hour={td.hour} minute={td.minute} second={td.second} />
- <div className="flex-1">
- <div className="font-mono text-foreground font-bold tracking-widest leading-none mb-1 text-4xl" style={{ textShadow: '0 0 20px rgba(255,255,255,0.3)' }}>
- {td.displayHour}:{td.displayMin}
- </div>
- <p className="text-indigo-200 text-xs">{td.weekday}, {td.day} {td.month}</p>
- <div className="mt-2 flex flex-wrap items-center gap-2">
- <span className="text-[10px] bg-[var(--bg-primary)]/20 text-foreground px-2 py-0.5 rounded-full font-medium">{td.offsetStr}</span>
- <span className="text-[10px] bg-[var(--bg-primary)]/20 text-foreground px-2 py-0.5 rounded-full font-medium">{td.diffStr}</span>
- {td.currentlyDST && <span className="text-[10px] bg-amber-400/30 text-amber-200 px-2 py-0.5 rounded-full font-bold">☀️ DST</span>}
- </div>
- </div>
- </div>
- </div>
- </div>
- </div>
+            <div className="px-4 pt-4 space-y-4">
+                {/* TIME */}
+                <div>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Time</p>
+                    <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 p-4 relative overflow-hidden shadow-xl">
+                        <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/5" />
+                        <div className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full bg-black/10" />
+                        <div className="relative">
+                            <h3 className="text-foreground font-bold text-xl">{clock.cityName}</h3>
+                            <p className="text-indigo-200 text-xs uppercase tracking-wider mb-4">{clock.countryName.toUpperCase()}</p>
+                            <div className="flex items-center gap-4">
+                                <AnalogClock hour={td.hour} minute={td.minute} second={td.second} />
+                                <div className="flex-1">
+                                    <div className="font-mono text-foreground font-bold tracking-widest leading-none mb-1 text-4xl" style={{ textShadow: '0 0 20px rgba(255,255,255,0.3)' }}>
+                                        {td.displayHour}:{td.displayMin}
+                                    </div>
+                                    <p className="text-indigo-200 text-xs">{td.weekday}, {td.day} {td.month}</p>
+                                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                                        <span className="text-[10px] bg-white/20 text-foreground px-2 py-0.5 rounded-full font-medium">{td.offsetStr}</span>
+                                        <span className="text-[10px] bg-white/20 text-foreground px-2 py-0.5 rounded-full font-medium">{td.diffStr}</span>
+                                        {td.currentlyDST && <span className="text-[10px] bg-amber-400/30 text-amber-200 px-2 py-0.5 rounded-full font-bold">☀️ DST</span>}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
- {/* Sunrise/Sunset */}
- <div className="grid grid-cols-2 gap-3">
- <div className="rounded-2xl bg-[var(--warning-bg)] border border-[var(--warning-border)]/20 p-4">
- <div className="flex items-center gap-2 mb-1">
- <Sunrise size={14} className="text-amber-500" />
- <p className="text-amber-600 text-[10px] font-bold uppercase">Sunrise</p>
- </div>
- <p className="text-foreground font-bold text-lg">{sun.sunrise}</p>
- </div>
- <div className="rounded-2xl bg-[var(--warning-bg)] border border-[var(--warning-border)]/20 p-4">
- <div className="flex items-center gap-2 mb-1">
- <Sun size={14} className="text-orange-500" />
- <p className="text-orange-600 text-[10px] font-bold uppercase">Sunset</p>
- </div>
- <p className="text-foreground font-bold text-lg">{sun.sunset}</p>
- </div>
- </div>
+                {/* Sunrise/Sunset */}
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                            <Sunrise size={14} className="text-amber-500" />
+                            <p className="text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase">Sunrise</p>
+                        </div>
+                        <p className="text-foreground font-bold text-lg">{sun.sunrise}</p>
+                    </div>
+                    <div className="rounded-2xl bg-orange-500/10 border border-orange-500/20 p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                            <Sun size={14} className="text-orange-500" />
+                            <p className="text-orange-600 dark:text-orange-400 text-[10px] font-bold uppercase">Sunset</p>
+                        </div>
+                        <p className="text-foreground font-bold text-lg">{sun.sunset}</p>
+                    </div>
+                </div>
 
- {/* Economic Info */}
- <div>
- <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Economic Info</p>
- <div className="rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 p-4 flex items-center gap-4 shadow-lg">
- <div className="flex-shrink-0">
- <div className="w-12 h-12 rounded-xl bg-[var(--bg-primary)]/20 flex flex-col items-center justify-center">
- <span className="text-[9px] text-indigo-200 font-semibold uppercase">Currency</span>
- <span className="text-yellow-300 font-bold text-xl leading-none">{meta.currencySymbol}</span>
- </div>
- </div>
- <div>
- <div className="flex items-center gap-2 mb-0.5">
- <DollarSign size={12} className="text-indigo-200" />
- <span className="text-[10px] text-indigo-200 uppercase font-bold">Currency</span>
- </div>
- <p className="text-foreground font-bold text-base">{meta.currencyName}</p>
- </div>
- </div>
- </div>
+                {/* Economic Info */}
+                <div>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Economic Info</p>
+                    <div className="rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 p-4 flex items-center gap-4 shadow-lg">
+                        <div className="flex-shrink-0">
+                            <div className="w-12 h-12 rounded-xl bg-white/20 flex flex-col items-center justify-center">
+                                <span className="text-[9px] text-indigo-200 font-semibold uppercase">Currency</span>
+                                <span className="text-yellow-300 font-bold text-xl leading-none">{meta.currencySymbol}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <DollarSign size={12} className="text-indigo-200" />
+                                <span className="text-[10px] text-indigo-200 uppercase font-bold">Currency</span>
+                            </div>
+                            <p className="text-foreground font-bold text-base">{meta.currencyName}</p>
+                        </div>
+                    </div>
+                </div>
 
- {/* Geography */}
- <div>
- <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Geography</p>
- <div className="rounded-2xl bg-card p-4 flex items-center gap-4 shadow-lg border border-border">
- <div className="flex-shrink-0">
- <div className="w-16 h-16 rounded-xl bg-muted flex flex-col items-center justify-center gap-2">
- <img src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} alt={meta.countryCode}
- className="w-8 h-auto shadow-[0_0_10px_rgba(0,0,0,0.2)] rounded-sm"
- onError={(e) => { e.currentTarget.style.display = 'none'; }}
- />
- <MapPin size={10} className="text-muted-foreground" />
- </div>
- </div>
- <div className="flex-1 space-y-1.5">
- <div className="flex items-center justify-between text-sm">
- <span className="text-muted-foreground text-xs">Country :</span>
- <span className="text-foreground font-bold">{clock.countryName}</span>
- </div>
- <div className="flex items-center justify-between text-sm">
- <span className="text-muted-foreground text-xs">Country Code :</span>
- <span className="text-foreground font-bold">{meta.countryCode}</span>
- </div>
- <div className="flex items-center justify-between text-sm">
- <span className="text-muted-foreground text-xs">Region :</span>
- <span className="text-foreground font-bold">{meta.region}</span>
- </div>
- <div className="flex items-center justify-between text-sm">
- <span className="text-muted-foreground text-xs">Phone Code :</span>
- <span className="text-foreground font-bold">{meta.phoneCode}</span>
- </div>
- </div>
- </div>
- </div>
+                {/* Geography */}
+                <div>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Geography</p>
+                    <div className="rounded-2xl bg-card p-4 flex items-center gap-4 shadow-lg border border-border">
+                        <div className="flex-shrink-0">
+                            <div className="w-16 h-16 rounded-xl bg-muted flex flex-col items-center justify-center gap-2">
+                                <img 
+                                    src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
+                                    alt={meta.countryCode}
+                                    className="w-8 h-auto shadow-[0_0_10px_rgba(0,0,0,0.2)] rounded-sm"
+                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                                <MapPin size={10} className="text-muted-foreground" />
+                            </div>
+                        </div>
+                        <div className="flex-1 space-y-1.5">
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground text-xs">Country :</span>
+                                <span className="text-foreground font-bold">{clock.countryName}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground text-xs">Country Code :</span>
+                                <span className="text-foreground font-bold">{meta.countryCode}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground text-xs">Region :</span>
+                                <span className="text-foreground font-bold">{meta.region}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground text-xs">Phone Code :</span>
+                                <span className="text-foreground font-bold">{meta.phoneCode}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
- {/* Timezone Info */}
- <div className="rounded-2xl bg-card border border-border p-4">
- <p className="text-[10px] font-bold uppercase text-muted-foreground mb-2">Timezone Info</p>
- <div className="space-y-1.5">
- <div className="flex justify-between text-sm">
- <span className="text-muted-foreground">IANA Name</span>
- <span className="text-foreground font-mono text-xs">{clock.timezone}</span>
- </div>
- <div className="flex justify-between text-sm">
- <span className="text-muted-foreground">UTC Offset</span>
- <span className="text-foreground font-medium">{td.offsetStr}</span>
- </div>
- <div className="flex justify-between text-sm">
- <span className="text-muted-foreground">DST</span>
- <span className={`font-medium ${td.isDST ? 'text-amber-500' : 'text-muted-foreground'}`}>
- {td.isDST ? (td.currentlyDST ? 'Active' : 'Observing') : 'Not observed'}
- </span>
- </div>
- </div>
- </div>
- </div>
- </motion.div>
- );
+                {/* Timezone Info */}
+                <div className="rounded-2xl bg-card border border-border p-4">
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-2">Timezone Info</p>
+                    <div className="space-y-1.5">
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">IANA Name</span>
+                            <span className="text-foreground font-mono text-xs">{clock.timezone}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">UTC Offset</span>
+                            <span className="text-foreground font-medium">{td.offsetStr}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">DST</span>
+                            <span className={`font-medium ${td.isDST ? 'text-amber-500' : 'text-muted-foreground'}`}>
+                                {td.isDST ? (td.currentlyDST ? 'Active' : 'Observing') : 'Not observed'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
 }
 
 export default function WorldClock() {
- useEffect(() => { AnalyticsService.trackScreen('World_Clock'); }, []);
- const navigate = useNavigate();
- const [now, setNow] = useState(new Date());
- const [clocks, setClocks] = useState<SavedClock[]>([]);
- const [showAddPanel, setShowAddPanel] = useState(false);
- const [searchQuery, setSearchQuery] = useState('');
- const [detailClock, setDetailClock] = useState<SavedClock | null>(null);
- const [toastMessage, setToastMessage] = useState<string | null>(null);
+    useEffect(() => { AnalyticsService.trackScreen('World_Clock'); }, []);
+    const navigate = useNavigate();
+    const [now, setNow] = useState(new Date());
+    const [clocks, setClocks] = useState<SavedClock[]>([]);
+    const [showAddPanel, setShowAddPanel] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [detailClock, setDetailClock] = useState<SavedClock | null>(null);
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
 
- // Mount logic - Read from LocalStorage
- useEffect(() => {
- try {
- const saved = localStorage.getItem('fincalix_world_clocks');
- if (saved) {
- const parsed = JSON.parse(saved);
- if (Array.isArray(parsed) && parsed.length > 0) {
- setClocks(parsed);
- return;
- }
- }
- } catch {}
- setClocks(DEFAULT_CLOCKS);
- }, []);
+    // Mount logic - Read from LocalStorage
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('fincalix_world_clocks');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    setClocks(parsed);
+                    return;
+                }
+            }
+        } catch {}
+        setClocks(DEFAULT_CLOCKS);
+    }, []);
 
- // Interval logic
- useEffect(() => {
- const interval = setInterval(() => setNow(new Date()), 1000);
- return () => clearInterval(interval);
- }, []);
+    // Interval logic
+    useEffect(() => {
+        const interval = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(interval);
+    }, []);
 
- // Sorting Logic - IST Pinned Top, Karachi Pinned Bottom, Rest A-Z
- const activeClocks = useMemo(() => {
- let clocksCopy = [...clocks];
- // Failsafe pin IST if lost somehow
- const hasPinned = clocksCopy.some(c => c.isPinned);
- if (!hasPinned && clocksCopy.length > 0) {
- const fallbackIST = clocksCopy.findIndex(c => c.timezone === 'Asia/Kolkata');
- if (fallbackIST >= 0) {
- clocksCopy[fallbackIST] = { ...clocksCopy[fallbackIST], isPinned: true };
- }
- }
+    // Sorting Logic - IST Pinned Top, Karachi Pinned Bottom, Rest A-Z
+    const activeClocks = useMemo(() => {
+        let clocksCopy = [...clocks];
+        
+        // Failsafe pin IST if lost somehow
+        const hasPinned = clocksCopy.some(c => c.isPinned);
+        if (!hasPinned && clocksCopy.length > 0) {
+            const fallbackIST = clocksCopy.findIndex(c => c.timezone === 'Asia/Kolkata');
+            if (fallbackIST >= 0) {
+                clocksCopy[fallbackIST] = { ...clocksCopy[fallbackIST], isPinned: true };
+            }
+        }
 
- let sorted = clocksCopy.filter(c => c.timezone !== 'Asia/Kolkata' && c.timezone !== 'Asia/Karachi')
- .sort((a, b) => a.cityName.localeCompare(b.cityName));
+        let sorted = clocksCopy.filter(c => c.timezone !== 'Asia/Kolkata' && c.timezone !== 'Asia/Karachi')
+            .sort((a, b) => a.cityName.localeCompare(b.cityName));
 
- const istClock = clocksCopy.find(c => c.timezone === 'Asia/Kolkata');
- const karachiClock = clocksCopy.find(c => c.timezone === 'Asia/Karachi');
+        const istClock = clocksCopy.find(c => c.timezone === 'Asia/Kolkata');
+        const karachiClock = clocksCopy.find(c => c.timezone === 'Asia/Karachi');
 
- if (istClock) sorted.unshift(istClock);
- if (karachiClock) sorted.push(karachiClock);
+        if (istClock) sorted.unshift(istClock);
+        if (karachiClock) sorted.push(karachiClock);
 
- return sorted;
- }, [clocks]);
+        return sorted;
+    }, [clocks]);
 
- // Enhanced Search logic
- const availableZones = useMemo(() => {
- const q = searchQuery.toLowerCase().trim();
- const excludeIanas = clocks.map(c => c.timezone);
- const notSelected = WORLD_TIMEZONES.filter(t => !excludeIanas.includes(t.iana));
- if (!q || q.length < 2) {
-  const popular = POPULAR_IANA.map(iana => notSelected.find(t => t.iana === iana)).filter(Boolean) as TimezoneInfo[];
-  const popularIanas = popular.map(t => t.iana);
-  const rest = notSelected.filter(t => !popularIanas.includes(t.iana))
-    .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0) || a.city.localeCompare(b.city));
-  return [...popular, ...rest];
-  }
+    // Enhanced Search logic
+    const availableZones = useMemo(() => {
+        const q = searchQuery.toLowerCase().trim();
+        const excludeIanas = clocks.map(c => c.timezone);
+        const notSelected = WORLD_TIMEZONES.filter(t => !excludeIanas.includes(t.iana));
 
-  const filtered = notSelected.filter(t => {
-  const offsetStr = new Intl.DateTimeFormat('en-US', {
-  timeZone: t.iana, timeZoneName: 'shortOffset',
-  }).formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'UTC';
-  return (
-  t.searchTerms.includes(q) ||
-  t.city.toLowerCase().includes(q) ||
-  t.country.toLowerCase().includes(q) ||
-  t.iana.toLowerCase().includes(q) ||
-  offsetStr.toLowerCase().includes(q)
-  );
-  }).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0) || a.city.localeCompare(b.city));
+        if (!q || q.length < 2) {
+            // Show popular first, max 20, keeping the order of POPULAR_IANA to ensure Karachi is at the bottom
+            const popular = POPULAR_IANA.map(iana => notSelected.find(t => t.iana === iana)).filter(Boolean) as TimezoneInfo[];
+            const popularIanas = popular.map(t => t.iana);
+            const rest = notSelected.filter(t => !popularIanas.includes(t.iana));
+            return [...popular, ...rest].slice(0, 20);
+        }
 
-  return filtered;
-  }, [clocks, searchQuery, now]);
+        // Calculate offsets on the fly for search strings
+        const filtered = notSelected.filter(t => {
+            const offsetStr = new Intl.DateTimeFormat('en-US', {
+                timeZone: t.iana, timeZoneName: 'shortOffset',
+            }).formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'UTC';
+            
+            return (
+                t.searchTerms.includes(q) ||
+                t.city.toLowerCase().includes(q) ||
+                t.country.toLowerCase().includes(q) ||
+                t.iana.toLowerCase().includes(q) ||
+                offsetStr.toLowerCase().includes(q)
+            );
+        });
 
- const showToast = (msg: string) => {
- setToastMessage(msg);
- setTimeout(() => setToastMessage(null), 3000);
- };
+        return filtered.slice(0, 20); // max 20 results in dropdown
+    }, [clocks, searchQuery, now]);
 
- const addZone = (tz: TimezoneInfo) => {
- const newClock: SavedClock = {
- id: `clock_${Date.now()}`,
- cityName: tz.city.split(' / ')[0], // Get primary city name
- countryName: tz.country,
- timezone: tz.iana,
- addedAt: new Date().toISOString()
- };
- const nextClocks = [...clocks, newClock];
- localStorage.setItem('fincalix_world_clocks', JSON.stringify(nextClocks));
- setClocks(nextClocks);
- setShowAddPanel(false);
- setSearchQuery('');
- showToast(`${newClock.cityName} added to World Clock`);
- };
+    const showToast = (msg: string) => {
+        setToastMessage(msg);
+        setTimeout(() => setToastMessage(null), 3000);
+    };
 
- const removeZone = (clockId: string) => {
- const nextClocks = clocks.filter(c => c.id !== clockId);
- localStorage.setItem('fincalix_world_clocks', JSON.stringify(nextClocks));
- setClocks(nextClocks);
- };
+    const addZone = (tz: TimezoneInfo) => {
+        const newClock: SavedClock = {
+            id: `clock_${Date.now()}`,
+            cityName: tz.city.split(' / ')[0], // Get primary city name
+            countryName: tz.country,
+            timezone: tz.iana,
+            addedAt: new Date().toISOString()
+        };
+        const nextClocks = [...clocks, newClock];
+        localStorage.setItem('fincalix_world_clocks', JSON.stringify(nextClocks));
+        setClocks(nextClocks);
+        setShowAddPanel(false);
+        setSearchQuery('');
+        showToast(`${newClock.cityName} added to World Clock`);
+    };
 
- return (
- <div className="min-h-dvh bg-background animate-fade-in relative overflow-hidden">
- {/* Header */}
- <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-3">
- <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border text-muted-foreground">
- <ArrowLeft size={18} />
- </button>
- <div>
- <h1 className="text-lg font-bold text-foreground">World Clock</h1>
- <p className="text-muted-foreground text-xs">{activeClocks.length} cities · Tap for details</p>
- </div>
- </div>
- <button onClick={() => setShowAddPanel(true)}
- className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary">
- <Plus size={16} />
- <span className="text-xs font-medium">Add</span>
- </button>
- </div>
- </div>
+    const removeZone = (clockId: string) => {
+        const nextClocks = clocks.filter(c => c.id !== clockId);
+        localStorage.setItem('fincalix_world_clocks', JSON.stringify(nextClocks));
+        setClocks(nextClocks);
+    };
+
+    return (
+        <div className="min-h-dvh bg-background animate-fade-in relative overflow-hidden">
+            {/* Header */}
+            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border text-muted-foreground">
+                            <ArrowLeft size={18} />
+                        </button>
+                        <div>
+                            <h1 className="text-lg font-bold text-foreground">World Clock</h1>
+                            <p className="text-muted-foreground text-xs">{activeClocks.length} cities · Tap for details</p>
+                        </div>
+                    </div>
+                        <button onClick={() => setShowAddPanel(true)}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+                            <Plus size={16} />
+                            <span className="text-xs font-medium">Add</span>
+                        </button>
+                </div>
+            </div>
 
 
- {/* Clock Cards */}
- <div className="px-4 pt-3 pb-28 space-y-4">
- {activeClocks.map((clock, i) => {
- const td = getTimeData(clock.timezone, now);
- const meta = getCountryMeta(clock.timezone);
- const isDark = td.hour < 6 || td.hour >= 20;
+            {/* Clock Cards */}
+            <div className="px-4 pt-3 pb-28 space-y-4">
+                {activeClocks.map((clock, i) => {
+                    const td = getTimeData(clock.timezone, now);
+                    const meta = getCountryMeta(clock.timezone);
+                    const isDark = td.hour < 6 || td.hour >= 20;
 
- return (
- <motion.div key={clock.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
- transition={{ delay: i * 0.04 }}
- className="relative rounded-2xl overflow-hidden shadow-md cursor-pointer active:scale-[0.98] transition-transform select-none border border-border bg-card"
- onClick={() => setDetailClock(clock)}
- >
- <div className={`absolute inset-0 opacity-10 ${isDark ? 'bg-indigo-900' : 'bg-primary'}`} />
- <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-primary/5" />
- <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-black/5" />
+                    return (
+                        <motion.div key={clock.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.04 }}
+                            className="relative rounded-2xl overflow-hidden shadow-md cursor-pointer active:scale-[0.98] transition-transform select-none border border-border bg-card"
+                            onClick={() => setDetailClock(clock)}
+                        >
+                            <div className={`absolute inset-0 opacity-10 ${isDark ? 'bg-indigo-900' : 'bg-primary'}`} />
+                            <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-primary/5" />
+                            <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-black/5" />
 
- <div className="relative p-4 flex items-center justify-between">
- <div className="flex items-center gap-3">
-  <div className="w-[36px] h-[24px] flex-shrink-0 flex items-center justify-center relative bg-muted rounded-[3px] border border-border/50 text-muted-foreground font-bold text-[10px] overflow-hidden">
-  {meta.countryCode}
-  {meta.countryCode !== '🌍' && (
-  <img src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} alt={meta.countryCode}
-  className="absolute inset-0 w-full h-full object-cover z-10"
-  onError={(e) => { e.currentTarget.style.display = 'none'; }}
-  />
-  )}
-  </div>
- <div>
- <div className="flex items-center gap-2">
- <h3 className="text-foreground font-bold text-base">{clock.cityName}</h3>
- {td.currentlyDST && (
- <span className="text-[9px] bg-[var(--warning-bg)] text-[var(--warning-text)] px-1.5 py-0.5 rounded-full font-bold">DST</span>
- )}
- </div>
- <p className="text-muted-foreground text-[11px]">{clock.countryName} · {td.offsetStr}</p>
- <p className="text-muted-foreground text-[10px]">{td.weekday}, {td.day} {td.month} · {td.diffStr}</p>
- </div>
- </div>
+                            <div className="relative p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-[36px] flex-shrink-0 flex items-center justify-center">
+                                        <img 
+                                            src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
+                                            alt={meta.countryCode}
+                                            className="w-full h-auto shadow-sm rounded-[2px]"
+                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-foreground font-bold text-base">{clock.cityName}</h3>
+                                            {td.currentlyDST && (
+                                                <span className="text-[9px] bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded-full font-bold">DST</span>
+                                            )}
+                                        </div>
+                                        <p className="text-muted-foreground text-[11px]">{clock.countryName} · {td.offsetStr}</p>
+                                        <p className="text-muted-foreground text-[10px]">{td.weekday}, {td.day} {td.month} · {td.diffStr}</p>
+                                    </div>
+                                </div>
 
- <div className="flex flex-col items-end gap-1">
- <div className="font-mono text-foreground font-bold text-2xl" style={{ letterSpacing: '0.02em' }}>
- {td.displayHour}:{td.displayMin}
- </div>
- <span className="text-muted-foreground text-xs uppercase">{td.ampm}</span>
- {!clock.isPinned && (
- <button
- onClick={(e) => { e.stopPropagation(); removeZone(clock.id); }}
- className="mt-1 p-1 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
- >
- <X size={12} className="text-muted-foreground" />
- </button>
- )}
- </div>
- </div>
- </motion.div>
- );
- })}
+                                <div className="flex flex-col items-end gap-1">
+                                    <div className="font-mono text-foreground font-bold text-2xl" style={{ letterSpacing: '0.02em' }}>
+                                        {td.displayHour}:{td.displayMin}
+                                    </div>
+                                    <span className="text-muted-foreground text-xs uppercase">{td.ampm}</span>
+                                    {!clock.isPinned && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); removeZone(clock.id); }}
+                                            className="mt-1 p-1 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
+                                        >
+                                            <X size={12} className="text-muted-foreground" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </motion.div>
+                    );
+                })}
 
- {activeClocks.length === 0 && (
- <div className="text-center py-16">
- <Globe size={40} className="text-muted-foreground mx-auto mb-3 opacity-50" />
- <p className="text-muted-foreground">No cities added. Tap Add to begin.</p>
- </div>
- )}
- </div>
+                {activeClocks.length === 0 && (
+                    <div className="text-center py-16">
+                        <Globe size={40} className="text-muted-foreground mx-auto mb-3 opacity-50" />
+                        <p className="text-muted-foreground">No cities added. Tap Add to begin.</p>
+                    </div>
+                )}
+            </div>
 
- {/* Success Toast */}
- <AnimatePresence>
- {toastMessage && (
- <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} className="fixed bottom-24 left-4 right-4 z-[60] flex justify-center pointer-events-none">
- <div className="bg-foreground text-background px-4 py-2 rounded-full shadow-xl flex items-center gap-2 text-sm font-medium">
- <Globe size={14} className="text-primary" />
- {toastMessage}
- </div>
- </motion.div>
- )}
- </AnimatePresence>
+            {/* Success Toast */}
+            <AnimatePresence>
+                {toastMessage && (
+                    <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} 
+                    className="fixed bottom-24 left-4 right-4 z-[60] flex justify-center pointer-events-none">
+                        <div className="bg-foreground text-background px-4 py-2 rounded-full shadow-xl flex items-center gap-2 text-sm font-medium">
+                            <Globe size={14} className="text-primary" />
+                            {toastMessage}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
- {/* Add Zone Bottom Sheet */}
- <AnimatePresence>
- {showAddPanel && (
- <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
- className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
- onClick={(e) => { if (e.target === e.currentTarget) { setShowAddPanel(false); setSearchQuery(''); } }}
- >
- <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
- transition={{ type: 'spring', damping: 26, stiffness: 200 }}
- className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl flex flex-col border-t border-border"
- style={{ maxHeight: '85vh' }}
- >
- <div className="flex items-center justify-between p-6 pb-3 flex-shrink-0">
- <div>
- <h3 className="text-lg font-bold text-foreground">Add Time Zone</h3>
- <p className="text-muted-foreground text-xs">{WORLD_TIMEZONES.length} countries available</p>
- </div>
- <button onClick={() => { setShowAddPanel(false); setSearchQuery(''); }}
- className="p-2 rounded-xl bg-muted text-muted-foreground">
- <X size={18} />
- </button>
- </div>
+            {/* Add Zone Bottom Sheet */}
+            <AnimatePresence>
+                {showAddPanel && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+                        onClick={(e) => { if (e.target === e.currentTarget) { setShowAddPanel(false); setSearchQuery(''); } }}
+                    >
+                        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 26, stiffness: 200 }}
+                            className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl flex flex-col border-t border-border"
+                            style={{ maxHeight: '85vh' }}
+                        >
+                            <div className="flex items-center justify-between p-6 pb-3 flex-shrink-0">
+                                <div>
+                                    <h3 className="text-lg font-bold text-foreground">Add Time Zone</h3>
+                                    <p className="text-muted-foreground text-xs">{WORLD_TIMEZONES.length} countries available</p>
+                                </div>
+                                <button onClick={() => { setShowAddPanel(false); setSearchQuery(''); }}
+                                    className="p-2 rounded-xl bg-muted text-muted-foreground">
+                                    <X size={18} />
+                                </button>
+                            </div>
 
- <div className="px-6 mb-3 flex-shrink-0">
- <div className="relative">
- <Search size={16} className="absolute inset-y-0 my-auto left-4 text-muted-foreground" />
- <input
- type="text"
- placeholder="Search India, New York, UTC+5..."
- value={searchQuery}
- onChange={(e) => setSearchQuery(e.target.value)}
- autoFocus
- className="w-full bg-input border border-border rounded-xl py-3 pl-11 pr-10 text-sm text-foreground outline-none focus:border-primary transition-colors"
- />
- {searchQuery && (
- <button onClick={() => setSearchQuery('')} className="absolute inset-y-0 my-auto right-4 text-muted-foreground">
- <X size={14} />
- </button>
- )}
- </div>
- </div>
+                            <div className="px-6 mb-3 flex-shrink-0">
+                                <div className="relative">
+                                    <Search size={16} className="absolute inset-y-0 my-auto left-4 text-muted-foreground" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search India, New York, UTC+5..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        autoFocus
+                                        className="w-full bg-input border border-border rounded-xl py-3 pl-11 pr-10 text-sm text-foreground outline-none focus:border-primary transition-colors"
+                                    />
+                                    {searchQuery && (
+                                        <button onClick={() => setSearchQuery('')} className="absolute inset-y-0 my-auto right-4 text-muted-foreground">
+                                            <X size={14} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
 
- {!searchQuery && (
- <p className="px-6 text-[10px] text-primary font-bold uppercase mb-2 flex-shrink-0">
- 🌟 Popular Cities
- </p>
- )}
+                            {!searchQuery && (
+                                <p className="px-6 text-[10px] text-primary font-bold uppercase mb-2 flex-shrink-0">
+                                    🌟 Popular Cities
+                                </p>
+                            )}
 
- <div className="overflow-y-auto flex-1 px-6 pb-6 space-y-2">
- {availableZones.map(tz => {
- const meta = getCountryMeta(tz.iana);
- const td = getTimeData(tz.iana, now);
- return (
- <button key={tz.iana} onClick={() => addZone(tz)}
- className="w-full flex items-center justify-between p-3 rounded-xl bg-background border border-border hover:border-primary/50 transition-colors text-left group">
- <div className="flex items-center gap-3 flex-1 min-w-0">
-  <div className="w-8 h-[22px] flex-shrink-0 flex items-center justify-center relative bg-muted rounded-[3px] border border-border/50 text-muted-foreground font-bold text-[9px] overflow-hidden">
-  {meta.countryCode}
-  {meta.countryCode !== '🌍' && (
-  <img src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} alt={meta.countryCode}
-  className="absolute inset-0 w-full h-full object-cover z-10"
-  onError={(e) => { e.currentTarget.style.display = 'none'; }}
-  />
-  )}
-  </div>
- <div className="flex-1 min-w-0">
- <p className="text-foreground font-semibold text-sm truncate group-hover:text-primary transition-colors">{tz.city}</p>
- <p className="text-muted-foreground text-xs truncate">{tz.country}</p>
- </div>
- </div>
- <div className="flex items-center gap-4 flex-shrink-0 text-right">
- <div className="hidden sm:block">
- <p className="text-foreground font-mono text-sm font-medium">{td.displayHour}:{td.displayMin} {td.ampm}</p>
- <p className="text-muted-foreground text-[10px]">{td.offsetStr}</p>
- </div>
- <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
- <Plus size={14} className="text-primary" />
- </div>
- </div>
- </button>
- );
- })}
+                            <div className="overflow-y-auto flex-1 px-6 pb-6 space-y-2">
+                                {availableZones.map(tz => {
+                                    const meta = getCountryMeta(tz.iana);
+                                    const td = getTimeData(tz.iana, now);
+                                    
+                                    return (
+                                        <button key={tz.iana} onClick={() => addZone(tz)}
+                                            className="w-full flex items-center justify-between p-3 rounded-xl bg-background border border-border hover:border-primary/50 transition-colors text-left group">
+                                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                <div className="w-8 flex-shrink-0 flex items-center justify-center">
+                                                    <img 
+                                                        src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
+                                                        alt={meta.countryCode}
+                                                        className="w-full h-auto shadow-sm rounded-sm"
+                                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                    />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-foreground font-semibold text-sm truncate group-hover:text-primary transition-colors">{tz.city}</p>
+                                                    <p className="text-muted-foreground text-xs truncate">{tz.country}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                                                <div className="hidden sm:block">
+                                                    <p className="text-foreground font-mono text-sm font-medium">{td.displayHour}:{td.displayMin} {td.ampm}</p>
+                                                    <p className="text-muted-foreground text-[10px]">{td.offsetStr}</p>
+                                                </div>
+                                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                                                    <Plus size={14} className="text-primary" />
+                                                </div>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
 
- {availableZones.length === 0 && (
- <div className="text-center py-8">
- <Globe size={32} className="text-muted-foreground mx-auto mb-2 opacity-50" />
- <p className="text-muted-foreground text-sm font-medium">No matching cities found</p>
- <p className="text-muted-foreground/70 text-xs mt-1">Try "India", "Japan" or "+5:30"</p>
- </div>
- )}
- </div>
- </motion.div>
- </motion.div>
- )}
- </AnimatePresence>
+                                {availableZones.length === 0 && (
+                                    <div className="text-center py-8">
+                                        <Globe size={32} className="text-muted-foreground mx-auto mb-2 opacity-50" />
+                                        <p className="text-muted-foreground text-sm font-medium">No matching cities found</p>
+                                        <p className="text-muted-foreground/70 text-xs mt-1">Try "India", "Japan" or "+5:30"</p>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
- {/* Detail View */}
- <AnimatePresence>
- {detailClock && (
- <CityDetailView clock={detailClock} now={now} onBack={() => setDetailClock(null)} />
- )}
- </AnimatePresence>
- </div>
- );
+            {/* Detail View */}
+            <AnimatePresence>
+                {detailClock && (
+                    <CityDetailView clock={detailClock} now={now} onBack={() => setDetailClock(null)} />
+                )}
+            </AnimatePresence>
+        </div>
+    );
 }
