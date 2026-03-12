@@ -6,988 +6,972 @@ import { Capacitor } from '@capacitor/core';
 // ─── Toast notification ────────────────────────────────────────────────────
 // ─── PDF text sanitizer (strips emoji that jsPDF can't render) ─────────────
 const stripEmoji = (text: string): string => {
-    if (!text) return '';
-    return text
-        .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
-        .replace(/[\u{2600}-\u{27BF}]/gu, '')
-        .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
-        .replace(/[\uFE00-\uFE0F]/gu, '')
-        .replace(/\s+/g, ' ')
-        .trim();
+ if (!text) return '';
+ return text
+ .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+ .replace(/[\u{2600}-\u{27BF}]/gu, '')
+ .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+ .replace(/[\uFE00-\uFE0F]/gu, '')
+ .replace(/\s+/g, ' ')
+ .trim();
 };
 
 export function sanitizeForPDF(text: string): string {
-    // Remove emoji + common unicode symbols outside Latin-1 range
-    return stripEmoji(text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '')).trim();
+ // Remove emoji + common unicode symbols outside Latin-1 range
+ return stripEmoji(text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '')).trim();
 }
 
 // Monkey-patch jsPDF text method to always sanitize text globally
 const originalText = (jsPDF.prototype as any).text;
 (jsPDF.prototype as any).text = function(text: any, x: number, y: number, options?: any) {
-    if (Array.isArray(text)) {
-        text = text.map(t => sanitizeForPDF(String(t)));
-    } else {
-        text = sanitizeForPDF(String(text));
-    }
-    return originalText.call(this, text, x, y, options);
+ if (Array.isArray(text)) {
+ text = text.map(t => sanitizeForPDF(String(t)));
+ } else {
+ text = sanitizeForPDF(String(text));
+ }
+ return originalText.call(this, text, x, y, options);
 };
 
 function showToast(message: string, isError = false) {
-    const old = document.getElementById('fncx-toast');
-    if (old) old.remove();
-    const t = document.createElement('div');
-    t.id = 'fncx-toast';
-    t.textContent = message;
-    Object.assign(t.style, {
-        position: 'fixed', bottom: '110px', left: '50%', transform: 'translateX(-50%)',
-        background: isError ? '#ef4444' : '#10B981', color: '#fff',
-        padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: '600',
-        zIndex: '99999', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', whiteSpace: 'nowrap',
-        maxWidth: '90vw', textAlign: 'center',
-    });
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 4000);
+ const old = document.getElementById('fncx-toast');
+ if (old) old.remove();
+ const t = document.createElement('div');
+ t.id = 'fncx-toast';
+ t.textContent = message;
+ Object.assign(t.style, {
+ position: 'fixed', bottom: '110px', left: '50%', transform: 'translateX(-50%)',
+ background: isError ? '#ef4444' : '#10B981', color: '#fff',
+ padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: '600',
+ zIndex: '99999', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', whiteSpace: 'nowrap',
+ maxWidth: '90vw', textAlign: 'center',
+ });
+ document.body.appendChild(t);
+ setTimeout(() => t.remove(), 4000);
 }
 
 // ─── Blob → base64 ────────────────────────────────────────────────────────
 function blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve((reader.result as string).split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
+ return new Promise((resolve, reject) => {
+ const reader = new FileReader();
+ reader.onload = () => resolve((reader.result as string).split(',')[1]);
+ reader.onerror = reject;
+ reader.readAsDataURL(blob);
+ });
 }
 
 // ─── Native save — writes to Cache (always writable), then shares ───────────
 async function saveOnNative(blob: Blob, filename: string): Promise<void> {
-    const { Filesystem, Directory } = await import('@capacitor/filesystem');
-    const { Share } = await import('@capacitor/share');
+ const { Filesystem, Directory } = await import('@capacitor/filesystem');
+ const { Share } = await import('@capacitor/share');
 
-    const base64 = await blobToBase64(blob);
+ const base64 = await blobToBase64(blob);
 
-    // Cache dir is always writable on Android without external storage permission
-    const writeResult = await Filesystem.writeFile({
-        path: filename,
-        data: base64,
-        directory: Directory.Cache,
-        recursive: true,
-    });
+ // Cache dir is always writable on Android without external storage permission
+ const writeResult = await Filesystem.writeFile({
+ path: filename,
+ data: base64,
+ directory: Directory.Cache,
+ recursive: true,
+ });
 
-    // Show success toast first
-    showToast(`✅ File ready — opening share sheet…`);
+ // Show success toast first
+ showToast(`✅ File ready — opening share sheet…`);
 
-    // Immediately offer the share sheet so user can open in Drive/WhatsApp/etc
-    try {
-        const canShare = await Share.canShare();
-        if (canShare.value) {
-            await Share.share({
-                title: `FinCalix – ${filename}`,
-                url: writeResult.uri,
-                dialogTitle: 'Open or Share File',
-            });
-        } else {
-            showToast(`✅ Saved: ${filename}`);
-        }
-    } catch {
-        // User dismissed share sheet — that's fine
-        showToast(`✅ File saved successfully`);
-    }
+ // Immediately offer the share sheet so user can open in Drive/WhatsApp/etc
+ try {
+ const canShare = await Share.canShare();
+ if (canShare.value) {
+ await Share.share({
+ title: `FinCalix – ${filename}`,
+ url: writeResult.uri,
+ dialogTitle: 'Open or Share File',
+ });
+ } else {
+ showToast(`✅ Saved: ${filename}`);
+ }
+ } catch {
+ // User dismissed share sheet — that's fine
+ showToast(`✅ File saved successfully`);
+ }
 }
 
 
 // ─── Web browser download ─────────────────────────────────────────────────
 function browserDownload(blob: Blob, filename: string) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement('a');
+ a.href = url;
+ a.download = filename;
+ document.body.appendChild(a);
+ a.click();
+ setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
 }
 
 // ─── Public: Export PDF ───────────────────────────────────────────────────
 export const exportToPDF = async (
-    title: string,
-    headers: string[],
-    data: (string | number)[][],
-    filename: string,
-    chartImage?: string,
-    chartSummary?: { label: string; value: string; color?: [number, number, number] }[]
+ title: string,
+ headers: string[],
+ data: (string | number)[][],
+ filename: string,
+ chartImage?: string,
+ chartSummary?: { label: string; value: string; color?: [number, number, number] }[]
 ): Promise<void> => {
-    try {
-        const doc = new jsPDF();
+ try {
+ const doc = new jsPDF();
 
-        doc.setFontSize(18);
-        doc.setTextColor(15, 23, 42);
-        doc.text(title, 14, 20);
+ doc.setFontSize(18);
+ doc.setTextColor(15, 23, 42);
+ doc.text(title, 14, 20);
 
-        doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text(`Generated by FinCalix  •  ${new Date().toLocaleDateString('en-IN')}`, 14, 28);
+ doc.setFontSize(10);
+ doc.setTextColor(100);
+ doc.text(`Generated by FinCalix • ${new Date().toLocaleDateString('en-IN')}`, 14, 28);
 
-        doc.setDrawColor(226, 232, 240);
-        doc.line(14, 33, 196, 33);
+ doc.setDrawColor(226, 232, 240);
+ doc.line(14, 33, 196, 33);
 
-        // ─── Sanitise data ────────────────────────────────────────────────
-        // 1. Detect separator rows ('---') and split table into sections
-        // 2. Replace ₹ with INR (jsPDF Latin font can't render the Rupee symbol)
-        const sanitise = (cell: string | number) => {
-            if (typeof cell !== 'string') return cell;
-            // 1. Replace Rupee symbol with INR
-            let text = cell.replace(/₹\s*/g, 'INR ').replace(/Rs\.\s*/g, 'INR ');
-            // 2. Strip emojis/special characters that jspdf can't render
-            return sanitizeForPDF(text);
-        };
+ // ─── Sanitise data ────────────────────────────────────────────────
+ // 1. Detect separator rows ('---') and split table into sections
+ // 2. Replace ₹ with INR (jsPDF Latin font can't render the Rupee symbol)
+ const sanitise = (cell: string | number) => {
+ if (typeof cell !== 'string') return cell;
+ // 1. Replace Rupee symbol with INR
+ let text = cell.replace(/₹\s*/g, 'INR ').replace(/Rs\.\s*/g, 'INR ');
+ // 2. Strip emojis/special characters that jspdf can't render
+ return sanitizeForPDF(text);
+ };
 
-        // Split at separator rows — first section = inputs, second = results
-        const separatorIdx = data.findIndex(r => String(r[0]).startsWith('---'));
-        const inputRows = (separatorIdx >= 0 ? data.slice(0, separatorIdx) : data)
-            .map(r => r.map(sanitise));
-        const resultRows = separatorIdx >= 0
-            ? data.slice(separatorIdx + 1).map(r => r.map(sanitise))
-            : [];
+ // Split at separator rows — first section = inputs, second = results
+ const separatorIdx = data.findIndex(r => String(r[0]).startsWith('---'));
+ const inputRows = (separatorIdx >= 0 ? data.slice(0, separatorIdx) : data)
+ .map(r => r.map(sanitise));
+ const resultRows = separatorIdx >= 0
+ ? data.slice(separatorIdx + 1).map(r => r.map(sanitise))
+ : [];
 
-        let currentY = 40;
+ let currentY = 40;
 
-        if (typeof autoTable === 'function') {
-            // Input parameters table
-            if (inputRows.length > 0) {
-                autoTable(doc, {
-                    startY: currentY,
-                    head: [headers.map(sanitise)],
-                    body: inputRows,
-                    theme: 'grid',
-                    headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold' },
-                    alternateRowStyles: { fillColor: [248, 250, 252] },
-                    styles: { fontSize: 9, cellPadding: 3 },
-                    margin: { left: 14, right: 14 },
-                });
-                currentY = (doc as any).lastAutoTable?.finalY ?? currentY;
-            }
+ if (typeof autoTable === 'function') {
+ // Input parameters table
+ if (inputRows.length > 0) {
+ autoTable(doc, {
+ startY: currentY,
+ head: [headers.map(sanitise)],
+ body: inputRows,
+ theme: 'grid',
+ headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold' },
+ alternateRowStyles: { fillColor: [248, 250, 252] },
+ styles: { fontSize: 9, cellPadding: 3 },
+ margin: { left: 14, right: 14 },
+ });
+ currentY = (doc as any).lastAutoTable?.finalY ?? currentY;
+ }
 
-            // Results table (after divider)
-            if (resultRows.length > 0) {
-                currentY += 6;
-                doc.setFontSize(9);
-                doc.setTextColor(100);
-                doc.text('Results', 14, currentY);
-                currentY += 3;
+ // Results table (after divider)
+ if (resultRows.length > 0) {
+ currentY += 6;
+ doc.setFontSize(9);
+ doc.setTextColor(100);
+ doc.text('Results', 14, currentY);
+ currentY += 3;
 
-                autoTable(doc, {
-                    startY: currentY,
-                    head: [],
-                    body: resultRows,
-                    theme: 'grid',
-                    headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold' },
-                    alternateRowStyles: { fillColor: [240, 253, 244] },
-                    styles: { fontSize: 9, cellPadding: 3 },
-                    bodyStyles: { fontStyle: 'bold' },
-                    margin: { left: 14, right: 14 },
-                    didParseCell: (d: any) => {
-                        if (d.row.index === resultRows.length - 1) {
-                            d.cell.styles.fillColor = [16, 185, 129];
-                            d.cell.styles.textColor = [255, 255, 255];
-                            d.cell.styles.fontStyle = 'bold';
-                        }
-                    },
-                });
-            }
-        }
+ autoTable(doc, {
+ startY: currentY,
+ head: [],
+ body: resultRows,
+ theme: 'grid',
+ headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold' },
+ alternateRowStyles: { fillColor: [240, 253, 244] },
+ styles: { fontSize: 9, cellPadding: 3 },
+ bodyStyles: { fontStyle: 'bold' },
+ margin: { left: 14, right: 14 },
+ didParseCell: (d: any) => {
+ if (d.row.index === resultRows.length - 1) {
+ d.cell.styles.fillColor = [16, 185, 129];
+ d.cell.styles.textColor = [255, 255, 255];
+ d.cell.styles.fontStyle = 'bold';
+ }
+ },
+ });
+ }
+ }
 
-        if (chartImage) {
-            const finalY: number = (doc as any).lastAutoTable?.finalY ?? 40;
-            const needsNewPage = finalY + 135 > 285;
-            if (needsNewPage) doc.addPage();
-            const y = needsNewPage ? 20 : finalY + 15;
+ if (chartImage) {
+ const finalY: number = (doc as any).lastAutoTable?.finalY ?? 40;
+ const needsNewPage = finalY + 135 > 285;
+ if (needsNewPage) doc.addPage();
+ const y = needsNewPage ? 20 : finalY + 15;
 
-            doc.setFontSize(12);
-            doc.setTextColor(15, 23, 42);
-            doc.text('Visual Summary', 14, y);
+ doc.setFontSize(12);
+ doc.setTextColor(15, 23, 42);
+ doc.text('Visual Summary', 14, y);
 
-            // Chart image — centred
-            doc.addImage(chartImage, 'PNG', 35, y + 8, 140, 90);
+ // Chart image — centred
+ doc.addImage(chartImage, 'PNG', 35, y + 8, 140, 90);
 
-            // ─── Chart legend/summary labels ──────────────────────────────
-            if (chartSummary && chartSummary.length > 0) {
-                const legendY = y + 103;
-                const colWidth = 182 / chartSummary.length;
-                chartSummary.forEach((item, i) => {
-                    const colX = 14 + i * colWidth;
-                    const rgb = item.color ?? [100, 100, 100];
+ // ─── Chart legend/summary labels ──────────────────────────────
+ if (chartSummary && chartSummary.length > 0) {
+ const legendY = y + 103;
+ const colWidth = 182 / chartSummary.length;
+ chartSummary.forEach((item, i) => {
+ const colX = 14 + i * colWidth;
+ const rgb = item.color ?? [100, 100, 100];
 
-                    // Coloured dot
-                    doc.setFillColor(rgb[0], rgb[1], rgb[2]);
-                    doc.circle(colX + 3, legendY - 1.5, 2, 'F');
+ // Coloured dot
+ doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+ doc.circle(colX + 3, legendY - 1.5, 2, 'F');
 
-                    // Label (small grey)
-                    doc.setFontSize(7);
-                    doc.setTextColor(130, 130, 130);
-                    doc.text(item.label.toUpperCase(), colX + 7, legendY);
+ // Label (small grey)
+ doc.setFontSize(7);
+ doc.setTextColor(130, 130, 130);
+ doc.text(item.label.toUpperCase(), colX + 7, legendY);
 
-                    // Value (bold, coloured)
-                    doc.setFontSize(10);
-                    doc.setTextColor(rgb[0], rgb[1], rgb[2]);
-                    const sanitisedVal = item.value.replace(/₹\s*/g, 'INR ');
-                    doc.text(sanitisedVal, colX + 1, legendY + 7);
-                });
-            }
-        }
+ // Value (bold, coloured)
+ doc.setFontSize(10);
+ doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+ const sanitisedVal = item.value.replace(/₹\s*/g, 'INR ');
+ doc.text(sanitisedVal, colX + 1, legendY + 7);
+ });
+ }
+ }
 
-        // Footer on each page
-        const totalPages: number = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setTextColor(150);
-            doc.text('FinCalix — Your Financial Companion', 14, 285);
-            doc.text(`Page ${i} / ${totalPages}`, 196, 285, { align: 'right' });
-        }
+ // Footer on each page
+ const totalPages: number = (doc as any).internal.getNumberOfPages();
+ for (let i = 1; i <= totalPages; i++) {
+ doc.setPage(i);
+ doc.setFontSize(8);
+ doc.setTextColor(150);
+ doc.text('FinCalix — Your Financial Companion', 14, 285);
+ doc.text(`Page ${i} / ${totalPages}`, 196, 285, { align: 'right' });
+ }
 
-        const pdfFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+ const pdfFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
 
-        if (Capacitor.isNativePlatform()) {
-            showToast('⏳ Generating PDF…');
-            const pdfBlob = doc.output('blob');
-            await saveOnNative(pdfBlob, pdfFilename);
-        } else {
-            doc.save(pdfFilename);
-            showToast('✅ PDF downloaded!');
-        }
-    } catch (err: any) {
-        console.error('[FinCalix] PDF Error:', err);
-        showToast(`❌ PDF failed: ${err?.message ?? 'Unknown error'}`, true);
-    }
+ if (Capacitor.isNativePlatform()) {
+ showToast('⏳ Generating PDF…');
+ const pdfBlob = doc.output('blob');
+ await saveOnNative(pdfBlob, pdfFilename);
+ } else {
+ doc.save(pdfFilename);
+ showToast('✅ PDF downloaded!');
+ }
+ } catch (err: any) {
+ console.error('[FinCalix] PDF Error:', err);
+ showToast(`❌ PDF failed: ${err?.message ?? 'Unknown error'}`, true);
+ }
 };
 
 // ─── Public: Export Excel ─────────────────────────────────────────────────
 export const exportToExcel = async (
-    headers: string[],
-    data: (string | number)[][],
-    filename: string
+ headers: string[],
+ data: (string | number)[][],
+ filename: string
 ): Promise<void> => {
-    try {
-        const parseCell = (cell: string | number): string | number => {
-            if (typeof cell === 'number') return cell;
-            const s = String(cell);
-            const stripped = s.replace(/[₹,\s]/g, '');
-            if (stripped !== '' && !isNaN(Number(stripped))) return Number(stripped);
-            return s;
-        };
+ try {
+ const parseCell = (cell: string | number): string | number => {
+ if (typeof cell === 'number') return cell;
+ const s = String(cell);
+ const stripped = s.replace(/[₹,\s]/g, '');
+ if (stripped !== '' && !isNaN(Number(stripped))) return Number(stripped);
+ return s;
+ };
 
-        const allRows: (string | number)[][] = [
-            headers,
-            ...data.map(row => row.map(parseCell)),
-        ];
+ const allRows: (string | number)[][] = [
+ headers,
+ ...data.map(row => row.map(parseCell)),
+ ];
 
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(allRows);
+ const wb = XLSX.utils.book_new();
+ const ws = XLSX.utils.aoa_to_sheet(allRows);
 
-        // Auto column widths — all values are strings now so no type issues
-        const colWidths: number[] = headers.map((h, i) => {
-            let max = String(h).length;
-            for (const row of allRows) {
-                const len = String(row[i] ?? '').length;
-                if (len > max) max = len;
-            }
-            return Math.min(max + 2, 30);
-        });
-        ws['!cols'] = colWidths.map(w => ({ wch: w }));
+ // Auto column widths — all values are strings now so no type issues
+ const colWidths: number[] = headers.map((h, i) => {
+ let max = String(h).length;
+ for (const row of allRows) {
+ const len = String(row[i] ?? '').length;
+ if (len > max) max = len;
+ }
+ return Math.min(max + 2, 30);
+ });
+ ws['!cols'] = colWidths.map(w => ({ wch: w }));
 
-        XLSX.utils.book_append_sheet(wb, ws, 'Results');
+ XLSX.utils.book_append_sheet(wb, ws, 'Results');
 
-        const xlsxFilename = filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`;
+ const xlsxFilename = filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`;
 
-        if (Capacitor.isNativePlatform()) {
-            showToast('⏳ Generating Excel…');
-            const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) as ArrayBuffer;
-            const blob = new Blob([buf], {
-                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            });
-            await saveOnNative(blob, xlsxFilename);
-        } else {
-            const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) as ArrayBuffer;
-            const blob = new Blob([buf], {
-                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            });
-            browserDownload(blob, xlsxFilename);
-            showToast('✅ Excel downloaded!');
-        }
-    } catch (err: any) {
-        console.error('[FinCalix] Excel Error:', err);
-        showToast(`❌ Excel failed: ${err?.message ?? 'Unknown error'}`, true);
-    }
+ if (Capacitor.isNativePlatform()) {
+ showToast('⏳ Generating Excel…');
+ const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) as ArrayBuffer;
+ const blob = new Blob([buf], {
+ type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+ });
+ await saveOnNative(blob, xlsxFilename);
+ } else {
+ const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) as ArrayBuffer;
+ const blob = new Blob([buf], {
+ type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+ });
+ browserDownload(blob, xlsxFilename);
+ showToast('✅ Excel downloaded!');
+ }
+ } catch (err: any) {
+ console.error('[FinCalix] Excel Error:', err);
+ showToast(`❌ Excel failed: ${err?.message ?? 'Unknown error'}`, true);
+ }
 };
 
 // ─── Comparison PDF (multi-page) ──────────────────────────────────────────
 interface AmortEntry { month: number; emi: number; principal: number; interest: number; balance: number; }
 interface ComparisonScenario {
-    label: string;
-    principal: number;
-    rate: number;
-    years: number;
-    emi: number;
-    totalInterest: number;
-    totalPayment: number;
-    amortization: AmortEntry[];
+ label: string;
+ principal: number;
+ rate: number;
+ years: number;
+ emi: number;
+ totalInterest: number;
+ totalPayment: number;
+ amortization: AmortEntry[];
 }
 interface ComparisonPDFParams {
-    type: string;
-    scenarioA: ComparisonScenario;
-    scenarioB: ComparisonScenario;
-    insights: string[];
-    winner: string;
+ type: string;
+ scenarioA: ComparisonScenario;
+ scenarioB: ComparisonScenario;
+ insights: string[];
+ winner: string;
 }
 
 const sanitiseCell = (cell: string | number) => {
-    if (typeof cell !== 'string') return String(cell);
-    return cell.replace(/₹\s*/g, 'INR ').replace(/Rs\.\s*/g, 'INR ').replace(/[^\x00-\x7F]/g, '').trim();
+ if (typeof cell !== 'string') return String(cell);
+ return cell.replace(/₹\s*/g, 'INR ').replace(/Rs\.\s*/g, 'INR ').replace(/[^\x00-\x7F]/g, '').trim();
 };
 
 export const formatForPDF = (v: number | string): string => {
-    const num = typeof v === 'string' ? parseFloat(v.toString().replace(/[^0-9.-]+/g, '')) : v;
-    if (isNaN(num)) return String(v);
-    return `INR ${num.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+ const num = typeof v === 'string' ? parseFloat(v.toString().replace(/[^0-9.-]+/g, '')) : v;
+ if (isNaN(num)) return String(v);
+ return `INR ${num.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 };
 
 export const exportComparisonPDF = async (params: ComparisonPDFParams): Promise<void> => {
-    try {
-        showToast('⏳ Generating comparison report…');
-        const { scenarioA, scenarioB, insights, winner } = params;
-        const doc = new jsPDF();
+ try {
+ showToast('⏳ Generating comparison report…');
+ const { scenarioA, scenarioB, insights, winner } = params;
+ const doc = new jsPDF();
 
-        // ─── PAGE 1: Comparison Summary ──────────────────────────────
-        doc.setFontSize(20);
-        doc.setTextColor(79, 70, 229);
-        doc.text('Loan Comparison Report', 14, 22);
-        doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text(`Generated by FinCalix  |  ${new Date().toLocaleDateString('en-IN')}`, 14, 30);
-        doc.setDrawColor(226, 232, 240);
-        doc.line(14, 35, 196, 35);
+ // ─── PAGE 1: Comparison Summary ──────────────────────────────
+ doc.setFontSize(20);
+ doc.setTextColor(79, 70, 229);
+ doc.text('Loan Comparison Report', 14, 22);
+ doc.setFontSize(10);
+ doc.setTextColor(100);
+ doc.text(`Generated by FinCalix | ${new Date().toLocaleDateString('en-IN')}`, 14, 30);
+ doc.setDrawColor(226, 232, 240);
+ doc.line(14, 35, 196, 35);
 
-        doc.setFontSize(12);
-        doc.setTextColor(15, 23, 42);
-        doc.text('Comparison Summary', 14, 45);
+ doc.setFontSize(12);
+ doc.setTextColor(15, 23, 42);
+ doc.text('Comparison Summary', 14, 45);
 
-        if (typeof autoTable === 'function') {
-            autoTable(doc, {
-                startY: 50,
-                head: [['Metric', 'Scenario A', 'Scenario B', 'Difference']],
-                body: [
-                    ['Loan Amount', formatForPDF(scenarioA.principal), formatForPDF(scenarioB.principal), formatForPDF(Math.abs(scenarioA.principal - scenarioB.principal))],
-                    ['Interest Rate', `${scenarioA.rate}%`, `${scenarioB.rate}%`, `${Math.abs(scenarioA.rate - scenarioB.rate).toFixed(1)}%`],
-                    ['Tenure', `${scenarioA.years} years`, `${scenarioB.years} years`, `${Math.abs(scenarioA.years - scenarioB.years)} years`],
-                    ['Monthly EMI', formatForPDF(scenarioA.emi), formatForPDF(scenarioB.emi), formatForPDF(Math.abs(scenarioA.emi - scenarioB.emi))],
-                    ['Total Interest', formatForPDF(scenarioA.totalInterest), formatForPDF(scenarioB.totalInterest), formatForPDF(Math.abs(scenarioA.totalInterest - scenarioB.totalInterest))],
-                    ['Total Payment', formatForPDF(scenarioA.totalPayment), formatForPDF(scenarioB.totalPayment), formatForPDF(Math.abs(scenarioA.totalPayment - scenarioB.totalPayment))],
-                ],
-                theme: 'grid',
-                headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-                alternateRowStyles: { fillColor: [248, 250, 252] },
-                styles: { fontSize: 8, cellPadding: 3 },
-                margin: { left: 14, right: 14 },
-                didParseCell: (d: any) => {
-                    // Highlight winner cells
-                    if (d.section === 'body' && d.column.index === (winner === 'A' ? 1 : 2)) {
-                        if (d.row.index >= 3) {
-                            d.cell.styles.textColor = [16, 185, 129];
-                            d.cell.styles.fontStyle = 'bold';
-                        }
-                    }
-                },
-            });
+ if (typeof autoTable === 'function') {
+ autoTable(doc, {
+ startY: 50,
+ head: [['Metric', 'Scenario A', 'Scenario B', 'Difference']],
+ body: [
+ ['Loan Amount', formatForPDF(scenarioA.principal), formatForPDF(scenarioB.principal), formatForPDF(Math.abs(scenarioA.principal - scenarioB.principal))],
+ ['Interest Rate', `${scenarioA.rate}%`, `${scenarioB.rate}%`, `${Math.abs(scenarioA.rate - scenarioB.rate).toFixed(1)}%`],
+ ['Tenure', `${scenarioA.years} years`, `${scenarioB.years} years`, `${Math.abs(scenarioA.years - scenarioB.years)} years`],
+ ['Monthly EMI', formatForPDF(scenarioA.emi), formatForPDF(scenarioB.emi), formatForPDF(Math.abs(scenarioA.emi - scenarioB.emi))],
+ ['Total Interest', formatForPDF(scenarioA.totalInterest), formatForPDF(scenarioB.totalInterest), formatForPDF(Math.abs(scenarioA.totalInterest - scenarioB.totalInterest))],
+ ['Total Payment', formatForPDF(scenarioA.totalPayment), formatForPDF(scenarioB.totalPayment), formatForPDF(Math.abs(scenarioA.totalPayment - scenarioB.totalPayment))],
+ ],
+ theme: 'grid',
+ headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+ alternateRowStyles: { fillColor: [248, 250, 252] },
+ styles: { fontSize: 8, cellPadding: 3 },
+ margin: { left: 14, right: 14 },
+ didParseCell: (d: any) => {
+ // Highlight winner cells
+ if (d.section === 'body' && d.column.index === (winner === 'A' ? 1 : 2)) {
+ if (d.row.index >= 3) {
+ d.cell.styles.textColor = [16, 185, 129];
+ d.cell.styles.fontStyle = 'bold';
+ }
+ }
+ },
+ });
 
-            const summaryY: number = (doc as any).lastAutoTable?.finalY ?? 130;
-            doc.setFontSize(11);
-            doc.setTextColor(16, 185, 129);
-            doc.text(`Winner: Scenario ${winner}`, 14, summaryY + 12);
-            doc.setFontSize(9);
-            doc.setTextColor(100);
-            doc.text(`Scenario ${winner} saves ${formatForPDF(Math.abs(scenarioA.totalInterest - scenarioB.totalInterest))} in total interest.`, 14, summaryY + 20);
+ const summaryY: number = (doc as any).lastAutoTable?.finalY ?? 130;
+ doc.setFontSize(11);
+ doc.setTextColor(16, 185, 129);
+ doc.text(`Winner: Scenario ${winner}`, 14, summaryY + 12);
+ doc.setFontSize(9);
+ doc.setTextColor(100);
+ doc.text(`Scenario ${winner} saves ${formatForPDF(Math.abs(scenarioA.totalInterest - scenarioB.totalInterest))} in total interest.`, 14, summaryY + 20);
 
-            // ─── PAGE 2: Graphical comparison bars ──────────────────────
-            doc.addPage();
-            doc.setFontSize(16);
-            doc.setTextColor(79, 70, 229);
-            doc.text('Visual Comparison', 14, 22);
+ // ─── PAGE 2: Graphical comparison bars ──────────────────────
+ doc.addPage();
+ doc.setFontSize(16);
+ doc.setTextColor(79, 70, 229);
+ doc.text('Visual Comparison', 14, 22);
 
-            // Draw comparison bars manually
-            const barMetrics = [
-                { label: 'Monthly EMI', a: scenarioA.emi, b: scenarioB.emi },
-                { label: 'Total Interest', a: scenarioA.totalInterest, b: scenarioB.totalInterest },
-                { label: 'Total Payment', a: scenarioA.totalPayment, b: scenarioB.totalPayment },
-            ];
-            let barY = 40;
-            barMetrics.forEach(metric => {
-                const max = Math.max(metric.a, metric.b, 1);
-                const barWidth = 130;
+ // Draw comparison bars manually
+ const barMetrics = [
+ { label: 'Monthly EMI', a: scenarioA.emi, b: scenarioB.emi },
+ { label: 'Total Interest', a: scenarioA.totalInterest, b: scenarioB.totalInterest },
+ { label: 'Total Payment', a: scenarioA.totalPayment, b: scenarioB.totalPayment },
+ ];
+ let barY = 40;
+ barMetrics.forEach(metric => {
+ const max = Math.max(metric.a, metric.b, 1);
+ const barWidth = 130;
 
-                doc.setFontSize(10);
-                doc.setTextColor(15, 23, 42);
-                doc.text(metric.label, 14, barY);
+ doc.setFontSize(10);
+ doc.setTextColor(15, 23, 42);
+ doc.text(metric.label, 14, barY);
 
-                // Scenario A bar
-                barY += 6;
-                doc.setFontSize(8);
-                doc.setTextColor(100);
-                doc.text('A', 14, barY + 4);
-                doc.setFillColor(59, 130, 246);
-                doc.rect(22, barY, (metric.a / max) * barWidth, 6, 'F');
-                doc.setTextColor(59, 130, 246);
-                doc.text(formatForPDF(metric.a), 22 + (metric.a / max) * barWidth + 3, barY + 4.5);
+ // Scenario A bar
+ barY += 6;
+ doc.setFontSize(8);
+ doc.setTextColor(100);
+ doc.text('A', 14, barY + 4);
+ doc.setFillColor(59, 130, 246);
+ doc.rect(22, barY, (metric.a / max) * barWidth, 6, 'F');
+ doc.setTextColor(59, 130, 246);
+ doc.text(formatForPDF(metric.a), 22 + (metric.a / max) * barWidth + 3, barY + 4.5);
 
-                // Scenario B bar
-                barY += 10;
-                doc.setTextColor(100);
-                doc.text('B', 14, barY + 4);
-                doc.setFillColor(245, 158, 11);
-                doc.rect(22, barY, (metric.b / max) * barWidth, 6, 'F');
-                doc.setTextColor(245, 158, 11);
-                doc.text(formatForPDF(metric.b), 22 + (metric.b / max) * barWidth + 3, barY + 4.5);
+ // Scenario B bar
+ barY += 10;
+ doc.setTextColor(100);
+ doc.text('B', 14, barY + 4);
+ doc.setFillColor(245, 158, 11);
+ doc.rect(22, barY, (metric.b / max) * barWidth, 6, 'F');
+ doc.setTextColor(245, 158, 11);
+ doc.text(formatForPDF(metric.b), 22 + (metric.b / max) * barWidth + 3, barY + 4.5);
 
-                barY += 18;
-            });
+ barY += 18;
+ });
 
-            // ─── PAGE 3: Amortization Schedule A ────────────────────────
-            doc.addPage();
-            doc.setFontSize(16);
-            doc.setTextColor(79, 70, 229);
-            doc.text(`Amortization Schedule — Scenario A`, 14, 22);
-            doc.setFontSize(9);
-            doc.setTextColor(100);
-            doc.text(`Loan: ${formatForPDF(scenarioA.principal)} | Rate: ${scenarioA.rate}% | Tenure: ${scenarioA.years} yrs | EMI: ${formatForPDF(scenarioA.emi)}`, 14, 30);
+ // ─── PAGE 3: Amortization Schedule A ────────────────────────
+ doc.addPage();
+ doc.setFontSize(16);
+ doc.setTextColor(79, 70, 229);
+ doc.text(`Amortization Schedule — Scenario A`, 14, 22);
+ doc.setFontSize(9);
+ doc.setTextColor(100);
+ doc.text(`Loan: ${formatForPDF(scenarioA.principal)} | Rate: ${scenarioA.rate}% | Tenure: ${scenarioA.years} yrs | EMI: ${formatForPDF(scenarioA.emi)}`, 14, 30);
 
-            const amortHeadersA = ['Month', 'EMI', 'Principal', 'Interest', 'Balance'];
-            // Show every 6th month + last row to keep PDF manageable
-            const amortRowsA = scenarioA.amortization
-                .filter((_, i) => i % 6 === 0 || i === scenarioA.amortization.length - 1)
-                .map(r => [String(r.month), formatForPDF(r.emi), formatForPDF(r.principal), formatForPDF(r.interest), formatForPDF(r.balance)]);
+ const amortHeadersA = ['Month', 'EMI', 'Principal', 'Interest', 'Balance'];
+ // Show every 6th month + last row to keep PDF manageable
+ const amortRowsA = scenarioA.amortization
+ .filter((_, i) => i % 6 === 0 || i === scenarioA.amortization.length - 1)
+ .map(r => [String(r.month), formatForPDF(r.emi), formatForPDF(r.principal), formatForPDF(r.interest), formatForPDF(r.balance)]);
 
-            autoTable(doc, {
-                startY: 36,
-                head: [amortHeadersA],
-                body: amortRowsA,
-                theme: 'striped',
-                headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
-                styles: { fontSize: 7, cellPadding: 2 },
-                margin: { left: 14, right: 14 },
-            });
+ autoTable(doc, {
+ startY: 36,
+ head: [amortHeadersA],
+ body: amortRowsA,
+ theme: 'striped',
+ headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+ styles: { fontSize: 7, cellPadding: 2 },
+ margin: { left: 14, right: 14 },
+ });
 
-            // ─── PAGE 4: Amortization Schedule B ────────────────────────
-            doc.addPage();
-            doc.setFontSize(16);
-            doc.setTextColor(79, 70, 229);
-            doc.text(`Amortization Schedule — Scenario B`, 14, 22);
-            doc.setFontSize(9);
-            doc.setTextColor(100);
-            doc.text(`Loan: ${formatForPDF(scenarioB.principal)} | Rate: ${scenarioB.rate}% | Tenure: ${scenarioB.years} yrs | EMI: ${formatForPDF(scenarioB.emi)}`, 14, 30);
+ // ─── PAGE 4: Amortization Schedule B ────────────────────────
+ doc.addPage();
+ doc.setFontSize(16);
+ doc.setTextColor(79, 70, 229);
+ doc.text(`Amortization Schedule — Scenario B`, 14, 22);
+ doc.setFontSize(9);
+ doc.setTextColor(100);
+ doc.text(`Loan: ${formatForPDF(scenarioB.principal)} | Rate: ${scenarioB.rate}% | Tenure: ${scenarioB.years} yrs | EMI: ${formatForPDF(scenarioB.emi)}`, 14, 30);
 
-            const amortRowsB = scenarioB.amortization
-                .filter((_, i) => i % 6 === 0 || i === scenarioB.amortization.length - 1)
-                .map(r => [String(r.month), formatForPDF(r.emi), formatForPDF(r.principal), formatForPDF(r.interest), formatForPDF(r.balance)]);
+ const amortRowsB = scenarioB.amortization
+ .filter((_, i) => i % 6 === 0 || i === scenarioB.amortization.length - 1)
+ .map(r => [String(r.month), formatForPDF(r.emi), formatForPDF(r.principal), formatForPDF(r.interest), formatForPDF(r.balance)]);
 
-            autoTable(doc, {
-                startY: 36,
-                head: [amortHeadersA],
-                body: amortRowsB,
-                theme: 'striped',
-                headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
-                styles: { fontSize: 7, cellPadding: 2 },
-                margin: { left: 14, right: 14 },
-            });
+ autoTable(doc, {
+ startY: 36,
+ head: [amortHeadersA],
+ body: amortRowsB,
+ theme: 'striped',
+ headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+ styles: { fontSize: 7, cellPadding: 2 },
+ margin: { left: 14, right: 14 },
+ });
 
-            // ─── PAGE 5: Financial Insights ─────────────────────────────
-            doc.addPage();
-            doc.setFontSize(16);
-            doc.setTextColor(79, 70, 229);
-            doc.text('Financial Insights & Recommendations', 14, 22);
-            doc.setDrawColor(226, 232, 240);
-            doc.line(14, 27, 196, 27);
+ // ─── PAGE 5: Financial Insights ─────────────────────────────
+ doc.addPage();
+ doc.setFontSize(16);
+ doc.setTextColor(79, 70, 229);
+ doc.text('Financial Insights & Recommendations', 14, 22);
+ doc.setDrawColor(226, 232, 240);
+ doc.line(14, 27, 196, 27);
 
-            let insightY = 36;
-            insights.forEach((text, i) => {
-                doc.setFillColor(248, 250, 252);
-                doc.roundedRect(14, insightY - 4, 182, 14, 3, 3, 'F');
-                doc.setFontSize(9);
-                doc.setTextColor(15, 23, 42);
-                doc.text(`${i + 1}. ${sanitiseCell(text)}`, 18, insightY + 3);
-                insightY += 18;
-            });
+ let insightY = 36;
+ insights.forEach((text, i) => {
+ doc.setFillColor(248, 250, 252);
+ doc.roundedRect(14, insightY - 4, 182, 14, 3, 3, 'F');
+ doc.setFontSize(9);
+ doc.setTextColor(15, 23, 42);
+ doc.text(`${i + 1}. ${sanitiseCell(text)}`, 18, insightY + 3);
+ insightY += 18;
+ });
 
-            // General recommendations
-            insightY += 8;
-            doc.setFontSize(11);
-            doc.setTextColor(79, 70, 229);
-            doc.text('General Recommendations', 14, insightY);
-            insightY += 10;
+ // General recommendations
+ insightY += 8;
+ doc.setFontSize(11);
+ doc.setTextColor(79, 70, 229);
+ doc.text('General Recommendations', 14, insightY);
+ insightY += 10;
 
-            const recommendations = [
-                'Compare offers from at least 3 lenders before finalizing.',
-                'Consider making 1 extra EMI per year to reduce tenure significantly.',
-                'A 0.5% reduction in interest rate can save lakhs over long tenures.',
-                'Keep your total EMI obligations below 30% of monthly income.',
-                'Review your loan terms annually and consider balance transfer if better rates are available.',
-            ];
+ const recommendations = [
+ 'Compare offers from at least 3 lenders before finalizing.',
+ 'Consider making 1 extra EMI per year to reduce tenure significantly.',
+ 'A 0.5% reduction in interest rate can save lakhs over long tenures.',
+ 'Keep your total EMI obligations below 30% of monthly income.',
+ 'Review your loan terms annually and consider balance transfer if better rates are available.',
+ ];
 
-            recommendations.forEach((rec, i) => {
-                doc.setFontSize(8);
-                doc.setTextColor(80);
-                doc.text(`  ${i + 1}. ${rec}`, 14, insightY);
-                insightY += 7;
-            });
-        }
+ recommendations.forEach((rec, i) => {
+ doc.setFontSize(8);
+ doc.setTextColor(80);
+ doc.text(` ${i + 1}. ${rec}`, 14, insightY);
+ insightY += 7;
+ });
+ }
 
-        // Footer on each page
-        const totalPages: number = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setTextColor(150);
-            doc.text('FinCalix — Your Financial Companion', 14, 285);
-            doc.text(`Page ${i} / ${totalPages}`, 196, 285, { align: 'right' });
-        }
+ // Footer on each page
+ const totalPages: number = (doc as any).internal.getNumberOfPages();
+ for (let i = 1; i <= totalPages; i++) {
+ doc.setPage(i);
+ doc.setFontSize(8);
+ doc.setTextColor(150);
+ doc.text('FinCalix — Your Financial Companion', 14, 285);
+ doc.text(`Page ${i} / ${totalPages}`, 196, 285, { align: 'right' });
+ }
 
-        const pdfFilename = 'Loan_Comparison_Report.pdf';
-        if (Capacitor.isNativePlatform()) {
-            const pdfBlob = doc.output('blob');
-            await saveOnNative(pdfBlob, pdfFilename);
-        } else {
-            doc.save(pdfFilename);
-            showToast('✅ Comparison PDF downloaded!');
-        }
-    } catch (err: any) {
-        console.error('[FinCalix] Comparison PDF Error:', err);
-        showToast(`❌ PDF failed: ${err?.message ?? 'Unknown error'}`, true);
-    }
+ const pdfFilename = 'Loan_Comparison_Report.pdf';
+ if (Capacitor.isNativePlatform()) {
+ const pdfBlob = doc.output('blob');
+ await saveOnNative(pdfBlob, pdfFilename);
+ } else {
+ doc.save(pdfFilename);
+ showToast('✅ Comparison PDF downloaded!');
+ }
+ } catch (err: any) {
+ console.error('[FinCalix] Comparison PDF Error:', err);
+ showToast(`❌ PDF failed: ${err?.message ?? 'Unknown error'}`, true);
+ }
 };
 
 // ─── SIP Comparison PDF ───────────────────────────────────────────────────
 interface SIPComparisonParams {
-    scenarioA: { monthly: number; rate: number; years: number; invested: number; futureValue: number; returns: number; };
-    scenarioB: { monthly: number; rate: number; years: number; invested: number; futureValue: number; returns: number; };
-    insights: string[];
-    winner: string;
+ scenarioA: { monthly: number; rate: number; years: number; invested: number; futureValue: number; returns: number; };
+ scenarioB: { monthly: number; rate: number; years: number; invested: number; futureValue: number; returns: number; };
+ insights: string[];
+ winner: string;
 }
 
 export const exportSIPComparisonPDF = async (params: SIPComparisonParams): Promise<void> => {
-    try {
-        showToast('⏳ Generating SIP comparison report…');
-        const { scenarioA, scenarioB, insights, winner } = params;
-        const doc = new jsPDF();
+ try {
+ showToast('⏳ Generating SIP comparison report…');
+ const { scenarioA, scenarioB, insights, winner } = params;
+ const doc = new jsPDF();
 
-        // PAGE 1: Summary
-        doc.setFontSize(20); doc.setTextColor(79, 70, 229);
-        doc.text('SIP Comparison Report', 14, 22);
-        doc.setFontSize(10); doc.setTextColor(100);
-        doc.text(`Generated by FinCalix  |  ${new Date().toLocaleDateString('en-IN')}`, 14, 30);
-        doc.setDrawColor(226, 232, 240); doc.line(14, 35, 196, 35);
+ // PAGE 1: Summary
+ doc.setFontSize(20); doc.setTextColor(79, 70, 229);
+ doc.text('SIP Comparison Report', 14, 22);
+ doc.setFontSize(10); doc.setTextColor(100);
+ doc.text(`Generated by FinCalix | ${new Date().toLocaleDateString('en-IN')}`, 14, 30);
+ doc.setDrawColor(226, 232, 240); doc.line(14, 35, 196, 35);
 
-        if (typeof autoTable === 'function') {
-            autoTable(doc, {
-                startY: 45,
-                head: [['Metric', 'Scenario A', 'Scenario B', 'Difference']],
-                body: [
-                    ['Monthly SIP', formatForPDF(scenarioA.monthly), formatForPDF(scenarioB.monthly), formatForPDF(Math.abs(scenarioA.monthly - scenarioB.monthly))],
-                    ['Return Rate', `${scenarioA.rate}%`, `${scenarioB.rate}%`, `${Math.abs(scenarioA.rate - scenarioB.rate).toFixed(1)}%`],
-                    ['Duration', `${scenarioA.years} years`, `${scenarioB.years} years`, `${Math.abs(scenarioA.years - scenarioB.years)} years`],
-                    ['Total Invested', formatForPDF(scenarioA.invested), formatForPDF(scenarioB.invested), formatForPDF(Math.abs(scenarioA.invested - scenarioB.invested))],
-                    ['Future Value', formatForPDF(scenarioA.futureValue), formatForPDF(scenarioB.futureValue), formatForPDF(Math.abs(scenarioA.futureValue - scenarioB.futureValue))],
-                    ['Total Returns', formatForPDF(scenarioA.returns), formatForPDF(scenarioB.returns), formatForPDF(Math.abs(scenarioA.returns - scenarioB.returns))],
-                ],
-                theme: 'grid',
-                headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-                alternateRowStyles: { fillColor: [248, 250, 252] },
-                styles: { fontSize: 8, cellPadding: 3 },
-                margin: { left: 14, right: 14 },
-            });
+ if (typeof autoTable === 'function') {
+ autoTable(doc, {
+ startY: 45,
+ head: [['Metric', 'Scenario A', 'Scenario B', 'Difference']],
+ body: [
+ ['Monthly SIP', formatForPDF(scenarioA.monthly), formatForPDF(scenarioB.monthly), formatForPDF(Math.abs(scenarioA.monthly - scenarioB.monthly))],
+ ['Return Rate', `${scenarioA.rate}%`, `${scenarioB.rate}%`, `${Math.abs(scenarioA.rate - scenarioB.rate).toFixed(1)}%`],
+ ['Duration', `${scenarioA.years} years`, `${scenarioB.years} years`, `${Math.abs(scenarioA.years - scenarioB.years)} years`],
+ ['Total Invested', formatForPDF(scenarioA.invested), formatForPDF(scenarioB.invested), formatForPDF(Math.abs(scenarioA.invested - scenarioB.invested))],
+ ['Future Value', formatForPDF(scenarioA.futureValue), formatForPDF(scenarioB.futureValue), formatForPDF(Math.abs(scenarioA.futureValue - scenarioB.futureValue))],
+ ['Total Returns', formatForPDF(scenarioA.returns), formatForPDF(scenarioB.returns), formatForPDF(Math.abs(scenarioA.returns - scenarioB.returns))],
+ ],
+ theme: 'grid',
+ headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+ alternateRowStyles: { fillColor: [248, 250, 252] },
+ styles: { fontSize: 8, cellPadding: 3 },
+ margin: { left: 14, right: 14 },
+ });
 
-            const summaryY: number = (doc as any).lastAutoTable?.finalY ?? 130;
-            doc.setFontSize(11); doc.setTextColor(16, 185, 129);
-            doc.text(`Winner: Scenario ${winner}`, 14, summaryY + 12);
+ const summaryY: number = (doc as any).lastAutoTable?.finalY ?? 130;
+ doc.setFontSize(11); doc.setTextColor(16, 185, 129);
+ doc.text(`Winner: Scenario ${winner}`, 14, summaryY + 12);
 
-            // PAGE 2: Year-wise Projections
-            doc.addPage();
-            doc.setFontSize(16); doc.setTextColor(79, 70, 229);
-            doc.text('Year-wise SIP Projection', 14, 22);
+ // PAGE 2: Year-wise Projections
+ doc.addPage();
+ doc.setFontSize(16); doc.setTextColor(79, 70, 229);
+ doc.text('Year-wise SIP Projection', 14, 22);
 
-            const projRows: string[][] = [];
-            const maxYrs = Math.max(scenarioA.years, scenarioB.years);
-            for (let y = 1; y <= maxYrs; y++) {
-                const rA = scenarioA.rate / 100 / 12;
-                const nA = Math.min(y, scenarioA.years) * 12;
-                const fvA = rA === 0 ? scenarioA.monthly * nA : scenarioA.monthly * (((Math.pow(1 + rA, nA) - 1) / rA) * (1 + rA));
+ const projRows: string[][] = [];
+ const maxYrs = Math.max(scenarioA.years, scenarioB.years);
+ for (let y = 1; y <= maxYrs; y++) {
+ const rA = scenarioA.rate / 100 / 12;
+ const nA = Math.min(y, scenarioA.years) * 12;
+ const fvA = rA === 0 ? scenarioA.monthly * nA : scenarioA.monthly * (((Math.pow(1 + rA, nA) - 1) / rA) * (1 + rA));
 
-                const rB = scenarioB.rate / 100 / 12;
-                const nB = Math.min(y, scenarioB.years) * 12;
-                const fvB = rB === 0 ? scenarioB.monthly * nB : scenarioB.monthly * (((Math.pow(1 + rB, nB) - 1) / rB) * (1 + rB));
+ const rB = scenarioB.rate / 100 / 12;
+ const nB = Math.min(y, scenarioB.years) * 12;
+ const fvB = rB === 0 ? scenarioB.monthly * nB : scenarioB.monthly * (((Math.pow(1 + rB, nB) - 1) / rB) * (1 + rB));
 
-                projRows.push([String(y), formatForPDF(Math.round(fvA)), formatForPDF(Math.round(fvB)), formatForPDF(Math.abs(Math.round(fvA - fvB)))]);
-            }
+ projRows.push([String(y), formatForPDF(Math.round(fvA)), formatForPDF(Math.round(fvB)), formatForPDF(Math.abs(Math.round(fvA - fvB)))]);
+ }
 
-            autoTable(doc, {
-                startY: 30,
-                head: [['Year', 'Scenario A Value', 'Scenario B Value', 'Difference']],
-                body: projRows,
-                theme: 'striped',
-                headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
-                styles: { fontSize: 7, cellPadding: 2 },
-                margin: { left: 14, right: 14 },
-            });
+ autoTable(doc, {
+ startY: 30,
+ head: [['Year', 'Scenario A Value', 'Scenario B Value', 'Difference']],
+ body: projRows,
+ theme: 'striped',
+ headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+ styles: { fontSize: 7, cellPadding: 2 },
+ margin: { left: 14, right: 14 },
+ });
 
-            // PAGE 3: Insights
-            doc.addPage();
-            doc.setFontSize(16); doc.setTextColor(79, 70, 229);
-            doc.text('Financial Insights & Recommendations', 14, 22);
-            doc.setDrawColor(226, 232, 240); doc.line(14, 27, 196, 27);
-            let insightY = 36;
-            insights.forEach((text, i) => {
-                doc.setFillColor(248, 250, 252);
-                doc.roundedRect(14, insightY - 4, 182, 14, 3, 3, 'F');
-                doc.setFontSize(9); doc.setTextColor(15, 23, 42);
-                doc.text(`${i + 1}. ${sanitiseCell(text)}`, 18, insightY + 3);
-                insightY += 18;
-            });
-            insightY += 8;
-            doc.setFontSize(11); doc.setTextColor(79, 70, 229);
-            doc.text('SIP Tips', 14, insightY); insightY += 10;
-            ['Start SIP early — even small amounts compound significantly.', 'Increase SIP by 10% annually (Step-Up SIP) for better wealth creation.', 'SIP in equity funds with 7+ year horizon typically outperforms FDs.', 'Use STP if investing lumpsum — reduces market timing risk.'].forEach((rec, i) => {
-                doc.setFontSize(8); doc.setTextColor(80);
-                doc.text(`  ${i + 1}. ${rec}`, 14, insightY); insightY += 7;
-            });
-        }
+ // PAGE 3: Insights
+ doc.addPage();
+ doc.setFontSize(16); doc.setTextColor(79, 70, 229);
+ doc.text('Financial Insights & Recommendations', 14, 22);
+ doc.setDrawColor(226, 232, 240); doc.line(14, 27, 196, 27);
+ let insightY = 36;
+ insights.forEach((text, i) => {
+ doc.setFillColor(248, 250, 252);
+ doc.roundedRect(14, insightY - 4, 182, 14, 3, 3, 'F');
+ doc.setFontSize(9); doc.setTextColor(15, 23, 42);
+ doc.text(`${i + 1}. ${sanitiseCell(text)}`, 18, insightY + 3);
+ insightY += 18;
+ });
+ insightY += 8;
+ doc.setFontSize(11); doc.setTextColor(79, 70, 229);
+ doc.text('SIP Tips', 14, insightY); insightY += 10;
+ ['Start SIP early — even small amounts compound significantly.', 'Increase SIP by 10% annually (Step-Up SIP) for better wealth creation.', 'SIP in equity funds with 7+ year horizon typically outperforms FDs.', 'Use STP if investing lumpsum — reduces market timing risk.'].forEach((rec, i) => {
+ doc.setFontSize(8); doc.setTextColor(80);
+ doc.text(` ${i + 1}. ${rec}`, 14, insightY); insightY += 7;
+ });
+ }
 
-        const totalPages: number = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150);
-            doc.text('FinCalix — Your Financial Companion', 14, 285);
-            doc.text(`Page ${i} / ${totalPages}`, 196, 285, { align: 'right' });
-        }
+ const totalPages: number = (doc as any).internal.getNumberOfPages();
+ for (let i = 1; i <= totalPages; i++) {
+ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150);
+ doc.text('FinCalix — Your Financial Companion', 14, 285);
+ doc.text(`Page ${i} / ${totalPages}`, 196, 285, { align: 'right' });
+ }
 
-        const pdfFilename = 'SIP_Comparison_Report.pdf';
-        if (Capacitor.isNativePlatform()) { const pdfBlob = doc.output('blob'); await saveOnNative(pdfBlob, pdfFilename); }
-        else { doc.save(pdfFilename); showToast('✅ SIP Comparison PDF downloaded!'); }
-    } catch (err: any) {
-        console.error('[FinCalix] SIP Comparison PDF Error:', err);
-        showToast(`❌ PDF failed: ${err?.message ?? 'Unknown error'}`, true);
-    }
+ const pdfFilename = 'SIP_Comparison_Report.pdf';
+ if (Capacitor.isNativePlatform()) { const pdfBlob = doc.output('blob'); await saveOnNative(pdfBlob, pdfFilename); }
+ else { doc.save(pdfFilename); showToast('✅ SIP Comparison PDF downloaded!'); }
+ } catch (err: any) {
+ console.error('[FinCalix] SIP Comparison PDF Error:', err);
+ showToast(`❌ PDF failed: ${err?.message ?? 'Unknown error'}`, true);
+ }
 };
 
 // ─── FD Comparison PDF ────────────────────────────────────────────────────
 interface FDComparisonParams {
-    scenarioA: { principal: number; rate: number; years: number; maturity: number; interest: number; };
-    scenarioB: { principal: number; rate: number; years: number; maturity: number; interest: number; };
-    insights: string[];
-    winner: string;
+ scenarioA: { principal: number; rate: number; years: number; maturity: number; interest: number; };
+ scenarioB: { principal: number; rate: number; years: number; maturity: number; interest: number; };
+ insights: string[];
+ winner: string;
 }
 
 export const exportFDComparisonPDF = async (params: FDComparisonParams): Promise<void> => {
-    try {
-        showToast('⏳ Generating FD comparison report…');
-        const { scenarioA, scenarioB, insights, winner } = params;
-        const doc = new jsPDF();
+ try {
+ showToast('⏳ Generating FD comparison report…');
+ const { scenarioA, scenarioB, insights, winner } = params;
+ const doc = new jsPDF();
 
-        // PAGE 1: Summary
-        doc.setFontSize(20); doc.setTextColor(79, 70, 229);
-        doc.text('FD Comparison Report', 14, 22);
-        doc.setFontSize(10); doc.setTextColor(100);
-        doc.text(`Generated by FinCalix  |  ${new Date().toLocaleDateString('en-IN')}`, 14, 30);
-        doc.setDrawColor(226, 232, 240); doc.line(14, 35, 196, 35);
+ // PAGE 1: Summary
+ doc.setFontSize(20); doc.setTextColor(79, 70, 229);
+ doc.text('FD Comparison Report', 14, 22);
+ doc.setFontSize(10); doc.setTextColor(100);
+ doc.text(`Generated by FinCalix | ${new Date().toLocaleDateString('en-IN')}`, 14, 30);
+ doc.setDrawColor(226, 232, 240); doc.line(14, 35, 196, 35);
 
-        if (typeof autoTable === 'function') {
-            autoTable(doc, {
-                startY: 45,
-                head: [['Metric', 'Scenario A', 'Scenario B', 'Difference']],
-                body: [
-                    ['Principal', formatForPDF(scenarioA.principal), formatForPDF(scenarioB.principal), formatForPDF(Math.abs(scenarioA.principal - scenarioB.principal))],
-                    ['Interest Rate', `${scenarioA.rate}%`, `${scenarioB.rate}%`, `${Math.abs(scenarioA.rate - scenarioB.rate).toFixed(1)}%`],
-                    ['Tenure', `${scenarioA.years} years`, `${scenarioB.years} years`, `${Math.abs(scenarioA.years - scenarioB.years)} years`],
-                    ['Maturity Amount', formatForPDF(scenarioA.maturity), formatForPDF(scenarioB.maturity), formatForPDF(Math.abs(scenarioA.maturity - scenarioB.maturity))],
-                    ['Interest Earned', formatForPDF(scenarioA.interest), formatForPDF(scenarioB.interest), formatForPDF(Math.abs(scenarioA.interest - scenarioB.interest))],
-                    ['Effective Return', `${((scenarioA.maturity / scenarioA.principal - 1) * 100).toFixed(1)}%`, `${((scenarioB.maturity / scenarioB.principal - 1) * 100).toFixed(1)}%`, ''],
-                ],
-                theme: 'grid',
-                headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-                alternateRowStyles: { fillColor: [254, 252, 232] },
-                styles: { fontSize: 8, cellPadding: 3 },
-                margin: { left: 14, right: 14 },
-            });
+ if (typeof autoTable === 'function') {
+ autoTable(doc, {
+ startY: 45,
+ head: [['Metric', 'Scenario A', 'Scenario B', 'Difference']],
+ body: [
+ ['Principal', formatForPDF(scenarioA.principal), formatForPDF(scenarioB.principal), formatForPDF(Math.abs(scenarioA.principal - scenarioB.principal))],
+ ['Interest Rate', `${scenarioA.rate}%`, `${scenarioB.rate}%`, `${Math.abs(scenarioA.rate - scenarioB.rate).toFixed(1)}%`],
+ ['Tenure', `${scenarioA.years} years`, `${scenarioB.years} years`, `${Math.abs(scenarioA.years - scenarioB.years)} years`],
+ ['Maturity Amount', formatForPDF(scenarioA.maturity), formatForPDF(scenarioB.maturity), formatForPDF(Math.abs(scenarioA.maturity - scenarioB.maturity))],
+ ['Interest Earned', formatForPDF(scenarioA.interest), formatForPDF(scenarioB.interest), formatForPDF(Math.abs(scenarioA.interest - scenarioB.interest))],
+ ['Effective Return', `${((scenarioA.maturity / scenarioA.principal - 1) * 100).toFixed(1)}%`, `${((scenarioB.maturity / scenarioB.principal - 1) * 100).toFixed(1)}%`, ''],
+ ],
+ theme: 'grid',
+ headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+ alternateRowStyles: { fillColor: [254, 252, 232] },
+ styles: { fontSize: 8, cellPadding: 3 },
+ margin: { left: 14, right: 14 },
+ });
 
-            const summaryY: number = (doc as any).lastAutoTable?.finalY ?? 130;
-            doc.setFontSize(11); doc.setTextColor(16, 185, 129);
-            doc.text(`Winner: Scenario ${winner}`, 14, summaryY + 12);
+ const summaryY: number = (doc as any).lastAutoTable?.finalY ?? 130;
+ doc.setFontSize(11); doc.setTextColor(16, 185, 129);
+ doc.text(`Winner: Scenario ${winner}`, 14, summaryY + 12);
 
-            // PAGE 2: Year-wise Growth
-            doc.addPage();
-            doc.setFontSize(16); doc.setTextColor(79, 70, 229);
-            doc.text('Year-wise FD Growth', 14, 22);
+ // PAGE 2: Year-wise Growth
+ doc.addPage();
+ doc.setFontSize(16); doc.setTextColor(79, 70, 229);
+ doc.text('Year-wise FD Growth', 14, 22);
 
-            const fdProjRows: string[][] = [];
-            const maxFdYrs = Math.max(scenarioA.years, scenarioB.years);
-            for (let y = 1; y <= maxFdYrs; y++) {
-                const matA = y <= scenarioA.years ? scenarioA.principal * Math.pow(1 + scenarioA.rate / 400, y * 4) : scenarioA.maturity;
-                const matB = y <= scenarioB.years ? scenarioB.principal * Math.pow(1 + scenarioB.rate / 400, y * 4) : scenarioB.maturity;
-                fdProjRows.push([String(y), formatForPDF(Math.round(matA)), formatForPDF(Math.round(matB)), formatForPDF(Math.abs(Math.round(matA - matB)))]);
-            }
+ const fdProjRows: string[][] = [];
+ const maxFdYrs = Math.max(scenarioA.years, scenarioB.years);
+ for (let y = 1; y <= maxFdYrs; y++) {
+ const matA = y <= scenarioA.years ? scenarioA.principal * Math.pow(1 + scenarioA.rate / 400, y * 4) : scenarioA.maturity;
+ const matB = y <= scenarioB.years ? scenarioB.principal * Math.pow(1 + scenarioB.rate / 400, y * 4) : scenarioB.maturity;
+ fdProjRows.push([String(y), formatForPDF(Math.round(matA)), formatForPDF(Math.round(matB)), formatForPDF(Math.abs(Math.round(matA - matB)))]);
+ }
 
-            autoTable(doc, {
-                startY: 30,
-                head: [['Year', 'Scenario A Value', 'Scenario B Value', 'Difference']],
-                body: fdProjRows,
-                theme: 'striped',
-                headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
-                styles: { fontSize: 7, cellPadding: 2 },
-                margin: { left: 14, right: 14 },
-            });
+ autoTable(doc, {
+ startY: 30,
+ head: [['Year', 'Scenario A Value', 'Scenario B Value', 'Difference']],
+ body: fdProjRows,
+ theme: 'striped',
+ headStyles: { fillColor: [245, 158, 11], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+ styles: { fontSize: 7, cellPadding: 2 },
+ margin: { left: 14, right: 14 },
+ });
 
-            // PAGE 3: Insights
-            doc.addPage();
-            doc.setFontSize(16); doc.setTextColor(79, 70, 229);
-            doc.text('Financial Insights & Recommendations', 14, 22);
-            doc.setDrawColor(226, 232, 240); doc.line(14, 27, 196, 27);
-            let insightY = 36;
-            insights.forEach((text, i) => {
-                doc.setFillColor(254, 252, 232);
-                doc.roundedRect(14, insightY - 4, 182, 14, 3, 3, 'F');
-                doc.setFontSize(9); doc.setTextColor(15, 23, 42);
-                doc.text(`${i + 1}. ${sanitiseCell(text)}`, 18, insightY + 3);
-                insightY += 18;
-            });
-            insightY += 8;
-            doc.setFontSize(11); doc.setTextColor(79, 70, 229);
-            doc.text('FD Tips', 14, insightY); insightY += 10;
-            ['Compare FD rates across banks — even 0.25% difference matters.', 'Senior citizens get 0.5% extra on FD rates at most banks.', 'Tax-saving FD (5-year lock-in) qualifies for 80C deduction up to 1.5L.', 'FD interest is taxable — consider your tax slab before investing.', 'For large amounts, spread across banks to stay within 5L DICGC insurance.'].forEach((rec, i) => {
-                doc.setFontSize(8); doc.setTextColor(80);
-                doc.text(`  ${i + 1}. ${rec}`, 14, insightY); insightY += 7;
-            });
-        }
+ // PAGE 3: Insights
+ doc.addPage();
+ doc.setFontSize(16); doc.setTextColor(79, 70, 229);
+ doc.text('Financial Insights & Recommendations', 14, 22);
+ doc.setDrawColor(226, 232, 240); doc.line(14, 27, 196, 27);
+ let insightY = 36;
+ insights.forEach((text, i) => {
+ doc.setFillColor(254, 252, 232);
+ doc.roundedRect(14, insightY - 4, 182, 14, 3, 3, 'F');
+ doc.setFontSize(9); doc.setTextColor(15, 23, 42);
+ doc.text(`${i + 1}. ${sanitiseCell(text)}`, 18, insightY + 3);
+ insightY += 18;
+ });
+ insightY += 8;
+ doc.setFontSize(11); doc.setTextColor(79, 70, 229);
+ doc.text('FD Tips', 14, insightY); insightY += 10;
+ ['Compare FD rates across banks — even 0.25% difference matters.', 'Senior citizens get 0.5% extra on FD rates at most banks.', 'Tax-saving FD (5-year lock-in) qualifies for 80C deduction up to 1.5L.', 'FD interest is taxable — consider your tax slab before investing.', 'For large amounts, spread across banks to stay within 5L DICGC insurance.'].forEach((rec, i) => {
+ doc.setFontSize(8); doc.setTextColor(80);
+ doc.text(` ${i + 1}. ${rec}`, 14, insightY); insightY += 7;
+ });
+ }
 
-        const totalPages: number = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150);
-            doc.text('FinCalix — Your Financial Companion', 14, 285);
-            doc.text(`Page ${i} / ${totalPages}`, 196, 285, { align: 'right' });
-        }
+ const totalPages: number = (doc as any).internal.getNumberOfPages();
+ for (let i = 1; i <= totalPages; i++) {
+ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150);
+ doc.text('FinCalix — Your Financial Companion', 14, 285);
+ doc.text(`Page ${i} / ${totalPages}`, 196, 285, { align: 'right' });
+ }
 
-        const pdfFilename = 'FD_Comparison_Report.pdf';
-        if (Capacitor.isNativePlatform()) { const pdfBlob = doc.output('blob'); await saveOnNative(pdfBlob, pdfFilename); }
-        else { doc.save(pdfFilename); showToast('✅ FD Comparison PDF downloaded!'); }
-    } catch (err: any) {
-        console.error('[FinCalix] FD Comparison PDF Error:', err);
-        showToast(`❌ PDF failed: ${err?.message ?? 'Unknown error'}`, true);
-    }
+ const pdfFilename = 'FD_Comparison_Report.pdf';
+ if (Capacitor.isNativePlatform()) { const pdfBlob = doc.output('blob'); await saveOnNative(pdfBlob, pdfFilename); }
+ else { doc.save(pdfFilename); showToast('✅ FD Comparison PDF downloaded!'); }
+ } catch (err: any) {
+ console.error('[FinCalix] FD Comparison PDF Error:', err);
+ showToast(`❌ PDF failed: ${err?.message ?? 'Unknown error'}`, true);
+ }
 };
 
 // ─── Expense Tracker PDF ──────────────────────────────────────────────────
 export interface ExpenseReportData {
-    periodLabel: string;
-    income: number;
-    expenses: number;
-    savings: number;
-    savingsRate: number;
-    categoryData: { name: string; total: number; percentage: number }[];
-    savingsTrend?: { month: string; saved: number; hasData: boolean }[];
-    budgetVsActual?: { category: string; budget: number; actual: number }[];
-    chartImage?: string;
-    netWorth?: number;
-    insights?: string[];
+ periodLabel: string;
+ income: number;
+ expenses: number;
+ savings: number;
+ savingsRate: number;
+ categoryData: { name: string; total: number; percentage: number }[];
+ savingsTrend?: { month: string; saved: number; hasData: boolean }[];
+ budgetVsActual?: { category: string; budget: number; actual: number }[];
+ chartImage?: string;
+ netWorth?: number;
+ insights?: string[];
 }
 
 export const exportExpenseReportPDF = async (data: ExpenseReportData): Promise<void> => {
-    try {
-        showToast('⏳ Generating Detailed Expense Report…');
-        const doc = new jsPDF();
-        doc.setFont('helvetica', 'normal');
-        
-        // PAGE 1: Cover & Summary
-        doc.setFontSize(22); doc.setTextColor(124, 58, 237); // Brand purple
-        doc.text('Expense & Budget Report', 14, 25);
-        doc.setFontSize(14); doc.setTextColor(15, 23, 42);
-        doc.text(`Period: ${stripEmoji(data.periodLabel)}`, 14, 34);
-        
-        doc.setFontSize(10); doc.setTextColor(100);
-        doc.text(`Generated by FinCalix  |  ${new Date().toLocaleDateString('en-IN')}`, 14, 42);
-        doc.setDrawColor(226, 232, 240); doc.line(14, 47, 196, 47);
+ try {
+ showToast('⏳ Generating Detailed Expense Report…');
+ const doc = new jsPDF();
+ doc.setFont('helvetica', 'normal');
+ // PAGE 1: Cover & Summary
+ doc.setFontSize(22); doc.setTextColor(124, 58, 237); // Brand purple
+ doc.text('Expense & Budget Report', 14, 25);
+ doc.setFontSize(14); doc.setTextColor(15, 23, 42);
+ doc.text(`Period: ${stripEmoji(data.periodLabel)}`, 14, 34);
+ doc.setFontSize(10); doc.setTextColor(100);
+ doc.text(`Generated by FinCalix | ${new Date().toLocaleDateString('en-IN')}`, 14, 42);
+ doc.setDrawColor(226, 232, 240); doc.line(14, 47, 196, 47);
 
-        // Summary metrics
-        let currentY = 58;
-        doc.setFontSize(12); doc.setTextColor(100);
-        doc.text('KEY FINANCIAL METRICS', 14, currentY); currentY += 8;
+ // Summary metrics
+ let currentY = 58;
+ doc.setFontSize(12); doc.setTextColor(100);
+ doc.text('KEY FINANCIAL METRICS', 14, currentY); currentY += 8;
 
-        if (typeof autoTable === 'function') {
-            autoTable(doc, {
-                startY: currentY,
-                head: [['Metric', 'Amount', 'Note']],
-                body: [
-                    ['Total Income', formatForPDF(data.income), ''],
-                    ['Total Expenses', formatForPDF(data.expenses), ''],
-                    ['Total Savings', formatForPDF(data.savings), `Savings Rate: ${data.savingsRate.toFixed(1)}%`],
-                    ...(data.netWorth !== undefined ? [['Estimated Net Worth', formatForPDF(data.netWorth), '']] : [])
-                ],
-                theme: 'grid',
-                headStyles: { fillColor: [124, 58, 237], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-                styles: { fontSize: 10, cellPadding: 4 },
-                alternateRowStyles: { fillColor: [248, 250, 252] },
-                margin: { left: 14, right: 14 },
-            });
-            currentY = ((doc as any).lastAutoTable?.finalY ?? (currentY - 15)) + 15;
-        }
+ if (typeof autoTable === 'function') {
+ autoTable(doc, {
+ startY: currentY,
+ head: [['Metric', 'Amount', 'Note']],
+ body: [
+ ['Total Income', formatForPDF(data.income), ''],
+ ['Total Expenses', formatForPDF(data.expenses), ''],
+ ['Total Savings', formatForPDF(data.savings), `Savings Rate: ${data.savingsRate.toFixed(1)}%`],
+ ...(data.netWorth !== undefined ? [['Estimated Net Worth', formatForPDF(data.netWorth), '']] : [])
+ ],
+ theme: 'grid',
+ headStyles: { fillColor: [124, 58, 237], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+ styles: { fontSize: 10, cellPadding: 4 },
+ alternateRowStyles: { fillColor: [248, 250, 252] },
+ margin: { left: 14, right: 14 },
+ });
+ currentY = ((doc as any).lastAutoTable?.finalY ?? (currentY - 15)) + 15;
+ }
 
-        // Category Breakdown
-        doc.setFontSize(12); doc.setTextColor(100);
-        doc.text('SPENDING BY CATEGORY', 14, currentY); currentY += 8;
-        
-        if (typeof autoTable === 'function' && data.categoryData.length > 0) {
-            autoTable(doc, {
-                startY: currentY,
-                head: [['Category', 'Amount Spent', '% of Total Expenses']],
-                body: data.categoryData.map(c => [
-                    stripEmoji(c.name), 
-                    formatForPDF(c.total), 
-                    `${c.percentage.toFixed(1)}%`
-                ]),
-                theme: 'striped',
-                headStyles: { fillColor: [71, 85, 105], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
-                styles: { fontSize: 9, cellPadding: 3 },
-                margin: { left: 14, right: 14 },
-            });
-            currentY = ((doc as any).lastAutoTable?.finalY ?? (currentY - 15)) + 15;
-        }
+ // Category Breakdown
+ doc.setFontSize(12); doc.setTextColor(100);
+ doc.text('SPENDING BY CATEGORY', 14, currentY); currentY += 8;
+ if (typeof autoTable === 'function' && data.categoryData.length > 0) {
+ autoTable(doc, {
+ startY: currentY,
+ head: [['Category', 'Amount Spent', '% of Total Expenses']],
+ body: data.categoryData.map(c => [
+ stripEmoji(c.name), formatForPDF(c.total), `${c.percentage.toFixed(1)}%`
+ ]),
+ theme: 'striped',
+ headStyles: { fillColor: [71, 85, 105], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+ styles: { fontSize: 9, cellPadding: 3 },
+ margin: { left: 14, right: 14 },
+ });
+ currentY = ((doc as any).lastAutoTable?.finalY ?? (currentY - 15)) + 15;
+ }
 
-        // Add Chart Image if exists and fits, else next page
-        if (data.chartImage) {
-            if (currentY + 80 > 280) { doc.addPage(); doc.setFont('helvetica', 'normal'); currentY = 20; }
-            doc.setFontSize(12); doc.setTextColor(100);
-            doc.text('SPENDING VISUALIZATION', 14, currentY);
-            doc.addImage(data.chartImage, 'PNG', 45, currentY + 5, 120, 120);
-        }
+ // Add Chart Image if exists and fits, else next page
+ if (data.chartImage) {
+ if (currentY + 80 > 280) { doc.addPage(); doc.setFont('helvetica', 'normal'); currentY = 20; }
+ doc.setFontSize(12); doc.setTextColor(100);
+ doc.text('SPENDING VISUALIZATION', 14, currentY);
+ doc.addImage(data.chartImage, 'PNG', 45, currentY + 5, 120, 120);
+ }
 
-        // PAGE 2: Budget vs Actual & Trends
-        doc.addPage();
-        doc.setFont('helvetica', 'normal');
-        currentY = 20;
+ // PAGE 2: Budget vs Actual & Trends
+ doc.addPage();
+ doc.setFont('helvetica', 'normal');
+ currentY = 20;
 
-        if (data.budgetVsActual && data.budgetVsActual.length > 0 && typeof autoTable === 'function') {
-            doc.setFontSize(16); doc.setTextColor(124, 58, 237);
-            doc.text('Budget vs Actual Analysis', 14, currentY); currentY += 8;
+ if (data.budgetVsActual && data.budgetVsActual.length > 0 && typeof autoTable === 'function') {
+ doc.setFontSize(16); doc.setTextColor(124, 58, 237);
+ doc.text('Budget vs Actual Analysis', 14, currentY); currentY += 8;
 
-            autoTable(doc, {
-                startY: currentY,
-                head: [['Category', 'Budget Limit', 'Actual Spent', 'Status', 'Variance']],
-                body: data.budgetVsActual.map(b => {
-                    const variance = b.budget - b.actual;
-                    const status = variance >= 0 ? 'Under Budget' : 'Over Budget';
-                    return [stripEmoji(b.category), formatForPDF(b.budget), formatForPDF(b.actual), status, formatForPDF(Math.abs(variance))];
-                }),
-                theme: 'grid',
-                headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
-                alternateRowStyles: { fillColor: [248, 250, 252] },
-                styles: { fontSize: 9, cellPadding: 3 },
-                margin: { left: 14, right: 14 },
-            });
-            currentY = ((doc as any).lastAutoTable?.finalY ?? (currentY - 15)) + 15;
-        }
+ autoTable(doc, {
+ startY: currentY,
+ head: [['Category', 'Budget Limit', 'Actual Spent', 'Status', 'Variance']],
+ body: data.budgetVsActual.map(b => {
+ const variance = b.budget - b.actual;
+ const status = variance >= 0 ? 'Under Budget' : 'Over Budget';
+ return [stripEmoji(b.category), formatForPDF(b.budget), formatForPDF(b.actual), status, formatForPDF(Math.abs(variance))];
+ }),
+ theme: 'grid',
+ headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+ alternateRowStyles: { fillColor: [248, 250, 252] },
+ styles: { fontSize: 9, cellPadding: 3 },
+ margin: { left: 14, right: 14 },
+ });
+ currentY = ((doc as any).lastAutoTable?.finalY ?? (currentY - 15)) + 15;
+ }
 
-        if (data.savingsTrend && data.savingsTrend.length > 0 && typeof autoTable === 'function') {
-            doc.setFontSize(16); doc.setTextColor(16, 185, 129);
-            doc.text('6-Month Savings Trend', 14, currentY); currentY += 8;
+ if (data.savingsTrend && data.savingsTrend.length > 0 && typeof autoTable === 'function') {
+ doc.setFontSize(16); doc.setTextColor(16, 185, 129);
+ doc.text('6-Month Savings Trend', 14, currentY); currentY += 8;
 
-            let finalSavingsTrend = data.savingsTrend;
-            try {
-                const store = JSON.parse(localStorage.getItem('budget-tracker-storage') || '{}');
-                const entries = store?.state?.entries || [];
-                
-                const now = new Date();
-                let currentYear = now.getFullYear();
-                let currentMonth = now.getMonth() + 1;
-                
-                finalSavingsTrend = data.savingsTrend.map((t, idx) => {
-                    const i = 5 - idx;
-                    const d = new Date(currentYear, currentMonth - 1 - i, 1);
-                    const y = d.getFullYear();
-                    const m = (d.getMonth() + 1).toString().padStart(2, '0');
-                    const prefix = `${y}-${m}`;
-                    
-                    const monthTx = entries.filter((e: any) => e.date && e.date.startsWith(prefix));
-                    if (monthTx.length === 0) {
-                        return { month: t.month, saved: 0, hasData: false };
-                    }
-                    return t;
-                });
-            } catch(e) {
-                console.error("Error patching savings trend lookup", e);
-            }
+ let finalSavingsTrend = data.savingsTrend;
+ try {
+ const store = JSON.parse(localStorage.getItem('budget-tracker-storage') || '{}');
+ const entries = store?.state?.entries || [];
+ const now = new Date();
+ let currentYear = now.getFullYear();
+ let currentMonth = now.getMonth() + 1;
+ finalSavingsTrend = data.savingsTrend.map((t, idx) => {
+ const i = 5 - idx;
+ const d = new Date(currentYear, currentMonth - 1 - i, 1);
+ const y = d.getFullYear();
+ const m = (d.getMonth() + 1).toString().padStart(2, '0');
+ const prefix = `${y}-${m}`;
+ const monthTx = entries.filter((e: any) => e.date && e.date.startsWith(prefix));
+ if (monthTx.length === 0) {
+ return { month: t.month, saved: 0, hasData: false };
+ }
+ return t;
+ });
+ } catch(e) {
+ console.error("Error patching savings trend lookup", e);
+ }
 
-            autoTable(doc, {
-                startY: currentY,
-                head: [['Month', 'Amount Saved', 'Status']],
-                body: finalSavingsTrend.map(t => [
-                    t.month,
-                    formatForPDF(t.saved),
-                    t.hasData ? (t.saved >= 0 ? 'Surplus' : 'Deficit') : 'No Data'
-                ]),
-                theme: 'striped',
-                headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
-                styles: { fontSize: 9, cellPadding: 3 },
-                margin: { left: 14, right: 14 },
-            });
-            currentY = ((doc as any).lastAutoTable?.finalY ?? (currentY - 15)) + 15;
-        }
+ autoTable(doc, {
+ startY: currentY,
+ head: [['Month', 'Amount Saved', 'Status']],
+ body: finalSavingsTrend.map(t => [
+ t.month,
+ formatForPDF(t.saved),
+ t.hasData ? (t.saved >= 0 ? 'Surplus' : 'Deficit') : 'No Data'
+ ]),
+ theme: 'striped',
+ headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+ styles: { fontSize: 9, cellPadding: 3 },
+ margin: { left: 14, right: 14 },
+ });
+ currentY = ((doc as any).lastAutoTable?.finalY ?? (currentY - 15)) + 15;
+ }
 
-        // Insights Section
-        if (data.insights && data.insights.length > 0) {
-            if (currentY + 40 > 280) { doc.addPage(); doc.setFont('helvetica', 'normal'); currentY = 20; }
-            doc.setFontSize(16); doc.setTextColor(245, 158, 11);
-            doc.text('Smart Financial Insights', 14, currentY); currentY += 8;
-            
-            data.insights.forEach((insight, i) => {
-                doc.setFillColor(254, 252, 232);
-                doc.roundedRect(14, currentY, 182, 12, 2, 2, 'F');
-                doc.setFontSize(9); doc.setTextColor(15, 23, 42);
-                doc.text(`${stripEmoji(insight)}`, 18, currentY + 7);
-                currentY += 15;
-            });
-        }
+ // Insights Section
+ if (data.insights && data.insights.length > 0) {
+ if (currentY + 40 > 280) { doc.addPage(); doc.setFont('helvetica', 'normal'); currentY = 20; }
+ doc.setFontSize(16); doc.setTextColor(245, 158, 11);
+ doc.text('Smart Financial Insights', 14, currentY); currentY += 8;
+ data.insights.forEach((insight, i) => {
+ doc.setFillColor(254, 252, 232);
+ doc.roundedRect(14, currentY, 182, 12, 2, 2, 'F');
+ doc.setFontSize(9); doc.setTextColor(15, 23, 42);
+ doc.text(`${stripEmoji(insight)}`, 18, currentY + 7);
+ currentY += 15;
+ });
+ }
 
-        // PDF Disclaimer Section
-        if (currentY + 50 > 280) { doc.addPage(); doc.setFont('helvetica', 'normal'); currentY = 20; }
-        currentY += 10;
-        doc.setDrawColor(200, 200, 200);
-        doc.line(14, currentY, 196, currentY);
-        currentY += 8;
-        doc.setFontSize(8); doc.setTextColor(107, 114, 128); doc.setFont('helvetica', 'italic');
-        const disclaimerText = stripEmoji(
-            'DISCLAIMER: This report is generated by FinCalix for personal expense tracking purposes only. ' +
-            'The financial data, health scores, and insights presented in this report are based solely on the information entered by the user and are indicative in nature. ' +
-            'This report does not constitute financial, tax, investment, or legal advice. ' +
-            'FinCalix and its developers are not responsible for any financial decisions made based on this report. ' +
-            'For professional financial guidance, please consult a certified financial advisor or chartered accountant.'
-        );
-        const disclaimerLines = doc.splitTextToSize(disclaimerText, 182);
-        doc.text(disclaimerLines, 14, currentY);
-        doc.setFont('helvetica', 'normal');
+ // PDF Disclaimer Section
+ if (currentY + 50 > 280) { doc.addPage(); doc.setFont('helvetica', 'normal'); currentY = 20; }
+ currentY += 10;
+ doc.setDrawColor(200, 200, 200);
+ doc.line(14, currentY, 196, currentY);
+ currentY += 8;
+ doc.setFontSize(8); doc.setTextColor(107, 114, 128); doc.setFont('helvetica', 'italic');
+ const disclaimerText = stripEmoji(
+ 'DISCLAIMER: This report is generated by FinCalix for personal expense tracking purposes only. ' +
+ 'The financial data, health scores, and insights presented in this report are based solely on the information entered by the user and are indicative in nature. ' +
+ 'This report does not constitute financial, tax, investment, or legal advice. ' +
+ 'FinCalix and its developers are not responsible for any financial decisions made based on this report. ' +
+ 'For professional financial guidance, please consult a certified financial advisor or chartered accountant.'
+ );
+ const disclaimerLines = doc.splitTextToSize(disclaimerText, 182);
+ doc.text(disclaimerLines, 14, currentY);
+ doc.setFont('helvetica', 'normal');
 
-        // Footer on each page
-        const totalPages: number = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150); doc.setFont('helvetica', 'normal');
-            doc.text('Generated by FinCalix — For personal use only', 14, 285);
-            doc.text(`Page ${i} / ${totalPages}`, 196, 285, { align: 'right' });
-        }
+ // Footer on each page
+ const totalPages: number = (doc as any).internal.getNumberOfPages();
+ for (let i = 1; i <= totalPages; i++) {
+ doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150); doc.setFont('helvetica', 'normal');
+ doc.text('Generated by FinCalix — For personal use only', 14, 285);
+ doc.text(`Page ${i} / ${totalPages}`, 196, 285, { align: 'right' });
+ }
 
-        const safeLabel = stripEmoji(data.periodLabel).replace(/[\/\s]/g, '_');
-        const pdfFilename = `Expense_Report_${safeLabel}.pdf`;
-        
-        if (Capacitor.isNativePlatform()) { 
-            const pdfBlob = doc.output('blob'); 
-            await saveOnNative(pdfBlob, pdfFilename); 
-        } else { 
-            doc.save(pdfFilename); 
-            showToast('✅ Expense Report PDF downloaded!'); 
-        }
-    } catch (err: any) {
-        console.error('[FinCalix] Expense Report PDF Error:', err);
-        showToast(`❌ PDF failed: ${err?.message ?? 'Unknown error'}`, true);
-    }
+ const safeLabel = stripEmoji(data.periodLabel).replace(/[\/\s]/g, '_');
+ const pdfFilename = `Expense_Report_${safeLabel}.pdf`;
+ if (Capacitor.isNativePlatform()) { const pdfBlob = doc.output('blob'); await saveOnNative(pdfBlob, pdfFilename); } else { doc.save(pdfFilename); showToast('✅ Expense Report PDF downloaded!'); }
+ } catch (err: any) {
+ console.error('[FinCalix] Expense Report PDF Error:', err);
+ showToast(`❌ PDF failed: ${err?.message ?? 'Unknown error'}`, true);
+ }
 };

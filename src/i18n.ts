@@ -11,17 +11,17 @@ import ml from './locales/ml.json';
 const savedLang = typeof window !== 'undefined' ? localStorage.getItem('language') || 'en' : 'en';
 
 i18n.use(initReactI18next).init({
-    resources: {
-        en: { translation: en },
-        hi: { translation: hi },
-        te: { translation: te },
-        ta: { translation: ta },
-        kn: { translation: kn },
-        ml: { translation: ml },
-    },
-    lng: savedLang,
-    fallbackLng: 'en',
-    interpolation: { escapeValue: false },
+ resources: {
+ en: { translation: en },
+ hi: { translation: hi },
+ te: { translation: te },
+ ta: { translation: ta },
+ kn: { translation: kn },
+ ml: { translation: ml },
+ },
+ lng: savedLang,
+ fallbackLng: 'en',
+ interpolation: { escapeValue: false },
 });
 
 export default i18n;
