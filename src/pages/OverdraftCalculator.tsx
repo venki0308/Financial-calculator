@@ -6,6 +6,7 @@ import { formatINR } from '../utils/calculations';
 import { exportOverdraftPDF, exportOverdraftExcel } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
 import NumberInput from '../components/NumberInput';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 
 // Helper to extract number
 const parseFormattedNumber = (value: string): number => {
@@ -21,6 +22,7 @@ const formatNumberExt = (value: string): string => {
 };
 
 export default function OverdraftCalculator() {
+  useTrackCalculator();
   const { t } = useTranslation();
   
   const [odType, setOdType] = useState('business');
@@ -451,51 +453,51 @@ export default function OverdraftCalculator() {
       </div>
 
       {/* SECTION 9: OD vs Personal Loan Comparison */}
-      <div className="bg-slate-900 dark:bg-slate-800 rounded-3xl p-6 text-white mb-6">
-          <h3 className="text-lg font-black tracking-tight mb-4 flex items-center gap-2">
-             <Scale className="w-5 h-5 text-indigo-400" /> OD vs Personal Loan
+      <div className="bg-slate-100 dark:bg-slate-800 rounded-3xl p-6 mb-6">
+          <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight mb-4 flex items-center gap-2">
+             <Scale className="w-5 h-5 text-brand-blue dark:text-indigo-400" /> OD vs Personal Loan
           </h3>
           
           <div className="space-y-4">
               <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="text-indigo-300 font-bold uppercase tracking-wider mb-1">Overdraft (OD)</div>
-                  <div className="text-indigo-300 font-bold uppercase tracking-wider mb-1">Personal Loan (PL)</div>
+                  <div className="text-brand-blue dark:text-indigo-300 font-bold uppercase tracking-wider mb-1">Overdraft (OD)</div>
+                  <div className="text-brand-blue dark:text-indigo-300 font-bold uppercase tracking-wider mb-1">Personal Loan (PL)</div>
                   
-                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
-                      <strong className="block text-white mb-1">Interest Calc</strong>
-                      <span className="text-slate-300">Daily on utilized amount only.</span>
+                  <div className="bg-white dark:bg-slate-700/80 p-3 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+                      <strong className="block text-slate-900 dark:text-white mb-1">Interest Calc</strong>
+                      <span className="text-slate-600 dark:text-slate-300">Daily on utilized amount only.</span>
                   </div>
-                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
-                      <strong className="block text-white mb-1">Interest Calc</strong>
-                      <span className="text-slate-300">Reducing/Flat on entire disbursed amount.</span>
+                  <div className="bg-white dark:bg-slate-700/80 p-3 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+                      <strong className="block text-slate-900 dark:text-white mb-1">Interest Calc</strong>
+                      <span className="text-slate-600 dark:text-slate-300">Reducing/Flat on entire disbursed amount.</span>
                   </div>
 
-                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
-                      <strong className="block text-emerald-400 mb-1">Pre-closure</strong>
-                      <span className="text-slate-300">Usually Nil or very low. Flexibility to repay anytime.</span>
+                  <div className="bg-white dark:bg-slate-700/80 p-3 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+                      <strong className="block text-emerald-600 dark:text-emerald-400 mb-1">Pre-closure</strong>
+                      <span className="text-slate-600 dark:text-slate-300">Usually Nil or very low. Flexibility to repay anytime.</span>
                   </div>
-                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
-                      <strong className="block text-red-400 mb-1">Pre-closure</strong>
-                      <span className="text-slate-300">High penalty, typically up to 4-5% of balance.</span>
+                  <div className="bg-white dark:bg-slate-700/80 p-3 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+                      <strong className="block text-red-600 dark:text-red-400 mb-1">Pre-closure</strong>
+                      <span className="text-slate-600 dark:text-slate-300">High penalty, typically up to 4-5% of balance.</span>
                   </div>
                   
-                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
-                      <strong className="block text-white mb-1">Best For</strong>
-                      <span className="text-slate-300">Short-term cash flow needs, working capital.</span>
+                  <div className="bg-white dark:bg-slate-700/80 p-3 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+                      <strong className="block text-slate-900 dark:text-white mb-1">Best For</strong>
+                      <span className="text-slate-600 dark:text-slate-300">Short-term cash flow needs, working capital.</span>
                   </div>
-                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
-                      <strong className="block text-white mb-1">Best For</strong>
-                      <span className="text-slate-300">Large, planned, one-time expenses (car, wedding).</span>
+                  <div className="bg-white dark:bg-slate-700/80 p-3 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+                      <strong className="block text-slate-900 dark:text-white mb-1">Best For</strong>
+                      <span className="text-slate-600 dark:text-slate-300">Large, planned, one-time expenses (car, wedding).</span>
                   </div>
               </div>
               
-              <div className="mt-4 pt-4 border-t border-slate-700 flex items-start gap-3">
-                  <div className="bg-emerald-500/20 p-2 rounded-xl text-emerald-400 mt-1">
+              <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex items-start gap-3">
+                  <div className="bg-emerald-100 dark:bg-emerald-500/20 p-2 rounded-xl text-emerald-600 dark:text-emerald-400 mt-1 shadow-sm">
                       <Lightbulb size={20} />
                   </div>
                   <div>
-                      <h4 className="font-bold text-white text-sm">Smart Verdict</h4>
-                      <p className="text-xs text-slate-300 leading-relaxed mt-1">
+                      <h4 className="font-bold text-slate-900 dark:text-white text-sm">Smart Verdict</h4>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mt-1">
                           Based on your {daysNum} days usage, OD is significantly cheaper than a typical personal loan because you only pay for the exact days you borrow. OD is ideal for bridging short-term liquidity gaps.
                       </p>
                   </div>
