@@ -451,7 +451,7 @@ input[type="number"]::-webkit-inner-spin-button {
 
 /* Main content area with bottom nav + Android nav bar safe inset */
 .pb-safe-nav {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 24px));
 }
 
 /* Safe area top — accounts for camera notch, punch-hole, status bar on all phones */

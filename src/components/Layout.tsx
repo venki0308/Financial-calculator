@@ -23,19 +23,19 @@ export default function Layout() {
                 <Outlet />
             </main>
 
-            <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] bg-surface border-t border-border z-[9999] safe-area-bottom">
-                <div className="flex items-center justify-around h-20 px-2">
+            <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-[#1E293B] z-[9999] safe-area-bottom">
+                <div className="flex items-center justify-around h-20 px-2 pb-1">
                     {tabs.map(({ to, icon: Icon, label }) => {
                         const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
                         return (
-                            <NavLink key={to} to={to} className="flex flex-col items-center gap-1 py-2 px-3">
+                            <NavLink key={to} to={to} className="flex flex-col items-center gap-1 py-1 px-3">
                                 <motion.div
                                     whileTap={{ scale: 0.85 }}
-                                    className={`p-2 rounded-xl transition-colors duration-200 ${isActive ? 'bg-brand-green/15' : ''}`}
+                                    className={`p-2 rounded-xl transition-colors duration-200 ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''}`}
                                 >
-                                    <Icon size={22} className={isActive ? 'text-brand-green' : 'text-muted-foreground'} strokeWidth={isActive ? 2.5 : 1.8} />
+                                    <Icon size={24} className={isActive ? 'text-indigo-600 dark:text-[#4F46E5]' : 'text-slate-500 dark:text-[#94A3B8]'} strokeWidth={isActive ? 2.5 : 2} />
                                 </motion.div>
-                                <span className={`text-[11px] font-medium ${isActive ? 'text-brand-green' : 'text-muted-foreground'}`}>{label}</span>
+                                <span className={`text-[10px] font-semibold ${isActive ? 'text-indigo-600 dark:text-[#4F46E5]' : 'text-slate-500 dark:text-[#94A3B8]'}`}>{label}</span>
                             </NavLink>
                         );
                     })}
