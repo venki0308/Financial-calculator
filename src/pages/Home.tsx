@@ -52,7 +52,7 @@ const defaultItems = [
     { label: 'EMI', icon: Calculator, color: '#10B981', path: '/calculator/loan-emi' },
     { label: 'SIP', icon: PieChart, color: '#3B82F6', path: '/calculator/sip' },
     { label: 'FD', icon: Star, color: '#F59E0B', path: '/calculator/fixed-deposit' },
-    { label: 'PPF', icon: Bookmark, color: '#8B5CF6', path: '/calculator/ppf' },
+    { label: 'Tax', icon: FileText, color: '#F59E0B', path: '/calculator/income-tax' },
 ];
 
 export default function Home() {
@@ -174,7 +174,7 @@ export default function Home() {
 
             {/* Global Search Bar */}
             <div className="relative z-50 mb-8">
-                <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl border transition-all ${isSearching ? 'bg-white dark:bg-card border-violet-500 shadow-lg shadow-violet-500/10' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-border text-muted-foreground'}`}>
+                <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl border transition-all ${isSearching ? 'bg-white dark:bg-card border-violet-500 shadow-lg shadow-violet-500/10' : 'bg-muted border-slate-200 dark:border-border text-muted-foreground'}`}>
                     <Search size={18} className={isSearching ? 'text-violet-500' : 'text-muted-foreground'} />
                     <input 
                         type="text" 
@@ -197,14 +197,14 @@ export default function Home() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700/50 rounded-2xl shadow-xl overflow-hidden z-50 max-h-[60vh] overflow-y-auto"
+                            className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1E293B] border border-border/50 rounded-2xl shadow-xl overflow-hidden z-50 max-h-[60vh] overflow-y-auto"
                         >
                             {!searchQuery.trim() ? (
                                 <div className="p-6 text-center">
                                     <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-card border-border flex items-center justify-center mx-auto mb-3">
                                         <Search size={20} className="text-muted-foreground" />
                                     </div>
-                                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">What are you looking for?</p>
+                                    <p className="text-sm font-semibold text-muted-foreground">What are you looking for?</p>
                                     <p className="text-xs text-muted-foreground mt-1">Try "home loan", "tax", "sip" or "ppf"</p>
                                 </div>
                             ) : searchResults && searchResults.all && searchResults.all.length > 0 ? (
@@ -285,7 +285,7 @@ export default function Home() {
                                         <div className="absolute inset-0 bg-brand-purple/20 blur-xl rounded-full" />
                                         <span className="text-5xl relative">🔍</span>
                                     </div>
-                                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No results found</p>
+                                    <p className="text-sm font-semibold text-muted-foreground">No results found</p>
                                     <p className="text-xs text-muted-foreground mt-1">Try "home loan", "tax", "sip" or "ppf"</p>
                                 </div>
                             )}

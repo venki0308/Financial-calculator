@@ -206,11 +206,11 @@ export default function AdvancedPPFCalculator() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30">
+                        <div className="text-center p-3 rounded-xl bg-muted/30">
                             <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Total Invested</p>
                             <p className="text-slate-900 dark:text-foreground font-bold text-sm">{formatINR(totalInvested)}</p>
                         </div>
-                        <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800/30">
+                        <div className="text-center p-3 rounded-xl bg-muted/30">
                             <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Interest Earned</p>
                             <p className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">{formatINR(totalInterest)}</p>
                         </div>
@@ -247,7 +247,7 @@ export default function AdvancedPPFCalculator() {
 
                 {/* Year-by-Year Table */}
                 <button onClick={() => setShowTable(!showTable)}
-                    className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-slate-700 dark:text-slate-300 font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
+                    className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
                     {showTable ? 'Hide' : 'View'} Year-by-Year Breakdown
                     {showTable ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
@@ -272,7 +272,7 @@ export default function AdvancedPPFCalculator() {
                                             <tr key={row.year} className={`border-b border-slate-100 dark:border-border/30 ${
                                                 row.year === PPF_LOCK_IN_YEARS ? 'bg-emerald-50 dark:bg-emerald-500/5' : ''
                                             }`}>
-                                                <td className="py-1.5 text-slate-700 dark:text-slate-300 font-medium">
+                                                <td className="py-1.5 text-muted-foreground font-medium">
                                                     {row.year}
                                                     {row.year === PPF_LOCK_IN_YEARS && <span className="text-[8px] text-emerald-500 ml-1">Maturity</span>}
                                                 </td>

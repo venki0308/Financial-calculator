@@ -92,7 +92,7 @@ export default function BudgetTab() {
                                     <div key={field.key} className="flex items-center gap-1.5">
                                         <span className="text-xl w-8 text-center">{field.icon}</span>
                                         <div className="flex-1">
-                                            <p className="text-slate-700 dark:text-slate-300 text-xs font-medium mb-1">{t(`expenses.${field.key}`)}</p>
+                                            <p className="text-muted-foreground text-xs font-medium mb-1">{t(`expenses.${field.key}`)}</p>
                                             <div className="flex items-center gap-1 bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2">
                                                 <span className="text-muted-foreground text-sm">₹</span>
                                                 <input
@@ -112,7 +112,7 @@ export default function BudgetTab() {
                                     <div key={o.id} className="flex items-center gap-3">
                                         <span className="text-xl w-8">📋</span>
                                         <div className="flex-1">
-                                            <p className="text-slate-700 dark:text-slate-300 text-xs font-medium mb-1">{o.label}</p>
+                                            <p className="text-muted-foreground text-xs font-medium mb-1">{o.label}</p>
                                             <p className="text-sm font-semibold text-slate-700 dark:text-foreground">₹{o.amount.toLocaleString('en-IN')}</p>
                                         </div>
                                         <button onClick={() => removeCustomFixed(o.id)} className="text-red-400">
@@ -193,7 +193,7 @@ export default function BudgetTab() {
                                             <div className="flex items-center justify-between mb-1">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xl w-6 text-center">{cat.icon}</span>
-                                                    <p className="text-slate-700 dark:text-slate-300 text-xs font-medium">{t(`expenses.categories.${cat.id}`)}</p>
+                                                    <p className="text-muted-foreground text-xs font-medium">{t(`expenses.categories.${cat.id}`)}</p>
                                                 </div>
                                                 <div className="bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 flex items-center min-w-[80px]">
                                                     <span className="text-muted-foreground text-xs px-1">₹</span>
@@ -214,7 +214,7 @@ export default function BudgetTab() {
                                                     step="500"
                                                     value={limit}
                                                     onChange={(e) => setCategoryBudgets({ [key]: Number(e.target.value) })}
-                                                    className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-purple"
+                                                    className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-brand-purple"
                                                 />
                                             </div>
                                         </div>

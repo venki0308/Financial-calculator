@@ -210,6 +210,14 @@
             "monthlyEmi": "मासिक EMI",
             "totalInterest": "कुल ब्याज",
             "totalPayment": "कुल भुगतान"
+        },
+        "overdraft": {
+            "name": "ओवरड्राफ्ट कैलकुलेटर",
+            "desc": "OD ब्याज की गणना करें"
+        },
+        "age": {
+            "name": "आयु कैलकुलेटर",
+            "desc": "अपनी सटीक आयु की गणना करें"
         }
     },
     "expenses": {

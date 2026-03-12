@@ -114,7 +114,7 @@ export default function SchemeDetail() {
                         <div className="flex items-start gap-3">
                             <Building2 size={20} className="text-muted-foreground flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-slate-700 dark:text-slate-300 text-sm font-medium mb-1">Government Mission — No Individual Application</p>
+                                <p className="text-muted-foreground text-sm font-medium mb-1">Government Mission — No Individual Application</p>
                                 <p className="text-muted-foreground dark:text-muted-foreground text-sm">This program is implemented by government agencies and does not require individual application. Citizens benefit through government-delivered services and infrastructure.</p>
                             </div>
                         </div>
@@ -125,7 +125,7 @@ export default function SchemeDetail() {
                             {scheme.howToApply.map((h, i) => (
                                 <div key={i} className="flex items-start gap-3 mb-2.5">
                                     <span className="w-6 h-6 rounded-full bg-brand-blue/15 flex items-center justify-center flex-shrink-0"><span className="text-xs text-brand-blue font-bold">{i + 1}</span></span>
-                                    <span className="text-slate-700 dark:text-slate-300 text-sm">{h}</span>
+                                    <span className="text-muted-foreground text-sm">{h}</span>
                                 </div>
                             ))}
                         </Section>
@@ -134,7 +134,7 @@ export default function SchemeDetail() {
                                 {scheme.documents.map((d, i) => (
                                     <div key={i} className="flex items-start gap-3 mb-2">
                                         <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-card border border-slate-200 dark:border-border flex items-center justify-center flex-shrink-0"><span className="text-xs text-muted-foreground font-medium">{i + 1}</span></span>
-                                        <span className="text-slate-700 dark:text-slate-300 text-sm">{d}</span>
+                                        <span className="text-muted-foreground text-sm">{d}</span>
                                     </div>
                                 ))}
                             </Section>
@@ -146,7 +146,7 @@ export default function SchemeDetail() {
                             {scheme.documents.map((d, i) => (
                                 <div key={i} className="flex items-start gap-3 mb-2">
                                     <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-card border border-slate-200 dark:border-border flex items-center justify-center flex-shrink-0"><span className="text-xs text-muted-foreground font-medium">{i + 1}</span></span>
-                                    <span className="text-slate-700 dark:text-slate-300 text-sm">{d}</span>
+                                    <span className="text-muted-foreground text-sm">{d}</span>
                                 </div>
                             ))}
                         </Section>
@@ -158,7 +158,7 @@ export default function SchemeDetail() {
                             {scheme.howToApply.map((h, i) => (
                                 <div key={i} className="flex items-start gap-3 mb-2.5">
                                     <span className="w-6 h-6 rounded-full bg-brand-green/15 flex items-center justify-center flex-shrink-0"><span className="text-xs text-brand-green font-bold">{i + 1}</span></span>
-                                    <span className="text-slate-700 dark:text-slate-300 text-sm">{h}</span>
+                                    <span className="text-muted-foreground text-sm">{h}</span>
                                 </div>
                             ))}
                         </Section>
@@ -170,7 +170,7 @@ export default function SchemeDetail() {
                                 {scheme.documents.map((d, i) => (
                                     <div key={i} className="flex items-start gap-3 mb-2">
                                         <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-card border border-slate-200 dark:border-border flex items-center justify-center flex-shrink-0"><span className="text-xs text-muted-foreground font-medium">{i + 1}</span></span>
-                                        <span className="text-slate-700 dark:text-slate-300 text-sm">{d}</span>
+                                        <span className="text-muted-foreground text-sm">{d}</span>
                                     </div>
                                 ))}
                             </Section>
@@ -185,7 +185,7 @@ export default function SchemeDetail() {
                             {scheme.howToApply.map((h, i) => (
                                 <div key={i} className="flex items-start gap-3 mb-2.5">
                                     <span className="w-6 h-6 rounded-full bg-brand-green/15 flex items-center justify-center flex-shrink-0"><span className="text-xs text-brand-green font-bold">{i + 1}</span></span>
-                                    <span className="text-slate-700 dark:text-slate-300 text-sm">{h}</span>
+                                    <span className="text-muted-foreground text-sm">{h}</span>
                                 </div>
                             ))}
                         </Section>
@@ -227,7 +227,7 @@ export default function SchemeDetail() {
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => nativeShare(scheme.name, `Check out the ${scheme.name} on FinCalix`, window.location.href)}
-                    className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-slate-700 dark:text-slate-300 font-semibold text-sm"
+                    className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-muted-foreground font-semibold text-sm"
                 >
                     <Share2 size={18} /> {t('schemes.share')}
                 </motion.button>
@@ -256,8 +256,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     return <section className="mb-6"><h2 className="text-base font-semibold text-slate-900 dark:text-foreground mb-3">{title}</h2>{children}</section>;
 }
 function CheckItem({ text }: { text: string }) {
-    return <div className="flex items-start gap-3 mb-2"><CheckCircle2 size={16} className="text-brand-green mt-0.5 flex-shrink-0" /><span className="text-slate-700 dark:text-slate-300 text-sm">{text}</span></div>;
+    return <div className="flex items-start gap-3 mb-2"><CheckCircle2 size={16} className="text-brand-green mt-0.5 flex-shrink-0" /><span className="text-muted-foreground text-sm">{text}</span></div>;
 }
 function Row({ label, value, green }: { label: string; value: string; green?: boolean }) {
-    return <div className="flex items-start gap-2"><span className="text-muted-foreground text-xs font-medium min-w-[70px]">{label}</span><span className={`text-xs ${green ? 'text-brand-green font-medium' : 'text-slate-700 dark:text-slate-300'}`}>{value}</span></div>;
+    return <div className="flex items-start gap-2"><span className="text-muted-foreground text-xs font-medium min-w-[70px]">{label}</span><span className={`text-xs ${green ? 'text-brand-green font-medium' : 'text-muted-foreground'}`}>{value}</span></div>;
 }

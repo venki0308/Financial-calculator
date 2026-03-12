@@ -59,7 +59,7 @@ function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
             exit={{ opacity: 0, x: 10, height: 0 }}
             className={`relative rounded-2xl border transition-all ${isUnread
                 ? 'bg-white dark:bg-card border-slate-200 dark:border-indigo-500/30 shadow-sm'
-                : 'bg-slate-50 dark:bg-slate-800/30 border-slate-100 dark:border-slate-700/30'
+                : 'bg-muted/30 border-slate-100 dark:border-slate-700/30'
             }`}
         >
             {isUnread && (
@@ -106,7 +106,7 @@ export default function Notifications() {
     return (
         <div className="min-h-dvh bg-slate-50 dark:bg-background">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-card border border-slate-200 dark:border-border">
                         <ArrowLeft size={18} className="text-muted-foreground" />
@@ -129,7 +129,7 @@ export default function Notifications() {
                             </button>
                         )}
                         {hasAny && (
-                            <button onClick={clearAll} className="p-2 rounded-xl bg-slate-100 dark:bg-card border-border border border-slate-200 dark:border-slate-700" title="Clear all">
+                            <button onClick={clearAll} className="p-2 rounded-xl bg-slate-100 dark:bg-card border-border border border-border" title="Clear all">
                                 <Trash2 size={16} className="text-muted-foreground" />
                             </button>
                         )}
@@ -143,7 +143,7 @@ export default function Notifications() {
                         <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-card border-border flex items-center justify-center mb-4">
                             <BellOff size={32} className="text-muted-foreground" />
                         </div>
-                        <h3 className="text-slate-700 dark:text-slate-300 font-semibold mb-1">All caught up!</h3>
+                        <h3 className="text-muted-foreground font-semibold mb-1">All caught up!</h3>
                         <p className="text-muted-foreground text-sm text-center leading-relaxed">
                             No notifications yet. Financial reminders and<br />insights will appear here.
                         </p>

@@ -507,12 +507,8 @@ export const TIMEZONE_META: Record<string, CountryMeta> = {
 // Get metadata for any IANA timezone (falls back to derived info if not in map)
 export function getCountryMeta(iana: string): CountryMeta {
     if (TIMEZONE_META[iana]) return TIMEZONE_META[iana];
-    // Partial match
-    const partial = Object.keys(TIMEZONE_META).find(k => iana.startsWith(k.split('/')[0]));
-    if (partial) {
-        const base = TIMEZONE_META[partial];
-        return { ...base };
-    }
+    
+    // Fallback for unmapped timezones to prevent wrong flags
     const parts = iana.split('/');
     const region = parts[0] || '';
     const city = (parts[parts.length - 1] || '').replace(/_/g, ' ');
@@ -520,8 +516,8 @@ export function getCountryMeta(iana: string): CountryMeta {
         flag: '🌍',
         currencySymbol: '$',
         currencyName: 'Local Currency',
-        phoneCode: '+?',
-        countryCode: region.slice(0, 2).toUpperCase(),
+        phoneCode: '',
+        countryCode: '', // Empty prevents incorrect flagcdn requests
         countryName: city,
         region,
     };

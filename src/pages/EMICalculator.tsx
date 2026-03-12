@@ -392,7 +392,7 @@ export default function EMICalculator() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mb-5">
-                        <div className="text-center p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 border border-slate-200 dark:border-transparent">
+                        <div className="text-center p-3 rounded-xl bg-muted/30 border border-slate-200 dark:border-transparent">
                             <div className="flex items-center justify-center gap-1.5 mb-1">
                                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                                 <span className="text-slate-600 dark:text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Principal</span>
@@ -400,7 +400,7 @@ export default function EMICalculator() {
                             <p className="text-slate-900 dark:text-foreground font-bold text-sm">{formatINR(principal)}</p>
                             {principal >= 100000 && <p className="text-muted-foreground dark:text-muted-foreground text-[9px] mt-0.5">({formatINRWords(principal)})</p>}
                         </div>
-                        <div className="text-center p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 border border-slate-200 dark:border-transparent">
+                        <div className="text-center p-3 rounded-xl bg-muted/30 border border-slate-200 dark:border-transparent">
                             <div className="flex items-center justify-center gap-1.5 mb-1">
                                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                                 <span className="text-slate-600 dark:text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Interest</span>
@@ -446,7 +446,7 @@ export default function EMICalculator() {
                 {method === 'reducing' && result.schedule && result.schedule.length > 0 && (
                     <div className="mb-4">
                         <button onClick={() => { setShowAmortization(!showAmortization); setAmortPage(0); }}
-                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-slate-700 dark:text-slate-300 font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
+                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
                             <Calculator size={16} />
                             {showAmortization ? 'Hide' : 'View'} Amortization Schedule
                             {showAmortization ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -475,7 +475,7 @@ export default function EMICalculator() {
                                                     const isYearEnd = row.month % 12 === 0;
                                                     return (
                                                         <tr key={row.month} className={`border-b border-slate-100 dark:border-border/30 ${isYearEnd ? 'bg-violet-50 dark:bg-violet-500/5' : ''}`}>
-                                                            <td className={`py-1.5 text-slate-700 dark:text-slate-300 ${isYearEnd ? 'font-bold text-violet-700 dark:text-violet-300' : ''}`}>
+                                                            <td className={`py-1.5 text-muted-foreground ${isYearEnd ? 'font-bold text-violet-700 dark:text-violet-300' : ''}`}>
                                                                 {row.month}
                                                                 {isYearEnd && <span className="text-[8px] text-violet-500 dark:text-violet-400 ml-1">Y{row.month / 12}</span>}
                                                             </td>
@@ -520,7 +520,7 @@ export default function EMICalculator() {
                 {method === 'reducing' && result.schedule && result.schedule.length > 0 && (
                     <div className="mb-4">
                         <button onClick={() => setShowForeclosure(!showForeclosure)}
-                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-slate-700 dark:text-slate-300 font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
+                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
                             <TrendingDown size={16} />
                             {showForeclosure ? 'Hide' : 'Foreclosure Calculator'}
                             {showForeclosure ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -554,7 +554,7 @@ export default function EMICalculator() {
                                                         { label: 'Interest Saved', value: formatINR(foreclosureResult.interestSaved), color: 'text-emerald-600 dark:text-emerald-400' },
                                                         { label: 'Foreclosure Charge', value: formatINR(foreclosureResult.foreclosureCharge), color: 'text-red-600 dark:text-red-400' },
                                                     ].map(item => (
-                                                        <div key={item.label} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-center">
+                                                        <div key={item.label} className="p-3 rounded-xl bg-muted/40 text-center">
                                                             <p className="text-muted-foreground text-[9px] uppercase font-bold mb-1">{item.label}</p>
                                                             <p className={`font-bold text-xs ${item.color}`}>{item.value}</p>
                                                         </div>
@@ -603,11 +603,11 @@ export default function EMICalculator() {
                         {enableReminder && (
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-3">
                                 <div className="pl-8 flex items-center gap-3">
-                                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Remind me on the</span>
+                                    <span className="text-xs font-semibold text-muted-foreground">Remind me on the</span>
                                     <div className="flex-1 max-w-[100px]">
                                         <NumberInput label="" value={reminderDate} onChange={(v) => setReminderDate(Math.max(1, Math.min(28, v)))} min={1} max={28} suffix="th" />
                                     </div>
-                                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">of every month</span>
+                                    <span className="text-xs font-semibold text-muted-foreground">of every month</span>
                                 </div>
                             </motion.div>
                         )}
@@ -618,11 +618,11 @@ export default function EMICalculator() {
                 <div className="space-y-3 mb-5">
                     <div className="grid grid-cols-2 gap-3">
                         <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadPDF}
-                            className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border text-slate-700 dark:text-slate-300 font-bold text-sm">
+                            className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm">
                             <FileText size={18} className="text-violet-500" /> Export PDF
                         </motion.button>
                         <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadExcel}
-                            className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border text-slate-700 dark:text-slate-300 font-bold text-sm">
+                            className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm">
                             <Download size={18} className="text-emerald-500" /> Export Excel
                         </motion.button>
                     </div>

@@ -23,7 +23,7 @@ export default function Layout() {
                 <Outlet />
             </main>
 
-            <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] bg-card/95 backdrop-blur-xl border-t border-border z-40 safe-area-bottom">
+            <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] bg-surface border-t border-border z-[9999] safe-area-bottom">
                 <div className="flex items-center justify-around h-20 px-2">
                     {tabs.map(({ to, icon: Icon, label }) => {
                         const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));

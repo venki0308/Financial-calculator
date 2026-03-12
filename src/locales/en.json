@@ -211,6 +211,14 @@
             "monthlyEmi": "Monthly EMI",
             "totalInterest": "Total Interest",
             "totalPayment": "Total Payment"
+        },
+        "overdraft": {
+            "name": "Overdraft Calculator",
+            "desc": "Calculate OD interest"
+        },
+        "age": {
+            "name": "Age Calculator",
+            "desc": "Calculate your exact age"
         }
     },
     "expenses": {

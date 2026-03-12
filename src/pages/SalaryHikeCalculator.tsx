@@ -347,7 +347,7 @@ export default function SalaryHikeCalculator() {
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setShowProjection(true)}
-                    className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-slate-700 dark:text-slate-300 font-semibold text-sm mb-3 active:bg-slate-50 dark:active:bg-card transition-colors"
+                    className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-semibold text-sm mb-3 active:bg-slate-50 dark:active:bg-card transition-colors"
                 >
                     📊 View Monthly Projection
                 </motion.button>
@@ -392,7 +392,7 @@ export default function SalaryHikeCalculator() {
                                             </tr>
                                         )}
                                         <tr key={row.month} className="border-b border-slate-100 dark:border-border/50">
-                                            <td className="py-2 text-slate-700 dark:text-slate-300">{row.month}</td>
+                                            <td className="py-2 text-muted-foreground">{row.month}</td>
                                             <td className="py-2 text-right text-brand-green">{formatINR(row.salary)}</td>
                                             <td className="py-2 text-right text-slate-900 dark:text-foreground">{formatINR(row.cumulative)}</td>
                                         </tr>

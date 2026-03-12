@@ -136,7 +136,7 @@ export default function SubscriptionsTab() {
                                 <button
                                     key={p.name}
                                     onClick={() => handleSuggest(p)}
-                                    className="flex-shrink-0 flex items-center gap-2 bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3"
+                                    className="flex-shrink-0 flex items-center gap-2 bg-white dark:bg-card border-border border border-border rounded-xl px-4 py-3"
                                 >
                                     <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: p.color }} />
                                     <span className="font-bold text-sm text-slate-800 dark:text-foreground">{p.name}</span>
@@ -225,7 +225,7 @@ export default function SubscriptionsTab() {
                             className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white dark:bg-background rounded-t-3xl z-50 shadow-2xl safe-bottom border-t border-slate-200 dark:border-white/10"
                         >
                             <div className="p-6">
-                                <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-6" />
+                                <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6" />
                                 
                                 <div className="flex items-center justify-between mb-6">
                                     <h2 className="text-xl font-bold text-slate-900 dark:text-foreground">
@@ -331,7 +331,7 @@ export default function SubscriptionsTab() {
                                                 onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
                                                 className="w-5 h-5 rounded text-brand-purple bg-slate-100 border-slate-300 focus:ring-brand-purple dark:bg-card border-border dark:border-slate-700"
                                             />
-                                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Active</span>
+                                            <span className="text-sm font-bold text-muted-foreground">Active</span>
                                         </label>
                                     </div>
                                 </div>

@@ -166,27 +166,27 @@ export default function OverdraftCalculator() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
             <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
               <Wallet className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
             Overdraft Loan Calculator
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2">
+          <p className="text-muted-foreground mt-2">
             Calculate interest on your overdraft limit based on utilization
           </p>
         </div>
         <div className="flex gap-4">
           <button
             onClick={exportToPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-muted-foreground rounded-lg transition-colors"
           >
             <FileText className="w-4 h-4" />
             <span className="hidden sm:inline">PDF</span>
           </button>
           <button
             onClick={exportToExcel}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-muted-foreground rounded-lg transition-colors"
           >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">Excel</span>
@@ -204,32 +204,32 @@ export default function OverdraftCalculator() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Input Section */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-border">
+            <h2 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
               <Calculator className="w-5 h-5 text-blue-500" />
               Overdraft Details
             </h2>
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Overdraft Limit (₹)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
                     ₹
                   </span>
                   <input
                     type="text"
                     value={odLimit}
                     onChange={(e) => setOdLimit(formatNumberExt(e.target.value.replace(/[^0-9]/g, '')))}
-                    className="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900 dark:text-white font-medium"
+                    className="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-foreground font-medium"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Interest Rate (% p.a.)
                 </label>
                 <div className="relative">
@@ -238,27 +238,27 @@ export default function OverdraftCalculator() {
                     value={interestRate}
                     onChange={(e) => setInterestRate(e.target.value)}
                     step="0.1"
-                    className="w-full pl-4 pr-8 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900 dark:text-white font-medium"
+                    className="w-full pl-4 pr-8 py-3 bg-slate-50 dark:bg-slate-900/50 border border-border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-foreground font-medium"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
                     %
                   </span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Utilized Amount (₹)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
                     ₹
                   </span>
                   <input
                     type="text"
                     value={utilizedAmount}
                     onChange={(e) => setUtilizedAmount(formatNumberExt(e.target.value.replace(/[^0-9]/g, '')))}
-                    className="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900 dark:text-white font-medium"
+                    className="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-foreground font-medium"
                   />
                 </div>
                 {parseFormattedNumber(utilizedAmount) > parseFormattedNumber(odLimit) && (
@@ -267,7 +267,7 @@ export default function OverdraftCalculator() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Days Utilized
                 </label>
                 <div className="relative">
@@ -275,9 +275,9 @@ export default function OverdraftCalculator() {
                     type="number"
                     value={daysUtilized}
                     onChange={(e) => setDaysUtilized(e.target.value)}
-                    className="w-full pl-4 pr-16 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-900 dark:text-white font-medium"
+                    className="w-full pl-4 pr-16 py-3 bg-slate-50 dark:bg-slate-900/50 border border-border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-foreground font-medium"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
                     Days
                   </span>
                 </div>
@@ -299,23 +299,30 @@ export default function OverdraftCalculator() {
 
         {/* Results Section */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4" ref={resultRef}>
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Total Utilized</p>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" ref={resultRef}>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-border">
+              <p className="text-sm text-muted-foreground mb-2">Utilized Amount</p>
+              <p className="text-2xl font-bold text-foreground">
                 {formatINR(parseFormattedNumber(utilizedAmount))}
               </p>
             </div>
             
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">Total Interest</p>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-border">
+              <p className="text-sm text-muted-foreground mb-2">Remaining Limit</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {formatINR(Math.max(0, parseFormattedNumber(odLimit) - parseFormattedNumber(utilizedAmount)))}
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-border">
+              <p className="text-sm text-muted-foreground mb-2">Interest Accrued</p>
               <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                 {formatINR(totalInterest)}
               </p>
             </div>
             
             <div className="bg-blue-600 p-6 rounded-2xl shadow-sm text-white">
-              <p className="text-blue-100 text-sm mb-2">Total Amount Payable</p>
+              <p className="text-blue-100 text-sm mb-2">Total Payable</p>
               <p className="text-2xl font-bold">
                 {formatINR(parseFormattedNumber(utilizedAmount) + totalInterest)}
               </p>
@@ -323,8 +330,8 @@ export default function OverdraftCalculator() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700" ref={chartRef}>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Limit Utilization</h3>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-border" ref={chartRef}>
+              <h3 className="text-lg font-semibold text-foreground mb-6">Limit Utilization</h3>
               <div className="relative h-64 flex items-center justify-center">
                 <Doughnut 
                   data={donutData}

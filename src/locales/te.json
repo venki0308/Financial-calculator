@@ -209,6 +209,14 @@
             "monthlyEmi": "నెలవారీ EMI",
             "totalInterest": "మొత్తం వడ్డీ",
             "totalPayment": "మొత్తం చెల్లింపు"
+        },
+        "overdraft": {
+            "name": "Overdraft Calculator",
+            "desc": "Calculate OD interest"
+        },
+        "age": {
+            "name": "Age Calculator",
+            "desc": "Calculate your exact age"
         }
     },
     "expenses": {

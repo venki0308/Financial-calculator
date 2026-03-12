@@ -161,7 +161,7 @@ export default function ValidatorPage() {
 
     return (
         <div className="min-h-dvh bg-slate-50 dark:bg-background">
-            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-card border border-slate-200 dark:border-border">
                         <ArrowLeft size={18} className="text-slate-600 dark:text-muted-foreground" />

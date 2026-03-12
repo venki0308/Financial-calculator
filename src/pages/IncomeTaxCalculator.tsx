@@ -98,7 +98,7 @@ const InputRow = memo(({ label, k, value, onChange, prefix = '₹', hint, warnin
 }) => (
     <div className="space-y-1">
         <label className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold">{label}</label>
-        <div className={`flex items-center gap-2 bg-slate-50 dark:bg-card border-border border rounded-xl px-3 py-2.5 transition-colors ${warning ? 'border-amber-400 dark:border-amber-500' : 'border-slate-200 dark:border-slate-700 focus-within:border-brand-purple'}`}>
+        <div className={`flex items-center gap-2 bg-slate-50 dark:bg-card border-border border rounded-xl px-3 py-2.5 transition-colors ${warning ? 'border-amber-400 dark:border-amber-500' : 'border-border focus-within:border-brand-purple'}`}>
             {prefix && <span className="text-brand-purple font-bold text-sm flex-shrink-0">{prefix}</span>}
             <input
                 type="number"
@@ -125,7 +125,7 @@ function CollapsibleSection({ title, children, defaultOpen = true }: { title: st
     return (
         <div>
             <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-2">
-                <span className="text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-wider">{title}</span>
+                <span className="text-muted-foreground text-xs font-bold uppercase tracking-wider">{title}</span>
                 {open ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
             </button>
             <AnimatePresence initial={false}>
@@ -514,7 +514,7 @@ export default function IncomeTaxCalculator() {
                         <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">CTC Details</h3>
                         <InputRow label="Annual CTC" k="ctcAmount" value={inputs.ctcAmount} onChange={set} />
                         {num('ctcAmount') > 0 && (
-                            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 space-y-2">
+                            <div className="bg-muted rounded-xl p-3 space-y-2">
                                 <p className="text-muted-foreground text-xs font-semibold">Auto-computed Breakdown</p>
                                 {[
                                     { label: 'Basic (40%)', val: num('ctcAmount') * 0.4 },
@@ -620,7 +620,7 @@ export default function IncomeTaxCalculator() {
                         {/* Section Deductions */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-1">
                             <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-2">Deductions (Old Regime)</h3>
-                            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 flex justify-between items-center">
+                            <div className="bg-muted rounded-xl p-3 flex justify-between items-center">
                                 <span className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold">Standard Deduction</span>
                                 <span className="font-bold text-brand-purple text-sm">{fmt(50000)}</span>
                             </div>
@@ -729,7 +729,7 @@ export default function IncomeTaxCalculator() {
                                         const slabAmount = Math.max(0, Math.min(activeTaxableIncome, upper) - slab.min);
                                         const slabTax = slabAmount * (slab.rate / 100);
                                         return (
-                                            <div key={i} className={`p-3 rounded-xl ${slab.rate === 0 ? 'bg-green-50 dark:bg-green-900/10' : slab.rate >= 25 ? 'bg-red-50 dark:bg-red-900/10' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
+                                            <div key={i} className={`p-3 rounded-xl ${slab.rate === 0 ? 'bg-green-50 dark:bg-green-900/10' : slab.rate >= 25 ? 'bg-red-50 dark:bg-red-900/10' : 'bg-muted'}`}>
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-xs text-slate-600 dark:text-muted-foreground font-medium">
                                                         {slab.max === Infinity ? `Above ${fmt(slab.min)}` : `${fmt(slab.min)} – ${fmt(slab.max)}`}
@@ -782,10 +782,10 @@ export default function IncomeTaxCalculator() {
                                     { label: 'Old Regime', tax: oldTotalTax, better: betterRegime === 'Old' && !bothZero },
                                     { label: 'New Regime', tax: newTotalTax, better: betterRegime === 'New' && !bothZero },
                                 ].map((r) => (
-                                    <div key={r.label} className={`flex items-center justify-between p-3 rounded-xl border-2 ${r.better ? 'border-brand-green bg-brand-green/5' : 'border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50'}`}>
+                                    <div key={r.label} className={`flex items-center justify-between p-3 rounded-xl border-2 ${r.better ? 'border-brand-green bg-brand-green/5' : 'border-slate-100 dark:border-slate-700 bg-muted'}`}>
                                         <div className="flex items-center gap-2">
                                             {r.better && <span className="w-5 h-5 rounded-full bg-brand-green flex items-center justify-center text-foreground text-[10px] font-bold">✓</span>}
-                                            <span className="text-slate-700 dark:text-slate-300 text-sm font-medium">{r.label}</span>
+                                            <span className="text-muted-foreground text-sm font-medium">{r.label}</span>
                                         </div>
                                         <span className={`font-extrabold text-sm ${r.better ? 'text-brand-green' : 'text-slate-700 dark:text-foreground'}`}>
                                             {r.tax === 0 ? 'NIL' : fmt(r.tax)}

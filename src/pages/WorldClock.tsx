@@ -347,11 +347,11 @@ export default function WorldClock() {
         const notSelected = WORLD_TIMEZONES.filter(t => !excludeIanas.includes(t.iana));
 
         if (!q || q.length < 2) {
-            // Show popular first, max 20, keeping the order of POPULAR_IANA to ensure Karachi is at the bottom
+            // Show popular first, keeping the order of POPULAR_IANA to ensure Karachi is at the bottom
             const popular = POPULAR_IANA.map(iana => notSelected.find(t => t.iana === iana)).filter(Boolean) as TimezoneInfo[];
             const popularIanas = popular.map(t => t.iana);
             const rest = notSelected.filter(t => !popularIanas.includes(t.iana));
-            return [...popular, ...rest].slice(0, 20);
+            return [...popular, ...rest];
         }
 
         // Calculate offsets on the fly for search strings
@@ -369,7 +369,7 @@ export default function WorldClock() {
             );
         });
 
-        return filtered.slice(0, 20); // max 20 results in dropdown
+        return filtered;
     }, [clocks, searchQuery, now]);
 
     const showToast = (msg: string) => {
@@ -441,13 +441,23 @@ export default function WorldClock() {
 
                             <div className="relative p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-[36px] flex-shrink-0 flex items-center justify-center">
-                                        <img 
-                                            src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
-                                            alt={meta.countryCode}
-                                            className="w-full h-auto shadow-sm rounded-[2px]"
-                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                        />
+                                    <div className="w-[36px] h-[24px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-[2px] overflow-hidden">
+                                        {meta.countryCode ? (
+                                            <img 
+                                                src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
+                                                alt={meta.countryCode}
+                                                className="w-full h-auto object-cover"
+                                                onError={(e) => { 
+                                                    e.currentTarget.style.display = 'none'; 
+                                                    e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
+                                                    if (e.currentTarget.parentElement) {
+                                                        e.currentTarget.parentElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <Globe size={16} className="text-slate-400" />
+                                        )}
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
@@ -558,13 +568,23 @@ export default function WorldClock() {
                                         <button key={tz.iana} onClick={() => addZone(tz)}
                                             className="w-full flex items-center justify-between p-3 rounded-xl bg-background border border-border hover:border-primary/50 transition-colors text-left group">
                                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                <div className="w-8 flex-shrink-0 flex items-center justify-center">
-                                                    <img 
-                                                        src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
-                                                        alt={meta.countryCode}
-                                                        className="w-full h-auto shadow-sm rounded-sm"
-                                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                    />
+                                                <div className="w-[32px] h-[22px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden">
+                                                    {meta.countryCode ? (
+                                                        <img 
+                                                            src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
+                                                            alt={meta.countryCode}
+                                                            className="w-full h-auto object-cover"
+                                                            onError={(e) => { 
+                                                                e.currentTarget.style.display = 'none'; 
+                                                                e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
+                                                                if (e.currentTarget.parentElement) {
+                                                                    e.currentTarget.parentElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+                                                                }
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <Globe size={14} className="text-slate-400" />
+                                                    )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-foreground font-semibold text-sm truncate group-hover:text-primary transition-colors">{tz.city}</p>

@@ -298,7 +298,7 @@ export default function ReportsTab() {
                                     }
                                     
                                     const styles = {
-                                        empty: 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500',
+                                        empty: 'bg-muted border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500',
                                         partial: 'bg-brand-purple/10 border-brand-purple/20 text-brand-purple dark:bg-brand-purple/20 dark:text-brand-purple-light',
                                         budgetless: 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-orange-600 dark:text-orange-400'
                                     };

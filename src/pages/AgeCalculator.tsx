@@ -92,7 +92,7 @@ export default function AgeCalculator() {
                     <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Date of Birth</label>
                     <input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)}
                         max={today.toISOString().slice(0, 10)}
-                        className="w-full py-3 px-4 rounded-xl bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-foreground text-lg font-semibold" />
+                        className="w-full py-3 px-4 rounded-xl bg-slate-50 dark:bg-card border-border border border-border text-slate-900 dark:text-foreground text-lg font-semibold" />
                 </div>
 
                 {result && (
