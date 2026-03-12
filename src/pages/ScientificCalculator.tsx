@@ -5,7 +5,7 @@ import { ArrowLeft, Delete, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import FinancialQuote from '../components/FinancialQuote';
+
 
 type CalcMode = 'standard' | 'scientific' | 'programmer';
 
@@ -103,7 +103,7 @@ export default function ScientificCalculator() {
     return (
         <div className="min-h-dvh bg-background animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-xl border-b border-white/10 pt-14 px-4 py-3 flex items-center gap-3">
+            <div className="sticky top-0 z-30 bg-background  border-b border-white/10 pt-14 px-4 py-3 flex items-center gap-3">
                 <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white/5 border border-white/10">
                     <ArrowLeft size={18} className="text-foreground" />
                 </button>
@@ -113,7 +113,7 @@ export default function ScientificCalculator() {
                 </div>
             </div>
 
-            <FinancialQuote />
+            
             <DisclaimerComponent module="general" />
 
             <div className="px-4 pt-4 pb-28 space-y-4">

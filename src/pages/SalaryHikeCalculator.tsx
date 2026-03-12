@@ -5,7 +5,7 @@ import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import FinancialQuote from '../components/FinancialQuote';
+
 import BottomSheet from '../components/BottomSheet';
 import { formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -158,7 +158,7 @@ export default function SalaryHikeCalculator() {
     return (
         <div className="min-h-dvh bg-white dark:bg-background animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-200 dark:border-border">
+            <div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A]  px-4 pt-14 pb-3 border-b border-slate-200 dark:border-border">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">
@@ -427,7 +427,7 @@ export default function SalaryHikeCalculator() {
                 />
 
                 <div className="mt-8">
-                    <FinancialQuote />
+                    
                     <DisclaimerComponent module="general" />
                 </div>
             </div>

@@ -10,7 +10,7 @@ import {
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import FinancialQuote from '../components/FinancialQuote';
+
 import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
@@ -107,7 +107,7 @@ export default function NPSCalculator() {
 
     return (
         <div className="min-h-dvh bg-background animate-fade-in">
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
+            <div className="sticky top-0 z-10 bg-background  px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border"><ArrowLeft size={18} className="text-muted-foreground" /></button>
                     <div className="flex-1"><h1 className="text-lg font-bold text-foreground">NPS Calculator</h1><p className="text-muted-foreground text-xs">National Pension System</p></div>
@@ -260,8 +260,8 @@ export default function NPSCalculator() {
                     gradient="from-blue-600 via-indigo-600 to-violet-600"
                 />
 
-                <FinancialQuote />
-                <DisclaimerComponent module="government" />
+                
+                
             </div>
         </div>
     );

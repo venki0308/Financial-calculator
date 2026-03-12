@@ -9,7 +9,7 @@ import {
 import { Pie, Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import FinancialQuote from '../components/FinancialQuote';
+
 import SmartInsight from '../components/SmartInsight';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
@@ -155,7 +155,7 @@ export default function SSYCalculator() {
     return (
         <div className="min-h-dvh bg-background animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
+            <div className="sticky top-0 z-10 bg-background  px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
                         <ArrowLeft size={18} className="text-muted-foreground" />
@@ -346,8 +346,8 @@ export default function SSYCalculator() {
                     gradient="from-pink-600 via-rose-500 to-red-500"
                 />
 
-                <FinancialQuote />
-                <DisclaimerComponent module="government" />
+                
+                
             </div>
         </div>
     );

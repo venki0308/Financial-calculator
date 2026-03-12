@@ -116,7 +116,7 @@ export default function Calculators() {
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.08 }}
                                 >
-                                    <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-white/20  flex items-center justify-center mb-3">
                                         <Icon size={20} className="text-foreground" />
                                     </div>
                                     <p className="text-foreground font-bold text-sm text-left leading-tight">{t(calc.nameKey as any)}</p>

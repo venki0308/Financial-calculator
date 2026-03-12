@@ -148,7 +148,7 @@ function CityDetailView({ clock, now, onBack }: { clock: SavedClock; now: Date; 
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="absolute inset-0 z-40 bg-background overflow-y-auto pb-24"
         >
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
+            <div className="sticky top-0 z-10 bg-background  px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                     <button onClick={onBack} className="p-2 rounded-xl bg-card border border-border text-muted-foreground">
                         <ChevronLeft size={18} />
@@ -402,7 +402,7 @@ export default function WorldClock() {
     return (
         <div className="min-h-dvh bg-background animate-fade-in relative overflow-hidden">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
+            <div className="sticky top-0 z-10 bg-background  px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border text-muted-foreground">
@@ -515,7 +515,7 @@ export default function WorldClock() {
             <AnimatePresence>
                 {showAddPanel && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+                        className="fixed inset-0 z-50 bg-black/50 "
                         onClick={(e) => { if (e.target === e.currentTarget) { setShowAddPanel(false); setSearchQuery(''); } }}
                     >
                         <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}

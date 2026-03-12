@@ -170,7 +170,7 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
 
     return (
         <div className="min-h-dvh bg-background animate-fade-in">
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
+            <div className="sticky top-0 z-10 bg-background  px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">

@@ -167,17 +167,17 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 mt-4">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center">
+                    <div className="bg-white/10  rounded-2xl p-3 text-center">
                         <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">{t('expenses.income')}</p>
                         <p className="text-foreground font-bold text-sm mt-0.5">₹{effectiveIncome.toLocaleString('en-IN')}</p>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center">
+                    <div className="bg-white/10  rounded-2xl p-3 text-center">
                         <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">{t('expenses.savings')}</p>
                         <p className={`font-bold text-sm mt-0.5 ${savings < 0 ? 'text-red-300' : 'text-green-300'}`}>
                             ₹{Math.abs(savings).toLocaleString('en-IN')}
                         </p>
                     </div>
-                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3 text-center">
+                    <div className="bg-white/10  rounded-2xl p-3 text-center">
                         <p className="text-purple-200 text-[10px] uppercase font-bold tracking-wider">{t('expenses.rate')}</p>
                         <p className={`font-bold text-sm mt-0.5 ${savingsRate < 0 ? 'text-red-300' : 'text-green-300'}`}>
                             {savingsRate.toFixed(0)}%

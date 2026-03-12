@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { exportToPDF } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
 import { triggerCalcNotification } from '../services/calcNotifications';
-import FinancialQuote from '../components/FinancialQuote';
+
 
 // ─── Tax Slab Tables ──────────────────────────────────────────────────────────
 const OLD_REGIME = [
@@ -429,7 +429,7 @@ export default function IncomeTaxCalculator() {
     return (
         <div className="min-h-dvh bg-slate-50 dark:bg-background">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 pt-14 px-4 py-3 flex items-center gap-3">
+            <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]  border-b border-slate-200 dark:border-white/10 pt-14 px-4 py-3 flex items-center gap-3">
                 <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10">
                     <ArrowLeft size={18} className="text-slate-700 dark:text-foreground" />
                 </button>
@@ -857,7 +857,7 @@ export default function IncomeTaxCalculator() {
                     </>
                 )}
 
-                <FinancialQuote />
+                
 
                 {/* Collapsible Disclaimer */}
                 <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-700/40 rounded-2xl overflow-hidden">

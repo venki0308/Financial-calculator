@@ -46,7 +46,7 @@ export default function ExpenseTracker() {
 
             {/* ── Sticky header with safe-area-inset-top ── */}
             <div
-                className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10"
+                className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]  border-b border-slate-200 dark:border-white/10"
                 style={{ paddingTop: 'calc(env(safe-area-inset-top, 24px) + 0px)' }}
             >
                 <div className="flex items-center gap-4 px-4 pt-3 pb-2">

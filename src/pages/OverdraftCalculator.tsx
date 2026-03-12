@@ -1,34 +1,12 @@
-
-import React, { useState, useEffect, useRef } from 'react';
-import { Share2, FileText, Download, Calculator, Info, Wallet, PieChart, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Share2, FileText, Download, Wallet, Info, ChevronDown, ChevronUp, AlertCircle, Building2, User, CreditCard, Landmark, Pickaxe, Lightbulb, Scale } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { formatINR } from '../utils/calculations';
-import { 
-  Chart as ChartJS, 
-  ArcElement, 
-  Tooltip, 
-  Legend, 
-  CategoryScale, 
-  LinearScale, 
-  BarElement, 
-  Title 
-} from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
 import { jsPDF } from 'jspdf';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import FinancialQuote from '../components/FinancialQuote';
+import { formatINR } from '../utils/calculations';
 import { exportToExcel as utilsExportToExcel } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
-
-ChartJS.register(
-  ArcElement, 
-  Tooltip, 
-  Legend, 
-  CategoryScale, 
-  LinearScale, 
-  BarElement, 
-  Title
-);
+import NumberInput from '../components/NumberInput';
 
 // Helper to extract number
 const parseFormattedNumber = (value: string): number => {
@@ -46,369 +24,523 @@ const formatNumberExt = (value: string): string => {
 export default function OverdraftCalculator() {
   const { t } = useTranslation();
   
+  const [odType, setOdType] = useState('business');
   const [odLimit, setOdLimit] = useState('10,00,000');
   const [interestRate, setInterestRate] = useState('10.5');
   const [utilizedAmount, setUtilizedAmount] = useState('5,00,000');
-  const [daysUtilized, setDaysUtilized] = useState('30');
   
-  const [totalInterest, setTotalInterest] = useState(0);
+  const [durationMode, setDurationMode] = useState<'days'|'dates'>('days');
+  const [daysUtilized, setDaysUtilized] = useState('30');
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState('');
+  
+  const [processingFee, setProcessingFee] = useState('');
+  const [annualCharge, setAnnualCharge] = useState('');
+
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [showPreclosure, setShowPreclosure] = useState(false);
+  
+  const [monthsRemaining, setMonthsRemaining] = useState('6');
+  const [preclosurePenalty, setPreclosurePenalty] = useState('0');
 
   useEffect(() => {
     AnalyticsService.trackScreen('Overdraft_Calculator');
   }, []);
 
+  // Sync dates
   useEffect(() => {
-    calculateOverdraft();
-  }, [odLimit, interestRate, utilizedAmount, daysUtilized]);
-
-  const calculateOverdraft = () => {
-    const limit = parseFormattedNumber(odLimit);
-    const rate = parseFloat(interestRate) || 0;
-    const utilized = parseFormattedNumber(utilizedAmount);
-    const days = parseInt(daysUtilized) || 0;
-
-    // Daily interest formula: (Principal * Rate * Days) / (365 * 100)
-    const activePrincipal = Math.min(utilized, limit); // Calculate only up to limit if excess exists
-    const interest = (activePrincipal * rate * days) / (365 * 100);
-    
-    // Additional penalty interest for over-utilization could be added here
-    const excess = Math.max(0, utilized - limit);
-    const penaltyInterest = excess > 0 ? (excess * (rate + 2) * days) / (365 * 100) : 0; // Assuming 2% penalty
-    
-    setTotalInterest(interest + penaltyInterest);
-  };
+    if (durationMode === 'dates' && startDate && endDate) {
+      const s = new Date(startDate);
+      const e = new Date(endDate);
+      if (e >= s) {
+        const diffTime = Math.abs(e.getTime() - s.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        setDaysUtilized(diffDays.toString());
+      }
+    }
+  }, [startDate, endDate, durationMode]);
 
   const limitNum = parseFormattedNumber(odLimit);
   const utilizedNum = parseFormattedNumber(utilizedAmount);
-  const remainingNum = Math.max(0, limitNum - utilizedNum);
-  const utilizationPercent = limitNum > 0 ? (utilizedNum / limitNum) * 100 : 0;
+  const rateNum = parseFloat(interestRate) || 0;
+  const daysNum = parseInt(daysUtilized) || 0;
+  const feePct = parseFloat(processingFee) || 0;
+  const amcNum = parseFormattedNumber(annualCharge) || 0;
+  
   const isOverLimit = utilizedNum > limitNum;
+  
+  // Base daily formula
+  const activePrincipal = isOverLimit ? limitNum : utilizedNum;
+  const dailyInterest = (activePrincipal * rateNum) / (365 * 100);
+  const standardInterest = dailyInterest * daysNum;
+  
+  // Penalty for excess
+  const excess = isOverLimit ? utilizedNum - limitNum : 0;
+  const penaltyInterest = excess > 0 ? (excess * (rateNum + 2) * daysNum) / (365 * 100) : 0;
+  
+  const totalInterest = standardInterest + penaltyInterest;
+  const processingFeeAmount = (limitNum * feePct) / 100;
+  const totalFees = processingFeeAmount + amcNum;
+  const totalPayableAmount = utilizedNum + totalInterest + totalFees;
+  
+  // Stats
+  const availableLimit = Math.max(0, limitNum - utilizedNum);
+  const effectiveCost = utilizedNum > 0 && daysNum > 0 
+    ? ((totalInterest + totalFees) / utilizedNum) * (365 / daysNum) * 100 
+    : 0;
+  
+  // Gauge
+  const utilPct = limitNum > 0 ? (utilizedNum / limitNum) * 100 : 0;
+  let gaugeColor = 'bg-brand-green';
+  let gaugeText = 'Green (Healthy)';
+  if (utilPct > 50 && utilPct <= 75) { gaugeColor = 'bg-amber-500'; gaugeText = 'Amber (Moderate)'; }
+  else if (utilPct > 75 && utilPct <= 90) { gaugeColor = 'bg-orange-500'; gaugeText = 'Orange (High)'; }
+  else if (utilPct > 90) { gaugeColor = 'bg-red-500'; gaugeText = 'Red (Critical)'; }
+
+  // Schedule
+  const scheduleRows = useMemo(() => {
+    if (daysNum === 0 || utilizedNum === 0) return [];
+    
+    const rows = [];
+    const maxRows = daysNum > 14 ? 14 : daysNum;
+    
+    for (let i = 1; i <= maxRows; i++) {
+        let dayIndex = i;
+        if (daysNum > 14 && i > 7) {
+            dayIndex = daysNum - (14 - i);
+        }
+        
+        let intOfDay = dailyInterest;
+        if (isOverLimit) intOfDay += (excess * (rateNum + 2) / (365*100));
+
+        rows.push({
+            day: dayIndex,
+            balance: utilizedNum,
+            interestOfDay: intOfDay,
+            isEllipsis: daysNum > 14 && i === 8
+        });
+    }
+    return rows;
+  }, [daysNum, utilizedNum, dailyInterest, excess, rateNum, isOverLimit]);
+
+  // Pre-closure
+  const mos = parseInt(monthsRemaining) || 0;
+  const penaltyPct = parseFloat(preclosurePenalty) || 0;
+  const preclosureCharges = (utilizedNum * penaltyPct) / 100;
+  const totalToClose = utilizedNum + totalInterest + preclosureCharges;
 
   const exportToPDF = () => {
-    const rate = parseFloat(interestRate);
-    const days = parseInt(daysUtilized);
-
     const doc = new jsPDF();
     doc.setFontSize(20);
-    doc.text('Overdraft Loan Report', 14, 22);
+    doc.text('Overdraft Calculator Report', 14, 22);
 
     doc.setFontSize(12);
     doc.text(`Overdraft Limit: ${formatINR(limitNum)}`, 14, 32);
-    doc.text(`Interest Rate: ${rate}% p.a.`, 14, 40);
-    doc.text(`Utilized Amount: ${formatINR(utilizedNum)}`, 14, 48);
-    doc.text(`Days Utilized: ${days} days`, 14, 56);
+    doc.text(`Utilized Amount: ${formatINR(utilizedNum)}`, 14, 40);
+    doc.text(`Interest Rate: ${rateNum}% p.a.`, 14, 48);
+    doc.text(`Days Utilized: ${daysNum} days`, 14, 56);
     
     doc.setFontSize(14);
-    doc.text(`Total Interest Payable: ${formatINR(totalInterest)}`, 14, 70);
-    doc.text(`Total Amount Payable: ${formatINR(utilizedNum + totalInterest)}`, 14, 78);
-
+    doc.text(`Assessment Summary:`, 14, 70);
+    doc.setFontSize(12);
+    doc.text(`Total Payable: ${formatINR(totalPayableAmount)}`, 14, 78);
+    doc.text(`Total Interest: ${formatINR(totalInterest)}`, 14, 86);
+    doc.text(`Total Fees: ${formatINR(totalFees)}`, 14, 94);
+    
     doc.save(`FinCalix_Overdraft_${new Date().toISOString().slice(0, 10)}.pdf`);
     AnalyticsService.trackFileDownload('pdf', 'overdraft_calculator');
   };
 
   const exportToExcel = () => {
-    const rate = parseFloat(interestRate);
-    const days = parseInt(daysUtilized);
-
     const headers = ['Detail', 'Value'];
     const data = [
       ['Overdraft Limit', limitNum],
-      ['Interest Rate (%)', rate],
       ['Utilized Amount', utilizedNum],
-      ['Days Utilized', days],
-      ['Utilization (%)', utilizationPercent.toFixed(2) + '%'],
-      ['Total Interest Payable', totalInterest],
-      ['Total Amount Payable', utilizedNum + totalInterest],
+      ['Interest Rate (%)', rateNum],
+      ['Days Utilized', daysNum],
+      ['Utilization (%)', utilPct.toFixed(2) + '%'],
+      ['Total Interest', totalInterest],
+      ['Total Fees', totalFees],
+      ['Total Amount Payable', totalPayableAmount],
+      ['Effective Cost (%)', effectiveCost.toFixed(2) + '%'],
+      ['Preclosure Penalty (if applied)', preclosureCharges]
     ];
-
     utilsExportToExcel(headers, data, `FinCalix_Overdraft_${new Date().toISOString().slice(0, 10)}`);
     AnalyticsService.trackFileDownload('excel', 'overdraft_calculator');
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Overdraft Loan Calculation',
-          text: `Overdraft Limit: ${odLimit}\nUtilized: ${utilizedAmount}\nInterest Payable: ${formatINR(totalInterest)}\nCalculate yours on FinCalix!`,
-          url: window.location.href,
-        });
-        AnalyticsService.trackCalculatorUsed('overdraft', { action: 'share' });
-      } catch (error) {
-        console.error('Error sharing:', error);
-      }
-    }
-  };
-
-  const donutData = {
-    labels: ['Utilized Amount', 'Available Limit'],
-    datasets: [
-      {
-        data: [
-          Math.min(utilizedNum, limitNum),
-          remainingNum
-        ],
-        backgroundColor: [
-          'rgba(239, 68, 68, 0.85)', // Red for utilized
-          'rgba(34, 197, 94, 0.85)', // Green for available
-        ],
-        borderColor: [
-          'rgba(239, 68, 68, 1)',
-          'rgba(34, 197, 94, 1)',
-        ],
-        borderWidth: 2,
-        hoverOffset: 4
-      },
-      // Inner ring for over-limit visualization
-      isOverLimit ? {
-        data: [utilizedNum - limitNum, limitNum],
-        backgroundColor: [
-          'rgba(153, 27, 27, 0.9)', // Dark red for excess
-          'transparent', 
-        ],
-        borderColor: [
-          'rgba(153, 27, 27, 1)',
-          'transparent',
-        ],
-        borderWidth: 2,
-        hoverOffset: 4
-      } : { data: [], backgroundColor: [] } as any
-    ],
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 pt-20 pb-24 lg:pt-8 animate-fade-in">
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-8 gap-4">
+    <div className="max-w-md mx-auto px-4 pt-16 pb-24 animate-fade-in">
+        
+      {/* SECTION 1: Header */}
+      <div className="flex flex-col items-start gap-4 mb-6 mt-4">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-foreground flex items-center gap-3">
-            <div className="bg-red-50 dark:bg-red-500/10 p-2.5 rounded-xl border border-red-100 dark:border-red-500/20">
-              <Wallet className="w-8 h-8 text-red-600 dark:text-red-500" />
-            </div>
-            {t('calculators.overdraft.name', 'Overdraft Calculator')}
-          </h1>
-          <p className="text-muted-foreground mt-2 max-w-xl text-sm lg:text-base">
-            Accurately track your overdraft utilization, daily interest accrual, and remaining available limit.
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">Overdraft Calculator</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Optimize your working capital & limit utilization
           </p>
         </div>
-        <div className="flex gap-3 w-full lg:w-auto">
-          <button onClick={exportToPDF} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-card border border-slate-200 dark:border-border hover:bg-slate-50 dark:hover:bg-accent text-slate-700 dark:text-foreground rounded-xl transition-all shadow-sm font-medium text-sm">
-            <FileText size={16} /> <span className="hidden sm:inline">PDF</span>
+        <div className="flex gap-2 w-full">
+          <button onClick={exportToPDF} className="flex-1 flex items-center justify-center gap-2 py-3 bg-white dark:bg-card border border-slate-200 dark:border-border hover:bg-slate-50 dark:hover:bg-accent text-slate-700 dark:text-foreground rounded-xl shadow-sm text-sm font-bold transition-all">
+            <FileText size={16} /> PDF
           </button>
-          <button onClick={exportToExcel} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-card border border-slate-200 dark:border-border hover:bg-slate-50 dark:hover:bg-accent text-slate-700 dark:text-foreground rounded-xl transition-all shadow-sm font-medium text-sm">
-            <Download size={16} /> <span className="hidden sm:inline">Excel</span>
-          </button>
-          <button onClick={handleShare} className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-green hover:bg-emerald-600 text-white rounded-xl transition-all shadow-sm shadow-brand-green/20 font-medium text-sm">
-            <Share2 size={16} /> <span className="hidden sm:inline">Share</span>
+          <button onClick={exportToExcel} className="flex-1 flex items-center justify-center gap-2 py-3 bg-white dark:bg-card border border-slate-200 dark:border-border hover:bg-slate-50 dark:hover:bg-accent text-slate-700 dark:text-foreground rounded-xl shadow-sm text-sm font-bold transition-all">
+            <Download size={16} /> Excel
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-        {/* Left Column: Inputs */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white dark:bg-card p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-border">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-foreground mb-6 flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-brand-blue" />
-              OD Parameters
-            </h2>
+      {/* SECTION 2: OD Type Selector */}
+      <div className="flex gap-2 mb-6 overflow-x-auto hide-scrollbar pb-2 pt-1">
+        {[
+          { id: 'business', icon: Building2, label: 'Business OD' },
+          { id: 'personal', icon: User, label: 'Personal OD' },
+          { id: 'salary', icon: Wallet, label: 'Salary OD' },
+          { id: 'fd', icon: Landmark, label: 'Against FD/Property' }
+        ].map(type => {
+          const Icon = type.icon;
+          const active = odType === type.id;
+          return (
+            <button key={type.id} onClick={() => setOdType(type.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all border ${
+                active 
+                ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-transparent shadow-md' 
+                : 'bg-white dark:bg-card text-slate-600 dark:text-slate-300 border-slate-200 dark:border-border hover:bg-slate-50'
+              }`}>
+              <Icon size={16} className={active ? 'text-white dark:text-slate-900' : 'text-slate-500'} />
+              {type.label}
+            </button>
+          );
+        })}
+      </div>
 
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Total OD Limit
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
-                  <input
-                    type="text"
-                    value={odLimit}
-                    onChange={(e) => setOdLimit(formatNumberExt(e.target.value))}
-                    className="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-background border border-slate-200 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue transition-all text-slate-900 dark:text-foreground font-semibold"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex justify-between">
-                  <span>Interest Rate</span>
-                  <span className="text-muted-foreground font-normal">% p.a.</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={interestRate}
-                    onChange={(e) => setInterestRate(e.target.value)}
-                    step="0.1"
-                    className="w-full pl-4 pr-12 py-3 bg-slate-50 dark:bg-background border border-slate-200 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue transition-all text-slate-900 dark:text-foreground font-semibold text-left"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex justify-between">
-                  <span>Utilized Amount</span>
-                  <span className="text-brand-red font-medium">Out of Limit</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
-                  <input
-                    type="text"
-                    value={utilizedAmount}
-                    onChange={(e) => setUtilizedAmount(formatNumberExt(e.target.value))}
-                    className={`w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-background border ${isOverLimit ? 'border-red-500 focus:ring-red-500/50 focus:border-red-500' : 'border-slate-200 dark:border-border focus:ring-brand-red/50 focus:border-brand-red'} rounded-xl focus:ring-2 transition-all text-slate-900 dark:text-foreground font-semibold`}
-                  />
-                </div>
-                {isOverLimit && (
-                  <div className="flex items-start gap-1.5 mt-2">
-                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-red-500 text-xs font-medium">Utilized amount exceeds OD limit. Penalty interest may apply.</p>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  Days Utilized
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={daysUtilized}
-                    onChange={(e) => setDaysUtilized(e.target.value)}
-                    className="w-full pl-4 pr-16 py-3 bg-slate-50 dark:bg-background border border-slate-200 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue transition-all text-slate-900 dark:text-foreground font-semibold"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">Days</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-brand-blue/5 dark:bg-brand-blue/10 p-5 rounded-2xl border border-brand-blue/10 dark:border-brand-blue/20">
-            <h3 className="text-sm font-semibold text-brand-blue flex items-center gap-2 mb-2">
-              <Info className="w-4 h-4" /> Formulas & Logic
-            </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-2">
-              Overdraft interest is calculated precisely on a daily compounding basis using the formula:
-            </p>
-            <div className="px-3 py-2 bg-white/50 dark:bg-background/50 rounded-lg border border-brand-blue/10 font-mono text-[10px] text-slate-700 dark:text-slate-300 text-center mb-2">
-              Interest = (Principal × Rate × Days) / (365 × 100)
-            </div>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              You only pay interest for the exact amount utilized over the exact number of days.
-            </p>
+      {/* SECTION 3: Input Form */}
+      <div className="bg-white dark:bg-card rounded-2xl p-5 shadow-sm border border-slate-200 dark:border-border mb-6 space-y-4">
+        
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex justify-between">
+            Sanctioned OD Limit
+            <span className="text-muted-foreground text-xs ml-2">(₹)</span>
+          </label>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">₹</span>
+            <input type="text" value={odLimit} onChange={(e) => setOdLimit(formatNumberExt(e.target.value))}
+              className="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-background border border-slate-200 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue text-slate-900 dark:text-foreground font-bold" />
           </div>
         </div>
 
-        {/* Right Column: Visualization & Results */}
-        <div className="lg:col-span-8 space-y-6">
-          
-          {/* Top KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
-            <div className="bg-white dark:bg-card p-4 lg:p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-border">
-              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 lg:mb-2">Total Limit</p>
-              <p className="text-lg lg:text-xl font-bold text-slate-900 dark:text-foreground truncate">{formatINR(limitNum)}</p>
-            </div>
-            <div className="bg-white dark:bg-card p-4 lg:p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-border">
-              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 lg:mb-2">Utilized</p>
-              <p className="text-lg lg:text-xl font-bold text-brand-red truncate">{formatINR(utilizedNum)}</p>
-            </div>
-            <div className="bg-white dark:bg-card p-4 lg:p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-border">
-              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 lg:mb-2">Interest Accrued</p>
-              <p className="text-lg lg:text-xl font-bold text-amber-500 truncate">{formatINR(totalInterest)}</p>
-            </div>
-            <div className="bg-white dark:bg-card p-4 lg:p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-border">
-              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1 lg:mb-2">Remaining Limit</p>
-              <p className={`text-lg lg:text-xl font-bold truncate ${isOverLimit ? 'text-red-500' : 'text-brand-green'}`}>
-                {isOverLimit ? formatINR(0) : formatINR(remainingNum)}
-              </p>
-            </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex justify-between">
+            Utilized Amount
+            {isOverLimit && <span className="text-red-500 font-bold text-xs ml-2">Exceeds Limit!</span>}
+          </label>
+          <div className="relative">
+            <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-semibold ${isOverLimit ? 'text-red-500' : 'text-muted-foreground'}`}>₹</span>
+            <input type="text" value={utilizedAmount} onChange={(e) => setUtilizedAmount(formatNumberExt(e.target.value))}
+              className={`w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-background border rounded-xl focus:ring-2 font-bold ${
+                  isOverLimit ? 'border-red-500 text-red-500 focus:ring-red-500/50' : 'border-slate-200 dark:border-border text-slate-900 dark:text-foreground focus:ring-brand-blue/50'
+              }`} />
           </div>
+          {isOverLimit && <p className="text-xs text-red-500 mt-1 font-medium">Warning: Penalty applies on excess utilization.</p>}
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Chart */}
-            <div className="bg-white dark:bg-card p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-border flex flex-col">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-foreground mb-6 flex items-center gap-2">
-                <PieChart className="w-5 h-5 text-brand-green" /> Limit Utilization
-              </h3>
-              <div className="relative flex-1 min-h-[220px] flex items-center justify-center">
-                <Doughnut 
-                  data={donutData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: { 
-                        position: 'bottom',
-                        labels: { color: document.documentElement.classList.contains('dark') ? '#e2e8f0' : '#475569', padding: 20, usePointStyle: true }
-                      },
-                      tooltip: {
-                        backgroundColor: document.documentElement.classList.contains('dark') ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-                        titleColor: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#0f172a',
-                        bodyColor: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#334155',
-                        borderColor: document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0',
-                        borderWidth: 1,
-                        padding: 12,
-                        callbacks: {
-                          label: function(context) {
-                            return ` ${context.label}: ${formatINR(context.parsed)}`;
-                          }
-                        }
-                      }
-                    },
-                    cutout: '65%',
-                  }}
-                />
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-[-20px]">
-                  <span className="text-3xl font-bold text-slate-900 dark:text-foreground">{utilizationPercent.toFixed(1)}%</span>
-                  <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider mt-1">Utilized</span>
-                </div>
-              </div>
+        <div>
+           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex justify-between">
+            Annual Interest Rate
+            <span className="text-muted-foreground text-xs ml-2">(%)</span>
+          </label>
+          <div className="relative">
+            <input type="number" step="0.1" value={interestRate} onChange={(e) => setInterestRate(e.target.value)}
+              className="w-full pl-4 pr-8 py-3 bg-slate-50 dark:bg-background border border-slate-200 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue text-slate-900 dark:text-foreground font-bold" />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">%</span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1.5">
+            {odType === 'business' && 'Typically 9-12% for businesses'}
+            {odType === 'personal' && 'Typically 12-15% for personal OD'}
+            {odType === 'salary' && 'Typically 12-14% for salary OD'}
+            {odType === 'fd' && 'Typically FD rate + 1-2%'}
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Duration</label>
+          <div className="grid grid-cols-2 gap-2 mb-3 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl">
+            <button onClick={() => setDurationMode('days')} 
+              className={`py-2 text-xs font-bold rounded-lg transition-all ${durationMode === 'days' ? 'bg-white dark:bg-slate-700 shadow flex-1' : 'text-slate-500'}`}>
+              Days input
+            </button>
+            <button onClick={() => setDurationMode('dates')} 
+              className={`py-2 text-xs font-bold rounded-lg transition-all ${durationMode === 'dates' ? 'bg-white dark:bg-slate-700 shadow flex-1' : 'text-slate-500'}`}>
+              Date Range
+            </button>
+          </div>
+          {durationMode === 'days' ? (
+             <div className="relative">
+                <input type="number" value={daysUtilized} onChange={(e) => setDaysUtilized(e.target.value)}
+                className="w-full pl-4 pr-16 py-3 bg-slate-50 dark:bg-background border border-slate-200 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue text-slate-900 dark:text-foreground font-bold" />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">Days</span>
             </div>
+          ) : (
+             <div className="grid grid-cols-2 gap-3">
+                 <div>
+                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block mb-1">Start Date</span>
+                     <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}
+                        className="w-full px-3 py-3 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                 </div>
+                 <div>
+                     <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block mb-1">End Date</span>
+                     <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)}
+                        className="w-full px-3 py-3 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                 </div>
+             </div>
+          )}
+        </div>
 
-            {/* Summary Box */}
-            <div className="bg-gradient-to-br from-indigo-500 to-violet-600 p-6 rounded-3xl shadow-lg border border-indigo-400/30 text-white flex flex-col justify-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 -tralate-y-1/4 translate-x-1/4 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 translate-y-1/4 -translate-x-1/4 w-40 h-40 bg-indigo-900/40 rounded-full blur-2xl pointer-events-none" />
-              
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-4 text-indigo-100 uppercase tracking-wider text-xs font-bold">
-                  <Calculator className="w-4 h-4" /> Assessment Summary
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Optional Charges</label>
+            <div className="grid grid-cols-2 gap-3">
+                 <div>
+                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider block mb-1">Processing Fee %</span>
+                     <input type="number" step="0.1" value={processingFee} onChange={e=>setProcessingFee(e.target.value)} placeholder="0.0"
+                        className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                 </div>
+                 <div>
+                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider block mb-1">Annual Charge ₹</span>
+                     <input type="text" value={annualCharge} onChange={e=>setAnnualCharge(formatNumberExt(e.target.value))} placeholder="0"
+                        className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                 </div>
+             </div>
+        </div>
+      </div>
+
+      {/* SECTION 4: Quick Stats Row */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="bg-slate-100 dark:bg-slate-800/60 rounded-xl p-4 flex flex-col justify-center">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Sanctioned</span>
+              <span className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">{formatINR(limitNum)}</span>
+          </div>
+          <div className="bg-red-50 dark:bg-red-500/10 rounded-xl p-4 flex flex-col justify-center">
+              <span className="text-[10px] uppercase font-bold text-red-600/70 dark:text-red-400 mb-1">Utilized</span>
+              <span className="text-base font-bold text-red-700 dark:text-red-400 truncate">{formatINR(utilizedNum)}</span>
+          </div>
+          <div className="bg-amber-50 dark:bg-amber-500/10 rounded-xl p-4 flex flex-col justify-center">
+              <span className="text-[10px] uppercase font-bold text-amber-600/70 dark:text-amber-500 mb-1">Interest Accrued</span>
+              <span className="text-base font-bold text-amber-600 dark:text-amber-400 truncate">{formatINR(totalInterest)}</span>
+          </div>
+          <div className="bg-green-50 dark:bg-green-500/10 rounded-xl p-4 flex flex-col justify-center">
+              <span className="text-[10px] uppercase font-bold text-green-600/70 dark:text-green-500 mb-1">Available Limit</span>
+              <span className="text-base font-bold text-green-700 dark:text-green-400 truncate">{formatINR(availableLimit)}</span>
+          </div>
+      </div>
+
+      {/* SECTION 5: Utilization Gauge */}
+      <div className="bg-white dark:bg-card p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-border mb-6">
+          <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-bold">Limit Utilization</h3>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-bold text-white ${gaugeColor}`}>
+                  {gaugeText}
+              </span>
+          </div>
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 mb-2 overflow-hidden">
+              <div className={`h-full ${gaugeColor} transition-all duration-700 ease-out`} style={{width: `${Math.min(utilPct, 100)}%`}}></div>
+          </div>
+          <div className="flex justify-between items-center text-xs font-semibold text-muted-foreground">
+              <span>0%</span>
+              <span className="text-slate-900 dark:text-white font-bold">{utilPct.toFixed(1)}% utilized</span>
+              <span>100%</span>
+          </div>
+      </div>
+
+      {/* SECTION 6: Assessment Summary */}
+      <div className="bg-gradient-to-br from-indigo-500 to-violet-600 p-6 rounded-2xl shadow-lg border border-indigo-400/30 text-white mb-6 relative overflow-hidden">
+        <div className="relative z-10">
+            <h3 className="text-xs uppercase font-bold text-indigo-100 tracking-widest mb-1">Assessment Summary</h3>
+            <p className="text-3xl font-black tracking-tight mb-5">{formatINR(totalPayableAmount)}</p>
+
+            <div className="space-y-3 pt-4 border-t border-indigo-400/30">
+                <div className="flex justify-between items-center text-sm font-medium">
+                <span className="text-indigo-100">Principal</span>
+                <span>{formatINR(utilizedNum)}</span>
                 </div>
-                
-                <h3 className="text-3xl lg:text-4xl font-black mb-2 tracking-tight">
-                  {formatINR(utilizedNum + totalInterest)}
-                </h3>
-                <p className="text-sm text-indigo-100 font-medium mb-8">
-                  Total Payable Amount (Principal + Interest)
-                </p>
-
-                <div className="space-y-4 pt-6 border-t border-indigo-400/30">
-                  <div className="flex justify-between items-center text-sm font-medium">
-                    <span className="text-indigo-100">Principal Utilized</span>
-                    <span>{formatINR(utilizedNum)}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm font-medium">
-                    <span className="text-indigo-100">Total Interest</span>
-                    <span className="text-amber-300 font-bold">+{formatINR(totalInterest)}</span>
-                  </div>
-                  {isOverLimit && (
-                    <div className="flex justify-between items-center text-sm font-bold pt-2 mt-2 border-t border-indigo-400/30">
-                      <span className="text-red-300">Over-limit Amount</span>
-                      <span className="text-red-300">{formatINR(utilizedNum - limitNum)}</span>
+                <div className="flex justify-between items-center text-sm font-medium">
+                <span className="text-indigo-100">Total Interest</span>
+                <span className="text-amber-300 font-bold">+{formatINR(totalInterest)}</span>
+                </div>
+                {totalFees > 0 && (
+                    <div className="flex justify-between items-center text-sm font-medium">
+                    <span className="text-indigo-100">Total Fees</span>
+                    <span className="text-amber-300 font-bold">+{formatINR(totalFees)}</span>
                     </div>
-                  )}
-                </div>
-              </div>
+                )}
             </div>
-          </div>
+
+            <div className="mt-5 pt-4 border-t border-indigo-400/30 grid grid-cols-2 gap-4">
+                 <div>
+                    <span className="block text-[10px] uppercase font-bold text-indigo-200 mb-1">Effective Cost (EAC)</span>
+                    <span className="text-lg font-bold">{effectiveCost.toFixed(2)}% p.a.</span>
+                 </div>
+                 <div>
+                    <span className="block text-[10px] uppercase font-bold text-indigo-200 mb-1">Daily Interest Cost</span>
+                    <span className="text-lg font-bold">₹{(totalInterest/Math.max(1, daysNum)).toFixed(0)}/day</span>
+                 </div>
+            </div>
         </div>
       </div>
-      
-      <div className="mt-8">
-        <FinancialQuote />
-        <DisclaimerComponent module="overdraft" />
+
+      {/* SECTION 7: Daily Interest Schedule */}
+      <div className="mb-4">
+        <button onClick={() => setShowSchedule(!showSchedule)}
+            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-slate-800 dark:text-slate-200 font-bold text-sm bg-white dark:bg-card flex items-center justify-center gap-2 shadow-sm">
+            {showSchedule ? 'Hide' : 'View'} Daily Interest Schedule
+            {showSchedule ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {showSchedule && (
+            <div className="mt-2 bg-white dark:bg-card border border-slate-200 dark:border-border rounded-2xl p-4 overflow-hidden shadow-sm animate-fade-in">
+                <table className="w-full text-xs">
+                    <thead>
+                        <tr className="text-muted-foreground border-b border-slate-200 dark:border-border">
+                            <th className="py-2 text-left font-bold">Day</th>
+                            <th className="py-2 text-right font-bold">Balance</th>
+                            <th className="py-2 text-right font-bold">Day Interest</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {scheduleRows.map((r, idx) => {
+                            if (r.isEllipsis) {
+                                return (
+                                  <tr key={`ellipsis-${idx}`} className="text-center text-muted-foreground font-bold border-b border-slate-100 dark:border-border/50">
+                                      <td colSpan={3} className="py-2">. . .</td>
+                                  </tr>
+                                )
+                            }
+                            return (
+                                <tr key={r.day} className="border-b border-slate-100 dark:border-border/30 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <td className="py-2 font-medium">Day {r.day}</td>
+                                    <td className="py-2 text-right text-slate-600 dark:text-slate-400">{formatINR(r.balance)}</td>
+                                    <td className="py-2 text-right font-semibold text-amber-600 dark:text-amber-400">{formatINR(r.interestOfDay)}</td>
+                                </tr>
+                            )
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        )}
       </div>
+
+      {/* SECTION 8: Pre-closure Calculator */}
+      <div className="mb-6">
+        <button onClick={() => setShowPreclosure(!showPreclosure)}
+            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-slate-800 dark:text-slate-200 font-bold text-sm bg-white dark:bg-card flex items-center justify-center gap-2 shadow-sm">
+            {showPreclosure ? 'Hide' : 'Calculate'} Pre-closure / Expiry
+            {showPreclosure ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {showPreclosure && (
+            <div className="mt-2 bg-white dark:bg-card border border-slate-200 dark:border-border rounded-2xl p-5 shadow-sm animate-fade-in space-y-4">
+                 <div>
+                     <label className="block text-[10px] uppercase font-bold text-muted-foreground mb-1 mt-1">Months Remaining to Expiry</label>
+                     <input type="number" value={monthsRemaining} onChange={e=>setMonthsRemaining(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                 </div>
+                 <div>
+                     <label className="block text-[10px] uppercase font-bold text-muted-foreground mb-1">Pre-closure penalty %</label>
+                     <input type="number" step="0.5" value={preclosurePenalty} onChange={e=>setPreclosurePenalty(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                 </div>
+                 
+                 <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-xl mt-4">
+                     <div className="flex justify-between items-center mb-2">
+                         <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Penalty Charges</span>
+                         <span className="text-sm font-bold text-red-500">{formatINR(preclosureCharges)}</span>
+                     </div>
+                     <div className="flex justify-between items-center border-t border-slate-200 dark:border-slate-700 pt-2">
+                         <span className="text-sm font-black text-slate-900 dark:text-white">Total to Close</span>
+                         <span className="text-lg font-black text-slate-900 dark:text-white">{formatINR(totalToClose)}</span>
+                     </div>
+                 </div>
+            </div>
+        )}
+      </div>
+
+      {/* SECTION 9: OD vs Personal Loan Comparison */}
+      <div className="bg-slate-900 dark:bg-slate-800 rounded-3xl p-6 text-white mb-6">
+          <h3 className="text-lg font-black tracking-tight mb-4 flex items-center gap-2">
+             <Scale className="w-5 h-5 text-indigo-400" /> OD vs Personal Loan
+          </h3>
+          
+          <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="text-indigo-300 font-bold uppercase tracking-wider mb-1">Overdraft (OD)</div>
+                  <div className="text-indigo-300 font-bold uppercase tracking-wider mb-1">Personal Loan (PL)</div>
+                  
+                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
+                      <strong className="block text-white mb-1">Interest Calc</strong>
+                      <span className="text-slate-300">Daily on utilized amount only.</span>
+                  </div>
+                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
+                      <strong className="block text-white mb-1">Interest Calc</strong>
+                      <span className="text-slate-300">Reducing/Flat on entire disbursed amount.</span>
+                  </div>
+
+                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
+                      <strong className="block text-emerald-400 mb-1">Pre-closure</strong>
+                      <span className="text-slate-300">Usually Nil or very low. Flexibility to repay anytime.</span>
+                  </div>
+                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
+                      <strong className="block text-red-400 mb-1">Pre-closure</strong>
+                      <span className="text-slate-300">High penalty, typically up to 4-5% of balance.</span>
+                  </div>
+                  
+                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
+                      <strong className="block text-white mb-1">Best For</strong>
+                      <span className="text-slate-300">Short-term cash flow needs, working capital.</span>
+                  </div>
+                  <div className="bg-slate-800/80 dark:bg-slate-700/80 p-3 rounded-lg border border-slate-700 dark:border-slate-600">
+                      <strong className="block text-white mb-1">Best For</strong>
+                      <span className="text-slate-300">Large, planned, one-time expenses (car, wedding).</span>
+                  </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-slate-700 flex items-start gap-3">
+                  <div className="bg-emerald-500/20 p-2 rounded-xl text-emerald-400 mt-1">
+                      <Lightbulb size={20} />
+                  </div>
+                  <div>
+                      <h4 className="font-bold text-white text-sm">Smart Verdict</h4>
+                      <p className="text-xs text-slate-300 leading-relaxed mt-1">
+                          Based on your {daysNum} days usage, OD is significantly cheaper than a typical personal loan because you only pay for the exact days you borrow. OD is ideal for bridging short-term liquidity gaps.
+                      </p>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      {/* SECTION 10: Smart Tips */}
+      <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 px-1">Optimization Tips</h3>
+      <div className="grid grid-cols-2 gap-3 mb-8">
+          <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 p-4 rounded-2xl">
+              <span className="text-xl mb-2 block">📅</span>
+              <strong className="block text-xs text-blue-800 dark:text-blue-300 font-bold mb-1">Interest is Daily</strong>
+              <p className="text-[10px] text-blue-600/80 dark:text-blue-200/70">Deposit cash back to OD account as soon as possible, even for weekends, to save on daily accrued interest.</p>
+          </div>
+          <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 p-4 rounded-2xl">
+              <span className="text-xl mb-2 block">🏦</span>
+              <strong className="block text-xs text-emerald-800 dark:text-emerald-300 font-bold mb-1">Deposit Idle Cash</strong>
+              <p className="text-[10px] text-emerald-600/80 dark:text-emerald-200/70">Route all your incoming payments entirely into the OD account to keep the utilized balance as low as possible.</p>
+          </div>
+          <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 p-4 rounded-2xl">
+              <span className="text-xl mb-2 block">⚠️</span>
+              <strong className="block text-xs text-red-800 dark:text-red-300 font-bold mb-1">Avoid Limit Breach</strong>
+              <p className="text-[10px] text-red-600/80 dark:text-red-200/70">Exceeding the sanctioned limit triggers heavy penal interest (usually +2% to +4%). Keep a buffer for safety.</p>
+          </div>
+          <div className="bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/30 p-4 rounded-2xl">
+              <span className="text-xl mb-2 block">🤝</span>
+              <strong className="block text-xs text-purple-800 dark:text-purple-300 font-bold mb-1">Renegotiate Rates</strong>
+              <p className="text-[10px] text-purple-600/80 dark:text-purple-200/70">If your limit utilization is consistently high and credit score is good, request your bank for a lower interest rate.</p>
+          </div>
+      </div>
+
+      <DisclaimerComponent module="overdraft" />
+
     </div>
   );
 }

@@ -18,7 +18,7 @@ import {
 import { Pie, Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import FinancialQuote from '../components/FinancialQuote';
+
 import { calculateSIP, formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -234,7 +234,7 @@ export default function SIPCalculator() {
 
     return (
         <div className="min-h-dvh bg-background animate-fade-in">
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
+            <div className="sticky top-0 z-10 bg-background  px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
@@ -449,7 +449,7 @@ export default function SIPCalculator() {
                 />
             </div>
             
-            <FinancialQuote />
+            
             <DisclaimerComponent module="sip" />
         </div>
     );

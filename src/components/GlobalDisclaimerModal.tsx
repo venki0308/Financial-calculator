@@ -1,100 +1,115 @@
-import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect, useRef } from 'react';
 
 export default function GlobalDisclaimerModal() {
-    const { t } = useTranslation();
     const [visible, setVisible] = useState(false);
+    const [canAccept, setCanAccept] = useState(false);
+    const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const alreadyAccepted =
             localStorage.getItem('appDisclaimerAccepted') === 'true' ||
-            localStorage.getItem('expenseTrackerDisclaimerAccepted') === 'true';
+            localStorage.getItem('expenseTrackerDisclaimerAccepted') === 'true' ||
+            localStorage.getItem('fincalix_disclaimer_accepted') === 'true';
+            
         if (!alreadyAccepted) {
             setVisible(true);
         }
     }, []);
 
+    const handleScroll = () => {
+        if (!scrollRef.current) return;
+        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+        if (scrollHeight - scrollTop - clientHeight < 50) {
+            setCanAccept(true);
+        }
+    };
+
     const handleAccept = () => {
-        localStorage.setItem('appDisclaimerAccepted', 'true');
+        if (!canAccept) return;
+        localStorage.setItem('fincalix_disclaimer_accepted', 'true');
         setVisible(false);
     };
 
     if (!visible) return null;
 
     return (
-        <div
-            className="fixed inset-0 z-[99999] flex items-center justify-center"
-            style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
-        >
-            <div className="mx-4 w-full max-w-md bg-[#1E293B] rounded-2xl p-5 flex flex-col" style={{ maxHeight: '85vh' }}>
-                {/* Title */}
-                <h2 className="text-xl font-bold text-center mb-4" style={{ color: '#7C3AED' }}>
-                    {t('globalDisclaimer.title', 'Important Disclaimer')}
-                </h2>
-
-                {/* Scrollable Body */}
-                <div className="overflow-y-auto flex-1 pr-1" style={{ maxHeight: '70vh' }}>
-                    <p className="text-sm text-slate-300 leading-relaxed mb-3">
-                        {t('globalDisclaimer.welcome', 'Welcome to FinCalix — Your Personal Finance Companion.')}
-                    </p>
-                    <p className="text-sm text-slate-300 leading-relaxed mb-3">
-                        {t('globalDisclaimer.readCarefully', 'Before you begin, please read this disclaimer carefully.')}
-                    </p>
-
-                    {/* Calculators & Tools */}
-                    <h3 className="text-sm font-semibold mt-3 mb-1" style={{ color: '#7C3AED' }}>
-                        {t('globalDisclaimer.calcTitle', 'Calculators & Tools:')}
-                    </h3>
-                    <ul className="text-sm text-slate-300 leading-relaxed space-y-1 pl-3">
-                        <li>• {t('globalDisclaimer.calcBullet1', 'All calculators (Home Loan, Car Loan, SIP, PPF, FD, Income Tax, Property, and others) provide estimates based on the values you enter.')}</li>
-                        <li>• {t('globalDisclaimer.calcBullet2', 'Results are for informational and planning purposes only.')}</li>
-                        <li>• {t('globalDisclaimer.calcBullet3', 'Actual figures may vary based on bank policies, market conditions, tax rule changes, and other factors.')}</li>
-                    </ul>
-
-                    {/* Expense Tracker */}
-                    <h3 className="text-sm font-semibold mt-3 mb-1" style={{ color: '#7C3AED' }}>
-                        {t('globalDisclaimer.expenseTitle', 'Expense Tracker:')}
-                    </h3>
-                    <ul className="text-sm text-slate-300 leading-relaxed space-y-1 pl-3">
-                        <li>• {t('globalDisclaimer.expenseBullet1', 'The Expense Tracker is for personal record-keeping only.')}</li>
-                        <li>• {t('globalDisclaimer.expenseBullet2', 'Financial Health Scores and Smart Insights are rule-based estimates — not professional financial assessments.')}</li>
-                        <li>• {t('globalDisclaimer.expenseBullet3', 'All data is stored locally on your device. FinCalix does not collect, store, or share your financial data.')}</li>
-                    </ul>
-
-                    {/* Government Schemes */}
-                    <h3 className="text-sm font-semibold mt-3 mb-1" style={{ color: '#7C3AED' }}>
-                        {t('globalDisclaimer.schemesTitle', 'Government Schemes:')}
-                    </h3>
-                    <ul className="text-sm text-slate-300 leading-relaxed space-y-1 pl-3">
-                        <li>• {t('globalDisclaimer.schemesBullet1', 'Scheme information is provided for general awareness only.')}</li>
-                        <li>• {t('globalDisclaimer.schemesBullet2', 'Eligibility criteria, interest rates, and benefits are subject to change by the government.')}</li>
-                        <li>• {t('globalDisclaimer.schemesBullet3', 'Always verify details on official government websites before applying.')}</li>
-                    </ul>
-
-                    {/* General */}
-                    <h3 className="text-sm font-semibold mt-3 mb-1" style={{ color: '#7C3AED' }}>
-                        {t('globalDisclaimer.generalTitle', 'General:')}
-                    </h3>
-                    <ul className="text-sm text-slate-300 leading-relaxed space-y-1 pl-3">
-                        <li>• {t('globalDisclaimer.generalBullet1', 'Nothing in this app constitutes financial, tax, investment, or legal advice.')}</li>
-                        <li>• {t('globalDisclaimer.generalBullet2', 'For professional guidance, consult a SEBI-registered advisor, certified financial planner, or chartered accountant.')}</li>
-                        <li>• {t('globalDisclaimer.generalBullet3', 'FinCalix and its developers are not liable for any financial decisions made using this app.')}</li>
-                    </ul>
-
-                    {/* Acknowledgment */}
-                    <p className="text-sm text-slate-200 font-semibold leading-relaxed mt-4">
-                        {t('globalDisclaimer.acknowledge', 'By continuing, you confirm that you have read, understood, and agreed to this disclaimer.')}
-                    </p>
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
+            <div className="w-full max-w-md bg-[#1E293B] rounded-2xl flex flex-col shadow-2xl overflow-hidden" style={{ maxHeight: '85vh' }}>
+                {/* Header */}
+                <div className="p-6 pb-4 border-b border-slate-700/50 text-center">
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
+                        Welcome to FinCalix!
+                    </h2>
+                    <p className="text-slate-400 text-sm font-medium">Your Personal Finance Companion</p>
                 </div>
 
-                {/* Accept Button */}
-                <button
-                    onClick={handleAccept}
-                    className="w-full py-3 rounded-xl font-bold text-foreground text-sm mt-4 transition-all active:scale-[0.97]"
-                    style={{ backgroundColor: '#7C3AED' }}
+                {/* Body */}
+                <div 
+                    ref={scrollRef}
+                    onScroll={handleScroll}
+                    className="overflow-y-auto p-6 space-y-6 flex-1 scroll-smooth pb-10"
                 >
-                    {t('globalDisclaimer.button', 'I Understand, Continue')}
-                </button>
+                    <p className="text-sm text-slate-300 font-medium leading-relaxed">
+                        Before you continue, please read and accept our expanded terms.
+                    </p>
+
+                    <div className="space-y-5">
+                        <section>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Calculators are Estimates</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">All tools (Home Loan, SIP, PPF, FD, Tax, etc.) provide mathematical estimates based on your inputs. They are for planning purposes only. Actual figures from your bank or government may vary.</p>
+                        </section>
+
+                        <section>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Expense Tracker Privacy</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">Your Expense Tracker data is stored locally on this device. We do not collect or monitor your spending habits. If you clear app data, your records are deleted.</p>
+                        </section>
+
+                        <section>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Government Schemes</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">Scheme details are for awareness only. Eligibility and benefits are subject to change. Always verify with official government portals before applying for any scheme.</p>
+                        </section>
+
+                        <section>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Financial Advisor & Goal Planner</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">Recommendations are algorithmically generated starting points. They do not replace professional, personalized financial advice from a certified planner.</p>
+                        </section>
+
+                        <section>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Loan & OD Tools</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">EMI and Overdraft calculations use standard reducing balance methods. Your lender's specific rounding rules or hidden charges (like processing and annual fees) will affect final amounts.</p>
+                        </section>
+
+                        <section>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Utility Tools</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">Tools like the Age Calculator and World Clock use system time. Ensure your device time is accurate for precise results.</p>
+                        </section>
+
+                        <section>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Data Privacy</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">We prioritize your privacy. Financial inputs in calculators are not transmitted to our servers.</p>
+                        </section>
+
+                        <section>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">General Note</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">Nothing in this app constitutes financial, tax, investment, or legal advice. FinCalix and its developers are not liable for any real-world financial decisions made using this app.</p>
+                        </section>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="p-5 border-t border-slate-700/50 bg-slate-800/50">
+                    <button
+                        onClick={handleAccept}
+                        disabled={!canAccept}
+                        className={`w-full py-4 rounded-xl font-bold text-sm transition-all duration-300 ${
+                            canAccept 
+                                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25 active:scale-[0.98]' 
+                                : 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                        }`}
+                    >
+                        {canAccept ? 'I Understand, Continue' : 'Please scroll down to read all terms'}
+                    </button>
+                </div>
             </div>
         </div>
     );

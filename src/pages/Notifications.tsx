@@ -106,7 +106,7 @@ export default function Notifications() {
     return (
         <div className="min-h-dvh bg-slate-50 dark:bg-background">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-border">
+            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-[#0F172A]  px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-card border border-slate-200 dark:border-border">
                         <ArrowLeft size={18} className="text-muted-foreground" />

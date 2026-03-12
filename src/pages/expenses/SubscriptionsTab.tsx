@@ -215,7 +215,7 @@ export default function SubscriptionsTab() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsModalOpen(false)}
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50"
+                            className="fixed inset-0 bg-black/40  z-50"
                         />
                         <motion.div
                             initial={{ y: '100%' }}

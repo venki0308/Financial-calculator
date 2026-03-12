@@ -42,7 +42,7 @@ export default function BudgetTracker() {
     return (
         <div className="min-h-dvh bg-slate-50 dark:bg-background animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 pt-14">
+            <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]  border-b border-slate-200 dark:border-white/10 pt-14">
                 <div className="flex items-center gap-4 px-4 py-3">
                     <button
                         onClick={() => navigate(-1)}

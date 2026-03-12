@@ -199,7 +199,7 @@ export default function SavedCalculations() {
 
     return (
         <div className="min-h-dvh bg-background pb-10 animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-lg px-4 pt-14 pb-4 border-b border-border">
+            <div className="sticky top-0 z-10 bg-background  px-4 pt-14 pb-4 border-b border-border">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
                         <ArrowLeft size={18} className="text-muted-foreground" />

@@ -9,7 +9,7 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import FinancialQuote from '../components/FinancialQuote';
+
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import {
     Chart as ChartJS,
@@ -635,7 +635,7 @@ export default function GSTCalculator() {
                     </button>
                 </div>
 
-                <FinancialQuote />
+                
                 <DisclaimerComponent module="tax" />
 
                 <CalculatorInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} calculatorTitle="GST Calculator" />

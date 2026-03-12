@@ -6,7 +6,7 @@ import { nativeShare } from '../utils/nativeShare';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import FinancialQuote from '../components/FinancialQuote';
+
 import { formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
@@ -141,7 +141,7 @@ export default function SimpleInterestCalculator() {
     return (
         <div className="min-h-dvh bg-slate-50 dark:bg-background animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg px-4 pt-14 pb-3 border-b border-slate-200 dark:border-border">
+            <div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A]  px-4 pt-14 pb-3 border-b border-slate-200 dark:border-border">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">
@@ -166,7 +166,7 @@ export default function SimpleInterestCalculator() {
                 </div>
             </div>
 
-            <FinancialQuote />
+            
             <DisclaimerComponent module="general" />
 
             <div className="px-4 pb-28">

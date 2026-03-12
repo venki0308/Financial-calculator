@@ -43,8 +43,8 @@ export default function SchemeDetail() {
                 : 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400';
 
     return (
-        <div className="min-h-dvh bg-white dark:bg-background pb-28 animate-fade-in">
-            <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg border-b border-slate-200 dark:border-border px-4 pt-14 pb-4">
+        <div className="min-h-dvh bg-white dark:bg-background pb-36 animate-fade-in">
+            <div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A] border-b border-slate-200 dark:border-border px-4 pt-14 pb-4">
                 <div className="flex items-center justify-between mb-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border"><ArrowLeft size={18} className="text-muted-foreground dark:text-muted-foreground" /></button>
                     <div className="flex gap-2">
@@ -114,7 +114,7 @@ export default function SchemeDetail() {
                         <div className="flex items-start gap-3">
                             <Building2 size={20} className="text-muted-foreground flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-muted-foreground text-sm font-medium mb-1">Government Mission — No Individual Application</p>
+                                <p className="text-muted-foreground text-sm font-medium mb-1">Government Mission â€” No Individual Application</p>
                                 <p className="text-muted-foreground dark:text-muted-foreground text-sm">This program is implemented by government agencies and does not require individual application. Citizens benefit through government-delivered services and infrastructure.</p>
                             </div>
                         </div>
@@ -195,13 +195,13 @@ export default function SchemeDetail() {
                 {/* Notes */}
                 {scheme.notes && (
                     <div className="p-3 rounded-xl bg-brand-blue/5 border border-brand-blue/15 text-slate-600 dark:text-muted-foreground text-[12px] mb-4 italic">
-                        📌 {scheme.notes}
+                        ðŸ“Œ {scheme.notes}
                     </div>
                 )}
 
                 {/* Disclaimer */}
                 <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-200 text-[11px] leading-relaxed mb-4 italic">
-                    ⚠️ {t('schemes.disclaimerNote')}
+                    âš ï¸ {t('schemes.disclaimerNote')}
                 </div>
 
                 {/* Verification Badge */}
@@ -213,17 +213,17 @@ export default function SchemeDetail() {
                         </div>
                         <p className="text-muted-foreground dark:text-muted-foreground text-[11px] leading-relaxed pl-6">
                             Last verified: {new Date(scheme.lastVerified).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            {scheme.verifiedSource && <> · Source: <a href={`https://${scheme.verifiedSource}`} target="_blank" rel="noopener noreferrer" className="text-brand-blue underline">{scheme.verifiedSource}</a></>}
+                            {scheme.verifiedSource && <> Â· Source: <a href={`https://${scheme.verifiedSource}`} target="_blank" rel="noopener noreferrer" className="text-brand-blue underline">{scheme.verifiedSource}</a></>}
                         </p>
                         <p className="text-muted-foreground dark:text-slate-600 text-[10px] mt-1 pl-6 italic">{t('schemes.alwaysCheck')}</p>
                     </div>
                 )}
             </div>
 
-            <DisclaimerComponent module="government" />
+            
 
             {/* Sticky bottom buttons */}
-            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[428px] bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-lg border-t border-slate-200 dark:border-border p-4 flex gap-3">
+            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[428px] bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-border p-4 flex gap-3 safe-area-bottom">
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => nativeShare(scheme.name, `Check out the ${scheme.name} on FinCalix`, window.location.href)}
