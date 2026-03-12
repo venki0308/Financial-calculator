@@ -191,12 +191,12 @@ export default function OverdraftCalculator() {
           const active = odType === type.id;
           return (
             <button key={type.id} onClick={() => setOdType(type.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all border ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all border shadow-sm ${
                 active 
-                ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-transparent shadow-md' 
-                : 'bg-white dark:bg-card text-slate-600 dark:text-slate-300 border-slate-200 dark:border-border hover:bg-slate-50'
+                ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-transparent' 
+                : 'bg-white dark:bg-card text-slate-700 dark:text-slate-300 border-slate-300 dark:border-border hover:bg-slate-100 hover:border-slate-400'
               }`}>
-              <Icon size={16} className={active ? 'text-white dark:text-slate-900' : 'text-slate-500'} />
+              <Icon size={16} className={active ? 'text-white dark:text-slate-900' : 'text-slate-600 dark:text-slate-400'} />
               {type.label}
             </button>
           );
@@ -214,7 +214,7 @@ export default function OverdraftCalculator() {
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">₹</span>
             <input type="text" value={odLimit} onChange={(e) => setOdLimit(formatNumberExt(e.target.value))}
-              className="w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-background border border-slate-200 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue text-slate-900 dark:text-foreground font-bold" />
+              className="w-full pl-8 pr-4 py-3 bg-white dark:bg-background border border-slate-300 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue text-slate-900 dark:text-foreground font-bold shadow-sm" />
           </div>
         </div>
 
@@ -226,8 +226,8 @@ export default function OverdraftCalculator() {
           <div className="relative">
             <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-semibold ${isOverLimit ? 'text-red-500' : 'text-muted-foreground'}`}>₹</span>
             <input type="text" value={utilizedAmount} onChange={(e) => setUtilizedAmount(formatNumberExt(e.target.value))}
-              className={`w-full pl-8 pr-4 py-3 bg-slate-50 dark:bg-background border rounded-xl focus:ring-2 font-bold ${
-                  isOverLimit ? 'border-red-500 text-red-500 focus:ring-red-500/50' : 'border-slate-200 dark:border-border text-slate-900 dark:text-foreground focus:ring-brand-blue/50'
+              className={`w-full pl-8 pr-4 py-3 bg-white dark:bg-background border rounded-xl focus:ring-2 font-bold shadow-sm ${
+                  isOverLimit ? 'border-red-500 text-red-500 focus:ring-red-500/50' : 'border-slate-300 dark:border-border text-slate-900 dark:text-foreground focus:ring-brand-blue/50'
               }`} />
           </div>
           {isOverLimit && <p className="text-xs text-red-500 mt-1 font-medium">Warning: Penalty applies on excess utilization.</p>}
@@ -240,7 +240,7 @@ export default function OverdraftCalculator() {
           </label>
           <div className="relative">
             <input type="number" step="0.1" value={interestRate} onChange={(e) => setInterestRate(e.target.value)}
-              className="w-full pl-4 pr-8 py-3 bg-slate-50 dark:bg-background border border-slate-200 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue text-slate-900 dark:text-foreground font-bold" />
+              className="w-full pl-4 pr-8 py-3 bg-white dark:bg-background border border-slate-300 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue text-slate-900 dark:text-foreground font-bold shadow-sm" />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">%</span>
           </div>
           <p className="text-xs text-muted-foreground mt-1.5">
@@ -253,20 +253,20 @@ export default function OverdraftCalculator() {
 
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Duration</label>
-          <div className="grid grid-cols-2 gap-2 mb-3 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl">
+          <div className="grid grid-cols-2 gap-2 mb-3 bg-slate-200 dark:bg-slate-800/50 p-1.5 rounded-xl border border-slate-300 dark:border-transparent">
             <button onClick={() => setDurationMode('days')} 
-              className={`py-2 text-xs font-bold rounded-lg transition-all ${durationMode === 'days' ? 'bg-white dark:bg-slate-700 shadow flex-1' : 'text-slate-500'}`}>
+              className={`py-2 text-xs font-bold rounded-lg transition-all ${durationMode === 'days' ? 'bg-white dark:bg-slate-700 shadow-sm flex-1 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800'}`}>
               Days input
             </button>
             <button onClick={() => setDurationMode('dates')} 
-              className={`py-2 text-xs font-bold rounded-lg transition-all ${durationMode === 'dates' ? 'bg-white dark:bg-slate-700 shadow flex-1' : 'text-slate-500'}`}>
+              className={`py-2 text-xs font-bold rounded-lg transition-all ${durationMode === 'dates' ? 'bg-white dark:bg-slate-700 shadow-sm flex-1 text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-800'}`}>
               Date Range
             </button>
           </div>
           {durationMode === 'days' ? (
              <div className="relative">
                 <input type="number" value={daysUtilized} onChange={(e) => setDaysUtilized(e.target.value)}
-                className="w-full pl-4 pr-16 py-3 bg-slate-50 dark:bg-background border border-slate-200 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue text-slate-900 dark:text-foreground font-bold" />
+                className="w-full pl-4 pr-16 py-3 bg-white dark:bg-background border border-slate-300 dark:border-border rounded-xl focus:ring-2 focus:ring-brand-blue/50 focus:border-brand-blue text-slate-900 dark:text-foreground font-bold shadow-sm" />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">Days</span>
             </div>
           ) : (
@@ -274,12 +274,12 @@ export default function OverdraftCalculator() {
                  <div>
                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block mb-1">Start Date</span>
                      <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}
-                        className="w-full px-3 py-3 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                        className="w-full px-3 py-3 rounded-xl bg-white dark:bg-background border border-slate-300 dark:border-border text-sm font-semibold shadow-sm" />
                  </div>
                  <div>
                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block mb-1">End Date</span>
                      <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)}
-                        className="w-full px-3 py-3 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                        className="w-full px-3 py-3 rounded-xl bg-white dark:bg-background border border-slate-300 dark:border-border text-sm font-semibold shadow-sm" />
                  </div>
              </div>
           )}
@@ -291,12 +291,12 @@ export default function OverdraftCalculator() {
                  <div>
                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider block mb-1">Processing Fee %</span>
                      <input type="number" step="0.1" value={processingFee} onChange={e=>setProcessingFee(e.target.value)} placeholder="0.0"
-                        className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                        className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-background border border-slate-300 dark:border-border text-sm font-semibold shadow-sm" />
                  </div>
                  <div>
                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider block mb-1">Annual Charge ₹</span>
                      <input type="text" value={annualCharge} onChange={e=>setAnnualCharge(formatNumberExt(e.target.value))} placeholder="0"
-                        className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                        className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-background border border-slate-300 dark:border-border text-sm font-semibold shadow-sm" />
                  </div>
              </div>
         </div>
@@ -304,21 +304,21 @@ export default function OverdraftCalculator() {
 
       {/* SECTION 4: Quick Stats Row */}
       <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-slate-100 dark:bg-slate-800/60 rounded-xl p-4 flex flex-col justify-center">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Sanctioned</span>
+          <div className="bg-slate-100 dark:bg-slate-800/60 rounded-xl p-4 flex flex-col justify-center border border-slate-300 dark:border-transparent shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-muted-foreground mb-1">Sanctioned</span>
               <span className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">{formatINR(limitNum)}</span>
           </div>
-          <div className="bg-red-50 dark:bg-red-500/10 rounded-xl p-4 flex flex-col justify-center">
-              <span className="text-[10px] uppercase font-bold text-red-600/70 dark:text-red-400 mb-1">Utilized</span>
-              <span className="text-base font-bold text-red-700 dark:text-red-400 truncate">{formatINR(utilizedNum)}</span>
+          <div className="bg-red-50 dark:bg-red-500/10 rounded-xl p-4 flex flex-col justify-center border border-red-200 dark:border-transparent shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-red-700 dark:text-red-400 mb-1">Utilized</span>
+              <span className="text-base font-bold text-red-800 dark:text-red-400 truncate">{formatINR(utilizedNum)}</span>
           </div>
-          <div className="bg-amber-50 dark:bg-amber-500/10 rounded-xl p-4 flex flex-col justify-center">
-              <span className="text-[10px] uppercase font-bold text-amber-600/70 dark:text-amber-500 mb-1">Interest Accrued</span>
-              <span className="text-base font-bold text-amber-600 dark:text-amber-400 truncate">{formatINR(totalInterest)}</span>
+          <div className="bg-amber-50 dark:bg-amber-500/10 rounded-xl p-4 flex flex-col justify-center border border-amber-200 dark:border-transparent shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-500 mb-1">Interest Accrued</span>
+              <span className="text-base font-bold text-amber-800 dark:text-amber-400 truncate">{formatINR(totalInterest)}</span>
           </div>
-          <div className="bg-green-50 dark:bg-green-500/10 rounded-xl p-4 flex flex-col justify-center">
-              <span className="text-[10px] uppercase font-bold text-green-600/70 dark:text-green-500 mb-1">Available Limit</span>
-              <span className="text-base font-bold text-green-700 dark:text-green-400 truncate">{formatINR(availableLimit)}</span>
+          <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-xl p-4 flex flex-col justify-center border border-emerald-200 dark:border-transparent shadow-sm">
+              <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-500 mb-1">Available Limit</span>
+              <span className="text-base font-bold text-emerald-800 dark:text-emerald-400 truncate">{formatINR(availableLimit)}</span>
           </div>
       </div>
 
@@ -428,12 +428,12 @@ export default function OverdraftCalculator() {
                  <div>
                      <label className="block text-[10px] uppercase font-bold text-muted-foreground mb-1 mt-1">Months Remaining to Expiry</label>
                      <input type="number" value={monthsRemaining} onChange={e=>setMonthsRemaining(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                        className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-background border border-slate-300 dark:border-border text-sm font-semibold shadow-sm" />
                  </div>
                  <div>
                      <label className="block text-[10px] uppercase font-bold text-muted-foreground mb-1">Pre-closure penalty %</label>
                      <input type="number" step="0.5" value={preclosurePenalty} onChange={e=>setPreclosurePenalty(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-sm font-semibold" />
+                        className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-background border border-slate-300 dark:border-border text-sm font-semibold shadow-sm" />
                  </div>
                  
                  <div className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-xl mt-4">

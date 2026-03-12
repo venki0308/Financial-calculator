@@ -356,9 +356,14 @@ export default function WorldClock() {
 
         // Calculate offsets on the fly for search strings
         const filtered = notSelected.filter(t => {
-            const offsetStr = new Intl.DateTimeFormat('en-US', {
-                timeZone: t.iana, timeZoneName: 'shortOffset',
-            }).formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'UTC';
+            let offsetStr = 'UTC';
+            try {
+                offsetStr = new Intl.DateTimeFormat('en-US', {
+                    timeZone: t.iana, timeZoneName: 'shortOffset',
+                }).formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'UTC';
+            } catch (e) {
+                // Ignore invalid timezones
+            }
             
             return (
                 t.searchTerms.includes(q) ||

@@ -310,7 +310,7 @@ export const TIMEZONE_META: Record<string, CountryMeta> = {
         flag: 'IE', currencySymbol: '€', currencyName: 'Euro',
         phoneCode: '+353', countryCode: 'IE', countryName: 'Ireland', region: 'Europe'
     },
-    'Europe/Valletta': {
+    'Europe/Malta': {
         flag: 'MT', currencySymbol: '€', currencyName: 'Euro',
         phoneCode: '+356', countryCode: 'MT', countryName: 'Malta', region: 'Europe'
     },
