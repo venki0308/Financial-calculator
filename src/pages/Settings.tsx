@@ -189,9 +189,9 @@ export default function Settings() {
                     </button>
                 </div>
 
-                <div className="text-center py-4">
-                    <p className="text-slate-600 text-xs">FinCalix v1.0.0</p>
-                    <p className="text-slate-700 text-xs mt-1">All your data is stored locally on this device</p>
+                <div className="text-center pb-8 mt-2 animate-fade-in delay-500">
+                    <p className="text-slate-600 text-xs text-brand-blue/80 dark:text-cyan-400 font-bold mb-1">FinCalix v1.0.1</p>
+                    <p className="text-slate-400 text-[10px]">All your data is stored locally on this device</p>
                 </div>
             </div>
 

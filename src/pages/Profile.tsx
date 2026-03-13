@@ -1,6 +1,6 @@
 import { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bookmark, Clock, Bell, Settings, ChevronRight, User, Globe, Pencil, Check } from 'lucide-react';
+import { Bookmark, Clock, Bell, Settings, ChevronRight, User, Globe, Pencil, Check, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -154,10 +154,12 @@ export default function Profile() {
                 })}
             </div>
 
-            <div className="text-center py-6 border-t border-border">
-                <p className="text-muted-foreground text-sm font-medium">FinCalix</p>
-                <p className="text-slate-600 text-xs mt-1">Version 1.0.0</p>
-                <p className="text-slate-600 text-xs mt-0.5">Made with ❤️ in India</p>
+            <div className="text-center mt-12 mb-8 animate-fade-in delay-400">
+                <p className="text-slate-500 dark:text-slate-400 font-medium">FinCalix</p>
+                <p className="text-slate-600 text-xs text-brand-blue/80 dark:text-cyan-400 font-bold mt-1">Version 1.0.1</p>
+                <div className="flex items-center justify-center gap-1 mt-2 text-xs text-slate-400">
+                    Made with <Heart size={10} className="text-red-500 fill-red-500" /> in India
+                </div>
             </div>
         </div>
     );
