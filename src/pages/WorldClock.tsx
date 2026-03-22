@@ -1,12 +1,303 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Search, ChevronLeft, Sun, Sunrise, MapPin, DollarSign, Globe } from 'lucide-react';
+import { ArrowLeft, Plus, X, Search, ChevronLeft, Sun, Sunrise, MapPin, DollarSign, Globe, ArrowRightLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 
 import { getCountryMeta, getSunTimes } from '../data/countryData';
 
 import { WORLD_TIMEZONES, POPULAR_IANA, TimezoneInfo } from '../data/timezones';
+
+// ────────────────────────────────────────────────────────────────────────────
+// CompareView – Convert a user-entered time from Zone A to Zone B
+// ────────────────────────────────────────────────────────────────────────────
+function CompareView() {
+    // Load/save last used TZ pair
+    const loadSaved = () => {
+        try {
+            const s = localStorage.getItem('fincalix_compare_tz');
+            if (s) return JSON.parse(s) as { a: string; b: string };
+        } catch {}
+        return { a: 'Asia/Kolkata', b: 'America/New_York' };
+    };
+
+    const [tzA, setTzA] = useState<string>(loadSaved().a);
+    const [tzB, setTzB] = useState<string>(loadSaved().b);
+    const [inputHour, setInputHour] = useState(9);
+    const [inputMin, setInputMin] = useState(0);
+    const [searchA, setSearchA] = useState('');
+    const [searchB, setSearchB] = useState('');
+    const [showPickerA, setShowPickerA] = useState(false);
+    const [showPickerB, setShowPickerB] = useState(false);
+    const [useLive, setUseLive] = useState(false);
+    const [now, setNow] = useState(new Date());
+
+    useEffect(() => {
+        localStorage.setItem('fincalix_compare_tz', JSON.stringify({ a: tzA, b: tzB }));
+    }, [tzA, tzB]);
+
+    useEffect(() => {
+        if (!useLive) return;
+        const iv = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(iv);
+    }, [useLive]);
+
+    const getLabel = (iana: string) => {
+        const tz = WORLD_TIMEZONES.find(t => t.iana === iana);
+        return tz ? `${tz.city} (${tz.country})` : iana;
+    };
+
+    const filterZones = (q: string) => {
+        const lq = q.toLowerCase().trim();
+        if (!lq || lq.length < 1) {
+            const pop = POPULAR_IANA.map(i => WORLD_TIMEZONES.find(t => t.iana === i)).filter(Boolean) as TimezoneInfo[];
+            const rest = WORLD_TIMEZONES.filter(t => !POPULAR_IANA.includes(t.iana));
+            return [...pop, ...rest];
+        }
+        return WORLD_TIMEZONES.filter(t =>
+            t.city.toLowerCase().includes(lq) ||
+            t.country.toLowerCase().includes(lq) ||
+            t.iana.toLowerCase().includes(lq)
+        );
+    };
+
+    const result = useMemo(() => {
+        try {
+            let refDate: Date;
+            if (useLive) {
+                refDate = now;
+            } else {
+                // Build a base Date at today's date but user-entered H:M in tzA
+                const todayInA = new Intl.DateTimeFormat('en-US', {
+                    timeZone: tzA, year: 'numeric', month: '2-digit', day: '2-digit'
+                }).format(now);
+                const [m, d, y] = todayInA.split('/');
+                refDate = new Date(`${y}-${m}-${d}T${String(inputHour).padStart(2, '0')}:${String(inputMin).padStart(2, '0')}:00`);
+                // Convert to UTC then to tzA
+                const tzAFormatter = new Intl.DateTimeFormat('en-US', {
+                    timeZone: tzA, year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+                });
+                // Approximate: treat the JS local Date as if it is tzA time
+                // We compute the offset of tzA vs UTC and build the UTC equivalent
+                const nowUtcMs = now.getTime();
+                const tzAOffset = (new Date(now.toLocaleString('en-US', { timeZone: tzA })).getTime() - nowUtcMs);
+                const utcEquiv = new Date(refDate.getTime() - tzAOffset);
+                refDate = utcEquiv;
+            }
+
+            const fmtTime = (iana: string) => new Intl.DateTimeFormat('en-IN', {
+                timeZone: iana, hour: '2-digit', minute: '2-digit', hour12: true
+            }).format(refDate);
+
+            const fmtDay = (iana: string) => new Intl.DateTimeFormat('en-IN', {
+                timeZone: iana, weekday: 'short', day: 'numeric', month: 'short'
+            }).format(refDate);
+
+            const fmtOffset = (iana: string) => {
+                return new Intl.DateTimeFormat('en-US', {
+                    timeZone: iana, timeZoneName: 'shortOffset'
+                }).formatToParts(refDate).find(p => p.type === 'timeZoneName')?.value || 'UTC';
+            };
+
+            // Day-cross comparison: compare calendar date in A vs B
+            const dateA = new Intl.DateTimeFormat('en-CA', { timeZone: tzA }).format(refDate);
+            const dateB = new Intl.DateTimeFormat('en-CA', { timeZone: tzB }).format(refDate);
+            const diff = (new Date(dateB).getTime() - new Date(dateA).getTime()) / 86400000;
+            let dayCross = '';
+            if (diff > 0) dayCross = '▲ next day';
+            else if (diff < 0) dayCross = '▼ previous day';
+
+            return {
+                timeA: fmtTime(tzA),
+                timeB: fmtTime(tzB),
+                dayA: fmtDay(tzA),
+                dayB: fmtDay(tzB),
+                offsetA: fmtOffset(tzA),
+                offsetB: fmtOffset(tzB),
+                dayCross,
+            };
+        } catch {
+            return null;
+        }
+    }, [tzA, tzB, inputHour, inputMin, useLive, now]);
+
+    const TZPicker = ({ label, value, onChange, search, setSearch, show, setShow }: {
+        label: string; value: string; onChange: (v: string) => void;
+        search: string; setSearch: (s: string) => void; show: boolean; setShow: (v: boolean) => void;
+    }) => (
+        <div className="flex-1">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5">{label}</p>
+            <button
+                onClick={() => setShow(true)}
+                className="w-full flex items-center gap-2 px-3 py-3 rounded-xl bg-muted border border-border text-left text-sm font-medium text-foreground truncate"
+            >
+                <Globe size={14} className="text-primary flex-shrink-0" />
+                <span className="truncate">{getLabel(value)}</span>
+            </button>
+            <AnimatePresence>
+                {show && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 bg-black/50"
+                        onClick={(e) => { if (e.target === e.currentTarget) { setShow(false); setSearch(''); } }}
+                    >
+                        <motion.div
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 26, stiffness: 200 }}
+                            className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl flex flex-col border-t border-border"
+                            style={{ maxHeight: '80vh' }}
+                        >
+                            <div className="flex items-center justify-between p-5 pb-3 flex-shrink-0">
+                                <h3 className="text-base font-bold text-foreground">Select {label}</h3>
+                                <button onClick={() => { setShow(false); setSearch(''); }} className="p-2 rounded-xl bg-muted text-muted-foreground">
+                                    <X size={16} />
+                                </button>
+                            </div>
+                            <div className="px-5 mb-3 flex-shrink-0">
+                                <div className="relative">
+                                    <Search size={14} className="absolute inset-y-0 my-auto left-3 text-muted-foreground" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search city or country…"
+                                        value={search}
+                                        onChange={e => setSearch(e.target.value)}
+                                        autoFocus
+                                        className="w-full bg-input border border-border rounded-xl py-2.5 pl-9 pr-8 text-sm text-foreground outline-none focus:border-primary"
+                                    />
+                                </div>
+                            </div>
+                            <div className="overflow-y-auto flex-1 px-5 pb-6 space-y-1.5">
+                                {filterZones(search).map(tz => (
+                                    <button
+                                        key={tz.iana}
+                                        onClick={() => { onChange(tz.iana); setShow(false); setSearch(''); }}
+                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                                            value === tz.iana ? 'bg-primary/10 border border-primary/30' : 'bg-background border border-border hover:border-primary/40'
+                                        }`}
+                                    >
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-foreground font-semibold text-sm truncate">{tz.city}</p>
+                                            <p className="text-muted-foreground text-xs">{tz.country} · {tz.iana}</p>
+                                        </div>
+                                        {value === tz.iana && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />}
+                                    </button>
+                                ))}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+
+    return (
+        <div className="px-4 pt-4 pb-28 space-y-4">
+            {/* Zone Pickers */}
+            <div className="flex gap-3 items-end">
+                <TZPicker label="Zone A" value={tzA} onChange={setTzA} search={searchA} setSearch={setSearchA} show={showPickerA} setShow={setShowPickerA} />
+                <button
+                    onClick={() => { const tmp = tzA; setTzA(tzB); setTzB(tmp); }}
+                    className="mb-0.5 flex-shrink-0 p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary"
+                >
+                    <ArrowRightLeft size={16} />
+                </button>
+                <TZPicker label="Zone B" value={tzB} onChange={setTzB} search={searchB} setSearch={setSearchB} show={showPickerB} setShow={setShowPickerB} />
+            </div>
+
+            {/* Live toggle + Time Input */}
+            <div className="flex items-center justify-between px-1">
+                <p className="text-[11px] text-muted-foreground font-medium">Use live current time</p>
+                <button
+                    onClick={() => setUseLive(p => !p)}
+                    className={`w-10 h-6 rounded-full transition-colors relative ${ useLive ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                >
+                    <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${ useLive ? 'left-4' : 'left-0.5' }`} />
+                </button>
+            </div>
+
+            {!useLive && (
+                <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 rounded-2xl bg-card border border-border"
+                >
+                    <p className="text-xs font-bold text-muted-foreground mb-3">Enter time in Zone A</p>
+                    <div className="flex items-center justify-center gap-3">
+                        <div className="text-center">
+                            <p className="text-[10px] text-muted-foreground mb-1">Hour (0–23)</p>
+                            <input
+                                type="number"
+                                value={inputHour}
+                                onChange={e => setInputHour(Math.max(0, Math.min(23, parseInt(e.target.value) || 0)))}
+                                className="w-16 text-center py-2 rounded-xl bg-muted border border-border text-foreground font-bold text-lg outline-none focus:border-primary"
+                            />
+                        </div>
+                        <span className="text-2xl font-bold text-foreground mt-3">:</span>
+                        <div className="text-center">
+                            <p className="text-[10px] text-muted-foreground mb-1">Min (0–59)</p>
+                            <input
+                                type="number"
+                                value={inputMin}
+                                onChange={e => setInputMin(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+                                className="w-16 text-center py-2 rounded-xl bg-muted border border-border text-foreground font-bold text-lg outline-none focus:border-primary"
+                            />
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+
+            {/* Result */}
+            {result && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="rounded-2xl overflow-hidden border border-border shadow-md"
+                >
+                    {/* Zone A */}
+                    <div className="p-4 bg-gradient-to-br from-indigo-600 to-violet-700">
+                        <p className="text-indigo-200 text-[10px] uppercase font-bold mb-1">{getLabel(tzA)} · {result.offsetA}</p>
+                        <p className="text-foreground font-bold text-4xl font-mono">{result.timeA}</p>
+                        <p className="text-indigo-200 text-xs mt-0.5">{result.dayA}</p>
+                    </div>
+
+                    {/* Swap icon row */}
+                    <div className="bg-card flex items-center justify-center py-2 gap-2">
+                        <div className="flex-1 h-px bg-border" />
+                        <div className="p-1.5 rounded-full bg-primary/10 border border-primary/20">
+                            <ArrowRightLeft size={12} className="text-primary" />
+                        </div>
+                        {result.dayCross ? (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                                {result.dayCross}
+                            </span>
+                        ) : (
+                            <span className="text-[10px] text-muted-foreground">same day</span>
+                        )}
+                        <div className="flex-1 h-px bg-border" />
+                    </div>
+
+                    {/* Zone B */}
+                    <div className="p-4 bg-card">
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">{getLabel(tzB)} · {result.offsetB}</p>
+                        <p className="text-foreground font-bold text-4xl font-mono">{result.timeB}</p>
+                        <p className="text-muted-foreground text-xs mt-0.5">{result.dayB}</p>
+                    </div>
+                </motion.div>
+            )}
+
+            <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
+                <p className="text-muted-foreground text-[10px] leading-relaxed">
+                    📡 Conversion uses Intl.DateTimeFormat UTC offsets. DST transitions are accounted for automatically.
+                </p>
+            </div>
+        </div>
+    );
+}
 
 interface SavedClock {
     id: string;
@@ -287,6 +578,7 @@ function CityDetailView({ clock, now, onBack }: { clock: SavedClock; now: Date; 
 export default function WorldClock() {
     useEffect(() => { AnalyticsService.trackScreen('World_Clock'); }, []);
     const navigate = useNavigate();
+    const [view, setView] = useState<'clocks' | 'compare'>('clocks');
     const [now, setNow] = useState(new Date());
     const [clocks, setClocks] = useState<SavedClock[]>([]);
     const [showAddPanel, setShowAddPanel] = useState(false);
@@ -415,19 +707,39 @@ export default function WorldClock() {
                         </button>
                         <div>
                             <h1 className="text-lg font-bold text-foreground">World Clock</h1>
-                            <p className="text-muted-foreground text-xs">{activeClocks.length} cities · Tap for details</p>
+                            <p className="text-muted-foreground text-xs">
+                                {view === 'compare' ? 'Time zone converter' : `${activeClocks.length} cities · Tap for details`}
+                            </p>
                         </div>
                     </div>
-                        <button onClick={() => setShowAddPanel(true)}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary">
-                            <Plus size={16} />
-                            <span className="text-xs font-medium">Add</span>
+                    <div className="flex items-center gap-2">
+                        {view === 'clocks' && (
+                            <button onClick={() => setShowAddPanel(true)}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+                                <Plus size={16} />
+                                <span className="text-xs font-medium">Add</span>
+                            </button>
+                        )}
+                        <button
+                            onClick={() => setView(v => v === 'compare' ? 'clocks' : 'compare')}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium transition-colors ${
+                                view === 'compare'
+                                    ? 'bg-primary text-white border-primary'
+                                    : 'bg-card border-border text-muted-foreground'
+                            }`}
+                        >
+                            <ArrowRightLeft size={14} />
+                            Compare
                         </button>
+                    </div>
                 </div>
             </div>
 
 
-            {/* Clock Cards */}
+            {/* Compare View or Clock Cards */}
+            {view === 'compare' ? (
+                <CompareView />
+            ) : (
             <div className="px-4 pt-3 pb-28 space-y-4">
                 {activeClocks.map((clock, i) => {
                     const td = getTimeData(clock.timezone, now);
@@ -502,6 +814,7 @@ export default function WorldClock() {
                     </div>
                 )}
             </div>
+            )}
 
             {/* Success Toast */}
             <AnimatePresence>

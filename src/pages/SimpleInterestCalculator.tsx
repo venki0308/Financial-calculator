@@ -15,6 +15,58 @@ import { AnalyticsService } from '../lib/analytics';
 
 type Mode = 'flat' | 'simple' | 'compound';
 
+// Payment frequency: how many months per period
+// 1 = monthly, 3 = quarterly, 6 = half-yearly, 12 = yearly
+type FrequencyMonths = 1 | 3 | 6 | 12;
+
+interface PeriodRow {
+    period: number;
+    dueDate: string;
+    interest: number;
+    cumulative: number;
+}
+
+function buildPeriodTable(
+    principal: number,
+    monthlyInterest: number,
+    startDate: Date,
+    tenure: number,
+    freqMonths: FrequencyMonths
+): PeriodRow[] {
+    const rows: PeriodRow[] = [];
+    let cumulative = 0;
+    const totalPeriods = Math.ceil(tenure / freqMonths);
+    let months = new Date(startDate);
+
+    for (let p = 1; p <= totalPeriods; p++) {
+        const monthsInPeriod = Math.min(freqMonths, tenure - (p - 1) * freqMonths);
+        const interest = monthlyInterest * monthsInPeriod;
+        cumulative += interest;
+        months.setMonth(months.getMonth() + freqMonths);
+        rows.push({
+            period: p,
+            dueDate: months.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+            interest,
+            cumulative,
+        });
+    }
+    return rows;
+}
+
+const FREQ_OPTIONS: { label: string; val: FrequencyMonths }[] = [
+    { label: 'Monthly', val: 1 },
+    { label: 'Quarterly', val: 3 },
+    { label: 'Half-yearly', val: 6 },
+    { label: 'Yearly', val: 12 },
+];
+
+const FREQ_LABEL: Record<FrequencyMonths, string> = {
+    1: 'Monthly',
+    3: 'Quarterly',
+    6: 'Half-yearly',
+    12: 'Yearly',
+};
+
 export default function SimpleInterestCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Simple_Interest'); }, []);
     useTrackCalculator();
@@ -26,6 +78,8 @@ export default function SimpleInterestCalculator() {
     const [tenure, setTenure] = useState(12); // months
     const [compoundFreq, setCompoundFreq] = useState(12); // monthly
     const [showInfo, setShowInfo] = useState(false);
+    const [payFreq, setPayFreq] = useState<FrequencyMonths>(1); // payment frequency
+
     const result = useMemo(() => {
         if (mode === 'flat') {
             // Flat ₹ per ₹100 per month model
@@ -78,35 +132,67 @@ export default function SimpleInterestCalculator() {
         }
     }, [mode, principal, flatRate, annualRate, tenure, compoundFreq]);
 
+    // Compute period breakdown table for flat and simple modes
+    const periodRows = useMemo((): PeriodRow[] => {
+        if (mode === 'compound') return [];
+        const monthlyInterest = mode === 'flat'
+            ? (principal / 100) * flatRate
+            : ((principal * annualRate) / 100) / 12;
+        return buildPeriodTable(principal, monthlyInterest, new Date(), tenure, payFreq);
+    }, [mode, principal, flatRate, annualRate, tenure, payFreq]);
+
     const handleDownloadPDF = async () => {
-        const headers = ['Field', 'Value'];
-        const data: (string | number)[][] = [];
-        data.push(['Mode', mode === 'flat' ? 'Flat ₹ Interest' : mode === 'simple' ? 'Simple Interest' : 'Compound Interest']);
-        data.push(['Principal', formatINR(principal)]);
+        const freqName = FREQ_LABEL[payFreq];
+        // Summary section
+        const summaryHeaders = ['Field', 'Value'];
+        const summaryData: (string | number)[][] = [];
+        summaryData.push(['Mode', mode === 'flat' ? 'Flat ₹ Interest' : mode === 'simple' ? 'Simple Interest' : 'Compound Interest']);
+        summaryData.push(['Principal', formatINR(principal)]);
         if (mode === 'flat') {
             const r = result as { monthlyInterest: number; equivalentMonthlyPct: number; equivalentAnnualPct: number; totalInterest: number; totalPayable: number };
-            data.push(['Rate', `₹${flatRate} per ₹100/month`]);
-            data.push(['Monthly Interest', formatINR(r.monthlyInterest)]);
-            data.push(['Equiv. Monthly %', `${r.equivalentMonthlyPct}%`]);
-            data.push(['Equiv. Annual %', `${r.equivalentAnnualPct}%`]);
-            data.push(['Total Interest', formatINR(r.totalInterest)]);
-            data.push(['Total Payable', formatINR(r.totalPayable)]);
+            summaryData.push(['Rate', `Rs.${flatRate} per Rs.100/month`]);
+            summaryData.push(['Monthly Interest', formatINR(r.monthlyInterest)]);
+            summaryData.push(['Equiv. Monthly %', `${r.equivalentMonthlyPct}%`]);
+            summaryData.push(['Equiv. Annual %', `${r.equivalentAnnualPct}%`]);
+            summaryData.push(['Total Interest', formatINR(r.totalInterest)]);
+            summaryData.push(['Total Payable', formatINR(r.totalPayable)]);
+            summaryData.push(['Payment Frequency', freqName]);
         } else if (mode === 'simple') {
             const r = result as { totalInterest: number; totalAmount: number; monthlyEMI: number };
-            data.push(['Annual Rate', `${annualRate}%`]);
-            data.push(['Tenure', `${tenure} months`]);
-            data.push(['Total Interest', formatINR(r.totalInterest)]);
-            data.push(['Total Amount', formatINR(r.totalAmount)]);
-            data.push(['Monthly EMI', formatINR(r.monthlyEMI)]);
+            summaryData.push(['Annual Rate', `${annualRate}%`]);
+            summaryData.push(['Tenure', `${tenure} months`]);
+            summaryData.push(['Total Interest', formatINR(r.totalInterest)]);
+            summaryData.push(['Total Amount', formatINR(r.totalAmount)]);
+            summaryData.push(['Monthly EMI', formatINR(r.monthlyEMI)]);
+            summaryData.push(['Payment Frequency', freqName]);
         } else {
             const r = result as { compoundInterest: number; totalPayable: number; monthlyEMI: number };
-            data.push(['Annual Rate', `${annualRate}%`]);
-            data.push(['Tenure', `${tenure} months`]);
-            data.push(['Compound Interest', formatINR(r.compoundInterest)]);
-            data.push(['Total Payable', formatINR(r.totalPayable)]);
-            data.push(['Monthly EMI', formatINR(r.monthlyEMI)]);
+            summaryData.push(['Annual Rate', `${annualRate}%`]);
+            summaryData.push(['Tenure', `${tenure} months`]);
+            summaryData.push(['Compound Interest', formatINR(r.compoundInterest)]);
+            summaryData.push(['Total Payable', formatINR(r.totalPayable)]);
+            summaryData.push(['Monthly EMI', formatINR(r.monthlyEMI)]);
         }
-        await exportToPDF('Interest Calculator Report', headers, data, 'Interest_Report');
+
+        if (mode !== 'compound' && periodRows.length > 0) {
+            // Build a combined dataset: summary rows + blank separator + schedule header + data
+            const scheduleTitle = `${freqName} Interest Schedule`;
+            const scheduleHeader = ['Period', 'Due Date', 'Interest Payable', 'Cumulative'];
+            const scheduleData = periodRows.map(row => [
+                row.period,
+                row.dueDate,
+                formatINR(row.interest),
+                formatINR(row.cumulative),
+            ]);
+            await exportToPDF(
+                `Interest Calculator Report — ${scheduleTitle}`,
+                scheduleHeader,
+                scheduleData,
+                'Interest_Report'
+            );
+        } else {
+            await exportToPDF('Interest Calculator Report', summaryHeaders, summaryData, 'Interest_Report');
+        }
     };
 
     const handleDownloadExcel = async () => {
@@ -114,7 +200,7 @@ export default function SimpleInterestCalculator() {
         const data: (string | number)[][] = [['Mode', mode], ['Principal', principal]];
         if (mode === 'flat') {
             const r = result as { monthlyInterest: number; totalInterest: number; totalPayable: number };
-            data.push(['Rate (₹/₹100)', flatRate], ['Monthly Interest', r.monthlyInterest], ['Total Interest', r.totalInterest], ['Total Payable', r.totalPayable]);
+            data.push(['Rate (Rs./Rs.100)', flatRate], ['Monthly Interest', r.monthlyInterest], ['Total Interest', r.totalInterest], ['Total Payable', r.totalPayable]);
         } else if (mode === 'simple') {
             const r = result as { totalInterest: number; totalAmount: number; monthlyEMI: number };
             data.push(['Rate (%)', annualRate], ['Tenure (months)', tenure], ['Total Interest', r.totalInterest], ['Total Amount', r.totalAmount], ['Monthly EMI', r.monthlyEMI]);
@@ -131,7 +217,7 @@ export default function SimpleInterestCalculator() {
         { key: 'compound', label: 'Compound Interest', color: 'bg-brand-purple' },
     ];
 
-    const freqOptions = [
+    const compFreqOptions = [
         { label: 'Monthly', val: 12 },
         { label: 'Quarterly', val: 4 },
         { label: 'Half-Yr', val: 2 },
@@ -236,12 +322,33 @@ export default function SimpleInterestCalculator() {
                         <div>
                             <label className="text-xs text-muted-foreground dark:text-muted-foreground mb-2 block font-medium">Compounding Frequency</label>
                             <div className="grid grid-cols-4 gap-2">
-                                {freqOptions.map(opt => (
+                                {compFreqOptions.map(opt => (
                                     <button
                                         key={opt.val}
                                         onClick={() => setCompoundFreq(opt.val)}
                                         className={`py-3 rounded-xl text-[11px] font-bold transition-all border ${compoundFreq === opt.val
                                             ? 'bg-brand-purple border-brand-purple text-foreground'
+                                            : 'bg-white dark:bg-card border-slate-200 dark:border-border text-muted-foreground'
+                                            }`}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Payment Frequency Selector — flat & simple modes only */}
+                    {mode !== 'compound' && (
+                        <div>
+                            <label className="text-xs text-muted-foreground dark:text-muted-foreground mb-2 block font-medium">Payment Frequency</label>
+                            <div className="grid grid-cols-4 gap-2">
+                                {FREQ_OPTIONS.map(opt => (
+                                    <button
+                                        key={opt.val}
+                                        onClick={() => setPayFreq(opt.val)}
+                                        className={`py-3 rounded-xl text-[11px] font-bold transition-all border ${payFreq === opt.val
+                                            ? 'bg-amber-500 border-amber-500 text-white'
                                             : 'bg-white dark:bg-card border-slate-200 dark:border-border text-muted-foreground'
                                             }`}
                                     >
@@ -364,7 +471,7 @@ export default function SimpleInterestCalculator() {
 
                     {mode === 'compound' && (() => {
                         const r = result as { compoundInterest: number; totalPayable: number; monthlyEMI: number; tenureInYears: number };
-                        const freqLabel = freqOptions.find(f => f.val === compoundFreq)?.label || 'Monthly';
+                        const freqLabel = compFreqOptions.find(f => f.val === compoundFreq)?.label || 'Monthly';
                         return (
                             <>
                                 <div className="text-center mb-4">
@@ -407,9 +514,48 @@ export default function SimpleInterestCalculator() {
                             </>
                         );
                     })()}
-
-                    {/* Removed Formula */}
                 </motion.div>
+
+                {/* ── Payment Frequency Breakdown Table (flat & simple only) ── */}
+                {mode !== 'compound' && periodRows.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-sm overflow-hidden"
+                    >
+                        <div className="px-4 py-3 border-b border-slate-200 dark:border-border flex items-center justify-between">
+                            <div>
+                                <p className="text-xs font-bold text-foreground">{FREQ_LABEL[payFreq]} Interest Schedule</p>
+                                <p className="text-[10px] text-muted-foreground">{periodRows.length} periods · {tenure} months total</p>
+                            </div>
+                            <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${mode === 'flat' ? 'bg-amber-500/10 text-amber-600' : 'bg-brand-blue/10 text-brand-blue'}`}>
+                                {mode === 'flat' ? 'FLAT' : 'SI'}
+                            </span>
+                        </div>
+                        <div className="overflow-x-auto max-h-64 overflow-y-auto">
+                            <table className="w-full text-xs">
+                                <thead className="sticky top-0 bg-slate-50 dark:bg-muted">
+                                    <tr className="border-b border-slate-200 dark:border-border">
+                                        <th className="py-2 px-3 text-left font-bold text-muted-foreground text-[10px] uppercase">Period</th>
+                                        <th className="py-2 px-3 text-left font-bold text-muted-foreground text-[10px] uppercase">Due Date</th>
+                                        <th className="py-2 px-3 text-right font-bold text-muted-foreground text-[10px] uppercase">Interest</th>
+                                        <th className="py-2 px-3 text-right font-bold text-muted-foreground text-[10px] uppercase">Cumulative</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {periodRows.map((row, i) => (
+                                        <tr key={row.period} className={`border-b border-slate-100 dark:border-border/40 ${i % 2 === 0 ? '' : 'bg-slate-50/60 dark:bg-muted/20'}`}>
+                                            <td className="py-2 px-3 font-medium text-foreground">{row.period}</td>
+                                            <td className="py-2 px-3 text-muted-foreground">{row.dueDate}</td>
+                                            <td className="py-2 px-3 text-right text-amber-600 dark:text-amber-400 font-medium">{formatINR(row.interest)}</td>
+                                            <td className="py-2 px-3 text-right text-brand-green font-semibold">{formatINR(row.cumulative)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* Download buttons */}
                 <div className="grid grid-cols-2 gap-3 mb-8">

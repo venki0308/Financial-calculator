@@ -486,7 +486,7 @@ export default function PropertyCalculator() {
                                         className="space-y-3"
                                     >
                                         {/* Main result */}
-                                        <div className="bg-gradient-to-br from-brand-green/15 to-emerald-900/10 border border-brand-green/30 rounded-2xl p-5 text-center relative overflow-hidden">
+                                        <div className="bg-card border border-brand-green/30 rounded-2xl p-5 text-center relative overflow-hidden shadow-md">
                                             <p className="text-muted-foreground text-xs mb-1">Estimated Land Value</p>
                                             <p className="text-3xl font-extrabold text-brand-green">
                                                 {fmt(landResult.totalValue)}

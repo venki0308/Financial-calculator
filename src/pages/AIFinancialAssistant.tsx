@@ -27,6 +27,14 @@ interface FinancialPlan {
     alerts: { type: 'warning' | 'positive'; text: string }[];
     totalMonthlySIP: number;
     monthlyBudget: { savings: number; investments: number; emi: number; expenses: number };
+    postTaxMonthly: number;
+    annualTax: number;
+    needs50: number;
+    wants30: number;
+    savings20: number;
+    maxEmiAllowed: number;
+    maxAdditionalEmi: number;
+    emiRatio: number;
 }
 
 const goalsMeta = [
@@ -64,11 +72,45 @@ export default function AIFinancialAssistant() {
     const plan = useMemo((): FinancialPlan | null => {
         if (!showResults || selectedGoals.length === 0) return null;
 
+        // ── Rough India income-tax estimate (FY 2024-25 new regime) ──────────
+        const annualGross = salary * 12;
+        const estimateAnnualTax = (gross: number): number => {
+            const slabs = [
+                { upto: 300000, rate: 0 },
+                { upto: 700000, rate: 0.05 },
+                { upto: 1000000, rate: 0.10 },
+                { upto: 1200000, rate: 0.15 },
+                { upto: 1500000, rate: 0.20 },
+                { upto: Infinity, rate: 0.30 },
+            ];
+            let tax = 0; let prev = 0;
+            for (const slab of slabs) {
+                if (gross <= prev) break;
+                const taxable = Math.min(gross, slab.upto) - prev;
+                tax += taxable * slab.rate;
+                prev = slab.upto;
+            }
+            // Add 4% cess
+            return Math.round(tax * 1.04);
+        };
+        const annualTax = estimateAnnualTax(annualGross);
+        const postTaxAnnual = annualGross - annualTax;
+        const postTaxMonthly = Math.round(postTaxAnnual / 12);
+
         const monthlySavings = salary - expenses - emi;
         const savingsRatio = monthlySavings / salary * 100;
-        const emiRatio = emi / salary * 100;
-        const emergencyMonths = savings / expenses;
+        // EMI-to-NMI ratio uses post-tax monthly (industry standard)
+        const emiRatio = postTaxMonthly > 0 ? (emi / postTaxMonthly) * 100 : 0;
+        // Max eligible additional EMI at 40% of post-tax monthly
+        const maxEmiAllowed = Math.round(postTaxMonthly * 0.40);
+        const maxAdditionalEmi = Math.max(0, maxEmiAllowed - emi);
+        const emergencyMonths = expenses > 0 ? savings / expenses : 0;
         const annualIncome = salary * 12;
+
+        // 50-30-20 on post-tax income
+        const needs50 = Math.round(postTaxMonthly * 0.50);
+        const wants30 = Math.round(postTaxMonthly * 0.30);
+        const savings20 = Math.round(postTaxMonthly * 0.20);
 
         // Compute health score
         let score = 0;
@@ -201,13 +243,16 @@ export default function AIFinancialAssistant() {
 
         // Alerts
         const alerts: FinancialPlan['alerts'] = [];
-        if (emiRatio > 35) alerts.push({ type: 'warning', text: `Your EMI is ${emiRatio.toFixed(0)}% of income — dangerously high. Recommended: below 30%.` });
-        if (savingsRatio < 15) alerts.push({ type: 'warning', text: `You're saving only ${savingsRatio.toFixed(0)}% of income. Target: 20%+ for financial security.` });
-        if (emergencyMonths < 3) alerts.push({ type: 'warning', text: `Emergency fund covers only ${emergencyMonths.toFixed(1)} months. Build 6-month buffer first.` });
+        // EMI alert: RBI guideline is 40% of net monthly income
+        if (emiRatio > 40) alerts.push({ type: 'warning', text: `Your EMI is ${emiRatio.toFixed(0)}% of net income — above the safe limit of 40%. Lenders may reject new loans.` });
+        else if (emiRatio > 30) alerts.push({ type: 'warning', text: `Your EMI is ${emiRatio.toFixed(0)}% of net income. Keep it under 40% for healthy finances.` });
+        if (savingsRatio < 15) alerts.push({ type: 'warning', text: `You're saving only ${savingsRatio.toFixed(0)}% of gross income. Target 20%+ for financial security.` });
+        if (emergencyMonths < 3) alerts.push({ type: 'warning', text: `Emergency fund covers only ${emergencyMonths.toFixed(1)} months of expenses. Build a 3–6 month buffer first.` });
+        else if (emergencyMonths < 6) alerts.push({ type: 'warning', text: `Emergency fund covers ${emergencyMonths.toFixed(1)} months. Aim for 6 months of expenses (${formatINR(expenses * 6)}).` });
         if (totalMonthlySIP > monthlySavings * 0.9) alerts.push({ type: 'warning', text: `Total SIP needed (${formatINR(totalMonthlySIP)}/mo) exceeds 90% of your surplus. Consider prioritizing goals.` });
         if (savingsRatio >= 25) alerts.push({ type: 'positive', text: `Great savings rate of ${savingsRatio.toFixed(0)}%! You're building wealth faster than most.` });
-        if (emiRatio <= 15 && emi > 0) alerts.push({ type: 'positive', text: `Your debt is well-managed at ${emiRatio.toFixed(0)}% of income. Keep it up!` });
-        if (emergencyMonths >= 6) alerts.push({ type: 'positive', text: `You have a solid emergency fund covering ${emergencyMonths.toFixed(1)} months. Well done!` });
+        if (emiRatio <= 15 && emi > 0) alerts.push({ type: 'positive', text: `Your debt is well-managed at ${emiRatio.toFixed(0)}% of net income. Keep it up!` });
+        if (emergencyMonths >= 6) alerts.push({ type: 'positive', text: `Solid emergency fund — ${emergencyMonths.toFixed(1)} months of expenses covered. Well done!` });
 
         const monthlyBudget = {
             savings: monthlySavings,
@@ -216,7 +261,12 @@ export default function AIFinancialAssistant() {
             expenses: expenses,
         };
 
-        return { score, goalPlans, alerts, totalMonthlySIP, monthlyBudget };
+        return {
+            score, goalPlans, alerts, totalMonthlySIP, monthlyBudget,
+            postTaxMonthly, annualTax,
+            needs50, wants30, savings20,
+            maxEmiAllowed, maxAdditionalEmi, emiRatio,
+        };
     }, [showResults, salary, age, expenses, savings, emi, selectedGoals]);
 
     const handleDownloadPDF = async () => {
@@ -365,13 +415,13 @@ export default function AIFinancialAssistant() {
                             </div>
 
                             {/* Monthly Budget Overview */}
-                            <div className="p-4 rounded-2xl bg-card border border-border mb-5">
+                            <div className="p-4 rounded-2xl bg-card border border-border mb-4">
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t('advisor.monthlyBudget')}</h3>
                                 <div className="grid grid-cols-2 gap-2.5">
-                                    <BudgetCard label={t('advisor.monthlyIncome')} value={formatINR(salary)} color="#10B981" />
+                                    <BudgetCard label="Gross Income" value={formatINR(salary)} color="#10B981" />
+                                    <BudgetCard label="Est. Post-Tax" value={formatINR(plan.postTaxMonthly)} color="#3B82F6" />
                                     <BudgetCard label={t('advisor.expenses')} value={formatINR(expenses)} color="#EF4444" />
                                     <BudgetCard label={t('advisor.emi')} value={formatINR(emi)} color="#F59E0B" />
-                                    <BudgetCard label={t('advisor.savings')} value={formatINR(salary - expenses - emi)} color="#3B82F6" />
                                 </div>
                                 <div className="mt-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
                                     <div className="flex justify-between items-center">
@@ -382,6 +432,68 @@ export default function AIFinancialAssistant() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* 50-30-20 Rule (on post-tax income) */}
+                            <div className="p-4 rounded-2xl bg-card border border-border mb-4">
+                                <div className="flex items-center justify-between mb-1">
+                                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">50-30-20 Rule</h3>
+                                    <span className="text-[10px] text-muted-foreground">On post-tax income</span>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground mb-3">Est. post-tax: <span className="font-bold text-foreground">{formatINR(plan.postTaxMonthly)}/mo</span> (tax ~{formatINR(plan.annualTax)}/yr)</p>
+                                {/* Progress bar */}
+                                <div className="flex rounded-full overflow-hidden h-3 mb-3">
+                                    <div style={{ width: '50%' }} className="bg-blue-500" />
+                                    <div style={{ width: '30%' }} className="bg-purple-500" />
+                                    <div style={{ width: '20%' }} className="bg-green-500" />
+                                </div>
+                                <div className="grid grid-cols-3 gap-2 text-center">
+                                    <div>
+                                        <div className="w-2 h-2 rounded-full bg-blue-500 mx-auto mb-1" />
+                                        <p className="text-[10px] text-muted-foreground font-bold">NEEDS</p>
+                                        <p className="text-foreground text-xs font-bold">{formatINR(plan.needs50)}</p>
+                                        <p className="text-[9px] text-muted-foreground">50%</p>
+                                    </div>
+                                    <div>
+                                        <div className="w-2 h-2 rounded-full bg-purple-500 mx-auto mb-1" />
+                                        <p className="text-[10px] text-muted-foreground font-bold">WANTS</p>
+                                        <p className="text-foreground text-xs font-bold">{formatINR(plan.wants30)}</p>
+                                        <p className="text-[9px] text-muted-foreground">30%</p>
+                                    </div>
+                                    <div>
+                                        <div className="w-2 h-2 rounded-full bg-green-500 mx-auto mb-1" />
+                                        <p className="text-[10px] text-muted-foreground font-bold">SAVINGS</p>
+                                        <p className="text-foreground text-xs font-bold">{formatINR(plan.savings20)}</p>
+                                        <p className="text-[9px] text-muted-foreground">20%</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Loan Eligibility */}
+                            <div className="p-4 rounded-2xl bg-card border border-border mb-5">
+                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">🏦 Loan Eligibility</h3>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                                        <span className="text-xs text-muted-foreground">Net Monthly Income (post-tax)</span>
+                                        <span className="text-sm font-bold text-foreground">{formatINR(plan.postTaxMonthly)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                                        <span className="text-xs text-muted-foreground">Max EMI allowed (40% of NMI)</span>
+                                        <span className="text-sm font-bold text-brand-green">{formatINR(plan.maxEmiAllowed)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-border/50">
+                                        <span className="text-xs text-muted-foreground">Current EMI</span>
+                                        <span className={`text-sm font-bold ${plan.emiRatio > 40 ? 'text-red-500' : 'text-foreground'}`}>{formatINR(emi)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2">
+                                        <span className="text-xs text-muted-foreground">Additional EMI headroom</span>
+                                        <span className={`text-sm font-bold ${plan.maxAdditionalEmi > 0 ? 'text-brand-green' : 'text-red-500'}`}>
+                                            {plan.maxAdditionalEmi > 0 ? `+ ${formatINR(plan.maxAdditionalEmi)}` : 'Over limit'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground mt-2">* 40% EMI/NMI cap follows RBI Fair Practice Code guidelines</p>
+                            </div>
+
 
                             {/* Alerts */}
                             {plan.alerts.length > 0 && (

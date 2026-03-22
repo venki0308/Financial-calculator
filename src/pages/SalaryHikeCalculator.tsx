@@ -95,12 +95,16 @@ export default function SalaryHikeCalculator() {
     }, [currentSalary, newSalaryInput, hikePct, period, periodUnit, mode]);
 
     const handleDownloadPDF = async () => {
-        const headers = ['Month', 'Monthly Salary', 'Cumulative Earnings'];
-        const data = result.projection.map(row => [
-            row.month,
-            formatINR(row.salary),
-            formatINR(row.cumulative)
-        ]);
+        const headers = ['Period', 'Monthly Salary', 'Cumulative Earnings'];
+        const data: (string | number)[][] = [];
+        let lastYear = 0;
+        result.projection.forEach(row => {
+            if (row.isNewYear || (row.month === 1 && row.year === 1)) {
+                // Year separator
+                data.push([`--- Year ${row.year} — After ${result.hikePctComputed.toFixed(1)}% Hike ---`, '', '']);
+            }
+            data.push([`Month ${row.month}`, formatINR(row.salary), formatINR(row.cumulative)]);
+        });
         await exportToPDF('Salary Hike Projection', headers, data, 'Salary_Hike_Projection');
     };
 

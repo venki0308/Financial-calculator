@@ -80,7 +80,7 @@ export default function GoalPlanner() {
         return {
             monthlySIP,
             totalInvested,
-            wealthGained: remaining - totalInvested,
+            wealthGained: remaining - totalInvested, // interest earned = FV - principal invested
             futureValue: remaining,
         };
     }, [targetAmount, targetYears, expectedReturn, currentSavings]);
