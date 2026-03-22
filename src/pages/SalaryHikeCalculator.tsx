@@ -5,8 +5,6 @@ import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-
-import BottomSheet from '../components/BottomSheet';
 import { formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { Save, Check, Lock } from 'lucide-react';
@@ -30,7 +28,6 @@ export default function SalaryHikeCalculator() {
     const [hikePct, setHikePct] = useState(10);
     const [period, setPeriod] = useState(1);
     const [periodUnit, setPeriodUnit] = useState<'months' | 'years'>('years');
-    const [showProjection, setShowProjection] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const { addHistory, addSaved, savedCalculations } = useCalculatorStore(); const [showInfo, setShowInfo] = useState(false);
 
@@ -378,58 +375,6 @@ export default function SalaryHikeCalculator() {
                         📐 This is a projection only. Actual hikes depend on company performance, individual performance, and market conditions. For reference purposes only.
                     </p>
                 </div>
-
-                {/* Monthly Projection Bottom Sheet */}
-                <BottomSheet isOpen={showProjection} onClose={() => setShowProjection(false)} title="Month-wise Salary Projection">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                            <thead>
-                                <tr className="text-muted-foreground border-b border-slate-200 dark:border-border">
-                                    <th className="py-2 text-left font-medium">Month</th>
-                                    <th className="py-2 text-right font-medium">Salary</th>
-                                    <th className="py-2 text-right font-medium">Cumulative</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {result.projection.map((row) => (
-                                    <>
-                                        {row.isNewYear && (
-                                            <tr key={`year-${row.year}`}>
-                                                <td colSpan={3} className="py-2.5 text-center">
-                                                    <span className="px-3 py-1 rounded-lg bg-brand-green/10 text-brand-green text-[10px] font-bold uppercase tracking-wider">
-                                                        Year {row.year} — After {result.hikePctComputed.toFixed(1)}% Hike
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        )}
-                                        <tr key={row.month} className="border-b border-slate-100 dark:border-border/50">
-                                            <td className="py-2 text-muted-foreground">{row.month}</td>
-                                            <td className="py-2 text-right text-brand-green">{formatINR(row.salary)}</td>
-                                            <td className="py-2 text-right text-slate-900 dark:text-foreground">{formatINR(row.cumulative)}</td>
-                                        </tr>
-                                    </>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Download buttons */}
-                    <div className="flex gap-3 mt-4 pt-4 border-t border-slate-200 dark:border-border mb-6">
-                        <button
-                            onClick={handleDownloadPDF}
-                            className="flex-1 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm flex items-center justify-center gap-2"
-                        >
-                            📄 PDF report
-                        </button>
-                        <button
-                            onClick={handleDownloadExcel}
-                            className="flex-1 py-4 rounded-2xl bg-brand-green/10 border-2 border-brand-green/40 text-brand-green font-bold text-sm flex items-center justify-center gap-2"
-                        >
-                            📊 Excel report
-                        </button>
-                    </div>
-                </BottomSheet>
-
 
                 <CalculatorInfoModal
                     isOpen={showInfo}

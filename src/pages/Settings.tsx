@@ -217,7 +217,7 @@ export default function Settings() {
                 </div>
 
                 <div className="text-center pb-8 mt-2 animate-fade-in delay-500">
-                    <p className="text-slate-600 text-xs text-brand-blue/80 dark:text-cyan-400 font-bold mb-1">FinCalix v1.0.1</p>
+                    <p className="text-slate-600 text-xs text-brand-purple/80 dark:text-cyan-400 font-bold mb-1">FinCalix v1.0.2</p>
                     <p className="text-slate-400 text-[10px]">All your data is stored locally on this device</p>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Delete, RotateCcw, Clock, Copy, Check, ChevronDown } from 'lucide-react';
+import { Delete, RotateCcw, Clock, Copy, Check, ChevronDown, Hash } from 'lucide-react';
 import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -199,25 +199,26 @@ export default function ScientificCalculator() {
     };
 
     // ─── UI Classes ─────────────────────────────────────────────────────────
-    const btnBase = "h-12 rounded-xl flex items-center justify-center font-medium text-sm transition-all active:scale-95 touch-manipulation select-none";
-    const numCls = `${btnBase} bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-lg font-semibold`;
-    const opCls = `${btnBase} bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-lg`;
-    const fnCls = `${btnBase} bg-slate-200 dark:bg-slate-700/50 text-slate-700 dark:text-slate-200 text-xs`;
-    const togCls = (on: boolean) => `${fnCls} ${on ? 'ring-2 ring-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' : ''}`;
-    const progBtnCls = (enabled: boolean) => `${btnBase} ${enabled ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100' : 'bg-slate-100/30 dark:bg-slate-800/20 text-slate-400 dark:text-slate-600 cursor-not-allowed'} text-lg font-semibold`;
+    // ─── UI Classes ─────────────────────────────────────────────────────────
+    const btnBase = "h-14 rounded-2xl flex items-center justify-center font-medium transition-all active:scale-95 touch-manipulation select-none";
+    const numCls = `${btnBase} bg-card text-foreground border border-border text-2xl font-semibold shadow-sm`;
+    const opCls = `${btnBase} bg-brand-purple/10 text-brand-purple border border-brand-purple/20 text-xl font-bold`;
+    const fnCls = `${btnBase} bg-muted/50 text-muted-foreground border border-border text-xs`;
+    const togCls = (on: boolean) => `${btnBase} border text-xs transition-colors ${on ? 'bg-brand-purple/20 border-brand-purple/40 text-brand-purple shadow-sm' : 'bg-muted/50 border-border text-muted-foreground'}`;
+    const progBtnCls = (enabled: boolean) => `${btnBase} text-xl font-semibold border ${enabled ? 'bg-card text-foreground border-border shadow-sm' : 'bg-card/30 text-muted-foreground/30 border-transparent cursor-not-allowed'}`;
 
     return (
-        <div className="max-w-md mx-auto px-4 pt-14 pb-24 animate-fade-in">
+        <div className="max-w-md mx-auto px-4 pt-14 pb-24 animate-fade-in bg-background min-h-[calc(100vh-6rem)]">
             {/* Mode Tab Bar */}
-            <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 mb-4">
+            <div className="flex gap-1 bg-muted border border-border rounded-xl p-1 mb-4 shadow-inner">
                 {(['normal', 'scientific', 'programming'] as CalcMode[]).map(m => (
                     <button
                         key={m}
                         onClick={() => setCalcMode(m)}
                         className={`flex-1 py-2.5 rounded-lg text-[11px] font-bold capitalize transition-all ${
                             calcMode === m
-                                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                                : 'text-slate-500 dark:text-slate-400'
+                                ? 'bg-card text-foreground shadow-sm border border-border/50'
+                                : 'text-muted-foreground hover:text-foreground'
                         }`}
                     >
                         {m}
@@ -229,15 +230,19 @@ export default function ScientificCalculator() {
             {calcMode === 'programming' && (
                 <div className="space-y-3">
                     {/* Display all bases */}
-                    <div className="bg-slate-900 rounded-2xl p-4 space-y-2">
+                    <div className="bg-gradient-to-br from-card to-card/50 border border-border shadow-sm rounded-3xl p-4 space-y-2 relative overflow-hidden mb-4">
+                        {/* Decorative background element */}
+                        <div className="absolute -top-4 -right-4 p-4 opacity-5 pointer-events-none">
+                            <Hash size={120} />
+                        </div>
                         {([{ base: 16, label: 'HEX' }, { base: 10, label: 'DEC' }, { base: 8, label: 'OCT' }, { base: 2, label: 'BIN' }] as { base: 2|8|10|16; label: string }[]).map(({ base, label }) => (
                             <button
                                 key={base}
                                 onClick={() => setProgBase(base)}
-                                className={`w-full flex items-center gap-3 p-2 rounded-xl transition-all ${progBase === base ? 'bg-indigo-600/30' : 'opacity-50'}`}
+                                className={`w-full flex items-center gap-3 p-2 rounded-xl transition-all ${progBase === base ? 'bg-brand-purple/10 ring-1 ring-brand-purple/30' : 'opacity-50 hover:opacity-80'}`}
                             >
-                                <span className={`text-[10px] font-bold w-8 text-right ${progBase === base ? 'text-indigo-400' : 'text-slate-500'}`}>{label}</span>
-                                <span className={`text-right flex-1 font-mono text-sm tracking-wide ${progBase === base ? 'text-white text-lg' : 'text-slate-400 text-xs'}`}>
+                                <span className={`text-[10px] font-bold w-8 text-right ${progBase === base ? 'text-brand-purple' : 'text-muted-foreground'}`}>{label}</span>
+                                <span className={`text-right flex-1 font-mono text-sm tracking-wide ${progBase === base ? 'text-foreground text-lg' : 'text-muted-foreground text-xs'} overflow-x-auto whitespace-nowrap scrollbar-hide`}>
                                     {toBase(isNaN(progValue) ? 0 : progValue, base, wordSize)}
                                 </span>
                             </button>
@@ -248,7 +253,7 @@ export default function ScientificCalculator() {
                     <div className="flex gap-2">
                         {([8, 16, 32, 64] as WordSize[]).map(ws => (
                             <button key={ws} onClick={() => setWordSize(ws)}
-                                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all border ${wordSize === ws ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-card border-border text-muted-foreground'}`}>
+                                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all border ${wordSize === ws ? 'bg-brand-purple text-white border-brand-purple shadow-md' : 'bg-card border-border text-muted-foreground hover:bg-muted'}`}>
                                 {ws}-bit
                             </button>
                         ))}
@@ -258,7 +263,7 @@ export default function ScientificCalculator() {
                     <div className="grid grid-cols-4 gap-2">
                         {['AND', 'OR', 'XOR', 'NOT', 'SHL', 'SHR', 'MOD', '( )'].map(op => (
                             <button key={op} onClick={() => handleProgOp(op)}
-                                className={`${fnCls} text-xs font-bold`}>
+                                className={`${fnCls} font-bold hover:bg-muted/80`}>
                                 {op}
                             </button>
                         ))}
@@ -281,11 +286,11 @@ export default function ScientificCalculator() {
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
-                        <button onClick={() => setProgInput('0')} className={`${btnBase} bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400`}>C</button>
-                        <button onClick={() => setProgInput(p => p.slice(0, -1) || '0')} className={`${btnBase} bg-slate-200 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300`}>
+                        <button onClick={() => setProgInput('0')} className={`${btnBase} bg-red-500/10 border border-red-500/20 text-red-500 font-bold hover:bg-red-500/20`}>C</button>
+                        <button onClick={() => setProgInput(p => p.slice(0, -1) || '0')} className={`${btnBase} bg-muted text-foreground border border-border hover:bg-muted/80`}>
                             <Delete size={18} />
                         </button>
-                        <button onClick={() => copyText(progInput, 'prog')} className={`${btnBase} bg-indigo-100 dark:bg-indigo-800/30 text-indigo-700 dark:text-indigo-300`}>
+                        <button onClick={() => copyText(progInput, 'prog')} className={`${btnBase} bg-brand-purple/10 border border-brand-purple/20 text-brand-purple hover:bg-brand-purple/20`}>
                             {copied === 'prog' ? <Check size={16} /> : <Copy size={16} />}
                         </button>
                     </div>
@@ -296,29 +301,29 @@ export default function ScientificCalculator() {
             {calcMode !== 'programming' && (
                 <>
                     {/* Display */}
-                    <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-4 min-h-[110px] flex flex-col items-end justify-end relative overflow-hidden">
+                    <div className="p-5 rounded-3xl bg-gradient-to-br from-purple-600/10 to-indigo-600/10 border border-purple-500/20 mb-4 min-h-[140px] flex flex-col items-end justify-end relative overflow-hidden shadow-sm">
                         {memory !== 0 && (
-                            <div className="absolute top-3 left-4 text-xs font-bold text-indigo-500">M = {memory}</div>
+                            <div className="absolute top-4 left-5 px-2 py-0.5 bg-brand-purple/20 text-brand-purple rounded text-xs font-bold border border-brand-purple/30">M = {memory}</div>
                         )}
-                        <div className="flex gap-2 absolute top-3 right-4 items-center">
+                        <div className="flex gap-3 absolute top-4 right-5 items-center">
                             {calcMode === 'scientific' && (
-                                <span className="text-xs font-semibold text-slate-400">{isDeg ? 'DEG' : 'RAD'}</span>
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-background/50 rounded text-muted-foreground border border-border shadow-sm">{isDeg ? 'DEG' : 'RAD'}</span>
                             )}
-                            <button onClick={() => setShowHistory(p => !p)} className="text-slate-400 hover:text-slate-600">
-                                <Clock size={15} />
+                            <button onClick={() => setShowHistory(p => !p)} className="text-muted-foreground hover:text-brand-purple transition-colors p-1.5 bg-background/50 rounded-full border border-border shadow-sm">
+                                <Clock size={14} />
                             </button>
                         </div>
-                        <div ref={displayRef} className="w-full text-right text-slate-500 dark:text-slate-400 text-base min-h-[24px] overflow-x-auto whitespace-nowrap scrollbar-hide mb-1">
+                        <div ref={displayRef} className="w-full text-right text-muted-foreground text-sm min-h-[24px] overflow-x-auto whitespace-nowrap scrollbar-hide mb-2 mt-6 font-medium tracking-wide">
                             {expression || '0'}
                         </div>
                         <div
-                            className="w-full text-right text-slate-900 dark:text-white text-3xl font-bold overflow-x-auto whitespace-nowrap scrollbar-hide cursor-pointer"
+                            className="w-full text-right text-foreground text-5xl font-black overflow-x-auto whitespace-nowrap scrollbar-hide cursor-pointer tracking-tight"
                             onClick={() => result && copyText(result, 'result')}
                         >
                             {result || ''}
                             {result && (
-                                <span className="ml-2 text-slate-400 dark:text-slate-500">
-                                    {copied === 'result' ? <Check size={14} className="inline" /> : <Copy size={14} className="inline" />}
+                                <span className="ml-2 text-brand-purple/80 align-middle">
+                                    {copied === 'result' ? <Check size={18} className="inline opacity-80" /> : <Copy size={18} className="inline opacity-50 hover:opacity-100 transition-opacity" />}
                                 </span>
                             )}
                         </div>
@@ -328,25 +333,24 @@ export default function ScientificCalculator() {
                     <AnimatePresence>
                         {showHistory && history.length > 0 && (
                             <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden mb-3"
+                                initial={{ height: 0, opacity: 0, scale: 0.95 }}
+                                animate={{ height: 'auto', opacity: 1, scale: 1 }}
+                                exit={{ height: 0, opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden mb-4 rounded-2xl bg-card border border-border shadow-lg"
                             >
-                                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                    <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-700">
-                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400">History</span>
-                                        <button onClick={() => setHistory([])} className="text-[10px] text-red-500 font-medium">Clear</button>
-                                    </div>
-                                    <div className="divide-y divide-slate-100 dark:divide-slate-700/50 max-h-40 overflow-y-auto">
-                                        {history.map((h, i) => (
-                                            <button key={i} onClick={() => { setExpression(h.expression); setResult(h.result); setShowHistory(false); }}
-                                                className="w-full text-right px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                                <p className="text-slate-500 dark:text-slate-400 text-xs">{h.expression}</p>
-                                                <p className="text-slate-900 dark:text-white font-bold text-base">= {h.result}</p>
-                                            </button>
-                                        ))}
-                                    </div>
+                                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/50">
+                                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">History</span>
+                                    <button onClick={() => setHistory([])} className="text-[11px] text-red-500 font-bold hover:bg-red-500/10 px-2 py-1 rounded transition-colors">Clear All</button>
+                                </div>
+                                <div className="divide-y divide-border max-h-48 overflow-y-auto">
+                                    {history.map((h, i) => (
+                                        <button key={i} onClick={() => { setExpression(h.expression); setResult(h.result); setShowHistory(false); }}
+                                            className="w-full text-right px-4 py-3 hover:bg-muted/50 transition-colors focus:bg-muted outline-none">
+                                            <p className="text-muted-foreground text-[11px] font-medium mb-1">{h.expression}</p>
+                                            <p className="text-foreground font-bold text-base text-brand-purple">= {h.result}</p>
+                                        </button>
+                                    ))}
                                 </div>
                             </motion.div>
                         )}
@@ -392,6 +396,16 @@ export default function ScientificCalculator() {
                         </div>
                     )}
 
+                    {/* Control row */}
+                    <div className={`grid gap-2 mb-2 ${calcMode === 'scientific' ? 'grid-cols-5' : 'grid-cols-4'}`}>
+                        {calcMode === 'scientific' && <div />}
+                        <button className={`${btnBase} bg-red-500/10 border border-red-500/20 text-red-500 text-lg font-bold hover:bg-red-500/20`} onClick={() => { setExpression(''); setResult(''); }}>CE</button>
+                        <button className={`${btnBase} bg-red-500/10 border border-red-500/20 text-red-500 text-lg font-bold hover:bg-red-500/20`} onClick={handleClear}>C</button>
+                        <button className={`${btnBase} bg-brand-purple/10 border border-brand-purple/20 text-brand-purple col-span-2 hover:bg-brand-purple/20`} onClick={handleBackspace}>
+                            <Delete className="w-6 h-6 mx-auto" />
+                        </button>
+                    </div>
+
                     {/* Number + operator grid (both modes) */}
                     <div className={`grid gap-2 mb-2 ${calcMode === 'scientific' ? 'grid-cols-5' : 'grid-cols-4'}`}>
                         {calcMode === 'scientific' && <button className={fnCls} onClick={() => handleInput('!')}>x!</button>}
@@ -420,21 +434,13 @@ export default function ScientificCalculator() {
 
                         {/* = spans full width */}
                         <button
-                            className={`${opCls} text-xl ${calcMode === 'scientific' ? 'col-span-5' : 'col-span-4'}`}
+                            className={`${btnBase} text-2xl font-bold transition-all shadow-md active:shadow-sm ${calcMode === 'scientific' ? 'col-span-5' : 'col-span-4'} bg-brand-purple text-white hover:bg-brand-purple/90`}
                             onClick={handleCalculate}
                         >=</button>
-                    </div>
-
-                    {/* Control row */}
-                    <div className="grid grid-cols-4 gap-2">
-                        <button className={`${btnBase} bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400`} onClick={() => { setExpression(''); setResult(''); }}>CE</button>
-                        <button className={`${btnBase} bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400`} onClick={handleClear}>C</button>
-                        <button className={`${btnBase} bg-slate-200 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 col-span-2`} onClick={handleBackspace}>
-                            <Delete className="w-5 h-5 mx-auto" />
-                        </button>
                     </div>
                 </>
             )}
         </div>
     );
 }
+

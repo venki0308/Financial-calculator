@@ -110,8 +110,10 @@ function CompareView() {
                 });
                 // Approximate: treat the JS local Date as if it is tzA time
                 // We compute the offset of tzA vs UTC and build the UTC equivalent
-                const nowUtcMs = now.getTime();
-                const tzAOffset = (new Date(now.toLocaleString('en-US', { timeZone: tzA })).getTime() - nowUtcMs);
+                // Compute exact offset ms of tzA vs UTC using the same string parsing base
+                const tzStr = now.toLocaleString('en-US', { timeZone: tzA });
+                const utcStr = now.toLocaleString('en-US', { timeZone: 'UTC' });
+                const tzAOffset = new Date(tzStr).getTime() - new Date(utcStr).getTime();
                 const utcEquiv = new Date(refDate.getTime() - tzAOffset);
                 refDate = utcEquiv;
             }
@@ -156,8 +158,8 @@ function CompareView() {
         label: string; value: string; onChange: (v: string) => void;
         search: string; setSearch: (s: string) => void; show: boolean; setShow: (v: boolean) => void;
     }) => (
-        <div className="flex-1">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5">{label}</p>
+        <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 truncate">{label}</p>
             <button
                 onClick={() => setShow(true)}
                 className="w-full flex items-center gap-2 px-3 py-3 rounded-xl bg-muted border border-border text-left text-sm font-medium text-foreground truncate"
@@ -395,27 +397,32 @@ function getTimeData(iana: string, now: Date) {
 
         const jan = new Date(now.getFullYear(), 0, 1);
         const jul = new Date(now.getFullYear(), 6, 1);
-        const getOff = (d: Date) => {
-            try { return new Date(d.toLocaleString('en-US', { timeZone: iana })).getTimezoneOffset(); } catch { return 0; }
+        const getOff = (d: Date, targetIana: string) => {
+            try {
+                const tzStr = d.toLocaleString('en-US', { timeZone: targetIana });
+                const utcStr = d.toLocaleString('en-US', { timeZone: 'UTC' });
+                return (new Date(tzStr).getTime() - new Date(utcStr).getTime()) / 60000;
+            } catch { return 0; }
         };
-        const janOff = getOff(jan);
-        const julOff = getOff(jul);
+        const janOff = getOff(jan, iana);
+        const julOff = getOff(jul, iana);
         const isDST = janOff !== julOff;
-        const currentlyDST = isDST && getOff(now) === Math.min(janOff, julOff);
+        const currentOff = getOff(now, iana);
+        // Usually, the higher offset (more positive) is the summer/DST time.
+        const currentlyDST = isDST && currentOff === Math.max(janOff, julOff);
 
         const weekday = new Intl.DateTimeFormat('en-IN', { timeZone: iana, weekday: 'short' }).format(now);
         const day = get('day');
         const month = new Intl.DateTimeFormat('en-IN', { timeZone: iana, month: 'short' }).format(now);
 
         // Diff to IST
-        const istOff = getOff(new Date()) - getOff(new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })));
-        const tzOff = getOff(now);
-        const diffMins = tzOff - (-330); // IST is -330 mins offset from UTC
+        const istOff = getOff(now, 'Asia/Kolkata');
+        const diffMins = currentOff - istOff;
         let diffStr = 'Same as IST';
         if (diffMins !== 0) {
             const h = Math.floor(Math.abs(diffMins) / 60);
             const m = Math.abs(diffMins) % 60;
-            const dir = diffMins > 0 ? "behind" : "ahead of";
+            const dir = diffMins < 0 ? "behind" : "ahead of";
             diffStr = `${h}h${m > 0 ? ` ${m}m` : ''} ${dir} IST`;
         }
 
