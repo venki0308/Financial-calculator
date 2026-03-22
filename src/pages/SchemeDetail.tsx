@@ -51,7 +51,7 @@ export default function SchemeDetail() {
                         <button onClick={() => isBookmarked ? removeBookmark(scheme.id) : addBookmark(scheme.id)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">
                             <Bookmark size={18} className={isBookmarked ? 'text-brand-gold fill-brand-gold' : 'text-muted-foreground'} />
                         </button>
-                        <button onClick={() => nativeShare(scheme.name, `Check out the ${scheme.name} on FinCalix`, window.location.href)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border"><Share2 size={18} className="text-muted-foreground" /></button>
+                        <button onClick={() => nativeShare(scheme.name, '', window.location.href)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border"><Share2 size={18} className="text-muted-foreground" /></button>
                     </div>
                 </div>
                 <div className="flex gap-1.5 flex-wrap mb-2">
@@ -224,7 +224,7 @@ export default function SchemeDetail() {
             <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[428px] bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-border p-4 flex gap-3 safe-area-bottom">
                 <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => nativeShare(scheme.name, `Check out the ${scheme.name} on FinCalix`, window.location.href)}
+                    onClick={() => nativeShare(scheme.name, '', window.location.href)}
                     className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-muted-foreground font-semibold text-sm"
                 >
                     <Share2 size={18} /> {t('schemes.share')}

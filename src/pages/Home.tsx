@@ -17,7 +17,7 @@ const calcCatalog: Record<string, { icon: React.ElementType; color: string; labe
     '/calculator/sip': { icon: Percent, color: '#3B82F6', label: 'SIP Calculator' },
     '/calculator/fixed-deposit': { icon: PiggyBank, color: '#F59E0B', label: 'FD Calculator' },
     '/calculator/income-tax': { icon: FileText, color: '#F59E0B', label: 'Income Tax' },
-    '/calculator/salary-hike': { icon: ArrowUpRight, color: '#10B981', label: 'Salary Hike' },
+    '/calculator/salary-hike': { icon: ArrowUpRight, color: '#10B981', label: 'calculators.salaryHike.name' },
     '/calculator/hra': { icon: GraduationCap, color: '#F59E0B', label: 'HRA Calculator' },
     '/calculator/recurring-deposit': { icon: Clock, color: '#3B82F6', label: 'RD Calculator' },
     '/calculator/compound-interest': { icon: Percent, color: '#8B5CF6', label: 'Compound Interest' },
@@ -28,7 +28,7 @@ const calcCatalog: Record<string, { icon: React.ElementType; color: string; labe
     '/calculator/cagr': { icon: BarChart3, color: '#8B5CF6', label: 'CAGR Calculator' },
     '/calculator/step-up-sip': { icon: ArrowUpRight, color: '#10B981', label: 'Step-Up SIP' },
     '/calculator/goal-sip': { icon: Target, color: '#EF4444', label: 'Goal SIP' },
-    '/calculator/ppf': { icon: Landmark, color: '#10B981', label: 'PPF Calculator' },
+    '/calculator/ppf': { icon: Landmark, color: '#10B981', label: 'calculators.ppf.name' },
     '/calculator/nps': { icon: LayoutGrid, color: '#3B82F6', label: 'NPS Calculator' },
     '/calculator/epf': { icon: Wallet, color: '#F59E0B', label: 'EPF Calculator' },
     '/calculator/gratuity': { icon: DollarSign, color: '#8B5CF6', label: 'Gratuity' },
@@ -38,14 +38,14 @@ const calcCatalog: Record<string, { icon: React.ElementType; color: string; labe
     '/calculator/post-office-mis': { icon: DollarSign, color: '#10B981', label: 'PO MIS' },
     '/calculator/senior-citizen-savings': { icon: Landmark, color: '#8B5CF6', label: 'SCSS Calculator' },
     '/calculator/post-office-td': { icon: PiggyBank, color: '#3B82F6', label: 'PO TD' },
-    '/calculator/property': { icon: Building2, color: '#F97316', label: 'Property' },
+    '/calculator/property': { icon: Building2, color: '#F97316', label: 'calculators.property.name' },
     '/calculator/gst': { icon: Receipt, color: '#06B6D4', label: 'GST Calculator' },
     '/calculator/break-even': { icon: BarChart3, color: '#10B981', label: 'Break Even' },
     '/calculator/car-loan': { icon: Car, color: '#3B82F6', label: 'Car Loan' },
-    '/calculator/age': { icon: Calendar, color: '#F97316', label: 'Age Calculator' },
-    '/world-clock': { icon: Globe, color: '#3B82F6', label: 'World Clock' },
-    '/calculator/ppf-advanced': { icon: Landmark, color: '#10B981', label: 'PPF Advanced' },
-    '/calculator/overdraft': { icon: Wallet, color: '#3B82F6', label: 'Overdraft Calculator' },
+    '/calculator/age': { icon: Calendar, color: '#F97316', label: 'calculators.age.name' },
+    '/world-clock': { icon: Globe, color: '#3B82F6', label: 'calculators.worldClock.name' },
+    '/calculator/ppf-advanced': { icon: Landmark, color: '#10B981', label: 'calculators.ppf.name' },
+    '/calculator/overdraft': { icon: Wallet, color: '#3B82F6', label: 'calculators.overdraft.name' },
 };
 
 // Default items if history is empty
@@ -131,20 +131,25 @@ export default function Home() {
     }, [currentBalance, monthlyIncome, getTotalFixed, getTotalSpent]);
 
     const quickCalcItems = useMemo(() => {
-        if (recentPaths.length === 0) return defaultItems;
+        if (recentPaths.length === 0) return defaultItems.map(item => {
+            const listC = allCalcs.find(c => c.path === item.path);
+            return { ...item, label: listC ? t(listC.nameKey as any) : item.label };
+        });
 
         return recentPaths
-            .filter(path => calcCatalog[path]) // Only include known paths
+            .filter(path => calcCatalog[path])
             .map(path => {
                 const info = calcCatalog[path];
+                const calcInList = allCalcs.find(c => c.path === path);
+                const label = calcInList ? t(calcInList.nameKey as any) : (t(info.label as any) !== info.label ? t(info.label as any) : info.label);
                 return {
-                    label: info.label,
+                    label,
                     path,
                     icon: info.icon,
                     color: info.color,
                 };
             }).slice(0, 6);
-    }, [recentPaths]);
+    }, [recentPaths, t]);
 
     // If no valid recent items after filtering, fall back to defaults
     const displayItems = quickCalcItems.length > 0 ? quickCalcItems : defaultItems;
@@ -355,7 +360,7 @@ export default function Home() {
                     </div>
                     <div className="mt-4 flex gap-2">
                         <span className="px-3 py-1.5 rounded-lg bg-white/20 text-foreground text-[10px] font-bold uppercase tracking-wider">{t('home.new2026')}</span>
-                        <span className="px-3 py-1.5 rounded-lg bg-white/20 text-foreground text-[10px] font-bold uppercase tracking-wider">Central Govt</span>
+                        <span className="px-3 py-1.5 rounded-lg bg-white/20 text-foreground text-[10px] font-bold uppercase tracking-wider">{t('home.centralGovt')}</span>
                     </div>
                 </motion.button>
             </section>
@@ -373,8 +378,8 @@ export default function Home() {
                     <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
                         <Sparkles size={18} className="text-foreground" />
                     </div>
-                    <h3 className="text-foreground font-bold text-sm">Financial Advisor</h3>
-                    <p className="text-foreground/60 text-[10px] mt-0.5">Personal financial plan</p>
+                    <h3 className="text-foreground font-bold text-sm">{t('calculators.financialAdvisor.name')}</h3>
+                    <p className="text-foreground/60 text-[10px] mt-0.5">{t('home.financialAdvisorDesc')}</p>
                 </motion.button>
                 <motion.button
                     whileTap={{ scale: 0.95 }}
@@ -387,8 +392,8 @@ export default function Home() {
                     <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
                         <Target size={18} className="text-foreground" />
                     </div>
-                    <h3 className="text-foreground font-bold text-sm">Goal Planner</h3>
-                    <p className="text-foreground/60 text-[10px] mt-0.5">Plan your milestones</p>
+                    <h3 className="text-foreground font-bold text-sm">{t('calculators.goalPlanner.name')}</h3>
+                    <p className="text-foreground/60 text-[10px] mt-0.5">{t('home.goalPlannerDesc')}</p>
                 </motion.button>
             </section>
 
@@ -406,8 +411,8 @@ export default function Home() {
                         <GitCompare size={18} className="text-foreground" />
                     </div>
                     <div className="text-left flex-1">
-                        <h3 className="text-foreground font-bold text-sm">Compare Scenarios</h3>
-                        <p className="text-foreground/60 text-[10px] mt-0.5">Loan A vs B, SIP rates, FD tenures</p>
+                        <h3 className="text-foreground font-bold text-sm">{t('home.compareScenarios')}</h3>
+                        <p className="text-foreground/60 text-[10px] mt-0.5">{t('home.compareScenariosDesc')}</p>
                     </div>
                     <ChevronRight size={16} className="text-foreground/40" />
                 </motion.button>
@@ -426,8 +431,8 @@ export default function Home() {
                     <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
                         <Globe size={18} className="text-foreground" />
                     </div>
-                    <h3 className="text-foreground font-bold text-sm">World Clock</h3>
-                    <p className="text-foreground/60 text-[10px] mt-0.5">Compare time zones</p>
+                    <h3 className="text-foreground font-bold text-sm">{t('calculators.worldClock.name')}</h3>
+                    <p className="text-foreground/60 text-[10px] mt-0.5">{t('home.worldClockDesc')}</p>
                 </motion.button>
                 <motion.button
                     whileTap={{ scale: 0.95 }}
@@ -440,8 +445,8 @@ export default function Home() {
                     <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center mb-2">
                         <Calendar size={18} className="text-foreground" />
                     </div>
-                    <h3 className="text-foreground font-bold text-sm">Age Calculator</h3>
-                    <p className="text-foreground/60 text-[10px] mt-0.5">Know your exact age</p>
+                    <h3 className="text-foreground font-bold text-sm">{t('calculators.age.name')}</h3>
+                    <p className="text-foreground/60 text-[10px] mt-0.5">{t('home.ageCalculatorDesc')}</p>
                 </motion.button>
             </section>
 

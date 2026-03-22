@@ -73,6 +73,7 @@ import Notifications from './pages/Notifications';
 import GlobalDisclaimerModal from './components/GlobalDisclaimerModal';
 import { NotificationScheduler } from './services/NotificationScheduler';
 import ValidatorPage from './pages/ValidatorPage';
+import { PdfActionSheet } from './components/PdfActionSheet';
 
 // Toast component for back-press notification
 function BackToast({ visible }: { visible: boolean }) {
@@ -151,6 +152,7 @@ function AppContent() {
             <GlobalDisclaimerModal />
             <BackToast visible={showBackToast} />
             <UpdateChecker />
+            <PdfActionSheet />
             <Routes>
                 {/* Support pages (no nav bar) */}
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />

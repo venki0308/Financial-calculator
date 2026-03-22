@@ -486,7 +486,7 @@ export default function PropertyCalculator() {
                                         className="space-y-3"
                                     >
                                         {/* Main result */}
-                                        <div className="bg-card border border-brand-green/30 rounded-2xl p-5 text-center relative overflow-hidden shadow-md">
+                                        <div className="bg-card z-[60] relative border border-brand-green/30 rounded-2xl p-5 text-center overflow-hidden shadow-2xl">
                                             <p className="text-muted-foreground text-xs mb-1">Estimated Land Value</p>
                                             <p className="text-3xl font-extrabold text-brand-green">
                                                 {fmt(landResult.totalValue)}
@@ -596,7 +596,7 @@ export default function PropertyCalculator() {
                                 {flatResult && (
                                     <motion.div ref={resultRef} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
                                         {/* Breakdown card */}
-                                        <div className="bg-card border border-border rounded-2xl p-4 space-y-2.5 relative overflow-hidden">
+                                        <div className="bg-card z-[60] relative border border-border rounded-2xl p-4 space-y-2.5 overflow-hidden shadow-2xl">
                                             <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-1">Cost Breakdown</p>
                                             <CostRow label={`Base Price (${builtUp} × ${fmt(Number(ppsf))})`} value={flatResult.basePrice} />
                                             {flatResult.parkingAmt > 0 && <CostRow label="Parking Charges" value={flatResult.parkingAmt} />}
@@ -744,7 +744,7 @@ export default function PropertyCalculator() {
                                         </div>
 
                                         {/* Overhead breakdown */}
-                                        <div className="bg-card border border-border rounded-2xl p-4 space-y-2 relative overflow-hidden">
+                                        <div className="bg-card z-[60] relative border border-border rounded-2xl p-4 space-y-2 overflow-hidden shadow-2xl">
                                             <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-1">Cost Breakdown</p>
                                             <CostRow label="Construction" value={villaResult.constructionCost} />
                                             {villaResult.wallCost > 0 && <CostRow label="Compound Wall" value={villaResult.wallCost} />}

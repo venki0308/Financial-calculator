@@ -17,8 +17,8 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.hra.name', descKey: 'calculators.hra.desc', icon: GraduationCap, color: '#F59E0B', path: '/calculator/hra', category: 'taxSalary', keywords: ['hra', 'house', 'rent', 'allowance'] },
 
     // Loans
-    { nameKey: 'Personal Loan', descKey: 'Estimate personal loan payments', icon: Calculator, color: '#8B5CF6', path: '/calculator/personal-loan', category: 'loans', keywords: ['personal', 'loan', 'finance', 'cash'] },
-    { nameKey: 'Education Loan', descKey: 'Plan your student loan EMI', icon: GraduationCap, color: '#F59E0B', path: '/calculator/education-loan', category: 'loans', keywords: ['education', 'loan', 'student', 'study', 'college'] },
+    { nameKey: 'calculators.personalLoan.name', descKey: 'calculators.personalLoan.desc', icon: Calculator, color: '#8B5CF6', path: '/calculator/personal-loan', category: 'loans', keywords: ['personal', 'loan', 'finance', 'cash'] },
+    { nameKey: 'calculators.educationLoan.name', descKey: 'calculators.educationLoan.desc', icon: GraduationCap, color: '#F59E0B', path: '/calculator/education-loan', category: 'loans', keywords: ['education', 'loan', 'student', 'study', 'college'] },
     { nameKey: 'calculators.emi.name', descKey: 'calculators.emi.desc', icon: Calculator, color: '#10B981', path: '/calculator/loan-emi', category: 'loans', keywords: ['emi', 'home', 'loan', 'mortgage'] },
     { nameKey: 'calculators.carLoan.name', descKey: 'calculators.carLoan.desc', icon: Car, color: '#3B82F6', path: '/calculator/car-loan', category: 'loans', keywords: ['car', 'loan', 'auto', 'vehicle'] },
     { nameKey: 'calculators.compound.name', descKey: 'calculators.compound.desc', icon: Percent, color: '#8B5CF6', path: '/calculator/compound-interest', category: 'loans', keywords: ['compound', 'interest', 'ci'] },
@@ -56,6 +56,6 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.property.name', descKey: 'calculators.property.desc', icon: Building2, color: '#F97316', path: '/calculator/property', category: 'property', keywords: ['property', 'real', 'estate', 'house', 'appreciation'] },
 
     // Tools
-    { nameKey: 'Age Calculator', descKey: 'Exact age & generation', icon: Calendar, color: '#F97316', path: '/calculator/age', category: 'tools', keywords: ['age', 'date', 'birth', 'generation'] },
-    { nameKey: 'Scientific', descKey: 'Advanced mathematical functions', icon: Calculator, color: '#3B82F6', path: '/calculator/scientific', category: 'tools', keywords: ['scientific', 'calculator', 'math', 'log', 'sin'] },
+    { nameKey: 'calculators.age.name', descKey: 'calculators.age.desc', icon: Calendar, color: '#F97316', path: '/calculator/age', category: 'tools', keywords: ['age', 'date', 'birth', 'generation'] },
+    { nameKey: 'calculators.scientific.name', descKey: 'calculators.scientific.desc', icon: Calculator, color: '#3B82F6', path: '/calculator/scientific', category: 'tools', keywords: ['scientific', 'calculator', 'math', 'log', 'sin'] },
 ];

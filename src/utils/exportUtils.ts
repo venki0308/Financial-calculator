@@ -62,7 +62,7 @@ function blobToBase64(blob: Blob): Promise<string> {
 // ─── Native save — writes to Cache (always writable), then shares ───────────
 async function saveOnNative(blob: Blob, filename: string): Promise<void> {
     const { Filesystem, Directory } = await import('@capacitor/filesystem');
-    const { Share } = await import('@capacitor/share');
+    const { usePdfStore } = await import('../store/usePdfStore');
 
     const base64 = await blobToBase64(blob);
 
@@ -75,24 +75,10 @@ async function saveOnNative(blob: Blob, filename: string): Promise<void> {
     });
 
     // Show success toast first
-    showToast(`✅ File ready — opening share sheet…`);
+    showToast(`✅ File ready`);
 
-    // Immediately offer the share sheet so user can open in Drive/WhatsApp/etc
-    try {
-        const canShare = await Share.canShare();
-        if (canShare.value) {
-            await Share.share({
-                title: `FinCalix – ${filename}`,
-                url: writeResult.uri,
-                dialogTitle: 'Open or Share File',
-            });
-        } else {
-            showToast(`✅ Saved: ${filename}`);
-        }
-    } catch {
-        // User dismissed share sheet — that's fine
-        showToast(`✅ File saved successfully`);
-    }
+    // Pass URI and filename to our global Action Sheet store
+    usePdfStore.getState().showActionSheet(writeResult.uri, filename);
 }
 
 
@@ -152,16 +138,26 @@ export const exportToPDF = async (
         let currentY = 40;
 
         if (typeof autoTable === 'function') {
+            // Calculate equal width for generic tables in mm (182mm printable width)
+            const genericColWidth = headers.length > 0 ? 182 / headers.length : 'auto';
+            const genericStyles = { fontSize: 9, cellPadding: 1.5, overflow: 'hidden' as const };
+            
             // Input parameters table
             if (inputRows.length > 0) {
+                const colsDef: any = {};
+                for (let i = 0; i < (headers.length || inputRows[0]?.length || 1); i++) {
+                    colsDef[i] = { cellWidth: genericColWidth };
+                }
+                
                 autoTable(doc, {
                     startY: currentY,
-                    head: [headers.map(sanitise)],
+                    head: headers.length ? [headers.map(sanitise)] : undefined,
                     body: inputRows,
                     theme: 'grid',
                     headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold' },
                     alternateRowStyles: { fillColor: [248, 250, 252] },
-                    styles: { fontSize: 9, cellPadding: 3 },
+                    styles: genericStyles,
+                    columnStyles: colsDef,
                     margin: { left: 14, right: 14 },
                 });
                 currentY = (doc as any).lastAutoTable?.finalY ?? currentY;
@@ -175,6 +171,11 @@ export const exportToPDF = async (
                 doc.text('Results', 14, currentY);
                 currentY += 3;
 
+                const resultColsDef: any = {};
+                for (let i = 0; i < (resultRows[0]?.length || 1); i++) {
+                    resultColsDef[i] = { cellWidth: 182 / (resultRows[0]?.length || 1) };
+                }
+
                 autoTable(doc, {
                     startY: currentY,
                     head: [],
@@ -182,7 +183,8 @@ export const exportToPDF = async (
                     theme: 'grid',
                     headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold' },
                     alternateRowStyles: { fillColor: [240, 253, 244] },
-                    styles: { fontSize: 9, cellPadding: 3 },
+                    styles: genericStyles,
+                    columnStyles: resultColsDef,
                     bodyStyles: { fontStyle: 'bold' },
                     margin: { left: 14, right: 14 },
                     didParseCell: (d: any) => {
@@ -206,31 +208,48 @@ export const exportToPDF = async (
             doc.setTextColor(15, 23, 42);
             doc.text('Visual Summary', 14, y);
 
-            // Chart image — centred
-            doc.addImage(chartImage, 'PNG', 35, y + 8, 140, 90);
+            // Chart image — fixed 300x300pt (~106x106mm), centred horizontally
+            const chartImgSize = 106;
+            const chartX = (210 - chartImgSize) / 2;
+            doc.addImage(chartImage, 'PNG', chartX, y + 8, chartImgSize, chartImgSize);
 
             // ─── Chart legend/summary labels ──────────────────────────────
             if (chartSummary && chartSummary.length > 0) {
-                const legendY = y + 103;
-                const colWidth = 182 / chartSummary.length;
-                chartSummary.forEach((item, i) => {
-                    const colX = 14 + i * colWidth;
-                    const rgb = item.color ?? [100, 100, 100];
-
-                    // Coloured dot
-                    doc.setFillColor(rgb[0], rgb[1], rgb[2]);
-                    doc.circle(colX + 3, legendY - 1.5, 2, 'F');
-
-                    // Label (small grey)
-                    doc.setFontSize(7);
-                    doc.setTextColor(130, 130, 130);
-                    doc.text(item.label.toUpperCase(), colX + 7, legendY);
-
-                    // Value (bold, coloured)
-                    doc.setFontSize(10);
-                    doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+                const legendBody = chartSummary.map(item => {
                     const sanitisedVal = item.value.replace(/₹\s*/g, 'INR ');
-                    doc.text(sanitisedVal, colX + 1, legendY + 7);
+                    return ['', item.label.toUpperCase(), sanitisedVal];
+                });
+
+                // Legend widths based on: 24pt (~8.5mm), 200pt (~70.5mm), 120pt (~42.5mm)
+                // Total width = 121.5mm. Centring it:
+                const legendMarginLeft = (210 - 121.5) / 2;
+
+                autoTable(doc, {
+                    startY: y + 8 + chartImgSize + 10,
+                    head: [],
+                    body: legendBody,
+                    theme: 'plain',
+                    styles: { fontSize: 9, cellPadding: 1.5, overflow: 'hidden' },
+                    columnStyles: {
+                        0: { cellWidth: 8.5 },    // Dot column
+                        1: { cellWidth: 70.5, textColor: [100, 100, 100] },  // Label
+                        2: { cellWidth: 42.5, fontStyle: 'bold' } // Value
+                    },
+                    margin: { left: legendMarginLeft, right: legendMarginLeft },
+                    didDrawCell: (d: any) => {
+                        // Draw the colored dot in the first column
+                        if (d.column.index === 0 && d.section === 'body') {
+                            const rgb = chartSummary[d.row.index].color ?? [100, 100, 100];
+                            doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+                            doc.circle(d.cell.x + 5, d.cell.y + (d.cell.height / 2), 2, 'F');
+                        }
+                    },
+                    didParseCell: (d: any) => {
+                         // Color the text of the trailing amount column
+                         if (d.column.index === 2 && d.section === 'body') {
+                             d.cell.styles.textColor = chartSummary[d.row.index].color ?? [15, 23, 42];
+                         }
+                    }
                 });
             }
         }

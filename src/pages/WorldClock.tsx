@@ -8,6 +8,42 @@ import { getCountryMeta, getSunTimes } from '../data/countryData';
 
 import { WORLD_TIMEZONES, POPULAR_IANA, TimezoneInfo } from '../data/timezones';
 
+// --- Shared Live Time Hook ---
+class TimeTicker {
+    listeners = new Set<(d: Date) => void>();
+    interval: any;
+    now = new Date();
+    start() {
+        if (!this.interval) {
+            this.interval = setInterval(() => {
+                this.now = new Date();
+                this.listeners.forEach(l => l(this.now));
+            }, 1000);
+        }
+    }
+    stop() {
+        if (this.listeners.size === 0 && this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+    }
+    subscribe(listener: (d: Date) => void) {
+        this.listeners.add(listener);
+        this.start();
+        return () => {
+            this.listeners.delete(listener);
+            this.stop();
+        };
+    }
+}
+const globalTicker = new TimeTicker();
+
+function useSharedTime() {
+    const [now, setNow] = useState(globalTicker.now);
+    useEffect(() => globalTicker.subscribe(setNow), []);
+    return now;
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // CompareView – Convert a user-entered time from Zone A to Zone B
 // ────────────────────────────────────────────────────────────────────────────
@@ -30,17 +66,11 @@ function CompareView() {
     const [showPickerA, setShowPickerA] = useState(false);
     const [showPickerB, setShowPickerB] = useState(false);
     const [useLive, setUseLive] = useState(false);
-    const [now, setNow] = useState(new Date());
+    const now = useSharedTime();
 
     useEffect(() => {
         localStorage.setItem('fincalix_compare_tz', JSON.stringify({ a: tzA, b: tzB }));
     }, [tzA, tzB]);
-
-    useEffect(() => {
-        if (!useLive) return;
-        const iv = setInterval(() => setNow(new Date()), 1000);
-        return () => clearInterval(iv);
-    }, [useLive]);
 
     const getLabel = (iana: string) => {
         const tz = WORLD_TIMEZONES.find(t => t.iana === iana);
@@ -428,7 +458,8 @@ function AnalogClock({ hour, minute, second }: { hour: number; minute: number; s
     );
 }
 
-function CityDetailView({ clock, now, onBack }: { clock: SavedClock; now: Date; onBack: () => void }) {
+function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => void }) {
+    const now = useSharedTime();
     const td = getTimeData(clock.timezone, now);
     const meta = getCountryMeta(clock.timezone);
     const sun = getSunTimes(clock.timezone, now);
@@ -575,11 +606,122 @@ function CityDetailView({ clock, now, onBack }: { clock: SavedClock; now: Date; 
     );
 }
 
+function LiveClockCard({ clock, index, onDetail, onRemove }: { clock: SavedClock; index: number; onDetail: () => void; onRemove: () => void }) {
+    const now = useSharedTime();
+    const td = getTimeData(clock.timezone, now);
+    const meta = getCountryMeta(clock.timezone);
+    const isDark = td.hour < 6 || td.hour >= 20;
+
+    return (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.04 }}
+            className="relative rounded-2xl overflow-hidden shadow-md cursor-pointer active:scale-[0.98] transition-transform select-none border border-border bg-card"
+            onClick={onDetail}
+        >
+            <div className={`absolute inset-0 opacity-10 ${isDark ? 'bg-indigo-900' : 'bg-primary'}`} />
+            <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-primary/5" />
+            <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-black/5" />
+
+            <div className="relative p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="w-[36px] h-[24px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-[2px] overflow-hidden">
+                        {meta.countryCode ? (
+                            <img 
+                                src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
+                                alt={meta.countryCode}
+                                className="w-full h-auto object-cover"
+                                onError={(e) => { 
+                                    e.currentTarget.style.display = 'none'; 
+                                    e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
+                                    if (e.currentTarget.parentElement) {
+                                        e.currentTarget.parentElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+                                    }
+                                }}
+                            />
+                        ) : (
+                            <Globe size={16} className="text-slate-400" />
+                        )}
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-foreground font-bold text-base">{clock.cityName}</h3>
+                            {td.currentlyDST && (
+                                <span className="text-[9px] bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded-full font-bold">DST</span>
+                            )}
+                        </div>
+                        <p className="text-muted-foreground text-[11px]">{clock.countryName} · {td.offsetStr}</p>
+                        <p className="text-muted-foreground text-[10px]">{td.weekday}, {td.day} {td.month} · {td.diffStr}</p>
+                    </div>
+                </div>
+
+                <div className="flex flex-col items-end gap-1">
+                    <div className="font-mono text-foreground font-bold text-2xl" style={{ letterSpacing: '0.02em' }}>
+                        {td.displayHour}:{td.displayMin}
+                    </div>
+                    <span className="text-muted-foreground text-xs uppercase">{td.ampm}</span>
+                    {!clock.isPinned && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onRemove(); }}
+                            className="mt-1 p-1 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
+                        >
+                            <X size={12} className="text-muted-foreground" />
+                        </button>
+                    )}
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+function LiveAddZoneItem({ tz, onAdd }: { tz: TimezoneInfo; onAdd: () => void }) {
+    const now = useSharedTime();
+    const meta = getCountryMeta(tz.iana);
+    const td = getTimeData(tz.iana, now);
+    
+    return (
+        <button onClick={onAdd}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-background border border-border hover:border-primary/50 transition-colors text-left group">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-[32px] h-[22px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden">
+                    {meta.countryCode ? (
+                        <img 
+                            src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
+                            alt={meta.countryCode}
+                            className="w-full h-auto object-cover"
+                            onError={(e) => { 
+                                e.currentTarget.style.display = 'none'; 
+                                e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
+                                if (e.currentTarget.parentElement) {
+                                    e.currentTarget.parentElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+                                }
+                            }}
+                        />
+                    ) : (
+                        <Globe size={14} className="text-slate-400" />
+                    )}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-foreground font-semibold text-sm truncate group-hover:text-primary transition-colors">{tz.city}</p>
+                    <p className="text-muted-foreground text-xs truncate">{tz.country}</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                <div className="hidden sm:block">
+                    <p className="text-foreground font-mono text-sm font-medium">{td.displayHour}:{td.displayMin} {td.ampm}</p>
+                    <p className="text-muted-foreground text-[10px]">{td.offsetStr}</p>
+                </div>
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Plus size={14} className="text-primary" />
+                </div>
+            </div>
+        </button>
+    );
+}
+
 export default function WorldClock() {
     useEffect(() => { AnalyticsService.trackScreen('World_Clock'); }, []);
     const navigate = useNavigate();
     const [view, setView] = useState<'clocks' | 'compare'>('clocks');
-    const [now, setNow] = useState(new Date());
     const [clocks, setClocks] = useState<SavedClock[]>([]);
     const [showAddPanel, setShowAddPanel] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -601,13 +743,7 @@ export default function WorldClock() {
         setClocks(DEFAULT_CLOCKS);
     }, []);
 
-    // Interval logic
-    useEffect(() => {
-        const interval = setInterval(() => setNow(new Date()), 1000);
-        return () => clearInterval(interval);
-    }, []);
-
-    // Sorting Logic - IST Pinned Top, Karachi Pinned Bottom, Rest A-Z
+    // Mount logic - Read from LocalStorage
     const activeClocks = useMemo(() => {
         let clocksCopy = [...clocks];
         
@@ -646,13 +782,14 @@ export default function WorldClock() {
             return [...popular, ...rest];
         }
 
+        const searchDate = new Date();
         // Calculate offsets on the fly for search strings
         const filtered = notSelected.filter(t => {
             let offsetStr = 'UTC';
             try {
                 offsetStr = new Intl.DateTimeFormat('en-US', {
                     timeZone: t.iana, timeZoneName: 'shortOffset',
-                }).formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'UTC';
+                }).formatToParts(searchDate).find(p => p.type === 'timeZoneName')?.value || 'UTC';
             } catch (e) {
                 // Ignore invalid timezones
             }
@@ -667,7 +804,7 @@ export default function WorldClock() {
         });
 
         return filtered;
-    }, [clocks, searchQuery, now]);
+    }, [clocks, searchQuery]);
 
     const showToast = (msg: string) => {
         setToastMessage(msg);
@@ -741,71 +878,15 @@ export default function WorldClock() {
                 <CompareView />
             ) : (
             <div className="px-4 pt-3 pb-28 space-y-4">
-                {activeClocks.map((clock, i) => {
-                    const td = getTimeData(clock.timezone, now);
-                    const meta = getCountryMeta(clock.timezone);
-                    const isDark = td.hour < 6 || td.hour >= 20;
-
-                    return (
-                        <motion.div key={clock.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.04 }}
-                            className="relative rounded-2xl overflow-hidden shadow-md cursor-pointer active:scale-[0.98] transition-transform select-none border border-border bg-card"
-                            onClick={() => setDetailClock(clock)}
-                        >
-                            <div className={`absolute inset-0 opacity-10 ${isDark ? 'bg-indigo-900' : 'bg-primary'}`} />
-                            <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-primary/5" />
-                            <div className="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-black/5" />
-
-                            <div className="relative p-4 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-[36px] h-[24px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-[2px] overflow-hidden">
-                                        {meta.countryCode ? (
-                                            <img 
-                                                src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
-                                                alt={meta.countryCode}
-                                                className="w-full h-auto object-cover"
-                                                onError={(e) => { 
-                                                    e.currentTarget.style.display = 'none'; 
-                                                    e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
-                                                    if (e.currentTarget.parentElement) {
-                                                        e.currentTarget.parentElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
-                                                    }
-                                                }}
-                                            />
-                                        ) : (
-                                            <Globe size={16} className="text-slate-400" />
-                                        )}
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="text-foreground font-bold text-base">{clock.cityName}</h3>
-                                            {td.currentlyDST && (
-                                                <span className="text-[9px] bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded-full font-bold">DST</span>
-                                            )}
-                                        </div>
-                                        <p className="text-muted-foreground text-[11px]">{clock.countryName} · {td.offsetStr}</p>
-                                        <p className="text-muted-foreground text-[10px]">{td.weekday}, {td.day} {td.month} · {td.diffStr}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col items-end gap-1">
-                                    <div className="font-mono text-foreground font-bold text-2xl" style={{ letterSpacing: '0.02em' }}>
-                                        {td.displayHour}:{td.displayMin}
-                                    </div>
-                                    <span className="text-muted-foreground text-xs uppercase">{td.ampm}</span>
-                                    {!clock.isPinned && (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); removeZone(clock.id); }}
-                                            className="mt-1 p-1 rounded-lg bg-card border border-border hover:bg-muted transition-colors"
-                                        >
-                                            <X size={12} className="text-muted-foreground" />
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
-                    );
-                })}
+                {activeClocks.map((clock, i) => (
+                    <LiveClockCard 
+                        key={clock.id} 
+                        clock={clock} 
+                        index={i} 
+                        onDetail={() => setDetailClock(clock)} 
+                        onRemove={() => removeZone(clock.id)} 
+                    />
+                ))}
 
                 {activeClocks.length === 0 && (
                     <div className="text-center py-16">
@@ -878,49 +959,9 @@ export default function WorldClock() {
                             )}
 
                             <div className="overflow-y-auto flex-1 px-6 pb-6 space-y-2">
-                                {availableZones.map(tz => {
-                                    const meta = getCountryMeta(tz.iana);
-                                    const td = getTimeData(tz.iana, now);
-                                    
-                                    return (
-                                        <button key={tz.iana} onClick={() => addZone(tz)}
-                                            className="w-full flex items-center justify-between p-3 rounded-xl bg-background border border-border hover:border-primary/50 transition-colors text-left group">
-                                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                <div className="w-[32px] h-[22px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden">
-                                                    {meta.countryCode ? (
-                                                        <img 
-                                                            src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
-                                                            alt={meta.countryCode}
-                                                            className="w-full h-auto object-cover"
-                                                            onError={(e) => { 
-                                                                e.currentTarget.style.display = 'none'; 
-                                                                e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
-                                                                if (e.currentTarget.parentElement) {
-                                                                    e.currentTarget.parentElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
-                                                                }
-                                                            }}
-                                                        />
-                                                    ) : (
-                                                        <Globe size={14} className="text-slate-400" />
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-foreground font-semibold text-sm truncate group-hover:text-primary transition-colors">{tz.city}</p>
-                                                    <p className="text-muted-foreground text-xs truncate">{tz.country}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-4 flex-shrink-0 text-right">
-                                                <div className="hidden sm:block">
-                                                    <p className="text-foreground font-mono text-sm font-medium">{td.displayHour}:{td.displayMin} {td.ampm}</p>
-                                                    <p className="text-muted-foreground text-[10px]">{td.offsetStr}</p>
-                                                </div>
-                                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                                                    <Plus size={14} className="text-primary" />
-                                                </div>
-                                            </div>
-                                        </button>
-                                    );
-                                })}
+                                {availableZones.map(tz => (
+                                    <LiveAddZoneItem key={tz.iana} tz={tz} onAdd={() => addZone(tz)} />
+                                ))}
 
                                 {availableZones.length === 0 && (
                                     <div className="text-center py-8">
@@ -938,7 +979,7 @@ export default function WorldClock() {
             {/* Detail View */}
             <AnimatePresence>
                 {detailClock && (
-                    <CityDetailView clock={detailClock} now={now} onBack={() => setDetailClock(null)} />
+                    <CityDetailView clock={detailClock} onBack={() => setDetailClock(null)} />
                 )}
             </AnimatePresence>
         </div>

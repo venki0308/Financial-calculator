@@ -12,7 +12,8 @@ export async function nativeShare(title: string, text: string, url?: string): Pr
             const { Share } = await import('@capacitor/share');
             await Share.share({
                 title,
-                text: url ? `${text}\n${url}` : text,
+                text,
+                url,
                 dialogTitle: `Share ${title}`,
             });
             return;
@@ -25,7 +26,7 @@ export async function nativeShare(title: string, text: string, url?: string): Pr
         }
 
         // 3. Fallback: copy to clipboard with toast
-        const copyText = url ? `${text}\n${url}` : text;
+        const copyText = url ? (text ? `${text}\n${url}` : url) : text;
         await navigator.clipboard.writeText(copyText);
         showToast('✅ Copied to clipboard!');
     } catch (e: any) {

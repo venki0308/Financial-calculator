@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bookmark, ChevronDown, ChevronUp, Trash2, Calculator, TrendingUp, IndianRupee, Calendar, Percent, CreditCard, PiggyBank, Home, Briefcase, Heart, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useCalculatorStore, Calculation } from '../store/useCalculatorStore';
 import { formatINR } from '../utils/calculations';
 
@@ -15,24 +16,24 @@ const calcMeta: Record<string, { label: string; icon: any; color: string; gradie
     'Advanced SIP Calculator': { label: 'Advanced SIP', icon: TrendingUp, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
     'fd': { label: 'FD Calculator', icon: PiggyBank, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
     'FD Calculator': { label: 'FD Calculator', icon: PiggyBank, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
-    'nps': { label: 'NPS Calculator', icon: Heart, color: '#10B981', gradient: 'from-green-600/20 to-emerald-600/20' },
-    'NPS Calculator': { label: 'NPS Calculator', icon: Heart, color: '#10B981', gradient: 'from-green-600/20 to-emerald-600/20' },
-    'ppf': { label: 'PPF Calculator', icon: PiggyBank, color: '#06B6D4', gradient: 'from-cyan-600/20 to-teal-600/20' },
-    'PPF Calculator': { label: 'PPF Calculator', icon: PiggyBank, color: '#06B6D4', gradient: 'from-cyan-600/20 to-teal-600/20' },
-    'epf': { label: 'EPF Calculator', icon: Briefcase, color: '#14B8A6', gradient: 'from-teal-600/20 to-cyan-600/20' },
-    'EPF Calculator': { label: 'EPF Calculator', icon: Briefcase, color: '#14B8A6', gradient: 'from-teal-600/20 to-cyan-600/20' },
-    'ssy': { label: 'SSY Calculator', icon: GraduationCap, color: '#EC4899', gradient: 'from-pink-600/20 to-rose-600/20' },
-    'SSY Calculator': { label: 'SSY Calculator', icon: GraduationCap, color: '#EC4899', gradient: 'from-pink-600/20 to-rose-600/20' },
+    'nps': { label: 'calculators.nps.name', icon: Heart, color: '#10B981', gradient: 'from-green-600/20 to-emerald-600/20' },
+    'NPS Calculator': { label: 'calculators.nps.name', icon: Heart, color: '#10B981', gradient: 'from-green-600/20 to-emerald-600/20' },
+    'ppf': { label: 'calculators.ppf.name', icon: PiggyBank, color: '#06B6D4', gradient: 'from-cyan-600/20 to-teal-600/20' },
+    'PPF Calculator': { label: 'calculators.ppf.name', icon: PiggyBank, color: '#06B6D4', gradient: 'from-cyan-600/20 to-teal-600/20' },
+    'epf': { label: 'calculators.epf.name', icon: Briefcase, color: '#14B8A6', gradient: 'from-teal-600/20 to-cyan-600/20' },
+    'EPF Calculator': { label: 'calculators.epf.name', icon: Briefcase, color: '#14B8A6', gradient: 'from-teal-600/20 to-cyan-600/20' },
+    'ssy': { label: 'calculators.ssy.name', icon: GraduationCap, color: '#EC4899', gradient: 'from-pink-600/20 to-rose-600/20' },
+    'SSY Calculator': { label: 'calculators.ssy.name', icon: GraduationCap, color: '#EC4899', gradient: 'from-pink-600/20 to-rose-600/20' },
     'tax': { label: 'Income Tax', icon: IndianRupee, color: '#EF4444', gradient: 'from-red-600/20 to-orange-600/20' },
     'breakeven': { label: 'Break-even', icon: Calculator, color: '#22C55E', gradient: 'from-green-600/20 to-lime-600/20' },
     'Break Even Calculator': { label: 'Break-even Calculator', icon: Calculator, color: '#22C55E', gradient: 'from-green-600/20 to-lime-600/20' },
     'home_loan': { label: 'Home Loan', icon: Home, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
     'car_loan': { label: 'Car Loan', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
     'Car Loan Calculator': { label: 'Car Loan', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
-    'lumpsum': { label: 'Lumpsum', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-blue-600/20' },
-    'Lumpsum Calculator': { label: 'Lumpsum Calculator', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-blue-600/20' },
-    'salary_hike': { label: 'Salary Hike', icon: TrendingUp, color: '#22D3EE', gradient: 'from-cyan-600/20 to-sky-600/20' },
-    'Salary Hike Calculator': { label: 'Salary Hike', icon: TrendingUp, color: '#22D3EE', gradient: 'from-cyan-600/20 to-sky-600/20' },
+    'lumpsum': { label: 'calculators.lumpsum.name', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-blue-600/20' },
+    'Lumpsum Calculator': { label: 'calculators.lumpsum.name', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-blue-600/20' },
+    'salary_hike': { label: 'calculators.salaryHike.name', icon: TrendingUp, color: '#22D3EE', gradient: 'from-cyan-600/20 to-sky-600/20' },
+    'Salary Hike Calculator': { label: 'calculators.salaryHike.name', icon: TrendingUp, color: '#22D3EE', gradient: 'from-cyan-600/20 to-sky-600/20' },
     'gst': { label: 'GST Calculator', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
     'GST Calculator (standard)': { label: 'GST Standard', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
     'GST Calculator (reverse)': { label: 'GST Reverse', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
@@ -106,6 +107,7 @@ function formatValue(key: string, val: any): string {
 }
 
 function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void }) {
+    const { t } = useTranslation();
     const [expanded, setExpanded] = useState(false);
     const meta = calcMeta[calc.calculatorType] || defaultMeta;
     const Icon = meta.icon;
@@ -135,7 +137,7 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-foreground font-bold text-sm">{meta.label}</h3>
+                            <h3 className="text-foreground font-bold text-sm">{t(meta.label as any, meta.label)}</h3>
                             <div className="flex items-center gap-2">
                                 {expanded ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                             </div>

@@ -187,7 +187,7 @@ export default function SalaryHikeCalculator() {
                 </div>
             </div>
 
-            <div className="px-4 pb-28 pt-4">
+            <div className="px-4 pb-32 pt-4">
                 {/* Mode Selector — matching reference design */}
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border mb-4 mt-2">
                     <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold mb-3 uppercase tracking-wider">Quarter Of Return Filing</p>
@@ -360,10 +360,25 @@ export default function SalaryHikeCalculator() {
                     whileTap={{ scale: 0.97 }}
                     onClick={handleSave}
                     disabled={isSaved || isAlreadySaved}
-                    className={`w-full py-3.5 rounded-2xl font-semibold text-sm mb-3 flex items-center justify-center gap-2 transition-all ${isSaved || isAlreadySaved ? 'bg-brand-green/10 text-brand-green border border-brand-green/20' : 'bg-brand-green text-white'}`}
+                    className={`w-full py-3.5 rounded-2xl font-semibold text-sm mb-5 flex items-center justify-center gap-2 transition-all ${isSaved || isAlreadySaved ? 'bg-brand-green/10 text-brand-green border border-brand-green/20' : 'bg-brand-green text-white'}`}
                 >
                     {isSaved || isAlreadySaved ? <><Check size={18} /> Saved</> : <><Save size={18} /> Save Calculation</>}
                 </motion.button>
+
+                <div className="flex gap-3 mb-5">
+                    <button
+                        onClick={handleDownloadPDF}
+                        className="flex-1 py-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors active:bg-indigo-100 dark:active:bg-indigo-500/20"
+                    >
+                        📄 Export PDF
+                    </button>
+                    <button
+                        onClick={handleDownloadExcel}
+                        className="flex-1 py-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors active:bg-emerald-100 dark:active:bg-emerald-500/20"
+                    >
+                        📊 Export Excel
+                    </button>
+                </div>
 
                 {/* Disclaimer */}
                 <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50 dark:bg-brand-blue/5 border border-blue-100 dark:border-brand-blue/15">

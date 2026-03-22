@@ -22,7 +22,16 @@
         "marketSnapshot": "మార్కెట్ స్నాప్‌షాట్",
         "viewExpenses": "ఖర్చులు చూడండి",
         "popularCalcs": "ప్రజాదరణ పొందిన కాలిక్యులేటర్లు",
-        "expenseOverview": "ఖర్చుల అవలోకనం"
+        "expenseOverview": "ఖర్చుల అవలోకనం",
+        "financialAdvisorDesc": "AI ఆధారిత వ్యక్తిగత అంతర్దృష్టులు",
+        "goalPlannerDesc": "మీ ఆర్థిక లక్ష్యాలను ప్లాన్ చేసి సాధించండి",
+        "compareScenarios": "సన్నివేశాలను పోల్చండి",
+        "compareScenariosDesc": "వివిధ పెట్టుబడులను పక్కపక్కనే పోల్చండి",
+        "worldClockDesc": "వివిధ సమయ మండలాల్లో సమయాన్ని ట్రాక్ చేయండి",
+        "ageCalculatorDesc": "సంవత్సరాలు, నెలలు మరియు రోజులలో మీ ఖచ్చితమైన వయస్సును లెక్కించండి",
+        "centralGovt": "కేంద్ర ప్రభుత్వం",
+        "currentBalance": "ప్రస్తుత నిల్వ",
+        "monthlyIncome": "నెలవారీ ఆదాయం"
     },
     "calculators": {
         "title": "అన్ని కాలిక్యులేటర్లు",
@@ -68,7 +77,7 @@
             "desc": "FY 2025-26 పన్ను గణన"
         },
         "salaryHike": {
-            "name": "జీతం పెంపు కాలిక్యులేటర్",
+            "name": "జీతం పెంపు",
             "desc": "మీ పెంపును ప్లాన్ చేయండి"
         },
         "hra": {
@@ -96,7 +105,7 @@
             "desc": "లక్ష్య ఆధారిత ప్రణాళిక"
         },
         "ppf": {
-            "name": "PPF కాలిక్యులేటర్",
+            "name": "పీపీఎఫ్",
             "desc": "పబ్లిక్ ప్రావిడెంట్ ఫండ్"
         },
         "nps": {
@@ -140,7 +149,7 @@
             "desc": "వ్యాపార ప్రణాళిక"
         },
         "property": {
-            "name": "ఆస్తి కాలిక్యులేటర్",
+            "name": "ఆస్తి",
             "desc": "భూమి & ఫ్లాట్ మూల్యాంకనం",
             "land": "భూమి",
             "flat": "ఫ్లాట్/అపార్ట్‌మెంట్",
@@ -211,12 +220,33 @@
             "totalPayment": "మొత్తం చెల్లింపు"
         },
         "overdraft": {
-            "name": "Overdraft Calculator",
+            "name": "ఓవర్‌డ్రాఫ్ట్ కాలిక్యులేటర్",
             "desc": "Calculate OD interest"
         },
         "age": {
-            "name": "Age Calculator",
+            "name": "వయస్సు కాలిక్యులేటర్",
             "desc": "Calculate your exact age"
+        },
+        "goalPlanner": {
+            "name": "లక్ష్య ప్రణాళిక"
+        },
+        "financialAdvisor": {
+            "name": "ఆర్థిక సలహాదారు"
+        },
+        "worldClock": {
+            "name": "వరల్డ్ క్లాక్"
+        },
+        "personalLoan": {
+            "name": "వ్యక్తిగత రుణం",
+            "desc": "వ్యక్తిగత రుణాల కోసం EMI మరియు వడ్డీని లెక్కించండి"
+        },
+        "educationLoan": {
+            "name": "విద్యా రుణం",
+            "desc": "విద్యా రుణాల కోసం EMI, వడ్డీ మరియు పన్ను ప్రయోజనాలను లెక్కించండి"
+        },
+        "scientific": {
+            "name": "సైంటిఫిక్ కాలిక్యులేటర్",
+            "desc": "అధునాతన గణిత విధులు మరియు లెక్కలు"
         }
     },
     "expenses": {
@@ -305,7 +335,16 @@
             "groceries": "కిరాణా",
             "dinner": "డిన్నర్",
             "petrol": "పెట్రోల్"
-        }
+        },
+        "paymentMethods": {
+            "Credit Card": "క్రెడిట్ కార్డ్"
+        },
+        "netWorth": "నికర విలువ",
+        "updateNetWorth": "నికర విలువ నవీకరించండి",
+        "totalAssets": "మొత్తం ఆస్తులు",
+        "totalLiabilities": "మొత్తం అప్పులు",
+        "assets": "ఆస్తులు",
+        "liabilities": "అప్పులు"
     },
     "schemes": {
         "title": "ప్రభుత్వ పథకాలు",

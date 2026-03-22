@@ -23,7 +23,14 @@
         "viewExpenses": "View Expenses",
         "popularCalcs": "Popular Calculators",
         "currentBalance": "Current Balance",
-        "monthlyIncome": "Monthly Income"
+        "monthlyIncome": "Monthly Income",
+        "financialAdvisorDesc": "AI-Powered personalized insights",
+        "goalPlannerDesc": "Plan & achieve your financial targets",
+        "compareScenarios": "Compare Scenarios",
+        "compareScenariosDesc": "Compare different investments side-by-side",
+        "worldClockDesc": "Track time across different timezones",
+        "ageCalculatorDesc": "Calculate your exact age in years, months & days",
+        "centralGovt": "Central Govt"
     },
     "calculators": {
         "title": "All Calculators",
@@ -70,7 +77,7 @@
             "desc": "Calculate tax for FY 2026-27"
         },
         "salaryHike": {
-            "name": "Salary Hike Calculator",
+            "name": "Salary Hike",
             "desc": "Plan your increment"
         },
         "hra": {
@@ -98,7 +105,7 @@
             "desc": "Target-based planning"
         },
         "ppf": {
-            "name": "PPF Calculator",
+            "name": "PPF",
             "desc": "Public Provident Fund"
         },
         "nps": {
@@ -142,7 +149,7 @@
             "desc": "Business planning"
         },
         "property": {
-            "name": "Property Calculator",
+            "name": "Property",
             "desc": "Land & flat valuation",
             "land": "Land",
             "flat": "Flat/Apartment",
@@ -219,6 +226,27 @@
         "age": {
             "name": "Age Calculator",
             "desc": "Calculate your exact age"
+        },
+        "goalPlanner": {
+            "name": "Goal Planner"
+        },
+        "financialAdvisor": {
+            "name": "Financial Advisor"
+        },
+        "worldClock": {
+            "name": "World Clock"
+        },
+        "personalLoan": {
+            "name": "Personal Loan",
+            "desc": "Calculate EMI and interest for personal loans"
+        },
+        "educationLoan": {
+            "name": "Education Loan",
+            "desc": "Calculate EMI, interest, and tax benefits for education loans"
+        },
+        "scientific": {
+            "name": "Scientific Calculator",
+            "desc": "Advanced mathematical functions and calculations"
         }
     },
     "expenses": {
@@ -320,7 +348,13 @@
             "savedWell": "🎉 Great job! You saved ₹{{amount}} this month ({{rate}}% savings rate)."
         },
         "subs": "Subs",
-        "subsSubtitle": "Subscriptions & recurring"
+        "subsSubtitle": "Subscriptions & recurring",
+        "netWorth": "Net Worth",
+        "updateNetWorth": "Update Net Worth",
+        "totalAssets": "Total Assets",
+        "totalLiabilities": "Total Liabilities",
+        "assets": "Assets",
+        "liabilities": "Liabilities"
     },
     "schemes": {
         "title": "Government Schemes",
@@ -732,5 +766,11 @@
         "generalBullet3": "FinCalix and its developers are not liable for any financial decisions made using this app.",
         "acknowledge": "By continuing, you confirm that you have read, understood, and agreed to this disclaimer.",
         "button": "I Understand, Continue"
+    },
+    "privacyBanner": {
+        "title": "Your Privacy First",
+        "message": "FinCalix operates completely offline. We do not collect, store, or share your financial data or personal information. Everything stays on your device.",
+        "viewPolicy": "View Policy",
+        "accept": "I Understand"
     }
 }

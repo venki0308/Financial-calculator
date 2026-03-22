@@ -98,6 +98,12 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
     // Removed old static alerts, now using dynamic insights array from store.
     const activeInsights = insights.filter(i => !i.dismissed);
 
+    // ── Net Worth Data ────────────────────────────────────────────────────────
+    const currentMonthKey = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}`;
+    const availableNetWorths = netWorthHistory.filter(n => n.month <= currentMonthKey);
+    const displayNetWorth = availableNetWorths.length > 0 ? availableNetWorths[availableNetWorths.length - 1] : null;
+    const isCurrentMonthNetWorth = displayNetWorth?.month === currentMonthKey;
+
 
     // Category breakdown for pie chart
     const categoryTotals = useMemo(() => {
@@ -368,35 +374,36 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="font-bold text-slate-900 dark:text-foreground">
-                                ₹{netWorthHistory.length > 0 ? netWorthHistory[netWorthHistory.length - 1].netWorth.toLocaleString('en-IN') : '0'}
+                                ₹{displayNetWorth ? displayNetWorth.netWorth.toLocaleString('en-IN') : '0'}
                             </span>
-                            {netWorthHistory.length > 0 && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        const lastEntry = netWorthHistory[netWorthHistory.length - 1];
-                                        
-                                        const mappedAssets: Record<string, string> = {};
-                                        lastEntry.assets?.forEach(a => {
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    
+                                    const mappedAssets: Record<string, string> = {};
+                                    if (displayNetWorth) {
+                                        displayNetWorth.assets?.forEach(a => {
                                             const field = ASSET_FIELDS.find(f => f.label === a.label);
                                             if (field) mappedAssets[field.key] = String(a.value);
                                         });
-                                        setNwAssets(mappedAssets);
-                                        
-                                        const mappedLiab: Record<string, string> = {};
-                                        lastEntry.liabilities?.forEach(l => {
+                                    }
+                                    setNwAssets(mappedAssets);
+                                    
+                                    const mappedLiab: Record<string, string> = {};
+                                    if (displayNetWorth) {
+                                        displayNetWorth.liabilities?.forEach(l => {
                                             const field = LIABILITY_FIELDS.find(f => f.label === l.label);
                                             if (field) mappedLiab[field.key] = String(l.value);
                                         });
-                                        setNwLiabilities(mappedLiab);
-                                        
-                                        setShowNetWorthModal(true);
-                                    }}
-                                    className="p-1 text-muted-foreground hover:text-brand-purple focus:outline-none"
-                                >
-                                    <Edit2 size={16} />
-                                </button>
-                            )}
+                                    }
+                                    setNwLiabilities(mappedLiab);
+                                    
+                                    setShowNetWorthModal(true);
+                                }}
+                                className="p-1 text-muted-foreground hover:text-brand-purple focus:outline-none"
+                            >
+                                <Edit2 size={16} />
+                            </button>
                             {isNetWorthOpen ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                         </div>
                     </button>
@@ -409,23 +416,30 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 exit={{ height: 0, opacity: 0 }}
                                 className="px-4 pb-4 border-t border-slate-100 dark:border-white/5"
                             >
-                                {netWorthHistory.length === 0 ? (
+                                {!displayNetWorth ? (
                                     <div className="text-center py-4 text-muted-foreground text-xs">
-                                        No net worth data added yet. 
-                                        <button onClick={() => setShowNetWorthModal(true)} className="text-brand-purple block mx-auto mt-2 font-semibold">Update Net Worth</button>
+                                        {t('expenses.noData')}
+                                        <button onClick={() => setShowNetWorthModal(true)} className="text-brand-purple block mx-auto mt-2 font-semibold">
+                                            {t('expenses.updateNetWorth')}
+                                        </button>
                                     </div>
                                 ) : (
                                     <>
                                         <div className="pt-4 grid grid-cols-2 gap-4">
                                             <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3">
-                                                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Total Assets</p>
-                                                <p className="font-bold text-green-500 text-sm">₹{netWorthHistory[netWorthHistory.length - 1].totalAssets.toLocaleString('en-IN')}</p>
+                                                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">{t('expenses.totalAssets')}</p>
+                                                <p className="font-bold text-green-500 text-sm">₹{displayNetWorth.totalAssets.toLocaleString('en-IN')}</p>
                                             </div>
                                             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
-                                                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Total Liabilities</p>
-                                                <p className="font-bold text-red-500 text-sm">₹{netWorthHistory[netWorthHistory.length - 1].totalLiabilities.toLocaleString('en-IN')}</p>
+                                                <p className="text-[10px] uppercase font-bold text-muted-foreground mb-1">{t('expenses.totalLiabilities')}</p>
+                                                <p className="font-bold text-red-500 text-sm">₹{displayNetWorth.totalLiabilities.toLocaleString('en-IN')}</p>
                                             </div>
                                         </div>
+                                        {!isCurrentMonthNetWorth && (
+                                            <div className="mt-3 text-center text-[10px] text-muted-foreground">
+                                                Showing historical net worth from {new Date(displayNetWorth.month + '-01').toLocaleString(undefined, { month: 'short', year: 'numeric' })}.
+                                            </div>
+                                        )}
                                     </>
                                 )}
                             </motion.div>
@@ -507,11 +521,11 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
 
 
             {/* Net Worth Bottom Sheet Modal */}
-            <BottomSheet isOpen={showNetWorthModal} onClose={() => setShowNetWorthModal(false)} title="Update Net Worth">
-                <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+            <BottomSheet isOpen={showNetWorthModal} onClose={() => setShowNetWorthModal(false)} title={t('expenses.updateNetWorth')}>
+                <div className="space-y-4">
                     {/* Assets Section */}
                     <div>
-                        <p className="text-green-500 text-xs font-bold uppercase tracking-wider mb-2">Assets</p>
+                        <p className="text-green-500 text-xs font-bold uppercase tracking-wider mb-2">{t('expenses.assets')}</p>
                         <div className="space-y-2">
                             {ASSET_FIELDS.map(f => (
                                 <div key={f.key} className="flex items-center gap-3">
@@ -528,7 +542,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
 
                     {/* Liabilities Section */}
                     <div>
-                        <p className="text-red-400 text-xs font-bold uppercase tracking-wider mb-2">Liabilities</p>
+                        <p className="text-red-400 text-xs font-bold uppercase tracking-wider mb-2">{t('expenses.liabilities')}</p>
                         <div className="space-y-2">
                             {LIABILITY_FIELDS.map(f => (
                                 <div key={f.key} className="flex items-center gap-3">
