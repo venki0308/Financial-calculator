@@ -521,58 +521,80 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
 
 
             {/* Net Worth Bottom Sheet Modal */}
-            <BottomSheet isOpen={showNetWorthModal} onClose={() => setShowNetWorthModal(false)} title={t('expenses.updateNetWorth')}>
-                <div className="space-y-4">
-                    {/* Assets Section */}
-                    <div>
-                        <p className="text-green-500 text-xs font-bold uppercase tracking-wider mb-2">{t('expenses.assets')}</p>
-                        <div className="space-y-2">
-                            {ASSET_FIELDS.map(f => (
-                                <div key={f.key} className="flex items-center gap-3">
-                                    <span className="text-muted-foreground text-xs w-28 flex-shrink-0">{f.label}</span>
-                                    <div className="flex-1 relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₹</span>
-                                        <input type="number" value={nwAssets[f.key] || ''} onChange={e => setNwAssets(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                            className="w-full pl-7 pr-3 py-2.5 bg-card border-border border border-slate-600 rounded-xl text-foreground text-sm focus:outline-none focus:border-green-500" placeholder="0" />
+            <BottomSheet isOpen={showNetWorthModal} onClose={() => setShowNetWorthModal(false)} title="">
+                <div style={{ height: '80vh' }} className="flex flex-col -mx-4 -mt-4">
+                    {/* Fixed header */}
+                    <div className="px-4 py-3 flex items-center justify-between flex-shrink-0">
+                        <h3 className="text-foreground font-semibold text-base">{t('expenses.updateNetWorth')}</h3>
+                        <button onClick={() => setShowNetWorthModal(false)} className="p-1.5 rounded-xl bg-muted text-muted-foreground">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <div className="h-px bg-border flex-shrink-0" />
+
+                    {/* Scrollable content */}
+                    <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+                        {/* Assets Section */}
+                        <div>
+                            <p className="text-green-500 text-xs font-bold uppercase tracking-wider mb-2">{t('expenses.assets')}</p>
+                            <div className="space-y-2">
+                                {ASSET_FIELDS.map(f => (
+                                    <div key={f.key} className="flex items-center gap-3">
+                                        <span className="text-muted-foreground text-xs w-28 flex-shrink-0">{f.label}</span>
+                                        <div className="flex-1 relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₹</span>
+                                            <input type="number" value={nwAssets[f.key] || ''} onChange={e => setNwAssets(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                                className="w-full pl-7 pr-3 py-2.5 bg-card border-border border border-slate-600 rounded-xl text-foreground text-sm focus:outline-none focus:border-green-500" placeholder="0" />
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Liabilities Section */}
+                        <div>
+                            <p className="text-red-400 text-xs font-bold uppercase tracking-wider mb-2">{t('expenses.liabilities')}</p>
+                            <div className="space-y-2">
+                                {LIABILITY_FIELDS.map(f => (
+                                    <div key={f.key} className="flex items-center gap-3">
+                                        <span className="text-muted-foreground text-xs w-28 flex-shrink-0">{f.label}</span>
+                                        <div className="flex-1 relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₹</span>
+                                            <input type="number" value={nwLiabilities[f.key] || ''} onChange={e => setNwLiabilities(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                                className="w-full pl-7 pr-3 py-2.5 bg-card border-border border border-slate-600 rounded-xl text-foreground text-sm focus:outline-none focus:border-red-500" placeholder="0" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
-                    {/* Liabilities Section */}
-                    <div>
-                        <p className="text-red-400 text-xs font-bold uppercase tracking-wider mb-2">{t('expenses.liabilities')}</p>
-                        <div className="space-y-2">
-                            {LIABILITY_FIELDS.map(f => (
-                                <div key={f.key} className="flex items-center gap-3">
-                                    <span className="text-muted-foreground text-xs w-28 flex-shrink-0">{f.label}</span>
-                                    <div className="flex-1 relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₹</span>
-                                        <input type="number" value={nwLiabilities[f.key] || ''} onChange={e => setNwLiabilities(prev => ({ ...prev, [f.key]: e.target.value }))}
-                                            className="w-full pl-7 pr-3 py-2.5 bg-card border-border border border-slate-600 rounded-xl text-foreground text-sm focus:outline-none focus:border-red-500" placeholder="0" />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                    {/* Apply button — NEVER inside scroll, always visible */}
+                    <div className="h-px bg-border flex-shrink-0" />
+                    <div className="px-4 pt-3 pb-4 flex-shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+                        <motion.button
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => {
+                                const assets = ASSET_FIELDS.map(f => ({ label: f.label, value: Number(nwAssets[f.key]) || 0 }));
+                                const liabilities = LIABILITY_FIELDS.map(f => ({ label: f.label, value: Number(nwLiabilities[f.key]) || 0 }));
+                                const totalAssets = assets.reduce((s, a) => s + a.value, 0);
+                                const totalLiabilities = liabilities.reduce((s, l) => s + l.value, 0);
+                                const netWorth = totalAssets - totalLiabilities;
+                                const month = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}`;
+                                addNetWorthSnapshot({ month, assets, liabilities, totalAssets, totalLiabilities, netWorth });
+                                setShowNetWorthModal(false);
+                                setNwAssets({});
+                                setNwLiabilities({});
+                            }}
+                            className="w-full py-4 rounded-xl bg-brand-purple text-white font-bold text-base"
+                            style={{ minHeight: 52 }}
+                        >
+                            Apply
+                        </motion.button>
                     </div>
                 </div>
-
-                <motion.button whileTap={{ scale: 0.97 }} onClick={() => {
-                    const assets = ASSET_FIELDS.map(f => ({ label: f.label, value: Number(nwAssets[f.key]) || 0 }));
-                    const liabilities = LIABILITY_FIELDS.map(f => ({ label: f.label, value: Number(nwLiabilities[f.key]) || 0 }));
-                    const totalAssets = assets.reduce((s, a) => s + a.value, 0);
-                    const totalLiabilities = liabilities.reduce((s, l) => s + l.value, 0);
-                    const netWorth = totalAssets - totalLiabilities;
-                    const month = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}`;
-                    addNetWorthSnapshot({ month, assets, liabilities, totalAssets, totalLiabilities, netWorth });
-                    setShowNetWorthModal(false);
-                    setNwAssets({});
-                    setNwLiabilities({});
-                }} className="w-full mt-4 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm">
-                    Save Net Worth
-                </motion.button>
             </BottomSheet>
+
         </div>
     );
 }

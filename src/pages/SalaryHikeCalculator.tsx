@@ -350,14 +350,6 @@ export default function SalaryHikeCalculator() {
                 {/* Action Buttons */}
                 <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => setShowProjection(true)}
-                    className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-semibold text-sm mb-3 active:bg-slate-50 dark:active:bg-card transition-colors"
-                >
-                    📊 View Monthly Projection
-                </motion.button>
-
-                <motion.button
-                    whileTap={{ scale: 0.97 }}
                     onClick={handleSave}
                     disabled={isSaved || isAlreadySaved}
                     className={`w-full py-3.5 rounded-2xl font-semibold text-sm mb-5 flex items-center justify-center gap-2 transition-all ${isSaved || isAlreadySaved ? 'bg-brand-green/10 text-brand-green border border-brand-green/20' : 'bg-brand-green text-white'}`}

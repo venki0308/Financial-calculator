@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Info } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -20,8 +20,21 @@ export default function CompoundInterestCalculator() {
     const [rate, setRate] = useState(8);
     const [years, setYears] = useState(10);
     const [freq, setFreq] = useState(4); const [showInfo, setShowInfo] = useState(false);
+    const [showAdvanced, setShowAdvanced] = useState(false);
     const result = useMemo(() => calculateCompoundInterest(principal, rate, years, freq), [principal, rate, years, freq]);
     const interestPct = result.amount > 0 ? (result.interest / result.amount) * 100 : 0;
+
+    // Advanced computations – all memoized
+    const advanced = useMemo(() => {
+        const ear = (Math.pow(1 + rate / 100 / freq, freq) - 1) * 100;
+        const rule72 = rate > 0 ? 72 / rate : 0;
+        const table: { year: number; value: number; interest: number }[] = [];
+        for (let y = 1; y <= years; y++) {
+            const v = principal * Math.pow(1 + rate / 100 / freq, freq * y);
+            table.push({ year: y, value: v, interest: v - principal });
+        }
+        return { ear, rule72, table };
+    }, [principal, rate, years, freq]);
 
     const handleDownloadPDF = () => {
         const headers = ['Metric', 'Value'];
@@ -147,6 +160,53 @@ export default function CompoundInterestCalculator() {
                         </div>
                     </div>
                 </motion.div>
+
+                {/* Advanced Details */}
+                <div className="rounded-2xl border border-border bg-card overflow-hidden mb-4">
+                    <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-4">
+                        <div className="flex items-center gap-2">
+                            <Info size={16} className="text-brand-purple" />
+                            <span className="text-foreground font-semibold text-sm">Advanced Details</span>
+                        </div>
+                        {showAdvanced ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
+                    </button>
+                    <AnimatePresence initial={false}>
+                        {showAdvanced && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                                <div className="px-4 pb-4 space-y-4">
+                                    <div className="h-px bg-border" />
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="p-3 rounded-xl bg-brand-purple/10 border border-brand-purple/20 text-center">
+                                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Effective Annual Rate</p>
+                                            <p className="text-brand-purple font-bold text-xl">{advanced.ear.toFixed(3)}%</p>
+                                            <p className="text-muted-foreground text-[10px] mt-0.5">True annualised yield</p>
+                                        </div>
+                                        <div className="p-3 rounded-xl bg-brand-gold/10 border border-brand-gold/20 text-center">
+                                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Rule of 72</p>
+                                            <p className="text-brand-gold font-bold text-xl">{advanced.rule72.toFixed(1)}y</p>
+                                            <p className="text-muted-foreground text-[10px] mt-0.5">Approx. doubling time</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-2">Year-by-Year Compounding</p>
+                                        <div className="rounded-xl overflow-hidden border border-border">
+                                            <div className="grid grid-cols-3 bg-muted px-3 py-2">
+                                                {['Year', 'Total Value', 'Cum. Interest'].map(h => (<p key={h} className="text-muted-foreground text-[10px] font-bold uppercase">{h}</p>))}
+                                            </div>
+                                            {advanced.table.map((row, i) => (
+                                                <div key={row.year} className={`grid grid-cols-3 px-3 py-2 ${i % 2 === 0 ? 'bg-background' : 'bg-card'}`}>
+                                                    <p className="text-foreground text-[10px] font-medium">Year {row.year}</p>
+                                                    <p className="text-foreground text-[10px] font-semibold">{formatINR(row.value)}</p>
+                                                    <p className="text-brand-green text-[10px] font-semibold">+{formatINR(row.interest)}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
 
 
 

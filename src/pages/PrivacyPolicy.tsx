@@ -222,7 +222,30 @@ export default function PrivacyPolicy() {
                     </div>
                 </Section>
 
+                {/* Section 11 — Crash Reporting */}
+                <Section number={11} title="Analytics & Crash Reporting" icon={Shield}>
+                    <p>
+                        FinCalix may collect anonymous, non-identifiable crash reports and performance diagnostics
+                        to improve app stability. This data <strong>never</strong> includes your financial inputs,
+                        personal identity, or any calculation history.
+                    </p>
+                    <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 mt-1">
+                        <p className="text-blue-400 text-[11px] font-semibold mb-1">What crash reports may include:</p>
+                        <ul className="list-disc pl-4 text-blue-300/80 text-[10px] space-y-0.5">
+                            <li>Device model and OS version</li>
+                            <li>App version and build number</li>
+                            <li>Stack trace of the crash (no user data)</li>
+                            <li>Time and frequency of crashes</li>
+                        </ul>
+                    </div>
+                    <p>
+                        Crash reporting can be disabled at any time via <strong>Settings → Crash Reporting</strong>.
+                        When disabled, no diagnostic data is transmitted.
+                    </p>
+                </Section>
+
                 {/* Data & Privacy Link */}
+
                 <div className="pt-2">
                     <button
                         onClick={() => navigate('/data-safety')}

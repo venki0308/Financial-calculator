@@ -1,0 +1,74 @@
+[
+  {
+    "key": "calculators.categories.loans",
+    "value": "Loans"
+  },
+  {
+    "key": "expenses.paymentMethods.Cash",
+    "value": "Cash"
+  },
+  {
+    "key": "expenses.paymentMethods.UPI",
+    "value": "UPI"
+  },
+  {
+    "key": "expenses.paymentMethods.Debit Card",
+    "value": "Debit Card"
+  },
+  {
+    "key": "expenses.paymentMethods.Credit Card",
+    "value": "Credit Card"
+  },
+  {
+    "key": "expenses.alerts.exceeded",
+    "value": "🚨 You exceeded your {{category}} budget by ₹{{amount}}."
+  },
+  {
+    "key": "expenses.alerts.usedPct",
+    "value": "⚠️ You have used {{pct}}% of your {{category}} budget."
+  },
+  {
+    "key": "expenses.alerts.savedWell",
+    "value": "🎉 Great job! You saved ₹{{amount}} this month ({{rate}}% savings rate)."
+  },
+  {
+    "key": "expenses.subs",
+    "value": "Subs"
+  },
+  {
+    "key": "expenses.subsSubtitle",
+    "value": "Subscriptions & recurring"
+  },
+  {
+    "key": "schemes.catDigital",
+    "value": "Digital"
+  },
+  {
+    "key": "schemes.catEnergy",
+    "value": "Energy"
+  },
+  {
+    "key": "schemes.catYouth",
+    "value": "Youth"
+  },
+  {
+    "key": "profile.savedCalculations",
+    "value": "Saved Calculations"
+  },
+  {
+    "key": "common.breakeven",
+    "value": "Calculate the point where total revenue equals total costs"
+  },
+  {
+    "key": "common.cagr",
+    "value": "Calculate the compound annual growth rate"
+  },
+  {
+    "key": "common.discount",
+    "value": "Calculate the final price after applying a discount and tax"
+  },
+  {
+    "key": "common.overdraft",
+    "value": "Calculate interest on your overdraft limit based on utilization"
+  }
+]
