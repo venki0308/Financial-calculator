@@ -946,14 +946,7 @@ export default function PropertyCalculator() {
     );
 }
 
-function SummaryPill({ label, val, color, isMonthly }: { label: string; val: number; color: string; isMonthly?: boolean }) {
-    return (
-        <div className="flex-shrink-0 bg-slate-800/80 rounded-xl px-3 py-2 border border-slate-700 min-w-[100px]">
-            <p className="text-[9px] text-muted-foreground font-bold uppercase text-center mb-0.5">{label}</p>
-            <p className={`text-xs font-black text-center ${color}`}>{fmt(val)}{isMonthly && '/mo'}</p>
-        </div>
-    );
-}
+
 
 
 // ─── Stamp Duty Section ───────────────────────────────────────────────────────

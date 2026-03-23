@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Search, ChevronLeft, Sun, Sunrise, MapPin, DollarSign, Globe, ArrowRightLeft } from 'lucide-react';
+import { ArrowLeft, Plus, X, Search, ChevronLeft, Sun, Sunrise, MapPin, DollarSign, Globe, ArrowRightLeft, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
+import BottomSheet from '../components/BottomSheet';
 
 import { getCountryMeta, getSunTimes } from '../data/countryData';
-
 import { WORLD_TIMEZONES, POPULAR_IANA, TimezoneInfo } from '../data/timezones';
 
 // --- Shared Live Time Hook ---
@@ -45,6 +45,69 @@ function useSharedTime() {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// TZ Picker BottomSheet
+// ────────────────────────────────────────────────────────────────────────────
+function filterZones(q: string) {
+    const lq = q.toLowerCase().trim();
+    if (!lq || lq.length < 1) {
+        const pop = POPULAR_IANA.map(i => WORLD_TIMEZONES.find(t => t.iana === i)).filter(Boolean) as TimezoneInfo[];
+        const rest = WORLD_TIMEZONES.filter(t => !POPULAR_IANA.includes(t.iana));
+        return [...pop, ...rest];
+    }
+    return WORLD_TIMEZONES.filter(t =>
+        t.city.toLowerCase().includes(lq) ||
+        t.country.toLowerCase().includes(lq) ||
+        t.iana.toLowerCase().includes(lq)
+    );
+}
+
+function getZoneLabel(iana: string) {
+    const tz = WORLD_TIMEZONES.find(t => t.iana === iana);
+    return tz ? `${tz.city} (${tz.country})` : iana;
+}
+
+const TZPickerSheet = memo(({ 
+    isOpen, onClose, label, value, onChange, search, setSearch 
+}: {
+    isOpen: boolean; onClose: () => void; label: string; value: string; onChange: (v: string) => void;
+    search: string; setSearch: (s: string) => void;
+}) => {
+    return (
+        <BottomSheet isOpen={isOpen} onClose={() => { onClose(); setSearch(''); }} title={`Select ${label}`}>
+            <div className="px-4 mb-3 flex-shrink-0">
+                <div className="relative">
+                    <Search size={14} className="absolute inset-y-0 my-auto left-3 text-muted-foreground" />
+                    <input
+                        type="text"
+                        placeholder="Search city or country…"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        className="w-full bg-input border border-border rounded-xl py-2.5 pl-9 pr-8 text-sm text-foreground outline-none focus:border-primary"
+                    />
+                </div>
+            </div>
+            <div className="overflow-y-auto px-4 pb-6 space-y-1.5" style={{ maxHeight: '60vh' }}>
+                {filterZones(search).map(tz => (
+                    <button
+                        key={tz.iana}
+                        onClick={() => { onChange(tz.iana); onClose(); setSearch(''); }}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                            value === tz.iana ? 'bg-primary/10 border border-primary/30' : 'bg-background border border-border hover:border-primary/40'
+                        }`}
+                    >
+                        <div className="flex-1 min-w-0">
+                            <p className="text-foreground font-semibold text-sm truncate">{tz.city}</p>
+                            <p className="text-muted-foreground text-[11px] font-medium">{tz.country} · {tz.iana}</p>
+                        </div>
+                        {value === tz.iana && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />}
+                    </button>
+                ))}
+            </div>
+        </BottomSheet>
+    );
+});
+
+// ────────────────────────────────────────────────────────────────────────────
 // CompareView – Convert a user-entered time from Zone A to Zone B
 // ────────────────────────────────────────────────────────────────────────────
 function CompareView() {
@@ -76,25 +139,6 @@ function CompareView() {
         localStorage.setItem('fincalix_compare_tz', JSON.stringify({ a: tzA, b: tzB }));
     }, [tzA, tzB]);
 
-    const getLabel = (iana: string) => {
-        const tz = WORLD_TIMEZONES.find(t => t.iana === iana);
-        return tz ? `${tz.city} (${tz.country})` : iana;
-    };
-
-    const filterZones = (q: string) => {
-        const lq = q.toLowerCase().trim();
-        if (!lq || lq.length < 1) {
-            const pop = POPULAR_IANA.map(i => WORLD_TIMEZONES.find(t => t.iana === i)).filter(Boolean) as TimezoneInfo[];
-            const rest = WORLD_TIMEZONES.filter(t => !POPULAR_IANA.includes(t.iana));
-            return [...pop, ...rest];
-        }
-        return WORLD_TIMEZONES.filter(t =>
-            t.city.toLowerCase().includes(lq) ||
-            t.country.toLowerCase().includes(lq) ||
-            t.iana.toLowerCase().includes(lq)
-        );
-    };
-
     const result = useMemo(() => {
         try {
             let refDate: Date;
@@ -107,10 +151,6 @@ function CompareView() {
                 }).format(now);
                 const [m, d, y] = todayInA.split('/');
                 refDate = new Date(`${y}-${m}-${d}T${String(inputHour).padStart(2, '0')}:${String(inputMin).padStart(2, '0')}:00`);
-                const tzAFormatter = new Intl.DateTimeFormat('en-US', {
-                    timeZone: tzA, year: 'numeric', month: '2-digit', day: '2-digit',
-                    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-                });
                 // Compute exact offset ms of tzA vs UTC
                 const tzStr = now.toLocaleString('en-US', { timeZone: tzA });
                 const utcStr = now.toLocaleString('en-US', { timeZone: 'UTC' });
@@ -119,11 +159,11 @@ function CompareView() {
                 refDate = utcEquiv;
             }
 
-            const fmtTime = (iana: string) => new Intl.DateTimeFormat('en-IN', {
+            const fmtTime = (iana: string) => new Intl.DateTimeFormat('en-US', {
                 timeZone: iana, hour: '2-digit', minute: '2-digit', hour12: true
-            }).format(refDate);
+            }).format(refDate).toLowerCase();
 
-            const fmtDay = (iana: string) => new Intl.DateTimeFormat('en-IN', {
+            const fmtDay = (iana: string) => new Intl.DateTimeFormat('en-US', {
                 timeZone: iana, weekday: 'short', day: 'numeric', month: 'short'
             }).format(refDate);
 
@@ -138,8 +178,8 @@ function CompareView() {
             const dateB = new Intl.DateTimeFormat('en-CA', { timeZone: tzB }).format(refDate);
             const diff = (new Date(dateB).getTime() - new Date(dateA).getTime()) / 86400000;
             let dayCross = '';
-            if (diff > 0) dayCross = '▲ next day';
-            else if (diff < 0) dayCross = '▼ previous day';
+            if (diff > 0) dayCross = '+1 Day';
+            else if (diff < 0) dayCross = '-1 Day';
 
             return {
                 timeA: fmtTime(tzA),
@@ -153,179 +193,152 @@ function CompareView() {
         } catch {
             return null;
         }
-    // Only recompute when live ticker, tz settings, or manual hour/min changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tzA, tzB, inputHour, inputMin, useLive, useLive ? now : null]);
 
-    const TZPicker = ({ label, value, onChange, search, setSearch, show, setShow }: {
-        label: string; value: string; onChange: (v: string) => void;
-        search: string; setSearch: (s: string) => void; show: boolean; setShow: (v: boolean) => void;
-    }) => (
-        <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1.5 truncate">{label}</p>
-            <button
-                onClick={() => setShow(true)}
-                className="w-full flex items-center gap-2 px-3 py-3 rounded-xl bg-muted border border-border text-left text-sm font-medium text-foreground truncate"
-            >
-                <Globe size={14} className="text-primary flex-shrink-0" />
-                <span className="truncate">{getLabel(value)}</span>
-            </button>
-            <AnimatePresence>
-                {show && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 bg-black/50"
-                        onClick={(e) => { if (e.target === e.currentTarget) { setShow(false); setSearch(''); } }}
+    return (
+        <div className="px-4 pt-6 pb-28 space-y-6">
+            {/* Zone Pickers styling redesign */}
+            <div className="p-5 rounded-[24px] bg-card border border-border flex flex-col gap-4 relative">
+                <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2 px-1 tracking-wider">Source Timezone</p>
+                    <button
+                        onClick={() => setShowPickerA(true)}
+                        className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-muted/30 border border-border text-left transition-colors active:scale-[0.98]"
                     >
-                        <motion.div
-                            initial={{ y: '100%' }}
-                            animate={{ y: 0 }}
-                            exit={{ y: '100%' }}
-                            transition={{ type: 'spring', damping: 26, stiffness: 200 }}
-                            className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl flex flex-col border-t border-border"
-                            style={{ maxHeight: '80vh' }}
-                        >
-                            <div className="flex items-center justify-between p-5 pb-3 flex-shrink-0">
-                                <h3 className="text-base font-bold text-foreground">Select {label}</h3>
-                                <button onClick={() => { setShow(false); setSearch(''); }} className="p-2 rounded-xl bg-muted text-muted-foreground">
-                                    <X size={16} />
-                                </button>
+                        <div className="flex items-center gap-3 truncate min-w-0">
+                            <div className="p-1.5 rounded-full bg-indigo-500/10 text-indigo-500 flex-shrink-0">
+                                <Globe size={16} />
                             </div>
-                            <div className="px-5 mb-3 flex-shrink-0">
-                                <div className="relative">
-                                    <Search size={14} className="absolute inset-y-0 my-auto left-3 text-muted-foreground" />
+                            <span className="text-sm font-semibold text-foreground truncate">{getZoneLabel(tzA)}</span>
+                        </div>
+                    </button>
+                </div>
+
+                <div className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 z-10 p-1.5 bg-card rounded-full shadow-sm border border-border"> 
+                    <button
+                        onClick={() => { const tmp = tzA; setTzA(tzB); setTzB(tmp); }}
+                        className="p-2.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    >
+                        <ArrowRightLeft size={16} />
+                    </button>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase mb-2 px-1 tracking-wider text-right">Target Timezone</p>
+                    <button
+                        onClick={() => setShowPickerB(true)}
+                        className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-muted/30 border border-border text-left transition-colors active:scale-[0.98]"
+                    >
+                        <div className="flex items-center gap-3 truncate min-w-0">
+                            <div className="p-1.5 rounded-full bg-emerald-500/10 text-emerald-500 flex-shrink-0">
+                                <Globe size={16} />
+                            </div>
+                            <span className="text-sm font-semibold text-foreground truncate">{getZoneLabel(tzB)}</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            {/* Time Input Section */}
+            <div className="p-5 rounded-[24px] bg-card border border-border relative">
+                <div className="flex items-center justify-between mb-5">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                        <Clock size={12} /> Compare Style
+                    </p>
+                    <div className="flex bg-muted p-1 rounded-xl">
+                        <button 
+                            onClick={() => setUseLive(false)} 
+                            className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${!useLive ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'}`}
+                        >
+                            Manual
+                        </button>
+                        <button 
+                            onClick={() => setUseLive(true)} 
+                            className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${useLive ? 'bg-primary shadow-sm text-primary-foreground' : 'text-muted-foreground'}`}
+                        >
+                            Live Time
+                        </button>
+                    </div>
+                </div>
+
+                <AnimatePresence mode="popLayout">
+                    {!useLive && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 bg-background border border-border rounded-[20px] p-4 flex flex-col items-center">
+                                    <span className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Hour (0-23)</span>
                                     <input
-                                        type="text"
-                                        placeholder="Search city or country…"
-                                        value={search}
-                                        onChange={e => setSearch(e.target.value)}
-                                        autoFocus
-                                        className="w-full bg-input border border-border rounded-xl py-2.5 pl-9 pr-8 text-sm text-foreground outline-none focus:border-primary"
+                                        type="number"
+                                        value={String(inputHour)}
+                                        onChange={e => setInputHour(Math.max(0, Math.min(23, parseInt(e.target.value) || 0)))}
+                                        className="w-full text-center bg-transparent text-4xl font-mono text-foreground font-black outline-none"
+                                    />
+                                </div>
+                                <span className="text-2xl font-black text-muted-foreground pb-2">:</span>
+                                <div className="flex-1 bg-background border border-border rounded-[20px] p-4 flex flex-col items-center">
+                                    <span className="text-[10px] uppercase font-bold text-muted-foreground mb-2">Min (0-59)</span>
+                                    <input
+                                        type="number"
+                                        value={String(inputMin)}
+                                        onChange={e => setInputMin(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+                                        className="w-full text-center bg-transparent text-4xl font-mono text-foreground font-black outline-none"
                                     />
                                 </div>
                             </div>
-                            <div className="overflow-y-auto flex-1 px-5 pb-6 space-y-1.5">
-                                {filterZones(search).map(tz => (
-                                    <button
-                                        key={tz.iana}
-                                        onClick={() => { onChange(tz.iana); setShow(false); setSearch(''); }}
-                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
-                                            value === tz.iana ? 'bg-primary/10 border border-primary/30' : 'bg-background border border-border hover:border-primary/40'
-                                        }`}
-                                    >
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-foreground font-semibold text-sm truncate">{tz.city}</p>
-                                            <p className="text-muted-foreground text-xs">{tz.country} · {tz.iana}</p>
-                                        </div>
-                                        {value === tz.iana && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />}
-                                    </button>
-                                ))}
-                            </div>
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
-
-    return (
-        <div className="px-4 pt-4 pb-28 space-y-4">
-            {/* Zone Pickers */}
-            <div className="flex gap-3 items-end">
-                <TZPicker label="Zone A" value={tzA} onChange={setTzA} search={searchA} setSearch={setSearchA} show={showPickerA} setShow={setShowPickerA} />
-                <button
-                    onClick={() => { const tmp = tzA; setTzA(tzB); setTzB(tmp); }}
-                    className="mb-0.5 flex-shrink-0 p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary"
-                >
-                    <ArrowRightLeft size={16} />
-                </button>
-                <TZPicker label="Zone B" value={tzB} onChange={setTzB} search={searchB} setSearch={setSearchB} show={showPickerB} setShow={setShowPickerB} />
+                    )}
+                </AnimatePresence>
             </div>
-
-            {/* Live toggle + Time Input */}
-            <div className="flex items-center justify-between px-1">
-                <p className="text-[11px] text-muted-foreground font-medium">Use live current time</p>
-                <button
-                    onClick={() => setUseLive(p => !p)}
-                    className={`w-10 h-6 rounded-full transition-colors relative ${ useLive ? 'bg-primary' : 'bg-muted-foreground/30'}`}
-                >
-                    <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${ useLive ? 'left-4' : 'left-0.5' }`} />
-                </button>
-            </div>
-
-            {!useLive && (
-                <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-4 rounded-2xl bg-card border border-border"
-                >
-                    <p className="text-xs font-bold text-muted-foreground mb-3">Enter time in Zone A</p>
-                    <div className="flex items-center justify-center gap-3">
-                        <div className="text-center">
-                            <p className="text-[10px] text-muted-foreground mb-1">Hour (0–23)</p>
-                            <input
-                                type="number"
-                                value={inputHour}
-                                onChange={e => setInputHour(Math.max(0, Math.min(23, parseInt(e.target.value) || 0)))}
-                                className="w-16 text-center py-2 rounded-xl bg-muted border border-border text-foreground font-bold text-lg outline-none focus:border-primary"
-                            />
-                        </div>
-                        <span className="text-2xl font-bold text-foreground mt-3">:</span>
-                        <div className="text-center">
-                            <p className="text-[10px] text-muted-foreground mb-1">Min (0–59)</p>
-                            <input
-                                type="number"
-                                value={inputMin}
-                                onChange={e => setInputMin(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
-                                className="w-16 text-center py-2 rounded-xl bg-muted border border-border text-foreground font-bold text-lg outline-none focus:border-primary"
-                            />
-                        </div>
-                    </div>
-                </motion.div>
-            )}
 
             {/* Result */}
             {result && (
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="rounded-2xl overflow-hidden border border-border shadow-md"
+                    className="relative pb-4"
                 >
-                    {/* Zone A */}
-                    <div className="p-4 bg-gradient-to-br from-indigo-600 to-violet-700">
-                        <p className="text-indigo-200 text-[10px] uppercase font-bold mb-1">{getLabel(tzA)} · {result.offsetA}</p>
-                        <p className="text-foreground font-bold text-4xl font-mono">{result.timeA}</p>
-                        <p className="text-indigo-200 text-xs mt-0.5">{result.dayA}</p>
-                    </div>
-
-                    {/* Swap icon row */}
-                    <div className="bg-card flex items-center justify-center py-2 gap-2">
-                        <div className="flex-1 h-px bg-border" />
-                        <div className="p-1.5 rounded-full bg-primary/10 border border-primary/20">
-                            <ArrowRightLeft size={12} className="text-primary" />
+                    {/* Source Result */}
+                    <div className="p-6 rounded-[28px] bg-gradient-to-br from-[#4F46E5] to-[#4338CA] shadow-lg shadow-indigo-500/20 relative z-10 border border-white/10">
+                        <div className="flex justify-between items-start mb-2">
+                            <p className="text-white text-[10px] uppercase font-black tracking-widest bg-black/20 px-2.5 py-1 rounded-full border border-white/5">Source</p>
+                            <p className="text-indigo-200 text-[11px] uppercase font-bold">{result.offsetA}</p>
                         </div>
-                        {result.dayCross ? (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                {result.dayCross}
-                            </span>
-                        ) : (
-                            <span className="text-[10px] text-muted-foreground">same day</span>
-                        )}
-                        <div className="flex-1 h-px bg-border" />
+                        <p className="text-white font-black text-4xl tracking-tight my-3 font-mono drop-shadow-sm truncate">{result.timeA}</p>
+                        <p className="text-indigo-100 text-sm font-medium opacity-90">{result.dayA}</p>
                     </div>
 
-                    {/* Zone B */}
-                    <div className="p-4 bg-card">
-                        <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">{getLabel(tzB)} · {result.offsetB}</p>
-                        <p className="text-foreground font-bold text-4xl font-mono">{result.timeB}</p>
-                        <p className="text-muted-foreground text-xs mt-0.5">{result.dayB}</p>
+                    {/* Connector */}
+                    <div className="flex justify-center -my-3.5 relative z-20">
+                        <div className="bg-card border border-border shadow-sm rounded-full px-4 py-1.5 flex items-center gap-2">
+                            <Globe size={12} className={result.dayCross ? "text-amber-500" : "text-muted-foreground"} />
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                                {result.dayCross ? <span className="text-amber-500">{result.dayCross}</span> : 'Same Day'}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Target Result */}
+                    <div className="p-6 rounded-[28px] bg-gradient-to-br from-[#059669] to-[#047857] shadow-lg shadow-emerald-500/20 relative z-10 border border-white/10">
+                        <div className="flex justify-between items-start mb-2">
+                            <p className="text-white text-[10px] uppercase font-black tracking-widest bg-black/20 px-2.5 py-1 rounded-full border border-white/5">Target</p>
+                            <p className="text-emerald-200 text-[11px] uppercase font-bold">{result.offsetB}</p>
+                        </div>
+                        <p className="text-white font-black text-4xl tracking-tight my-3 font-mono drop-shadow-sm truncate">{result.timeB}</p>
+                        <p className="text-emerald-100 text-sm font-medium opacity-90">{result.dayB}</p>
                     </div>
                 </motion.div>
             )}
 
-            <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
+            <TZPickerSheet isOpen={showPickerA} onClose={() => setShowPickerA(false)} label="Source Zone" value={tzA} onChange={setTzA} search={searchA} setSearch={setSearchA} />
+            <TZPickerSheet isOpen={showPickerB} onClose={() => setShowPickerB(false)} label="Target Zone" value={tzB} onChange={setTzB} search={searchB} setSearch={setSearchB} />
+
+            <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 mt-6">
                 <p className="text-muted-foreground text-[10px] leading-relaxed">
                     📡 Conversion uses Intl.DateTimeFormat UTC offsets. DST transitions are accounted for automatically.
                 </p>
