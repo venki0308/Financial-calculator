@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, X, Search, ChevronLeft, Sun, Sunrise, MapPin, DollarSign, Globe, ArrowRightLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -613,7 +613,7 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
     );
 }
 
-function LiveClockCard({ clock, index, onDetail, onRemove }: { clock: SavedClock; index: number; onDetail: () => void; onRemove: () => void }) {
+const LiveClockCard = memo(function LiveClockCard({ clock, index, onDetail, onRemove }: { clock: SavedClock; index: number; onDetail: () => void; onRemove: () => void }) {
     const now = useSharedTime();
     const td = getTimeData(clock.timezone, now);
     const meta = getCountryMeta(clock.timezone);
@@ -678,9 +678,9 @@ function LiveClockCard({ clock, index, onDetail, onRemove }: { clock: SavedClock
             </div>
         </motion.div>
     );
-}
+});
 
-function LiveAddZoneItem({ tz, onAdd }: { tz: TimezoneInfo; onAdd: () => void }) {
+const LiveAddZoneItem = memo(function LiveAddZoneItem({ tz, onAdd }: { tz: TimezoneInfo; onAdd: () => void }) {
     const now = useSharedTime();
     const meta = getCountryMeta(tz.iana);
     const td = getTimeData(tz.iana, now);
@@ -723,7 +723,7 @@ function LiveAddZoneItem({ tz, onAdd }: { tz: TimezoneInfo; onAdd: () => void })
             </div>
         </button>
     );
-}
+});
 
 export default function WorldClock() {
     useEffect(() => { AnalyticsService.trackScreen('World_Clock'); }, []);

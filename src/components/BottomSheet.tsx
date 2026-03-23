@@ -7,9 +7,11 @@ interface BottomSheetProps {
     onClose: () => void;
     title: string;
     children: React.ReactNode;
+    /** Optional sticky footer rendered OUTSIDE the scroll area — always visible */
+    footer?: React.ReactNode;
 }
 
-export default function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
+export default function BottomSheet({ isOpen, onClose, title, children, footer }: BottomSheetProps) {
     const dragControls = useDragControls();
     const constraintsRef = useRef(null);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -70,16 +72,26 @@ export default function BottomSheet({ isOpen, onClose, title, children }: Bottom
                             <div className="w-10 h-1 rounded-full bg-slate-600" />
                         </div>
 
-                        <div className="flex items-center justify-between px-5 pb-3 border-b border-border flex-shrink-0">
-                            <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-                            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-dark-bg transition-colors">
-                                <X size={20} className="text-muted-foreground" />
-                            </button>
-                        </div>
+                        {title && (
+                            <div className="flex items-center justify-between px-5 pb-3 border-b border-border flex-shrink-0">
+                                <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+                                <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-dark-bg transition-colors">
+                                    <X size={20} className="text-muted-foreground" />
+                                </button>
+                            </div>
+                        )}
 
-                        <div className="flex-1 overflow-y-auto px-5 pt-4 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] hide-scrollbar">
+                        {/* Scrollable body — grows but never pushes footer off screen */}
+                        <div className="flex-1 overflow-y-auto px-5 pt-4 hide-scrollbar" style={{ paddingBottom: footer ? '0.5rem' : 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
                             {children}
                         </div>
+
+                        {/* Sticky footer — always visible, never scrolls */}
+                        {footer && (
+                            <div className="flex-shrink-0 border-t border-border px-5 pt-3 pb-4" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
+                                {footer}
+                            </div>
+                        )}
                     </motion.div>
                 </>
             )}

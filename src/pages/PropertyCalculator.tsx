@@ -359,7 +359,7 @@ export default function PropertyCalculator() {
 
     return (
         <div className="min-h-dvh bg-background animate-fade-in relative pb-[env(safe-area-inset-bottom,40px)]" style={{ maxWidth: 428, margin: '0 auto' }}>
-            <div className="px-4 pt-14 pb-32">
+            <div className={`px-4 pt-14 transition-[padding-bottom] duration-300 ${(landResult || flatResult || villaResult || sdResult || emiResult) ? 'pb-56' : 'pb-32'}`}>
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
