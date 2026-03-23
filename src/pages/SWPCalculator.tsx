@@ -1,187 +1,461 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Info, ChevronLeft, ChevronRight as ChevronRightIcon } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
+import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { useCalculatorStore } from '../store/useCalculatorStore';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const PAGE_SIZE = 24;
 
 export default function SWPCalculator() {
     const navigate = useNavigate();
-    useEffect(() => { AnalyticsService.trackScreen('SWP_Calculator'); }, []);
+    const { addSaved } = useCalculatorStore();
 
+    useEffect(() => { AnalyticsService.trackScreen('SWP_Advanced'); }, []);
+
+    // Base Inputs
     const [principal, setPrincipal] = useState(1000000);
     const [withdrawal, setWithdrawal] = useState(10000);
     const [rate, setRate] = useState(8);
     const [years, setYears] = useState(10);
-    const [showAdvanced, setShowAdvanced] = useState(false);
-    const [page, setPage] = useState(0);
+    const [inflation, setInflation] = useState(6);
 
+    // Simulators
+    const [simWithdrawal, setSimWithdrawal] = useState(withdrawal);
+    const [simRate, setSimRate] = useState(rate);
+    const [simYears, setSimYears] = useState(years);
+
+    useEffect(() => { setSimWithdrawal(withdrawal); setSimRate(rate); setSimYears(years); }, [principal, withdrawal, rate, years]);
+
+    // UI States
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [showWhatIf, setShowWhatIf] = useState(false);
+    const [showTable, setShowTable] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [page, setPage] = useState(1);
+
+    // 1. CORE CALCULATION
     const result = useMemo(() => {
         const r = rate / 12 / 100;
         const n = years * 12;
-        let balance = principal;
+        
+        let currentBalance = principal;
         let totalWithdrawn = 0;
         let depletionMonth: number | null = null;
+        let depletionYear: number | null = null;
 
-        const schedule: { month: number; withdrawal: number; balance: number }[] = [];
+        const yearlySchedule: { year: number; open: number; withdrawn: number; interest: number; close: number }[] = [];
+
+        let currentYearOpen = principal;
+        let currentYearWithdrawn = 0;
+        let currentYearInterest = 0;
 
         for (let i = 1; i <= n; i++) {
-            balance = balance * (1 + r) - withdrawal;
-            totalWithdrawn += withdrawal;
-            if (balance <= 0 && depletionMonth === null) {
-                depletionMonth = i;
-                balance = 0;
+            const interestForMonth = currentBalance * r;
+            currentYearInterest += interestForMonth;
+            
+            currentBalance += interestForMonth;
+            
+            if (currentBalance >= withdrawal) {
+                currentBalance -= withdrawal;
+                totalWithdrawn += withdrawal;
+                currentYearWithdrawn += withdrawal;
+            } else {
+                totalWithdrawn += currentBalance;
+                currentYearWithdrawn += currentBalance;
+                currentBalance = 0;
             }
-            schedule.push({ month: i, withdrawal, balance: Math.max(0, balance) });
-            if (balance <= 0) break;
+
+            if (currentBalance <= 0 && depletionMonth === null) {
+                depletionMonth = i;
+                depletionYear = Math.ceil(i / 12);
+            }
+
+            // End of year or end of tenure
+            if (i % 12 === 0 || i === n || currentBalance === 0) {
+                const yearNum = Math.ceil(i / 12);
+                if (yearlySchedule.length === 0 || yearlySchedule[yearlySchedule.length - 1].year !== yearNum) {
+                     yearlySchedule.push({
+                        year: yearNum,
+                        open: currentYearOpen,
+                        withdrawn: currentYearWithdrawn,
+                        interest: currentYearInterest,
+                        close: currentBalance
+                    });
+                    currentYearOpen = currentBalance;
+                    currentYearWithdrawn = 0;
+                    currentYearInterest = 0;
+                }
+            }
+
+            if (currentBalance <= 0) break;
         }
 
-        // Break-even withdrawal: SWP amount that exactly depletes the corpus in n months
-        // PWA formula: PMT = PV * r / (1 - (1+r)^(-n))
-        const breakEvenWd = r === 0 ? principal / n : (principal * r) / (1 - Math.pow(1 + r, -n));
+        const finalBalance = currentBalance;
+        const swr = (withdrawal * 12 / principal) * 100;
+        
+        // SWR Risk
+        let swrRisk = 'Safe'; let swrColor = 'text-brand-green'; let swrBg = 'bg-brand-green/10 border-brand-green/20';
+        if (swr > 8) { swrRisk = 'High'; swrColor = 'text-rose-500'; swrBg = 'bg-rose-500/10 border-rose-500/20'; }
+        else if (swr > 6) { swrRisk = 'Moderate'; swrColor = 'text-amber-500'; swrBg = 'bg-amber-500/10 border-amber-500/20'; }
 
-        const finalBalance = schedule[schedule.length - 1]?.balance ?? 0;
+        // Inflation adjusted final withdrawal
+        const realWithdrawalValueAtEnd = withdrawal / Math.pow(1 + (inflation / 100), years);
 
-        return { finalBalance, totalWithdrawn, schedule, depletionMonth, breakEvenWd };
-    }, [principal, withdrawal, rate, years]);
+        return { finalBalance, totalWithdrawn, yearlySchedule, depletionMonth, depletionYear, swr, swrRisk, swrColor, swrBg, realWithdrawalValueAtEnd };
+    }, [principal, withdrawal, rate, years, inflation]);
 
-    const totalPages = Math.ceil(result.schedule.length / PAGE_SIZE);
-    const currentRows = result.schedule.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-    const baseDate = new Date();
 
-    const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-base font-semibold focus:outline-none focus:border-brand-blue";
+    // 3. SIMULATOR
+    const simResult = useMemo(() => {
+        const r = simRate / 12 / 100;
+        const n = simYears * 12;
+        let bal = principal;
+        let dMonth: number | null = null;
+        for (let i = 1; i <= n; i++) {
+            bal = bal * (1 + r) - simWithdrawal;
+            if (bal <= 0) { dMonth = i; bal = 0; break; }
+        }
+        return { finalBal: bal, depMonth: dMonth };
+    }, [principal, simWithdrawal, simRate, simYears]);
+
+    // 4. SMART INSIGHTS
+    const insight = useMemo(() => {
+        if (result.depletionMonth) {
+            return { msg: `Warning: Your withdrawals are too high. Your corpus will completely deplete in year ${result.depletionYear}.`, type: 'warn' };
+        }
+        if (result.swr > 8) {
+            return { msg: `Your Safe Withdrawal Rate is ${result.swr.toFixed(1)}%. This is considered aggressive and may not survive market down-cycles.`, type: 'warn' };
+        }
+        if (rate <= 4 && withdrawal > 0) {
+           return { msg: "Your expected returns are very low. This forces your corpus to erode faster. Consider optimizing asset allocation.", type: 'warn' };
+        }
+        if (result.finalBalance > principal) {
+            return { msg: "Excellent! Your returns outpace your withdrawals, meaning your corpus is actually growing while providing income.", type: 'success' };
+        }
+        return { msg: "Your plan is sustainable for the chosen tenure with your corpus slowly depleting as designed.", type: 'info' };
+    }, [result, rate, principal, withdrawal]);
+
+
+    const handleSave = () => {
+        addSaved({
+            id: `swp-${Date.now()}`,
+            calculatorType: 'swp',
+            inputValues: { principal, withdrawal, rate, years },
+            resultValues: { primary: result.finalBalance, label: 'Final Balance', invested: principal, returns: result.totalWithdrawn },
+            timestamp: Date.now(),
+        });
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+    };
+
+    const handleDownloadPDF = async () => {
+        const headers = ['Metric', 'Value'];
+        const data: (string | number)[][] = [
+            ['Total Investment', fmtINR(principal)],
+            ['Monthly Withdrawal', fmtINR(withdrawal)],
+            ['Expected Return', `${rate}% p.a.`],
+            ['Time Period', `${years} years`],
+            ['--- Results ---', ''],
+            ['Total Amount Withdrawn', fmtINR(result.totalWithdrawn)],
+            ['Final Balance', fmtINR(result.finalBalance)],
+            ['--- Advanced Analysis ---', ''],
+            ['Sustainable Duration', result.depletionMonth ? `${(result.depletionMonth/12).toFixed(1)} years (Depletes early)` : `${years} years (Sustainable)`],
+            ['Safe Withdrawal Rate (SWR)', `${result.swr.toFixed(1)}% (${result.swrRisk} Risk)`],
+            ['--- Inflation Impact ---', ''],
+            ['Assumed Inflation', `${inflation}% p.a.`],
+            [`Real Value of ${fmtINR(withdrawal)} in yr ${years}`, fmtINR(result.realWithdrawalValueAtEnd)],
+            ['--- Smart Insights ---', ''],
+            ['Insight', insight.msg],
+            ['--- Depletion Table (First 5 Yrs) ---', ''],
+            ...result.yearlySchedule.slice(0, 5).map(r => [`Year ${r.year}`, `Balance: ${fmtINR(r.close)}`]),
+        ];
+
+        await exportToPDF('Smart SWP Analysis', headers, data, 'SWP_Smart_Analysis');
+    };
+
+    const handleDownloadExcel = () => {
+        const headers = ['Year', 'Opening Balance', 'Amount Withdrawn', 'Interest Earned', 'Closing Balance'];
+        const data = result.yearlySchedule.map(r => [r.year, Math.round(r.open), Math.round(r.withdrawn), Math.round(r.interest), Math.round(r.close)]);
+        exportToExcel(headers, data, 'SWP_Growth');
+    };
+
+    const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50";
 
     return (
-        <div className="min-h-dvh bg-background" style={{ maxWidth: 428, margin: '0 auto' }}>
-            <div className="sticky top-0 z-10 bg-background px-4 pt-14 pb-3 border-b border-border">
+        <div className="min-h-dvh bg-background pb-28 animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
+            {/* Header */}
+            <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border hover:bg-muted transition-all">
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-foreground">SWP Calculator</h1>
-                        <p className="text-muted-foreground text-xs">Systematic Withdrawal Plan</p>
+                        <h1 className="text-lg font-bold text-foreground leading-tight">SWP Calculator</h1>
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Smart Withdrawal Analysis</p>
                     </div>
                 </div>
             </div>
 
-            <div className="px-4 pt-5 pb-28 space-y-4">
-                <div className="space-y-3">
-                    {[
-                        { label: 'Total Investment', val: principal, set: setPrincipal, prefix: '₹' },
-                        { label: 'Monthly Withdrawal', val: withdrawal, set: setWithdrawal, prefix: '₹' },
-                        { label: 'Expected Return (p.a.)', val: rate, set: setRate, suffix: '%' },
-                        { label: 'Time Period (years)', val: years, set: setYears, suffix: ' yrs' },
-                    ].map(({ label, val, set, prefix, suffix }) => (
-                        <div key={label}>
-                            <label className="text-muted-foreground text-xs font-medium mb-1 block">{label}</label>
-                            <div className="relative">
-                                {prefix && <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">{prefix}</span>}
-                                <input type="number" value={val} onChange={e => set(Number(e.target.value) || 0)}
-                                    className={inputCls + (prefix ? ' pl-8' : '') + (suffix ? ' pr-14' : '')} />
-                                {suffix && <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{suffix}</span>}
-                            </div>
+            <div className="px-4 pt-5 space-y-5">
+                {/* 1. CORE INPUTS */}
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Total Investment</label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
+                            <input type="number" value={principal} onChange={e => setPrincipal(Number(e.target.value)||0)} className={inputCls + " pl-7"} />
                         </div>
-                    ))}
-                </div>
-
-                {/* Result Card */}
-                <div className="rounded-2xl bg-gradient-to-br from-brand-blue/20 to-blue-500/10 border border-brand-blue/30 p-5">
-                    <p className="text-muted-foreground text-xs font-medium mb-1">Final Balance</p>
-                    <p className="text-foreground font-bold text-3xl">{fmtINR(result.finalBalance)}</p>
-                    <div className="mt-3 grid grid-cols-2 gap-3">
+                    </div>
+                    <div>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Monthly Withdrawal</label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
+                            <input type="number" value={withdrawal} onChange={e => setWithdrawal(Number(e.target.value)||0)} className={inputCls + " pl-7"} />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-muted-foreground text-[11px]">Total Withdrawn</p>
-                            <p className="text-brand-green font-bold text-base">{fmtINR(result.totalWithdrawn)}</p>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Return Rate (%)</label>
+                            <input type="number" step="0.1" value={rate} onChange={e => setRate(Number(e.target.value)||0)} className={inputCls} />
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[11px]">Initial Principal</p>
-                            <p className="text-foreground font-bold text-base">{fmtINR(principal)}</p>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Time (Years)</label>
+                            <input type="number" value={years} onChange={e => setYears(Number(e.target.value)||0)} className={inputCls} />
                         </div>
                     </div>
                 </div>
 
-                {/* Advanced Details */}
-                <div className="rounded-2xl border border-border bg-card overflow-hidden">
-                    <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-4">
-                        <div className="flex items-center gap-2">
-                            <Info size={16} className="text-brand-blue" />
-                            <span className="text-foreground font-semibold text-sm">Advanced Details</span>
+                {/* 2. RESULTS HERO */}
+                <motion.div layout className="p-6 rounded-3xl bg-card border border-border shadow-sm">
+                    <div className="flex justify-between items-start mb-4">
+                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">Final Balance</p>
+                        {result.depletionMonth ? (
+                             <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border bg-red-500/10 border-red-500/20 text-red-500`}>
+                                Depleted Early
+                            </div>
+                        ) : (
+                             <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border bg-brand-green/10 border-brand-green/20 text-brand-green`}>
+                                Sustainable
+                            </div>
+                        )}
+                    </div>
+                    
+                    <p className={`text-5xl font-black tracking-tighter mb-5 ${result.finalBalance === 0 ? 'text-red-500' : 'text-brand-blue'}`}>
+                        {fmtINR(result.finalBalance)}
+                    </p>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3.5 rounded-2xl bg-brand-green/10 border border-brand-green/20">
+                            <p className="text-brand-green/80 text-[10px] uppercase font-bold mb-0.5">Total Withdrawn</p>
+                            <p className="text-brand-green font-black text-sm">{fmtINR(result.totalWithdrawn)}</p>
                         </div>
-                        {showAdvanced ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
-                    </button>
-                    <AnimatePresence initial={false}>
-                        {showAdvanced && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
-                                <div className="px-4 pb-4 space-y-4">
-                                    <div className="h-px bg-border" />
+                        <div className="p-3.5 rounded-2xl bg-background border border-border/50">
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-0.5">Total Invested</p>
+                            <p className="text-foreground font-black text-sm">{fmtINR(principal)}</p>
+                        </div>
+                    </div>
+                </motion.div>
 
-                                    {/* Key insights */}
+                {/* SMART INSIGHT (Dynamic) */}
+                <div className={`p-4 rounded-2xl border flex items-start gap-3 ${insight.type === 'warn' ? 'bg-amber-500/10 border-amber-500/30' : insight.type === 'success' ? 'bg-brand-green/10 border-brand-green/30' : 'bg-brand-blue/10 border-brand-blue/30'}`}>
+                    <BrainCircuit size={18} className={`shrink-0 mt-0.5 ${insight.type === 'warn' ? 'text-amber-500' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`} />
+                    <div>
+                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`}>Smart Insight</p>
+                        <p className={`text-xs font-medium leading-relaxed ${insight.type === 'warn' ? 'text-amber-700 dark:text-amber-400' : insight.type === 'success' ? 'text-emerald-700 dark:text-emerald-400' : 'text-blue-700 dark:text-blue-300'}`}>{insight.msg}</p>
+                    </div>
+                </div>
+
+                {/* SAVE BUTTON */}
+                <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-blue text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
+                    {saved ? <Check size={18} /> : <Save size={18} />}
+                    {saved ? 'Calculation Saved!' : 'Save Calculation'}
+                </button>
+
+
+                {/* 3. ADVANCED DETAILS */}
+                <div className="rounded-3xl border border-border bg-card overflow-hidden">
+                    <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-5">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-brand-blue/10 rounded-lg text-brand-blue"><Activity size={16} /></div>
+                            <span className="text-foreground font-bold text-sm">Sustainability Check</span>
+                        </div>
+                        {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
+                    </button>
+
+                    <AnimatePresence>
+                        {showAdvanced && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                <div className="px-5 pb-5 space-y-5">
+                                    <div className="h-px bg-border w-full -mt-2" />
+
+                                    {/* SWR badge and Depletion */}
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
-                                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Break-Even Withdrawal</p>
-                                            <p className="text-amber-500 font-bold text-base">{fmtINR(result.breakEvenWd)}<span className="text-[10px] font-normal">/mo</span></p>
-                                            <p className="text-muted-foreground text-[10px] mt-0.5">Corpus depletes in exactly {years}y</p>
+                                        <div className={`p-4 rounded-2xl border text-center ${result.swrBg}`}>
+                                            <p className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${result.swrColor}`}>Safe W.D. Rate</p>
+                                            <p className={`font-black text-xl mb-1 ${result.swrColor}`}>{result.swr.toFixed(1)}%</p>
+                                            <p className={`text-[9px] leading-tight px-1 font-bold ${result.swrColor}`}>{result.swrRisk} Risk</p>
                                         </div>
-                                        <div className={`p-3 rounded-xl border text-center ${result.depletionMonth ? 'bg-red-500/10 border-red-500/20' : 'bg-brand-green/10 border-brand-green/20'}`}>
-                                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Corpus Depletion</p>
-                                            {result.depletionMonth ? (
-                                                <>
-                                                    <p className="text-red-400 font-bold text-base">Month {result.depletionMonth}</p>
-                                                    <p className="text-muted-foreground text-[10px] mt-0.5">~{(result.depletionMonth / 12).toFixed(1)} years</p>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <p className="text-brand-green font-bold text-base">Intact</p>
-                                                    <p className="text-muted-foreground text-[10px] mt-0.5">Corpus survives period</p>
-                                                </>
-                                            )}
+                                        <div className={`p-4 rounded-2xl border text-center ${result.depletionMonth ? 'bg-red-500/10 border-red-500/20' : 'bg-brand-green/10 border-brand-green/20'}`}>
+                                            <p className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>Corpus Lifespan</p>
+                                            <p className={`font-black text-xl mb-1 ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>
+                                                {result.depletionMonth ? `${(result.depletionMonth/12).toFixed(1)}y` : `${years}y+`}
+                                            </p>
+                                            <p className={`text-[9px] leading-tight px-1 font-bold ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>
+                                                {result.depletionMonth ? 'Depletes Early' : 'Fully Sustainable'}
+                                            </p>
                                         </div>
                                     </div>
 
-                                    {/* Month-by-month withdrawal schedule */}
-                                    <div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">Withdrawal Schedule</p>
-                                            {totalPages > 1 && (
-                                                <div className="flex items-center gap-1">
-                                                    <button onClick={() => setPage(p => Math.max(0, p-1))} disabled={page === 0} className="p-1 rounded-lg bg-muted disabled:opacity-40">
-                                                        <ChevronLeft size={12} className="text-foreground" />
-                                                    </button>
-                                                    <span className="text-muted-foreground text-[10px]">{page+1}/{totalPages}</span>
-                                                    <button onClick={() => setPage(p => Math.min(totalPages-1, p+1))} disabled={page >= totalPages-1} className="p-1 rounded-lg bg-muted disabled:opacity-40">
-                                                        <ChevronRightIcon size={12} className="text-foreground" />
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="rounded-xl overflow-hidden border border-border">
-                                            <div className="grid grid-cols-3 bg-muted px-3 py-2">
-                                                {['Month', 'Withdrawal', 'Balance'].map(h => (
-                                                    <p key={h} className="text-muted-foreground text-[10px] font-bold uppercase">{h}</p>
-                                                ))}
+                                    {/* Inflation Adjusted Return */}
+                                    <div className="bg-gradient-to-br from-background to-muted p-4 rounded-2xl border border-border space-y-3">
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-foreground text-xs font-bold flex items-center gap-1.5"><ShieldAlert size={14} className="text-amber-500"/> Inflation Impact</p>
+                                            <div className="flex items-center gap-1.5 bg-card border border-border px-2 py-1 rounded-lg">
+                                                <span className="text-[10px] text-muted-foreground font-bold uppercase">Rate</span>
+                                                <input type="number" className="w-8 bg-transparent text-xs font-bold text-amber-500 outline-none p-0 text-center" value={inflation} onChange={e => setInflation(Number(e.target.value)||0)} />
+                                                <span className="text-[10px] text-muted-foreground font-bold">%</span>
                                             </div>
-                                            {currentRows.map((row, i) => {
-                                                const d = new Date(baseDate);
-                                                d.setMonth(d.getMonth() + row.month - 1);
-                                                return (
-                                                    <div key={row.month} className={`grid grid-cols-3 px-3 py-2 ${i % 2 === 0 ? 'bg-background' : 'bg-card'}`}>
-                                                        <p className="text-foreground text-[11px] font-medium">{MONTHS[d.getMonth()]} '{String(d.getFullYear()).slice(2)}</p>
-                                                        <p className="text-red-400 text-[11px] font-semibold">-{fmtINR(row.withdrawal)}</p>
-                                                        <p className={`text-[11px] font-semibold ${row.balance <= 0 ? 'text-red-400' : 'text-foreground'}`}>{fmtINR(row.balance)}</p>
-                                                    </div>
-                                                );
-                                            })}
                                         </div>
+                                        
+                                        <div className="p-3 rounded-xl bg-card border border-border/50">
+                                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Purchasing Power Decline</p>
+                                            <p className="text-xs text-foreground font-medium leading-relaxed">Due to {inflation}% inflation, your <span className="font-bold text-rose-500">{fmtINR(withdrawal)}</span> monthly withdrawal will only have the purchasing power of <span className="font-bold text-emerald-500">{fmtINR(result.realWithdrawalValueAtEnd)}</span> in year {years}.</p>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* 5. WHAT-IF SIMULATOR */}
+                <div className="rounded-3xl border border-border bg-card overflow-hidden">
+                    <button onClick={() => setShowWhatIf(p => !p)} className="w-full flex items-center justify-between p-5">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-rose-500/10 rounded-lg text-rose-500"><TrendingUp size={16} /></div>
+                            <span className="text-foreground font-bold text-sm">What-If Simulator</span>
+                        </div>
+                        {showWhatIf ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
+                    </button>
+
+                    <AnimatePresence>
+                        {showWhatIf && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                <div className="px-5 pb-5 space-y-6">
+                                    <div className="h-px bg-border w-full -mt-2" />
+                                    
+                                    <div>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Withdrawal</span>
+                                            <span className="text-sm font-black text-rose-500">{fmtINR(simWithdrawal)}/mo</span>
+                                        </div>
+                                        <input type="range" min={1000} max={principal * 0.05} step={1000} value={simWithdrawal} onChange={e => setSimWithdrawal(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-rose-500" />
+                                    </div>
+
+                                    <div>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Expected Return</span>
+                                            <span className="text-sm font-black text-emerald-500">{simRate}%</span>
+                                        </div>
+                                        <input type="range" min={1} max={30} step={0.5} value={simRate} onChange={e => setSimRate(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                                    </div>
+
+                                    <div>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Duration</span>
+                                            <span className="text-sm font-black text-blue-500">{simYears} yrs</span>
+                                        </div>
+                                        <input type="range" min={1} max={40} step={1} value={simYears} onChange={e => setSimYears(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-500" />
+                                    </div>
+
+                                    <div className={`p-4 rounded-2xl border text-center ${simResult.depMonth ? 'bg-red-500/10 border-red-500/20' : 'bg-brand-green/10 border-brand-green/20'}`}>
+                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Simulated Final Balance</p>
+                                        <p className={`font-black text-2xl mb-1 ${simResult.depMonth ? 'text-red-500' : 'text-brand-green'}`}>{fmtINR(simResult.finalBal)}</p>
+                                        {simResult.depMonth ? (
+                                             <p className="text-red-500 text-[10px] font-bold"><AlertTriangle size={10} className="inline mr-1"/>Depletes in yr {Math.ceil(simResult.depMonth/12)}</p>
+                                        ) : (
+                                             <p className="text-brand-green text-[10px] font-bold"><ShieldCheck size={10} className="inline mr-1"/> Fully Sustainable</p>
+                                        )}
+                                       
                                     </div>
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
+                </div>
+
+
+                {/* 6. YEAR-BY-YEAR GROWTH TABLE */}
+                <div className="rounded-3xl border border-border bg-card overflow-hidden mb-6">
+                    <button onClick={() => setShowTable(p => !p)} className="w-full flex items-center justify-between p-5">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-500"><FileText size={16} /></div>
+                            <span className="text-foreground font-bold text-sm">Portfolio Depletion Table</span>
+                        </div>
+                        {showTable ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
+                    </button>
+
+                    <AnimatePresence>
+                        {showTable && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                <div className="px-5 pb-5 pt-1">
+                                    <div className="rounded-2xl overflow-hidden border border-border mt-2">
+                                        <div className="grid grid-cols-4 bg-muted px-2 py-2.5">
+                                            {['Year', 'Start', 'Net', 'End'].map(h => (<p key={h} className="text-muted-foreground text-[9px] font-black uppercase tracking-wider text-center">{h}</p>))}
+                                        </div>
+                                        <div className="divide-y divide-border/50">
+                                            {result.yearlySchedule.slice((page - 1) * 10, page * 10).map((row) => (
+                                                <div key={row.year} className={`grid grid-cols-4 px-2 py-3 items-center text-center ${row.close <= 0 ? 'bg-red-500/5' : 'bg-background'}`}>
+                                                    <p className={`text-xs font-bold ${row.close <= 0 ? 'text-red-500' : 'text-foreground'}`}>Yr {row.year}</p>
+                                                    <p className="text-foreground text-[10px] font-bold font-mono">{fmtINR(row.open)}</p>
+                                                    <p className={`text-[10px] font-bold font-mono ${row.interest > row.withdrawn ? 'text-brand-green' : 'text-amber-500'}`}>
+                                                        {row.interest > row.withdrawn ? '+' : '-'}{fmtINR(Math.abs(row.interest - row.withdrawn))}
+                                                    </p>
+                                                    <p className={`text-[10px] font-bold font-mono ${row.close <= 0 ? 'text-red-500' : 'text-foreground'}`}>{fmtINR(row.close)}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        
+                                        {/* Pagination */}
+                                        {result.yearlySchedule.length > 10 && (
+                                            <div className="bg-muted px-3 py-2.5 flex justify-between items-center border-t border-border">
+                                                <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
+                                                    <ChevronLeft size={14} />
+                                                </button>
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Page {page} of {Math.ceil(result.yearlySchedule.length / 10)}</p>
+                                                <button disabled={page === Math.ceil(result.yearlySchedule.length / 10)} onClick={() => setPage(p => p + 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
+                                                    <ChevronRight size={14} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground text-center mt-3 font-medium px-2">
+                                        * Net equals (Interest Earned - Total Withdrawn). Negative means portfolio is eroding.
+                                    </p>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* EXPORT OPTIONS */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                    <button
+                        onClick={handleDownloadPDF}
+                        className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-colors hover:bg-brand-blue/10 active:scale-95"
+                    >
+                        <FileText size={20} /> Export Report
+                    </button>
+                    <button
+                        onClick={handleDownloadExcel}
+                        className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-green/5 border border-brand-green/20 text-brand-green font-bold text-xs transition-colors hover:bg-brand-green/10 active:scale-95"
+                    >
+                        <FileText size={20} /> Excel Data
+                    </button>
                 </div>
             </div>
         </div>

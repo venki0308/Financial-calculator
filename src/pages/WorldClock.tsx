@@ -181,6 +181,28 @@ function CompareView() {
             if (diff > 0) dayCross = '+1 Day';
             else if (diff < 0) dayCross = '-1 Day';
 
+            const getDSTInfo = (iana: string, d: Date) => {
+                const jan = new Date(d.getFullYear(), 0, 1);
+                const jul = new Date(d.getFullYear(), 6, 1);
+                const getO = (dt: Date, tz: string) => {
+                    try {
+                        const tzStr = dt.toLocaleString('en-US', { timeZone: tz });
+                        const utcStr = dt.toLocaleString('en-US', { timeZone: 'UTC' });
+                        return (new Date(tzStr).getTime() - new Date(utcStr).getTime()) / 60000;
+                    } catch { return 0; }
+                };
+                const janOff = getO(jan, iana);
+                const julOff = getO(jul, iana);
+                const isDST = janOff !== julOff;
+                const currentOff = getO(d, iana);
+                const currentlyDST = isDST && currentOff === Math.max(janOff, julOff);
+                const nextDST = getNextDST(iana, d);
+                return { isDST, currentlyDST, nextDST };
+            };
+
+            const infoA = getDSTInfo(tzA, refDate);
+            const infoB = getDSTInfo(tzB, refDate);
+
             return {
                 timeA: fmtTime(tzA),
                 timeB: fmtTime(tzB),
@@ -189,6 +211,10 @@ function CompareView() {
                 offsetA: fmtOffset(tzA),
                 offsetB: fmtOffset(tzB),
                 dayCross,
+                infoA,
+                infoB,
+                tzA,
+                tzB
             };
         } catch {
             return null;
@@ -306,11 +332,23 @@ function CompareView() {
                     {/* Source Result */}
                     <div className="p-6 rounded-[28px] bg-gradient-to-br from-[#4F46E5] to-[#4338CA] shadow-lg shadow-indigo-500/20 relative z-10 border border-white/10">
                         <div className="flex justify-between items-start mb-2">
-                            <p className="text-white text-[10px] uppercase font-black tracking-widest bg-black/20 px-2.5 py-1 rounded-full border border-white/5">Source</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-white text-[10px] uppercase font-black tracking-widest bg-black/20 px-2.5 py-1 rounded-full border border-white/5">Source</p>
+                                {result.infoA.currentlyDST && (
+                                    <span className="text-[9px] font-bold bg-amber-500 text-white px-1.5 py-0.5 rounded tracking-tight">DST</span>
+                                )}
+                            </div>
                             <p className="text-indigo-200 text-[11px] uppercase font-bold">{result.offsetA}</p>
                         </div>
                         <p className="text-white font-black text-4xl tracking-tight my-3 font-mono drop-shadow-sm truncate">{result.timeA}</p>
-                        <p className="text-indigo-100 text-sm font-medium opacity-90">{result.dayA}</p>
+                        <div className="flex justify-between items-end">
+                            <p className="text-indigo-100 text-sm font-medium opacity-90">{result.dayA}</p>
+                            {result.infoA.nextDST && (
+                                <p className="text-[9px] text-indigo-200 font-bold uppercase tracking-tighter opacity-80 max-w-[120px] text-right leading-tight">
+                                    Next Change: {new Intl.DateTimeFormat('en-IN', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZone: result.tzA }).format(result.infoA.nextDST.date)}
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Connector */}
@@ -326,11 +364,23 @@ function CompareView() {
                     {/* Target Result */}
                     <div className="p-6 rounded-[28px] bg-gradient-to-br from-[#059669] to-[#047857] shadow-lg shadow-emerald-500/20 relative z-10 border border-white/10">
                         <div className="flex justify-between items-start mb-2">
-                            <p className="text-white text-[10px] uppercase font-black tracking-widest bg-black/20 px-2.5 py-1 rounded-full border border-white/5">Target</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-white text-[10px] uppercase font-black tracking-widest bg-black/20 px-2.5 py-1 rounded-full border border-white/5">Target</p>
+                                {result.infoB.currentlyDST && (
+                                    <span className="text-[9px] font-bold bg-amber-500 text-white px-1.5 py-0.5 rounded tracking-tight">DST</span>
+                                )}
+                            </div>
                             <p className="text-emerald-200 text-[11px] uppercase font-bold">{result.offsetB}</p>
                         </div>
                         <p className="text-white font-black text-4xl tracking-tight my-3 font-mono drop-shadow-sm truncate">{result.timeB}</p>
-                        <p className="text-emerald-100 text-sm font-medium opacity-90">{result.dayB}</p>
+                        <div className="flex justify-between items-end">
+                            <p className="text-emerald-100 text-sm font-medium opacity-90">{result.dayB}</p>
+                            {result.infoB.nextDST && (
+                                <p className="text-[9px] text-emerald-200 font-bold uppercase tracking-tighter opacity-80 max-w-[120px] text-right leading-tight">
+                                    Next Change: {new Intl.DateTimeFormat('en-IN', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true, timeZone: result.tzB }).format(result.infoB.nextDST.date)}
+                                </p>
+                            )}
+                        </div>
                     </div>
                 </motion.div>
             )}
