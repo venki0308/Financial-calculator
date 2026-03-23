@@ -359,7 +359,7 @@ export default function PropertyCalculator() {
 
     return (
         <div className="min-h-dvh bg-background animate-fade-in relative pb-[env(safe-area-inset-bottom,40px)]" style={{ maxWidth: 428, margin: '0 auto' }}>
-            <div className={`px-4 pt-14 transition-[padding-bottom] duration-300 ${(landResult || flatResult || villaResult || sdResult || emiResult) ? 'pb-56' : 'pb-32'}`}>
+            <div className="px-4 pt-14 pb-32">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
@@ -942,45 +942,6 @@ export default function PropertyCalculator() {
                     )}
                 </div>
             </div>
-
-            {/* ── Total Cost Summary Sticky Footer ───────────────────────────── */}
-            {(landResult || flatResult || villaResult || sdResult || emiResult) && (
-                <motion.div 
-                    initial={{ y: 100 }}
-                    animate={{ y: 0 }}
-                    className="fixed bottom-0 left-0 right-0 bg-background/90  border-t border-brand-green/20 px-4 pt-4 z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] pb-[calc(env(safe-area-inset-bottom,20px)+2rem)] sm:pb-8"
-                    style={{ maxWidth: 428, margin: '0 auto' }}
-                >
-                    <div className="max-w-2xl mx-auto space-y-3">
-                        <div className="flex justify-between items-center mb-1">
-                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Total Cost Summary</span>
-                            <button onClick={() => { setLandResult(null); setFlatResult(null); setVillaResult(null); setSdResult(null); setEmiResult(null); }} 
-                                className="text-[10px] text-red-400 font-bold px-2 py-1 rounded bg-red-400/10 hover:bg-red-400/20 transition-colors uppercase">Reset All</button>
-                        </div>
-                        <div className="flex gap-4 overflow-x-auto pb-1 scrollbar-hide">
-                            {mode === 'land' && landResult && <SummaryPill label="Property" val={landResult.totalValue} color="text-brand-green" />}
-                            {mode === 'flat' && flatResult && <SummaryPill label="Property" val={flatResult.totalCost} color="text-brand-green" />}
-                            {mode === 'villa' && villaResult && <SummaryPill label="Property" val={villaResult.totalCost} color="text-brand-green" />}
-                            {sdResult && <SummaryPill label="Reg. Cost" val={sdResult.total} color="text-yellow-400" />}
-                            {emiResult && <SummaryPill label="EMI" val={emiResult.emi} color="text-brand-purple" isMonthly />}
-                        </div>
-                        
-                        <div className="flex justify-between items-center pt-2 border-t border-slate-700">
-                            <div>
-                                <p className="text-muted-foreground text-[10px] font-medium uppercase">Grand Total Cost</p>
-                                <p className="text-brand-green text-xl font-black">
-                                    {fmt((mode === 'land' ? (landResult?.totalValue || 0) : mode === 'flat' ? (flatResult?.totalCost || 0) : (villaResult?.totalCost || 0)) + (sdResult?.total || 0))}
-                                </p>
-                            </div>
-                            <button onClick={() => copyText(`Total Property Cost: ${fmt((mode === 'land' ? (landResult?.totalValue || 0) : mode === 'flat' ? (flatResult?.totalCost || 0) : (villaResult?.totalCost || 0)) + (sdResult?.total || 0))}`, 'grand-copy')}
-                                className="px-4 py-2.5 bg-brand-green text-black font-bold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-brand-green/20 transition-transform active:scale-95">
-                                {copied === 'grand-copy' ? <Check size={14} /> : <Calculator size={14} />}
-                                {copied === 'grand-copy' ? 'Copied' : 'Copy Summary'}
-                            </button>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
         </div>
     );
 }

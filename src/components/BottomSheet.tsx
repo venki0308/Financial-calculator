@@ -47,7 +47,7 @@ export default function BottomSheet({ isOpen, onClose, title, children, footer }
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 sheet-overlay z-[60]"
+                        className="fixed inset-0 sheet-overlay z-[10000]"
                         onClick={onClose}
                     />
                     <motion.div
@@ -65,7 +65,7 @@ export default function BottomSheet({ isOpen, onClose, title, children, footer }
                             // Move sheet up by keyboard height so Apply button stays visible
                             bottom: keyboardHeight > 0 ? keyboardHeight : 0,
                         }}
-                        className="fixed left-0 right-0 mx-auto w-full max-w-[428px] max-h-[85dvh] bg-card border-t border-border rounded-t-3xl z-[60] flex flex-col transition-[bottom] duration-200"
+                        className="fixed left-0 right-0 mx-auto w-full max-w-[428px] max-h-[85dvh] bg-card border-t border-border rounded-t-3xl z-[10000] flex flex-col transition-[bottom] duration-200"
                     >
                         {/* Drag handle */}
                         <div className="flex justify-center pt-3 pb-2 cursor-grab flex-shrink-0" onPointerDown={(e) => dragControls.start(e)}>

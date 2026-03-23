@@ -66,7 +66,11 @@ function CompareView() {
     const [showPickerA, setShowPickerA] = useState(false);
     const [showPickerB, setShowPickerB] = useState(false);
     const [useLive, setUseLive] = useState(false);
-    const now = useSharedTime();
+
+    // Only subscribe to live ticker when useLive is ON — prevents 1s re-renders during zone picking
+    const liveNow = useSharedTime();
+    const staticNow = useRef(new Date());
+    const now = useLive ? liveNow : staticNow.current;
 
     useEffect(() => {
         localStorage.setItem('fincalix_compare_tz', JSON.stringify({ a: tzA, b: tzB }));
@@ -103,14 +107,11 @@ function CompareView() {
                 }).format(now);
                 const [m, d, y] = todayInA.split('/');
                 refDate = new Date(`${y}-${m}-${d}T${String(inputHour).padStart(2, '0')}:${String(inputMin).padStart(2, '0')}:00`);
-                // Convert to UTC then to tzA
                 const tzAFormatter = new Intl.DateTimeFormat('en-US', {
                     timeZone: tzA, year: 'numeric', month: '2-digit', day: '2-digit',
                     hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
                 });
-                // Approximate: treat the JS local Date as if it is tzA time
-                // We compute the offset of tzA vs UTC and build the UTC equivalent
-                // Compute exact offset ms of tzA vs UTC using the same string parsing base
+                // Compute exact offset ms of tzA vs UTC
                 const tzStr = now.toLocaleString('en-US', { timeZone: tzA });
                 const utcStr = now.toLocaleString('en-US', { timeZone: 'UTC' });
                 const tzAOffset = new Date(tzStr).getTime() - new Date(utcStr).getTime();
@@ -132,7 +133,7 @@ function CompareView() {
                 }).formatToParts(refDate).find(p => p.type === 'timeZoneName')?.value || 'UTC';
             };
 
-            // Day-cross comparison: compare calendar date in A vs B
+            // Day-cross comparison
             const dateA = new Intl.DateTimeFormat('en-CA', { timeZone: tzA }).format(refDate);
             const dateB = new Intl.DateTimeFormat('en-CA', { timeZone: tzB }).format(refDate);
             const diff = (new Date(dateB).getTime() - new Date(dateA).getTime()) / 86400000;
@@ -152,7 +153,9 @@ function CompareView() {
         } catch {
             return null;
         }
-    }, [tzA, tzB, inputHour, inputMin, useLive, now]);
+    // Only recompute when live ticker, tz settings, or manual hour/min changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tzA, tzB, inputHour, inputMin, useLive, useLive ? now : null]);
 
     const TZPicker = ({ label, value, onChange, search, setSearch, show, setShow }: {
         label: string; value: string; onChange: (v: string) => void;
