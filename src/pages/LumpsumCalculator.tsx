@@ -1,162 +1,473 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Info, Save, Check, Target, TrendingUp, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
+import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { useCalculatorStore } from '../store/useCalculatorStore';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
 export default function LumpsumCalculator() {
     const navigate = useNavigate();
-    useEffect(() => { AnalyticsService.trackScreen('Lumpsum'); }, []);
+    const { addSaved } = useCalculatorStore();
 
+    useEffect(() => { AnalyticsService.trackScreen('Lumpsum_Advanced'); }, []);
+
+    // Base Inputs
     const [principal, setPrincipal] = useState(100000);
     const [rate, setRate] = useState(12);
     const [years, setYears] = useState(10);
     const [inflation, setInflation] = useState(6);
-    const [showAdvanced, setShowAdvanced] = useState(false);
 
+    // Goal Matching
+    const [targetAmount, setTargetAmount] = useState(500000);
+
+    // Simulators
+    const [simPrincipal, setSimPrincipal] = useState(principal);
+    const [simRate, setSimRate] = useState(rate);
+    const [simYears, setSimYears] = useState(years);
+    useEffect(() => { setSimPrincipal(principal); setSimRate(rate); setSimYears(years); }, [principal, rate, years]);
+
+    // UI States
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [showWhatIf, setShowWhatIf] = useState(false);
+    const [showGoal, setShowGoal] = useState(false);
+    const [showTable, setShowTable] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [page, setPage] = useState(1);
+
+    // 1. CORE CALCULATION
     const result = useMemo(() => {
-        const fv = principal * Math.pow(1 + rate / 100, years);
-        const cagr = rate; // by definition for lumpsum
-        const realRate = ((1 + rate / 100) / (1 + inflation / 100) - 1) * 100;
-        const realValue = principal * Math.pow(1 + realRate / 100, years);
+        const rDecimal = rate / 100;
+        const iDecimal = inflation / 100;
+        
+        const fv = principal * Math.pow(1 + rDecimal, years);
         const wealthRatio = fv / principal;
+        
+        const cagr = rate; // Fixed lumpsum assumption
+        const realRate = ((1 + rDecimal) / (1 + iDecimal)) - 1;
+        const realValue = principal * Math.pow(1 + realRate, years);
+        const wealthErosion = fv - realValue;
+
+        // Risk Indicator (<6% Low, 6-12% Moderate, >12% High)
+        let riskLevel = 'Low'; let riskColor = 'text-brand-green'; let riskBg = 'bg-brand-green/10 border-brand-green/20';
+        if (rate >= 6 && rate <= 12) { riskLevel = 'Moderate'; riskColor = 'text-amber-500'; riskBg = 'bg-amber-500/10 border-amber-500/20'; }
+        else if (rate > 12) { riskLevel = 'High'; riskColor = 'text-rose-500'; riskBg = 'bg-rose-500/10 border-rose-500/20'; }
 
         // Year-by-year table
-        const table: { year: number; value: number; gain: number }[] = [];
+        const table: { year: number; value: number; gain: number; yearlyGain: number }[] = [];
+        let prev = principal;
         for (let y = 1; y <= years; y++) {
-            const v = principal * Math.pow(1 + rate / 100, y);
-            table.push({ year: y, value: v, gain: v - principal });
+            const v = principal * Math.pow(1 + rDecimal, y);
+            table.push({ year: y, value: v, gain: v - principal, yearlyGain: v - prev });
+            prev = v;
         }
 
-        return { fv, cagr, realRate, realValue, wealthRatio, table };
+        return { fv, cagr, realRate, realValue, wealthRatio, table, wealthErosion, riskLevel, riskColor, riskBg };
     }, [principal, rate, years, inflation]);
 
-    const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-base font-semibold focus:outline-none focus:border-brand-blue";
+    // 2. GOAL MATCHING ENGINE
+    const goalData = useMemo(() => {
+        if (targetAmount <= principal) return { requiredYears: 0, requiredRate: 0, gap: 0, achievable: true };
+        
+        const reqYears = Math.log(targetAmount / principal) / Math.log(1 + (rate / 100));
+        const reqRate = (Math.pow(targetAmount / principal, 1 / years) - 1) * 100;
+        const gap = targetAmount - result.fv;
+
+        return {
+            requiredYears: reqYears > 0 ? reqYears : 0,
+            requiredRate: reqRate > 0 ? reqRate : 0,
+            gap,
+            achievable: gap <= 0
+        };
+    }, [targetAmount, principal, rate, years, result.fv]);
+
+    // 3. SIMULATOR
+    const simResult = useMemo(() => {
+        return simPrincipal * Math.pow(1 + simRate / 100, simYears);
+    }, [simPrincipal, simRate, simYears]);
+
+    // 4. SMART INSIGHTS
+    const insight = useMemo(() => {
+        if (!goalData.achievable && showGoal && targetAmount > 0) {
+            return { msg: `You need ${fmtINR(goalData.gap)} more to reach your goal. Consider extending tenure to ${goalData.requiredYears.toFixed(1)} years or adjusting risk for a ${goalData.requiredRate.toFixed(1)}% return.`, type: 'warn' };
+        }
+        if (rate > 0 && result.realRate <= 0) {
+            return { msg: `Inflation (${inflation}%) is completely eroding your returns. Ensure your asset allocation yields at least ${inflation + 2}% for real wealth creation.`, type: 'warn' };
+        }
+        if (years >= 15 && rate >= 10) {
+            return { msg: "Excellent! Holding investments for 15+ years allows exponential compounding to do the heavy lifting for your wealth.", type: 'success' };
+        }
+        return { msg: `Inflation will reduce the purchasing power of your gains by ${fmtINR(result.wealthErosion)} over ${years} years.`, type: 'info' };
+    }, [rate, result.realRate, inflation, years, result.wealthErosion, goalData, showGoal, targetAmount]);
+
+
+    const handleSave = () => {
+        addSaved({
+            id: `lump-${Date.now()}`,
+            calculatorType: 'lumpsum',
+            inputValues: { principal, rate, years },
+            resultValues: { primary: result.fv, label: 'Wealth Generated', invested: principal, returns: result.fv - principal },
+            timestamp: Date.now(),
+        });
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+    };
+
+    const handleDownloadPDF = async () => {
+        const headers = ['Metric', 'Value'];
+        const data: (string | number)[][] = [
+            ['Total Investment', fmtINR(principal)],
+            ['Expected Return', `${rate}% p.a. (${result.riskLevel} Risk)`],
+            ['Time Period', `${years} years`],
+            ['--- Results ---', ''],
+            ['Estimated Maturity Value', fmtINR(result.fv)],
+            ['Wealth Gained', fmtINR(result.fv - principal)],
+            ['Wealth Multiplier', `${result.wealthRatio.toFixed(2)}x`],
+            ['Effective CAGR', `${result.cagr.toFixed(2)}%`],
+            ['--- Inflation Analysis ---', ''],
+            ['Assumed Inflation Rate', `${inflation}% p.a.`],
+            ['Real Inflation-Adjusted Return', `${result.realRate.toFixed(2)}% p.a.`],
+            ['Real Maturity Value', fmtINR(result.realValue)],
+            ['Wealth Erosion Impact', `-${fmtINR(result.wealthErosion)}`],
+            ...(showGoal ? [
+                ['--- Goal Analysis ---', ''],
+                ['Target Amount', fmtINR(targetAmount)],
+                ['Goal Gap', goalData.achievable ? 'Goal Achieved' : fmtINR(goalData.gap)],
+                ['Required Time at Current Rate', `${goalData.requiredYears.toFixed(1)} years`],
+                ['Required Rate for Current Time', `${goalData.requiredRate.toFixed(2)}% p.a.`]
+            ] : []),
+            ['--- Smart Insights ---', ''],
+            ['Insight', insight.msg],
+            ['--- Growth Bracket (Summary) ---', ''],
+            ...result.table.slice(0, 5).map(r => [`Year ${r.year}`, `Balance: ${fmtINR(r.value)}`]),
+        ];
+
+        await exportToPDF('Smart Lumpsum Investment Analysis', headers, data, 'Lumpsum_Smart_Analysis');
+    };
+
+    const handleDownloadExcel = () => {
+        const headers = ['Year', 'Yearly Interest Added', 'Cumulative Gain', 'Closing Value'];
+        const data = result.table.map(r => [r.year, Math.round(r.yearlyGain), Math.round(r.gain), Math.round(r.value)]);
+        exportToExcel(headers, data, 'Lumpsum_Growth');
+    };
+
+    const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50";
 
     return (
-        <div className="min-h-dvh bg-background" style={{ maxWidth: 428, margin: '0 auto' }}>
-            <div className="sticky top-0 z-10 bg-background px-4 pt-14 pb-3 border-b border-border">
+        <div className="min-h-dvh bg-background pb-28 animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
+            {/* Header */}
+            <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border hover:bg-muted transition-all">
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-foreground">Lumpsum Calculator</h1>
-                        <p className="text-muted-foreground text-xs">One-time investment growth</p>
+                        <h1 className="text-lg font-bold text-foreground leading-tight">Lumpsum Calculator</h1>
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Smart Wealth Analysis</p>
                     </div>
                 </div>
             </div>
 
-            <div className="px-4 pt-5 pb-28 space-y-4">
-                <div className="space-y-3">
-                    {[
-                        { label: 'Total Investment', val: principal, set: setPrincipal, prefix: '₹', min: 1000 },
-                        { label: 'Expected Return (p.a.)', val: rate, set: setRate, suffix: '%', min: 1, max: 30 },
-                        { label: 'Time Period (years)', val: years, set: setYears, suffix: ' yrs', min: 1, max: 40 },
-                    ].map(({ label, val, set, prefix, suffix }) => (
-                        <div key={label}>
-                            <label className="text-muted-foreground text-xs font-medium mb-1 block">{label}</label>
-                            <div className="relative">
-                                {prefix && <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">{prefix}</span>}
-                                <input type="number" value={val} onChange={e => set(Number(e.target.value) || 0)}
-                                    className={inputCls + (prefix ? ' pl-8' : '') + (suffix ? ' pr-12' : '')} />
-                                {suffix && <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{suffix}</span>}
-                            </div>
+            <div className="px-4 pt-5 space-y-5">
+                {/* 1. CORE INPUTS */}
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Total Investment</label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
+                            <input type="number" value={principal} onChange={e => setPrincipal(Number(e.target.value)||0)} className={inputCls + " pl-7"} />
                         </div>
-                    ))}
-                </div>
-
-                {/* Result Card */}
-                <div className="rounded-2xl bg-gradient-to-br from-brand-blue/20 to-blue-500/10 border border-brand-blue/30 p-5">
-                    <p className="text-muted-foreground text-xs font-medium mb-1">Estimated Maturity Value</p>
-                    <p className="text-foreground font-bold text-3xl">{fmtINR(result.fv)}</p>
-                    <div className="mt-3 grid grid-cols-2 gap-3">
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-muted-foreground text-[11px]">Total Invested</p>
-                            <p className="text-foreground font-bold text-base">{fmtINR(principal)}</p>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Return Rate (%)</label>
+                            <input type="number" step="0.1" value={rate} onChange={e => setRate(Number(e.target.value)||0)} className={inputCls} />
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[11px]">Wealth Gained</p>
-                            <p className="text-brand-green font-bold text-base">{fmtINR(result.fv - principal)}</p>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Time (Years)</label>
+                            <input type="number" value={years} onChange={e => setYears(Number(e.target.value)||0)} className={inputCls} />
                         </div>
                     </div>
                 </div>
 
-                {/* Advanced Details */}
-                <div className="rounded-2xl border border-border bg-card overflow-hidden">
-                    <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-4">
-                        <div className="flex items-center gap-2">
-                            <Info size={16} className="text-brand-blue" />
-                            <span className="text-foreground font-semibold text-sm">Advanced Details</span>
+                {/* 2. RESULTS HERO */}
+                <motion.div layout className="p-6 rounded-3xl bg-card border border-border shadow-sm">
+                    <div className="flex justify-between items-start mb-4">
+                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">Maturity Value</p>
+                        <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${result.riskBg} ${result.riskColor}`}>
+                            {result.riskLevel} Risk
                         </div>
-                        {showAdvanced ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
+                    </div>
+                    
+                    <p className="text-5xl font-black text-brand-blue tracking-tighter mb-5">
+                        {fmtINR(result.fv)}
+                    </p>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3.5 rounded-2xl bg-background border border-border/50">
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-0.5">Invested</p>
+                            <p className="text-foreground font-black text-sm">{fmtINR(principal)}</p>
+                        </div>
+                        <div className="p-3.5 rounded-2xl bg-brand-green/10 border border-brand-green/20">
+                            <p className="text-brand-green/80 text-[10px] uppercase font-bold mb-0.5">Wealth Gained</p>
+                            <p className="text-brand-green font-black text-sm">{fmtINR(result.fv - principal)}</p>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* SMART INSIGHT (Dynamic) */}
+                <div className={`p-4 rounded-2xl border flex items-start gap-3 ${insight.type === 'warn' ? 'bg-amber-500/10 border-amber-500/30' : insight.type === 'success' ? 'bg-brand-green/10 border-brand-green/30' : 'bg-brand-blue/10 border-brand-blue/30'}`}>
+                    <BrainCircuit size={18} className={`shrink-0 mt-0.5 ${insight.type === 'warn' ? 'text-amber-500' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`} />
+                    <div>
+                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`}>Smart Insight</p>
+                        <p className={`text-xs font-medium leading-relaxed ${insight.type === 'warn' ? 'text-amber-700 dark:text-amber-400' : insight.type === 'success' ? 'text-emerald-700 dark:text-emerald-400' : 'text-blue-700 dark:text-blue-300'}`}>{insight.msg}</p>
+                    </div>
+                </div>
+
+                {/* SAVE BUTTON */}
+                <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-blue text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
+                    {saved ? <Check size={18} /> : <Save size={18} />}
+                    {saved ? 'Calculation Saved!' : 'Save Calculation'}
+                </button>
+
+
+                {/* 3. ADVANCED DETAILS */}
+                <div className="rounded-3xl border border-border bg-card overflow-hidden">
+                    <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-5">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-brand-blue/10 rounded-lg text-brand-blue"><Activity size={16} /></div>
+                            <span className="text-foreground font-bold text-sm">Advanced Details</span>
+                        </div>
+                        {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
-                    <AnimatePresence initial={false}>
+
+                    <AnimatePresence>
                         {showAdvanced && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
-                                <div className="px-4 pb-4 space-y-4">
-                                    <div className="h-px bg-border" />
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                <div className="px-5 pb-5 space-y-5">
+                                    <div className="h-px bg-border w-full -mt-2" />
 
-                                    {/* CAGR + Real Return */}
+                                    {/* CAGR & Multiplier */}
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div className="p-3 rounded-xl bg-brand-blue/10 border border-brand-blue/20 text-center">
-                                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">CAGR</p>
-                                            <p className="text-brand-blue font-bold text-xl">{result.cagr.toFixed(2)}%</p>
+                                        <div className="p-4 rounded-2xl bg-background border border-border text-center">
+                                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-0.5">CAGR</p>
+                                            <p className="text-brand-blue font-black text-xl mb-1">{result.cagr.toFixed(2)}%</p>
+                                            <p className="text-muted-foreground text-[9px] leading-tight px-1">Effective annual growth rate</p>
                                         </div>
-                                        <div className="p-3 rounded-xl bg-brand-green/10 border border-brand-green/20 text-center">
-                                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Wealth Ratio</p>
-                                            <p className="text-brand-green font-bold text-xl">{result.wealthRatio.toFixed(2)}x</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Inflation-adjusted real return */}
-                                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <p className="text-amber-500 text-xs font-semibold">Inflation-Adjusted Real Return</p>
-                                        </div>
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="text-muted-foreground text-xs">Inflation Rate:</span>
-                                            <input type="number" value={inflation} onChange={e => setInflation(Number(e.target.value) || 0)}
-                                                className="w-16 text-center py-1 rounded-lg bg-card border border-border text-foreground text-sm font-bold focus:outline-none focus:border-amber-500" />
-                                            <span className="text-muted-foreground text-xs">%</span>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <div>
-                                                <p className="text-muted-foreground text-[10px]">Real Return Rate</p>
-                                                <p className="text-amber-500 font-bold">{result.realRate.toFixed(2)}% p.a.</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-muted-foreground text-[10px]">Inflation-adj. Value</p>
-                                                <p className="text-amber-500 font-bold">{fmtINR(result.realValue)}</p>
-                                            </div>
+                                        <div className="p-4 rounded-2xl bg-background border border-border text-center">
+                                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-0.5">Wealth Multiplier</p>
+                                            <p className="text-brand-green font-black text-xl mb-1">{result.wealthRatio.toFixed(1)}x</p>
+                                            <p className="text-muted-foreground text-[9px] leading-tight px-1">Your money grew {result.wealthRatio.toFixed(1)} times</p>
                                         </div>
                                     </div>
 
-                                    {/* Year-by-year table */}
+                                    {/* Inflation Adjusted Return */}
+                                    <div className="bg-gradient-to-br from-background to-muted p-4 rounded-2xl border border-border space-y-3">
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-foreground text-xs font-bold flex items-center gap-1.5"><ShieldAlert size={14} className="text-amber-500"/> Inflation Impact</p>
+                                            <div className="flex items-center gap-1.5 bg-card border border-border px-2 py-1 rounded-lg">
+                                                <span className="text-[10px] text-muted-foreground font-bold uppercase">Rate</span>
+                                                <input type="number" className="w-8 bg-transparent text-xs font-bold text-amber-500 outline-none p-0 text-center" value={inflation} onChange={e => setInflation(Number(e.target.value)||0)} />
+                                                <span className="text-[10px] text-muted-foreground font-bold">%</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="p-3 rounded-xl bg-card border border-border/50 grid grid-cols-2 gap-2 mt-2">
+                                            <div>
+                                                <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Real Return Rate</p>
+                                                <p className={`font-black text-sm ${result.realRate > 0 ? 'text-brand-green' : 'text-red-500'}`}>{result.realRate.toFixed(2)}%</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Real Purchasing Power</p>
+                                                <p className="font-bold text-sm text-foreground">{fmtINR(result.realValue)}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        {result.wealthErosion > 0 && (
+                                            <p className="text-muted-foreground text-[10px] text-center italic mt-1 pb-1">
+                                                Wealth erosion due to inflation: <span className="text-amber-500 font-bold">-{fmtINR(result.wealthErosion)}</span>
+                                            </p>
+                                        )}
+                                    </div>
+
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+
+                {/* 4. GOAL MATCHING (POWER FEATURE) */}
+                <div className="rounded-3xl border border-border bg-card overflow-hidden">
+                    <button onClick={() => setShowGoal(p => !p)} className="w-full flex items-center justify-between p-5">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-emerald-500/10 rounded-lg text-emerald-500"><Target size={16} /></div>
+                            <span className="text-foreground font-bold text-sm">Target Goal Matcher</span>
+                        </div>
+                        {showGoal ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
+                    </button>
+
+                    <AnimatePresence>
+                        {showGoal && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                <div className="px-5 pb-5 space-y-4">
+                                    <div className="h-px bg-border w-full -mt-2" />
+                                    
                                     <div>
-                                        <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-2">Year-by-Year Growth</p>
-                                        <div className="rounded-xl overflow-hidden border border-border">
-                                            <div className="grid grid-cols-3 bg-muted px-3 py-2">
-                                                {['Year', 'Value', 'Gain'].map(h => (
-                                                    <p key={h} className="text-muted-foreground text-[10px] font-bold uppercase">{h}</p>
-                                                ))}
-                                            </div>
-                                            {result.table.map((row, i) => (
-                                                <div key={row.year} className={`grid grid-cols-3 px-3 py-2 ${i % 2 === 0 ? 'bg-background' : 'bg-card'}`}>
-                                                    <p className="text-foreground text-xs font-medium">Year {row.year}</p>
-                                                    <p className="text-foreground text-xs font-semibold">{fmtINR(row.value)}</p>
-                                                    <p className="text-brand-green text-xs font-semibold">+{fmtINR(row.gain)}</p>
-                                                </div>
-                                            ))}
+                                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">What is your Target Amount?</label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
+                                            <input type="number" value={targetAmount} onChange={e => setTargetAmount(Number(e.target.value)||0)} className={inputCls + " pl-7 border-emerald-500/30 focus:border-emerald-500 focus:ring-emerald-500/20"} />
                                         </div>
+                                    </div>
+
+                                    <div className={`p-4 rounded-2xl border ${goalData.achievable ? 'bg-brand-green/10 border-brand-green/30' : 'bg-background border-border'}`}>
+                                        {goalData.achievable ? (
+                                            <div className="text-center py-2">
+                                                <p className="text-brand-green tracking-tight font-black text-lg mb-1">Goal Reached! 🎉</p>
+                                                <p className="text-brand-green/80 text-[11px] font-bold">Your maturity ({fmtINR(result.fv)}) exceeds your target.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                <p className="text-amber-500 text-[10px] font-black uppercase tracking-wider text-center">Shortfall: {fmtINR(goalData.gap)}</p>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <div className="bg-card border border-border/50 p-2.5 rounded-xl text-center">
+                                                        <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Required Time</p>
+                                                        <p className="text-foreground font-black text-sm">{goalData.requiredYears.toFixed(1)} <span className="text-[10px] font-bold">yrs</span></p>
+                                                    </div>
+                                                    <div className="bg-card border border-border/50 p-2.5 rounded-xl text-center">
+                                                        <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Required Rate</p>
+                                                        <p className="text-foreground font-black text-sm">{goalData.requiredRate.toFixed(1)} <span className="text-[10px] font-bold">% p.a.</span></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
+                </div>
+
+
+                {/* 5. WHAT-IF SIMULATOR */}
+                <div className="rounded-3xl border border-border bg-card overflow-hidden">
+                    <button onClick={() => setShowWhatIf(p => !p)} className="w-full flex items-center justify-between p-5">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-rose-500/10 rounded-lg text-rose-500"><TrendingUp size={16} /></div>
+                            <span className="text-foreground font-bold text-sm">What-If Simulator</span>
+                        </div>
+                        {showWhatIf ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
+                    </button>
+
+                    <AnimatePresence>
+                        {showWhatIf && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                <div className="px-5 pb-5 space-y-6">
+                                    <div className="h-px bg-border w-full -mt-2" />
+                                    
+                                    <div>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Invested Amount</span>
+                                            <span className="text-sm font-black text-blue-500">{fmtINR(simPrincipal)}</span>
+                                        </div>
+                                        <input type="range" min={1000} max={principal * 3} step={5000} value={simPrincipal} onChange={e => setSimPrincipal(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-500" />
+                                    </div>
+
+                                    <div>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Expected Return</span>
+                                            <span className="text-sm font-black text-emerald-500">{simRate}%</span>
+                                        </div>
+                                        <input type="range" min={1} max={30} step={0.5} value={simRate} onChange={e => setSimRate(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-emerald-500" />
+                                    </div>
+
+                                    <div>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Time Period</span>
+                                            <span className="text-sm font-black text-rose-500">{simYears} yrs</span>
+                                        </div>
+                                        <input type="range" min={1} max={40} step={1} value={simYears} onChange={e => setSimYears(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-rose-500" />
+                                    </div>
+
+                                    <div className="p-4 rounded-2xl bg-gradient-to-br from-background to-muted border border-border text-center">
+                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Simulated Value</p>
+                                        <p className="font-black text-2xl text-foreground mb-1">{fmtINR(simResult)}</p>
+                                        <p className="text-brand-green text-[10px] font-bold">+ {fmtINR(simResult - simPrincipal)} total gain</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+
+                {/* 6. YEAR-BY-YEAR GROWTH TABLE */}
+                <div className="rounded-3xl border border-border bg-card overflow-hidden mb-6">
+                    <button onClick={() => setShowTable(p => !p)} className="w-full flex items-center justify-between p-5">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-500"><FileText size={16} /></div>
+                            <span className="text-foreground font-bold text-sm">Year-Wise Timeline</span>
+                        </div>
+                        {showTable ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
+                    </button>
+
+                    <AnimatePresence>
+                        {showTable && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                <div className="px-5 pb-5 pt-1">
+                                    <div className="rounded-2xl overflow-hidden border border-border mt-2">
+                                        <div className="grid grid-cols-3 bg-muted px-3 py-2.5">
+                                            {['Year', 'Total Value', 'Gain'].map(h => (<p key={h} className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">{h}</p>))}
+                                        </div>
+                                        <div className="divide-y divide-border/50">
+                                            {result.table.slice((page - 1) * 10, page * 10).map((row) => (
+                                                <div key={row.year} className="grid grid-cols-3 px-3 py-3 bg-background items-center">
+                                                    <p className="text-foreground text-xs font-bold">Yr {row.year}</p>
+                                                    <p className="text-foreground text-xs font-bold font-mono">{fmtINR(row.value)}</p>
+                                                    <div className="flex flex-col">
+                                                        <p className="text-brand-green text-xs font-bold font-mono">+{fmtINR(row.gain)}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        
+                                        {/* Pagination */}
+                                        {result.table.length > 10 && (
+                                            <div className="bg-muted px-3 py-2.5 flex justify-between items-center border-t border-border">
+                                                <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
+                                                    <ChevronLeft size={14} />
+                                                </button>
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Page {page} of {Math.ceil(result.table.length / 10)}</p>
+                                                <button disabled={page === Math.ceil(result.table.length / 10)} onClick={() => setPage(p => p + 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
+                                                    <ChevronRight size={14} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* EXPORT OPTIONS */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                    <button
+                        onClick={handleDownloadPDF}
+                        className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-colors hover:bg-brand-blue/10 active:scale-95"
+                    >
+                        <FileText size={20} /> Export Report
+                    </button>
+                    <button
+                        onClick={handleDownloadExcel}
+                        className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-green/5 border border-brand-green/20 text-brand-green font-bold text-xs transition-colors hover:bg-brand-green/10 active:scale-95"
+                    >
+                        <FileText size={20} /> Excel Data
+                    </button>
                 </div>
             </div>
         </div>
