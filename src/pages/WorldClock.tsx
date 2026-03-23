@@ -388,6 +388,78 @@ const DEFAULT_CLOCKS: SavedClock[] = [
     }
 ];
 
+interface DSTTransition {
+    date: Date;
+    isStarting: boolean;
+    type: 'forward' | 'backward';
+}
+
+const dstCache = new Map<string, { t: number, res: DSTTransition | null }>();
+
+function getNextDST(iana: string, now: Date): DSTTransition | null {
+    try {
+        const year = now.getFullYear();
+        const dayOfYear = Math.floor((now.getTime() - new Date(year, 0, 0).getTime()) / 86400000);
+        const key = `${iana}_${year}_${dayOfYear}`;
+        if (dstCache.has(key)) return dstCache.get(key)!.res;
+
+        const getOff = (t: number) => {
+            try {
+                const d = new Date(t);
+                const tzStr = d.toLocaleString('en-US', { timeZone: iana });
+                const utcStr = d.toLocaleString('en-US', { timeZone: 'UTC' });
+                return (new Date(tzStr).getTime() - new Date(utcStr).getTime()) / 60000;
+            } catch { return 0; }
+        };
+
+        const jan1 = Date.UTC(year, 0, 1, 12, 0, 0);
+        const jul1 = Date.UTC(year, 6, 1, 12, 0, 0);
+        
+        const janOff = getOff(jan1);
+        const julOff = getOff(jul1);
+
+        if (janOff === julOff) {
+            dstCache.set(key, { t: Date.now(), res: null });
+            return null;
+        }
+
+        const dstOff = Math.max(janOff, julOff);
+        const nowP = now.getTime();
+        const currentOff = getOff(nowP);
+
+        // Scan every day for the next 365 days
+        for (let i = 1; i <= 365; i++) {
+            const t = nowP + i * 86400000;
+            const off = getOff(t);
+            if (off !== currentOff) {
+                // Found transition date between t - 86400000 and t.
+                // Binary search to find exact minute
+                let low = t - 86400000;
+                let high = t;
+                while (high - low > 60000) {
+                    const mid = Math.floor((low + high) / 2);
+                    if (getOff(mid) === currentOff) {
+                        low = mid;
+                    } else {
+                        high = mid;
+                    }
+                }
+                const transDate = new Date(high);
+                const isStarting = (off === dstOff);
+                const res: DSTTransition = {
+                    date: transDate,
+                    isStarting, 
+                    type: isStarting ? 'forward' : 'backward'
+                };
+                dstCache.set(key, { t: Date.now(), res });
+                return res;
+            }
+        }
+        dstCache.set(key, { t: Date.now(), res: null });
+        return null;
+    } catch { return null; }
+}
+
 function getTimeData(iana: string, now: Date) {
     try {
         const parts = new Intl.DateTimeFormat('en-US', {
@@ -441,10 +513,12 @@ function getTimeData(iana: string, now: Date) {
             const dir = diffMins < 0 ? "behind" : "ahead of";
             diffStr = `${h}h${m > 0 ? ` ${m}m` : ''} ${dir} IST`;
         }
+        
+        const nextDST = getNextDST(iana, now);
 
-        return { hour, minute, second, displayHour, displayMin, ampm, offsetStr, isDST, currentlyDST, weekday, day, month, diffStr };
+        return { hour, minute, second, displayHour, displayMin, ampm, offsetStr, isDST, currentlyDST, weekday, day, month, diffStr, nextDST };
     } catch {
-        return { hour: 0, minute: 0, second: 0, displayHour: '12', displayMin: '00', ampm: 'AM', offsetStr: 'UTC', isDST: false, currentlyDST: false, weekday: '', day: '', month: '', diffStr: 'Same as IST' };
+        return { hour: 0, minute: 0, second: 0, displayHour: '12', displayMin: '00', ampm: 'AM', offsetStr: 'UTC', isDST: false, currentlyDST: false, weekday: '', day: '', month: '', diffStr: 'Same as IST', nextDST: null };
     }
 }
 
@@ -624,6 +698,31 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
                         </div>
                     </div>
                 </div>
+
+                {/* Upcoming DST Change */}
+                {td.nextDST && (
+                    <div className="rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 p-4 shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Clock size={14} className="text-amber-600" />
+                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Upcoming Clock Change</p>
+                        </div>
+                        <p className="text-foreground text-sm font-semibold mb-1">
+                            Clocks go <span className="text-amber-600 font-bold">{td.nextDST.type}</span> 1 hour
+                        </p>
+                        <p className="text-muted-foreground text-sm">
+                            {new Intl.DateTimeFormat('en-IN', { 
+                                timeZone: clock.timezone, 
+                                weekday: 'short', 
+                                month: 'long', 
+                                day: 'numeric', 
+                                year: 'numeric', 
+                                hour: 'numeric', 
+                                minute: 'numeric', 
+                                hour12: true 
+                            }).format(td.nextDST.date)}
+                        </p>
+                    </div>
+                )}
             </div>
         </motion.div>
     );
@@ -692,6 +791,18 @@ const LiveClockCard = memo(function LiveClockCard({ clock, index, onDetail, onRe
                     )}
                 </div>
             </div>
+
+            {td.nextDST && (td.nextDST.date.getTime() - now.getTime()) < 5 * 86400000 && (
+                <div className="bg-amber-500/10 border-t border-amber-500/20 px-4 py-1.5 flex flex-row items-center justify-between">
+                     <span className="text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase flex items-center gap-1.5">
+                         <Clock size={10} /> 
+                         DST Change in {Math.max(0, Math.ceil((td.nextDST.date.getTime() - now.getTime()) / 86400000))} Days
+                     </span>
+                     <span className="text-amber-700 dark:text-amber-300 text-[10px] font-bold uppercase bg-amber-500/20 px-1.5 py-0.5 rounded-sm">
+                         {td.nextDST.type === 'forward' ? '+1 Hr' : '-1 Hr'}
+                     </span>
+                </div>
+            )}
         </motion.div>
     );
 });
