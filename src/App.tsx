@@ -9,6 +9,7 @@ import { FeatureFlagService } from './services/featureFlags.service';
 import { UpdateChecker } from './components/UpdateChecker';
 import { APP_VERSION } from './config/app';
 import { Capacitor } from '@capacitor/core';
+import { useSmartContrast } from './hooks/useSmartContrast';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Calculators from './pages/Calculators';
@@ -88,6 +89,7 @@ function BackToast({ visible }: { visible: boolean }) {
 }
 
 function AppContent() {
+    useSmartContrast();
     const darkMode = useSettingsStore((s) => s.darkMode);
     const navigate = useNavigate();
     const location = useLocation();
