@@ -1,11 +1,15 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF } from '../utils/exportUtils';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import TaxInputGroup from '../components/TaxInputGroup';
+import RiskCategoryTags from '../components/RiskCategoryTags';
+import { TaxRegime, calculateAssetTax } from '../utils/taxEngine';
+import { DecisionEngine } from '../services/DecisionEngine';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 const ITEMS_PER_PAGE = 5;
@@ -22,8 +26,10 @@ export default function KVPCalculator() {
 
     const [investment, setInvestment] = useState(50000);
     const [rate, setRate] = useState(7.5);
-    const [taxRate, setTaxRate] = useState(20);
+    const [annualIncome, setAnnualIncome] = useState(1200000);
+    const [taxRegime, setTaxRegime] = useState<TaxRegime>('new');
     const [inflation, setInflation] = useState(6.0);
+    
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [saved, setSaved] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
@@ -39,8 +45,7 @@ export default function KVPCalculator() {
         const yearTable = [];
         let curVal = investment;
         for (let y = 1; y <= Math.ceil(doublingYearsTotal); y++) {
-            const monthsInThisYear = Math.min(12, doublingMonths - (y - 1) * 12);
-            // KVP compounds annually, but practically values are stated via formula
+            // KVP compounds annually
             const newVal = investment * Math.pow(1 + rate / 100, y);
             const displayVal = y === Math.ceil(doublingYearsTotal) ? maturity : newVal;
             
@@ -62,31 +67,49 @@ export default function KVPCalculator() {
 
         // Effective annual return (CAGR)
         const cagr = (Math.pow(maturity / investment, 1 / doublingYearsTotal) - 1) * 100;
-        
-        // Tax Impact (Taxed under IFOS)
         const totalInterest = maturity - investment;
-        const taxLiable = totalInterest * (taxRate / 100);
+
+        // Tax Impact (Taxed under IFOS)
+        const taxImpact = calculateAssetTax({
+            annualIncome,
+            regime: taxRegime,
+            assetInterest: totalInterest,
+            deduction80c: 0 // No 80C for KVP
+        });
+
+        const taxLiable = Math.max(0, taxImpact.taxPayableOnAsset);
         const postTaxMaturity = maturity - taxLiable;
         const postTaxCAGR = (Math.pow(postTaxMaturity / investment, 1 / doublingYearsTotal) - 1) * 100;
 
         // Inflation Impact
         const inflationFactor = Math.pow(1 + inflation / 100, doublingYearsTotal);
         const realMaturity = postTaxMaturity / inflationFactor;
+        const realReturn = postTaxCAGR - inflation;
 
         return { 
             maturity, doublingMonths, doublingYearsTotal, yearTable, premature, 
-            cagr, taxLiable, postTaxMaturity, postTaxCAGR, realMaturity, totalInterest
+            cagr, taxLiable, postTaxMaturity, postTaxCAGR, realMaturity, realReturn, totalInterest
         };
-    }, [investment, rate, taxRate, inflation]);
+    }, [investment, rate, annualIncome, taxRegime, inflation]);
 
     const doublingYears = Math.floor(result.doublingMonths / 12);
     const doublingMonthsRem = result.doublingMonths % 12;
+
+    const riskConfig = DecisionEngine.getRiskConfig('KVP');
+    const recommendation = useMemo(() => DecisionEngine.getRecommendation({
+        calculatorId: 'KVP',
+        realReturn: result.realReturn,
+        is80CEligible: false,
+        postTaxCAGR: result.postTaxCAGR,
+        liquidityScore: 3, // Lock in 2.5y is decent compared to NSC
+        riskLevel: riskConfig.risk
+    }), [result, riskConfig.risk]);
 
     const handleSave = () => {
         addSaved({
             id: crypto.randomUUID(),
             calculatorType: 'KVP Calculator',
-            inputValues: { investment, rate },
+            inputValues: { investment, rate, annualIncome, taxRegime },
             resultValues: { primary: result.maturity, ...result },
             timestamp: Date.now()
         });
@@ -97,19 +120,25 @@ export default function KVPCalculator() {
     const handlePDFExport = () => {
         const headers = ['Parameter', 'Value'];
         const data: (string | number)[][] = [
+            ['--- Inputs ---', ''],
             ['Total Investment', fmtINR(investment)],
             ['Interest Rate (p.a.)', `${rate}%`],
+            ['Annual Income', fmtINR(annualIncome)],
+            ['Tax Regime', taxRegime === 'old' ? 'Old Regime' : 'New Regime'],
+            ['Inflation Rate', `${inflation}% p.a.`],
+            ['--- Results ---', ''],
             ['Doubling Time', `${doublingYears}y ${doublingMonthsRem}m (${result.doublingMonths} months)`],
             ['Maturity Amount', fmtINR(result.maturity)],
             ['Effective CAGR', `${result.cagr.toFixed(2)}%`],
-            ['', ''],
-            ['Tax Bracket Assumed', `${taxRate}%`],
+            ['--- Tax Breakdown ---', ''],
             ['Est. Tax Liability (IFOS)', fmtINR(result.taxLiable)],
             ['Net Post-Tax Maturity', fmtINR(result.postTaxMaturity)],
             ['Post-Tax CAGR', `${result.postTaxCAGR.toFixed(2)}%`],
-            ['', ''],
-            ['Inflation Assumed', `${inflation}% p.a.`],
-            ['Purchasing Power (Real Value)', fmtINR(result.realMaturity)]
+            ['--- Real Return (Inflation Adj) ---', ''],
+            ['Purchasing Power (Real Value)', fmtINR(result.realMaturity)],
+            ['Real Return', `${result.realReturn.toFixed(2)}% p.a.`],
+            ['--- Final Recommendation ---', ''],
+            [recommendation.title, recommendation.description]
         ];
 
         result.yearTable.forEach(y => {
@@ -125,12 +154,12 @@ export default function KVPCalculator() {
         (currentPage + 1) * ITEMS_PER_PAGE
     );
 
-    const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-base font-semibold focus:outline-none focus:border-brand-green";
+    const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-green";
 
     return (
         <div className="min-h-dvh bg-background" style={{ maxWidth: 428, margin: '0 auto' }}>
             <div className="sticky top-0 z-10 bg-background px-4 pt-14 pb-3 border-b border-border">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
                             <ArrowLeft size={18} className="text-muted-foreground" />
@@ -144,6 +173,7 @@ export default function KVPCalculator() {
                         {saved ? <Check size={18} /> : <Save size={18} />}
                     </button>
                 </div>
+                <RiskCategoryTags risk={riskConfig.risk} categories={riskConfig.categories} />
             </div>
 
             <div className="px-4 pt-5 pb-28 space-y-4">
@@ -166,20 +196,16 @@ export default function KVPCalculator() {
                 </div>
 
                 <div className="rounded-2xl bg-gradient-to-br from-brand-green/20 to-emerald-500/10 border border-brand-green/30 p-5">
-                    <p className="text-muted-foreground text-xs font-medium mb-1">Maturity Amount</p>
+                    <p className="text-muted-foreground text-xs font-medium mb-1">Maturity Amount (Doubled)</p>
                     <p className="text-foreground font-bold text-3xl">{fmtINR(result.maturity)}</p>
-                    <div className="mt-3 grid grid-cols-3 gap-2">
+                    <div className="mt-3 grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-muted-foreground text-[10px]">Principal</p>
-                            <p className="text-foreground font-bold text-sm">{fmtINR(investment)}</p>
+                            <p className="text-muted-foreground text-[11px]">Investment</p>
+                            <p className="text-foreground font-bold text-base">{fmtINR(investment)}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px]">Doubling Period</p>
-                            <p className="text-brand-blue font-bold text-sm">{doublingYears}y {doublingMonthsRem}m</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground text-[10px]">Interest Earned</p>
-                            <p className="text-brand-green font-bold text-sm">{fmtINR(investment)}</p>
+                            <p className="text-muted-foreground text-[11px]">Doubles In</p>
+                            <p className="text-brand-blue font-bold text-base">{doublingYears}y {doublingMonthsRem}m</p>
                         </div>
                     </div>
                 </div>
@@ -188,7 +214,7 @@ export default function KVPCalculator() {
                     <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-4 bg-muted/30">
                         <div className="flex items-center gap-2">
                             <BrainCircuit size={18} className="text-brand-green" />
-                            <span className="text-foreground font-semibold text-sm">Decision Analytics & Details</span>
+                            <span className="text-foreground font-semibold text-sm">Decision Analytics</span>
                         </div>
                         {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -198,22 +224,33 @@ export default function KVPCalculator() {
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
                                 <div className="px-4 pb-4 space-y-6 pt-2">
 
-                                    {/* Action Buttons */}
                                     <div className="flex items-center justify-end gap-2 border-b border-border pb-4">
                                         <button onClick={handlePDFExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-green/10 text-brand-green text-xs font-medium hover:bg-brand-green/20 transition-colors">
                                             <FileText size={14} /> Export PDF
                                         </button>
                                     </div>
 
-                                    {/* Smart Insights */}
-                                    <div className="space-y-3">
+                                    {/* 1. Final Recommendation */}
+                                    <div className={`p-4 rounded-xl border ${recommendation.status === 'success' ? 'bg-brand-green/10 border-brand-green/30' : recommendation.status === 'warning' ? 'bg-orange-500/10 border-orange-500/30' : 'bg-brand-blue/10 border-brand-blue/30'}`}>
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <ShieldCheck size={16} className={recommendation.status === 'success' ? 'text-brand-green' : recommendation.status === 'warning' ? 'text-orange-500' : 'text-brand-blue'} />
+                                            <h3 className={`text-sm font-bold ${recommendation.status === 'success' ? 'text-brand-green' : recommendation.status === 'warning' ? 'text-orange-600 dark:text-orange-400' : 'text-brand-blue'}`}>
+                                                FINAL RECOMMENDATION
+                                            </h3>
+                                        </div>
+                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendation.title}</p>
+                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendation.description}</p>
+                                    </div>
+
+                                    {/* 2. Smart Insights */}
+                                    <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                                             <Activity size={14} /> Smart Insights
                                         </h3>
                                         <div className="grid gap-2">
                                             <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex gap-3">
                                                 <Info size={16} className="text-orange-500 shrink-0 mt-0.5" />
-                                                <p className="text-[11px] font-medium text-foreground">KVP offers no Section 80C deductions. Interest is fully taxable under 'Income from Other Sources'.</p>
+                                                <p className="text-[11px] font-medium text-foreground">KVP offers NO Section 80C deductions. Interest is fully taxable under 'Income from Other Sources'.</p>
                                             </div>
                                             {result.postTaxCAGR > inflation ? (
                                                 <div className="p-3 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex gap-3">
@@ -223,58 +260,54 @@ export default function KVPCalculator() {
                                             ) : (
                                                 <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-3">
                                                     <ShieldAlert size={16} className="text-red-500 shrink-0 mt-0.5" />
-                                                    <p className="text-[11px] font-medium text-red-500">Inflation ({inflation}%) outpaces your post-tax return ({result.postTaxCAGR.toFixed(2)}%). Consider diversifying into equities if lock-in is acceptable.</p>
+                                                    <p className="text-[11px] font-medium text-red-500">Inflation ({inflation}%) outpaces your post-tax return ({result.postTaxCAGR.toFixed(2)}%). Loss of purchasing power expected.</p>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
 
-                                    {/* Tax benefits & Effective Return */}
+                                    {/* 3. Tax Analysis */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <BarChart2 size={14} /> Taxation & Effective Return
+                                            <BarChart2 size={14} /> Tax Engine
                                         </h3>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="text-muted-foreground text-[11px] font-medium block mb-1">Your Income Tax Slab Rate (%)</label>
-                                                <div className="relative">
-                                                    <input type="number" value={taxRate} onChange={e => setTaxRate(Number(e.target.value) || 0)} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-green" />
-                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">%</span>
-                                                </div>
-                                            </div>
+                                        
+                                        <TaxInputGroup 
+                                            income={annualIncome} setIncome={setAnnualIncome} 
+                                            regime={taxRegime} setRegime={setTaxRegime} 
+                                        />
 
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="bg-muted border border-border rounded-xl p-3">
-                                                    <p className="text-muted-foreground text-[10px] mb-1">Pre-Tax CAGR</p>
-                                                    <p className="text-foreground font-bold text-sm">{result.cagr.toFixed(2)}%</p>
-                                                </div>
-                                                <div className="bg-brand-green/10 border border-brand-green/20 rounded-xl p-3">
-                                                    <p className="text-brand-green/80 text-[10px] mb-1 font-semibold">Post-Tax CAGR</p>
-                                                    <p className="text-brand-green font-bold text-sm">{result.postTaxCAGR.toFixed(2)}%</p>
-                                                </div>
+                                        <div className="grid grid-cols-2 gap-3 mt-3">
+                                            <div className="bg-muted border border-border rounded-xl p-3">
+                                                <p className="text-muted-foreground text-[10px] mb-1">Pre-Tax CAGR</p>
+                                                <p className="text-foreground font-bold text-sm">{result.cagr.toFixed(2)}%</p>
                                             </div>
+                                            <div className="bg-brand-green/10 border border-brand-green/20 rounded-xl p-3">
+                                                <p className="text-brand-green/80 text-[10px] mb-1 font-semibold">Post-Tax CAGR</p>
+                                                <p className="text-brand-green font-bold text-sm">{result.postTaxCAGR.toFixed(2)}%</p>
+                                            </div>
+                                        </div>
 
-                                            <div className="space-y-2 bg-background p-3 rounded-xl border border-border">
-                                                <div className="flex justify-between items-center py-1">
-                                                    <span className="text-muted-foreground text-[11px]">Gross Maturity</span>
-                                                    <span className="text-foreground font-medium text-[11px]">{fmtINR(result.maturity)}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center py-1">
-                                                    <span className="text-muted-foreground text-[11px]">Tax Liability (IFOS)</span>
-                                                    <span className="text-red-500 font-bold text-[11px] font-mono">-{fmtINR(result.taxLiable)}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center py-1 pt-2 border-t border-border">
-                                                    <span className="text-foreground font-semibold text-[11px]">Post-Tax Maturity</span>
-                                                    <span className="text-brand-green font-bold text-[11px] font-mono">{fmtINR(result.postTaxMaturity)}</span>
-                                                </div>
+                                        <div className="space-y-2 bg-background p-3 rounded-xl border border-border mt-3">
+                                            <div className="flex justify-between items-center py-1">
+                                                <span className="text-muted-foreground text-[11px]">Gross Maturity</span>
+                                                <span className="text-foreground font-medium text-[11px]">{fmtINR(result.maturity)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center py-1">
+                                                <span className="text-muted-foreground text-[11px]">Tax Liability (IFOS)</span>
+                                                <span className="text-red-500 font-bold text-[11px] font-mono">-{fmtINR(result.taxLiable)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center py-1 pt-2 border-t border-border">
+                                                <span className="text-foreground font-semibold text-[11px]">Post-Tax Maturity</span>
+                                                <span className="text-brand-green font-bold text-[11px] font-mono">{fmtINR(result.postTaxMaturity)}</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Inflation impact */}
+                                    {/* 4. Inflation impact */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <TrendingUp size={14} /> Inflation Impact
+                                            <TrendingUp size={14} /> Real Value
                                         </h3>
                                         <div className="bg-muted border border-border rounded-xl p-3 flex justify-between items-center">
                                             <div>
@@ -282,15 +315,15 @@ export default function KVPCalculator() {
                                                 <input type="number" value={inflation} onChange={e => setInflation(Number(e.target.value) || 0)} className="w-20 bg-background border border-border rounded-md px-2 py-1 text-foreground text-xs font-semibold focus:outline-none focus:border-brand-green" />
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-muted-foreground text-[10px] mb-1">Purchasing Power at Maturity</p>
+                                                <p className="text-muted-foreground text-[10px] mb-1">Purchasing Power</p>
                                                 <p className="text-foreground font-bold text-sm">{fmtINR(result.realMaturity)}</p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Year-by-year table */}
+                                    {/* 5. Year-by-year table */}
                                     <div className="space-y-3 pt-2">
-                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Year-by-Year Growth</h3>
+                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Growth Breakdown</h3>
                                         <div className="rounded-xl overflow-hidden border border-border">
                                             <div className="grid grid-cols-4 bg-muted px-2 py-2">
                                                 <p className="text-muted-foreground text-[9px] font-bold uppercase">Year</p>
@@ -323,7 +356,7 @@ export default function KVPCalculator() {
                                         )}
                                     </div>
 
-                                    {/* Premature encashment */}
+                                    {/* 6. Premature encashment */}
                                     {result.premature.length > 0 && (
                                         <div className="space-y-3 pt-2">
                                             <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Premature Encashment (After 2.5 yrs)</h3>

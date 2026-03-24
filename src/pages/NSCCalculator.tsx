@@ -1,14 +1,18 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF } from '../utils/exportUtils';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import TaxInputGroup from '../components/TaxInputGroup';
+import RiskCategoryTags from '../components/RiskCategoryTags';
+import { TaxRegime, calculateAssetTax } from '../utils/taxEngine';
+import { DecisionEngine } from '../services/DecisionEngine';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
-const ITEMS_PER_PAGE = 5; // NSC is strictly 5 years anyway, but keeping pagination structure if needed.
+const ITEMS_PER_PAGE = 5;
 const LOCK_IN = 5;
 
 export default function NSCCalculator() {
@@ -19,9 +23,9 @@ export default function NSCCalculator() {
 
     const [investment, setInvestment] = useState(50000);
     const [rate, setRate] = useState(7.7);
-    const [taxRate, setTaxRate] = useState(20);
+    const [annualIncome, setAnnualIncome] = useState(1200000);
+    const [taxRegime, setTaxRegime] = useState<TaxRegime>('new');
     const [inflation, setInflation] = useState(6.0);
-    const [fdRate, setFdRate] = useState(7.0);
 
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -48,43 +52,58 @@ export default function NSCCalculator() {
             bal = newBal;
         }
 
-        // 80C deduction: Investment in Year 1 + reinvested interest in yrs 1 to 4
-        // However simple deduction calculation for user input:
+        // 80C Deduction: Investment in Year 1 up to 1.5L
         const sec80cDeduction = Math.min(investment, 150000);
-        const taxSaving = sec80cDeduction * (taxRate / 100);
 
-        // Tax details (assuming 5th-year interest is taxed)
+        // Tax calculation on the 5th year interest
         const fifthYearInterest = table[4].interest;
-        const taxOnInterest = fifthYearInterest * (taxRate / 100);
-        const postTaxMaturity = maturity - taxOnInterest;
+        const taxImpact = calculateAssetTax({
+            annualIncome,
+            regime: taxRegime,
+            assetInterest: fifthYearInterest,
+            deduction80c: sec80cDeduction
+        });
+
+        // Compute tax savings by taking base tax without deduction vs with deduction
+        const baseWithout80C = calculateAssetTax({
+            annualIncome,
+            regime: taxRegime,
+            assetInterest: 0,
+            deduction80c: 0
+        }).baseTax;
         
-        // Effective CAGR post tax
-        const postTaxReturn = ((postTaxMaturity / investment) - 1) * 100;
+        const taxSaving = Math.max(0, baseWithout80C - taxImpact.baseTax);
+        
+        const taxOnInterest = Math.max(0, taxImpact.taxPayableOnAsset);
+        // Effective maturity considers the initial tax saved as a cash inflow benefit, and subtracting the exit tax
+        const postTaxMaturity = maturity - taxOnInterest + taxSaving;
+
         const postTaxCAGR = (Math.pow(postTaxMaturity / investment, 1 / LOCK_IN) - 1) * 100;
-
-        // Inflation adjustment
-        const inflationFactor = Math.pow(1 + inflation / 100, LOCK_IN);
-        const realValue = postTaxMaturity / inflationFactor;
-
-        // FD Comparison
-        const fdMaturity = investment * Math.pow(1 + fdRate / 100, LOCK_IN);
-        // FD interest taxed every year, but using simple comparison at end:
-        const fdInterest = fdMaturity - investment;
-        const fdTax = fdInterest * (taxRate / 100);
-        const fdPostTaxMaturity = fdMaturity - fdTax;
+        const realValue = postTaxMaturity / Math.pow(1 + inflation / 100, LOCK_IN);
+        // Annualized real return approximation
+        const realReturn = postTaxCAGR - inflation;
 
         return { 
             maturity, totalInterest, table, sec80cDeduction, taxSaving, 
-            taxOnInterest, postTaxMaturity, postTaxReturn, postTaxCAGR, 
-            realValue, fdMaturity, fdPostTaxMaturity 
+            taxOnInterest, postTaxMaturity, postTaxCAGR, realValue, realReturn, taxImpact
         };
-    }, [investment, rate, taxRate, inflation, fdRate]);
+    }, [investment, rate, annualIncome, taxRegime, inflation]);
+
+    const riskConfig = DecisionEngine.getRiskConfig('NSC');
+    const recommendation = useMemo(() => DecisionEngine.getRecommendation({
+        calculatorId: 'NSC',
+        realReturn: result.realReturn,
+        is80CEligible: taxRegime === 'old' && result.taxSaving > 0,
+        postTaxCAGR: result.postTaxCAGR,
+        liquidityScore: 2,
+        riskLevel: riskConfig.risk
+    }), [result, taxRegime, riskConfig.risk]);
 
     const handleSave = () => {
         addSaved({
             id: crypto.randomUUID(),
             calculatorType: 'NSC Calculator',
-            inputValues: { investment, rate },
+            inputValues: { investment, rate, annualIncome, taxRegime },
             resultValues: { primary: result.maturity, ...result },
             timestamp: Date.now()
         });
@@ -95,20 +114,26 @@ export default function NSCCalculator() {
     const handlePDFExport = () => {
         const headers = ['Parameter', 'Value'];
         const data: (string | number)[][] = [
+            ['--- Inputs ---', ''],
             ['Total Investment', fmtINR(investment)],
             ['Interest Rate (p.a.)', `${rate}%`],
+            ['Annual Income', fmtINR(annualIncome)],
+            ['Tax Regime', taxRegime === 'old' ? 'Old Regime' : 'New Regime'],
+            ['Inflation Rate', `${inflation}% p.a.`],
+            ['--- Results ---', ''],
             ['Maturity Amount (5 Years)', fmtINR(result.maturity)],
             ['Total Interest Earned', fmtINR(result.totalInterest)],
-            ['', ''],
-            ['Tax Bracket Assumed', `${taxRate}%`],
-            ['Eligible 80C Deduction (Yr 1)', fmtINR(result.sec80cDeduction)],
-            ['Initial Tax Savings under 80C', fmtINR(result.taxSaving)],
-            ['Tax on Maturity (5th Yr Interest)', fmtINR(result.taxOnInterest)],
+            ['--- Tax Breakdown ---', ''],
+            ['Eligible 80C Deduction', fmtINR(result.sec80cDeduction)],
+            ['Initial Tax Savings (80C)', fmtINR(result.taxSaving)],
+            ['Tax on 5th Yr Interest', fmtINR(result.taxOnInterest)],
             ['Net Post-Tax Maturity', fmtINR(result.postTaxMaturity)],
             ['Effective Post-Tax CAGR', `${result.postTaxCAGR.toFixed(2)}%`],
-            ['', ''],
-            ['Inflation Assumed', `${inflation}% p.a.`],
-            ['Purchasing Power (Real Value)', fmtINR(result.realValue)]
+            ['--- Real Return (Inflation Adj) ---', ''],
+            ['Purchasing Power (Real Value)', fmtINR(result.realValue)],
+            ['Real Return (CAGR - Inflation)', `${result.realReturn.toFixed(2)}% p.a.`],
+            ['--- Final Recommendation ---', ''],
+            [recommendation.title, recommendation.description]
         ];
 
         result.table.forEach(y => {
@@ -124,12 +149,12 @@ export default function NSCCalculator() {
         (currentPage + 1) * ITEMS_PER_PAGE
     );
 
-    const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-base font-semibold focus:outline-none focus:border-brand-gold";
+    const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-gold";
 
     return (
         <div className="min-h-dvh bg-background" style={{ maxWidth: 428, margin: '0 auto' }}>
             <div className="sticky top-0 z-10 bg-background px-4 pt-14 pb-3 border-b border-border">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
                             <ArrowLeft size={18} className="text-muted-foreground" />
@@ -143,6 +168,7 @@ export default function NSCCalculator() {
                         {saved ? <Check size={18} /> : <Save size={18} />}
                     </button>
                 </div>
+                <RiskCategoryTags risk={riskConfig.risk} categories={riskConfig.categories} />
             </div>
 
             <div className="px-4 pt-5 pb-28 space-y-4">
@@ -183,7 +209,7 @@ export default function NSCCalculator() {
                     <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-4 bg-muted/30">
                         <div className="flex items-center gap-2">
                             <BrainCircuit size={18} className="text-brand-gold" />
-                            <span className="text-foreground font-semibold text-sm">Decision Analytics & Details</span>
+                            <span className="text-foreground font-semibold text-sm">Decision Analytics</span>
                         </div>
                         {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -193,127 +219,90 @@ export default function NSCCalculator() {
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
                                 <div className="px-4 pb-4 space-y-6 pt-2">
                                     
-                                    {/* Action Buttons */}
                                     <div className="flex items-center justify-end gap-2 border-b border-border pb-4">
                                         <button onClick={handlePDFExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-gold/10 text-brand-gold text-xs font-medium hover:bg-brand-gold/20 transition-colors">
                                             <FileText size={14} /> Export PDF
                                         </button>
                                     </div>
 
-                                    {/* Smart Insights */}
-                                    <div className="space-y-3">
-                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <Activity size={14} /> Smart Insights
-                                        </h3>
-                                        <div className="grid gap-2">
-                                            {result.postTaxMaturity > result.fdPostTaxMaturity ? (
-                                                <div className="p-3 rounded-xl bg-brand-green/10 border border-brand-green/20 flex gap-3">
-                                                    <Check size={16} className="text-brand-green shrink-0 mt-0.5" />
-                                                    <p className="text-xs font-medium text-brand-green">NSC outperforms a comparable FD in tax efficiency, providing {fmtINR(result.postTaxMaturity - result.fdPostTaxMaturity)} more in post-tax returns.</p>
-                                                </div>
-                                            ) : (
-                                                <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex gap-3">
-                                                    <ShieldAlert size={16} className="text-orange-500 shrink-0 mt-0.5" />
-                                                    <p className="text-xs font-medium text-orange-600 dark:text-orange-400">FD yields higher post-tax returns compared to NSC at current configurations.</p>
-                                                </div>
-                                            )}
-                                            {result.postTaxCAGR > inflation ? (
-                                                <div className="p-3 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex gap-3">
-                                                    <TrendingUp size={16} className="text-brand-blue shrink-0 mt-0.5" />
-                                                    <p className="text-xs font-medium text-brand-blue">Your real return beats inflation by {(result.postTaxCAGR - inflation).toFixed(2)}%.</p>
-                                                </div>
-                                            ) : (
-                                                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-3">
-                                                    <TrendingUp size={16} className="text-red-500 shrink-0 mt-0.5" />
-                                                    <p className="text-xs font-medium text-red-500">Your real return after inflation is negative (loss of purchasing power).</p>
-                                                </div>
-                                            )}
-                                            <div className="p-3 rounded-xl bg-muted border border-border flex gap-3">
-                                                <Info size={16} className="text-muted-foreground shrink-0 mt-0.5" />
-                                                <p className="text-[11px] font-medium text-foreground">NSC interest is deemed reinvested and qualifies for 80C deduction in years 1 to 4, but Year 5 interest is fully taxable.</p>
-                                            </div>
+                                    {/* 1. Final Recommendation */}
+                                    <div className={`p-4 rounded-xl border ${recommendation.status === 'success' ? 'bg-brand-green/10 border-brand-green/30' : recommendation.status === 'warning' ? 'bg-orange-500/10 border-orange-500/30' : 'bg-brand-blue/10 border-brand-blue/30'}`}>
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <ShieldCheck size={16} className={recommendation.status === 'success' ? 'text-brand-green' : recommendation.status === 'warning' ? 'text-orange-500' : 'text-brand-blue'} />
+                                            <h3 className={`text-sm font-bold ${recommendation.status === 'success' ? 'text-brand-green' : recommendation.status === 'warning' ? 'text-orange-600 dark:text-orange-400' : 'text-brand-blue'}`}>
+                                                FINAL RECOMMENDATION
+                                            </h3>
                                         </div>
+                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendation.title}</p>
+                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendation.description}</p>
                                     </div>
 
-                                    {/* Tax benefits & Effective Return */}
+                                    {/* 2. Tax Analysis */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <BarChart2 size={14} /> Tax Engine & Effective Return
+                                            <BarChart2 size={14} /> Tax Analysis
                                         </h3>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="text-muted-foreground text-[11px] font-medium block mb-1">Your Income Tax Slab Rate (%)</label>
-                                                <div className="relative">
-                                                    <input type="number" value={taxRate} onChange={e => setTaxRate(Number(e.target.value) || 0)} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-gold" />
-                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">%</span>
-                                                </div>
-                                            </div>
+                                        
+                                        <TaxInputGroup 
+                                            income={annualIncome} setIncome={setAnnualIncome} 
+                                            regime={taxRegime} setRegime={setTaxRegime} 
+                                        />
 
-                                            <div className="space-y-2 bg-background p-3 rounded-xl border border-border">
-                                                <div className="flex items-center justify-between pb-2 mb-2 border-b border-border border-dashed">
-                                                    <span className="text-muted-foreground text-xs font-semibold">80C Deduction Claim</span>
-                                                    <span className="text-brand-green font-bold text-xs">{fmtINR(result.sec80cDeduction)}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between pb-2 mb-2 border-b border-border border-dashed">
-                                                    <span className="text-muted-foreground text-xs">Initial Tax Saving</span>
-                                                    <span className="text-brand-green font-bold text-xs">{fmtINR(result.taxSaving)}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center py-1">
-                                                    <span className="text-muted-foreground text-[11px]">Gross Maturity</span>
-                                                    <span className="text-foreground font-medium text-[11px]">{fmtINR(result.maturity)}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center py-1">
-                                                    <span className="text-muted-foreground text-[11px]">Tax on Yr 5 Interest</span>
-                                                    <span className="text-red-500 font-bold text-[11px] font-mono">-{fmtINR(result.taxOnInterest)}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center py-1 pt-2 border-t border-border">
-                                                    <span className="text-foreground font-semibold text-[11px]">Post-Tax Maturity</span>
-                                                    <span className="text-brand-green font-bold text-[11px] font-mono">{fmtINR(result.postTaxMaturity)}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center py-1">
-                                                    <span className="text-foreground font-semibold text-[11px]">Effective Post-Tax CAGR</span>
-                                                    <span className="text-brand-gold font-bold text-[13px]">{result.postTaxCAGR.toFixed(2)}%</span>
-                                                </div>
+                                        <div className="space-y-2 bg-background p-3 rounded-xl border border-border">
+                                            <div className="flex items-center justify-between pb-2 mb-2 border-b border-border border-dashed">
+                                                <span className="text-muted-foreground text-xs font-semibold">80C Deduction Claim</span>
+                                                <span className="text-brand-green font-bold text-xs">{fmtINR(result.sec80cDeduction)}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between pb-2 mb-2 border-b border-border border-dashed">
+                                                <span className="text-muted-foreground text-xs">Initial Tax Saving</span>
+                                                <span className="text-brand-green font-bold text-xs">{fmtINR(result.taxSaving)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center py-1">
+                                                <span className="text-muted-foreground text-[11px]">Gross Maturity</span>
+                                                <span className="text-foreground font-medium text-[11px]">{fmtINR(result.maturity)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center py-1">
+                                                <span className="text-muted-foreground text-[11px]">Tax on Yr 5 Interest</span>
+                                                <span className="text-red-500 font-bold text-[11px] font-mono">-{fmtINR(result.taxOnInterest)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center py-1 pt-2 border-t border-border">
+                                                <span className="text-foreground font-semibold text-[11px]">Post-Tax Maturity</span>
+                                                <span className="text-brand-green font-bold text-[11px] font-mono">{fmtINR(result.postTaxMaturity)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center py-1 mt-1 bg-muted/50 px-2 rounded-lg">
+                                                <span className="text-foreground font-semibold text-[11px]">Effective Post-Tax CAGR</span>
+                                                <span className="text-brand-gold font-bold text-[13px]">{result.postTaxCAGR.toFixed(2)}%</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Inflation & FD Comparison */}
-                                    <div className="grid grid-cols-2 gap-3 pt-2">
-                                        <div className="space-y-3">
-                                            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                                <TrendingUp size={14} /> Real Value
-                                            </h3>
-                                            <div className="bg-muted border border-border rounded-xl p-3">
-                                                <label className="text-muted-foreground text-[10px] font-medium block mb-1">Inflation Rate (%)</label>
-                                                <div className="relative mb-2">
-                                                    <input type="number" value={inflation} onChange={e => setInflation(Number(e.target.value) || 0)} className="w-full bg-background border border-border rounded-md px-2 py-1 text-foreground text-xs font-semibold focus:outline-none focus:border-brand-gold pr-5" />
-                                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px]">%</span>
-                                                </div>
-                                                <p className="text-muted-foreground text-[10px] mb-1">Purchasing Power</p>
-                                                <p className="text-foreground font-bold text-sm">{fmtINR(result.realValue)}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                                <RotateCw size={14} /> Vs Bank FD
-                                            </h3>
-                                            <div className="bg-muted border border-border rounded-xl p-3">
-                                                <label className="text-muted-foreground text-[10px] font-medium block mb-1">FD Rate (%)</label>
-                                                <div className="relative mb-2">
-                                                    <input type="number" value={fdRate} onChange={e => setFdRate(Number(e.target.value) || 0)} className="w-full bg-background border border-border rounded-md px-2 py-1 text-foreground text-xs font-semibold focus:outline-none focus:border-brand-gold pr-5" />
-                                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px]">%</span>
-                                                </div>
-                                                <p className="text-muted-foreground text-[10px] mb-1">FD Post-Tax Value</p>
-                                                <p className="text-foreground font-bold text-sm">{fmtINR(result.fdPostTaxMaturity)}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Year-by-year table */}
+                                    {/* 3. Inflation Adjustments */}
                                     <div className="space-y-3 pt-2">
-                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Year-by-Year Growth</h3>
+                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                                            <TrendingUp size={14} /> Real Value (Purchasing Power)
+                                        </h3>
+                                        <div className="bg-muted border border-border rounded-xl p-3">
+                                            <label className="text-muted-foreground text-[10px] font-medium block mb-1">Expected Inflation Rate (%)</label>
+                                            <div className="relative mb-3">
+                                                <input type="number" value={inflation} onChange={e => setInflation(Number(e.target.value) || 0)} className="w-full bg-background border border-border rounded-md px-3 py-2 text-foreground text-xs font-semibold focus:outline-none focus:border-brand-gold" />
+                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px]">%</span>
+                                            </div>
+                                            <div className="flex items-end justify-between">
+                                                <div>
+                                                    <p className="text-muted-foreground text-[10px] mb-1">Real Value at Maturity</p>
+                                                    <p className="text-foreground font-bold text-sm">{fmtINR(result.realValue)}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-muted-foreground text-[10px] mb-1">Real Annual Return</p>
+                                                    <p className={`font-bold text-sm ${result.realReturn >= 0 ? 'text-brand-green' : 'text-red-500'}`}>{result.realReturn.toFixed(2)}%</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 4. Year-by-year table */}
+                                    <div className="space-y-3 pt-2">
+                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Growth Breakdown</h3>
                                         <div className="rounded-xl overflow-hidden border border-border">
                                             <div className="grid grid-cols-4 bg-muted px-2 py-2">
                                                 <p className="text-muted-foreground text-[9px] font-bold uppercase">Year</p>

@@ -1,11 +1,15 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, Lightbulb } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF } from '../utils/exportUtils';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { calculateAssetTax } from '../utils/taxEngine';
+import { DecisionEngine } from '../services/DecisionEngine';
+import RiskCategoryTags from '../components/RiskCategoryTags';
+import TaxInputGroup from '../components/TaxInputGroup';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -19,7 +23,9 @@ export default function GratuityCalculator() {
 
     const [salary, setSalary] = useState(50000);
     const [years, setYears] = useState(10);
-    const [taxRate, setTaxRate] = useState(20);
+    const [employerType, setEmployerType] = useState<'Private' | 'Govt'>('Private');
+    const [annualIncome, setAnnualIncome] = useState(1500000);
+    const [taxRegime, setTaxRegime] = useState<'new' | 'old'>('new');
     const [salaryHike, setSalaryHike] = useState(5);
     const [projectionYears, setProjectionYears] = useState(5);
 
@@ -29,17 +35,26 @@ export default function GratuityCalculator() {
 
     const result = useMemo(() => {
         // Formula: (Last Drawn Salary × 15 × Years of Service) / 26
-        const gratuity = (salary * 15 * years) / 26;
-        const exemptionLimit = 2000000; // ₹20 lakhs statuory limit
+        const isEligible = years >= 4.5; // Eligible at 4 years 240 days (approx 4.5)
+        const roundedYears = (years >= 4.5 && years < 5) ? 5 : Math.round(years);
+        const gratuity = isEligible ? (salary * 15 * roundedYears) / 26 : 0;
+        const exemptionLimit = employerType === 'Govt' ? Infinity : 2000000; // Govt fully exempt
         const taxableGratuity = Math.max(0, gratuity - exemptionLimit);
-        const estimatedTax = taxableGratuity * (taxRate / 100);
+        
+        // Use standard tax calculation
+        const taxDetails = calculateAssetTax({
+            annualIncome: annualIncome,
+            assetInterest: taxableGratuity,
+            regime: taxRegime,
+            deduction80c: 0
+        });
+        const estimatedTax = taxDetails.taxPayableOnAsset;
         const netGratuity = gratuity - estimatedTax;
-        const isEligible = years >= 5;
 
         // Service Milestones / Year-wise impact
-        const yearWiseData = Array.from({ length: years }, (_, i) => {
+        const yearWiseData = Array.from({ length: Math.ceil(years) }, (_, i) => {
             const yr = i + 1;
-            const eligible = yr >= 5;
+            const eligible = yr >= 5; // Year table shows strict 5 for simplicity or we can show 4.5
             const amt = eligible ? (salary * 15 * yr) / 26 : 0;
             return { year: yr, gratuity: amt, eligible };
         });
@@ -49,11 +64,24 @@ export default function GratuityCalculator() {
         const projectedTotalYears = years + projectionYears;
         const projectedGratuity = (projectedSalary * 15 * projectedTotalYears) / 26;
 
+        // Use standard DecisionEngine
+        const recommendation = DecisionEngine.getRecommendation({
+            calculatorId: 'Gratuity',
+            realReturn: 0, // purely a corpus building, no direct inflation adjusted return calculation
+            is80CEligible: false,
+            postTaxCAGR: 0, 
+            liquidityScore: 10,
+            riskLevel: 'Low (Govt backed)'
+        });
+        
+        const riskConfig = DecisionEngine.getRiskConfig('Gratuity');
+
         return { 
             gratuity, exemptionLimit, taxableGratuity, estimatedTax, netGratuity, 
-            isEligible, yearWiseData, projectedSalary, projectedTotalYears, projectedGratuity
+            isEligible, yearWiseData, projectedSalary, projectedTotalYears, projectedGratuity,
+            taxDetails, recommendation, riskConfig
         };
-    }, [salary, years, taxRate, salaryHike, projectionYears]);
+    }, [salary, years, annualIncome, taxRegime, salaryHike, projectionYears]);
 
     const handleSave = () => {
         addSaved({
@@ -70,11 +98,12 @@ export default function GratuityCalculator() {
     const handlePDFExport = () => {
         const headers = ['Parameter', 'Value'];
         const data: (string | number)[][] = [
+            ['Employer Type', employerType],
             ['Last Drawn Salary (Basic+DA)', fmtINR(salary)],
             ['Years of Service', `${years} years`],
-            ['Eligibility', result.isEligible ? 'Eligible (>= 5 Years)' : 'Not Eligible (< 5 Years)'],
+            ['Eligibility', result.isEligible ? 'Eligible (>= 4.5 Years)' : 'Not Eligible (< 4.5 Years)'],
             ['Calculated Gratuity', fmtINR(result.gratuity)],
-            ['Tax Exemption Limit', fmtINR(result.exemptionLimit)],
+            ['Tax Exemption Limit', employerType === 'Govt' ? 'Fully Exempt' : fmtINR(result.exemptionLimit)],
             ['Taxable Gratuity', fmtINR(result.taxableGratuity)],
             ['Estimated Tax', fmtINR(result.estimatedTax)],
             ['Net In-Hand Gratuity', fmtINR(result.netGratuity)],
@@ -112,6 +141,9 @@ export default function GratuityCalculator() {
                         <div>
                             <h1 className="text-lg font-bold text-foreground">Gratuity Calculator</h1>
                             <p className="text-muted-foreground text-xs">Service gratuity estimate</p>
+                            <div className="mt-1">
+                                <RiskCategoryTags risk={result.riskConfig.risk} categories={result.riskConfig.categories} />
+                            </div>
                         </div>
                     </div>
                     <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-blue">
@@ -124,6 +156,27 @@ export default function GratuityCalculator() {
                 {/* Inputs */}
                 <div className="space-y-3">
                     <div>
+                        <label className="text-muted-foreground text-xs font-medium mb-2 block">Employer Type</label>
+                        <div className="flex bg-muted/30 p-1 rounded-xl border border-border">
+                            {(['Private', 'Govt'] as const).map(type => (
+                                <button
+                                    key={type}
+                                    onClick={() => setEmployerType(type)}
+                                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${
+                                        employerType === type 
+                                            ? 'bg-background text-brand-blue shadow-sm border border-border' 
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    {type} Sector
+                                </button>
+                            ))}
+                        </div>
+                        {employerType === 'Govt' && (
+                            <p className="text-brand-green text-[10px] mt-1.5 font-semibold">✓ Govt employee gratuity is fully exempt from Income Tax</p>
+                        )}
+                    </div>
+                    <div>
                         <label className="text-muted-foreground text-xs font-medium mb-1 block">Last Drawn Salary (Basic + DA)</label>
                         <p className="text-muted-foreground text-[10px] mb-1">Monthly Basic + DA</p>
                         <div className="relative">
@@ -133,9 +186,9 @@ export default function GratuityCalculator() {
                     </div>
                     <div>
                         <label className="text-muted-foreground text-xs font-medium mb-1 block">Years of Service</label>
-                        <p className="text-muted-foreground text-[10px] mb-1">Standard rule: 5+ years for eligibility</p>
+                        <p className="text-muted-foreground text-[10px] mb-1">Act considers 4 yrs 240 days (4.5 yrs) as 5 years.</p>
                         <div className="relative">
-                            <input type="number" value={years} onChange={e => {
+                            <input type="number" step="0.1" value={years} onChange={e => {
                                 setYears(Math.max(1, Number(e.target.value) || 1));
                                 setCurrentPage(0);
                             }} className={inputCls + " pr-16"} />
@@ -197,19 +250,40 @@ export default function GratuityCalculator() {
                                     {/* Smart Insights */}
                                     <div className="space-y-3">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                                            <Lightbulb size={14} className="text-brand-blue" /> Final Recommendation
+                                        </h3>
+                                        <div className={`p-4 rounded-xl border ${
+                                            result.recommendation.status === 'success' ? 'bg-brand-green/10 border-brand-green/20' :
+                                            result.recommendation.status === 'warning' ? 'bg-orange-500/10 border-orange-500/20' :
+                                            'bg-brand-blue/10 border-brand-blue/20'
+                                        }`}>
+                                            <h4 className={`text-sm font-bold mb-1 ${
+                                                result.recommendation.status === 'success' ? 'text-brand-green' :
+                                                result.recommendation.status === 'warning' ? 'text-orange-600 dark:text-orange-400' :
+                                                'text-brand-blue'
+                                            }`}>
+                                                {result.recommendation.title}
+                                            </h4>
+                                            <p className="text-xs text-foreground/80 leading-relaxed">
+                                                {result.recommendation.description}
+                                            </p>
+                                        </div>
+                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2 mt-4">
                                             <Activity size={14} /> Smart Insights
                                         </h3>
                                         <div className="grid gap-2">
                                             {!result.isEligible && (
                                                 <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex gap-3">
                                                     <Info size={16} className="text-orange-500 shrink-0" />
-                                                    <p className="text-xs font-medium text-orange-600 dark:text-orange-400">Complete {5 - years} more year(s) to become eligible for Gratuity payouts.</p>
+                                                    <p className="text-xs font-medium text-orange-600 dark:text-orange-400">Complete {Math.max(0, 4.5 - years).toFixed(1)} more year(s) to become eligible for Gratuity payouts.</p>
                                                 </div>
                                             )}
                                             {result.isEligible && result.taxableGratuity === 0 && (
                                                 <div className="p-3 rounded-xl bg-brand-green/10 border border-brand-green/20 flex gap-3">
                                                     <Check size={16} className="text-brand-green shrink-0 mt-0.5" />
-                                                    <p className="text-xs font-medium text-brand-green">Your entire gratuity amount is currently tax-free (Under ₹20 Lakhs limit).</p>
+                                                    <p className="text-xs font-medium text-brand-green">
+                                                        Your entire gratuity amount is currently tax-free {employerType === 'Govt' ? '(Govt employees are fully exempt)' : '(Under ₹20 Lakhs limit)'}.
+                                                    </p>
                                                 </div>
                                             )}
                                             {result.isEligible && result.taxableGratuity > 0 && (
@@ -248,13 +322,12 @@ export default function GratuityCalculator() {
                                                 <BarChart2 size={14} /> Tax Calculation
                                             </h3>
                                             <div className="space-y-4">
-                                                <div>
-                                                    <label className="text-muted-foreground text-[11px] font-medium block mb-1">Your Income Tax Slab Rate (%)</label>
-                                                    <div className="relative">
-                                                        <input type="number" value={taxRate} onChange={e => setTaxRate(Number(e.target.value) || 0)} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue" />
-                                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">%</span>
-                                                    </div>
-                                                </div>
+                                                <TaxInputGroup
+                                                    income={annualIncome}
+                                                    setIncome={setAnnualIncome}
+                                                    regime={taxRegime}
+                                                    setRegime={setTaxRegime}
+                                                />
 
                                                 <div className="space-y-2 bg-background p-3 rounded-xl border border-border">
                                                     {[
