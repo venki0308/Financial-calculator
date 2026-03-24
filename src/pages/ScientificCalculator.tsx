@@ -4,6 +4,7 @@ import { Delete, RotateCcw, Clock, Copy, Check, ChevronDown, Hash } from 'lucide
 import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { AnimatePresence, motion } from 'framer-motion';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 type CalcMode = 'normal' | 'scientific' | 'programming';
 type WordSize = 8 | 16 | 32 | 64;
@@ -440,6 +441,8 @@ export default function ScientificCalculator() {
                     </div>
                 </>
             )}
+
+            <DisclaimerComponent module="scientific" />
         </div>
     );
 }

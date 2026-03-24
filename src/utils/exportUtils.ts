@@ -49,6 +49,20 @@ function showToast(message: string, isError = false) {
     setTimeout(() => t.remove(), 4000);
 }
 
+// ─── Shared PDF Disclaimer ──────────────────────────────────────────────────
+function addPdfDisclaimer(doc: jsPDF) {
+    const totalPages: number = (doc as any).internal.getNumberOfPages();
+    const disclaimer = 'Disclaimer: The calculations provided are estimates for informational purposes only and should not be considered financial advice. Actual results may vary. Consult a certified financial advisor before making decisions.';
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(6.5);
+        doc.setTextColor(160);
+        const lines = doc.splitTextToSize(disclaimer, 182);
+        const startY = 290 - (lines.length * 3.5);
+        doc.text(lines, 14, startY);
+    }
+}
+
 // ─── Blob → base64 ────────────────────────────────────────────────────────
 function blobToBase64(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -558,7 +572,8 @@ export const exportComparisonPDF = async (params: ComparisonPDFParams): Promise<
             });
         }
 
-        // Footer on each page
+        // Disclaimer + Footer on each page
+        addPdfDisclaimer(doc);
         const totalPages: number = (doc as any).internal.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
             doc.setPage(i);
@@ -677,6 +692,7 @@ export const exportSIPComparisonPDF = async (params: SIPComparisonParams): Promi
             });
         }
 
+        addPdfDisclaimer(doc);
         const totalPages: number = (doc as any).internal.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
             doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150);
@@ -782,6 +798,7 @@ export const exportFDComparisonPDF = async (params: FDComparisonParams): Promise
             });
         }
 
+        addPdfDisclaimer(doc);
         const totalPages: number = (doc as any).internal.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
             doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150);
@@ -1215,6 +1232,7 @@ export const exportOverdraftPDF = async (data: OverdraftReportData): Promise<voi
             });
         }
 
+        addPdfDisclaimer(doc);
         const pdfFilename = `FinCalix_Overdraft_${new Date().toISOString().slice(0, 10)}.pdf`;
         if (Capacitor.isNativePlatform()) {
             const pdfBlob = doc.output('blob');

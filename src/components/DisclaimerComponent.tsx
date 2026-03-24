@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Lightbulb, BarChart2, ClipboardList, TrendingUp, Landmark, ShieldCheck, Target, CreditCard, AlertCircle, Scale, Building2, Briefcase } from 'lucide-react';
 
-export type ModuleName = 'advisor' | 'emi' | 'tax' | 'sip' | 'fd' | 'rd' | 'ppf' | 'hra' | 'gratuity' | 'gst' | 'goal' | 'expense' | 'overdraft' | 'schemes' | 'compare' | 'general';
+export type ModuleName = 'advisor' | 'emi' | 'tax' | 'sip' | 'fd' | 'rd' | 'ppf' | 'hra' | 'gratuity' | 'gst' | 'goal' | 'expense' | 'overdraft' | 'schemes' | 'compare' | 'general' | 'time' | 'scientific' | 'swp' | 'cagr' | 'lumpsum' | 'epf' | 'nps' | 'ssy' | 'nsc' | 'kvp' | 'pomis' | 'potd' | 'scss' | 'budget';
 
 interface DisclaimerConfig {
     icon: React.ElementType;
@@ -108,7 +108,91 @@ const DISCLAIMER_CONTENT: Record<ModuleName, DisclaimerConfig> = {
         title: "Disclaimer",
         text: "The calculations provided are estimates for informational and planning purposes only. They should not be considered formal financial advice. Please verify specific figures with your financial institution.",
         colorClass
-    }
+    },
+    time: {
+        icon: AlertCircle,
+        title: "Time & Utility Data",
+        text: "Data is provided for general informational purposes only. Time zones, daylight saving changes, and calculations may vary slightly depending on system data. Please verify with official sources for critical scheduling.",
+        colorClass
+    },
+    scientific: {
+        icon: AlertCircle,
+        title: "Scientific Calculator",
+        text: "Results are approximate and intended for informational use only. Please verify values independently for critical decisions. Floating-point precision limitations may cause minor rounding differences.",
+        colorClass
+    },
+    swp: {
+        icon: TrendingUp,
+        title: "SWP Projections",
+        text: "Systematic Withdrawal Plan projections assume a constant rate of return. Actual mutual fund returns fluctuate with market conditions. Your corpus may deplete faster or slower than projected.",
+        colorClass
+    },
+    cagr: {
+        icon: BarChart2,
+        title: "CAGR Note",
+        text: "CAGR represents a smoothed annual growth rate and does not reflect actual year-to-year volatility. Past performance is not indicative of future results. Use CAGR as a benchmark, not a guarantee.",
+        colorClass
+    },
+    lumpsum: {
+        icon: TrendingUp,
+        title: "Lumpsum Investment",
+        text: "Lumpsum projections are based on assumed constant returns. Actual market returns vary significantly. Mutual fund investments are subject to market risks — read all scheme-related documents carefully.",
+        colorClass
+    },
+    epf: {
+        icon: ShieldCheck,
+        title: "EPF Rates",
+        text: "EPF interest rates are set annually by the EPFO and Government of India. The rate used here is based on the latest declared rate. Actual credited interest may differ based on EPFO notifications.",
+        colorClass
+    },
+    nps: {
+        icon: ShieldCheck,
+        title: "NPS Returns",
+        text: "NPS returns are market-linked and vary by fund manager and asset class. The projections shown are indicative only. Verify your actual returns on the NPS portal (enps.nsdl.com).",
+        colorClass
+    },
+    ssy: {
+        icon: ShieldCheck,
+        title: "SSY Interest",
+        text: "Sukanya Samriddhi Yojana interest rates are reviewed and set quarterly by the Government of India. Current rates may differ from those used in this calculation. Verify on India Post or your bank.",
+        colorClass
+    },
+    nsc: {
+        icon: Landmark,
+        title: "NSC Rates",
+        text: "National Savings Certificate rates are set by the Ministry of Finance and reviewed quarterly. The maturity amount shown is based on the current declared rate. Confirm rates at your nearest Post Office.",
+        colorClass
+    },
+    kvp: {
+        icon: Landmark,
+        title: "KVP Doubling",
+        text: "Kisan Vikas Patra doubling time is approximate and based on the current government-declared rate. Rates are reviewed quarterly. Confirm the exact maturity period before investing.",
+        colorClass
+    },
+    pomis: {
+        icon: Landmark,
+        title: "POMIS Monthly Income",
+        text: "Post Office Monthly Income Scheme interest rates are reviewed quarterly by the Government. Monthly payout amounts shown are based on the current rate. Verify at your nearest Post Office branch.",
+        colorClass
+    },
+    potd: {
+        icon: Landmark,
+        title: "Post Office TD",
+        text: "Post Office Time Deposit rates are set quarterly by the Government. Maturity amounts are estimated based on the latest declared rates. Verify with India Post for the most current rates.",
+        colorClass
+    },
+    scss: {
+        icon: ShieldCheck,
+        title: "SCSS Eligibility",
+        text: "Senior Citizens Savings Scheme interest rates are reviewed quarterly. Eligibility is restricted to individuals aged 60 and above (55 for retired defence personnel). Verify terms at your bank or Post Office.",
+        colorClass
+    },
+    budget: {
+        icon: CreditCard,
+        title: "Budget Data",
+        text: "All budget and expense data is stored locally on your device. Insights and recommendations are generated algorithmically and should not be considered professional financial advice. Consult a financial advisor for personalized guidance.",
+        colorClass
+    },
 };
 
 export interface DisclaimerProps {

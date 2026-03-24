@@ -10,6 +10,7 @@ import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
 import { TaxRegime, calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -405,6 +406,8 @@ export default function POTDCalculator() {
                     </AnimatePresence>
                 </div>
             </div>
+
+            <DisclaimerComponent module="potd" />
         </div>
     );
 }

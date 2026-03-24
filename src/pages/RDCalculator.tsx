@@ -6,6 +6,7 @@ import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -417,6 +418,8 @@ export default function RDCalculator() {
                     </button>
                 </div>
             </div>
+
+            <DisclaimerComponent module="rd" />
         </div>
     );
 }

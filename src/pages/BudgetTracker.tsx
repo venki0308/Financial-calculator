@@ -8,6 +8,7 @@ import BudgetTab from './expenses/BudgetTab';
 import DailyTab from './expenses/DailyTab';
 import ReportsTab from './expenses/ReportsTab';
 import { AnalyticsService } from '../lib/analytics';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const TABS = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -95,6 +96,8 @@ export default function BudgetTracker() {
                     </motion.div>
                 </AnimatePresence>
             </div>
+
+            <DisclaimerComponent module="budget" />
         </div>
     );
 }

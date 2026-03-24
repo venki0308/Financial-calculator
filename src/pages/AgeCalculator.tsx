@@ -6,6 +6,7 @@ import { AnalyticsService } from '../lib/analytics';
 
 
 import { triggerCalcNotification } from '../services/calcNotifications';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 
 function getGeneration(year: number) {
@@ -165,6 +166,8 @@ export default function AgeCalculator() {
                 
                 
             </div>
+
+            <DisclaimerComponent module="time" />
         </div>
     );
 }

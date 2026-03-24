@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const config = {
     title: 'Goal SIP Calculator',
@@ -30,5 +31,11 @@ const config = {
 };
 
 export default function GoalSIPCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('Goal_SIP'); }, []); return <GenericCalculator config={config} />;
+    useEffect(() => { AnalyticsService.trackScreen('Goal_SIP'); }, []);
+    return (
+        <>
+            <GenericCalculator config={config} />
+            <DisclaimerComponent module="sip" />
+        </>
+    );
 }

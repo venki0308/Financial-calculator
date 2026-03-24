@@ -6,6 +6,7 @@ import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF } from '../utils/exportUtils';
 import { nativeShare } from '../utils/nativeShare';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -471,6 +472,8 @@ export default function HRACalculator() {
                 </div>
 
             </div>
+
+            <DisclaimerComponent module="hra" />
         </div>
     );
 }

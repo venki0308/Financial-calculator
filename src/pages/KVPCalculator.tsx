@@ -10,6 +10,7 @@ import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
 import { TaxRegime, calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 const ITEMS_PER_PAGE = 5;
@@ -385,6 +386,8 @@ export default function KVPCalculator() {
                     </AnimatePresence>
                 </div>
             </div>
+
+            <DisclaimerComponent module="kvp" />
         </div>
     );
 }

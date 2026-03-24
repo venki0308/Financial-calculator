@@ -349,6 +349,8 @@ export default function SSYCalculator() {
                 
                 
             </div>
+
+            <DisclaimerComponent module="ssy" />
         </div>
     );
 }

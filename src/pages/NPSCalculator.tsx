@@ -263,6 +263,8 @@ export default function NPSCalculator() {
                 
                 
             </div>
+
+            <DisclaimerComponent module="nps" />
         </div>
     );
 }

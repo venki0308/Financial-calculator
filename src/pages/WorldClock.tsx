@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, X, Search, ChevronLeft, Sun, Sunrise, MapPin, DollarSi
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import BottomSheet from '../components/BottomSheet';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { getCountryMeta, getSunTimes } from '../data/countryData';
 import { WORLD_TIMEZONES, POPULAR_IANA, TimezoneInfo } from '../data/timezones';
@@ -1166,6 +1167,8 @@ export default function WorldClock() {
                     <CityDetailView clock={detailClock} onBack={() => setDetailClock(null)} />
                 )}
             </AnimatePresence>
+
+            <DisclaimerComponent module="time" />
         </div>
     );
 }

@@ -10,6 +10,7 @@ import { calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
 import RiskCategoryTags from '../components/RiskCategoryTags';
 import TaxInputGroup from '../components/TaxInputGroup';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -433,6 +434,8 @@ export default function GratuityCalculator() {
                     </AnimatePresence>
                 </div>
             </div>
+
+            <DisclaimerComponent module="gratuity" />
         </div>
     );
 }

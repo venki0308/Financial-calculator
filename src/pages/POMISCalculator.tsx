@@ -10,6 +10,7 @@ import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
 import { TaxRegime, calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 const LOCK_IN_YEARS = 5;
@@ -447,6 +448,8 @@ export default function POMISCalculator() {
                     </AnimatePresence>
                 </div>
             </div>
+
+            <DisclaimerComponent module="pomis" />
         </div>
     );
 }

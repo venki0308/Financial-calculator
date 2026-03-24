@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import GenericCalculator from '../components/GenericCalculator';
 import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const config = {
     title: 'SCSS Calculator',
@@ -25,5 +26,11 @@ const config = {
 };
 
 export default function SCSSCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('SCSS_Calculator'); }, []); return <GenericCalculator config={config} />;
+    useEffect(() => { AnalyticsService.trackScreen('SCSS_Calculator'); }, []);
+    return (
+        <>
+            <GenericCalculator config={config} />
+            <DisclaimerComponent module="scss" />
+        </>
+    );
 }
