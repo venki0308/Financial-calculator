@@ -219,22 +219,17 @@ export default function PrivacyPolicy() {
                 </Section>
 
                 {/* Section 11 — Analytics & Crash Reporting */}
-                <Section number={11} title="Analytics & Crash Reporting" icon={Shield}>
-                    <p>
-                        We use limited analytics tools (such as Google Analytics or Firebase) to understand app usage and improve user experience. No personally identifiable financial data is collected or shared.
-                    </p>
+                <Section number={11} title={t('privacyPolicy.sec11Title')} icon={Shield}>
+                    <p>{t('privacyPolicy.sec11Desc')}</p>
                     <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 mt-2">
-                        <p className="text-blue-500 dark:text-blue-400 text-[11px] font-semibold mb-1">Data Safety</p>
+                        <p className="text-blue-500 dark:text-blue-400 text-[11px] font-semibold mb-1">{t('privacyPolicy.sec11BoxTitle')}</p>
                         <ul className="list-disc pl-4 text-slate-700 dark:text-blue-300/80 text-[11px] space-y-0.5 font-medium">
-                            <li>All calculations are performed locally on your device.</li>
-                            <li>No financial data is stored on our servers.</li>
-                            <li>No third-party data selling.</li>
+                            <li>{t('privacyPolicy.sec11BoxLi1')}</li>
+                            <li>{t('privacyPolicy.sec11BoxLi2')}</li>
+                            <li>{t('privacyPolicy.sec11BoxLi3')}</li>
                         </ul>
                     </div>
-                    <p className="mt-2 text-muted-foreground">
-                        Crash reporting can be disabled at any time via <strong>Settings → Crash Reporting</strong>.
-                        When disabled, no diagnostic data is transmitted.
-                    </p>
+                    <p className="mt-2 text-muted-foreground">{t('privacyPolicy.sec11CrashNote')}</p>
                 </Section>
 
                 {/* Data & Privacy Link */}

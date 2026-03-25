@@ -1,3 +1,4 @@
-// Central version config — import APP_VERSION everywhere you need the version string
-export const APP_VERSION = '1.0.0';
+// Central version config — auto-synced from package.json
+import pkg from '../../package.json';
+export const APP_VERSION: string = pkg.version;
 export const APP_BUILD = 1;

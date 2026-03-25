@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { App as CapApp } from '@capacitor/app';
 import { useSettingsStore } from './store/useSettingsStore';
-import { AnalyticsService, CrashlyticsService } from './lib/analytics';
+import { CrashlyticsService } from './lib/analytics';
+import { AnalyticsService } from './services/analyticsService';
 import { setupErrorHandling } from './utils/errorHandler';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { FeatureFlagService } from './services/featureFlags.service';
@@ -108,11 +109,9 @@ function AppContent() {
             await CrashlyticsService.setCustomKey('app_version', APP_VERSION);
             await CrashlyticsService.setCustomKey('platform', Capacitor.getPlatform());
             await FeatureFlagService.load();
-            await AnalyticsService.trackAppOpened();
-            await AnalyticsService.setUserProperties({
-                app_version: APP_VERSION,
-                platform: Capacitor.getPlatform(),
-            });
+            // Initialize generic analytics wrapper
+            await AnalyticsService.initialize();
+            AnalyticsService.trackScreenView({ screen_name: 'App_Open' });
         };
         initAnalytics();
         // Run notification scheduler (at most once every 23h)

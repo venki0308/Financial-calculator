@@ -7,9 +7,10 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import BottomSheet from '../components/BottomSheet';
-import { AnalyticsService } from '../lib/analytics';
+import { AnalyticsService, CrashlyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { APP_VERSION } from '../config/app';
 
 
 const languages = [
@@ -39,6 +40,7 @@ export default function Settings() {
         const next = !crashReporting;
         setCrashReporting(next);
         localStorage.setItem('crashlytics_enabled', String(next));
+        CrashlyticsService.setEnabled(next);
     };
 
     const currentLang = languages.find(l => i18n.language.startsWith(l.code)) || languages[0];
@@ -115,14 +117,14 @@ export default function Settings() {
                 </div>
 
                 {/* Privacy & Crash Reporting */}
-                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">Privacy</p>
+                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.privacy')}</p>
                 <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
                     <div className="flex items-center justify-between p-4">
                         <div className="flex items-center gap-3">
                             <ActivitySquare size={20} className="text-blue-400" />
                             <div>
-                                <p className="text-foreground font-medium text-sm">Crash Reporting</p>
-                                <p className="text-muted-foreground text-[11px]">Anonymous diagnostics to improve stability</p>
+                                <p className="text-foreground font-medium text-sm">{t('settings.crashReporting')}</p>
+                                <p className="text-muted-foreground text-[11px]">{t('settings.crashReportingDesc')}</p>
                             </div>
                         </div>
                         <button onClick={toggleCrashReporting} className={`w-12 h-7 rounded-full p-0.5 transition-colors ${crashReporting ? 'bg-brand-purple' : 'bg-slate-600'}`}>
@@ -202,7 +204,7 @@ export default function Settings() {
                 </div>
 
                 {/* Data Management */}
-                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">Data</p>
+                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.data')}</p>
                 <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
                     <button onClick={() => setShowClearConfirm(true)} className="w-full flex items-center gap-4 p-4">
                         <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
@@ -217,7 +219,7 @@ export default function Settings() {
                 </div>
 
                 <div className="text-center pb-8 mt-2 animate-fade-in delay-500">
-                    <p className="text-slate-600 text-xs text-brand-purple/80 dark:text-cyan-400 font-bold mb-1">FinCalix v1.0.2</p>
+                    <p className="text-slate-600 text-xs text-brand-purple/80 dark:text-cyan-400 font-bold mb-1">FinCalix v{APP_VERSION}</p>
                     <p className="text-slate-400 text-[10px]">All your data is stored locally on this device</p>
                 </div>
             </div>
