@@ -146,10 +146,6 @@ export default function PrivacyPolicy() {
                             <p className="text-foreground text-[11px] font-bold">{t('privacyPolicy.gaTitle')}</p>
                             <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.gaDesc')}</p>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-foreground text-[11px] font-bold">{t('privacyPolicy.vercelTitle')}</p>
-                            <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.vercelDesc')}</p>
-                        </div>
                     </div>
                     <p className="mt-1">{t('privacyPolicy.sec4End')}</p>
                 </Section>
@@ -222,23 +218,20 @@ export default function PrivacyPolicy() {
                     </div>
                 </Section>
 
-                {/* Section 11 — Crash Reporting */}
+                {/* Section 11 — Analytics & Crash Reporting */}
                 <Section number={11} title="Analytics & Crash Reporting" icon={Shield}>
                     <p>
-                        FinCalix may collect anonymous, non-identifiable crash reports and performance diagnostics
-                        to improve app stability. This data <strong>never</strong> includes your financial inputs,
-                        personal identity, or any calculation history.
+                        We use limited analytics tools (such as Google Analytics or Firebase) to understand app usage and improve user experience. No personally identifiable financial data is collected or shared.
                     </p>
-                    <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 mt-1">
-                        <p className="text-blue-400 text-[11px] font-semibold mb-1">What crash reports may include:</p>
-                        <ul className="list-disc pl-4 text-blue-300/80 text-[10px] space-y-0.5">
-                            <li>Device model and OS version</li>
-                            <li>App version and build number</li>
-                            <li>Stack trace of the crash (no user data)</li>
-                            <li>Time and frequency of crashes</li>
+                    <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 mt-2">
+                        <p className="text-blue-500 dark:text-blue-400 text-[11px] font-semibold mb-1">Data Safety</p>
+                        <ul className="list-disc pl-4 text-slate-700 dark:text-blue-300/80 text-[11px] space-y-0.5 font-medium">
+                            <li>All calculations are performed locally on your device.</li>
+                            <li>No financial data is stored on our servers.</li>
+                            <li>No third-party data selling.</li>
                         </ul>
                     </div>
-                    <p>
+                    <p className="mt-2 text-muted-foreground">
                         Crash reporting can be disabled at any time via <strong>Settings → Crash Reporting</strong>.
                         When disabled, no diagnostic data is transmitted.
                     </p>

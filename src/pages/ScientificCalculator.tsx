@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Delete, RotateCcw, Clock, Copy, Check, ChevronDown, Hash } from 'lucide-react';
+import { Delete, RotateCcw, Clock, Copy, Check, ChevronDown, Hash, ArrowLeft } from 'lucide-react';
 import { AnalyticsService } from '../lib/analytics';
+import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { AnimatePresence, motion } from 'framer-motion';
 import DisclaimerComponent from '../components/DisclaimerComponent';
@@ -36,6 +37,7 @@ function toBase(value: number, base: 2 | 8 | 10 | 16, bits: WordSize): string {
 export default function ScientificCalculator() {
     useTrackCalculator();
     const { t } = useTranslation();
+    const navigate = useNavigate();
 
     const [calcMode, setCalcMode] = useState<CalcMode>('scientific');
     const [expression, setExpression] = useState('');
@@ -209,27 +211,32 @@ export default function ScientificCalculator() {
     const progBtnCls = (enabled: boolean) => `${btnBase} text-xl font-semibold border ${enabled ? 'bg-card text-foreground border-border shadow-sm' : 'bg-card/30 text-muted-foreground/30 border-transparent cursor-not-allowed'}`;
 
     return (
-        <div className="max-w-md mx-auto px-4 pt-14 pb-24 animate-fade-in bg-background min-h-[calc(100vh-6rem)]">
-            {/* Mode Tab Bar */}
-            <div className="flex gap-1 bg-muted border border-border rounded-xl p-1 mb-4 shadow-inner">
-                {(['normal', 'scientific', 'programming'] as CalcMode[]).map(m => (
-                    <button
-                        key={m}
-                        onClick={() => setCalcMode(m)}
-                        className={`flex-1 py-2.5 rounded-lg text-[11px] font-bold capitalize transition-all ${
-                            calcMode === m
-                                ? 'bg-card text-foreground shadow-sm border border-border/50'
-                                : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                    >
-                        {m}
-                    </button>
-                ))}
+        <div className="max-w-md mx-auto px-4 pt-14 pb-4 animate-fade-in bg-background h-[100dvh] flex flex-col">
+            {/* Header / Mode Tab Bar */}
+            <div className="flex items-center gap-2 mb-4 shrink-0">
+                <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-600 dark:text-slate-400 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <ArrowLeft size={20} />
+                </button>
+                <div className="flex flex-1 gap-1 bg-muted border border-border rounded-xl p-1 shadow-inner">
+                    {(['normal', 'scientific', 'programming'] as CalcMode[]).map(m => (
+                        <button
+                            key={m}
+                            onClick={() => setCalcMode(m)}
+                            className={`flex-1 py-2.5 rounded-lg text-[11px] font-bold capitalize transition-all ${
+                                calcMode === m
+                                    ? 'bg-card text-foreground shadow-sm border border-border/50'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            {m}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* ═══════════════════ PROGRAMMING MODE ═══════════════════════════ */}
             {calcMode === 'programming' && (
-                <div className="space-y-3">
+                <div className="space-y-3 flex-1 overflow-y-auto hide-scrollbar pb-6">
                     {/* Display all bases */}
                     <div className="bg-gradient-to-br from-card to-card/50 border border-border shadow-sm rounded-3xl p-4 space-y-2 relative overflow-hidden mb-4">
                         {/* Decorative background element */}
@@ -300,9 +307,9 @@ export default function ScientificCalculator() {
 
             {/* ═══════════════════ NORMAL & SCIENTIFIC MODES ═══════════════════ */}
             {calcMode !== 'programming' && (
-                <>
+                <div className="flex flex-col flex-1 min-h-0">
                     {/* Display */}
-                    <div className="p-5 rounded-3xl bg-gradient-to-br from-purple-600/10 to-indigo-600/10 border border-purple-500/20 mb-4 min-h-[140px] flex flex-col items-end justify-end relative overflow-hidden shadow-sm">
+                    <div className="p-5 rounded-3xl bg-gradient-to-br from-purple-600/10 to-indigo-600/10 border border-purple-500/20 mb-4 min-h-[140px] shrink-0 flex flex-col items-end justify-end relative overflow-hidden shadow-sm">
                         {memory !== 0 && (
                             <div className="absolute top-4 left-5 px-2 py-0.5 bg-brand-purple/20 text-brand-purple rounded text-xs font-bold border border-brand-purple/30">M = {memory}</div>
                         )}
@@ -330,34 +337,35 @@ export default function ScientificCalculator() {
                         </div>
                     </div>
 
-                    {/* History panel */}
-                    <AnimatePresence>
-                        {showHistory && history.length > 0 && (
-                            <motion.div
-                                initial={{ height: 0, opacity: 0, scale: 0.95 }}
-                                animate={{ height: 'auto', opacity: 1, scale: 1 }}
-                                exit={{ height: 0, opacity: 0, scale: 0.95 }}
-                                transition={{ duration: 0.2 }}
-                                className="overflow-hidden mb-4 rounded-2xl bg-card border border-border shadow-lg"
-                            >
-                                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/50">
-                                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">History</span>
-                                    <button onClick={() => setHistory([])} className="text-[11px] text-red-500 font-bold hover:bg-red-500/10 px-2 py-1 rounded transition-colors">Clear All</button>
-                                </div>
-                                <div className="divide-y divide-border max-h-48 overflow-y-auto">
-                                    {history.map((h, i) => (
-                                        <button key={i} onClick={() => { setExpression(h.expression); setResult(h.result); setShowHistory(false); }}
-                                            className="w-full text-right px-4 py-3 hover:bg-muted/50 transition-colors focus:bg-muted outline-none">
-                                            <p className="text-muted-foreground text-[11px] font-medium mb-1">{h.expression}</p>
-                                            <p className="text-foreground font-bold text-base text-brand-purple">= {h.result}</p>
-                                        </button>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    <div className="flex-1 overflow-y-auto hide-scrollbar pb-6 space-y-2">
+                        {/* History panel */}
+                        <AnimatePresence>
+                            {showHistory && history.length > 0 && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0, scale: 0.95 }}
+                                    animate={{ height: 'auto', opacity: 1, scale: 1 }}
+                                    exit={{ height: 0, opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="overflow-hidden mb-4 rounded-2xl bg-card border border-border shadow-lg"
+                                >
+                                    <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/50">
+                                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">History</span>
+                                        <button onClick={() => setHistory([])} className="text-[11px] text-red-500 font-bold hover:bg-red-500/10 px-2 py-1 rounded transition-colors">Clear All</button>
+                                    </div>
+                                    <div className="divide-y divide-border max-h-48 overflow-y-auto">
+                                        {history.map((h, i) => (
+                                            <button key={i} onClick={() => { setExpression(h.expression); setResult(h.result); setShowHistory(false); }}
+                                                className="w-full text-right px-4 py-3 hover:bg-muted/50 transition-colors focus:bg-muted outline-none">
+                                                <p className="text-muted-foreground text-[11px] font-medium mb-1">{h.expression}</p>
+                                                <p className="text-foreground font-bold text-base text-brand-purple">= {h.result}</p>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                    {/* Scientific: mem + toggle row */}
+                        {/* Scientific: mem + toggle row */}
                     {calcMode === 'scientific' && (
                         <div className="grid grid-cols-5 gap-2 mb-2">
                             <button className={togCls(!isDeg)} onClick={() => setIsDeg(!isDeg)}>{isDeg ? 'DEG' : 'RAD'}</button>
@@ -439,10 +447,11 @@ export default function ScientificCalculator() {
                             onClick={handleCalculate}
                         >=</button>
                     </div>
-                </>
-            )}
 
-            <DisclaimerComponent module="scientific" />
+                    <DisclaimerComponent module="scientific" />
+                </div>
+                </div>
+            )}
         </div>
     );
 }

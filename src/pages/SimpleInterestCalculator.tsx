@@ -532,23 +532,23 @@ export default function SimpleInterestCalculator() {
                                 {mode === 'flat' ? 'FLAT' : 'SI'}
                             </span>
                         </div>
-                        <div className="overflow-x-auto max-h-64 overflow-y-auto">
+                        <div className="overflow-x-auto max-h-64 overflow-y-auto relative border-t border-slate-200 dark:border-slate-700 shadow-inner dark:shadow-none">
                             <table className="w-full text-xs">
-                                <thead className="sticky top-0 bg-slate-50 dark:bg-muted">
-                                    <tr className="border-b border-slate-200 dark:border-border">
-                                        <th className="py-2 px-3 text-left font-bold text-muted-foreground text-[10px] uppercase">Period</th>
-                                        <th className="py-2 px-3 text-left font-bold text-muted-foreground text-[10px] uppercase">Due Date</th>
-                                        <th className="py-2 px-3 text-right font-bold text-muted-foreground text-[10px] uppercase">Interest</th>
-                                        <th className="py-2 px-3 text-right font-bold text-muted-foreground text-[10px] uppercase">Cumulative</th>
+                                <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10 shadow-sm">
+                                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                                        <th className="py-2 px-3 text-left font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">Period</th>
+                                        <th className="py-2 px-3 text-left font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">Due Date</th>
+                                        <th className="py-2 px-3 text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">Interest</th>
+                                        <th className="py-2 px-3 text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">Cumulative</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {periodRows.map((row, i) => (
-                                        <tr key={row.period} className={`border-b border-slate-100 dark:border-border/40 ${i % 2 === 0 ? '' : 'bg-slate-50/60 dark:bg-muted/20'}`}>
-                                            <td className="py-2 px-3 font-medium text-foreground">{row.period}</td>
-                                            <td className="py-2 px-3 text-muted-foreground">{row.dueDate}</td>
-                                            <td className="py-2 px-3 text-right text-amber-600 dark:text-amber-400 font-medium">{formatINR(row.interest)}</td>
-                                            <td className="py-2 px-3 text-right text-brand-green font-semibold">{formatINR(row.cumulative)}</td>
+                                        <tr key={row.period} className={`border-b border-slate-200 dark:border-slate-700 transition-colors ${i % 2 === 0 ? 'bg-white dark:bg-[#0F172A]' : 'bg-slate-50 dark:bg-slate-800/40'}`}>
+                                            <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-foreground">{row.period}</td>
+                                            <td className="py-2.5 px-3 font-medium text-slate-600 dark:text-slate-300">{row.dueDate}</td>
+                                            <td className="py-2.5 px-3 text-right text-amber-600 dark:text-amber-400 font-bold">{formatINR(row.interest)}</td>
+                                            <td className="py-2.5 px-3 text-right text-brand-green font-bold">{formatINR(row.cumulative)}</td>
                                         </tr>
                                     ))}
                                 </tbody>

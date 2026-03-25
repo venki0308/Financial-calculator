@@ -40,10 +40,10 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
     }, [adjustedInputs, currentInputs, sliders]);
 
     return (
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/5 to-purple-500/5 border border-indigo-500/20">
+        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-gradient-to-br dark:from-indigo-500/5 dark:to-purple-500/5 border border-slate-200 dark:border-indigo-500/20">
             <div className="flex items-center gap-2 mb-4">
-                <Sliders size={16} className="text-indigo-400" />
-                <h3 className="text-foreground font-bold text-sm">{title}</h3>
+                <Sliders size={16} className="text-indigo-600 dark:text-indigo-400" />
+                <h3 className="text-slate-900 dark:text-foreground font-bold text-sm">{title}</h3>
             </div>
 
             {/* Sliders */}
@@ -60,9 +60,9 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
                                 <span className="text-muted-foreground text-xs font-medium">{slider.label}</span>
                                 <div className="flex items-center gap-2">
                                     {changed && (
-                                        <span className="text-muted-foreground text-[10px] line-through">{formatFn(currentVal)}</span>
+                                        <span className="text-slate-400 dark:text-muted-foreground text-[10px] line-through">{formatFn(currentVal)}</span>
                                     )}
-                                    <span className={`text-xs font-bold ${changed ? 'text-indigo-400' : 'text-foreground'}`}>
+                                    <span className={`text-xs font-bold ${changed ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-foreground'}`}>
                                         {formatFn(adjVal)}
                                     </span>
                                 </div>
@@ -80,8 +80,8 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
                                 }}
                             />
                             <div className="flex justify-between mt-0.5">
-                                <span className="text-[9px] text-slate-600">{formatFn(slider.min)}</span>
-                                <span className="text-[9px] text-slate-600">{formatFn(slider.max)}</span>
+                                <span className="text-[9px] text-slate-500 dark:text-slate-400">{formatFn(slider.min)}</span>
+                                <span className="text-[9px] text-slate-500 dark:text-slate-400">{formatFn(slider.max)}</span>
                             </div>
                         </div>
                     );
@@ -90,12 +90,12 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
 
             {/* Result comparison */}
             {hasChanges && (
-                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                    <p className="text-muted-foreground text-[9px] uppercase font-bold tracking-wider mb-2">{resultLabel}</p>
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="p-3 rounded-xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-none">
+                    <p className="text-slate-500 dark:text-muted-foreground text-[9px] uppercase font-bold tracking-wider mb-2">{resultLabel}</p>
                     <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground text-sm line-through">{resultPrefix}{currentResult >= 1000 ? formatINR(currentResult) : currentResult.toLocaleString('en-IN')}</span>
-                        <ArrowRight size={14} className="text-slate-600" />
-                        <span className="text-foreground font-bold text-lg">{resultPrefix}{adjustedResult >= 1000 ? formatINR(adjustedResult) : adjustedResult.toLocaleString('en-IN')}</span>
+                        <span className="text-slate-400 dark:text-muted-foreground text-sm line-through">{resultPrefix}{currentResult >= 1000 ? formatINR(currentResult) : currentResult.toLocaleString('en-IN')}</span>
+                        <ArrowRight size={14} className="text-slate-400 dark:text-slate-600" />
+                        <span className="text-slate-900 dark:text-foreground font-bold text-lg">{resultPrefix}{adjustedResult >= 1000 ? formatINR(adjustedResult) : adjustedResult.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex items-center gap-1.5 mt-1.5">
                         {diff > 0 ? (
@@ -112,8 +112,8 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
             )}
 
             {!hasChanges && (
-                <div className="p-3 rounded-xl bg-slate-800/30 text-center">
-                    <p className="text-slate-300 text-xs">Adjust sliders to see how changes affect your result</p>
+                <div className="p-3 rounded-xl bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-transparent text-center shadow-sm dark:shadow-none">
+                    <p className="text-slate-600 dark:text-slate-300 text-xs font-medium">Adjust sliders to see how changes affect your result</p>
                 </div>
             )}
         </div>

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Share2, FileText, Download, Wallet, Info, ChevronDown, ChevronUp, AlertCircle, Building2, User, CreditCard, Landmark, Pickaxe, Lightbulb, Scale } from 'lucide-react';
+import { Share2, FileText, Download, Wallet, Info, ChevronDown, ChevronUp, AlertCircle, Building2, User, CreditCard, Landmark, Pickaxe, Lightbulb, Scale, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR } from '../utils/calculations';
 import { exportOverdraftPDF, exportOverdraftExcel } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
+import { useNavigate } from 'react-router-dom';
 import NumberInput from '../components/NumberInput';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 
@@ -24,6 +25,7 @@ const formatNumberExt = (value: string): string => {
 export default function OverdraftCalculator() {
   useTrackCalculator();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   
   const [odType, setOdType] = useState('business');
   const [odLimit, setOdLimit] = useState('10,00,000');
@@ -163,8 +165,16 @@ export default function OverdraftCalculator() {
   return (
     <div className="max-w-md mx-auto px-4 pt-16 pb-24 animate-fade-in">
         
+      {/* Back Button Header */}
+      <button 
+        onClick={() => navigate(-1)} 
+        className="flex items-center gap-2 text-slate-600 dark:text-slate-400 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mb-4 -ml-2"
+      >
+        <ArrowLeft size={20} />
+      </button>
+
       {/* SECTION 1: Header */}
-      <div className="flex flex-col items-start gap-4 mb-6 mt-4">
+      <div className="flex flex-col items-start gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">Overdraft Calculator</h1>
           <p className="text-muted-foreground text-sm mt-1">
