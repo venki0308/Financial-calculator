@@ -91,7 +91,10 @@ export default function ReportsTab() {
     // Category breakdown
     const categoryData = useMemo(() => {
         const map: Record<string, number> = {};
-        activeEntries.forEach((e) => { map[e.category] = (map[e.category] || 0) + e.amount; });
+        activeEntries.forEach((e) => {
+            const cat = e.category || e.categoryId || 'others';
+            map[cat] = (map[cat] || 0) + e.amount;
+        });
         return Object.entries(map)
             .map(([id, total]) => {
                 const cat = EXPENSE_CATEGORIES.find((c) => c.id === id);
@@ -118,7 +121,7 @@ export default function ReportsTab() {
     const budgetVsActual = useMemo(() => {
         return EXPENSE_CATEGORIES.map((cat) => {
             const budget = (categoryBudgets as unknown as Record<string, number>)[cat.id] || 0;
-            const actual = activeEntries.filter((e) => e.category === cat.id).reduce((s, e) => s + e.amount, 0);
+            const actual = activeEntries.filter((e) => (e.category || e.categoryId) === cat.id).reduce((s, e) => s + e.amount, 0);
             return { category: cat.icon + ' ' + t(`expenses.categories.${cat.id}`).split(' ')[0], budget, actual };
         }).filter((row) => row.budget > 0 || row.actual > 0);
     }, [activeEntries, categoryBudgets, t]);

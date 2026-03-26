@@ -55,6 +55,8 @@ export type PaymentMethod = 'Cash' | 'UPI' | 'Debit Card' | 'Credit Card';
 export interface BudgetEntry {
     id: string;
     category: string;       // Built-in category key OR custom category id
+    /** @deprecated use category instead - kept for migration compatibility */
+    categoryId?: string;
     amount: number;
     description: string;
     date: string;           // ISO string (e.g. "2026-03-05T10:00:00.000Z")
@@ -297,6 +299,22 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
             })),
             setHealthScore: (healthScore) => set({ healthScore }),
         }),
-        { name: 'budget-tracker-storage' }
+        {
+            name: 'budget-tracker-storage',
+            version: 1,
+            migrate: (persistedState: unknown, fromVersion: number) => {
+                const state = persistedState as Record<string, unknown>;
+                // v0 → v1: rename categoryId → category on all entries
+                if (fromVersion < 1 && Array.isArray(state.entries)) {
+                    state.entries = (state.entries as Record<string, unknown>[]).map((e) => {
+                        if (!e.category && e.categoryId) {
+                            return { ...e, category: e.categoryId };
+                        }
+                        return e;
+                    });
+                }
+                return state;
+            },
+        }
     )
 );

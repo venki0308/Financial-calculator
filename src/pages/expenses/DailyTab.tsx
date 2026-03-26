@@ -302,7 +302,7 @@ export default function DailyTab() {
                 )}
                 <div className="space-y-2">
                     {dayEntries.map((exp) => {
-                        const cat = EXPENSE_CATEGORIES.find((c) => c.id === exp.category);
+                        const cat = EXPENSE_CATEGORIES.find((c) => c.id === (exp.category || exp.categoryId));
                         return (
                             <div key={exp.id} className="relative rounded-2xl bg-red-500 overflow-hidden mb-2">
                                 <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center text-foreground">

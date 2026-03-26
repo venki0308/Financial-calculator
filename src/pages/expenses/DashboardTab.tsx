@@ -109,7 +109,8 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
     const categoryTotals = useMemo(() => {
         const map: Record<string, number> = {};
         monthEntries.forEach((e) => {
-            map[e.category] = (map[e.category] || 0) + e.amount;
+            const cat = e.category || e.categoryId || 'others';
+            map[cat] = (map[cat] || 0) + e.amount;
         });
         return Object.entries(map)
             .map(([id, total]) => {
@@ -498,7 +499,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                 ) : (
                     <div className="space-y-2">
                         {recentExpenses.map((exp) => {
-                            const cat = EXPENSE_CATEGORIES.find((c) => c.id === exp.category);
+                            const cat = EXPENSE_CATEGORIES.find((c) => c.id === (exp.category || exp.categoryId));
                             return (
                                 <div key={exp.id} className="flex items-center gap-3">
                                     <div className="w-9 h-9 rounded-xl bg-brand-purple/10 flex items-center justify-center text-base flex-shrink-0">
