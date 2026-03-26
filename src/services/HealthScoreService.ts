@@ -45,7 +45,7 @@ export function calculateHealthScore(
     const budgetMap = categoryBudgets as unknown as Record<string, number>;
     if (Object.keys(budgetMap).length > 0) {
         const categoryTotals = currentEntries.reduce((acc, e) => {
-            acc[e.categoryId] = (acc[e.categoryId] || 0) + e.amount;
+            acc[e.category] = (acc[e.category] || 0) + e.amount;
             return acc;
         }, {} as Record<string, number>);
 

@@ -91,7 +91,7 @@ export default function ReportsTab() {
     // Category breakdown
     const categoryData = useMemo(() => {
         const map: Record<string, number> = {};
-        activeEntries.forEach((e) => { map[e.categoryId] = (map[e.categoryId] || 0) + e.amount; });
+        activeEntries.forEach((e) => { map[e.category] = (map[e.category] || 0) + e.amount; });
         return Object.entries(map)
             .map(([id, total]) => {
                 const cat = EXPENSE_CATEGORIES.find((c) => c.id === id);
@@ -118,7 +118,7 @@ export default function ReportsTab() {
     const budgetVsActual = useMemo(() => {
         return EXPENSE_CATEGORIES.map((cat) => {
             const budget = (categoryBudgets as unknown as Record<string, number>)[cat.id] || 0;
-            const actual = activeEntries.filter((e) => e.categoryId === cat.id).reduce((s, e) => s + e.amount, 0);
+            const actual = activeEntries.filter((e) => e.category === cat.id).reduce((s, e) => s + e.amount, 0);
             return { category: cat.icon + ' ' + t(`expenses.categories.${cat.id}`).split(' ')[0], budget, actual };
         }).filter((row) => row.budget > 0 || row.actual > 0);
     }, [activeEntries, categoryBudgets, t]);
@@ -289,16 +289,16 @@ export default function ReportsTab() {
                                 {MONTHS.map((monthName, i) => {
                                     const m = i + 1;
                                     const mEntries = entries.filter((e) => new Date(e.date).getFullYear() === selectedYear && new Date(e.date).getMonth() + 1 === m);
+                                    return { monthName, mEntries, m };
+                                }).filter(({ mEntries, m }) => {
                                     const hasEntries = mEntries.length > 0;
+                                    const hasIncome = (selectedYear === new Date().getFullYear() && m === new Date().getMonth() + 1) ? monthlyIncome > 0 : false;
+                                    return hasEntries || hasIncome;
+                                }).map(({ monthName, mEntries }) => {
                                     const budgetActive = totalBudgetSet > 0 || subscriptions.length > 0;
-                                    
-                                    let state: 'empty' | 'partial' | 'budgetless' = 'empty';
-                                    if (hasEntries) {
-                                        state = budgetActive ? 'partial' : 'budgetless';
-                                    }
+                                    let state: 'partial' | 'budgetless' = budgetActive ? 'partial' : 'budgetless';
                                     
                                     const styles = {
-                                        empty: 'bg-muted border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500',
                                         partial: 'bg-brand-purple/10 border-brand-purple/20 text-brand-purple dark:bg-brand-purple/20 dark:text-brand-purple-light',
                                         budgetless: 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-orange-600 dark:text-orange-400'
                                     };
@@ -383,11 +383,11 @@ export default function ReportsTab() {
                             <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">Savings Trend (6 Months)</h3>
                             <Bar
                                 data={{
-                                    labels: savingsTrend.map(t => t.month),
+                                    labels: savingsTrend.filter(t => t.hasData).map(t => t.month),
                                     datasets: [{
                                         label: 'Saved',
-                                        data: savingsTrend.map(t => t.saved),
-                                        backgroundColor: savingsTrend.map(t => t.saved >= 0 ? 'rgba(16,185,129,0.8)' : 'rgba(239,68,68,0.8)'),
+                                        data: savingsTrend.filter(t => t.hasData).map(t => t.saved),
+                                        backgroundColor: savingsTrend.filter(t => t.hasData).map(t => t.saved >= 0 ? 'rgba(16,185,129,0.8)' : 'rgba(239,68,68,0.8)'),
                                         borderRadius: 4
                                     }]
                                 }}

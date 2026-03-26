@@ -12,12 +12,12 @@ const PAYMENT_METHODS: { id: PaymentMethod; icon: string }[] = [
 ];
 
 const QUICK_ADD = [
-    { emoji: '☕', label: 'Coffee', amount: 50, categoryId: 'food' },
-    { emoji: '🍱', label: 'Lunch', amount: 150, categoryId: 'food' },
-    { emoji: '🚕', label: 'Transport', amount: 100, categoryId: 'transportation' },
-    { emoji: '🛒', label: 'Groceries', amount: 500, categoryId: 'groceries' },
-    { emoji: '🍕', label: 'Dinner', amount: 250, categoryId: 'food' },
-    { emoji: '⛽', label: 'Petrol', amount: 500, categoryId: 'transportation' },
+    { emoji: '☕', label: 'Coffee', amount: 50, category: 'food' },
+    { emoji: '🍱', label: 'Lunch', amount: 150, category: 'food' },
+    { emoji: '🚕', label: 'Transport', amount: 100, category: 'transportation' },
+    { emoji: '🛒', label: 'Groceries', amount: 500, category: 'groceries' },
+    { emoji: '🍕', label: 'Dinner', amount: 250, category: 'food' },
+    { emoji: '⛽', label: 'Petrol', amount: 500, category: 'transportation' },
 ];
 
 function formatDate(dateStr: string) {
@@ -39,6 +39,7 @@ export default function DailyTab() {
     const [selectedDate, setSelectedDate] = useState(toDateInput(new Date()));
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [initialFormState, setInitialFormState] = useState<{ category: string, amount: string, desc: string, payment: PaymentMethod } | null>(null);
 
     const [quickAdds, setQuickAdds] = useState<typeof QUICK_ADD>(() => {
         const saved = localStorage.getItem('fincalix_quick_adds');
@@ -56,6 +57,13 @@ export default function DailyTab() {
     const [fDesc, setFDesc] = useState('');
     const [fPayment, setFPayment] = useState<PaymentMethod>('UPI');
 
+    const isDirty = initialFormState ? (
+        fCategory !== initialFormState.category ||
+        fAmount !== initialFormState.amount ||
+        fDesc !== initialFormState.desc ||
+        fPayment !== initialFormState.payment
+    ) : false;
+
     const dayEntries = useMemo(
         () => getEntriesByDate(selectedDate).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
         [entries, selectedDate]
@@ -69,9 +77,10 @@ export default function DailyTab() {
     const overBudget = selectedCatBudget > 0 && remaining < 0;
 
     const handleQuickAdd = (qa: typeof QUICK_ADD[0]) => {
-        setFCategory(qa.categoryId);
+        setFCategory(qa.category);
         setFAmount(qa.amount.toString());
         setFDesc(t(`expenses.quickAdd.${qa.label.toLowerCase()}`));
+        setInitialFormState({ category: '', amount: '', desc: '', payment: 'UPI' }); // Set blank initial state so it's dirty
         setShowAddForm(true);
     };
 
@@ -80,7 +89,7 @@ export default function DailyTab() {
 
         if (editingId) {
             updateEntry(editingId, {
-                categoryId: fCategory,
+                category: fCategory,
                 amount: parseFloat(fAmount),
                 description: fDesc || t(`expenses.categories.${fCategory}`),
                 paymentMethod: fPayment,
@@ -92,7 +101,7 @@ export default function DailyTab() {
             const localIso = `${selectedDate}T${timeStr}`;
 
             addEntry({
-                categoryId: fCategory,
+                category: fCategory,
                 amount: parseFloat(fAmount),
                 description: fDesc || t(`expenses.categories.${fCategory}`),
                 date: localIso,
@@ -103,17 +112,29 @@ export default function DailyTab() {
         setFAmount('');
         setFDesc('');
         setFPayment('UPI');
+        setInitialFormState(null);
         setShowAddForm(false);
+    };
+
+    const openAddForm = () => {
+        setFCategory('food');
+        setFAmount('');
+        setFDesc('');
+        setFPayment('UPI');
+        setInitialFormState({ category: 'food', amount: '', desc: '', payment: 'UPI' });
+        setEditingId(null);
+        setShowAddForm(true);
     };
 
     const startEdit = (id: string) => {
         const e = entries.find(e => e.id === id);
         if (!e) return;
         setEditingId(id);
-        setFCategory(e.categoryId);
+        setFCategory(e.category);
         setFAmount(e.amount.toString());
         setFDesc(e.description);
         setFPayment(e.paymentMethod || 'UPI');
+        setInitialFormState({ category: e.category, amount: e.amount.toString(), desc: e.description, payment: e.paymentMethod || 'UPI' });
         setShowAddForm(true);
     };
 
@@ -150,7 +171,7 @@ export default function DailyTab() {
             {/* Add Expense FAB */}
             <motion.button
                 whileTap={{ scale: 0.97 }}
-                onClick={() => setShowAddForm(true)}
+                onClick={openAddForm}
                 className="w-full bg-gradient-to-r from-brand-purple to-purple-700 hover:from-purple-700 hover:to-brand-purple text-foreground font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/30"
             >
                 <Plus size={20} /> {t('expenses.addNewExpense')}
@@ -274,12 +295,12 @@ export default function DailyTab() {
                     <div className="text-center py-10 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
                         <p className="text-4xl mb-2">🌿</p>
                         <p className="text-muted-foreground text-sm">{t('expenses.noExpensesDay')}</p>
-                        <button onClick={() => setShowAddForm(true)} className="mt-3 text-brand-purple text-xs font-semibold">+ {t('expenses.addExpense')}</button>
+                        <button onClick={openAddForm} className="mt-3 text-brand-purple text-xs font-semibold">+ {t('expenses.addExpense')}</button>
                     </div>
                 )}
                 <div className="space-y-2">
                     {dayEntries.map((exp) => {
-                        const cat = EXPENSE_CATEGORIES.find((c) => c.id === exp.categoryId);
+                        const cat = EXPENSE_CATEGORIES.find((c) => c.id === exp.category);
                         return (
                             <div key={exp.id} className="relative rounded-2xl bg-red-500 overflow-hidden mb-2">
                                 <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center text-foreground">
@@ -412,14 +433,16 @@ export default function DailyTab() {
                             </div>
                             <div className="flex gap-3 mt-5">
                                 <button onClick={() => setShowAddForm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-slate-300 font-medium text-sm">{t('common.cancel')}</button>
-                                <motion.button
-                                    whileTap={{ scale: 0.97 }}
-                                    onClick={handleSaveEntry}
-                                    disabled={!fAmount}
-                                    className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm disabled:opacity-40"
-                                >
-                                    {editingId ? t('common.save', 'Save') : t('expenses.saveExpense')}
-                                </motion.button>
+                                {isDirty && (
+                                    <motion.button
+                                        whileTap={{ scale: 0.97 }}
+                                        onClick={handleSaveEntry}
+                                        disabled={!fAmount}
+                                        className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm disabled:opacity-40"
+                                    >
+                                        {editingId ? 'Apply' : 'Save'}
+                                    </motion.button>
+                                )}
                             </div>
                         </motion.div>
                     </motion.div>

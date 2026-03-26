@@ -30,7 +30,7 @@ export function generateInsights(
     const savingsRate = (savings / monthlyIncome) * 100;
 
     const categoryTotals = currentEntries.reduce((acc, e) => {
-        acc[e.categoryId] = (acc[e.categoryId] || 0) + e.amount;
+        acc[e.category] = (acc[e.category] || 0) + e.amount;
         return acc;
     }, {} as Record<string, number>);
 
@@ -84,7 +84,7 @@ export function generateInsights(
         return d.getMonth() + 1 === lastMonth && d.getFullYear() === lastMonthYear;
     });
     const lastCategoryTotals = lastEntries.reduce((acc, e) => {
-        acc[e.categoryId] = (acc[e.categoryId] || 0) + e.amount;
+        acc[e.category] = (acc[e.category] || 0) + e.amount;
         return acc;
     }, {} as Record<string, number>);
 

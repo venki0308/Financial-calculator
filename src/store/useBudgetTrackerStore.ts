@@ -54,7 +54,7 @@ export type PaymentMethod = 'Cash' | 'UPI' | 'Debit Card' | 'Credit Card';
 
 export interface BudgetEntry {
     id: string;
-    categoryId: string;     // Built-in category key OR custom category id
+    category: string;       // Built-in category key OR custom category id
     amount: number;
     description: string;
     date: string;           // ISO string (e.g. "2026-03-05T10:00:00.000Z")
@@ -147,7 +147,7 @@ interface BudgetTrackerState {
     getTotalSpent: () => number;
     getEntriesByMonth: (year: number, month: number) => BudgetEntry[];
     getEntriesByDate: (dateStr: string) => BudgetEntry[];
-    getMonthlySpentByCategory: (categoryId: string) => number;
+    getMonthlySpentByCategory: (category: string) => number;
 
     addSubscription: (sub: Omit<Subscription, 'id'>) => void;
     updateSubscription: (id: string, updates: Partial<Subscription>) => void;
@@ -213,7 +213,7 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
 
             deleteCategory: (id) => set((s) => ({
                 categories: s.categories.filter((c) => c.id !== id),
-                entries: s.entries.filter((e) => e.categoryId !== id),
+                entries: s.entries.filter((e) => e.category !== id),
             })),
 
             addEntry: (entry) => {
@@ -271,10 +271,10 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
                 });
             },
 
-            getMonthlySpentByCategory: (categoryId) => {
+            getMonthlySpentByCategory: (category) => {
                 const now = new Date();
                 return get().getEntriesByMonth(now.getFullYear(), now.getMonth() + 1)
-                    .filter((e) => e.categoryId === categoryId)
+                    .filter((e) => e.category === category)
                     .reduce((sum, e) => sum + e.amount, 0);
             },
             
