@@ -348,14 +348,14 @@ export default function DailyTab() {
                 {showAddForm && (
                     <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/60  z-50 flex items-end justify-center"
+                        className="fixed inset-0 bg-black/70 z-[10000] flex items-end justify-center"
                         onClick={() => setShowAddForm(false)}
                     >
                         <motion.div
                             initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }}
                             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
                             className="w-full max-w-md bg-background border-t border-slate-700 rounded-t-3xl flex flex-col"
-                            style={{ maxHeight: 'calc(100svh - 64px)', paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}
+                            style={{ maxHeight: '85dvh' }}
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Drag handle + Title - HEADER */}
