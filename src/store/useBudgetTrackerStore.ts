@@ -115,11 +115,12 @@ const defaultFixedExpenses: FixedExpenses = {
 
 interface BudgetTrackerState {
     monthlyIncome: number;
-    currentBalance: number;
     totalBalance: number;
     savingsGoal: number;
     fixedExpenses: FixedExpenses;
     categoryBudgets: CategoryBudgets;
+    // Month-specific tracking
+    monthlyBalances: Record<string, { manual?: number; auto?: number }>;
     // Custom user-defined categories (backward compat)
     categories: BudgetCategory[];
     entries: BudgetEntry[];
@@ -131,9 +132,9 @@ interface BudgetTrackerState {
 
     // Setters
     setMonthlyIncome: (v: number) => void;
-    setCurrentBalance: (v: number) => void;
     setTotalBalance: (v: number) => void;
     setSavingsGoal: (v: number) => void;
+    setMonthlyBalance: (monthKey: string, manual: number, auto: number) => void;
     setMonthlyBudget: (v: number) => void;  // compat alias
     setFixedExpenses: (v: Partial<FixedExpenses>) => void;
     setCategoryBudgets: (v: Partial<CategoryBudgets>) => void;
@@ -171,11 +172,11 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
     persist(
         (set, get) => ({
             monthlyIncome: 0,
-            currentBalance: 0,
             totalBalance: 0,
             savingsGoal: 0,
             fixedExpenses: defaultFixedExpenses,
             categoryBudgets: defaultCategoryBudgets,
+            monthlyBalances: {},
             categories: [],
             entries: [],
             subscriptions: [],
@@ -184,9 +185,11 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
             healthScore: null,
 
             setMonthlyIncome: (v) => set({ monthlyIncome: v }),
-            setCurrentBalance: (v) => set({ currentBalance: v }),
             setTotalBalance: (v) => set({ totalBalance: v }),
             setSavingsGoal: (v) => set({ savingsGoal: v }),
+            setMonthlyBalance: (monthKey, manual, auto) => set((s) => ({
+                monthlyBalances: { ...s.monthlyBalances, [monthKey]: { manual, auto } }
+            })),
             setMonthlyBudget: (v) => set({ monthlyIncome: v }), // compat
 
             setFixedExpenses: (v) => set((s) => ({
@@ -306,7 +309,7 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
         }),
         {
             name: 'budget-tracker-storage',
-            version: 1,
+            version: 2,
             migrate: (persistedState: unknown, fromVersion: number) => {
                 const state = persistedState as Record<string, unknown>;
                 // v0 → v1: rename categoryId → category on all entries
@@ -317,6 +320,18 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
                         }
                         return e;
                     });
+                }
+                // v1 → v2: move currentBalance to monthlyBalances for the current month
+                if (fromVersion < 2) {
+                    const cb = state.currentBalance as number;
+                    if (cb && cb > 0) {
+                        const now = new Date();
+                        const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                        state.monthlyBalances = { [key]: { manual: cb, auto: 0 } };
+                    } else {
+                        state.monthlyBalances = {};
+                    }
+                    delete state.currentBalance;
                 }
                 return state;
             },

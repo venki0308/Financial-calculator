@@ -60,7 +60,7 @@ export default function Home() {
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { user } = useAuthStore();
-    const { currentBalance, monthlyIncome, getTotalFixed, getTotalSpent } = useBudgetTrackerStore();
+    const { monthlyBalances, monthlyIncome, getTotalFixed, getTotalSpent } = useBudgetTrackerStore();
 
     const [recentPaths, setRecentPaths] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -121,14 +121,18 @@ export default function Home() {
 
     // Compute effective current balance: if user hasn't set one, derive from income - expenses
     const effectiveBalance = useMemo(() => {
-        if (currentBalance > 0) return currentBalance;
+        const now = new Date();
+        const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const manualBal = monthlyBalances[key]?.manual || 0;
+        
+        if (manualBal > 0) return manualBal;
         if (monthlyIncome > 0) {
             const fixed = getTotalFixed();
             const spent = getTotalSpent();
             return Math.max(0, monthlyIncome - fixed - spent);
         }
         return 0;
-    }, [currentBalance, monthlyIncome, getTotalFixed, getTotalSpent]);
+    }, [monthlyBalances, monthlyIncome, getTotalFixed, getTotalSpent]);
 
     const quickCalcItems = useMemo(() => {
         if (recentPaths.length === 0) return defaultItems.map(item => {

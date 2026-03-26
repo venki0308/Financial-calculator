@@ -16,7 +16,8 @@ export function calculateHealthScore(
     currentMonthNum: number,
     currentYear: number,
     netWorthHistory: NetWorthEntry[],
-    savingsGoal?: number
+    savingsGoal?: number,
+    monthlyBalances?: Record<string, { manual?: number; auto?: number }>
 ): HealthScore {
     const nowStr = new Date().toISOString();
 
@@ -31,13 +32,44 @@ export function calculateHealthScore(
         };
     }
 
-    const fixedTotal = calcFixedTotal(fixedExpenses);
-    const emiAmount = typeof fixedExpenses.emi === 'number' ? fixedExpenses.emi : 0;
+    const currentMonthKey = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}`;
+    const prevMonthNum = currentMonthNum === 1 ? 12 : currentMonthNum - 1;
+    const prevMonthYear = currentMonthNum === 1 ? currentYear - 1 : currentYear;
+    const prevMonthKey = `${prevMonthYear}-${String(prevMonthNum).padStart(2, '0')}`;
 
     const currentEntries = entries.filter(e => {
         const d = new Date(e.date);
         return d.getMonth() + 1 === currentMonthNum && d.getFullYear() === currentYear;
     });
+
+    const prevEntries = entries.filter(e => {
+        const d = new Date(e.date);
+        return d.getMonth() + 1 === prevMonthNum && d.getFullYear() === prevMonthYear;
+    });
+
+    const hasCurrentData = currentEntries.length > 0 || (monthlyBalances?.[currentMonthKey]?.manual ?? 0) > 0;
+    const hasPrevData = prevEntries.length > 0 || (monthlyBalances?.[prevMonthKey]?.manual ?? 0) > 0;
+
+    if (!hasCurrentData) {
+        return {
+            total: -1,
+            savingsScore: 0, adherenceScore: 0, consistencyScore: 0,
+            tips: ['No data for this month', 'Add income or expenses to see insights'],
+            calculatedAt: nowStr,
+        };
+    }
+
+    if (!hasPrevData) {
+        return {
+            total: -2,
+            savingsScore: 0, adherenceScore: 0, consistencyScore: 0,
+            tips: ['Track at least 2 consecutive months to unlock Financial Health insights'],
+            calculatedAt: nowStr,
+        };
+    }
+
+    const fixedTotal = calcFixedTotal(fixedExpenses);
+    const emiAmount = typeof fixedExpenses.emi === 'number' ? fixedExpenses.emi : 0;
 
     const totalSpent = currentEntries.reduce((sum, e) => sum + e.amount, 0);
     const savings = monthlyIncome - (fixedTotal + totalSpent);

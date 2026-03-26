@@ -1,9 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, Calendar, CreditCard, CheckCircle2 } from 'lucide-react';
+import {
+    Plus, Trash2, Calendar, CreditCard, CheckCircle2,
+    AlertTriangle, ShieldAlert, Bell, X, TrendingUp,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, Subscription, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
+import BottomSheet from '../../components/BottomSheet';
 
+// ── Constants ─────────────────────────────────────────────────────────────
 const COLOR_TAGS = [
     '#ef4444', // Red
     '#f97316', // Orange
@@ -15,58 +20,132 @@ const COLOR_TAGS = [
     '#ec4899', // Pink
 ];
 
-const PREPOPULATED = [
-    { name: 'Netflix', amount: 499, color: '#ef4444' },
-    { name: 'Spotify', amount: 119, color: '#10b981' },
-    { name: 'Amazon Prime', amount: 299, color: '#06b6d4' },
-    { name: 'YouTube Premium', amount: 129, color: '#ef4444' },
-    { name: 'Gym Membership', amount: 1500, color: '#f59e0b' },
+const QUICK_ADD_SUGGESTIONS = [
+    { name: 'Netflix', amount: 499, color: '#ef4444', category: 'entertainment' },
+    { name: 'Spotify', amount: 119, color: '#10b981', category: 'entertainment' },
+    { name: 'Amazon Prime', amount: 299, color: '#06b6d4', category: 'entertainment' },
+    { name: 'YouTube Premium', amount: 129, color: '#ef4444', category: 'entertainment' },
+    { name: 'Gym Membership', amount: 1500, color: '#f59e0b', category: 'healthcare' },
+    { name: 'Hotstar', amount: 299, color: '#3b82f6', category: 'entertainment' },
+    { name: 'Swiggy One', amount: 399, color: '#f97316', category: 'food' },
+    { name: 'ChatGPT Plus', amount: 1650, color: '#8b5cf6', category: 'education' },
 ];
 
+const BILLING_CYCLES = [
+    { value: 'monthly', label: 'Monthly' },
+    { value: 'quarterly', label: 'Quarterly' },
+    { value: 'yearly', label: 'Yearly' },
+] as const;
+
+type BillingCycle = 'monthly' | 'quarterly' | 'yearly';
+
+const EMPTY_FORM: Partial<Subscription> = {
+    name: '',
+    amount: 0,
+    billingCycle: 'monthly',
+    nextDueDate: new Date().toISOString().split('T')[0],
+    category: 'entertainment',
+    colorTag: COLOR_TAGS[5],
+    isActive: true,
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function toMonthlyEquivalent(amount: number, cycle: BillingCycle): number {
+    if (cycle === 'monthly') return amount;
+    if (cycle === 'quarterly') return amount / 3;
+    return amount / 12;
+}
+
+function getDaysUntil(dateStr: string): number {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const due = new Date(dateStr);
+    due.setHours(0, 0, 0, 0);
+    return Math.ceil((due.getTime() - now.getTime()) / (1000 * 3600 * 24));
+}
+
+function getDaysIndicator(dateStr: string) {
+    const d = getDaysUntil(dateStr);
+    if (d < 0) return { text: `Overdue by ${Math.abs(d)}d`, color: 'text-red-500 bg-red-50 dark:bg-red-500/10' };
+    if (d === 0) return { text: 'Due Today', color: 'text-red-500 bg-red-50 dark:bg-red-500/10' };
+    if (d <= 3) return { text: `Due in ${d}d`, color: 'text-orange-500 bg-orange-50 dark:bg-orange-500/10' };
+    if (d <= 7) return { text: `Due in ${d}d`, color: 'text-amber-500 bg-amber-50 dark:bg-amber-500/10' };
+    return { text: `Due in ${d}d`, color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10' };
+}
+
+// ── Component ─────────────────────────────────────────────────────────────
 export default function SubscriptionsTab() {
     const { t } = useTranslation();
-    const { subscriptions, addSubscription, updateSubscription, deleteSubscription, monthlyIncome } = useBudgetTrackerStore();
-    
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [formData, setFormData] = useState<Partial<Subscription>>({
-        name: '',
-        amount: 0,
-        billingCycle: 'monthly',
-        nextDueDate: new Date().toISOString().split('T')[0],
-        category: 'entertainment',
-        colorTag: COLOR_TAGS[5],
-        isActive: true,
-    });
+    const {
+        subscriptions, addSubscription, updateSubscription, deleteSubscription, monthlyIncome,
+    } = useBudgetTrackerStore();
 
-    const openModal = (sub?: Subscription) => {
-        if (sub) {
-            setEditingId(sub.id);
-            setFormData(sub);
-        } else {
-            setEditingId(null);
-            setFormData({
-                name: '',
-                amount: 0,
-                billingCycle: 'monthly',
-                nextDueDate: new Date().toISOString().split('T')[0],
-                category: 'entertainment',
-                colorTag: COLOR_TAGS[5],
-                isActive: true,
-            });
-        }
-        setIsModalOpen(true);
+    // ── UI State ─────────────────────────────────────────────────────────
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [formData, setFormData] = useState<Partial<Subscription>>(EMPTY_FORM);
+    const [formErrors, setFormErrors] = useState<{ name?: string; amount?: string }>({});
+    const [riskDismissed, setRiskDismissed] = useState(false);
+    const [reminderDismissed, setReminderDismissed] = useState(false);
+
+    // ── Derived Data (useMemo'd) ──────────────────────────────────────────
+    const sortedSubs = useMemo(
+        () => [...subscriptions].sort((a, b) => getDaysUntil(a.nextDueDate) - getDaysUntil(b.nextDueDate)),
+        [subscriptions],
+    );
+
+    const { totalMonthly, totalYearly, riskPct } = useMemo(() => {
+        const active = subscriptions.filter(s => s.isActive);
+        const monthly = active.reduce((sum, s) => sum + toMonthlyEquivalent(s.amount, s.billingCycle as BillingCycle), 0);
+        return {
+            totalMonthly: monthly,
+            totalYearly: monthly * 12,
+            riskPct: monthlyIncome > 0 ? monthly / monthlyIncome : 0,
+        };
+    }, [subscriptions, monthlyIncome]);
+
+    const renewalsSoon = useMemo(
+        () => subscriptions.filter(s => s.isActive && getDaysUntil(s.nextDueDate) >= 0 && getDaysUntil(s.nextDueDate) <= 3),
+        [subscriptions],
+    );
+
+    // ── Handlers ──────────────────────────────────────────────────────────
+    const openAddForm = (prefill?: Partial<Subscription>) => {
+        setEditingId(null);
+        setFormData({ ...EMPTY_FORM, ...prefill });
+        setFormErrors({});
+        setIsFormOpen(true);
+    };
+
+    const openEditForm = (sub: Subscription) => {
+        setEditingId(sub.id);
+        setFormData({ ...sub });
+        setFormErrors({});
+        setIsFormOpen(true);
+    };
+
+    const closeForm = () => {
+        setIsFormOpen(false);
+        setEditingId(null);
+    };
+
+    const validate = (): boolean => {
+        const errs: typeof formErrors = {};
+        if (!formData.name?.trim()) errs.name = 'Name is required';
+        if (!formData.amount || formData.amount <= 0) errs.amount = 'Enter a valid amount';
+        setFormErrors(errs);
+        return Object.keys(errs).length === 0;
     };
 
     const handleSave = () => {
-        if (!formData.name || !formData.amount || !formData.nextDueDate) return;
+        if (!validate()) return;
 
         const sub: Subscription = {
             id: editingId || Date.now().toString(),
-            name: formData.name!,
+            name: formData.name!.trim(),
             amount: Number(formData.amount),
-            billingCycle: formData.billingCycle as 'monthly' | 'yearly',
-            nextDueDate: formData.nextDueDate!,
+            billingCycle: (formData.billingCycle || 'monthly') as BillingCycle,
+            nextDueDate: formData.nextDueDate || new Date().toISOString().split('T')[0],
             category: formData.category || 'entertainment',
             colorTag: formData.colorTag || COLOR_TAGS[5],
             isActive: formData.isActive ?? true,
@@ -75,300 +154,449 @@ export default function SubscriptionsTab() {
         if (editingId) {
             updateSubscription(editingId, sub);
         } else {
-            const { id, ...newSub } = sub;
+            const { id: _id, ...newSub } = sub;
             addSubscription(newSub);
         }
-        setIsModalOpen(false);
+        closeForm();
     };
 
-    const handleSuggest = (suggest: typeof PREPOPULATED[0]) => {
-        addSubscription({
-            name: suggest.name,
-            amount: suggest.amount,
-            billingCycle: 'monthly',
-            nextDueDate: new Date().toISOString().split('T')[0],
-            category: 'entertainment',
-            colorTag: suggest.color,
-            isActive: true,
-        });
+    const handleDelete = () => {
+        if (editingId) {
+            deleteSubscription(editingId);
+            closeForm();
+        }
     };
 
-    const sortedSubs = [...subscriptions].sort((a, b) => new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime());
-
-    const totalMonthly = subscriptions
-        .filter(s => s.isActive)
-        .reduce((sum, s) => sum + (s.billingCycle === 'monthly' ? s.amount : s.amount / 12), 0);
-
-    const getDaysIndicator = (dateStr: string) => {
-        const diffDays = Math.ceil((new Date(dateStr).getTime() - new Date().getTime()) / (1000 * 3600 * 24));
-        if (diffDays < 0) return { text: `Overdue by ${Math.abs(diffDays)}d`, color: 'text-red-500 bg-red-50 dark:bg-red-500/10' };
-        if (diffDays === 0) return { text: 'Due Today', color: 'text-red-500 bg-red-50 dark:bg-red-500/10' };
-        if (diffDays <= 3) return { text: `Due in ${diffDays}d`, color: 'text-orange-500 bg-orange-50 dark:bg-orange-500/10' };
-        if (diffDays <= 7) return { text: `Due in ${diffDays}d`, color: 'text-amber-500 bg-amber-50 dark:bg-amber-500/10' };
-        return { text: `Due in ${diffDays}d`, color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10' };
+    // Quick-add: opens pre-filled form (not direct add) to let user verify
+    const handleQuickAdd = (s: typeof QUICK_ADD_SUGGESTIONS[0]) => {
+        openAddForm({ name: s.name, amount: s.amount, colorTag: s.color, category: s.category });
     };
 
+    const updateField = (patch: Partial<Subscription>) => {
+        setFormData(prev => ({ ...prev, ...patch }));
+        // Clear relevant errors on change
+        if ('name' in patch && formErrors.name) setFormErrors(e => ({ ...e, name: undefined }));
+        if ('amount' in patch && formErrors.amount) setFormErrors(e => ({ ...e, amount: undefined }));
+    };
+
+    // ── Risk level ────────────────────────────────────────────────────────
+    const riskLevel = riskPct > 0.15 ? 'high' : riskPct > 0.10 ? 'medium' : 'none';
+
+    // ── Render ────────────────────────────────────────────────────────────
     return (
-        <div className="space-y-6 pb-24">
-            {/* Header Summary — Enhanced (Part 5) */}
-            <div className="bg-gradient-to-r from-brand-purple to-indigo-600 rounded-2xl p-5 text-white shadow-lg shadow-brand-purple/20">
-                <div className="flex items-center gap-2 mb-2 text-foreground/80">
-                    <CreditCard size={18} />
-                    <span className="font-semibold text-sm">Monthly Commitment</span>
-                    {/* Renewal badge */}
-                    {(() => {
-                        const today = new Date();
-                        const renewalsSoon = subscriptions.filter(s => s.isActive && (() => {
-                            const diff = (new Date(s.nextDueDate).getTime() - today.getTime()) / (1000 * 3600 * 24);
-                            return diff >= 0 && diff <= 7;
-                        })());
-                        return renewalsSoon.length > 0 ? (
-                            <span className="ml-auto text-[10px] font-bold bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full">
-                                ⚠️ {renewalsSoon.length} renewal{renewalsSoon.length > 1 ? 's' : ''} this week
-                            </span>
-                        ) : null;
-                    })()}
-                </div>
-                <h2 className="text-3xl font-extrabold tracking-tight">₹{Math.round(totalMonthly).toLocaleString('en-IN')}</h2>
-                <div className="flex items-center gap-3 mt-1">
-                    <p className="text-sm opacity-90">{subscriptions.filter(s => s.isActive).length} Active Subscriptions</p>
-                    {monthlyIncome > 0 && totalMonthly > 0 && (
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${(totalMonthly / monthlyIncome) > 0.10 ? 'bg-red-400/30 text-red-100' : 'bg-white/20 text-white'}`}>
-                            {((totalMonthly / monthlyIncome) * 100).toFixed(1)}% of income
+        <div className="space-y-4 pb-28">
+
+            {/* ── Reminder Banner (due in ≤3 days) ─────────────────────── */}
+            <AnimatePresence>
+                {!reminderDismissed && renewalsSoon.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        className="flex items-start gap-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-2xl px-4 py-3"
+                    >
+                        <Bell size={16} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                            <p className="text-amber-800 dark:text-amber-300 font-bold text-sm">
+                                {renewalsSoon.length} renewal{renewalsSoon.length > 1 ? 's' : ''} due within 3 days
+                            </p>
+                            <p className="text-amber-700 dark:text-amber-400 text-xs mt-0.5">
+                                {renewalsSoon.map(s => s.name).join(', ')}
+                            </p>
+                        </div>
+                        <button onClick={() => setReminderDismissed(true)} className="text-amber-400 hover:text-amber-600 flex-shrink-0">
+                            <X size={16} />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Header Summary Card ───────────────────────────────────── */}
+            <div className="bg-gradient-to-br from-brand-purple via-purple-600 to-indigo-600 rounded-3xl p-5 text-white shadow-xl shadow-brand-purple/25">
+                <div className="flex items-center gap-2 mb-1 text-purple-200">
+                    <CreditCard size={16} />
+                    <span className="font-semibold text-xs uppercase tracking-wider">Monthly Commitment</span>
+                    {renewalsSoon.length > 0 && (
+                        <span className="ml-auto text-[10px] font-bold bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full">
+                            ⚠️ {renewalsSoon.length} due soon
                         </span>
                     )}
                 </div>
+                <h2 className="text-4xl font-extrabold tracking-tight">
+                    ₹{Math.round(totalMonthly).toLocaleString('en-IN')}
+                    <span className="text-base font-medium text-purple-200 ml-1">/mo</span>
+                </h2>
+
+                {/* 3-col Impact Breakdown */}
+                <div className="grid grid-cols-3 gap-2 mt-4">
+                    <div className="bg-white/10 rounded-2xl p-3 text-center">
+                        <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider">Yearly</p>
+                        <p className="text-foreground font-bold text-sm mt-0.5">
+                            ₹{Math.round(totalYearly).toLocaleString('en-IN')}
+                        </p>
+                    </div>
+                    <div className="bg-white/10 rounded-2xl p-3 text-center">
+                        <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider">Active</p>
+                        <p className="text-foreground font-bold text-sm mt-0.5">
+                            {subscriptions.filter(s => s.isActive).length}
+                        </p>
+                    </div>
+                    <div className="bg-white/10 rounded-2xl p-3 text-center">
+                        <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider">% Income</p>
+                        <p className={`font-bold text-sm mt-0.5 ${riskPct > 0.10 ? 'text-red-300' : 'text-green-300'}`}>
+                            {monthlyIncome > 0 ? `${(riskPct * 100).toFixed(1)}%` : '—'}
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            {/* Empty State / Prepopulated Suggestions */}
+            {/* ── Risk Insight Banner ───────────────────────────────────── */}
+            <AnimatePresence>
+                {!riskDismissed && riskLevel !== 'none' && monthlyIncome > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        className={`flex items-start gap-3 rounded-2xl px-4 py-3 border ${
+                            riskLevel === 'high'
+                                ? 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20'
+                                : 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20'
+                        }`}
+                    >
+                        {riskLevel === 'high'
+                            ? <ShieldAlert size={18} className="text-red-500 mt-0.5 flex-shrink-0" />
+                            : <AlertTriangle size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                        }
+                        <div className="flex-1 min-w-0">
+                            <p className={`font-bold text-sm ${riskLevel === 'high' ? 'text-red-700 dark:text-red-400' : 'text-amber-800 dark:text-amber-300'}`}>
+                                {riskLevel === 'high'
+                                    ? `🔴 High Risk — ${(riskPct * 100).toFixed(1)}% of income in subscriptions`
+                                    : `🟡 Watch Out — Over 10% of income in subscriptions`
+                                }
+                            </p>
+                            <p className={`text-xs mt-0.5 ${riskLevel === 'high' ? 'text-red-600 dark:text-red-400/80' : 'text-amber-700 dark:text-amber-400/80'}`}>
+                                {riskLevel === 'high'
+                                    ? 'Consider pausing unused services to free up cash flow.'
+                                    : 'Review which subscriptions you actually use each month.'}
+                            </p>
+                        </div>
+                        <button onClick={() => setRiskDismissed(true)} className="text-slate-400 hover:text-slate-600 flex-shrink-0">
+                            <X size={16} />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Empty State ───────────────────────────────────────────── */}
             {subscriptions.length === 0 && (
-                <div className="space-y-4">
-                    <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-slate-100 dark:bg-card border-border rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📱</div>
-                        <h3 className="font-bold text-slate-900 dark:text-foreground mb-2">No Subscriptions Yet</h3>
-                        <p className="text-muted-foreground text-sm">Track your recurring expenses easily.</p>
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-5"
+                >
+                    <div className="text-center py-8 px-4">
+                        <div className="w-20 h-20 bg-gradient-to-br from-brand-purple/10 to-indigo-500/10 border border-brand-purple/20 rounded-3xl flex items-center justify-center mx-auto mb-4 text-4xl">
+                            📱
+                        </div>
+                        <h3 className="font-bold text-slate-900 dark:text-foreground text-lg mb-1">
+                            No subscriptions yet
+                        </h3>
+                        <p className="text-muted-foreground text-sm mb-5">
+                            Start tracking to avoid unnecessary charges
+                        </p>
+                        <motion.button
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => openAddForm()}
+                            className="inline-flex items-center gap-2 bg-brand-purple text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-brand-purple/25"
+                        >
+                            <Plus size={18} />
+                            Add Subscription
+                        </motion.button>
                     </div>
 
+                    {/* Quick Add Chips */}
                     <div>
-                        <h4 className="font-bold text-slate-800 dark:text-foreground text-sm mb-3">Quick Add Popular</h4>
-                        <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide">
-                            {PREPOPULATED.map((p) => (
-                                <button
-                                    key={p.name}
-                                    onClick={() => handleSuggest(p)}
-                                    className="flex-shrink-0 flex items-center gap-2 bg-white dark:bg-card border-border border border-border rounded-xl px-4 py-3"
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
+                            Quick Add Popular
+                        </p>
+                        <div className="flex overflow-x-auto gap-2.5 pb-2 scrollbar-hide">
+                            {QUICK_ADD_SUGGESTIONS.map(s => (
+                                <motion.button
+                                    key={s.name}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleQuickAdd(s)}
+                                    className="flex-shrink-0 flex items-center gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5"
                                 >
-                                    <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: p.color }} />
-                                    <span className="font-bold text-sm text-slate-800 dark:text-foreground">{p.name}</span>
-                                    <span className="text-muted-foreground text-xs font-semibold ml-2">₹{p.amount}</span>
-                                </button>
+                                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+                                    <span className="font-bold text-sm text-slate-800 dark:text-foreground whitespace-nowrap">{s.name}</span>
+                                    <span className="text-muted-foreground text-xs font-semibold">₹{s.amount}</span>
+                                </motion.button>
                             ))}
                         </div>
                     </div>
-                </div>
+                </motion.div>
             )}
 
-            {/* List */}
-            <div className="space-y-3">
-                {sortedSubs.map(sub => {
-                    const indicator = getDaysIndicator(sub.nextDueDate);
-                    const cat = EXPENSE_CATEGORIES.find(c => c.id === sub.category);
-                    
-                    return (
-                        <motion.div
-                            key={sub.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            onClick={() => openModal(sub)}
-                            className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 flex items-center gap-4 cursor-pointer relative overflow-hidden group"
-                        >
-                            <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ backgroundColor: sub.colorTag }} />
-                            
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-card border-border flex items-center justify-center text-lg flex-shrink-0">
-                                {cat?.icon || '📅'}
-                            </div>
-                            
-                            <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-slate-900 dark:text-foreground text-base truncate">{sub.name}</h3>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${indicator.color}`}>
-                                        {indicator.text}
-                                    </span>
-                                    {!sub.isActive && (
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md text-muted-foreground bg-slate-100 dark:bg-card border-border">
-                                            Inactive
+            {/* ── Subscription List ─────────────────────────────────────── */}
+            {subscriptions.length > 0 && (
+                <>
+                    {/* Quick Add Chips (shown above list when subs exist too) */}
+                    <div>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">
+                            Quick Add
+                        </p>
+                        <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-hide">
+                            {QUICK_ADD_SUGGESTIONS.map(s => (
+                                <motion.button
+                                    key={s.name}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleQuickAdd(s)}
+                                    className="flex-shrink-0 flex items-center gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2"
+                                >
+                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
+                                    <span className="font-bold text-xs text-slate-800 dark:text-foreground whitespace-nowrap">{s.name}</span>
+                                </motion.button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {sortedSubs.map(sub => {
+                            const indicator = getDaysIndicator(sub.nextDueDate);
+                            const cat = EXPENSE_CATEGORIES.find(c => c.id === sub.category);
+                            const monthlyEq = toMonthlyEquivalent(sub.amount, sub.billingCycle as BillingCycle);
+
+                            return (
+                                <motion.div
+                                    key={sub.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    whileTap={{ scale: 0.985 }}
+                                    onClick={() => openEditForm(sub)}
+                                    className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 flex items-center gap-4 cursor-pointer relative overflow-hidden"
+                                >
+                                    {/* Left color accent */}
+                                    <div className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl" style={{ backgroundColor: sub.colorTag }} />
+
+                                    {/* Icon */}
+                                    <div className="w-11 h-11 rounded-xl bg-slate-50 dark:bg-card flex items-center justify-center text-xl flex-shrink-0 ml-1">
+                                        {cat?.icon || '📅'}
+                                    </div>
+
+                                    {/* Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm truncate">{sub.name}</h3>
+                                            {!sub.isActive && (
+                                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/10 text-muted-foreground flex-shrink-0">
+                                                    Paused
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 mt-1">
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${indicator.color}`}>
+                                                {indicator.text}
+                                            </span>
+                                            <span className="text-[10px] text-muted-foreground capitalize">
+                                                · {sub.billingCycle}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Amount */}
+                                    <div className="text-right flex-shrink-0">
+                                        <p className="font-extrabold text-slate-900 dark:text-foreground text-base leading-none">
+                                            ₹{sub.amount.toLocaleString('en-IN')}
+                                        </p>
+                                        {sub.billingCycle !== 'monthly' && (
+                                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                                ≈₹{Math.round(monthlyEq).toLocaleString('en-IN')}/mo
+                                            </p>
+                                        )}
+                                        <span className="text-[9px] text-muted-foreground uppercase tracking-wider">
+                                            /{sub.billingCycle === 'monthly' ? 'mo' : sub.billingCycle === 'quarterly' ? 'qtr' : 'yr'}
                                         </span>
-                                    )}
-                                </div>
-                            </div>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
 
-                            <div className="text-right">
-                                <p className="font-bold text-slate-900 dark:text-foreground text-base leading-none mb-1">
-                                    ₹{sub.amount.toLocaleString('en-IN')}
-                                </p>
-                                <span className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
-                                    /{sub.billingCycle === 'monthly' ? 'mo' : 'yr'}
-                                </span>
-                            </div>
-                        </motion.div>
-                    );
-                })}
-            </div>
-
-            {/* Add Button */}
-            <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => openModal()}
-                className="fixed right-5 w-14 h-14 bg-brand-purple text-white rounded-2xl flex items-center justify-center shadow-lg shadow-brand-purple/30 z-40 bottom-[calc(env(safe-area-inset-bottom,20px)+5.5rem)]"
-            >
-                <Plus size={24} />
-            </motion.button>
-
-
-
-            {/* Add/Edit Modal */}
-            <AnimatePresence>
-                {isModalOpen && (
-                    <>
+                    {/* Yearly projection footer */}
+                    {totalMonthly > 0 && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsModalOpen(false)}
-                            className="fixed inset-0 bg-black/40  z-50"
-                        />
-                        <motion.div
-                            initial={{ y: '100%' }}
-                            animate={{ y: 0 }}
-                            exit={{ y: '100%' }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white dark:bg-background rounded-t-3xl z-50 shadow-2xl safe-bottom border-t border-slate-200 dark:border-white/10"
+                            className="flex items-center gap-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-3"
                         >
-                            <div className="p-6">
-                                <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6" />
-                                
-                                <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-xl font-bold text-slate-900 dark:text-foreground">
-                                        {editingId ? 'Edit Subscription' : 'New Subscription'}
-                                    </h2>
-                                    {editingId && (
-                                        <button
-                                            onClick={() => {
-                                                deleteSubscription(editingId);
-                                                setIsModalOpen(false);
-                                            }}
-                                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-colors"
-                                        >
-                                            <Trash2 size={20} />
-                                        </button>
-                                    )}
-                                </div>
-
-                                <div className="space-y-4 max-h-[60vh] overflow-y-auto pb-6 scrollbar-hide px-1">
-                                    {/* Name & Amount */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-muted-foreground ml-1">Name</label>
-                                            <input
-                                                type="text"
-                                                value={formData.name}
-                                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                                placeholder="e.g. Netflix"
-                                                className="w-full bg-slate-50 dark:bg-card border-border border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple"
-                                            />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-muted-foreground ml-1">Amount (₹)</label>
-                                            <input
-                                                type="number"
-                                                value={formData.amount || ''}
-                                                onChange={e => setFormData({ ...formData, amount: Number(e.target.value) })}
-                                                placeholder="0"
-                                                className="w-full bg-slate-50 dark:bg-card border-border border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Date & Cycle */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-muted-foreground ml-1">Next Due Date</label>
-                                            <div className="relative">
-                                                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                                                <input
-                                                    type="date"
-                                                    value={formData.nextDueDate}
-                                                    onChange={e => setFormData({ ...formData, nextDueDate: e.target.value })}
-                                                    className="w-full bg-slate-50 dark:bg-card border-border border-none rounded-xl pl-10 pr-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-muted-foreground ml-1">Billing Cycle</label>
-                                            <select
-                                                value={formData.billingCycle}
-                                                onChange={e => setFormData({ ...formData, billingCycle: e.target.value as 'monthly' | 'yearly' })}
-                                                className="w-full bg-slate-50 dark:bg-card border-border border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple appearance-none cursor-pointer"
-                                            >
-                                                <option value="monthly">Monthly</option>
-                                                <option value="yearly">Yearly</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    {/* Category */}
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-muted-foreground ml-1">Category</label>
-                                        <select
-                                            value={formData.category}
-                                            onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                            className="w-full bg-slate-50 dark:bg-card border-border border-none rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple appearance-none cursor-pointer"
-                                        >
-                                            {EXPENSE_CATEGORIES.map(c => (
-                                                <option key={c.id} value={c.id}>{c.icon} {t(`expenses.categories.${c.id}`)}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    {/* Color Tag & Status */}
-                                    <div className="flex items-center justify-between pt-2">
-                                        <div className="flex gap-2">
-                                            {COLOR_TAGS.map(color => (
-                                                <button
-                                                    key={color}
-                                                    onClick={() => setFormData({ ...formData, colorTag: color })}
-                                                    className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-transform ${formData.colorTag === color ? 'border-brand-purple scale-110' : 'border-transparent'}`}
-                                                    style={{ backgroundColor: color }}
-                                                >
-                                                    {formData.colorTag === color && <CheckCircle2 size={14} className="text-foreground drop-shadow-sm" />}
-                                                </button>
-                                            ))}
-                                        </div>
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.isActive}
-                                                onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-                                                className="w-5 h-5 rounded text-brand-purple bg-slate-100 border-slate-300 focus:ring-brand-purple dark:bg-card border-border dark:border-slate-700"
-                                            />
-                                            <span className="text-sm font-bold text-muted-foreground">Active</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <motion.button
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={handleSave}
-                                    disabled={!formData.name || !formData.amount || !formData.nextDueDate}
-                                    className="w-full py-4 mt-2 bg-brand-purple hover:bg-brand-purple/90 text-foreground rounded-xl font-bold shadow-lg shadow-brand-purple/20 disabled:opacity-50 disabled:shadow-none transition-all"
-                                >
-                                    Save Subscription
-                                </motion.button>
-                            </div>
+                            <TrendingUp size={16} className="text-brand-purple flex-shrink-0" />
+                            <p className="text-sm text-slate-700 dark:text-slate-300">
+                                You'll spend{' '}
+                                <span className="font-bold text-slate-900 dark:text-foreground">
+                                    ₹{Math.round(totalYearly).toLocaleString('en-IN')}
+                                </span>{' '}
+                                on subscriptions this year.
+                            </p>
                         </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                    )}
+                </>
+            )}
+
+            {/* ── FAB ──────────────────────────────────────────────────── */}
+            <motion.button
+                aria-label="Add Subscription"
+                whileTap={{ scale: 0.88 }}
+                whileHover={{ scale: 1.05 }}
+                onClick={() => openAddForm()}
+                className="fixed right-5 w-14 h-14 bg-brand-purple text-white rounded-2xl flex items-center justify-center shadow-xl shadow-brand-purple/35 z-40 bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)]"
+            >
+                <Plus size={26} strokeWidth={2.5} />
+            </motion.button>
+
+            {/* ── Add/Edit Bottom Sheet Form ────────────────────────────── */}
+            <BottomSheet
+                isOpen={isFormOpen}
+                onClose={closeForm}
+                title={editingId ? 'Edit Subscription' : 'New Subscription'}
+                footer={
+                    <div className="space-y-2">
+                        <motion.button
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleSave}
+                            className="w-full py-4 rounded-xl bg-brand-purple text-white font-bold text-base shadow-lg shadow-brand-purple/20"
+                        >
+                            {editingId ? 'Save Changes' : 'Add Subscription'}
+                        </motion.button>
+                        {editingId && (
+                            <motion.button
+                                whileTap={{ scale: 0.97 }}
+                                onClick={handleDelete}
+                                className="w-full py-3 rounded-xl border border-red-200 dark:border-red-500/30 text-red-500 font-semibold text-sm flex items-center justify-center gap-2"
+                            >
+                                <Trash2 size={15} />
+                                Delete Subscription
+                            </motion.button>
+                        )}
+                    </div>
+                }
+            >
+                <div className="space-y-4 pb-2">
+
+                    {/* Name */}
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-muted-foreground">Name *</label>
+                        <input
+                            type="text"
+                            value={formData.name || ''}
+                            onChange={e => updateField({ name: e.target.value })}
+                            placeholder="e.g. Netflix, Gym, Spotify"
+                            autoFocus
+                            className={`w-full bg-slate-50 dark:bg-card rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple border ${formErrors.name ? 'border-red-400 focus:ring-red-400' : 'border-transparent'}`}
+                        />
+                        {formErrors.name && (
+                            <p className="text-xs text-red-500 ml-1">{formErrors.name}</p>
+                        )}
+                    </div>
+
+                    {/* Amount + Billing Cycle */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">Amount (₹) *</label>
+                            <div className="relative">
+                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-bold text-sm">₹</span>
+                                <input
+                                    type="number"
+                                    value={formData.amount || ''}
+                                    onChange={e => updateField({ amount: Number(e.target.value) })}
+                                    placeholder="0"
+                                    className={`w-full pl-8 pr-3 bg-slate-50 dark:bg-card rounded-xl py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple border ${formErrors.amount ? 'border-red-400 focus:ring-red-400' : 'border-transparent'}`}
+                                />
+                            </div>
+                            {formErrors.amount && (
+                                <p className="text-xs text-red-500 ml-1">{formErrors.amount}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">Billing Cycle</label>
+                            <select
+                                value={formData.billingCycle || 'monthly'}
+                                onChange={e => updateField({ billingCycle: e.target.value as BillingCycle })}
+                                className="w-full bg-slate-50 dark:bg-card border-transparent border rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple appearance-none cursor-pointer"
+                            >
+                                {BILLING_CYCLES.map(c => (
+                                    <option key={c.value} value={c.value}>{c.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Monthly equivalent hint */}
+                    {formData.billingCycle !== 'monthly' && Number(formData.amount) > 0 && (
+                        <p className="text-xs text-muted-foreground ml-1">
+                            ≈ ₹{Math.round(toMonthlyEquivalent(Number(formData.amount), formData.billingCycle as BillingCycle)).toLocaleString('en-IN')}/mo equivalent
+                        </p>
+                    )}
+
+                    {/* Next Due Date */}
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-muted-foreground">Next Due Date</label>
+                        <div className="relative">
+                            <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                            <input
+                                type="date"
+                                value={formData.nextDueDate || ''}
+                                onChange={e => updateField({ nextDueDate: e.target.value })}
+                                className="w-full bg-slate-50 dark:bg-card border-transparent border rounded-xl pl-10 pr-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Category */}
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-muted-foreground">Category</label>
+                        <select
+                            value={formData.category || 'entertainment'}
+                            onChange={e => updateField({ category: e.target.value })}
+                            className="w-full bg-slate-50 dark:bg-card border-transparent border rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple appearance-none cursor-pointer"
+                        >
+                            {EXPENSE_CATEGORIES.map(c => (
+                                <option key={c.id} value={c.id}>{c.icon} {t(`expenses.categories.${c.id}`)}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Color Tag + Active */}
+                    <div className="flex items-center justify-between pt-1">
+                        <div className="flex gap-2 flex-wrap">
+                            {COLOR_TAGS.map(color => (
+                                <button
+                                    key={color}
+                                    onClick={() => updateField({ colorTag: color })}
+                                    className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-transform ${formData.colorTag === color ? 'border-brand-purple scale-115' : 'border-transparent'}`}
+                                    style={{ backgroundColor: color }}
+                                >
+                                    {formData.colorTag === color && <CheckCircle2 size={13} className="text-white drop-shadow" />}
+                                </button>
+                            ))}
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <div
+                                onClick={() => updateField({ isActive: !formData.isActive })}
+                                className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${formData.isActive ? 'bg-brand-purple' : 'bg-slate-300 dark:bg-slate-600'}`}
+                            >
+                                <motion.div
+                                    animate={{ x: formData.isActive ? 20 : 0 }}
+                                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                    className="w-5 h-5 bg-white rounded-full shadow"
+                                />
+                            </div>
+                            <span className="text-xs font-bold text-muted-foreground">Active</span>
+                        </label>
+                    </div>
+
+                </div>
+            </BottomSheet>
         </div>
     );
 }

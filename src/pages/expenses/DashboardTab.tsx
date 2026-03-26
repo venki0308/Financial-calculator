@@ -34,11 +34,12 @@ const COLORS = [
 
 export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { onAddExpense: () => void, onViewAll: () => void, onViewSubs?: () => void }) {
     const { t } = useTranslation();
-    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, fixedExpenses, subscriptions, netWorthHistory, healthScore, setHealthScore, setInsights, insights, savingsGoal, currentBalance } = useBudgetTrackerStore();
+    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, fixedExpenses, subscriptions, netWorthHistory, healthScore, setHealthScore, setInsights, insights, savingsGoal, monthlyBalances, setMonthlyBalance } = useBudgetTrackerStore();
 
     const [selectedDate, setSelectedDate] = useState(new Date());
     const currentYear = selectedDate.getFullYear();
     const currentMonthNum = selectedDate.getMonth() + 1;
+    const currentMonthKey = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}`;
 
     const [selectedPieCategory, setSelectedPieCategory] = useState<string | null>(null);
     const [isNetWorthOpen, setIsNetWorthOpen] = useState(false);
@@ -46,6 +47,8 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
     const [nwAssets, setNwAssets] = useState<Record<string, string>>({});
     const [nwLiabilities, setNwLiabilities] = useState<Record<string, string>>({});
     const addNetWorthSnapshot = useBudgetTrackerStore((s) => s.addNetWorthSnapshot);
+    const [isEditSavingsOpen, setIsEditSavingsOpen] = useState(false);
+    const [manualSavingsInput, setManualSavingsInput] = useState('');
 
     const monthEntries = useMemo(
         () => getEntriesByMonth(currentYear, currentMonthNum),
@@ -57,9 +60,9 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
         const newInsights = generateInsights(entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, subscriptions);
         setInsights(newInsights);
 
-        const newScore = calculateHealthScore(entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, netWorthHistory, savingsGoal > 0 ? savingsGoal : undefined);
+        const newScore = calculateHealthScore(entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, netWorthHistory, savingsGoal > 0 ? savingsGoal : undefined, monthlyBalances);
         setHealthScore(newScore);
-    }, [entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, subscriptions, netWorthHistory, savingsGoal, setInsights, setHealthScore]);
+    }, [entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, subscriptions, netWorthHistory, savingsGoal, monthlyBalances, setInsights, setHealthScore]);
 
     // Option B: Auto-calculated cumulative savings from all tracked months
     const autoCalculatedSavings = useMemo(() => {
@@ -127,7 +130,6 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
     const activeInsights = insights.filter(i => !i.dismissed);
 
     // ── Net Worth Data ────────────────────────────────────────────────────────
-    const currentMonthKey = `${currentYear}-${String(currentMonthNum).padStart(2, '0')}`;
     const availableNetWorths = netWorthHistory.filter(n => n.month <= currentMonthKey);
     const displayNetWorth = availableNetWorths.length > 0 ? availableNetWorths[availableNetWorths.length - 1] : null;
     const isCurrentMonthNetWorth = displayNetWorth?.month === currentMonthKey;
@@ -251,65 +253,91 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
             </div>
 
             {/* Financial Health Score — Enhanced */}
-            {healthScore && healthScore.total > 0 && (
+            {healthScore && (
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <div className="flex items-center gap-4">
-                        <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
-                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                <path className="text-slate-200 dark:text-slate-700" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                <path className={`${healthScore.total >= 80 ? 'text-green-500' : healthScore.total >= 60 ? 'text-yellow-500' : healthScore.total >= 40 ? 'text-orange-500' : 'text-red-500'}`} strokeDasharray={`${healthScore.total}, 100`} strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            </svg>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <span className="text-lg font-bold text-slate-900 dark:text-foreground leading-none">{healthScore.total}</span>
-                                <span className="text-[8px] text-muted-foreground">/100</span>
+                    {healthScore.total < 0 || healthScore.total === 0 ? (
+                        <div className="flex items-center gap-4">
+                            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center flex-shrink-0">
+                                {healthScore.total === -1 ? <ZapOff size={24} className="text-amber-500" /> : <Activity size={24} className="text-brand-purple" />}
                             </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Financial Health</h3>
-                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                                    healthScore.total >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400'
-                                    : healthScore.total >= 60 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400'
-                                    : healthScore.total >= 40 ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400'
-                                    : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
-                                }`}>
-                                    {healthScore.total >= 80 ? 'Great' : healthScore.total >= 60 ? 'Good' : healthScore.total >= 40 ? 'Fair' : 'Poor'}
-                                </span>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{healthScore.tips[1] || healthScore.tips[0]}</p>
-                            {/* Sub-score mini bars */}
-                            <div className="grid grid-cols-3 gap-1 mt-2">
-                                {[
-                                    { label: 'Savings', val: healthScore.savingsScore, max: 40 },
-                                    { label: 'Budget', val: healthScore.adherenceScore, max: 30 },
-                                    { label: 'Consistent', val: healthScore.consistencyScore, max: 20 },
-                                ].map(s => (
-                                    <div key={s.label}>
-                                        <div className="flex justify-between text-[8px] text-slate-500 dark:text-muted-foreground mb-0.5">
-                                            <span>{s.label}</span><span>{s.val}/{s.max}</span>
-                                        </div>
-                                        <div className="h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                            <div className="h-full bg-brand-purple rounded-full" style={{ width: `${(s.val / s.max) * 100}%` }} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            {/* Future Projection */}
-                            {healthScore.futureProjection && healthScore.futureProjection.annualSavings > 0 && (
-                                <p className="text-[10px] text-green-500 dark:text-green-400 font-semibold mt-2">
-                                    📈 At this rate, you'll save ₹{healthScore.futureProjection.annualSavings.toLocaleString('en-IN')} in 12 months
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-1">
+                                    {healthScore.total === -1 ? 'Data Missing' : healthScore.total === -2 ? 'Continuity Required' : 'Score Unavailable'}
+                                </h3>
+                                <p className="text-xs text-slate-700 dark:text-slate-400">
+                                    {healthScore.tips[0]}
                                 </p>
-                            )}
+                                {healthScore.tips[1] && (
+                                    <p className="text-[11px] text-muted-foreground mt-1">
+                                        {healthScore.tips[1]}
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="flex items-center gap-4">
+                            <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
+                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                    <path className="text-slate-200 dark:text-slate-700" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path className={`${healthScore.total >= 80 ? 'text-green-500' : healthScore.total >= 60 ? 'text-yellow-500' : healthScore.total >= 40 ? 'text-orange-500' : 'text-red-500'}`} strokeDasharray={`${healthScore.total}, 100`} strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="text-lg font-bold text-slate-900 dark:text-foreground leading-none">{healthScore.total}</span>
+                                    <span className="text-[8px] text-muted-foreground">/100</span>
+                                </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                    <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Financial Health</h3>
+                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                                        healthScore.total >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400'
+                                        : healthScore.total >= 60 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400'
+                                        : healthScore.total >= 40 ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400'
+                                        : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
+                                    }`}>
+                                        {healthScore.total >= 80 ? 'Great' : healthScore.total >= 60 ? 'Good' : healthScore.total >= 40 ? 'Fair' : 'Poor'}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{healthScore.tips[1] || healthScore.tips[0]}</p>
+                                {/* Sub-score mini bars */}
+                                <div className="grid grid-cols-3 gap-1 mt-2">
+                                    {[
+                                        { label: 'Savings', val: healthScore.savingsScore, max: 40 },
+                                        { label: 'Budget', val: healthScore.adherenceScore, max: 30 },
+                                        { label: 'Consistent', val: healthScore.consistencyScore, max: 20 },
+                                    ].map(s => (
+                                        <div key={s.label}>
+                                            <div className="flex justify-between text-[8px] text-slate-500 dark:text-muted-foreground mb-0.5">
+                                                <span>{s.label}</span><span>{s.val}/{s.max}</span>
+                                            </div>
+                                            <div className="h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                <div className="h-full bg-brand-purple rounded-full" style={{ width: `${(s.val / s.max) * 100}%` }} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                {/* Future Projection */}
+                                {healthScore.futureProjection && healthScore.futureProjection.annualSavings > 0 && (
+                                    <p className="text-[10px] text-green-500 dark:text-green-400 font-semibold mt-2">
+                                        📈 At this rate, you'll save ₹{healthScore.futureProjection.annualSavings.toLocaleString('en-IN')} in 12 months
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
             {/* Savings Goal Tracker — Unified Source of Truth */}
-            {(savingsGoal > 0 || currentBalance > 0 || autoCalculatedSavings > 0) && (() => {
-                const isManualMode = currentBalance > 0;
-                const primarySavings = isManualMode ? currentBalance : autoCalculatedSavings;
+            {(() => {
+                const currentMonthBalance = monthlyBalances?.[currentMonthKey]?.manual ?? 0;
+                const isManualMode = currentMonthBalance > 0;
+                const primarySavings = isManualMode ? currentMonthBalance : autoCalculatedSavings;
                 const progressPct = savingsGoal > 0 ? Math.min((primarySavings / savingsGoal) * 100, 100) : 0;
+
+                if (!(savingsGoal > 0 || currentMonthBalance > 0 || autoCalculatedSavings > 0)) {
+                    return null;
+                }
 
                 return (
                     <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
@@ -338,13 +366,8 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                     {isManualMode ? 'Current Balance (Manual)' : 'Tracked Savings'}
                                     <button 
                                         onClick={() => {
-                                            const val = prompt('Enter manual savings balance (0 for auto-tracking):', currentBalance.toString());
-                                            if (val !== null) {
-                                                const parsed = parseInt(val, 10);
-                                                if (!isNaN(parsed) && parsed >= 0) {
-                                                    useBudgetTrackerStore.getState().setCurrentBalance(parsed);
-                                                }
-                                            }
+                                            setManualSavingsInput(currentMonthBalance.toString());
+                                            setIsEditSavingsOpen(true);
                                         }}
                                         className="text-brand-purple hover:underline bg-brand-purple/10 px-1.5 py-0.5 rounded text-[9px] font-bold"
                                     >
@@ -784,6 +807,54 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </BottomSheet>
+            
+            {/* Edit Savings Goal Balance Sheet */}
+            <BottomSheet
+                isOpen={isEditSavingsOpen}
+                onClose={() => setIsEditSavingsOpen(false)}
+                title=""
+                footer={
+                    <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                            const parsed = parseInt(manualSavingsInput, 10);
+                            if (!isNaN(parsed) && parsed >= 0) {
+                                setMonthlyBalance(currentMonthKey, parsed, autoCalculatedSavings);
+                            }
+                            setIsEditSavingsOpen(false);
+                        }}
+                        className="w-full py-4 rounded-xl bg-brand-purple text-white font-bold text-base"
+                        style={{ minHeight: 52 }}
+                    >
+                        Save Balance
+                    </motion.button>
+                }
+            >
+                <div className="pb-3 flex items-center justify-between flex-shrink-0">
+                    <h3 className="text-foreground font-semibold text-base">Edit Savings Balance</h3>
+                    <button onClick={() => setIsEditSavingsOpen(false)} className="p-1.5 rounded-xl bg-muted text-muted-foreground">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+                <div className="h-px bg-border mb-4" />
+
+                <div className="mb-4">
+                    <p className="text-muted-foreground text-sm mb-4">
+                        Set a manual balance to track money saved outside of fincalix. To use auto-tracking, set the balance to 0.
+                    </p>
+                    <div className="flex-1 relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg font-bold">₹</span>
+                        <input 
+                            type="number" 
+                            value={manualSavingsInput} 
+                            onChange={e => setManualSavingsInput(e.target.value)}
+                            className="w-full pl-8 pr-3 py-4 bg-card border-border border border-slate-600 rounded-xl text-foreground text-lg font-bold focus:outline-none focus:border-brand-purple" 
+                            placeholder="0" 
+                            autoFocus
+                        />
                     </div>
                 </div>
             </BottomSheet>
