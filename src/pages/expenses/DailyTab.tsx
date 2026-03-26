@@ -64,6 +64,8 @@ export default function DailyTab() {
         fPayment !== initialFormState.payment
     ) : false;
 
+    const isValid = parseFloat(fAmount) > 0;
+
     const dayEntries = useMemo(
         () => getEntriesByDate(selectedDate).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
         [entries, selectedDate]
@@ -431,18 +433,16 @@ export default function DailyTab() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex gap-3 mt-5">
-                                <button onClick={() => setShowAddForm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-slate-300 font-medium text-sm">{t('common.cancel')}</button>
-                                {isDirty && (
-                                    <motion.button
-                                        whileTap={{ scale: 0.97 }}
-                                        onClick={handleSaveEntry}
-                                        disabled={!fAmount}
-                                        className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm disabled:opacity-40"
-                                    >
-                                        {editingId ? 'Apply' : 'Save'}
-                                    </motion.button>
-                                )}
+                            <div className="flex gap-3 mt-5 mb-4">
+                                <button onClick={() => setShowAddForm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-slate-300 font-medium text-sm transition-colors hover:bg-slate-600">{t('common.cancel')}</button>
+                                <motion.button
+                                    whileTap={isDirty && isValid ? { scale: 0.97 } : {}}
+                                    onClick={handleSaveEntry}
+                                    disabled={!isDirty || !isValid}
+                                    className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                                >
+                                    {editingId ? 'Apply' : 'Save'}
+                                </motion.button>
                             </div>
                         </motion.div>
                     </motion.div>
