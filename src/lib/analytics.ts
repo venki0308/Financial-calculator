@@ -24,21 +24,18 @@ const isNative = Capacitor.isNativePlatform();
 //  CRASHLYTICS SERVICE
 // ─────────────────────────────────────────────────────────
 export const CrashlyticsService = {
-    /** Enable/disable Crashlytics based on user preference */
+    /** Initialize Crashlytics to run in the background unconditionally */
     async initialize() {
         if (!isNative) return;
-        const stored = localStorage.getItem('crashlytics_enabled');
-        const enabled = stored === null ? true : stored === 'true';
         try {
-            await FirebaseCrashlytics.setEnabled({ enabled });
-            console.log(`[FinCalix] Crashlytics ${enabled ? 'enabled' : 'disabled'} (user preference)`);
+            await FirebaseCrashlytics.setEnabled({ enabled: true });
+            console.log(`[FinCalix] Crashlytics enabled in background`);
         } catch (error) {
             console.warn('[FinCalix] Crashlytics init failed:', error);
         }
 
         // Assign an anonymous, per-install session ID — purely for crash correlation.
         // No PII: just a random hex string. Format: uid-{16 hex chars}
-        if (!enabled) return;
         try {
             let anonId = localStorage.getItem('fincalix_anon_id');
             if (!anonId) {
@@ -51,17 +48,6 @@ export const CrashlyticsService = {
             console.log(`[FinCalix] Crashlytics anonymous ID set: ${anonId}`);
         } catch (error) {
             console.warn('[FinCalix] Crashlytics setUserId failed:', error);
-        }
-    },
-
-    /** Toggle Crashlytics on/off at runtime (called from Settings) */
-    async setEnabled(enabled: boolean) {
-        if (!isNative) return;
-        try {
-            await FirebaseCrashlytics.setEnabled({ enabled });
-            console.log(`[FinCalix] Crashlytics ${enabled ? 'enabled' : 'disabled'}`);
-        } catch (error) {
-            console.warn('[FinCalix] CrashlyticsService.setEnabled failed:', error);
         }
     },
 

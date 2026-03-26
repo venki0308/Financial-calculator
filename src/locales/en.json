@@ -752,8 +752,7 @@
         "sec11BoxTitle": "Data Safety",
         "sec11BoxLi1": "All calculations are performed locally on your device.",
         "sec11BoxLi2": "No financial data is stored on our servers.",
-        "sec11BoxLi3": "No third-party data selling.",
-        "sec11CrashNote": "Crash reporting can be disabled at any time via Settings → Crash Reporting. When disabled, no diagnostic data is transmitted."
+        "sec11BoxLi3": "No third-party data selling."
     },
     "globalDisclaimer": {
         "title": "Important Disclaimer",

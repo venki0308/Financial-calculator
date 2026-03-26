@@ -7,7 +7,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import BottomSheet from '../components/BottomSheet';
-import { AnalyticsService, CrashlyticsService } from '../lib/analytics';
+import { AnalyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { APP_VERSION } from '../config/app';
@@ -31,17 +31,6 @@ export default function Settings() {
     const [showNotif, setShowNotif] = useState(false);
     const [showLangPicker, setShowLangPicker] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
-    const [crashReporting, setCrashReporting] = useState<boolean>(() => {
-        const stored = localStorage.getItem('crashlytics_enabled');
-        return stored === null ? true : stored === 'true';
-    });
-
-    const toggleCrashReporting = () => {
-        const next = !crashReporting;
-        setCrashReporting(next);
-        localStorage.setItem('crashlytics_enabled', String(next));
-        CrashlyticsService.setEnabled(next);
-    };
 
     const currentLang = languages.find(l => i18n.language.startsWith(l.code)) || languages[0];
 
@@ -114,23 +103,6 @@ export default function Settings() {
                         <span className="text-foreground font-medium text-sm flex-1 text-left">{t('settings.notifications')}</span>
                         <ChevronRight size={16} className="text-slate-600" />
                     </button>
-                </div>
-
-                {/* Privacy & Crash Reporting */}
-                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.privacy')}</p>
-                <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
-                    <div className="flex items-center justify-between p-4">
-                        <div className="flex items-center gap-3">
-                            <ActivitySquare size={20} className="text-blue-400" />
-                            <div>
-                                <p className="text-foreground font-medium text-sm">{t('settings.crashReporting')}</p>
-                                <p className="text-muted-foreground text-[11px]">{t('settings.crashReportingDesc')}</p>
-                            </div>
-                        </div>
-                        <button onClick={toggleCrashReporting} className={`w-12 h-7 rounded-full p-0.5 transition-colors ${crashReporting ? 'bg-brand-purple' : 'bg-slate-600'}`}>
-                            <motion.div layout className={`w-6 h-6 rounded-full bg-white shadow-md ${crashReporting ? 'ml-auto' : 'ml-0'}`} />
-                        </button>
-                    </div>
                 </div>
 
                 {/* About & Sharing */}

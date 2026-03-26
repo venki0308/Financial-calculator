@@ -229,7 +229,6 @@ export default function PrivacyPolicy() {
                             <li>{t('privacyPolicy.sec11BoxLi3')}</li>
                         </ul>
                     </div>
-                    <p className="mt-2 text-muted-foreground">{t('privacyPolicy.sec11CrashNote')}</p>
                 </Section>
 
                 {/* Data & Privacy Link */}
