@@ -36,9 +36,9 @@ export default function KVPCalculator() {
     const [currentPage, setCurrentPage] = useState(0);
 
     const result = useMemo(() => {
-        // Doubling period in months (Rule of 72 variant for months)
-        const monthlyRate = rate / 12 / 100;
-        const doublingMonths = Math.round(Math.log(2) / Math.log(1 + monthlyRate));
+        // Exact doubling time using annual compounding: t = ln(2) / ln(1 + r/100)
+        const doublingYearsExact = Math.log(2) / Math.log(1 + rate / 100);
+        const doublingMonths = Math.round(doublingYearsExact * 12);
         const maturity = investment * 2;
         const doublingYearsTotal = doublingMonths / 12;
 
@@ -60,9 +60,10 @@ export default function KVPCalculator() {
         }
 
         // Premature encashment values (after lock-in) every 6 months
+        // KVP compounds annually; convert months to fractional years for value
         const premature: { months: number; value: number; penalty: string }[] = [];
         for (let m = PREMATURE_LOCK; m < doublingMonths; m += 6) {
-            const fv = investment * Math.pow(1 + monthlyRate, m);
+            const fv = investment * Math.pow(1 + rate / 100, m / 12);
             premature.push({ months: m, value: fv, penalty: m < 36 ? '1% approx penalty' : 'No penalty' });
         }
 

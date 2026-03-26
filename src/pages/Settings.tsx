@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Bell, FileText, Star, Share2, Info, ChevronRight, Globe, Check, Trash2, ActivitySquare } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Bell, FileText, Star, Share2, Info, ChevronRight, Globe, Check, Trash2, ActivitySquare, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -22,14 +22,24 @@ const languages = [
     { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം' },
 ];
 
+const currencies = [
+    { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+    { code: 'USD', symbol: '$', name: 'US Dollar' },
+    { code: 'EUR', symbol: '€', name: 'Euro' },
+    { code: 'GBP', symbol: '£', name: 'British Pound' },
+    { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' },
+    { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' },
+];
+
 export default function Settings() {
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
-    const { darkMode, toggleDarkMode, notifications, setNotification } = useSettingsStore();
+    const { darkMode, toggleDarkMode, notifications, setNotification, currency, setCurrency } = useSettingsStore();
     const { clearAllData } = useAuthStore();
     const { clearHistory } = useCalculatorStore();
     const [showNotif, setShowNotif] = useState(false);
     const [showLangPicker, setShowLangPicker] = useState(false);
+    const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
 
     const currentLang = languages.find(l => i18n.language.startsWith(l.code)) || languages[0];
@@ -90,6 +100,19 @@ export default function Settings() {
                         <div className="flex-1 text-left">
                             <p className="text-foreground font-medium text-sm">{t('settings.language')}</p>
                             <p className="text-muted-foreground text-xs">{currentLang.nativeName}</p>
+                        </div>
+                        <ChevronRight size={16} className="text-slate-600" />
+                    </button>
+                </div>
+
+                {/* Currency */}
+                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">Currency Display</p>
+                <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
+                    <button onClick={() => setShowCurrencyPicker(true)} className="w-full flex items-center gap-4 p-4">
+                        <DollarSign size={20} className="text-brand-green" />
+                        <div className="flex-1 text-left">
+                            <p className="text-foreground font-medium text-sm">Currency Symbol</p>
+                            <p className="text-muted-foreground text-xs">{currencies.find(c => c.code === currency)?.symbol} — {currencies.find(c => c.code === currency)?.name ?? 'Indian Rupee'}</p>
                         </div>
                         <ChevronRight size={16} className="text-slate-600" />
                     </button>
@@ -207,6 +230,26 @@ export default function Settings() {
                                 <span className="text-muted-foreground text-xs">{lang.name}</span>
                             </div>
                             {i18n.language.startsWith(lang.code) && <Check size={18} className="text-brand-green" />}
+                        </button>
+                    ))}
+                </div>
+            </BottomSheet>
+
+            {/* Currency Picker Sheet */}
+            <BottomSheet isOpen={showCurrencyPicker} onClose={() => setShowCurrencyPicker(false)} title="Currency Symbol">
+                <p className="text-muted-foreground text-xs mb-3 px-1">Changes the currency symbol displayed throughout the app. All amounts remain in Indian Rupees.</p>
+                <div className="space-y-2">
+                    {currencies.map(cur => (
+                        <button key={cur.code} onClick={() => { setCurrency(cur.code); setShowCurrencyPicker(false); }}
+                            className={`w-full flex items-center justify-between p-4 rounded-xl transition-colors ${currency === cur.code ? 'bg-brand-green/10 border-2 border-brand-green' : 'bg-dark-bg border-2 border-transparent hover:bg-card'}`}>
+                            <div className="flex items-center gap-3">
+                                <span className="text-foreground font-bold text-lg w-8 text-center">{cur.symbol}</span>
+                                <div className="flex flex-col items-start">
+                                    <span className="text-foreground font-medium text-sm">{cur.name}</span>
+                                    <span className="text-muted-foreground text-xs">{cur.code}</span>
+                                </div>
+                            </div>
+                            {currency === cur.code && <Check size={18} className="text-brand-green" />}
                         </button>
                     ))}
                 </div>

@@ -16,15 +16,18 @@ export interface TaxCalculationResult {
   taxSaved80C: number;
 }
 
+// FY 2025-26 (AY 2026-27) New Regime slabs — Budget 2025
 const NEW_REGIME_SLABS = [
-  { limit: 300000, rate: 0 },
-  { limit: 700000, rate: 0.05 },
-  { limit: 1000000, rate: 0.10 },
-  { limit: 1200000, rate: 0.15 },
-  { limit: 1500000, rate: 0.20 },
+  { limit: 400000, rate: 0 },
+  { limit: 800000, rate: 0.05 },
+  { limit: 1200000, rate: 0.10 },
+  { limit: 1600000, rate: 0.15 },
+  { limit: 2000000, rate: 0.20 },
+  { limit: 2400000, rate: 0.25 },
   { limit: Infinity, rate: 0.30 }
 ];
 
+// Old Regime slabs (unchanged)
 const OLD_REGIME_SLABS = [
   { limit: 250000, rate: 0 },
   { limit: 500000, rate: 0.05 },
@@ -42,7 +45,7 @@ function calculateTaxForIncome(income: number, regime: TaxRegime, deductions: nu
     standardDeduction = 75000;
     taxable = Math.max(0, taxable - standardDeduction);
     slabs = NEW_REGIME_SLABS;
-    rebateLimit = 700000;
+    rebateLimit = 1200000; // 87A: full rebate if taxable income ≤ ₹12L (FY 2025-26)
   } else {
     standardDeduction = 50000;
     taxable = Math.max(0, taxable - standardDeduction - deductions);

@@ -36,8 +36,8 @@ export default function GratuityCalculator() {
 
     const result = useMemo(() => {
         // Formula: (Last Drawn Salary × 15 × Years of Service) / 26
-        const isEligible = years >= 4.5; // Eligible at 4 years 240 days (approx 4.5)
-        const roundedYears = (years >= 4.5 && years < 5) ? 5 : Math.round(years);
+        const isEligible = years >= (4 + 240 / 365); // Eligible at 4 years 240 days per Payment of Gratuity Act 1972
+        const roundedYears = (years >= (4 + 240 / 365) && years < 5) ? 5 : Math.round(years);
         const gratuity = isEligible ? (salary * 15 * roundedYears) / 26 : 0;
         const exemptionLimit = employerType === 'Govt' ? Infinity : 2000000; // Govt fully exempt
         const taxableGratuity = Math.max(0, gratuity - exemptionLimit);

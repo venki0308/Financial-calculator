@@ -37,56 +37,46 @@ export default function NSCCalculator() {
         const maturity = investment * Math.pow(1 + rate / 100, LOCK_IN);
         const totalInterest = maturity - investment;
 
-        // Year-by-year
-        const table = [];
+        // Year-by-year growth
+        const rawTable: { year: number; openBal: number; interest: number; cumInterest: number; closeBal: number }[] = [];
         let bal = investment;
         for (let y = 1; y <= LOCK_IN; y++) {
             const interest = bal * (rate / 100);
             const newBal = bal + interest;
-            table.push({
-                year: y,
-                openBal: bal,
-                interest,
-                cumInterest: newBal - investment,
-                closeBal: newBal,
-            });
+            rawTable.push({ year: y, openBal: bal, interest, cumInterest: newBal - investment, closeBal: newBal });
             bal = newBal;
         }
 
         // 80C Deduction: Investment in Year 1 up to 1.5L
         const sec80cDeduction = Math.min(investment, 150000);
 
-        // Tax calculation on the 5th year interest
-        const fifthYearInterest = table[4].interest;
+        // Marginal tax rate: tax on (income + avg annual interest) minus tax on income, divided by interest
+        // NSC interest is taxable as IFOS in each year it accrues (deemed reinvestment rule)
+        const avgAnnualInterest = totalInterest / LOCK_IN;
         const taxImpact = calculateAssetTax({
             annualIncome,
             regime: taxRegime,
-            assetInterest: fifthYearInterest,
+            assetInterest: avgAnnualInterest,
             deduction80c: sec80cDeduction
         });
+        const effectiveRate = taxImpact.effectiveTaxRate / 100; // marginal rate on scheme interest
+        const taxSaving = taxImpact.taxSaved80C; // 80C upfront tax benefit
 
-        // Compute tax savings by taking base tax without deduction vs with deduction
-        const baseWithout80C = calculateAssetTax({
-            annualIncome,
-            regime: taxRegime,
-            assetInterest: 0,
-            deduction80c: 0
-        }).baseTax;
-        
-        const taxSaving = Math.max(0, baseWithout80C - taxImpact.baseTax);
-        
-        const taxOnInterest = Math.max(0, taxImpact.taxPayableOnAsset);
-        // Effective maturity considers the initial tax saved as a cash inflow benefit, and subtracting the exit tax
-        const postTaxMaturity = maturity - taxOnInterest + taxSaving;
+        // Apply marginal rate to each year's accrued interest
+        const table = rawTable.map(row => ({
+            ...row,
+            taxOnInterest: Math.max(0, Math.round(row.interest * effectiveRate))
+        }));
 
+        const totalTaxOnInterest = table.reduce((s, r) => s + r.taxOnInterest, 0);
+        const postTaxMaturity = maturity - totalTaxOnInterest + taxSaving;
         const postTaxCAGR = (Math.pow(postTaxMaturity / investment, 1 / LOCK_IN) - 1) * 100;
         const realValue = postTaxMaturity / Math.pow(1 + inflation / 100, LOCK_IN);
-        // Annualized real return approximation
         const realReturn = postTaxCAGR - inflation;
 
-        return { 
-            maturity, totalInterest, table, sec80cDeduction, taxSaving, 
-            taxOnInterest, postTaxMaturity, postTaxCAGR, realValue, realReturn, taxImpact
+        return {
+            maturity, totalInterest, table, sec80cDeduction, taxSaving,
+            taxOnInterest: totalTaxOnInterest, postTaxMaturity, postTaxCAGR, realValue, realReturn, taxImpact
         };
     }, [investment, rate, annualIncome, taxRegime, inflation]);
 
@@ -263,7 +253,7 @@ export default function NSCCalculator() {
                                                 <span className="text-foreground font-medium text-[11px]">{fmtINR(result.maturity)}</span>
                                             </div>
                                             <div className="flex justify-between items-center py-1">
-                                                <span className="text-muted-foreground text-[11px]">Tax on Yr 5 Interest</span>
+                                                <span className="text-muted-foreground text-[11px]">Total Tax on Interest (5 Yrs)</span>
                                                 <span className="text-red-500 font-bold text-[11px] font-mono">-{fmtINR(result.taxOnInterest)}</span>
                                             </div>
                                             <div className="flex justify-between items-center py-1 pt-2 border-t border-border">
@@ -305,16 +295,18 @@ export default function NSCCalculator() {
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Growth Breakdown</h3>
                                         <div className="rounded-xl overflow-hidden border border-border">
-                                            <div className="grid grid-cols-4 bg-muted px-2 py-2">
+                                            <div className="grid grid-cols-5 bg-muted px-2 py-2">
                                                 <p className="text-muted-foreground text-[9px] font-bold uppercase">Year</p>
                                                 <p className="text-muted-foreground text-[9px] font-bold uppercase">Interest</p>
+                                                <p className="text-muted-foreground text-[9px] font-bold uppercase">Tax</p>
                                                 <p className="text-muted-foreground text-[9px] font-bold uppercase">Cum. Int</p>
                                                 <p className="text-muted-foreground text-[9px] font-bold uppercase text-right">Balance</p>
                                             </div>
                                             {paginatedYears.map((row, i) => (
-                                                <div key={row.year} className={`grid grid-cols-4 px-2 py-2 text-[10px] ${i % 2 === 0 ? 'bg-background' : 'bg-muted/30'}`}>
-                                                    <p className="text-foreground font-medium">Year {row.year}</p>
+                                                <div key={row.year} className={`grid grid-cols-5 px-2 py-2 text-[10px] ${i % 2 === 0 ? 'bg-background' : 'bg-muted/30'}`}>
+                                                    <p className="text-foreground font-medium">Yr {row.year}</p>
                                                     <p className="text-brand-green">+{fmtINR(row.interest)}</p>
+                                                    <p className="text-red-400">-{fmtINR(row.taxOnInterest)}</p>
                                                     <p className="text-foreground">{fmtINR(row.cumInterest)}</p>
                                                     <p className="text-foreground font-semibold text-right">{fmtINR(row.closeBal)}</p>
                                                 </div>

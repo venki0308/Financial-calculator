@@ -241,6 +241,7 @@ export default function POTDCalculator() {
                             <p className="text-brand-blue font-bold text-sm">{result.effectiveYield.toFixed(2)}%</p>
                         </div>
                     </div>
+                    <p className="text-brand-blue/70 text-[10px] font-medium mt-3">Compounded Quarterly as per Post Office TD rules</p>
                 </div>
 
                 <div className="rounded-2xl border border-border bg-card overflow-hidden">

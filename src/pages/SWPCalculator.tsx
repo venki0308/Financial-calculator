@@ -96,11 +96,11 @@ export default function SWPCalculator() {
 
         const finalBalance = currentBalance;
         const swr = (withdrawal * 12 / principal) * 100;
-        
-        // SWR Risk
-        let swrRisk = 'Safe'; let swrColor = 'text-brand-green'; let swrBg = 'bg-brand-green/10 border-brand-green/20';
-        if (swr > 8) { swrRisk = 'High'; swrColor = 'text-rose-500'; swrBg = 'bg-rose-500/10 border-rose-500/20'; }
-        else if (swr > 6) { swrRisk = 'Moderate'; swrColor = 'text-amber-500'; swrBg = 'bg-amber-500/10 border-amber-500/20'; }
+
+        // SWR Risk: <4% = Low, 4-6% = Moderate, >6% = High
+        let swrRisk = 'Low'; let swrColor = 'text-brand-green'; let swrBg = 'bg-brand-green/10 border-brand-green/20';
+        if (swr > 6) { swrRisk = 'High'; swrColor = 'text-rose-500'; swrBg = 'bg-rose-500/10 border-rose-500/20'; }
+        else if (swr >= 4) { swrRisk = 'Moderate'; swrColor = 'text-amber-500'; swrBg = 'bg-amber-500/10 border-amber-500/20'; }
 
         // Inflation adjusted final withdrawal
         const realWithdrawalValueAtEnd = withdrawal / Math.pow(1 + (inflation / 100), years);
@@ -238,7 +238,7 @@ export default function SWPCalculator() {
                                 Depleted Early
                             </div>
                         ) : (
-                             <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border bg-brand-green/10 border-brand-green/20 text-brand-green`}>
+                            <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border bg-brand-green/10 border-brand-green/20 text-brand-green`}>
                                 Sustainable
                             </div>
                         )}
@@ -305,7 +305,7 @@ export default function SWPCalculator() {
                                                 {result.depletionMonth ? `${(result.depletionMonth/12).toFixed(1)}y` : `${years}y+`}
                                             </p>
                                             <p className={`text-[9px] leading-tight px-1 font-bold ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>
-                                                {result.depletionMonth ? 'Depletes Early' : 'Fully Sustainable'}
+                                                {result.depletionMonth ? 'Depletes Early' : 'Sustainable'}
                                             </p>
                                         </div>
                                     </div>
@@ -405,18 +405,17 @@ export default function SWPCalculator() {
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                                 <div className="px-5 pb-5 pt-1">
                                     <div className="rounded-2xl overflow-hidden border border-border mt-2">
-                                        <div className="grid grid-cols-4 bg-muted px-2 py-2.5">
-                                            {['Year', 'Start', 'Net', 'End'].map(h => (<p key={h} className="text-muted-foreground text-[9px] font-black uppercase tracking-wider text-center">{h}</p>))}
+                                        <div className="grid grid-cols-5 bg-muted px-2 py-2.5">
+                                            {['Year', 'Start', 'W/D', 'Interest', 'End'].map(h => (<p key={h} className="text-muted-foreground text-[9px] font-black uppercase tracking-wider text-center">{h}</p>))}
                                         </div>
                                         <div className="divide-y divide-border/50">
                                             {result.yearlySchedule.slice((page - 1) * 10, page * 10).map((row) => (
-                                                <div key={row.year} className={`grid grid-cols-4 px-2 py-3 items-center text-center ${row.close <= 0 ? 'bg-red-500/5' : 'bg-background'}`}>
+                                                <div key={row.year} className={`grid grid-cols-5 px-2 py-3 items-center text-center ${row.close <= 0 ? 'bg-red-500/5' : 'bg-background'}`}>
                                                     <p className={`text-xs font-bold ${row.close <= 0 ? 'text-red-500' : 'text-foreground'}`}>Yr {row.year}</p>
                                                     <p className="text-foreground text-[10px] font-bold font-mono">{fmtINR(row.open)}</p>
-                                                    <p className={`text-[10px] font-bold font-mono ${row.interest > row.withdrawn ? 'text-brand-green' : 'text-amber-500'}`}>
-                                                        {row.interest > row.withdrawn ? '+' : '-'}{fmtINR(Math.abs(row.interest - row.withdrawn))}
-                                                    </p>
-                                                    <p className={`text-[10px] font-bold font-mono ${row.close <= 0 ? 'text-red-500' : 'text-foreground'}`}>{fmtINR(row.close)}</p>
+                                                    <p className="text-rose-400 text-[10px] font-bold font-mono">-{fmtINR(row.withdrawn)}</p>
+                                                    <p className="text-brand-green text-[10px] font-bold font-mono">+{fmtINR(row.interest)}</p>
+                                                    <p className={`text-[10px] font-bold font-mono ${row.close <= 0 ? 'text-red-500' : 'text-foreground'}`}>{fmtINR(Math.max(0, row.close))}</p>
                                                 </div>
                                             ))}
                                         </div>

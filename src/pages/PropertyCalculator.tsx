@@ -54,7 +54,6 @@ export default function PropertyCalculator() {
     // ── Land Plot Premium (optional) ─────────────────────────────────────────
     const [showPlotPremium, setShowPlotPremium] = useState(false);
     const [cornerPremium, setCornerPremium] = useState('');
-    const [roadWidth, setRoadWidth] = useState('');
     const [roadPremium, setRoadPremium] = useState('');
     const [isDTCP, setIsDTCP] = useState(false);
 
@@ -171,7 +170,8 @@ export default function PropertyCalculator() {
         if (showPlotPremium) {
             const cp = Number(cornerPremium) || 0;
             const rp = Number(roadPremium) || 0;
-            const totalPremiumPct = cp + rp;
+            const dtcpBonus = isDTCP ? 2.5 : 0;
+            const totalPremiumPct = cp + rp + dtcpBonus;
             premiumValue = baseValue * (totalPremiumPct / 100);
         }
 
@@ -357,6 +357,32 @@ export default function PropertyCalculator() {
         ], 'Home_Loan_EMI_Report');
     };
 
+    const handleVillaPDF = async () => {
+        if (!villaResult) return;
+        const totalBUA = villaResult.floors.reduce((sum, f) => sum + f.area, 0);
+        const gradeName = CONSTRUCTION_GRADES.find(g => g.key === constGrade)?.label || constGrade;
+        await exportToPDF('Villa / Independent House Construction Report', ['Component', 'Amount'], [
+            ['Ground Floor Area', `${groundFloor || 0} sq.ft`],
+            ...(Number(firstFloor) > 0 ? [['First Floor Area', `${firstFloor} sq.ft`] as [string, string]] : []),
+            ...(Number(secondFloor) > 0 ? [['Second Floor Area', `${secondFloor} sq.ft`] as [string, string]] : []),
+            ['Total Built-up Area', `${totalBUA.toLocaleString('en-IN')} sq.ft`],
+            ['Construction Grade', gradeName],
+            ['Rate per sq.ft', fmt(Number(constRate))],
+            ...(Number(wallPerimeter) > 0 ? [['Compound Wall', `${wallPerimeter} ft @ ₹${wallRate}/ft`] as [string, string]] : []),
+            ['---', '---'],
+            ...villaResult.floors.map(f => [f.name, fmt(f.cost)] as [string, string]),
+            ['Construction Cost', fmt(villaResult.constructionCost)],
+            ...(villaResult.wallCost > 0 ? [['Compound Wall Cost', fmt(villaResult.wallCost)] as [string, string]] : []),
+            [`Electrical (${ohElectrical}%)`, fmt(villaResult.electrical)],
+            [`Plumbing (${ohPlumbing}%)`, fmt(villaResult.plumbing)],
+            [`Interior Works (${ohInterior}%)`, fmt(villaResult.interior)],
+            [`Miscellaneous (${ohMisc}%)`, fmt(villaResult.misc)],
+            ['---', '---'],
+            ['Total Construction Cost', fmt(villaResult.totalCost)],
+            ['Cost per sq.ft', `INR ${villaResult.costPerSqft.toLocaleString('en-IN')}`],
+        ], 'Villa_Construction_Report');
+    };
+
     return (
         <div className="min-h-dvh bg-background animate-fade-in relative pb-[env(safe-area-inset-bottom,40px)]" style={{ maxWidth: 428, margin: '0 auto' }}>
             <div className="px-4 pt-14 pb-32">
@@ -453,8 +479,9 @@ export default function PropertyCalculator() {
                                                 >
                                                     <div className="grid grid-cols-2 gap-3">
                                                         <Field label="Corner Premium %" value={cornerPremium} onChange={setCornerPremium} type="number" suffix="%" placeholder="e.g. 5" />
-                                                        <Field label="Road Width (ft)" value={roadWidth} onChange={setRoadWidth} type="number" suffix=" ft" placeholder="e.g. 40" />
+                                                        <Field label="Road Premium %" value={roadPremium} onChange={setRoadPremium} type="number" suffix="%" placeholder="e.g. 3" />
                                                     </div>
+                                                    <p className="text-[10px] text-muted-foreground">Tip: 30-40ft road ≈ 3%, 60ft+ road ≈ 5–8% premium</p>
                                                     <div className="flex items-center gap-3 py-1">
                                                         <input 
                                                             type="checkbox" 
@@ -481,6 +508,7 @@ export default function PropertyCalculator() {
 
                                 {landResult && (
                                     <motion.div
+                                        ref={resultRef}
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         className="space-y-3"
@@ -638,6 +666,12 @@ export default function PropertyCalculator() {
                                                     </span>
                                                 </div>
                                                 <p className="text-muted-foreground text-xs mt-1">{carpet} sq.ft carpet of {builtUp} sq.ft built-up</p>
+                                                {flatResult && (
+                                                    <div className="mt-2 pt-2 border-t border-border/50 flex justify-between items-center">
+                                                        <span className="text-muted-foreground text-xs">Effective rate per carpet sq.ft</span>
+                                                        <span className="text-brand-green font-bold text-sm">{fmt(flatResult.totalCost / Number(carpet))}/sq.ft</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
 
@@ -770,7 +804,7 @@ export default function PropertyCalculator() {
                                         <div className="grid grid-cols-2 gap-2">
                                             <button onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Villa Construction', inputValues: { groundFloor, firstFloor, secondFloor, constRate }, resultValues: { primary: villaResult.totalCost }, timestamp: Date.now() })}
                                                 className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">Save</button>
-                                            <button className="py-3 rounded-xl bg-slate-700 text-slate-300 text-xs font-bold">📄 PDF</button>
+                                            <button onClick={handleVillaPDF} className="py-3 rounded-xl bg-slate-700 text-slate-300 text-xs font-bold">📄 PDF</button>
                                         </div>
                                     </motion.div>
                                 )}
@@ -876,71 +910,74 @@ export default function PropertyCalculator() {
                     </motion.div>
                 </AnimatePresence>
 
-                {/* ── Rental Yield Estimation ──────────────────────────────────── */}
-                <div className="mt-6 bg-card border border-border rounded-2xl p-4 space-y-3">
-                    <h3 className="font-bold text-foreground text-sm flex items-center gap-2">📊 Rental Yield Estimation</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                        <Field label="Property Value" value={ryPropertyValue} onChange={setRyPropertyValue} prefix="₹" type="number" />
-                        <Field label="Monthly Rent" value={ryMonthlyRent} onChange={setRyMonthlyRent} prefix="₹" type="number" />
-                        <Field label="Monthly Maintenance" value={ryMaintenance} onChange={setRyMaintenance} prefix="₹" type="number" />
-                        <Field label="Vacant Months/Year" value={ryVacancy} onChange={setRyVacancy} type="number" />
-                    </div>
-                    <motion.button whileTap={{ scale: 0.97 }} onClick={calculateRentalYield}
-                        className="w-full py-3 bg-brand-green text-white font-bold rounded-xl text-sm shadow-lg shadow-brand-green/20">
-                        Calculate Yield
-                    </motion.button>
-                    {ryResult && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 mt-2">
+                {/* ── Rental Yield & Appreciation (hidden on Convert tab) ───────── */}
+                {mode !== 'convert' && (
+                    <>
+                        <div className="mt-6 bg-card border border-border rounded-2xl p-4 space-y-3">
+                            <h3 className="font-bold text-foreground text-sm flex items-center gap-2">📊 Rental Yield Estimation</h3>
                             <div className="grid grid-cols-2 gap-3">
-                                {[
-                                    { label: 'Annual Rent Income', value: fmt(ryResult.annualRent), color: 'text-brand-green' },
-                                    { label: 'Gross Yield', value: `${ryResult.grossYield.toFixed(2)}%`, color: 'text-blue-400' },
-                                    { label: 'Net Yield', value: `${ryResult.netYield.toFixed(2)}%`, color: 'text-brand-gold' },
-                                    { label: 'Payback Period', value: `${ryResult.paybackYears.toFixed(1)} yrs`, color: 'text-brand-purple' },
-                                ].map(s => (
-                                    <div key={s.label} className="text-center p-3 rounded-xl bg-slate-800/30">
-                                        <p className="text-muted-foreground text-[9px] uppercase font-bold">{s.label}</p>
-                                        <p className={`font-bold text-sm mt-1 ${s.color}`}>{s.value}</p>
-                                    </div>
-                                ))}
+                                <Field label="Property Value" value={ryPropertyValue} onChange={setRyPropertyValue} prefix="₹" type="number" />
+                                <Field label="Monthly Rent" value={ryMonthlyRent} onChange={setRyMonthlyRent} prefix="₹" type="number" />
+                                <Field label="Monthly Maintenance" value={ryMaintenance} onChange={setRyMaintenance} prefix="₹" type="number" />
+                                <Field label="Vacant Months/Year" value={ryVacancy} onChange={setRyVacancy} type="number" />
                             </div>
-                            <button onClick={handleRentalYieldPDF}
-                                className="w-full py-3 rounded-xl bg-brand-green/10 border border-brand-green/30 text-brand-green text-xs font-bold flex items-center justify-center gap-2">
-                                <Download size={14} /> Download Rental Yield Report
-                            </button>
-                        </motion.div>
-                    )}
-                </div>
-
-                {/* ── Property Appreciation Forecast ───────────────────────────── */}
-                <div className="mt-4 bg-card border border-border rounded-2xl p-4 space-y-3 mb-10">
-                    <h3 className="font-bold text-foreground text-sm flex items-center gap-2">📈 Appreciation Forecast</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                        <Field label="Current Property Value" value={apCurrentValue} onChange={setApCurrentValue} prefix="₹" type="number" />
-                        <Field label="Annual Appreciation %" value={apRate} onChange={setApRate} suffix="%" type="number" />
-                    </div>
-                    <motion.button whileTap={{ scale: 0.97 }} onClick={calculateAppreciation}
-                        className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-600/20">
-                        Forecast Value
-                    </motion.button>
-                    {apResult && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-2">
-                            {apResult.projections.map((p: { years: number; value: number; gain: number }) => (
-                                <div key={p.years} className="flex justify-between items-center p-3 rounded-xl bg-slate-800/30">
-                                    <div>
-                                        <p className="text-foreground font-bold text-sm">{p.years} Years</p>
-                                        <p className="text-muted-foreground text-[10px]">Gain: {fmt(p.gain)}</p>
+                            <motion.button whileTap={{ scale: 0.97 }} onClick={calculateRentalYield}
+                                className="w-full py-3 bg-brand-green text-white font-bold rounded-xl text-sm shadow-lg shadow-brand-green/20">
+                                Calculate Yield
+                            </motion.button>
+                            {ryResult && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 mt-2">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[
+                                            { label: 'Annual Rent Income', value: fmt(ryResult.annualRent), color: 'text-brand-green' },
+                                            { label: 'Gross Yield', value: `${ryResult.grossYield.toFixed(2)}%`, color: 'text-blue-400' },
+                                            { label: 'Net Yield', value: `${ryResult.netYield.toFixed(2)}%`, color: 'text-brand-gold' },
+                                            { label: 'Payback Period', value: `${ryResult.paybackYears.toFixed(1)} yrs`, color: 'text-brand-purple' },
+                                        ].map(s => (
+                                            <div key={s.label} className="text-center p-3 rounded-xl bg-slate-800/30">
+                                                <p className="text-muted-foreground text-[9px] uppercase font-bold">{s.label}</p>
+                                                <p className={`font-bold text-sm mt-1 ${s.color}`}>{s.value}</p>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <p className="text-brand-green font-extrabold text-sm">{fmt(p.value)}</p>
-                                </div>
-                            ))}
-                            <button onClick={handleAppreciationPDF}
-                                className="w-full py-3 rounded-xl bg-indigo-600/10 border border-indigo-600/30 text-indigo-400 text-xs font-bold flex items-center justify-center gap-2 mt-2">
-                                <Download size={14} /> Download Appreciation Report
-                            </button>
-                        </motion.div>
-                    )}
-                </div>
+                                    <button onClick={handleRentalYieldPDF}
+                                        className="w-full py-3 rounded-xl bg-brand-green/10 border border-brand-green/30 text-brand-green text-xs font-bold flex items-center justify-center gap-2">
+                                        <Download size={14} /> Download Rental Yield Report
+                                    </button>
+                                </motion.div>
+                            )}
+                        </div>
+
+                        <div className="mt-4 bg-card border border-border rounded-2xl p-4 space-y-3 mb-10">
+                            <h3 className="font-bold text-foreground text-sm flex items-center gap-2">📈 Appreciation Forecast</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                                <Field label="Current Property Value" value={apCurrentValue} onChange={setApCurrentValue} prefix="₹" type="number" />
+                                <Field label="Annual Appreciation %" value={apRate} onChange={setApRate} suffix="%" type="number" />
+                            </div>
+                            <motion.button whileTap={{ scale: 0.97 }} onClick={calculateAppreciation}
+                                className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-600/20">
+                                Forecast Value
+                            </motion.button>
+                            {apResult && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-2">
+                                    {apResult.projections.map((p: { years: number; value: number; gain: number }) => (
+                                        <div key={p.years} className="flex justify-between items-center p-3 rounded-xl bg-slate-800/30">
+                                            <div>
+                                                <p className="text-foreground font-bold text-sm">{p.years} Years</p>
+                                                <p className="text-muted-foreground text-[10px]">Gain: {fmt(p.gain)}</p>
+                                            </div>
+                                            <p className="text-brand-green font-extrabold text-sm">{fmt(p.value)}</p>
+                                        </div>
+                                    ))}
+                                    <button onClick={handleAppreciationPDF}
+                                        className="w-full py-3 rounded-xl bg-indigo-600/10 border border-indigo-600/30 text-indigo-400 text-xs font-bold flex items-center justify-center gap-2 mt-2">
+                                        <Download size={14} /> Download Appreciation Report
+                                    </button>
+                                </motion.div>
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

@@ -212,13 +212,33 @@ export function calculateFD(principal: number, annualRate: number, years: number
 // ─── Indian Number Formatting ──────────────────────────────────────────────
 
 /**
+ * Returns the currency symbol based on user preference stored in settings.
+ * Reads directly from localStorage so it works outside React context.
+ */
+export function getCurrencySymbol(): string {
+    try {
+        const s = localStorage.getItem('settings-storage');
+        if (s) {
+            const currency = JSON.parse(s)?.state?.currency;
+            if (currency === 'USD') return '$';
+            if (currency === 'EUR') return '€';
+            if (currency === 'GBP') return '£';
+            if (currency === 'AED') return 'د.إ';
+            if (currency === 'SGD') return 'S$';
+        }
+    } catch { /* ignore */ }
+    return '₹';
+}
+
+/**
  * Format number to Indian currency: ₹1,23,45,678
  */
 export function formatINR(v: number): string {
+    const sym = getCurrencySymbol();
     const rounded = Math.round(v);
     const isNeg = rounded < 0;
     const str = Math.abs(rounded).toString();
-    if (str.length <= 3) return (isNeg ? '-₹' : '₹') + str;
+    if (str.length <= 3) return (isNeg ? `-${sym}` : sym) + str;
     let result = str.slice(-3);
     let remaining = str.slice(0, -3);
     while (remaining.length > 2) {
@@ -226,25 +246,26 @@ export function formatINR(v: number): string {
         remaining = remaining.slice(0, -2);
     }
     if (remaining.length > 0) result = remaining + ',' + result;
-    return (isNeg ? '-₹' : '₹') + result;
+    return (isNeg ? `-${sym}` : sym) + result;
 }
 
 /**
  * Format number to short form: ₹45L, ₹1.2Cr, ₹5K
  */
 export function formatINRShort(v: number): string {
+    const sym = getCurrencySymbol();
     const abs = Math.abs(Math.round(v));
     if (abs >= 10000000) {
         const cr = abs / 10000000;
-        return `₹${cr % 1 === 0 ? cr.toFixed(0) : cr.toFixed(1)}Cr`;
+        return `${sym}${cr % 1 === 0 ? cr.toFixed(0) : cr.toFixed(1)}Cr`;
     }
     if (abs >= 100000) {
         const lakh = abs / 100000;
-        return `₹${lakh % 1 === 0 ? lakh.toFixed(0) : lakh.toFixed(1)}L`;
+        return `${sym}${lakh % 1 === 0 ? lakh.toFixed(0) : lakh.toFixed(1)}L`;
     }
     if (abs >= 1000) {
         const k = abs / 1000;
-        return `₹${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1)}K`;
+        return `${sym}${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1)}K`;
     }
     return formatINR(v);
 }

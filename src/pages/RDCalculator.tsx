@@ -32,34 +32,46 @@ export default function RDCalculator() {
     const [saved, setSaved] = useState(false);
     const [page, setPage] = useState(1);
 
-    // 1. CORE CALCULATION (Keep exact same RBI formula equivalent)
+    // 1. CORE CALCULATION — RBI standard: quarterly compounding at whole-quarter boundaries.
+    // Each monthly deposit earns interest for the number of complete quarters from the
+    // start of its deposit quarter to the end of the tenure.
     const result = useMemo(() => {
-        const r = (rate || 0) / 400; // quarterly rate
-        let maturity = 0;
+        const r = (rate || 0) / 400; // quarterly rate (annual / 4 / 100)
         const validMonths = Math.max(1, months || 1);
         const validMonthly = Math.max(1, monthly || 0);
+        const totalQuarters = Math.ceil(validMonths / 3);
 
+        // Maturity: each deposit in quarter q earns (totalQuarters - q) whole quarters
+        let maturity = 0;
+        for (let i = 1; i <= validMonths; i++) {
+            const depositQIdx = Math.floor((i - 1) / 3);
+            maturity += validMonthly * Math.pow(1 + r, totalQuarters - depositQIdx);
+        }
+
+        // Schedule: balance shown after each month, with interest credited at quarter-end
         const schedule: { month: number; deposit: number; interestEarned: number; cumInterest: number; balance: number }[] = [];
-        let runningBalance = 0;
+        let prevCumInterest = 0;
 
         for (let i = 1; i <= validMonths; i++) {
-            const remainingQuarters = (validMonths - i + 1) / 3;
-            const installmentGrowth = validMonthly * Math.pow(1 + r, remainingQuarters);
-            maturity += installmentGrowth;
+            const currentQIdx = Math.floor((i - 1) / 3);
+            const isQEnd = (i % 3 === 0) || (i === validMonths); // quarter-end or last month
 
-            runningBalance = 0;
+            let balance = 0;
             for (let j = 1; j <= i; j++) {
-                runningBalance += validMonthly * Math.pow(1 + r, (i - j + 1) / 3);
+                const depositQIdx = Math.floor((j - 1) / 3);
+                const completedQ = currentQIdx - depositQIdx + (isQEnd ? 1 : 0);
+                balance += validMonthly * Math.pow(1 + r, completedQ);
             }
-            const interestEarned = runningBalance - validMonthly * i;
 
+            const cumInterest = Math.max(0, balance - validMonthly * i);
             schedule.push({
                 month: i,
                 deposit: validMonthly,
-                interestEarned: Math.max(0, interestEarned - (schedule[i - 2]?.cumInterest ?? 0)),
-                cumInterest: Math.max(0, interestEarned),
-                balance: runningBalance
+                interestEarned: Math.max(0, cumInterest - prevCumInterest),
+                cumInterest,
+                balance
             });
+            prevCumInterest = cumInterest;
         }
 
         const invested = validMonthly * validMonths;
@@ -79,14 +91,15 @@ export default function RDCalculator() {
 
     // 2. WHAT-IF SIMULATOR
     const whatIf = useMemo(() => {
-        const extraM= Math.max(100, whatIfExtra || 0);
+        const extraM = Math.max(100, whatIfExtra || 0);
         const newMonthly = result.validMonthly + extraM;
         const r = (rate || 0) / 400;
+        const totalQuarters = Math.ceil(result.validMonths / 3);
 
         let newMaturity = 0;
         for (let i = 1; i <= result.validMonths; i++) {
-            const remainingQuarters = (result.validMonths - i + 1) / 3;
-            newMaturity += newMonthly * Math.pow(1 + r, remainingQuarters);
+            const depositQIdx = Math.floor((i - 1) / 3);
+            newMaturity += newMonthly * Math.pow(1 + r, totalQuarters - depositQIdx);
         }
 
         const addedWealth = newMaturity - result.maturity;

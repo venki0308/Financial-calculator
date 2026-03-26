@@ -166,6 +166,7 @@ export default function IncomeTaxCalculator() {
     const [inputMode, setInputMode] = useState<'monthly' | 'annual' | 'ctc' | 'payslip'>('monthly');
     const [inputs, setInputs] = useState<Inputs>({
         basicSalary: '',
+        da: '',
         hra: '',
         special: '',
         lta: '',
@@ -213,7 +214,7 @@ export default function IncomeTaxCalculator() {
     }, [inputMode, inputs, num]);
 
     // ─── Gross Income (always annual internally) ──────────────────────────────
-    const allEarnings = num('basicSalary') + num('hra') + num('special') + num('lta') + num('bonus') + num('otherIncome') + num('transportAllowance') + num('medicalAllowance') + num('foodAllowance');
+    const allEarnings = num('basicSalary') + num('da') + num('hra') + num('special') + num('lta') + num('bonus') + num('otherIncome') + num('transportAllowance') + num('medicalAllowance') + num('foodAllowance');
     const grossSalary = inputMode === 'ctc' ? ctcGross : allEarnings * multiplier;
 
     // ─── Payroll Deductions ───────────────────────────────────────────────────
@@ -231,10 +232,10 @@ export default function IncomeTaxCalculator() {
     const hraExemption = useMemo(() => {
         const hraRcvd = num('hraReceived') * multiplier;
         const rentPaid = num('rentPaid') * multiplier;
-        const basic = num('basicSalary') * multiplier;
+        const basicPlusDA = (num('basicSalary') + num('da')) * multiplier;
         const isMetro = inputs.isMetro === 'true';
         if (!rentPaid || !hraRcvd) return 0;
-        return Math.max(0, Math.min(hraRcvd, rentPaid - basic * 0.1, basic * (isMetro ? 0.5 : 0.4)));
+        return Math.max(0, Math.min(hraRcvd, rentPaid - basicPlusDA * 0.1, basicPlusDA * (isMetro ? 0.5 : 0.4)));
     }, [inputs, num, multiplier]);
 
     // ─── Old Regime Deductions (always computed for comparison) ────────────────
@@ -531,6 +532,7 @@ export default function IncomeTaxCalculator() {
                                 {inputMode === 'monthly' ? 'Monthly' : inputMode === 'payslip' ? 'Payslip' : 'Annual'} Income Details
                             </h3>
                             <InputRow label="Basic Salary" k="basicSalary" value={inputs.basicSalary} onChange={set} />
+                            <InputRow label="Dearness Allowance (DA)" k="da" value={inputs.da} onChange={set} hint="Govt/PSU employees only — leave 0 for private sector" />
                             <InputRow label="HRA (House Rent Allowance)" k="hra" value={inputs.hra} onChange={set} />
                             <InputRow label="Special Allowance" k="special" value={inputs.special} onChange={set} />
                             <InputRow label="Transport Allowance" k="transportAllowance" value={inputs.transportAllowance} onChange={set} />
