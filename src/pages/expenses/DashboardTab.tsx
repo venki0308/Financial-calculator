@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff, ChevronLeft, ChevronRight, Activity, ChevronDown, ChevronUp, Edit2, Repeat, Target, PiggyBank } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff, ChevronLeft, ChevronRight, Activity, ChevronDown, ChevronUp, Edit2, Repeat, Target, PiggyBank, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 import { Pie } from 'react-chartjs-2';
@@ -305,75 +305,83 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                 </div>
             )}
 
-            {/* Savings Goal Tracker — Option A (manual) + Option B (auto-calculated) */}
-            {(savingsGoal > 0 || currentBalance > 0 || autoCalculatedSavings > 0) && (
-                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center">
-                            <Target size={16} className="text-green-500" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Savings Goal</h3>
-                            {savingsGoal > 0 && (
-                                <p className="text-[10px] text-muted-foreground">Target: ₹{savingsGoal.toLocaleString('en-IN')}</p>
+            {/* Savings Goal Tracker — Unified Source of Truth */}
+            {(savingsGoal > 0 || currentBalance > 0 || autoCalculatedSavings > 0) && (() => {
+                const isManualMode = currentBalance > 0;
+                const primarySavings = isManualMode ? currentBalance : autoCalculatedSavings;
+                const progressPct = savingsGoal > 0 ? Math.min((primarySavings / savingsGoal) * 100, 100) : 0;
+
+                return (
+                    <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center">
+                                <Target size={16} className="text-green-500" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">{t('home.savingsGoal', 'Savings Goal')}</h3>
+                                {savingsGoal > 0 && (
+                                    <p className="text-[10px] text-muted-foreground">{t('expenses.target', 'Target')}: ₹{savingsGoal.toLocaleString('en-IN')}</p>
+                                )}
+                            </div>
+                            {healthScore?.futureProjection?.monthsToGoal && (
+                                <span className="ml-auto text-[10px] font-bold text-brand-purple bg-brand-purple/10 px-2 py-1 rounded-full">
+                                    ~{healthScore.futureProjection.monthsToGoal}m to goal
+                                </span>
                             )}
                         </div>
-                        {healthScore?.futureProjection?.monthsToGoal && (
-                            <span className="ml-auto text-[10px] font-bold text-brand-purple bg-brand-purple/10 px-2 py-1 rounded-full">
-                                ~{healthScore.futureProjection.monthsToGoal}m to goal
-                            </span>
-                        )}
-                    </div>
 
-                    {/* Option A: Manual Balance */}
-                    {currentBalance > 0 && (
+                        {/* PRIMARY PROGRESS BAR */}
                         <div className="mb-3">
                             <div className="flex items-center gap-2 mb-1">
-                                <PiggyBank size={12} className="text-blue-400" />
-                                <span className="text-[10px] font-semibold text-muted-foreground">Current Balance (Manual)</span>
-                                <span className="ml-auto text-[10px] font-bold text-blue-500">₹{currentBalance.toLocaleString('en-IN')}</span>
+                                {isManualMode ? <PiggyBank size={12} className="text-blue-400" /> : <TrendingUp size={12} className="text-green-400" />}
+                                <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                    {isManualMode ? 'Current Balance (Manual)' : 'Tracked Savings'}
+                                    <button 
+                                        onClick={() => {
+                                            const val = prompt('Enter manual savings balance (0 for auto-tracking):', currentBalance.toString());
+                                            if (val !== null) {
+                                                const parsed = parseInt(val, 10);
+                                                if (!isNaN(parsed) && parsed >= 0) {
+                                                    useBudgetTrackerStore.getState().setCurrentBalance(parsed);
+                                                }
+                                            }
+                                        }}
+                                        className="text-brand-purple hover:underline bg-brand-purple/10 px-1.5 py-0.5 rounded text-[9px] font-bold"
+                                    >
+                                        Edit
+                                    </button>
+                                </span>
+                                <span className={`ml-auto text-[10px] font-bold ${isManualMode ? 'text-blue-500' : 'text-green-500'}`}>
+                                    ₹{primarySavings.toLocaleString('en-IN')}
+                                </span>
                             </div>
                             {savingsGoal > 0 && (
                                 <>
                                     <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                         <motion.div
                                             initial={{ width: 0 }}
-                                            animate={{ width: `${Math.min((currentBalance / savingsGoal) * 100, 100)}%` }}
+                                            animate={{ width: `${progressPct}%` }}
                                             transition={{ duration: 0.8 }}
-                                            className="h-full bg-blue-400 rounded-full"
+                                            className={`h-full rounded-full ${isManualMode ? 'bg-blue-400' : 'bg-green-400'}`}
                                         />
                                     </div>
-                                    <p className="text-[9px] text-muted-foreground mt-0.5 text-right">{((currentBalance / savingsGoal) * 100).toFixed(1)}% of goal</p>
+                                    <p className="text-[9px] text-muted-foreground mt-0.5 text-right">{progressPct.toFixed(1)}% of goal</p>
                                 </>
                             )}
                         </div>
-                    )}
 
-                    {/* Option B: Auto-Calculated Savings */}
-                    {autoCalculatedSavings > 0 && (
-                        <div>
-                            <div className="flex items-center gap-2 mb-1">
-                                <TrendingUp size={12} className="text-green-400" />
-                                <span className="text-[10px] font-semibold text-muted-foreground">Tracked Savings (Auto-calculated)</span>
-                                <span className="ml-auto text-[10px] font-bold text-green-500">₹{autoCalculatedSavings.toLocaleString('en-IN')}</span>
-                            </div>
-                            {savingsGoal > 0 && (
-                                <>
-                                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${Math.min((autoCalculatedSavings / savingsGoal) * 100, 100)}%` }}
-                                            transition={{ duration: 0.8, delay: 0.1 }}
-                                            className="h-full bg-green-400 rounded-full"
-                                        />
-                                    </div>
-                                    <p className="text-[9px] text-muted-foreground mt-0.5 text-right">{Math.min((autoCalculatedSavings / savingsGoal) * 100, 100).toFixed(1)}% of goal</p>
-                                </>
-                            )}
+                        {/* SECONDARY REFERENCE */}
+                        <div className="mt-2 bg-slate-50 dark:bg-white/5 rounded-lg p-2.5 flex items-start gap-2 border border-slate-100 dark:border-white/5">
+                            <Lightbulb size={12} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                            <p className="text-[10px] text-slate-600 dark:text-slate-400 leading-snug">
+                                {isManualMode 
+                                    ? `Tracked savings based on your data: ₹${autoCalculatedSavings.toLocaleString('en-IN')}`
+                                    : "Based on your tracked income & expenses"}
+                            </p>
                         </div>
-                    )}
-                </div>
-            )}
+                    </div>
+                );
+            })()}
 
             {/* General Budget Alert */}
             {budgetUsePct >= 90 && monthlyIncome > 0 && (
