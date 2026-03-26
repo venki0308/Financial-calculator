@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { App as CapApp } from '@capacitor/app';
 import { useSettingsStore } from './store/useSettingsStore';
 import { CrashlyticsService } from './lib/analytics';
+import { useCrashContext } from './hooks/useCrashContext';
 import { AnalyticsService } from './services/analyticsService';
 import { setupErrorHandling } from './utils/errorHandler';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -94,6 +95,9 @@ function AppContent() {
     const location = useLocation();
     const lastBackPress = useRef<number>(0);
     const [showBackToast, setShowBackToast] = useState(false);
+
+    // Attach active screen to Crashlytics on every route change (Part 6)
+    useCrashContext();
     const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {

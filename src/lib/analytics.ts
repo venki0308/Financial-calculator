@@ -35,6 +35,23 @@ export const CrashlyticsService = {
         } catch (error) {
             console.warn('[FinCalix] Crashlytics init failed:', error);
         }
+
+        // Assign an anonymous, per-install session ID — purely for crash correlation.
+        // No PII: just a random hex string. Format: uid-{16 hex chars}
+        if (!enabled) return;
+        try {
+            let anonId = localStorage.getItem('fincalix_anon_id');
+            if (!anonId) {
+                const arr = new Uint8Array(8);
+                crypto.getRandomValues(arr);
+                anonId = 'uid-' + Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+                localStorage.setItem('fincalix_anon_id', anonId);
+            }
+            await FirebaseCrashlytics.setUserId({ userId: anonId });
+            console.log(`[FinCalix] Crashlytics anonymous ID set: ${anonId}`);
+        } catch (error) {
+            console.warn('[FinCalix] Crashlytics setUserId failed:', error);
+        }
     },
 
     /** Toggle Crashlytics on/off at runtime (called from Settings) */
