@@ -354,13 +354,20 @@ export default function DailyTab() {
                         <motion.div
                             initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }}
                             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                            className="w-full max-w-md bg-background border-t border-slate-700 rounded-t-3xl p-6 pb-10"
+                            className="w-full max-w-md bg-background border-t border-slate-700 rounded-t-3xl flex flex-col"
+                            style={{ maxHeight: 'calc(100svh - 64px)', paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <div className="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5" />
-                            <h3 className="text-foreground font-bold text-lg mb-4">
-                                {editingId ? t('expenses.editExpenseTitle', 'Edit Expense') : t('expenses.addExpenseTitle')}
-                            </h3>
+                            {/* Drag handle + Title - HEADER */}
+                            <div className="flex-shrink-0 px-6 pt-5 pb-2">
+                                <div className="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5" />
+                                <h3 className="text-foreground font-bold text-lg mb-2">
+                                    {editingId ? t('expenses.editExpenseTitle', 'Edit Expense') : t('expenses.addExpenseTitle')}
+                                </h3>
+                            </div>
+
+                            {/* Scrollable form content */}
+                            <div className="flex-1 overflow-y-auto px-6 pb-2">
                             <div className="space-y-3">
                                 {/* Category */}
                                 <div>
@@ -433,16 +440,21 @@ export default function DailyTab() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex gap-3 mt-5 mb-4">
-                                <button onClick={() => setShowAddForm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-slate-300 font-medium text-sm transition-colors hover:bg-slate-600">{t('common.cancel')}</button>
-                                <motion.button
-                                    whileTap={isDirty && isValid ? { scale: 0.97 } : {}}
-                                    onClick={handleSaveEntry}
-                                    disabled={!isDirty || !isValid}
-                                    className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
-                                >
-                                    {editingId ? 'Apply' : 'Save'}
-                                </motion.button>
+                            </div>{/* end scrollable area */}
+
+                            {/* Sticky action buttons - always visible */}
+                            <div className="flex-shrink-0 px-6 pt-3 pb-4 border-t border-slate-700/60">
+                                <div className="flex gap-3">
+                                    <button onClick={() => setShowAddForm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-slate-300 font-medium text-sm transition-colors hover:bg-slate-600">{t('common.cancel')}</button>
+                                    <motion.button
+                                        whileTap={isDirty && isValid ? { scale: 0.97 } : {}}
+                                        onClick={handleSaveEntry}
+                                        disabled={!isDirty || !isValid}
+                                        className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                                    >
+                                        {editingId ? 'Apply' : 'Save'}
+                                    </motion.button>
+                                </div>
                             </div>
                         </motion.div>
                     </motion.div>
