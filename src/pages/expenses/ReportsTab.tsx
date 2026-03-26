@@ -1,8 +1,9 @@
 import { useState, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Download, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
+import { Download, TrendingUp, TrendingDown, PiggyBank, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
+import { getReportInsights } from '../../services/InsightEngine';
 import {
     Chart as ChartJS, ArcElement, Tooltip, Legend,
     CategoryScale, LinearScale, PointElement, LineElement,
@@ -147,6 +148,12 @@ export default function ReportsTab() {
     }, [entries, currentMonth, currentYear, monthlyIncome, getTotalFixed]);
 
     const maxCategoryTotal = categoryData.length > 0 ? categoryData[0].total : 0;
+
+    // Report-level insights (Part 7)
+    const reportInsights = useMemo(() => {
+        if (!hasData || categoryData.length === 0) return [];
+        return getReportInsights(entries, selectedMonth, selectedYear, income, totalFixed);
+    }, [entries, selectedMonth, selectedYear, income, totalFixed, hasData, categoryData.length]);
 
     const handleDownloadPDF = async () => {
         let chartImage: string | undefined;
@@ -313,6 +320,23 @@ export default function ReportsTab() {
                                         </div>
                                     );
                                 })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Report Insights Banner (Part 7) */}
+                    {reportInsights.length > 0 && (
+                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Lightbulb size={14} className="text-amber-500" />
+                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Smart Insights</h3>
+                            </div>
+                            <div className="space-y-2">
+                                {reportInsights.map((insight, i) => (
+                                    <div key={i} className="flex items-start gap-2.5 p-2.5 bg-slate-50 dark:bg-white/5 rounded-xl">
+                                        <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-snug">{insight}</p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

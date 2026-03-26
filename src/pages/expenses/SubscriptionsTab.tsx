@@ -25,7 +25,7 @@ const PREPOPULATED = [
 
 export default function SubscriptionsTab() {
     const { t } = useTranslation();
-    const { subscriptions, addSubscription, updateSubscription, deleteSubscription } = useBudgetTrackerStore();
+    const { subscriptions, addSubscription, updateSubscription, deleteSubscription, monthlyIncome } = useBudgetTrackerStore();
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -110,14 +110,34 @@ export default function SubscriptionsTab() {
 
     return (
         <div className="space-y-6 pb-24">
-            {/* Header Summary */}
+            {/* Header Summary — Enhanced (Part 5) */}
             <div className="bg-gradient-to-r from-brand-purple to-indigo-600 rounded-2xl p-5 text-white shadow-lg shadow-brand-purple/20">
                 <div className="flex items-center gap-2 mb-2 text-foreground/80">
                     <CreditCard size={18} />
                     <span className="font-semibold text-sm">Monthly Commitment</span>
+                    {/* Renewal badge */}
+                    {(() => {
+                        const today = new Date();
+                        const renewalsSoon = subscriptions.filter(s => s.isActive && (() => {
+                            const diff = (new Date(s.nextDueDate).getTime() - today.getTime()) / (1000 * 3600 * 24);
+                            return diff >= 0 && diff <= 7;
+                        })());
+                        return renewalsSoon.length > 0 ? (
+                            <span className="ml-auto text-[10px] font-bold bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full">
+                                ⚠️ {renewalsSoon.length} renewal{renewalsSoon.length > 1 ? 's' : ''} this week
+                            </span>
+                        ) : null;
+                    })()}
                 </div>
                 <h2 className="text-3xl font-extrabold tracking-tight">₹{Math.round(totalMonthly).toLocaleString('en-IN')}</h2>
-                <p className="text-sm mt-1 opacity-90">{subscriptions.length} Active Subscriptions</p>
+                <div className="flex items-center gap-3 mt-1">
+                    <p className="text-sm opacity-90">{subscriptions.filter(s => s.isActive).length} Active Subscriptions</p>
+                    {monthlyIncome > 0 && totalMonthly > 0 && (
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${(totalMonthly / monthlyIncome) > 0.10 ? 'bg-red-400/30 text-red-100' : 'bg-white/20 text-white'}`}>
+                            {((totalMonthly / monthlyIncome) * 100).toFixed(1)}% of income
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* Empty State / Prepopulated Suggestions */}

@@ -48,6 +48,11 @@ export interface HealthScore {
     consistencyScore: number;
     tips: string[];
     calculatedAt: string;
+    futureProjection?: {
+        annualSavings: number;
+        monthsToGoal: number | null;
+        autoCalculatedSavings: number; // Option B: sum of (income - expenses) across all months
+    };
 }
 
 export type PaymentMethod = 'Cash' | 'UPI' | 'Debit Card' | 'Credit Card';

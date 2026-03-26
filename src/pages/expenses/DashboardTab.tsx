@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff, ChevronLeft, ChevronRight, Activity, ChevronDown, ChevronUp, Edit2, Repeat } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff, ChevronLeft, ChevronRight, Activity, ChevronDown, ChevronUp, Edit2, Repeat, Target, PiggyBank } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { generateInsights } from '../../services/InsightEngine';
+import { generateInsights, getDailyNudges } from '../../services/InsightEngine';
 import { calculateHealthScore } from '../../services/HealthScoreService';
 import BottomSheet from '../../components/BottomSheet';
 
@@ -34,7 +34,7 @@ const COLORS = [
 
 export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { onAddExpense: () => void, onViewAll: () => void, onViewSubs?: () => void }) {
     const { t } = useTranslation();
-    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, fixedExpenses, subscriptions, netWorthHistory, healthScore, setHealthScore, setInsights, insights } = useBudgetTrackerStore();
+    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, fixedExpenses, subscriptions, netWorthHistory, healthScore, setHealthScore, setInsights, insights, savingsGoal, currentBalance } = useBudgetTrackerStore();
 
     const [selectedDate, setSelectedDate] = useState(new Date());
     const currentYear = selectedDate.getFullYear();
@@ -57,9 +57,37 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
         const newInsights = generateInsights(entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, subscriptions);
         setInsights(newInsights);
 
-        const newScore = calculateHealthScore(entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, netWorthHistory);
+        const newScore = calculateHealthScore(entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, netWorthHistory, savingsGoal > 0 ? savingsGoal : undefined);
         setHealthScore(newScore);
-    }, [entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, subscriptions, netWorthHistory, setInsights, setHealthScore]);
+    }, [entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, subscriptions, netWorthHistory, savingsGoal, setInsights, setHealthScore]);
+
+    // Option B: Auto-calculated cumulative savings from all tracked months
+    const autoCalculatedSavings = useMemo(() => {
+        return healthScore?.futureProjection?.autoCalculatedSavings ?? 0;
+    }, [healthScore]);
+
+    // Smart daily nudges
+    const dailyNudges = useMemo(() => {
+        return getDailyNudges(entries, monthlyIncome, fixedExpenses);
+    }, [entries, monthlyIncome, fixedExpenses]);
+
+    // Per-category budget progress
+    const categoryBudgetProgress = useMemo(() => {
+        const budgetMap = categoryBudgets as unknown as Record<string, number>;
+        const catTotals: Record<string, number> = {};
+        monthEntries.forEach(e => {
+            const cat = e.category || e.categoryId || 'others';
+            catTotals[cat] = (catTotals[cat] || 0) + e.amount;
+        });
+        return EXPENSE_CATEGORIES
+            .map(cat => {
+                const budget = budgetMap[cat.id] || 0;
+                const spent = catTotals[cat.id] || 0;
+                const pct = budget > 0 ? Math.min((spent / budget) * 100, 120) : 0;
+                return { ...cat, budget, spent, pct };
+            })
+            .filter(c => c.budget > 0 || c.spent > 0);
+    }, [monthEntries, categoryBudgets]);
 
     const changeMonth = (offset: number) => {
         const newDate = new Date(selectedDate);
@@ -222,22 +250,128 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                 ))}
             </div>
 
-            {/* Financial Health Score (NEW) */}
+            {/* Financial Health Score — Enhanced */}
             {healthScore && healthScore.total > 0 && (
-                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 flex items-center gap-4">
-                    <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                            <path className="text-slate-200 dark:text-slate-700" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path className={`${healthScore.total >= 80 ? 'text-green-500' : healthScore.total >= 50 ? 'text-yellow-500' : 'text-red-500'}`} strokeDasharray={`${healthScore.total}, 100`} strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-lg font-bold text-slate-900 dark:text-foreground leading-none">{healthScore.total}</span>
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                    <div className="flex items-center gap-4">
+                        <div className="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                <path className="text-slate-200 dark:text-slate-700" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path className={`${healthScore.total >= 80 ? 'text-green-500' : healthScore.total >= 60 ? 'text-yellow-500' : healthScore.total >= 40 ? 'text-orange-500' : 'text-red-500'}`} strokeDasharray={`${healthScore.total}, 100`} strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="text-lg font-bold text-slate-900 dark:text-foreground leading-none">{healthScore.total}</span>
+                                <span className="text-[8px] text-muted-foreground">/100</span>
+                            </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Financial Health</h3>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                                    healthScore.total >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400'
+                                    : healthScore.total >= 60 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400'
+                                    : healthScore.total >= 40 ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400'
+                                    : 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
+                                }`}>
+                                    {healthScore.total >= 80 ? 'Great' : healthScore.total >= 60 ? 'Good' : healthScore.total >= 40 ? 'Fair' : 'Poor'}
+                                </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{healthScore.tips[1] || healthScore.tips[0]}</p>
+                            {/* Sub-score mini bars */}
+                            <div className="grid grid-cols-3 gap-1 mt-2">
+                                {[
+                                    { label: 'Savings', val: healthScore.savingsScore, max: 40 },
+                                    { label: 'Budget', val: healthScore.adherenceScore, max: 30 },
+                                    { label: 'Consistent', val: healthScore.consistencyScore, max: 20 },
+                                ].map(s => (
+                                    <div key={s.label}>
+                                        <div className="flex justify-between text-[8px] text-muted-foreground mb-0.5">
+                                            <span>{s.label}</span><span>{s.val}/{s.max}</span>
+                                        </div>
+                                        <div className="h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                            <div className="h-full bg-brand-purple rounded-full" style={{ width: `${(s.val / s.max) * 100}%` }} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            {/* Future Projection */}
+                            {healthScore.futureProjection && healthScore.futureProjection.annualSavings > 0 && (
+                                <p className="text-[10px] text-green-500 dark:text-green-400 font-semibold mt-2">
+                                    📈 At this rate, you'll save ₹{healthScore.futureProjection.annualSavings.toLocaleString('en-IN')} in 12 months
+                                </p>
+                            )}
                         </div>
                     </div>
-                    <div>
-                        <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Financial Health</h3>
-                        <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-0.5 line-clamp-2">{healthScore.tips[0] || "Looking good this month!"}</p>
+                </div>
+            )}
+
+            {/* Savings Goal Tracker — Option A (manual) + Option B (auto-calculated) */}
+            {(savingsGoal > 0 || currentBalance > 0 || autoCalculatedSavings > 0) && (
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center">
+                            <Target size={16} className="text-green-500" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Savings Goal</h3>
+                            {savingsGoal > 0 && (
+                                <p className="text-[10px] text-muted-foreground">Target: ₹{savingsGoal.toLocaleString('en-IN')}</p>
+                            )}
+                        </div>
+                        {healthScore?.futureProjection?.monthsToGoal && (
+                            <span className="ml-auto text-[10px] font-bold text-brand-purple bg-brand-purple/10 px-2 py-1 rounded-full">
+                                ~{healthScore.futureProjection.monthsToGoal}m to goal
+                            </span>
+                        )}
                     </div>
+
+                    {/* Option A: Manual Balance */}
+                    {currentBalance > 0 && (
+                        <div className="mb-3">
+                            <div className="flex items-center gap-2 mb-1">
+                                <PiggyBank size={12} className="text-blue-400" />
+                                <span className="text-[10px] font-semibold text-muted-foreground">Current Balance (Manual)</span>
+                                <span className="ml-auto text-[10px] font-bold text-blue-500">₹{currentBalance.toLocaleString('en-IN')}</span>
+                            </div>
+                            {savingsGoal > 0 && (
+                                <>
+                                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${Math.min((currentBalance / savingsGoal) * 100, 100)}%` }}
+                                            transition={{ duration: 0.8 }}
+                                            className="h-full bg-blue-400 rounded-full"
+                                        />
+                                    </div>
+                                    <p className="text-[9px] text-muted-foreground mt-0.5 text-right">{((currentBalance / savingsGoal) * 100).toFixed(1)}% of goal</p>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Option B: Auto-Calculated Savings */}
+                    {autoCalculatedSavings > 0 && (
+                        <div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <TrendingUp size={12} className="text-green-400" />
+                                <span className="text-[10px] font-semibold text-muted-foreground">Tracked Savings (Auto-calculated)</span>
+                                <span className="ml-auto text-[10px] font-bold text-green-500">₹{autoCalculatedSavings.toLocaleString('en-IN')}</span>
+                            </div>
+                            {savingsGoal > 0 && (
+                                <>
+                                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${Math.min((autoCalculatedSavings / savingsGoal) * 100, 100)}%` }}
+                                            transition={{ duration: 0.8, delay: 0.1 }}
+                                            className="h-full bg-green-400 rounded-full"
+                                        />
+                                    </div>
+                                    <p className="text-[9px] text-muted-foreground mt-0.5 text-right">{Math.min((autoCalculatedSavings / savingsGoal) * 100, 100).toFixed(1)}% of goal</p>
+                                </>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -353,6 +487,48 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 );
                             })}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Category Budget Progress Bars (Part 2 & 3) */}
+            {categoryBudgetProgress.length > 0 && (
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+                    <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">Budget Progress</h3>
+                    <div className="space-y-3">
+                        {categoryBudgetProgress.map(cat => {
+                            const barColor = cat.pct >= 100 ? 'bg-red-500' : cat.pct >= 80 ? 'bg-amber-500' : 'bg-green-500';
+                            const textColor = cat.pct >= 100 ? 'text-red-500' : cat.pct >= 80 ? 'text-amber-500' : 'text-green-500';
+                            const statusLabel = cat.pct >= 120 ? `Over by ₹${(cat.spent - cat.budget).toLocaleString('en-IN')}` 
+                                : cat.pct >= 100 ? 'Budget reached'
+                                : cat.budget > 0 ? `₹${(cat.budget - cat.spent).toLocaleString('en-IN')} left`
+                                : 'No budget set';
+                            return (
+                                <div key={cat.id}>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-xs font-semibold text-slate-700 dark:text-foreground">{cat.icon} {t(`expenses.categories.${cat.id}`)}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[10px] font-bold ${textColor}`}>{cat.pct.toFixed(0)}%</span>
+                                            <span className="text-[9px] text-muted-foreground">{statusLabel}</span>
+                                        </div>
+                                    </div>
+                                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${Math.min(cat.pct, 100)}%` }}
+                                            transition={{ duration: 0.6 }}
+                                            className={`h-full rounded-full ${barColor}`}
+                                        />
+                                    </div>
+                                    {cat.budget > 0 && (
+                                        <div className="flex justify-between mt-0.5">
+                                            <span className="text-[9px] text-muted-foreground">₹{cat.spent.toLocaleString('en-IN')} spent</span>
+                                            <span className="text-[9px] text-muted-foreground">₹{cat.budget.toLocaleString('en-IN')} budget</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             )}
@@ -486,12 +662,24 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                     <button onClick={onViewAll} className="text-brand-purple text-xs font-semibold">{t('home.viewAll')}</button>
                 </div>
                 {recentExpenses.length === 0 ? (
-                    <div className="text-center py-6">
-                        <Wallet className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-                        <p className="text-muted-foreground text-sm">{t('expenses.noExpensesMonth')}</p>
+                    <div className="py-5">
+                        <div className="text-center mb-3">
+                            <Wallet className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                            <p className="text-muted-foreground text-sm">{t('expenses.noExpensesMonth')}</p>
+                        </div>
+                        {/* Smart Daily Nudges (Part 6) */}
+                        {dailyNudges.length > 0 && (
+                            <div className="space-y-2 mb-3">
+                                {dailyNudges.map((nudge, i) => (
+                                    <div key={i} className="bg-brand-purple/5 border border-brand-purple/20 rounded-xl px-3 py-2">
+                                        <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-snug">{nudge}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         <button
                             onClick={onAddExpense}
-                            className="mt-3 flex items-center gap-1 text-brand-purple text-xs font-semibold mx-auto"
+                            className="mt-1 flex items-center gap-1 text-brand-purple text-xs font-semibold mx-auto"
                         >
                             <Plus size={12} /> {t('expenses.addFirst')}
                         </button>
