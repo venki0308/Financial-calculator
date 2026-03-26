@@ -312,7 +312,7 @@ export default function DailyTab() {
                                     drag="x"
                                     dragConstraints={{ left: -80, right: 0 }}
                                     onDragEnd={(e, info) => { if (info.offset.x < -50) deleteEntry(exp.id); }}
-                                    className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-3 flex items-center gap-3 relative z-10 cursor-pointer"
+                                    className="bg-white dark:bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-3 flex items-center gap-3 relative z-10 cursor-pointer"
                                     onClick={() => startEdit(exp.id)}
                                 >
                                     <div className="w-10 h-10 rounded-xl bg-brand-purple/10 flex items-center justify-center text-xl flex-shrink-0">

@@ -240,7 +240,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 <span className={`text-[9px] font-bold ${stat.color}`}>{(stat.metric * 100).toFixed(0)}%</span>
                             )}
                         </div>
-                        <p className="text-muted-foreground text-[9px] font-semibold uppercase tracking-wider mt-1">{stat.label}</p>
+                        <p className="text-slate-500 dark:text-muted-foreground text-[9px] font-semibold uppercase tracking-wider mt-1">{stat.label}</p>
                         <p className={`font-bold text-xs ${stat.color}`}>₹{Math.abs(stat.value).toLocaleString('en-IN')}</p>
                         {/* Mini progress bar */}
                         {stat.metric > 0 && <div className="absolute bottom-0 left-0 h-1 bg-white/20 w-full">
@@ -285,7 +285,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                     { label: 'Consistent', val: healthScore.consistencyScore, max: 20 },
                                 ].map(s => (
                                     <div key={s.label}>
-                                        <div className="flex justify-between text-[8px] text-muted-foreground mb-0.5">
+                                        <div className="flex justify-between text-[8px] text-slate-500 dark:text-muted-foreground mb-0.5">
                                             <span>{s.label}</span><span>{s.val}/{s.max}</span>
                                         </div>
                                         <div className="h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -373,7 +373,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                         {/* SECONDARY REFERENCE */}
                         <div className="mt-2 bg-slate-50 dark:bg-white/5 rounded-lg p-2.5 flex items-start gap-2 border border-slate-100 dark:border-white/5">
                             <Lightbulb size={12} className="text-amber-500 mt-0.5 flex-shrink-0" />
-                            <p className="text-[10px] text-slate-600 dark:text-slate-400 leading-snug">
+                            <p className="text-[10px] text-slate-700 dark:text-slate-400 leading-snug">
                                 {isManualMode 
                                     ? `Tracked savings based on your data: ₹${autoCalculatedSavings.toLocaleString('en-IN')}`
                                     : "Based on your tracked income & expenses"}
@@ -393,7 +393,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                     <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
                     <div>
                         <p className="font-bold text-red-400 text-sm">{t('expenses.budgetAlertTitle')}</p>
-                        <p className="text-xs text-red-300/80 mt-0.5">
+                        <p className="text-xs text-red-600 dark:text-red-300/80 mt-0.5">
                             {t('expenses.budgetAlertMsg', { pct: budgetUsePct.toFixed(0) })}
                             {budgetUsePct >= 100 ? ` ${t('expenses.overspending')}` : ` ${t('expenses.slowDown')}`}
                         </p>
@@ -430,7 +430,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 }
                                 <span className="font-bold text-xs text-slate-800 dark:text-foreground">{alert.title}</span>
                             </div>
-                            <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 leading-snug">{alert.message}</p>
+                            <p className="text-[10px] sm:text-xs text-slate-700 dark:text-slate-300 leading-snug">{alert.message}</p>
                             {alert.actionLabel && (
                                 <button
                                     onClick={() => {
