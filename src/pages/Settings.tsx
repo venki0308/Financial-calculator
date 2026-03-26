@@ -240,8 +240,8 @@ export default function Settings() {
             <AnimatePresence>
                 {showClearConfirm && (
                     <>
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[100]" onClick={() => setShowClearConfirm(false)} />
-                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[10000]" onClick={() => setShowClearConfirm(false)} />
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="fixed inset-0 z-[10001] flex items-center justify-center p-4 pointer-events-none">
                             <div className="bg-card border-border border-2 border-slate-600 rounded-2xl w-full max-w-sm shadow-2xl pointer-events-auto p-6">
                                 <div className="flex justify-center mb-4">
                                     <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center"><Trash2 size={32} className="text-red-500" /></div>

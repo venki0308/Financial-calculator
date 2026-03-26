@@ -52,7 +52,7 @@ export function UpdateChecker() {
     // Force update — fullscreen, no dismiss
     if (updateState.status === 'required') {
         return (
-            <div className="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center p-6">
+            <div className="fixed inset-0 z-[10000] bg-black/90 flex items-center justify-center p-6">
                 <div className="bg-white dark:bg-card border-border rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center">
                     <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
                         <AlertCircle className="w-10 h-10 text-red-500" />
