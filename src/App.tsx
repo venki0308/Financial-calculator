@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { App as CapApp } from '@capacitor/app';
 import { useSettingsStore } from './store/useSettingsStore';
 import { CrashlyticsService } from './lib/analytics';
@@ -75,6 +75,7 @@ import GlobalDisclaimerModal from './components/GlobalDisclaimerModal';
 import { NotificationScheduler } from './services/NotificationScheduler';
 import ValidatorPage from './pages/ValidatorPage';
 import { PdfActionSheet } from './components/PdfActionSheet';
+import WebLandingPage from './pages/WebLandingPage';
 
 // Toast component for back-press notification
 function BackToast({ visible }: { visible: boolean }) {
@@ -231,6 +232,21 @@ function AppContent() {
 }
 
 export default function App() {
+    const isNativePlatform =
+        Capacitor.isNativePlatform() ||
+        window.location.protocol === 'capacitor:' ||
+        (window as any).__CAPACITOR__;
+
+    // Web detection — more reliable
+    const isWebBrowser =
+        !isNativePlatform &&
+        (window.location.protocol === 'https:' ||
+            window.location.protocol === 'http:');
+
+    if (isWebBrowser) {
+        return <WebLandingPage />;
+    }
+
     return (
         <ErrorBoundary>
             <BrowserRouter>
