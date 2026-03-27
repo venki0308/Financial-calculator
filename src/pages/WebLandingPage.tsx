@@ -81,6 +81,7 @@ const LANGUAGES = [
     { label: 'తెలుగు' },
     { label: 'தமிழ்' },
     { label: 'ಕನ್ನಡ' },
+    { label: 'മലയാളം' },
 ];
 
 const CALC_MODULES = [
@@ -755,7 +756,7 @@ export default function WebLandingPage() {
                     </Reveal>
                     <Reveal delay={100}>
                         <p className="fc-font-body text-lg mb-10" style={{ color: '#94A3B8' }}>
-                            Calculate in your language — Hindi, Telugu, Tamil, Kannada, English
+                            Calculate in your language — Hindi, Telugu, Tamil, Kannada, Malayalam, English
                         </p>
                     </Reveal>
                     <Reveal delay={180}>
@@ -948,47 +949,180 @@ export default function WebLandingPage() {
             </section>
 
             {/* ─────────────────────────── FOOTER ────────── */}
-            <footer style={{ background: '#050D1A', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                <div className="max-w-6xl mx-auto" style={{ padding: '56px 24px 32px' }}>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+            <footer style={{ background: '#050D1A', borderTop: '1px solid rgba(201,168,76,0.12)' }}>
+                <div className="max-w-6xl mx-auto" style={{ padding: '64px 24px 32px' }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+
                         {/* Col 1 — Brand */}
-                        <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <img src="/icons/fincalix-logo.png" alt="" className="rounded-xl" style={{ width: '32px', height: '32px' }} />
+                        <div className="sm:col-span-2 lg:col-span-1">
+                            <div className="flex items-center gap-3 mb-3">
+                                <img src="/icons/fincalix-logo.png" alt="FinCalix" className="rounded-xl" style={{ width: '36px', height: '36px' }} />
                                 <span className="fc-font-display text-xl font-bold" style={{ color: '#C9A84C' }}>FinCalix</span>
                             </div>
-                            <p className="fc-font-body text-sm" style={{ color: '#4A5568' }}>Financial Super Calculator</p>
+                            <p className="fc-font-body text-sm mb-4 leading-relaxed" style={{ color: '#4A5568' }}>
+                                Financial Super Calculator.<br />Built for India, by Indians.
+                            </p>
+                            {/* Social icons */}
+                            <div className="flex items-center gap-3">
+                                {/* Instagram */}
+                                <a
+                                    href="https://www.instagram.com/fincalix/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="FinCalix on Instagram"
+                                    className="transition-all hover:scale-110"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '36px',
+                                        height: '36px',
+                                        borderRadius: '10px',
+                                        background: 'rgba(255,255,255,0.06)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        color: '#94A3B8',
+                                    }}
+                                    onMouseEnter={e => {
+                                        (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)';
+                                        (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
+                                        (e.currentTarget as HTMLElement).style.color = '#fff';
+                                    }}
+                                    onMouseLeave={e => {
+                                        (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)';
+                                        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)';
+                                        (e.currentTarget as HTMLElement).style.color = '#94A3B8';
+                                    }}
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                                        <circle cx="12" cy="12" r="4"/>
+                                        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+                                    </svg>
+                                </a>
+                                {/* Play Store */}
+                                <a
+                                    href={PLAY_STORE_URL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="FinCalix on Google Play"
+                                    className="transition-all hover:scale-110"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '36px',
+                                        height: '36px',
+                                        borderRadius: '10px',
+                                        background: 'rgba(255,255,255,0.06)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        color: '#94A3B8',
+                                    }}
+                                    onMouseEnter={e => {
+                                        (e.currentTarget as HTMLElement).style.background = '#01875f';
+                                        (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
+                                        (e.currentTarget as HTMLElement).style.color = '#fff';
+                                    }}
+                                    onMouseLeave={e => {
+                                        (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)';
+                                        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)';
+                                        (e.currentTarget as HTMLElement).style.color = '#94A3B8';
+                                    }}
+                                >
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-1.199c.445.217.744.666.744 1.198s-.3.981-.744 1.198l-2.15 1.245-2.51-2.443 2.51-2.443 2.15 1.245zm-11.3-7.197l10.937 6.333-2.302 2.302-8.635-8.635z"/>
+                                    </svg>
+                                </a>
+                                {/* Email */}
+                                <a
+                                    href="mailto:support@fincalix.com"
+                                    aria-label="Email FinCalix"
+                                    className="transition-all hover:scale-110"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '36px',
+                                        height: '36px',
+                                        borderRadius: '10px',
+                                        background: 'rgba(255,255,255,0.06)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        color: '#94A3B8',
+                                    }}
+                                    onMouseEnter={e => {
+                                        (e.currentTarget as HTMLElement).style.background = '#C9A84C';
+                                        (e.currentTarget as HTMLElement).style.borderColor = 'transparent';
+                                        (e.currentTarget as HTMLElement).style.color = '#0A1628';
+                                    }}
+                                    onMouseLeave={e => {
+                                        (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)';
+                                        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)';
+                                        (e.currentTarget as HTMLElement).style.color = '#94A3B8';
+                                    }}
+                                >
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="2" y="4" width="20" height="16" rx="2"/>
+                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
 
-                        {/* Col 2 — Links */}
-                        <div className="flex flex-col gap-3">
-                            <a
-                                href="/privacy-policy"
-                                className="fc-font-body text-sm transition-colors hover:text-white"
-                                style={{ color: '#94A3B8' }}
-                            >
-                                Privacy Policy
-                            </a>
-                            <a
-                                href={PLAY_STORE_URL}
-                                className="fc-font-body text-sm transition-colors hover:text-white"
-                                style={{ color: '#94A3B8' }}
-                            >
-                                Contact Us
-                            </a>
+                        {/* Col 2 — Legal */}
+                        <div>
+                            <h4 className="fc-font-display text-xs font-semibold mb-4 uppercase tracking-widest" style={{ color: '#C9A84C' }}>
+                                Legal
+                            </h4>
+                            <div className="flex flex-col gap-2.5">
+                                <a href="/privacy-policy" className="fc-font-body text-sm transition-colors hover:text-white" style={{ color: '#94A3B8' }}>Privacy Policy</a>
+                                <a href="/terms-of-service" className="fc-font-body text-sm transition-colors hover:text-white" style={{ color: '#94A3B8' }}>Terms of Service</a>
+                                <a href="/data-privacy" className="fc-font-body text-sm transition-colors hover:text-white" style={{ color: '#94A3B8' }}>Data &amp; Privacy</a>
+                                <a href="/about" className="fc-font-body text-sm transition-colors hover:text-white" style={{ color: '#94A3B8' }}>About Us</a>
+                            </div>
                         </div>
 
-                        {/* Col 3 — Made in India */}
-                        <div className="fc-font-body text-sm" style={{ color: '#4A5568' }}>
-                            Made with ❤️ in India
+                        {/* Col 3 — App */}
+                        <div>
+                            <h4 className="fc-font-display text-xs font-semibold mb-4 uppercase tracking-widest" style={{ color: '#C9A84C' }}>
+                                App
+                            </h4>
+                            <div className="flex flex-col gap-2.5">
+                                <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="fc-font-body text-sm transition-colors hover:text-white" style={{ color: '#94A3B8' }}>Download on Play Store</a>
+                                <a href="https://www.instagram.com/fincalix/" target="_blank" rel="noopener noreferrer" className="fc-font-body text-sm transition-colors hover:text-white" style={{ color: '#94A3B8' }}>Instagram</a>
+                                <a href="mailto:support@fincalix.com" className="fc-font-body text-sm transition-colors hover:text-white" style={{ color: '#94A3B8' }}>support@fincalix.com</a>
+                            </div>
+                        </div>
+
+                        {/* Col 4 — Made in India */}
+                        <div>
+                            <h4 className="fc-font-display text-xs font-semibold mb-4 uppercase tracking-widest" style={{ color: '#C9A84C' }}>
+                                About
+                            </h4>
+                            <p className="fc-font-body text-sm leading-relaxed" style={{ color: '#4A5568' }}>
+                                Made with ❤️ in India
+                            </p>
+                            <p className="fc-font-body text-sm leading-relaxed mt-2" style={{ color: '#4A5568' }}>
+                                Hyderabad, Telangana, India
+                            </p>
+                            <div
+                                className="inline-flex items-center gap-2 rounded-full mt-4 fc-font-mono text-xs font-medium"
+                                style={{ padding: '6px 12px', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', color: '#C9A84C' }}
+                            >
+                                ✦ v1.0.4
+                            </div>
                         </div>
                     </div>
 
+                    {/* Bottom bar */}
                     <div
-                        className="fc-font-body text-xs text-center pt-6"
+                        className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 fc-font-body text-xs"
                         style={{ borderTop: '1px solid rgba(255,255,255,0.05)', color: '#4A5568' }}
                     >
-                        © 2025 FinCalix. All rights reserved.
+                        <span>© 2025 FinCalix. All rights reserved.</span>
+                        <div className="flex items-center gap-4">
+                            <a href="/privacy-policy" className="transition-colors hover:text-white" style={{ color: '#4A5568' }}>Privacy</a>
+                            <a href="/terms-of-service" className="transition-colors hover:text-white" style={{ color: '#4A5568' }}>Terms</a>
+                            <a href="/about" className="transition-colors hover:text-white" style={{ color: '#4A5568' }}>About</a>
+                        </div>
                     </div>
                 </div>
             </footer>

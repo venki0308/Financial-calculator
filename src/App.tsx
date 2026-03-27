@@ -76,6 +76,10 @@ import { NotificationScheduler } from './services/NotificationScheduler';
 import ValidatorPage from './pages/ValidatorPage';
 import { PdfActionSheet } from './components/PdfActionSheet';
 import WebLandingPage from './pages/WebLandingPage';
+import WebPrivacyPolicy from './pages/legal/PrivacyPolicy';
+import WebAbout from './pages/legal/About';
+import WebDataPrivacy from './pages/legal/DataPrivacy';
+import WebTermsOfService from './pages/legal/TermsOfService';
 
 // Toast component for back-press notification
 function BackToast({ visible }: { visible: boolean }) {
@@ -245,5 +249,16 @@ export default function App() {
         );
     }
 
-    return <WebLandingPage />;
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<WebLandingPage />} />
+                <Route path="/privacy-policy" element={<WebPrivacyPolicy />} />
+                <Route path="/about" element={<WebAbout />} />
+                <Route path="/data-privacy" element={<WebDataPrivacy />} />
+                <Route path="/terms-of-service" element={<WebTermsOfService />} />
+                <Route path="*" element={<WebLandingPage />} />
+            </Routes>
+        </BrowserRouter>
+    );
 }
