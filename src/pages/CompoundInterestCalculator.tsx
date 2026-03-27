@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, ChevronDown, ChevronUp, Save, Check, BrainCircuit, Activity, Settings, FileText, ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { calculateCompoundInterest, formatINR } from '../utils/calculations';
@@ -353,8 +352,8 @@ export default function CompoundInterestCalculator() {
                                         <input type="range" min={1} max={40} step={1} value={simYears} onChange={e => setSimYears(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-rose-500" />
                                     </div>
 
-                                    <div className="p-4 rounded-2xl bg-background border border-border text-center">
-                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Simulated Final Value</p>
+                                    <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-600 text-center">
+                                        <p className="text-slate-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider mb-1">Simulated Final Value</p>
                                         <p className="font-black text-2xl text-foreground mb-2">{fmtINR(simResult.amount)}</p>
                                         
                                         {valueDiff !== 0 && (

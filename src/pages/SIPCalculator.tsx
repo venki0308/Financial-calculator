@@ -21,7 +21,6 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { calculateSIP, formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { useAuthStore } from '../store/useAuthStore';
 import { exportToPDF, exportToExcel } from '../utils/exportUtils';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
@@ -215,12 +214,24 @@ export default function SIPCalculator() {
 
         const headers = ['Metric', 'Value'];
         const tabLabel = activeTab === 'basic' ? 'Basic SIP' : activeTab === 'stepup' ? 'Step-Up SIP' : 'Goal SIP';
-        const data = [
-            ['Calculator Type', tabLabel],
-            [displayValues.label, formatINR(displayValues.primary)],
-            ['Total Invested', formatINR(displayValues.invested)],
-            ['Wealth Gained', formatINR(displayValues.returns)],
-        ];
+        const data: string[][] =
+            activeTab === 'goal'
+                ? [
+                    ['Calculator Type', 'Goal SIP'],
+                    ['Target Amount', formatINR(goalTarget)],
+                    ['Investment Period', `${goalYears} Years`],
+                    ['Expected Return', `${goalRate}% p.a.`],
+                    ['---', '---'],
+                    ['Monthly SIP Required', formatINR(goalResult.monthlyNeeded)],
+                    ['Total to be Invested', formatINR(goalResult.totalInvested)],
+                    ['Estimated Returns', formatINR(goalResult.returns)],
+                ]
+                : [
+                    ['Calculator Type', tabLabel],
+                    [displayValues.label, formatINR(displayValues.primary)],
+                    ['Total Invested', formatINR(displayValues.invested)],
+                    ['Wealth Gained', formatINR(displayValues.returns)],
+                ];
         exportToPDF(`SIP Investment Report — ${tabLabel}`, headers, data, 'SIP_Report', chartImage, chartSummary);
     };
 
@@ -321,11 +332,11 @@ export default function SIPCalculator() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mb-6">
-                        <div className="p-3 rounded-xl bg-slate-800/20 text-center">
+                        <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 text-center">
                             <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Invested</p>
                             <p className="text-foreground font-bold text-sm">{formatINR(displayValues.invested)}</p>
                         </div>
-                        <div className="p-3 rounded-xl bg-slate-800/20 text-center">
+                        <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 text-center">
                             <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Returns</p>
                             <p className="text-brand-green font-bold text-sm">{formatINR(displayValues.returns)}</p>
                         </div>

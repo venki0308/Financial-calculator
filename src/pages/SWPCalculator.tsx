@@ -373,13 +373,13 @@ export default function SWPCalculator() {
                                         <input type="range" min={1} max={40} step={1} value={simYears} onChange={e => setSimYears(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-500" />
                                     </div>
 
-                                    <div className={`p-4 rounded-2xl border text-center ${simResult.depMonth ? 'bg-red-500/10 border-red-500/20' : 'bg-brand-green/10 border-brand-green/20'}`}>
-                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Simulated Final Balance</p>
-                                        <p className={`font-black text-2xl mb-1 ${simResult.depMonth ? 'text-red-500' : 'text-brand-green'}`}>{fmtINR(simResult.finalBal)}</p>
+                                    <div className={`p-4 rounded-2xl border text-center ${simResult.depMonth ? 'bg-red-50 dark:bg-red-500/15 border-red-200 dark:border-red-500/40' : 'bg-emerald-50 dark:bg-brand-green/15 border-emerald-200 dark:border-brand-green/30'}`}>
+                                        <p className="text-slate-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider mb-1">Simulated Final Balance</p>
+                                        <p className={`font-black text-2xl mb-1 ${simResult.depMonth ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-brand-green'}`}>{fmtINR(simResult.finalBal)}</p>
                                         {simResult.depMonth ? (
-                                             <p className="text-red-500 text-[10px] font-bold"><AlertTriangle size={10} className="inline mr-1"/>Depletes in yr {Math.ceil(simResult.depMonth/12)}</p>
+                                             <p className="text-red-600 dark:text-red-400 text-xs font-bold"><AlertTriangle size={11} className="inline mr-1"/>Depletes in yr {Math.ceil(simResult.depMonth/12)}</p>
                                         ) : (
-                                             <p className="text-brand-green text-[10px] font-bold"><ShieldCheck size={10} className="inline mr-1"/> Fully Sustainable</p>
+                                             <p className="text-emerald-600 dark:text-brand-green text-xs font-bold"><ShieldCheck size={11} className="inline mr-1"/> Fully Sustainable</p>
                                         )}
                                        
                                     </div>

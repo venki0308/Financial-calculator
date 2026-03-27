@@ -394,10 +394,10 @@ export default function LumpsumCalculator() {
                                         <input type="range" min={1} max={40} step={1} value={simYears} onChange={e => setSimYears(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-rose-500" />
                                     </div>
 
-                                    <div className="p-4 rounded-2xl bg-gradient-to-br from-background to-muted border border-border text-center">
-                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Simulated Value</p>
+                                    <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-600 text-center">
+                                        <p className="text-slate-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider mb-1">Simulated Value</p>
                                         <p className="font-black text-2xl text-foreground mb-1">{fmtINR(simResult)}</p>
-                                        <p className="text-brand-green text-[10px] font-bold">+ {fmtINR(simResult - simPrincipal)} total gain</p>
+                                        <p className="text-emerald-600 dark:text-brand-green text-xs font-bold">+ {fmtINR(simResult - simPrincipal)} total gain</p>
                                     </div>
                                 </div>
                             </motion.div>
