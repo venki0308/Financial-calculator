@@ -210,9 +210,9 @@ export default function SCSSCalculator() {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
                         <IndianRupee size={16} className="text-amber-400 shrink-0 mt-0.5" />
                         <div>
-                            <p className="text-amber-400 font-bold text-xs mb-1">TDS Applicable on Your Interest</p>
-                            <p className="text-muted-foreground text-[11px]">Annual interest {formatINR(result.annualInterest)} exceeds ₹50,000. TDS @ 10% = {formatINR(result.annualTDS)} p.a. Submit Form 15H to avoid TDS deduction.</p>
-                            <p className="text-brand-green font-bold text-xs mt-1">Net quarterly income after TDS: {formatINR(result.netQuarterlyIncome)}</p>
+                            <p className="text-amber-600 dark:text-amber-400 font-bold text-xs mb-1">TDS Applicable on Your Interest</p>
+                            <p className="text-slate-600 dark:text-slate-300 text-xs">Annual interest {formatINR(result.annualInterest)} exceeds ₹50,000. TDS @ 10% = {formatINR(result.annualTDS)} p.a. Submit Form 15H to avoid TDS deduction.</p>
+                            <p className="text-green-600 dark:text-brand-green font-bold text-xs mt-1">Net quarterly income after TDS: {formatINR(result.netQuarterlyIncome)}</p>
                         </div>
                     </motion.div>
                 )}
@@ -262,7 +262,7 @@ export default function SCSSCalculator() {
                                         <Shield size={14} className="text-green-400 shrink-0 mt-1" />
                                         <div>
                                             <p className="text-foreground font-bold text-xs">{item.title}</p>
-                                            <p className="text-muted-foreground text-[11px]">{item.desc}</p>
+                                            <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{item.desc}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -284,10 +284,10 @@ export default function SCSSCalculator() {
                                     <span>Year</span><span>Interest</span><span>TDS</span><span>Cumulative</span>
                                 </div>
                                 {result.yearlyBreakdown.map((row, i) => (
-                                    <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${i % 2 === 0 ? 'bg-card' : 'bg-slate-800/20'}`}>
-                                        <span className="text-slate-300">{row.year}</span>
+                                    <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${i % 2 === 0 ? 'bg-card' : 'bg-slate-100 dark:bg-slate-800/40'}`}>
+                                        <span className="text-slate-600 dark:text-slate-300">{row.year}</span>
                                         <span className="text-brand-green font-medium">{formatINR(row.interest)}</span>
-                                        <span className="text-amber-400">{row.tds > 0 ? formatINR(row.tds) : '—'}</span>
+                                        <span className="text-amber-500 dark:text-amber-400">{row.tds > 0 ? formatINR(row.tds) : '—'}</span>
                                         <span className="text-foreground font-bold">{formatINR(row.cumInterest)}</span>
                                     </div>
                                 ))}
@@ -305,30 +305,30 @@ export default function SCSSCalculator() {
                     {showPenalty && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
-                                <p className="text-muted-foreground text-[11px]">Premature closure allowed after 1 year with penalty deducted from principal:</p>
+                                <p className="text-slate-500 dark:text-slate-400 text-xs">Premature closure allowed after 1 year with penalty deducted from principal:</p>
                                 <div className="space-y-2">
-                                    <div className="flex justify-between items-center p-3 rounded-xl bg-red-500/10">
+                                    <div className="flex justify-between items-center p-3 rounded-xl bg-red-500/10 border border-red-500/20">
                                         <div>
-                                            <p className="text-red-400 font-bold text-xs">After 1 yr, before 2 yrs</p>
-                                            <p className="text-muted-foreground text-[10px]">1.5% penalty on principal</p>
+                                            <p className="text-red-500 dark:text-red-400 font-bold text-xs">After 1 yr, before 2 yrs</p>
+                                            <p className="text-slate-500 dark:text-slate-400 text-xs">1.5% penalty on principal</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-red-400 font-bold text-xs">−{formatINR(result.penaltyAfter1Yr)}</p>
-                                            <p className="text-foreground text-xs font-medium">You get {formatINR(result.amtAfter1Yr)}</p>
+                                            <p className="text-red-500 dark:text-red-400 font-bold text-xs">−{formatINR(result.penaltyAfter1Yr)}</p>
+                                            <p className="text-slate-700 dark:text-slate-200 text-xs font-semibold">You get {formatINR(result.amtAfter1Yr)}</p>
                                         </div>
                                     </div>
-                                    <div className="flex justify-between items-center p-3 rounded-xl bg-amber-500/10">
+                                    <div className="flex justify-between items-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
                                         <div>
-                                            <p className="text-amber-400 font-bold text-xs">After 2 years</p>
-                                            <p className="text-muted-foreground text-[10px]">1% penalty on principal</p>
+                                            <p className="text-amber-600 dark:text-amber-400 font-bold text-xs">After 2 years</p>
+                                            <p className="text-slate-500 dark:text-slate-400 text-xs">1% penalty on principal</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-amber-400 font-bold text-xs">−{formatINR(result.penaltyAfter2Yrs)}</p>
-                                            <p className="text-foreground text-xs font-medium">You get {formatINR(result.amtAfter2Yrs)}</p>
+                                            <p className="text-amber-600 dark:text-amber-400 font-bold text-xs">−{formatINR(result.penaltyAfter2Yrs)}</p>
+                                            <p className="text-slate-700 dark:text-slate-200 text-xs font-semibold">You get {formatINR(result.amtAfter2Yrs)}</p>
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-muted-foreground text-[10px]">* Interest accrued up to closure date is also paid. Penalty is deducted from the principal.</p>
+                                <p className="text-slate-500 dark:text-slate-400 text-xs">* Interest accrued up to closure date is also paid. Penalty is deducted from the principal.</p>
                             </div>
                         </motion.div>
                     )}
