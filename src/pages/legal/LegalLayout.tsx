@@ -1,14 +1,112 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
+// ── Language types ───────────────────────────────────────
+export type Lang = 'en' | 'hi' | 'te' | 'ta' | 'kn';
+
+export const LANG_OPTIONS: { code: Lang; label: string }[] = [
+    { code: 'en', label: 'English' },
+    { code: 'hi', label: 'हिंदी' },
+    { code: 'te', label: 'తెలుగు' },
+    { code: 'ta', label: 'தமிழ்' },
+    { code: 'kn', label: 'ಕನ್ನಡ' },
+];
+
+// ── Language selector dropdown ───────────────────────────
+export function LangSelector({ lang, onChange }: { lang: Lang; onChange: (l: Lang) => void }) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+    const current = LANG_OPTIONS.find(l => l.code === lang)!;
+
+    useEffect(() => {
+        function handler(e: MouseEvent) {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        }
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    return (
+        <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
+            <button
+                onClick={() => setOpen(o => !o)}
+                style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '7px 12px', borderRadius: '10px',
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#94A3B8', fontSize: '13px', cursor: 'pointer',
+                    fontFamily: 'Poppins, sans-serif', whiteSpace: 'nowrap',
+                }}
+            >
+                🌐 <span>{current.label}</span>
+                <span style={{ fontSize: '9px', opacity: 0.5 }}>{open ? '▲' : '▼'}</span>
+            </button>
+            {open && (
+                <div
+                    style={{
+                        position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                        background: '#0F1E35', border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px', overflow: 'hidden', zIndex: 200,
+                        minWidth: '150px', boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
+                    }}
+                >
+                    {LANG_OPTIONS.map(l => (
+                        <button
+                            key={l.code}
+                            onClick={() => { onChange(l.code); setOpen(false); }}
+                            style={{
+                                display: 'block', width: '100%', padding: '10px 16px',
+                                textAlign: 'left',
+                                background: l.code === lang ? 'rgba(201,168,76,0.12)' : 'transparent',
+                                color: l.code === lang ? '#C9A84C' : '#94A3B8',
+                                fontSize: '13px', cursor: 'pointer',
+                                fontFamily: 'Poppins, sans-serif', border: 'none',
+                                transition: 'background 0.15s',
+                            }}
+                        >
+                            {l.label}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ── Official Play Store badge ────────────────────────────
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.fincalix.app';
+export function PlayStoreBadge({ className = '' }: { className?: string }) {
+    return (
+        <a
+            href={PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={className}
+            style={{ display: 'inline-block', cursor: 'pointer', transition: 'opacity 0.2s', textDecoration: 'none' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.85'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+        >
+            <img
+                src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                alt="Get it on Google Play"
+                style={{ height: '60px', width: 'auto' }}
+            />
+        </a>
+    );
+}
+
+// ── Main layout ──────────────────────────────────────────
 export default function LegalLayout({
     title,
     updated,
     children,
+    langBar,
 }: {
     title: string;
     updated: string;
     children: ReactNode;
+    langBar?: ReactNode;
 }) {
     useEffect(() => {
         if (!document.querySelector('link[data-fc-poppins]')) {
@@ -22,172 +120,59 @@ export default function LegalLayout({
     }, [title]);
 
     return (
-        <div
-            style={{
-                fontFamily: "'Poppins', sans-serif",
-                background: '#0A1628',
-                color: '#fff',
-                minHeight: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-            }}
-        >
+        <div style={{ fontFamily: "'Poppins', sans-serif", background: '#0A1628', color: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             {/* Header */}
             <header
                 style={{
                     borderBottom: '1px solid rgba(201,168,76,0.15)',
                     background: 'rgba(5,13,26,0.95)',
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 50,
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
+                    position: 'sticky', top: 0, zIndex: 50,
+                    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
                 }}
             >
                 <div
                     style={{
-                        maxWidth: '860px',
-                        margin: '0 auto',
-                        padding: '16px 24px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
+                        maxWidth: '880px', margin: '0 auto', padding: '14px 24px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
                     }}
                 >
-                    <a
-                        href="/"
-                        style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}
-                    >
-                        <img
-                            src="/icons/fincalix-logo.png"
-                            alt="FinCalix"
-                            style={{ width: '32px', height: '32px', borderRadius: '8px' }}
-                        />
-                        <span style={{ color: '#C9A84C', fontSize: '20px', fontWeight: 700, letterSpacing: '-0.3px' }}>
-                            FinCalix
-                        </span>
+                    <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', flexShrink: 0 }}>
+                        <img src="/icons/fincalix-logo.png" alt="FinCalix" style={{ width: '30px', height: '30px', borderRadius: '8px' }} />
+                        <span style={{ color: '#C9A84C', fontSize: '18px', fontWeight: 700, letterSpacing: '-0.3px' }}>FinCalix</span>
                     </a>
-                    <a
-                        href="/"
-                        style={{
-                            fontSize: '13px',
-                            color: '#94A3B8',
-                            textDecoration: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                        }}
-                    >
-                        ← Back to Home
-                    </a>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {langBar}
+                        <a href="/" style={{ fontSize: '12px', color: '#4A5568', textDecoration: 'none', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            ← Home
+                        </a>
+                    </div>
                 </div>
             </header>
 
-            {/* Main content */}
-            <main style={{ flex: 1, maxWidth: '860px', margin: '0 auto', width: '100%', padding: '56px 24px 80px' }}>
-                {/* Meta */}
-                <p
-                    style={{
-                        color: '#C9A84C',
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        letterSpacing: '1.2px',
-                        textTransform: 'uppercase',
-                        marginBottom: '12px',
-                    }}
-                >
-                    Last Updated: {updated}
+            {/* Content */}
+            <main style={{ flex: 1, maxWidth: '880px', margin: '0 auto', width: '100%', padding: '48px 24px 80px' }}>
+                <p style={{ color: '#C9A84C', fontSize: '11px', fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', marginBottom: '10px' }}>
+                    {updated}
                 </p>
-
-                <h1
-                    style={{
-                        fontSize: 'clamp(1.8rem, 5vw, 2.8rem)',
-                        fontWeight: 700,
-                        letterSpacing: '-1px',
-                        lineHeight: 1.1,
-                        marginBottom: '48px',
-                        color: '#fff',
-                    }}
-                >
+                <h1 style={{ fontSize: 'clamp(1.7rem, 5vw, 2.6rem)', fontWeight: 700, letterSpacing: '-0.8px', lineHeight: 1.1, marginBottom: '40px', color: '#fff' }}>
                     {title}
                 </h1>
-
-                <div style={{ maxWidth: '720px' }}>{children}</div>
+                {children}
             </main>
 
             {/* Footer */}
-            <footer
-                style={{
-                    borderTop: '1px solid rgba(255,255,255,0.06)',
-                    background: '#050D1A',
-                    padding: '24px',
-                    textAlign: 'center',
-                    fontSize: '12px',
-                    color: '#4A5568',
-                }}
-            >
-                © 2025 FinCalix ·{' '}
-                <a href="/privacy-policy" style={{ color: '#94A3B8', textDecoration: 'none' }}>Privacy Policy</a>
-                {' · '}
-                <a href="/terms-of-service" style={{ color: '#94A3B8', textDecoration: 'none' }}>Terms of Service</a>
-                {' · '}
-                <a href="/about" style={{ color: '#94A3B8', textDecoration: 'none' }}>About</a>
+            <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: '#050D1A', padding: '24px', textAlign: 'center', fontSize: '12px', color: '#4A5568' }}>
+                <div style={{ marginBottom: '8px' }}>FinCalix — Smart Financial Planning Tool</div>
+                <div>
+                    Made with ❤️ in India ·{' '}
+                    <a href="/privacy-policy" style={{ color: '#94A3B8', textDecoration: 'none' }}>Privacy</a>
+                    {' · '}
+                    <a href="/terms-of-service" style={{ color: '#94A3B8', textDecoration: 'none' }}>Terms</a>
+                    {' · '}
+                    <a href="/about" style={{ color: '#94A3B8', textDecoration: 'none' }}>About</a>
+                    {' · '}© 2026 FinCalix. All rights reserved.
+                </div>
             </footer>
-        </div>
-    );
-}
-
-// Shared section components used by all legal pages
-export function Section({ title, children }: { title: string; children: ReactNode }) {
-    return (
-        <section style={{ marginBottom: '48px' }}>
-            <div
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    marginBottom: '16px',
-                    paddingBottom: '12px',
-                    borderBottom: '1px solid rgba(201,168,76,0.15)',
-                }}
-            >
-                <div style={{ width: '3px', height: '20px', background: '#C9A84C', borderRadius: '2px', flexShrink: 0 }} />
-                <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#C9A84C', margin: 0 }}>{title}</h2>
-            </div>
-            <div style={{ color: '#94A3B8', fontSize: '15px', lineHeight: 1.75 }}>{children}</div>
-        </section>
-    );
-}
-
-export function P({ children }: { children: ReactNode }) {
-    return <p style={{ marginBottom: '12px' }}>{children}</p>;
-}
-
-export function UL({ items }: { items: string[] }) {
-    return (
-        <ul style={{ paddingLeft: '20px', margin: '8px 0 12px' }}>
-            {items.map((item, i) => (
-                <li key={i} style={{ marginBottom: '6px' }}>{item}</li>
-            ))}
-        </ul>
-    );
-}
-
-export function Highlight({ children }: { children: ReactNode }) {
-    return (
-        <div
-            style={{
-                background: 'rgba(201,168,76,0.07)',
-                border: '1px solid rgba(201,168,76,0.2)',
-                borderRadius: '12px',
-                padding: '14px 18px',
-                margin: '16px 0',
-                color: '#e2e8f0',
-                fontSize: '14px',
-                lineHeight: 1.65,
-            }}
-        >
-            {children}
         </div>
     );
 }

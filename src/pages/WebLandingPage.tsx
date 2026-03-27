@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.fincalix.app';
-const DEV_KEY = 'fincalix_dev_mode';
 
 // ── Deterministic particles (no Math.random on render) ──
 const PARTICLES = Array.from({ length: 30 }, (_, i) => ({
@@ -201,10 +200,6 @@ const GLOBAL_CSS = `
 }
 `;
 
-function isMobileDevice(): boolean {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
 // ── Scroll reveal ────────────────────────────────────────
 function Reveal({ children, delay = 0, className = '' }: { children: ReactNode; delay?: number; className?: string }) {
     const ref = useRef<HTMLDivElement>(null);
@@ -333,24 +328,21 @@ function PhoneMockup({ label = 'App Screenshot', src }: { label?: string; src?: 
     );
 }
 
-// ── Play Store CTA ───────────────────────────────────────
-function PlayStoreBadge({ large = false, className = '' }: { large?: boolean; className?: string }) {
-    const pad = large ? '16px 32px' : '12px 22px';
-    const iconSize = large ? 26 : 20;
+// ── Play Store CTA — official badge ─────────────────────
+function PlayStoreBadge({ large: _large, className = '' }: { large?: boolean; className?: string }) {
     return (
-        <a href={PLAY_STORE_URL} className={`fc-cta-btn ${className}`} style={{ padding: pad }}>
-            {/* Official-style Google Play triangle icon */}
-            <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-1.199c.445.217.744.666.744 1.198s-.3.981-.744 1.198l-2.15 1.245-2.51-2.443 2.51-2.443 2.15 1.245zm-11.3-7.197l10.937 6.333-2.302 2.302-8.635-8.635z" />
-            </svg>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.15 }}>
-                <span style={{ fontSize: large ? '11px' : '9px', fontWeight: 400, opacity: 0.75, letterSpacing: '0.8px', textTransform: 'uppercase' }}>
-                    Get it on
-                </span>
-                <span style={{ fontSize: large ? '20px' : '15px', fontWeight: 700, letterSpacing: '-0.3px' }}>
-                    Google Play
-                </span>
-            </div>
+        <a
+            href={PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-block transition-transform hover:scale-105 active:scale-95 ${className}`}
+            style={{ cursor: 'pointer' }}
+        >
+            <img
+                src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                alt="Get it on Google Play"
+                style={{ height: '60px', width: 'auto' }}
+            />
         </a>
     );
 }
@@ -373,46 +365,10 @@ function Pill({ children }: { children: ReactNode }) {
     );
 }
 
-// ── Mobile redirect ──────────────────────────────────────
-function MobileRedirectScreen({ countdown }: { countdown: number }) {
-    return (
-        <div
-            className="min-h-screen flex flex-col items-center justify-center px-6 fc-font-body"
-            style={{ background: '#050D1A' }}
-        >
-            <div className="flex flex-col items-center text-center">
-                <img
-                    src="/icons/fincalix-logo.png"
-                    alt="FinCalix"
-                    className="rounded-3xl mb-6"
-                    style={{ width: '96px', height: '96px', boxShadow: '0 0 70px rgba(201,168,76,0.4)' }}
-                />
-                <h1 className="text-4xl font-bold mb-2 fc-font-display" style={{ color: '#C9A84C' }}>
-                    FinCalix
-                </h1>
-                <p className="mb-10 max-w-xs" style={{ color: '#94A3B8', fontSize: '15px' }}>
-                    India's best free financial calculator — no login, works offline.
-                </p>
-                <p className="text-sm mb-3" style={{ color: '#4A5568' }}>Taking you to Play Store in</p>
-                <div
-                    className="text-8xl font-black mb-8 fc-font-mono"
-                    style={{ color: '#C9A84C', fontVariantNumeric: 'tabular-nums', lineHeight: 1 }}
-                >
-                    {countdown}
-                </div>
-                <PlayStoreBadge large />
-                <p className="mt-5 text-xs" style={{ color: '#4A5568' }}>Redirecting automatically…</p>
-            </div>
-        </div>
-    );
-}
-
 // ══════════════════════════════════════════════════════════
 // MAIN EXPORT
 // ══════════════════════════════════════════════════════════
 export default function WebLandingPage() {
-    const [countdown, setCountdown] = useState<number | null>(null);
-
     // Inject CSS once
     useEffect(() => {
         const ID = 'fc-styles';
@@ -423,25 +379,6 @@ export default function WebLandingPage() {
             document.head.prepend(el);
         }
     }, []);
-
-    // Dev gate + mobile redirect
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('dev') === 'true' || sessionStorage.getItem(DEV_KEY) === 'true') {
-            sessionStorage.setItem(DEV_KEY, 'true');
-            return;
-        }
-        if (isMobileDevice()) setCountdown(3);
-    }, []);
-
-    useEffect(() => {
-        if (countdown === null) return;
-        if (countdown <= 0) { window.location.href = PLAY_STORE_URL; return; }
-        const t = setTimeout(() => setCountdown((c) => (c !== null ? c - 1 : null)), 1000);
-        return () => clearTimeout(t);
-    }, [countdown]);
-
-    if (countdown !== null) return <MobileRedirectScreen countdown={countdown} />;
 
     return (
         <div className="fc-font-body" style={{ background: '#050D1A', color: '#fff', overflowX: 'hidden' }}>
@@ -1107,7 +1044,7 @@ export default function WebLandingPage() {
                                 className="inline-flex items-center gap-2 rounded-full mt-4 fc-font-mono text-xs font-medium"
                                 style={{ padding: '6px 12px', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)', color: '#C9A84C' }}
                             >
-                                ✦ v1.0.4
+                                ✦ v1.0.5
                             </div>
                         </div>
                     </div>
@@ -1117,7 +1054,7 @@ export default function WebLandingPage() {
                         className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 fc-font-body text-xs"
                         style={{ borderTop: '1px solid rgba(255,255,255,0.05)', color: '#4A5568' }}
                     >
-                        <span>© 2025 FinCalix. All rights reserved.</span>
+                        <span>© 2026 FinCalix. All rights reserved.</span>
                         <div className="flex items-center gap-4">
                             <a href="/privacy-policy" className="transition-colors hover:text-white" style={{ color: '#4A5568' }}>Privacy</a>
                             <a href="/terms-of-service" className="transition-colors hover:text-white" style={{ color: '#4A5568' }}>Terms</a>
