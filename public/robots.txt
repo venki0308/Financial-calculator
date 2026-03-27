@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
-
 Sitemap: https://fincalix.com/sitemap.xml
+Disallow: /api/

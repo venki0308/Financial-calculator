@@ -236,10 +236,17 @@ function AppContent() {
 }
 
 export default function App() {
-    // Native Android/iOS app → full calculator app as normal.
-    // Any web browser → WebLandingPage (which handles dev mode,
-    // mobile redirect, and desktop landing page internally).
-    if (Capacitor.isNativePlatform()) {
+    // Dev mode: ?dev=true in URL sets localStorage flag, persists for session
+    const urlParams = new URLSearchParams(window.location.search);
+    const isDevUrl = urlParams.get('dev') === 'true';
+    if (isDevUrl) {
+        localStorage.setItem('fincalix_dev_access', 'true');
+    }
+    const isDevMode = localStorage.getItem('fincalix_dev_access') === 'true';
+
+    // CASE 1: Native Android/iOS → always show full app
+    // CASE 2: Browser with dev mode → show full app for testing
+    if (Capacitor.isNativePlatform() || isDevMode) {
         return (
             <ErrorBoundary>
                 <BrowserRouter>
@@ -249,6 +256,7 @@ export default function App() {
         );
     }
 
+    // CASE 3: Regular browser visitor → landing page + legal routes
     return (
         <BrowserRouter>
             <Routes>

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.fincalix.app';
@@ -347,6 +347,106 @@ function PlayStoreBadge({ large: _large, className = '' }: { large?: boolean; cl
     );
 }
 
+// ── FAQ Accordion ────────────────────────────────────────
+const FAQS = [
+    {
+        q: 'Is FinCalix free to use?',
+        a: 'Yes, completely free. No subscription, no login, no hidden charges. Download and start calculating.',
+    },
+    {
+        q: 'Does FinCalix work offline?',
+        a: 'Yes, all 30+ calculators work completely offline. No internet needed after download.',
+    },
+    {
+        q: 'Is the Income Tax updated for Budget 2026-27?',
+        a: 'Yes, fully updated. Zero tax on income up to ₹12 lakh under New Regime after standard deduction.',
+    },
+    {
+        q: 'Which languages are supported?',
+        a: 'English, हिंदी, తెలుగు, தமிழ், ಕನ್ನಡ, മലയാളം — 6 Indian languages supported.',
+    },
+    {
+        q: 'How many calculators does FinCalix have?',
+        a: '30+ calculators — SIP, EMI, FD, PPF, HRA, GST, Income Tax, NPS, Sukanya Samriddhi, Age Calculator, Expense Tracker and more.',
+    },
+];
+
+function AccordionItem({ q, a, open, onToggle }: { q: string; a: string; open: boolean; onToggle: () => void }) {
+    return (
+        <div
+            style={{
+                background: '#0F1E35',
+                border: `1px solid ${open ? 'rgba(201,168,76,0.45)' : 'rgba(255,255,255,0.07)'}`,
+                borderRadius: '16px',
+                overflow: 'hidden',
+                transition: 'border-color 0.25s ease',
+            }}
+        >
+            <button
+                onClick={onToggle}
+                style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '16px',
+                    padding: '20px 24px',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                }}
+            >
+                <span
+                    className="fc-font-body"
+                    style={{ fontSize: '15px', fontWeight: 600, color: open ? '#C9A84C' : '#e2e8f0', lineHeight: 1.4, transition: 'color 0.2s' }}
+                >
+                    {q}
+                </span>
+                <span
+                    style={{
+                        flexShrink: 0,
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '8px',
+                        background: open ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.06)',
+                        border: `1px solid ${open ? 'rgba(201,168,76,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: open ? '#C9A84C' : '#94A3B8',
+                        fontSize: '18px',
+                        lineHeight: 1,
+                        transition: 'all 0.25s ease',
+                    }}
+                >
+                    {open ? '−' : '+'}
+                </span>
+            </button>
+            <div
+                style={{
+                    maxHeight: open ? '200px' : '0px',
+                    overflow: 'hidden',
+                    transition: 'max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
+            >
+                <p
+                    className="fc-font-body"
+                    style={{
+                        padding: '0 24px 20px',
+                        fontSize: '14px',
+                        color: '#94A3B8',
+                        lineHeight: 1.75,
+                        margin: 0,
+                    }}
+                >
+                    {a}
+                </p>
+            </div>
+        </div>
+    );
+}
+
 // ── Feature pill ─────────────────────────────────────────
 function Pill({ children }: { children: ReactNode }) {
     return (
@@ -365,6 +465,50 @@ function Pill({ children }: { children: ReactNode }) {
     );
 }
 
+// ── FAQ Section component ────────────────────────────────
+function FaqSection() {
+    const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+    return (
+        <section
+            style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                background: '#050D1A',
+                borderTop: '1px solid rgba(255,255,255,0.05)',
+                padding: '96px 24px',
+            }}
+        >
+            <div style={{ width: '100%', maxWidth: '760px', margin: '0 auto', boxSizing: 'border-box' }}>
+                <Reveal className="text-center mb-14">
+                    <h2
+                        className="fc-font-display font-bold mb-4"
+                        style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', letterSpacing: '-0.5px' }}
+                    >
+                        Frequently Asked Questions
+                    </h2>
+                    <p className="fc-font-body" style={{ color: '#94A3B8', fontSize: '16px' }}>
+                        Everything you need to know about FinCalix
+                    </p>
+                </Reveal>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {FAQS.map((faq, i) => (
+                        <Reveal key={faq.q} delay={i * 60}>
+                            <AccordionItem
+                                q={faq.q}
+                                a={faq.a}
+                                open={openIndex === i}
+                                onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+                            />
+                        </Reveal>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
 // ══════════════════════════════════════════════════════════
 // MAIN EXPORT
 // ══════════════════════════════════════════════════════════
@@ -380,13 +524,53 @@ export default function WebLandingPage() {
         }
     }, []);
 
+    const isDevMode = localStorage.getItem('fincalix_dev_access') === 'true';
+
     return (
-        <div className="fc-font-body" style={{ background: '#050D1A', color: '#fff', overflowX: 'hidden' }}>
+        <div className="fc-font-body" style={{ background: '#050D1A', color: '#fff', width: '100%', maxWidth: '100vw', overflowX: 'hidden', boxSizing: 'border-box' }}>
+
+            {/* Dev mode exit badge */}
+            {isDevMode && (
+                <button
+                    onClick={() => {
+                        localStorage.removeItem('fincalix_dev_access');
+                        window.location.href = '/';
+                    }}
+                    style={{
+                        position: 'fixed',
+                        bottom: '16px',
+                        left: '16px',
+                        zIndex: 9999,
+                        padding: '8px 14px',
+                        borderRadius: '20px',
+                        background: '#0F1E35',
+                        border: '1px solid rgba(201,168,76,0.4)',
+                        color: '#C9A84C',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontFamily: 'DM Sans, sans-serif',
+                        whiteSpace: 'nowrap',
+                    }}
+                >
+                    🔧 Exit Dev Mode
+                </button>
+            )}
 
             {/* ─────────────────────────── NAVBAR ─── */}
             <nav
-                className="fc-glass fixed top-0 left-0 right-0 z-50"
-                style={{ borderBottom: '1px solid rgba(201,168,76,0.12)' }}
+                className="fc-glass"
+                style={{
+                    width: '100%',
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    zIndex: 1000,
+                    backgroundColor: 'rgba(5,13,26,0.95)',
+                    borderBottom: '1px solid rgba(201,168,76,0.12)',
+                    boxSizing: 'border-box',
+                }}
             >
                 <div
                     className="max-w-7xl mx-auto flex items-center justify-between"
@@ -404,12 +588,22 @@ export default function WebLandingPage() {
 
             {/* ─────────────────────────── HERO ────── */}
             <section
-                className="relative min-h-screen flex items-center"
+                className="relative"
                 style={{
-                    paddingTop: '88px',
+                    width: '100%',
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    paddingTop: '80px',
+                    paddingLeft: '24px',
+                    paddingRight: '24px',
+                    boxSizing: 'border-box',
                     background: `
-                        radial-gradient(ellipse at 65% 28%, rgba(201,168,76,0.13) 0%, transparent 52%),
-                        radial-gradient(ellipse at 18% 78%, rgba(139,92,246,0.10) 0%, transparent 48%),
+                        radial-gradient(ellipse at 50% 28%, rgba(201,168,76,0.13) 0%, transparent 52%),
+                        radial-gradient(ellipse at 50% 78%, rgba(139,92,246,0.10) 0%, transparent 48%),
                         #050D1A
                     `,
                 }}
@@ -420,138 +614,100 @@ export default function WebLandingPage() {
                 <div
                     className="absolute pointer-events-none"
                     style={{
-                        top: '30%',
-                        left: '20%',
+                        top: '40%',
+                        left: '50%',
                         width: '700px',
                         height: '450px',
                         background: 'radial-gradient(ellipse, rgba(201,168,76,0.1) 0%, transparent 70%)',
-                        transform: 'translate(-30%, -50%)',
+                        transform: 'translate(-50%, -50%)',
                         animation: 'fc-glow-pulse 5s ease-in-out infinite',
                     }}
                 />
 
-                <div className="relative z-10 max-w-7xl mx-auto w-full" style={{ padding: '40px 24px 80px' }}>
-                    <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+                <div
+                    className="relative z-10"
+                    style={{
+                        width: '100%',
+                        maxWidth: '900px',
+                        margin: '0 auto',
+                        padding: '40px 0 60px',
+                        boxSizing: 'border-box',
+                    }}
+                >
+                    {/* Badge */}
+                    <div
+                        className="inline-flex items-center gap-2 rounded-full fc-font-mono text-xs font-medium mb-8"
+                        style={{
+                            padding: '8px 16px',
+                            background: 'rgba(201,168,76,0.1)',
+                            border: '1px solid rgba(201,168,76,0.3)',
+                            color: '#C9A84C',
+                        }}
+                    >
+                        <span>✦</span>
+                        Budget 2026-27 Updated · Made for India
+                    </div>
 
-                        {/* ── Left text ── */}
-                        <div className="flex-1 text-center lg:text-left" style={{ maxWidth: '560px' }}>
-                            {/* Badge */}
-                            <div
-                                className="inline-flex items-center gap-2 rounded-full fc-font-mono text-xs font-medium mb-8"
-                                style={{
-                                    padding: '8px 16px',
-                                    background: 'rgba(201,168,76,0.1)',
-                                    border: '1px solid rgba(201,168,76,0.3)',
-                                    color: '#C9A84C',
-                                }}
-                            >
-                                <span>✦</span>
-                                Budget 2026-27 Updated · Made for India
-                            </div>
-
-                            {/* Headline */}
-                            <h1
-                                className="fc-font-display font-black leading-[1.05] mb-6"
-                                style={{ fontSize: 'clamp(2.8rem, 6vw, 4.75rem)', letterSpacing: '-2.5px' }}
-                            >
-                                India's Smartest
-                                <br />
-                                <span
-                                    style={{
-                                        background: 'linear-gradient(120deg, #C9A84C 0%, #E8C96A 45%, #C9A84C 100%)',
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent',
-                                        backgroundClip: 'text',
-                                    }}
-                                >
-                                    Financial Super
-                                </span>
-                                <br />
-                                Calculator
-                            </h1>
-
-                            {/* Sub */}
-                            <p
-                                className="fc-font-body mb-8 leading-relaxed"
-                                style={{ fontSize: '17px', color: '#94A3B8', lineHeight: 1.65 }}
-                            >
-                                30+ calculators, 45+ government schemes, expense tracking — everything to master your money.{' '}
-                                <strong style={{ color: '#e2e8f0' }}>Free. Offline. No login.</strong>
-                            </p>
-
-                            {/* Trust row */}
-                            <div
-                                className="fc-font-mono flex flex-wrap justify-center lg:justify-start items-center gap-x-3 gap-y-1 mb-10 text-xs"
-                                style={{ color: '#4A5568' }}
-                            >
-                                {['30+ Calculators', '45 Schemes', '5 Languages', '100% Free'].map((t, i, arr) => (
-                                    <span key={t} className="flex items-center gap-3">
-                                        <span style={{ color: '#C9A84C' }}>{t}</span>
-                                        {i < arr.length - 1 && <span>·</span>}
-                                    </span>
-                                ))}
-                            </div>
-
-                            <div className="flex flex-col items-center lg:items-start gap-3">
-                                <PlayStoreBadge large />
-                                <p className="text-xs" style={{ color: '#4A5568' }}>
-                                    No account needed · Works offline
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* ── Right phone ── */}
-                        <div
-                            className="hidden lg:flex relative flex-shrink-0 items-center justify-center"
-                            style={{ width: '340px', height: '580px' }}
+                    {/* Headline */}
+                    <h1
+                        className="fc-font-display font-black mb-6"
+                        style={{
+                            fontSize: 'clamp(40px, 7vw, 80px)',
+                            fontWeight: 900,
+                            lineHeight: 1.1,
+                            color: '#FFFFFF',
+                            textAlign: 'center',
+                            letterSpacing: '-2.5px',
+                        }}
+                    >
+                        India's Smartest
+                        <br />
+                        <span
+                            style={{
+                                background: 'linear-gradient(120deg, #C9A84C 0%, #E8C96A 45%, #C9A84C 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text',
+                            }}
                         >
-                            <PhoneMockup label="Home Screen" src="/screenshots/home.png" />
+                            Financial Super
+                        </span>
+                        <br />
+                        Calculator
+                    </h1>
 
-                            {/* Floating badge — top right */}
-                            <div className="fc-badge-a absolute" style={{ top: '48px', right: '-28px' }}>
-                                <div
-                                    className="fc-glass rounded-2xl text-xs font-semibold whitespace-nowrap"
-                                    style={{
-                                        padding: '10px 14px',
-                                        border: '1px solid rgba(201,168,76,0.4)',
-                                        color: '#C9A84C',
-                                        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                                    }}
-                                >
-                                    ⚡ 30+ Calculators
-                                </div>
-                            </div>
+                    {/* Sub */}
+                    <p
+                        className="fc-font-body mb-8 leading-relaxed"
+                        style={{ fontSize: '17px', color: '#94A3B8', lineHeight: 1.65, maxWidth: '600px', margin: '0 auto 32px' }}
+                    >
+                        30+ calculators, 45+ government schemes, expense tracking — everything to master your money.{' '}
+                        <strong style={{ color: '#e2e8f0' }}>Free. Offline. No login.</strong>
+                    </p>
 
-                            {/* Floating badge — bottom left */}
-                            <div className="fc-badge-b absolute" style={{ bottom: '110px', left: '-48px' }}>
-                                <div
-                                    className="fc-glass rounded-2xl text-xs font-semibold whitespace-nowrap"
-                                    style={{
-                                        padding: '10px 14px',
-                                        border: '1px solid rgba(16,185,129,0.4)',
-                                        color: '#10B981',
-                                        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                                    }}
-                                >
-                                    📅 Budget 2026-27
-                                </div>
-                            </div>
+                    {/* Trust row */}
+                    <div
+                        className="fc-font-mono flex flex-wrap justify-center items-center gap-x-3 gap-y-1 mb-10 text-xs"
+                        style={{ color: '#4A5568' }}
+                    >
+                        {['30+ Calculators', '45 Schemes', '5 Languages', '100% Free'].map((t, i, arr) => (
+                            <span key={t} className="flex items-center gap-3">
+                                <span style={{ color: '#C9A84C' }}>{t}</span>
+                                {i < arr.length - 1 && <span>·</span>}
+                            </span>
+                        ))}
+                    </div>
 
-                            {/* Floating badge — left middle */}
-                            <div className="fc-badge-c absolute" style={{ top: '200px', left: '-56px' }}>
-                                <div
-                                    className="fc-glass rounded-2xl text-xs font-semibold whitespace-nowrap"
-                                    style={{
-                                        padding: '10px 14px',
-                                        border: '1px solid rgba(139,92,246,0.4)',
-                                        color: '#8B5CF6',
-                                        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                                    }}
-                                >
-                                    🔒 100% Free
-                                </div>
-                            </div>
-                        </div>
+                    <div className="flex flex-col items-center gap-3 mb-14">
+                        <PlayStoreBadge large />
+                        <p className="text-xs" style={{ color: '#4A5568' }}>
+                            No account needed · Works offline
+                        </p>
+                    </div>
+
+                    {/* Phone mockup — centered below text */}
+                    <div className="flex justify-center" style={{ position: 'relative' }}>
+                        <PhoneMockup label="Home Screen" src="/screenshots/home.png" />
                     </div>
                 </div>
 
@@ -574,6 +730,8 @@ export default function WebLandingPage() {
             {/* ─────────────────────────── STATS STRIP ─── */}
             <section
                 style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
                     background: '#0A1628',
                     borderTop: '1px solid rgba(201,168,76,0.22)',
                     borderBottom: '1px solid rgba(201,168,76,0.1)',
@@ -607,7 +765,7 @@ export default function WebLandingPage() {
             {FEATURE_BLOCKS.map((block) => (
                 <section
                     key={block.id}
-                    style={{ background: block.phoneLeft ? '#050D1A' : '#0A1628', padding: '96px 24px' }}
+                    style={{ width: '100%', boxSizing: 'border-box', background: block.phoneLeft ? '#050D1A' : '#0A1628', padding: '96px 24px' }}
                 >
                     <div className="max-w-6xl mx-auto">
                         <div
@@ -676,6 +834,8 @@ export default function WebLandingPage() {
             {/* ─────────────────── MULTILINGUAL BANNER ─── */}
             <section
                 style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
                     background: `radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 60%), #050D1A`,
                     borderTop: '1px solid rgba(255,255,255,0.05)',
                     borderBottom: '1px solid rgba(255,255,255,0.05)',
@@ -717,7 +877,7 @@ export default function WebLandingPage() {
             </section>
 
             {/* ─────────────────── CALCULATOR GRID ───────── */}
-            <section style={{ background: '#0A1628', padding: '96px 24px' }}>
+            <section style={{ width: '100%', boxSizing: 'border-box', background: '#0A1628', padding: '96px 24px' }}>
                 <div className="max-w-6xl mx-auto">
                     <Reveal className="text-center mb-14">
                         <h2
@@ -771,6 +931,8 @@ export default function WebLandingPage() {
             {/* ─────────────────── HOW IT WORKS ───────────── */}
             <section
                 style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
                     background: `radial-gradient(ellipse at 50% 100%, rgba(201,168,76,0.07) 0%, transparent 55%), #050D1A`,
                     borderTop: '1px solid rgba(255,255,255,0.05)',
                     padding: '96px 24px',
@@ -831,10 +993,15 @@ export default function WebLandingPage() {
                 </div>
             </section>
 
+            {/* ───────────────────────── FAQ ──────────────── */}
+            <FaqSection />
+
             {/* ─────────────────── FINAL CTA BANNER ──────── */}
             <section
                 className="relative overflow-hidden text-center"
                 style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
                     background: '#0A1628',
                     borderTop: '1px solid rgba(201,168,76,0.18)',
                     padding: '112px 24px',
@@ -886,7 +1053,7 @@ export default function WebLandingPage() {
             </section>
 
             {/* ─────────────────────────── FOOTER ────────── */}
-            <footer style={{ background: '#050D1A', borderTop: '1px solid rgba(201,168,76,0.12)' }}>
+            <footer style={{ width: '100%', boxSizing: 'border-box', background: '#050D1A', borderTop: '1px solid rgba(201,168,76,0.12)' }}>
                 <div className="max-w-6xl mx-auto" style={{ padding: '64px 24px 32px' }}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 
