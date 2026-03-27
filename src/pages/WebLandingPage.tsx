@@ -185,14 +185,41 @@ const GLOBAL_CSS = `
 .fc-hero-h1-size{font-size:clamp(48px,8vw,88px)}
 .fc-calc-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
 .fc-footer-grid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.fc-social-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
 
-/* ── Mobile responsive ── */
+/* ── Mobile (<768px) ── */
 @media(max-width:767px){
-  .fc-section-pad{padding-top:60px!important;padding-bottom:60px!important;padding-left:20px!important;padding-right:20px!important}
+  html,body{overflow-x:hidden}
+
+  /* Hero */
+  .fc-hero-section{padding-top:100px!important;padding-bottom:60px!important;padding-left:20px!important;padding-right:20px!important}
+  .fc-hero-phone{display:none!important}
+  .fc-hero-h1-size{font-size:clamp(32px,10vw,56px)}
+  .fc-hero-sub{font-size:15px!important}
+
+  /* All standard sections: 60px vertical, 20px horizontal */
+  .fc-sec{padding-top:60px!important;padding-bottom:60px!important;padding-left:20px!important;padding-right:20px!important}
+  .fc-stats-sec{padding:32px 20px!important}
+  .fc-final-cta{padding:80px 20px!important}
+
+  /* Screenshots: keep full-bleed carousel, only reduce vertical */
+  .fc-screenshots-sec{padding-top:60px!important;padding-bottom:60px!important}
+  .fc-carousel-track{padding:20px 20px 32px!important}
+
+  /* Bento "30+" headline */
+  .fc-bento-big-num{font-size:44px!important}
+
+  /* Stats strip: remove the rogue right-border on the 2nd item in 2-col wrap */
+  .fc-stat-col:nth-child(even){border-right:none!important}
+
+  /* Grids */
   .fc-calc-grid{grid-template-columns:repeat(2,1fr)!important}
+  .fc-social-grid{grid-template-columns:1fr!important}
   .fc-footer-grid{grid-template-columns:1fr!important}
-  .fc-hero-h1-size{font-size:clamp(36px,10vw,64px)}
+  .fc-footer-inner{padding:40px 20px 24px!important}
 }
+
+/* ── Tablet (768–1023px) ── */
 @media(min-width:768px) and (max-width:1023px){
   .fc-calc-grid{grid-template-columns:repeat(3,1fr)!important}
 }
@@ -331,7 +358,7 @@ function NavBar() {
 // ── Hero ──────────────────────────────────────────────────
 function HeroSection() {
     return (
-        <section style={{ position: 'relative', minHeight: '100vh', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: '140px', paddingBottom: '100px', paddingLeft: '24px', paddingRight: '24px', textAlign: 'center', background: '#020810', overflow: 'hidden' }}>
+        <section className="fc-hero-section" style={{ position: 'relative', minHeight: '100vh', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: '140px', paddingBottom: '100px', paddingLeft: '24px', paddingRight: '24px', textAlign: 'center', background: '#020810', overflow: 'hidden' }}>
             {/* Layer 1 — base radial vignettes */}
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 80% 50% at 50% -10%,rgba(201,168,76,.1),transparent)' }} />
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 40% at 80% 110%,rgba(59,130,246,.05),transparent)' }} />
@@ -365,7 +392,7 @@ function HeroSection() {
                     <span style={{ color: '#FFFFFF', display: 'block' }}>Calculator</span>
                 </h1>
 
-                <p className="fc-body fc-hero-sub" style={{ fontSize: '18px', color: '#94A3B8', lineHeight: 1.65, maxWidth: '520px', margin: '0 auto 32px' }}>
+                <p className="fc-body fc-hero-sub" style={{ fontSize: '18px', color: '#94A3B8', lineHeight: 1.65, maxWidth: '520px', margin: '0 auto 32px', width: '100%' }}>
                     30+ calculators, 45+ government schemes, expense tracking — everything to master your money.
                 </p>
 
@@ -441,10 +468,10 @@ function StatItem({ stat }: { stat: typeof STATS[0] }) {
 
 function StatsStrip() {
     return (
-        <section style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(201,168,76,.02)', borderTop: '1px solid rgba(201,168,76,.08)', borderBottom: '1px solid rgba(201,168,76,.08)', padding: '48px 24px' }}>
+        <section className="fc-stats-sec" style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(201,168,76,.02)', borderTop: '1px solid rgba(201,168,76,.08)', borderBottom: '1px solid rgba(201,168,76,.08)', padding: '48px 24px' }}>
             <div className="fc-stats-grid" style={{ maxWidth: '900px', margin: '0 auto' }}>
                 {STATS.map((s, i) => (
-                    <div key={s.label} style={{ borderRight: i < 3 ? '1px solid rgba(255,255,255,.06)' : 'none' }}>
+                    <div key={s.label} className="fc-stat-col" style={{ borderRight: i < 3 ? '1px solid rgba(255,255,255,.06)' : 'none' }}>
                         <StatItem stat={s} />
                     </div>
                 ))}
@@ -456,7 +483,7 @@ function StatsStrip() {
 // ── Bento grid ────────────────────────────────────────────
 function BentoGrid() {
     return (
-        <section style={{ width: '100%', boxSizing: 'border-box', background: '#060F1C', padding: '96px 24px' }}>
+        <section className="fc-sec" style={{ width: '100%', boxSizing: 'border-box', background: '#060F1C', padding: '96px 24px' }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <Reveal className="text-center" style={{ marginBottom: '56px' }}>
                     <h2 className="fc-display" style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 800, letterSpacing: '-0.04em', color: '#fff', marginBottom: '12px' }}>
@@ -470,7 +497,7 @@ function BentoGrid() {
                     <Reveal style={{ gridColumn: '1 / 9', gridRow: '1 / 3' }}>
                         <div className="fc-bento" style={{ height: '100%', padding: '32px', position: 'relative', minHeight: '400px', background: 'linear-gradient(135deg,#0B1929,#0F1E35)' }}>
                             <div style={{ marginBottom: '20px' }}>
-                                <span className="fc-mono fc-gold-text" style={{ fontSize: '72px', fontWeight: 600, lineHeight: 1 }}>30+</span>
+                                <span className="fc-mono fc-gold-text fc-bento-big-num" style={{ fontSize: '72px', fontWeight: 600, lineHeight: 1 }}>30+</span>
                                 <div className="fc-body" style={{ fontSize: '14px', color: '#94A3B8', marginTop: '4px' }}>Smart Financial Calculators</div>
                             </div>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '100px' }}>
@@ -593,7 +620,7 @@ function ScreenshotsSection() {
         carouselRef.current?.scrollBy({ left: dir * 300, behavior: 'smooth' });
     };
     return (
-        <section className="fc-section-pad" style={{ background: '#020810', borderTop: '1px solid rgba(255,255,255,.04)', paddingTop: '96px', paddingBottom: '96px', paddingLeft: '0', paddingRight: '0', overflow: 'hidden' }}>
+        <section className="fc-screenshots-sec" style={{ background: '#020810', borderTop: '1px solid rgba(255,255,255,.04)', paddingTop: '96px', paddingBottom: '96px', paddingLeft: '0', paddingRight: '0', overflow: 'hidden' }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto', paddingLeft: '24px', paddingRight: '24px' }}>
                 <Reveal className="text-center" style={{ marginBottom: '40px' }}>
                     <h2 className="fc-display" style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 800, letterSpacing: '-0.04em', color: '#fff', marginBottom: '12px' }}>
@@ -612,7 +639,7 @@ function ScreenshotsSection() {
                 </button>
 
                 {/* Scrollable track */}
-                <div ref={carouselRef} className="fc-carousel"
+                <div ref={carouselRef} className="fc-carousel fc-carousel-track"
                     style={{ display: 'flex', gap: '20px', overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '40px 60px' }}>
                     {SCREENSHOTS_DATA.map((item, i) => (
                         <div key={i} style={{ scrollSnapAlign: 'start', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -666,7 +693,7 @@ function CalculatorSpotlightGrid() {
     const filtered = activeTab === 'All' ? CALC_MODULES : CALC_MODULES.filter(m => m.cat === activeTab);
 
     return (
-        <section style={{ width: '100%', boxSizing: 'border-box', background: '#060F1C', padding: '96px 24px', borderTop: '1px solid rgba(255,255,255,.04)' }}>
+        <section className="fc-sec" style={{ width: '100%', boxSizing: 'border-box', background: '#060F1C', padding: '96px 24px', borderTop: '1px solid rgba(255,255,255,.04)' }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
                 <Reveal className="text-center" style={{ marginBottom: '40px' }}>
                     <h2 className="fc-display" style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 800, letterSpacing: '-0.04em', color: '#fff', marginBottom: '12px' }}>Every Calculator You Need</h2>
@@ -704,14 +731,14 @@ function SocialProof() {
         { icon: '🇮🇳', title: 'Made for India',         desc: 'Built specifically for Indian tax laws, government schemes, and financial products.', color: '#3B82F6' },
     ];
     return (
-        <section style={{ width: '100%', boxSizing: 'border-box', background: '#020810', borderTop: '1px solid rgba(255,255,255,.05)', padding: '80px 24px' }}>
+        <section className="fc-sec" style={{ width: '100%', boxSizing: 'border-box', background: '#020810', borderTop: '1px solid rgba(255,255,255,.05)', padding: '80px 24px' }}>
             <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
                 <Reveal className="text-center" style={{ marginBottom: '48px' }}>
                     <h2 className="fc-display" style={{ fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 800, letterSpacing: '-0.04em', color: '#fff' }}>
                         Trusted by Indians for Smart Financial Planning
                     </h2>
                 </Reveal>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: '16px' }}>
+                <div className="fc-social-grid">
                     {cards.map((c, i) => (
                         <Reveal key={c.title} delay={i * 80}>
                             <div style={{ padding: '28px', borderRadius: '20px', background: 'rgba(255,255,255,.02)', border: '1px solid rgba(255,255,255,.06)', backdropFilter: 'blur(10px)', height: '100%' }}>
@@ -749,7 +776,7 @@ function FaqSection() {
     const left  = FAQS.filter((_, i) => i % 2 === 0);
     const right = FAQS.filter((_, i) => i % 2 !== 0);
     return (
-        <section style={{ width: '100%', boxSizing: 'border-box', background: '#060F1C', borderTop: '1px solid rgba(255,255,255,.04)', padding: '96px 24px' }}>
+        <section className="fc-sec" style={{ width: '100%', boxSizing: 'border-box', background: '#060F1C', borderTop: '1px solid rgba(255,255,255,.04)', padding: '96px 24px' }}>
             <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
                 <Reveal className="text-center" style={{ marginBottom: '52px' }}>
                     <h2 className="fc-display" style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 800, letterSpacing: '-0.04em', color: '#fff', marginBottom: '12px' }}>Common Questions</h2>
@@ -777,7 +804,7 @@ function FaqSection() {
 // ── Final CTA ─────────────────────────────────────────────
 function FinalCTA() {
     return (
-        <section style={{ position: 'relative', width: '100%', boxSizing: 'border-box', background: '#020810', padding: '120px 24px', textAlign: 'center', overflow: 'hidden' }}>
+        <section className="fc-final-cta" style={{ position: 'relative', width: '100%', boxSizing: 'border-box', background: '#020810', padding: '120px 24px', textAlign: 'center', overflow: 'hidden' }}>
             <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 70% 50% at 50% 0%,rgba(201,168,76,.1),transparent)' }} />
             <div className="fc-grid-bg" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 1, maxWidth: '700px', margin: '0 auto' }}>
@@ -803,7 +830,7 @@ function FinalCTA() {
 function Footer() {
     return (
         <footer style={{ width: '100%', boxSizing: 'border-box', background: '#020810', borderTop: '1px solid rgba(255,255,255,.06)' }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '64px 24px 32px' }}>
+            <div className="fc-footer-inner" style={{ maxWidth: '1200px', margin: '0 auto', padding: '64px 24px 32px' }}>
                 <div className="fc-footer-grid" style={{ display: 'grid', gap: '40px 24px', marginBottom: '48px' }}>
 
                     {/* Brand */}
