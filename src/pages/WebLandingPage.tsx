@@ -60,7 +60,7 @@ const FAQS = [
 const STATS = [
     { value: 30, suffix: '+', label: 'Smart Calculators' },
     { value: 45, suffix: '+', label: 'Govt Schemes'      },
-    { value: 5,  suffix: '',  label: 'Indian Languages'  },
+    { value: 6,  suffix: '',  label: 'Indian Languages'  },
     { value: 0,  suffix: '∞', label: 'Free Forever'      },
 ];
 
@@ -175,7 +175,7 @@ const GLOBAL_CSS = `
 @media(max-width:767px){.fc-nav-badge{display:none!important}}
 
 /* ── Screenshots carousel ── */
-.fc-carousel{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+.fc-carousel{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
 .fc-carousel::-webkit-scrollbar{display:none}
 
 /* ── Carousel arrows — desktop only ── */
