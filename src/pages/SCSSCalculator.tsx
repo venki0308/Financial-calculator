@@ -179,28 +179,28 @@ export default function SCSSCalculator() {
                 </div>
 
                 {/* Result Card */}
-                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-purple-500/20">
-                    <p className="text-purple-300 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wider mb-1">Quarterly Income</p>
+                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-purple-500/30">
+                    <p className="text-purple-600 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wider mb-1">Quarterly Income</p>
                     <p className="text-3xl font-black text-foreground mb-4">{formatINR(result.quarterlyIncome)}</p>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Annual Income</p>
-                            <p className="text-brand-green font-bold text-sm">{formatINR(result.annualInterest)}</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">Annual Income</p>
+                            <p className="text-green-600 dark:text-brand-green font-bold text-sm">{formatINR(result.annualInterest)}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Total Interest ({tenure} yrs)</p>
-                            <p className="text-foreground font-bold text-sm">{formatINR(result.totalInterest)}</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">Total Interest ({tenure} yrs)</p>
+                            <p className="text-slate-800 dark:text-slate-100 font-bold text-sm">{formatINR(result.totalInterest)}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Principal</p>
-                            <p className="text-blue-400 font-bold text-sm">{formatINR(investment)}</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">Principal</p>
+                            <p className="text-blue-600 dark:text-blue-400 font-bold text-sm">{formatINR(investment)}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Maturity Amount</p>
-                            <p className="text-amber-400 font-bold text-sm">{formatINR(result.maturityAmount)}</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">Maturity Amount</p>
+                            <p className="text-amber-600 dark:text-amber-400 font-bold text-sm">{formatINR(result.maturityAmount)}</p>
                         </div>
                     </div>
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/20 dark:bg-white/10 border border-white/20 text-slate-800 dark:text-slate-100 font-bold text-sm">
                         <Save size={16} /> {saved ? '✅ Saved!' : 'Save Calculation'}
                     </motion.button>
                 </motion.div>
@@ -336,10 +336,10 @@ export default function SCSSCalculator() {
 
                 {/* Export & Share */}
                 <div className="grid grid-cols-3 gap-3">
-                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium">
+                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-slate-600 dark:text-slate-300 text-[10px] font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                         <Download size={16} /> PDF
                     </button>
-                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium">
+                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-slate-600 dark:text-slate-300 text-[10px] font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                         <Download size={16} /> Excel
                     </button>
                     <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white text-[10px] font-bold">
