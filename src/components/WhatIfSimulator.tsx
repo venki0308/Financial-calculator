@@ -76,7 +76,7 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
                                 onChange={(e) => handleSliderChange(slider.key, Number(e.target.value))}
                                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
                                 style={{
-                                    background: `linear-gradient(to right, #6366F1 ${((adjVal - slider.min) / (slider.max - slider.min)) * 100}%, #1E293B ${((adjVal - slider.min) / (slider.max - slider.min)) * 100}%)`,
+                                    background: `linear-gradient(to right, #6366F1 ${((adjVal - slider.min) / (slider.max - slider.min)) * 100}%, #475569 ${((adjVal - slider.min) / (slider.max - slider.min)) * 100}%)`,
                                 }}
                             />
                             <div className="flex justify-between mt-0.5">
@@ -94,7 +94,7 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
                     <p className="text-slate-500 dark:text-muted-foreground text-[9px] uppercase font-bold tracking-wider mb-2">{resultLabel}</p>
                     <div className="flex items-center gap-2">
                         <span className="text-slate-400 dark:text-muted-foreground text-sm line-through">{resultPrefix}{currentResult >= 1000 ? formatINR(currentResult) : currentResult.toLocaleString('en-IN')}</span>
-                        <ArrowRight size={14} className="text-slate-400 dark:text-slate-600" />
+                        <ArrowRight size={14} className="text-slate-400 dark:text-slate-400" />
                         <span className="text-slate-900 dark:text-foreground font-bold text-lg">{resultPrefix}{adjustedResult >= 1000 ? formatINR(adjustedResult) : adjustedResult.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex items-center gap-1.5 mt-1.5">
@@ -112,7 +112,7 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
             )}
 
             {!hasChanges && (
-                <div className="p-3 rounded-xl bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-transparent text-center shadow-sm dark:shadow-none">
+                <div className="p-3 rounded-xl bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-center shadow-sm dark:shadow-none">
                     <p className="text-slate-600 dark:text-slate-300 text-xs font-medium">Adjust sliders to see how changes affect your result</p>
                 </div>
             )}

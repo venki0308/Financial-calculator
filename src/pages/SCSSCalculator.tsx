@@ -180,7 +180,7 @@ export default function SCSSCalculator() {
 
                 {/* Result Card */}
                 <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-purple-500/20">
-                    <p className="text-purple-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">Quarterly Income</p>
+                    <p className="text-purple-300 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wider mb-1">Quarterly Income</p>
                     <p className="text-3xl font-black text-foreground mb-4">{formatINR(result.quarterlyIncome)}</p>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
@@ -280,7 +280,7 @@ export default function SCSSCalculator() {
                     {showBreakdown && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="rounded-2xl bg-card border border-border overflow-hidden">
-                                <div className="grid grid-cols-4 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-800/50">
+                                <div className="grid grid-cols-4 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-200 dark:bg-slate-800/50">
                                     <span>Year</span><span>Interest</span><span>TDS</span><span>Cumulative</span>
                                 </div>
                                 {result.yearlyBreakdown.map((row, i) => (
