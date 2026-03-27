@@ -232,26 +232,18 @@ function AppContent() {
 }
 
 export default function App() {
-    const isNativePlatform =
-        Capacitor.isNativePlatform() ||
-        window.location.protocol === 'capacitor:' ||
-        (window as any).__CAPACITOR__;
-
-    // Web detection — more reliable
-    const isWebBrowser =
-        !isNativePlatform &&
-        (window.location.protocol === 'https:' ||
-            window.location.protocol === 'http:');
-
-    if (isWebBrowser) {
-        return <WebLandingPage />;
+    // Native Android/iOS app → full calculator app as normal.
+    // Any web browser → WebLandingPage (which handles dev mode,
+    // mobile redirect, and desktop landing page internally).
+    if (Capacitor.isNativePlatform()) {
+        return (
+            <ErrorBoundary>
+                <BrowserRouter>
+                    <AppContent />
+                </BrowserRouter>
+            </ErrorBoundary>
+        );
     }
 
-    return (
-        <ErrorBoundary>
-            <BrowserRouter>
-                <AppContent />
-            </BrowserRouter>
-        </ErrorBoundary>
-    );
+    return <WebLandingPage />;
 }
