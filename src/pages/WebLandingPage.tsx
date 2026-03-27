@@ -15,14 +15,14 @@ const PARTICLES = Array.from({ length: 20 }, (_, i) => ({
 
 // ── Screenshot cards ──────────────────────────────────────
 const SCREENSHOTS_DATA = [
-    { label: 'Home Dashboard',        caption: 'Your complete financial overview', bg: 'linear-gradient(135deg,#6D28D9 0%,#4C1D95 100%)', icon: '🏠' },
-    { label: '30+ Calculators',       caption: 'SIP, EMI, Tax and more',           bg: 'linear-gradient(135deg,#1D4ED8 0%,#1E3A8A 100%)', icon: '🧮' },
-    { label: 'Income Tax Calculator', caption: 'Old vs New Regime 2026-27',        bg: 'linear-gradient(135deg,#059669 0%,#064E3B 100%)', icon: '💼' },
-    { label: 'Government Schemes',    caption: '45+ schemes discovered',           bg: 'linear-gradient(135deg,#D97706 0%,#92400E 100%)', icon: '🏛️' },
-    { label: 'Expense Tracker',       caption: 'Track every rupee',                bg: 'linear-gradient(135deg,#DC2626 0%,#7F1D1D 100%)', icon: '📒' },
-    { label: 'Multiple Languages',    caption: 'Hindi, Telugu, Tamil & more',      bg: 'linear-gradient(135deg,#0D9488 0%,#134E4A 100%)', icon: '🌍' },
-    { label: 'Age Calculator',        caption: 'Know your generation',             bg: 'linear-gradient(135deg,#4F46E5 0%,#312E81 100%)', icon: '🎂' },
-    { label: 'Sukanya Samriddhi',     caption: 'Girl child savings scheme',        bg: 'linear-gradient(135deg,#DB2777 0%,#831843 100%)', icon: '👧' },
+    { label: 'Home Dashboard',        caption: 'Your complete financial overview', src: '/screenshots/screen1-home.png'        },
+    { label: '30+ Calculators',       caption: 'SIP, EMI, Tax and more',           src: '/screenshots/screen2-calculators.png' },
+    { label: 'Income Tax Calculator', caption: 'Old vs New Regime 2026-27',        src: '/screenshots/screen3-tax.png'         },
+    { label: 'Government Schemes',    caption: '45+ schemes discovered',           src: '/screenshots/screen4-schemes.png'     },
+    { label: 'Expense Tracker',       caption: 'Track every rupee',                src: '/screenshots/screen5-expense.png'     },
+    { label: 'Multiple Languages',    caption: 'Hindi, Telugu, Tamil & more',      src: '/screenshots/screen6-language.png'    },
+    { label: 'Age Calculator',        caption: 'Know your generation',             src: '/screenshots/screen7-age.png'         },
+    { label: 'Sukanya Samriddhi',     caption: 'Girl child savings scheme',        src: '/screenshots/screen8-sukanya.png'     },
 ];
 
 // ── Data ─────────────────────────────────────────────────
@@ -623,13 +623,12 @@ function ScreenshotsSection() {
                                 onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = '0 20px 60px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.04)'; }}>
                                 {/* Phone frame */}
                                 <div style={{ background: '#0B1929', borderRadius: '32px', padding: '12px' }}>
-                                    {/* Placeholder gradient — replace with <img> when screenshots are ready */}
-                                    <div style={{ width: '236px', aspectRatio: '9/19.5', borderRadius: '24px', background: item.bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '14px', position: 'relative', overflow: 'hidden' }}>
-                                        <div style={{ fontSize: '52px', lineHeight: 1 }}>{item.icon}</div>
-                                        <div className="fc-display" style={{ fontSize: '14px', fontWeight: 700, color: '#fff', textAlign: 'center', padding: '0 16px', lineHeight: 1.3 }}>{item.label}</div>
-                                        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 30%,rgba(255,255,255,.07),transparent 60%)', pointerEvents: 'none' }} />
-                                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px', background: 'linear-gradient(transparent,rgba(0,0,0,.3))', pointerEvents: 'none' }} />
-                                    </div>
+                                    <img
+                                        src={item.src}
+                                        alt={item.label}
+                                        loading="lazy"
+                                        style={{ width: '100%', borderRadius: '24px', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+                                    />
                                 </div>
                             </div>
                             {/* Caption */}
