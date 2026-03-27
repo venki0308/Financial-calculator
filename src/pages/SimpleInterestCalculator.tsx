@@ -507,9 +507,10 @@ export default function SimpleInterestCalculator() {
                                         <span className="font-semibold text-sm text-amber-400">₹{(annualRate / 12).toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-border">
-                                        <span className="text-slate-900 dark:text-foreground text-xs font-bold">Monthly EMI</span>
+                                        <span className="text-slate-900 dark:text-foreground text-xs font-bold">Avg Monthly Payment</span>
                                         <span className="font-bold text-sm text-brand-green">{formatINR(r.monthlyEMI)}</span>
                                     </div>
+                                    <p className="text-muted-foreground text-[10px] leading-tight">Total ÷ tenure. For true reducing-balance EMI use the Loan EMI calculator.</p>
                                 </div>
                             </>
                         );

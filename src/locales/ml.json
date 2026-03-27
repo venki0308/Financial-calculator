@@ -31,7 +31,9 @@
         "ageCalculatorDesc": "വർഷങ്ങൾ, മാസങ്ങൾ, ദിവസങ്ങൾ എന്നിവയിൽ നിങ്ങളുടെ കൃത്യമായ പ്രായം കണക്കാക്കുക",
         "centralGovt": "കേന്ദ്ര സർക്കാർ",
         "currentBalance": "നിലവിലെ ബാക്കി",
-        "monthlyIncome": "പ്രതിമാസ വരുമാനം"
+        "monthlyIncome": "പ്രതിമാസ വരുമാനം",
+        "myBudget": "My Budget",
+        "searchTools": "ഏതെങ്കിലും കാൽക്കുലേറ്റർ തിരയുക..."
     },
     "calculators": {
         "title": "എല്ലാ കാൽക്കുലേറ്ററുകൾ",
@@ -46,7 +48,8 @@
             "property": "സ്വത്ത്",
             "business": "ബിസിനസ്",
             "others": "മറ്റുള്ളവ",
-            "tools": "ടൂൾസ്"
+            "tools": "ടൂൾസ്",
+            "loans": "Loans"
         },
         "emi": {
             "name": "ലോൺ EMI",
@@ -337,14 +340,24 @@
             "petrol": "പെട്രോൾ"
         },
         "paymentMethods": {
-            "Credit Card": "ക്രെഡിറ്റ് കാർഡ്"
+            "Credit Card": "ക്രെഡിറ്റ് കാർഡ്",
+            "Cash": "Cash",
+            "UPI": "UPI",
+            "Debit Card": "Debit Card"
         },
         "netWorth": "അറ്റമൂല്യം",
         "updateNetWorth": "അറ്റമൂല്യം അപ്ഡേറ്റ് ചെയ്യുക",
         "totalAssets": "ആകെ ആസ്തികൾ",
         "totalLiabilities": "ആകെ ബാധ്യതകൾ",
         "assets": "ആസ്തികൾ",
-        "liabilities": "ബാധ്യതകൾ"
+        "liabilities": "ബാധ്യതകൾ",
+        "alerts": {
+            "exceeded": "🚨 You exceeded your {{category}} budget by ₹{{amount}}.",
+            "usedPct": "⚠️ You have used {{pct}}% of your {{category}} budget.",
+            "savedWell": "🎉 Great job! You saved ₹{{amount}} this month ({{rate}}% savings rate)."
+        },
+        "subs": "Subs",
+        "subsSubtitle": "Subscriptions & recurring"
     },
     "schemes": {
         "title": "സർക്കാർ പദ്ധതികൾ",
@@ -393,7 +406,10 @@
         "catBanking": "ബാങ്കിംഗ്",
         "catPension": "പെൻഷൻ",
         "catEmployment": "തൊഴിൽ",
-        "catSocialWelfare": "സാമൂഹ്യ ക്ഷേമം"
+        "catSocialWelfare": "സാമൂഹ്യ ക്ഷേമം",
+        "catDigital": "Digital",
+        "catEnergy": "Energy",
+        "catYouth": "Youth"
     },
     "profile": {
         "title": "പ്രൊഫൈൽ",
@@ -405,7 +421,8 @@
         "calcHistory": "കണക്കുകൂട്ടൽ ചരിത്രം",
         "notifications": "അറിയിപ്പുകൾ",
         "settings": "ക്രമീകരണങ്ങൾ",
-        "adminPanel": "അഡ്മിൻ പാനൽ"
+        "adminPanel": "അഡ്മിൻ പാനൽ",
+        "savedCalculations": "Saved Calculations"
     },
     "settings": {
         "title": "ക്രമീകരണങ്ങൾ",
@@ -465,7 +482,11 @@
         "investmentAmount": "നിക്ഷേപ തുക",
         "all": "എല്ലാം",
         "next": "അടുത്തത്",
-        "done": "പൂർത്തിയായി"
+        "done": "പൂർത്തിയായി",
+        "breakeven": "Calculate the point where total revenue equals total costs",
+        "cagr": "Calculate the compound annual growth rate",
+        "discount": "Calculate the final price after applying a discount and tax",
+        "overdraft": "Calculate interest on your overdraft limit based on utilization"
     },
     "units": {
         "squareMeter": "ചതുരശ്ര മീറ്റർ",
@@ -758,5 +779,11 @@
         "generalBullet3": "FinCalix ഉം അതിന്റെ ഡെവലപ്പർമാരും ഈ ആപ്പ് ഉപയോഗിച്ച് എടുക്കുന്ന ഏതെങ്കിലും സാമ്പത്തിക തീരുമാനങ്ങൾക്ക് ബാധ്യസ്ഥരല്ല.",
         "acknowledge": "തുടരുന്നതിലൂടെ, നിങ്ങൾ ഈ നിരാകരണം വായിച്ച്, മനസ്സിലാക്കി, അംഗീകരിച്ചതായി സ്ഥിരീകരിക്കുന്നു.",
         "button": "ഞാൻ മനസ്സിലാക്കി, തുടരുക"
+    },
+    "privacyBanner": {
+        "title": "Your Privacy First",
+        "message": "FinCalix does not collect personal or financial data. Anonymous analytics help us improve the app. Everything stays on your device.",
+        "viewPolicy": "View Policy",
+        "accept": "I Understand"
     }
 }

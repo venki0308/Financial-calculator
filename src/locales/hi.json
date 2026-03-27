@@ -30,7 +30,8 @@
         "compareScenariosDesc": "विभिन्न निवेशों की एक साथ तुलना करें",
         "worldClockDesc": "विभिन्न समय क्षेत्रों में समय ट्रैक करें",
         "ageCalculatorDesc": "वर्षों, महीनों और दिनों में अपनी सटीक आयु की गणना करें",
-        "centralGovt": "केंद्र सरकार"
+        "centralGovt": "केंद्र सरकार",
+        "searchTools": "कोई भी कैलकुलेटर खोजें..."
     },
     "calculators": {
         "title": "सभी कैलकुलेटर",

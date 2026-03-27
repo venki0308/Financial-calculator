@@ -17,6 +17,7 @@ interface CalculatorState {
     updateSaved: (id: string, inputValues: Record<string, any>, resultValues: any) => void;
     removeSaved: (id: string) => void;
     addHistory: (calc: Calculation) => void;
+    removeHistory: (id: string) => void;
     clearHistory: () => void;
 }
 
@@ -37,6 +38,7 @@ export const useCalculatorStore = create<CalculatorState>()(
             addHistory: (calc) => set((s) => ({
                 history: [calc, ...s.history.filter(h => h.id !== calc.id)].slice(0, 50)
             })),
+            removeHistory: (id) => set((s) => ({ history: s.history.filter((h) => h.id !== id) })),
             clearHistory: () => set({ history: [] }),
         }),
         { name: 'calculator-storage' }

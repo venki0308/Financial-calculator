@@ -158,7 +158,7 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
                                     <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-2">📥 Inputs</p>
                                     <div className="grid grid-cols-2 gap-2">
                                         {inputEntries.map(([key, val]) => (
-                                            <div key={key} className="p-2 rounded-lg bg-slate-800/50">
+                                            <div key={key} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800/50">
                                                 <p className="text-[9px] text-muted-foreground uppercase font-bold">{labelMap[key] || key.replace(/([A-Z])/g, ' $1').trim()}</p>
                                                 <p className="text-foreground font-bold text-xs mt-0.5">{formatValue(key, val)}</p>
                                             </div>
@@ -173,7 +173,7 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
                                     <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-2">📊 Results</p>
                                     <div className="grid grid-cols-2 gap-2">
                                         {resultEntries.map(([key, val]) => (
-                                            <div key={key} className="p-2 rounded-lg bg-slate-800/50">
+                                            <div key={key} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800/50">
                                                 <p className="text-[9px] text-muted-foreground uppercase font-bold">{labelMap[key] || key.replace(/([A-Z])/g, ' $1').trim()}</p>
                                                 <p className="text-brand-green font-bold text-xs mt-0.5">{formatValue(key, val)}</p>
                                             </div>

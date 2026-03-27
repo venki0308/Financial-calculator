@@ -32,8 +32,7 @@ import RDCalculator from './pages/RDCalculator';
 import SimpleInterestCalculator from './pages/SimpleInterestCalculator';
 import LumpsumCalculator from './pages/LumpsumCalculator';
 import SWPCalculator from './pages/SWPCalculator';
-import StepUpSIPCalculator from './pages/StepUpSIPCalculator';
-import GoalSIPCalculator from './pages/GoalSIPCalculator';
+
 // PPF Calculators
 import AdvancedPPFCalculator from './pages/AdvancedPPFCalculator';
 import NPSCalculator from './pages/NPSCalculator';
@@ -205,7 +204,6 @@ function AppContent() {
                     
                     <Route path="/calculator/break-even" element={<BreakEvenCalculator />} />
                     <Route path="/calculator/overdraft" element={<OverdraftCalculator />} />
-                    <Route path="/calculator/cagr" element={<CAGRCalculator />} />
 
                     {/* New Calculators */}
                     <Route path="/calculator/property" element={<PropertyCalculator />} />

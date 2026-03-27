@@ -58,25 +58,22 @@ function computeSlabTax(income: number, slabs: typeof OLD_REGIME): number {
     return tax;
 }
 
-function applyRebate87A(tax: number, taxableIncome: number, regime: 'old' | 'new', fy: '2026-27' | '2025-26'): number {
+// fy retained for future year differentiations; both FY 2025-26 and 2026-27 share same rebate logic
+function applyRebate87A(tax: number, taxableIncome: number, regime: 'old' | 'new', _fy: '2026-27' | '2025-26'): number {
     if (regime === 'new') {
-        if (fy === '2026-27') {
-            // Budget 2026-27: Full rebate — zero tax if taxable income ≤ ₹12,00,000
-            if (taxableIncome <= 1200000) return 0;
-        } else {
-            // FY 2025-26: Rebate up to ₹12,500 if taxable income ≤ ₹7,00,000
-            if (taxableIncome <= 700000) return Math.max(0, tax - 12500);
-        }
+        // Budget 2025 raised rebate to full exemption ≤ ₹12L; unchanged in Budget 2026
+        if (taxableIncome <= 1200000) return 0;
     } else {
-        // Old regime: rebate up to ₹12,500 if taxable income ≤ ₹5,00,000
+        // Old regime: 87A eliminates tax fully for taxable income ≤ ₹5L (max tax = ₹12,500 at 5%)
         if (taxableIncome <= 500000) return 0;
     }
     return tax;
 }
 
-// Surcharge calculation (New Regime)
+// Surcharge calculation — old regime has 37% tier (>₹5Cr); new regime capped at 25%
 function computeSurcharge(tax: number, taxableIncome: number, regime: 'old' | 'new'): number {
     if (tax <= 0) return 0;
+    if (regime === 'old' && taxableIncome > 50000000) return tax * 0.37; // >₹5Cr (old only): 37%
     if (taxableIncome > 20000000) return tax * 0.25; // >₹2Cr: 25%
     if (taxableIncome > 10000000) return tax * 0.15; // >₹1Cr: 15%
     if (taxableIncome > 5000000)  return tax * 0.10; // >₹50L: 10%
@@ -266,7 +263,7 @@ export default function IncomeTaxCalculator() {
     const newTaxAfterSurcharge = newAfterRebate + newSurcharge;
     const newCess = newTaxAfterSurcharge * 0.04;
     const newTotalTax = newTaxAfterSurcharge + newCess;
-    const newNoTax = fy === '2026-27' ? newTaxableIncome <= 1200000 : newTaxableIncome <= 700000;
+    const newNoTax = newTaxableIncome <= 1200000; // Full rebate ≤ ₹12L applies for both FY 2025-26 and 2026-27
 
     const oldTaxableIncome = Math.max(0, grossSalary - oldDeductions);
     const oldRawTax = computeSlabTax(oldTaxableIncome, OLD_REGIME);
@@ -314,7 +311,7 @@ export default function IncomeTaxCalculator() {
         const used80C = Math.min(num('section80C'), 150000);
         if (used80C < 150000) t.push(`Invest ${fmt(150000 - used80C)} more under Section 80C (PPF, ELSS, LIC, etc.) — max limit Rs 1,50,000.`);
         if (num('section80D') < 25000) t.push(`Claim health insurance under Section 80D — up to Rs 25,000 for self & family.`);
-        if (!num('section80CCD')) t.push(`NPS contribution under Section 80CCD(1B) offers additional deduction up to Rs 50,000.`);
+        if (!num('section80CCD') && regime === 'old') t.push(`NPS contribution under Section 80CCD(1B) offers additional deduction up to Rs 50,000 (old regime only).`);
         if (!num('homeLoan')) t.push(`Home loan interest under Section 24 allows deduction up to Rs 2,00,000.`);
         return t;
     }, [inputs, grossSalary, num]);
@@ -586,7 +583,7 @@ export default function IncomeTaxCalculator() {
                                 No income tax payable under the new regime.
                             </p>
                             <p className="text-emerald-600 dark:text-emerald-500 text-[10px] text-center mt-0.5">
-                                Taxable income is within Rs 12,00,000 exemption limit (Budget 2026-27)
+                                Taxable income is within Rs 12,00,000 exemption limit (Sec 87A — Budget {fy === '2026-27' ? '2026' : '2025'})
                             </p>
                         </div>
                     )}
@@ -653,9 +650,7 @@ export default function IncomeTaxCalculator() {
                                     Standard deduction of Rs 75,000 applied automatically. No manual deductions (HRA, 80C, 80D, etc.) available in the new regime.
                                 </p>
                                 <p className="text-brand-purple text-[10px] mt-1 font-semibold">
-                                    {fy === '2026-27'
-                                        ? 'No tax if taxable income ≤ Rs 12,00,000 (Section 87A rebate)'
-                                        : 'Rebate u/s 87A: Up to Rs 12,500 if taxable income ≤ Rs 7,00,000'}
+                                    No tax if taxable income ≤ Rs 12,00,000 (Section 87A full rebate — Budget 2025)
                                 </p>
                             </div>
                         </div>

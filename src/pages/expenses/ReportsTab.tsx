@@ -138,8 +138,8 @@ export default function ReportsTab() {
                 const date = new Date(e.date);
                 return date.getFullYear() === y && date.getMonth() + 1 === m;
             });
-            const spent = msEntries.reduce((s, e) => s + e.amount, 0) + getTotalFixed();
             const hasMonthActive = (y === currentYear && m === currentMonth) || msEntries.length > 0;
+            const spent = msEntries.reduce((s, e) => s + e.amount, 0) + (hasMonthActive ? getTotalFixed() : 0);
             const inc = hasMonthActive ? monthlyIncome : 0;
             const saved = inc - spent;
             trend.push({ month: MONTHS[m - 1], saved, hasData: hasMonthActive });
@@ -186,13 +186,6 @@ export default function ReportsTab() {
         await exportExpenseReportPDF(reportData);
     };
 
-    const hexToRgb = (hex: string): [number, number, number] => {
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        return [r, g, b];
-    };
-
     return (
         <div className="space-y-5 pb-6">
             {/* Period Toggle */}
@@ -223,7 +216,7 @@ export default function ReportsTab() {
                         onChange={(e) => setSelectedYear(Number(e.target.value))}
                         className="flex-1 px-3 py-2 bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-foreground outline-none"
                     >
-                        {[2024, 2025, 2026].map((y) => <option key={y} value={y}>{y}</option>)}
+                        {Array.from({ length: currentYear - 2023 }, (_, i) => 2024 + i).map((y) => <option key={y} value={y}>{y}</option>)}
                     </select>
                 </div>
             ) : (
@@ -232,7 +225,7 @@ export default function ReportsTab() {
                     onChange={(e) => setSelectedYear(Number(e.target.value))}
                     className="w-full px-3 py-2 bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-foreground outline-none"
                 >
-                    {[2024, 2025, 2026].map((y) => <option key={y} value={y}>{y}</option>)}
+                    {Array.from({ length: currentYear - 2023 }, (_, i) => 2024 + i).map((y) => <option key={y} value={y}>{y}</option>)}
                 </select>
             )}
 
@@ -304,7 +297,7 @@ export default function ReportsTab() {
                                     const hasEntries = mEntries.length > 0;
                                     const hasIncome = (selectedYear === new Date().getFullYear() && m === new Date().getMonth() + 1) ? monthlyIncome > 0 : false;
                                     return hasEntries || hasIncome;
-                                }).map(({ monthName, mEntries }) => {
+                                }).map(({ monthName }) => {
                                     const budgetActive = totalBudgetSet > 0 || subscriptions.length > 0;
                                     let state: 'partial' | 'budgetless' = budgetActive ? 'partial' : 'budgetless';
                                     

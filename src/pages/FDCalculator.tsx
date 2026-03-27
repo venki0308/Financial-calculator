@@ -31,6 +31,7 @@ export default function FDCalculator() {
     const [rate, setRate] = useState(7);
     const [years, setYears] = useState(5);
     const [compounding, setCompounding] = useState<number>(4);
+    const [inflation, setInflation] = useState(6);
     const [saved, setSaved] = useState(false);
     const [showCompare, setShowCompare] = useState(false);
     const [showGrowth, setShowGrowth] = useState(false);
@@ -66,12 +67,11 @@ export default function FDCalculator() {
 
     // Inflation-adjusted return
     const inflationAdj = useMemo(() => {
-        const inflation = 6; // assumed average Indian inflation
-        const nominalReturn = ((result.amount / principal) - 1) * 100;
-        const realReturn = nominalReturn - (inflation * years);
         const realValue = result.amount / Math.pow(1 + inflation / 100, years);
+        const nominalReturn = ((result.amount / principal) - 1) * 100;
+        const realReturn = ((realValue / principal) - 1) * 100; // accurate: deflated maturity vs principal
         return { inflation, nominalReturn: nominalReturn.toFixed(1), realReturn: realReturn.toFixed(1), realValue: Math.round(realValue) };
-    }, [result, principal, years]);
+    }, [result, principal, years, inflation]);
 
     const chartData = {
         labels: ['Invested', 'Interest Earned'],
@@ -114,7 +114,7 @@ export default function FDCalculator() {
             ['Deposit Amount', formatINR(principal)], ['Interest Rate', `${rate}%`], ['Tenure', `${years} years`],
             ['Compounding', compounding === 4 ? 'Quarterly' : compounding === 12 ? 'Monthly' : compounding === 1 ? 'Yearly' : 'Daily'],
             ['---', '---'], ['Total Invested', formatINR(principal)], ['Interest Earned', formatINR(result.interest)], ['Maturity Amount', formatINR(result.amount)],
-            ['---', '---'], ['Inflation-adjusted Value', formatINR(inflationAdj.realValue)], ['Real Return', `${inflationAdj.realReturn}%`],
+            ['---', '---'], ['Inflation Rate Assumed', `${inflation}%`], ['Inflation-adjusted Value', formatINR(inflationAdj.realValue)], ['Real Return', `${inflationAdj.realReturn}%`],
         ], 'FD_Report', chartImage, [
             { label: 'Invested', value: formatINR(principal), color: [79, 70, 229] as [number, number, number] },
             { label: 'Interest', value: formatINR(result.interest), color: [16, 185, 129] as [number, number, number] },
@@ -162,6 +162,7 @@ export default function FDCalculator() {
                     <NumberInput label="Deposit Amount" value={principal} onChange={setPrincipal} min={1000} max={10000000} prefix="₹" />
                     <NumberInput label="Interest Rate (p.a.)" value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} />
                     <NumberInput label="Tenure (years)" value={years} onChange={setYears} min={1} max={20} suffix=" years" />
+                    <NumberInput label="Assumed Inflation (p.a.)" value={inflation} onChange={setInflation} min={1} max={15} suffix="%" step={0.5} helperText="Used for inflation-adjusted real return" />
                 </div>
 
                 {/* Result Card */}
@@ -199,7 +200,7 @@ export default function FDCalculator() {
                         <TrendingUp size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
                         <div>
                             <h3 className="text-foreground font-bold text-xs">Inflation-Adjusted Return</h3>
-                            <p className="text-muted-foreground text-[11px] mt-1">After accounting for ~{inflationAdj.inflation}% inflation:</p>
+                            <p className="text-muted-foreground text-[11px] mt-1">After accounting for {inflation}% assumed inflation:</p>
                             <div className="grid grid-cols-2 gap-2 mt-2">
                                 <div><p className="text-muted-foreground text-[9px] uppercase font-bold">Nominal Return</p><p className="text-foreground font-bold text-xs">{inflationAdj.nominalReturn}%</p></div>
                                 <div><p className="text-muted-foreground text-[9px] uppercase font-bold">Real Return</p><p className={`font-bold text-xs ${Number(inflationAdj.realReturn) > 0 ? 'text-brand-green' : 'text-red-400'}`}>{inflationAdj.realReturn}%</p></div>

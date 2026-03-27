@@ -31,7 +31,9 @@
         "ageCalculatorDesc": "సంవత్సరాలు, నెలలు మరియు రోజులలో మీ ఖచ్చితమైన వయస్సును లెక్కించండి",
         "centralGovt": "కేంద్ర ప్రభుత్వం",
         "currentBalance": "ప్రస్తుత నిల్వ",
-        "monthlyIncome": "నెలవారీ ఆదాయం"
+        "monthlyIncome": "నెలవారీ ఆదాయం",
+        "myBudget": "My Budget",
+        "searchTools": "ఏదైనా కాల్క్యులేటర్ వెతకండి..."
     },
     "calculators": {
         "title": "అన్ని కాలిక్యులేటర్లు",
@@ -46,7 +48,8 @@
             "property": "ఆస్తి",
             "business": "వ్యాపారం",
             "others": "ఇతరములు",
-            "tools": "టూల్స్"
+            "tools": "టూల్స్",
+            "loans": "Loans"
         },
         "emi": {
             "name": "లోన్ EMI",
@@ -337,14 +340,24 @@
             "petrol": "పెట్రోల్"
         },
         "paymentMethods": {
-            "Credit Card": "క్రెడిట్ కార్డ్"
+            "Credit Card": "క్రెడిట్ కార్డ్",
+            "Cash": "Cash",
+            "UPI": "UPI",
+            "Debit Card": "Debit Card"
         },
         "netWorth": "నికర విలువ",
         "updateNetWorth": "నికర విలువ నవీకరించండి",
         "totalAssets": "మొత్తం ఆస్తులు",
         "totalLiabilities": "మొత్తం అప్పులు",
         "assets": "ఆస్తులు",
-        "liabilities": "అప్పులు"
+        "liabilities": "అప్పులు",
+        "alerts": {
+            "exceeded": "🚨 You exceeded your {{category}} budget by ₹{{amount}}.",
+            "usedPct": "⚠️ You have used {{pct}}% of your {{category}} budget.",
+            "savedWell": "🎉 Great job! You saved ₹{{amount}} this month ({{rate}}% savings rate)."
+        },
+        "subs": "Subs",
+        "subsSubtitle": "Subscriptions & recurring"
     },
     "schemes": {
         "title": "ప్రభుత్వ పథకాలు",
@@ -393,7 +406,10 @@
         "catBanking": "బ్యాంకింగ్",
         "catPension": "పెన్షన్",
         "catEmployment": "ఉపాధి",
-        "catSocialWelfare": "సామాజిక సంక్షేమం"
+        "catSocialWelfare": "సామాజిక సంక్షేమం",
+        "catDigital": "Digital",
+        "catEnergy": "Energy",
+        "catYouth": "Youth"
     },
     "profile": {
         "title": "ప్రొఫైల్",
@@ -405,7 +421,8 @@
         "calcHistory": "గణన చరిత్ర",
         "notifications": "సూచనలు",
         "settings": "సెట్టింగ్‌లు",
-        "adminPanel": "అడ్మిన్ ప్యానెల్"
+        "adminPanel": "అడ్మిన్ ప్యానెల్",
+        "savedCalculations": "Saved Calculations"
     },
     "settings": {
         "title": "సెట్టింగ్‌లు",
@@ -465,7 +482,11 @@
         "investmentAmount": "పెట్టుబడి మొత్తం",
         "all": "అన్ని",
         "next": "తదుపరి",
-        "done": "పూర్తి"
+        "done": "పూర్తి",
+        "breakeven": "Calculate the point where total revenue equals total costs",
+        "cagr": "Calculate the compound annual growth rate",
+        "discount": "Calculate the final price after applying a discount and tax",
+        "overdraft": "Calculate interest on your overdraft limit based on utilization"
     },
     "units": {
         "squareMeter": "చదరపు మీటర్",
@@ -758,5 +779,11 @@
         "generalBullet3": "FinCalix మరియు దాని డెవలపర్లు ఈ యాప్ ఉపయోగించి తీసుకున్న ఏవైనా ఆర్థిక నిర్ణయాలకు బాధ్యత వహించరు.",
         "acknowledge": "కొనసాగించడం ద్వారా, మీరు ఈ నిరాకరణను చదివి, అర్థం చేసుకుని, అంగీకరించారని ధృవీకరిస్తున్నారు.",
         "button": "నేను అర్థం చేసుకున్నాను, కొనసాగించండి"
+    },
+    "privacyBanner": {
+        "title": "Your Privacy First",
+        "message": "FinCalix does not collect personal or financial data. Anonymous analytics help us improve the app. Everything stays on your device.",
+        "viewPolicy": "View Policy",
+        "accept": "I Understand"
     }
 }

@@ -47,6 +47,7 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.kvp.name', descKey: 'calculators.kvp.desc', icon: Clock, color: '#F59E0B', path: '/calculator/kvp', category: 'postOffice', keywords: ['kvp', 'kisan', 'vikas', 'patra'] },
     { nameKey: 'calculators.pomis.name', descKey: 'calculators.pomis.desc', icon: DollarSign, color: '#10B981', path: '/calculator/post-office-mis', category: 'postOffice', keywords: ['mis', 'pomis', 'monthly', 'income', 'scheme'] },
     { nameKey: 'calculators.potd.name', descKey: 'calculators.potd.desc', icon: PiggyBank, color: '#3B82F6', path: '/calculator/post-office-td', category: 'postOffice', keywords: ['td', 'time', 'deposit', 'post', 'office'] },
+    { nameKey: 'calculators.scss.name', descKey: 'calculators.scss.desc', icon: Landmark, color: '#8B5CF6', path: '/calculator/senior-citizen-savings', category: 'postOffice', keywords: ['scss', 'senior', 'citizen', 'savings', 'scheme', 'elderly'] },
 
     // Business
     { nameKey: 'calculators.gst.name', descKey: 'calculators.gst.desc', icon: Receipt, color: '#06B6D4', path: '/calculator/gst', category: 'business', keywords: ['gst', 'goods', 'services', 'tax', 'business'] },

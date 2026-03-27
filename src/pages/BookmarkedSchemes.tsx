@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bookmark } from 'lucide-react';
+import { ArrowLeft, Bookmark, Trash2 } from 'lucide-react';
 import { useSchemeStore } from '../store/useSchemeStore';
 import { schemes } from '../data/schemes';
 
 export default function BookmarkedSchemes() {
     const navigate = useNavigate();
-    const { bookmarkedSchemes } = useSchemeStore();
+    const { bookmarkedSchemes, removeBookmark } = useSchemeStore();
     const savedSchemes = schemes.filter(s => bookmarkedSchemes.includes(s.id));
 
     return (
@@ -28,13 +28,23 @@ export default function BookmarkedSchemes() {
                 ) : (
                     <div className="space-y-4">
                         {savedSchemes.map((scheme) => (
-                            <div key={scheme.id} onClick={() => navigate(`/scheme/${scheme.id}`)} className="p-5 rounded-3xl bg-card border border-border active:scale-[0.98] transition-transform">
-                                <div className="flex gap-2 mb-3">
-                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-brand-blue/15 text-brand-blue">{scheme.governmentLevel}</span>
-                                    {scheme.state && <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-brand-purple/15 text-brand-purple">{scheme.state.substring(0, 2)}</span>}
+                            <div key={scheme.id} className="p-5 rounded-3xl bg-card border border-border">
+                                <div className="flex items-start justify-between gap-2 mb-3">
+                                    <div className="flex gap-2">
+                                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-brand-blue/15 text-brand-blue">{scheme.governmentLevel}</span>
+                                        {scheme.state && <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-brand-purple/15 text-brand-purple">{scheme.state.substring(0, 2)}</span>}
+                                    </div>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); removeBookmark(scheme.id); }}
+                                        className="p-1.5 rounded-lg text-red-400 hover:text-red-500 shrink-0"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
                                 </div>
-                                <h3 className="text-foreground font-bold text-base mb-1">{scheme.name}</h3>
-                                <p className="text-muted-foreground text-xs line-clamp-2">{scheme.description}</p>
+                                <div onClick={() => navigate(`/scheme/${scheme.id}`)} className="active:scale-[0.98] transition-transform cursor-pointer">
+                                    <h3 className="text-foreground font-bold text-base mb-1">{scheme.name}</h3>
+                                    <p className="text-muted-foreground text-xs line-clamp-2">{scheme.description}</p>
+                                </div>
                             </div>
                         ))}
                     </div>

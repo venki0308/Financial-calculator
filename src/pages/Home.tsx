@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuthStore } from '../store/useAuthStore';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
 import { formatINR } from '../utils/calculations';
@@ -59,7 +58,6 @@ const defaultItems = [
 export default function Home() {
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const { user } = useAuthStore();
     const { monthlyBalances, monthlyIncome, getTotalFixed, getTotalSpent } = useBudgetTrackerStore();
 
     const [recentPaths, setRecentPaths] = useState<string[]>([]);
@@ -157,12 +155,6 @@ export default function Home() {
 
     // If no valid recent items after filtering, fall back to defaults
     const displayItems = quickCalcItems.length > 0 ? quickCalcItems : defaultItems;
-
-    const popularCalcs = [
-        { name: t('calculators.incomeTax.name'), desc: t('calculators.incomeTax.desc'), path: '/calculator/income-tax' },
-        { name: t('calculators.sip.name'), desc: t('calculators.sip.desc'), path: '/calculator/sip' },
-        { name: t('calculators.emi.name'), desc: t('calculators.emi.desc'), path: '/calculator/loan-emi' },
-    ];
 
     return (
         <div className="px-5 pt-14 animate-fade-in pb-20 max-w-md mx-auto">
@@ -311,7 +303,7 @@ export default function Home() {
                         initial={{ opacity: 0 }} 
                         animate={{ opacity: 0.5 }} 
                         exit={{ opacity: 0 }} 
-                        onClick={() => setIsSearching(false)}
+                        onClick={() => { setIsSearching(false); setSearchQuery(''); }}
                         className="fixed inset-0 bg-background z-40" 
                     />
                 )}

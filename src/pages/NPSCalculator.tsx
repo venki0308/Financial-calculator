@@ -35,6 +35,7 @@ export default function NPSCalculator() {
     const [age, setAge] = useState(30);
     const [retireAge, setRetireAge] = useState(60);
     const [annuityPct, setAnnuityPct] = useState(40);
+    const [annuityRate, setAnnuityRate] = useState(6); // annuity provider return rate (IRDA-approved range: 5–7.5%)
     const [showTimeline, setShowTimeline] = useState(false);
     const [showTaxInfo, setShowTaxInfo] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -47,7 +48,7 @@ export default function NPSCalculator() {
         const fv = r === 0 ? invested : monthly * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
         const annuity = fv * (annuityPct / 100);
         const lumpsum = fv - annuity;
-        const monthlyPension = annuity * 0.06 / 12;
+        const monthlyPension = annuity * (annuityRate / 100) / 12;
 
         const timeline: YearEntry[] = [];
         let cumContrib = 0;
@@ -59,7 +60,7 @@ export default function NPSCalculator() {
         }
 
         return { invested, corpus: Math.round(fv), wealthGained: Math.round(fv - invested), annuity: Math.round(annuity), lumpsum: Math.round(lumpsum), monthlyPension: Math.round(monthlyPension), years, timeline };
-    }, [monthly, rate, age, retireAge, annuityPct]);
+    }, [monthly, rate, age, retireAge, annuityPct, annuityRate]);
 
     const pieData = useMemo(() => ({
         labels: ['Total Invested', 'Wealth Gained'],
@@ -120,6 +121,7 @@ export default function NPSCalculator() {
                     <NumberInput label="Current Age" value={age} onChange={setAge} min={18} max={55} suffix=" years" />
                     <NumberInput label="Retirement Age" value={retireAge} onChange={setRetireAge} min={55} max={70} suffix=" years" />
                     <NumberInput label="Annuity Purchase (%)" value={annuityPct} onChange={setAnnuityPct} min={40} max={100} suffix="%" helperText="Min 40% must buy annuity" />
+                    <NumberInput label="Annuity Return Rate (p.a.)" value={annuityRate} onChange={setAnnuityRate} min={4} max={9} step={0.25} suffix="%" helperText="IRDA-approved range: 5–7.5%. Default 6%" />
                 </div>
 
                 {/* Result Card */}
@@ -152,7 +154,7 @@ export default function NPSCalculator() {
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-800/50">
                         <p className="text-muted-foreground text-[9px] uppercase font-bold">Annuity Investment</p>
-                        <p className="text-foreground font-bold text-sm">{formatINR(result.annuity)} <span className="text-muted-foreground text-xs">({annuityPct}% of corpus → ~6% annuity rate)</span></p>
+                        <p className="text-foreground font-bold text-sm">{formatINR(result.annuity)} <span className="text-muted-foreground text-xs">({annuityPct}% of corpus → {annuityRate}% annuity rate)</span></p>
                     </div>
                 </div>
 

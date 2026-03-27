@@ -30,7 +30,8 @@
         "compareScenariosDesc": "Compare different investments side-by-side",
         "worldClockDesc": "Track time across different timezones",
         "ageCalculatorDesc": "Calculate your exact age in years, months & days",
-        "centralGovt": "Central Govt"
+        "centralGovt": "Central Govt",
+        "searchTools": "Search any calculator..."
     },
     "calculators": {
         "title": "All Calculators",

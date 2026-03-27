@@ -31,7 +31,9 @@
         "ageCalculatorDesc": "ನಿಮ್ಮ ನಿಖರವಾದ ವಯಸ್ಸನ್ನು ವರ್ಷಗಳು, ತಿಂಗಳುಗಳು ಮತ್ತು ದಿನಗಳಲ್ಲಿ ಲೆಕ್ಕಹಾಕಿ",
         "centralGovt": "ಕೇಂದ್ರ ಸರ್ಕಾರ",
         "currentBalance": "ಪ್ರಸ್ತುತ ಬಾಕಿ",
-        "monthlyIncome": "ಮಾಸಿಕ ಆದಾಯ"
+        "monthlyIncome": "ಮಾಸಿಕ ಆದಾಯ",
+        "myBudget": "My Budget",
+        "searchTools": "ಯಾವುದೇ ಕ್ಯಾಲ್ಕುಲೇಟರ್ ಹುಡುಕಿ..."
     },
     "calculators": {
         "title": "ಎಲ್ಲಾ ಕ್ಯಾಲ್ಕುಲೇಟರ್‌ಗಳು",
@@ -46,7 +48,8 @@
             "property": "ಆಸ್ತಿ",
             "business": "ವ್ಯಾಪಾರ",
             "others": "ಇತರ",
-            "tools": "ಉಪಕರಣಗಳು"
+            "tools": "ಉಪಕರಣಗಳು",
+            "loans": "Loans"
         },
         "emi": {
             "name": "ಸಾಲ EMI",
@@ -337,14 +340,24 @@
             "petrol": "ಪೆಟ್ರೋಲ್"
         },
         "paymentMethods": {
-            "Credit Card": "ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್"
+            "Credit Card": "ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್",
+            "Cash": "Cash",
+            "UPI": "UPI",
+            "Debit Card": "Debit Card"
         },
         "netWorth": "ನಿವ್ವಳ ಮೌಲ್ಯ",
         "updateNetWorth": "ನಿವ್ವಳ ಮೌಲ್ಯ ನವೀಕರಿಸಿ",
         "totalAssets": "ಒಟ್ಟು ಆಸ್ತಿಗಳು",
         "totalLiabilities": "ಒಟ್ಟು ಹೊಣೆಗಾರಿಕೆಗಳು",
         "assets": "ಆಸ್ತಿಗಳು",
-        "liabilities": "ಹೊಣೆಗಾರಿಕೆಗಳು"
+        "liabilities": "ಹೊಣೆಗಾರಿಕೆಗಳು",
+        "alerts": {
+            "exceeded": "🚨 You exceeded your {{category}} budget by ₹{{amount}}.",
+            "usedPct": "⚠️ You have used {{pct}}% of your {{category}} budget.",
+            "savedWell": "🎉 Great job! You saved ₹{{amount}} this month ({{rate}}% savings rate)."
+        },
+        "subs": "Subs",
+        "subsSubtitle": "Subscriptions & recurring"
     },
     "schemes": {
         "title": "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
@@ -393,7 +406,10 @@
         "catBanking": "ಬ್ಯಾಂಕಿಂಗ್",
         "catPension": "ಪಿಂಚಣಿ",
         "catEmployment": "ಉದ್ಯೋಗ",
-        "catSocialWelfare": "ಸಾಮಾಜಿಕ ಕಲ್ಯಾಣ"
+        "catSocialWelfare": "ಸಾಮಾಜಿಕ ಕಲ್ಯಾಣ",
+        "catDigital": "Digital",
+        "catEnergy": "Energy",
+        "catYouth": "Youth"
     },
     "profile": {
         "title": "ಪ್ರೊಫೈಲ್",
@@ -405,7 +421,8 @@
         "calcHistory": "ಲೆಕ್ಕಾಚಾರ ಇತಿಹಾಸ",
         "notifications": "ಅಧಿಸೂಚನೆಗಳು",
         "settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
-        "adminPanel": "ನಿರ್ವಾಹಕ ಫಲಕ"
+        "adminPanel": "ನಿರ್ವಾಹಕ ಫಲಕ",
+        "savedCalculations": "Saved Calculations"
     },
     "settings": {
         "title": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
@@ -465,7 +482,11 @@
         "investmentAmount": "ಹೂಡಿಕೆ ಮೊತ್ತ",
         "all": "ಎಲ್ಲಾ",
         "next": "ಮುಂದೆ",
-        "done": "ಮುಗಿಯಿತು"
+        "done": "ಮುಗಿಯಿತು",
+        "breakeven": "Calculate the point where total revenue equals total costs",
+        "cagr": "Calculate the compound annual growth rate",
+        "discount": "Calculate the final price after applying a discount and tax",
+        "overdraft": "Calculate interest on your overdraft limit based on utilization"
     },
     "units": {
         "squareMeter": "ಚದರ ಮೀಟರ್",
@@ -758,5 +779,11 @@
         "generalBullet3": "FinCalix ಮತ್ತು ಅದರ ಡೆವಲಪರ್‌ಗಳು ಈ ಅಪ್ಲಿಕೇಶನ್ ಬಳಸಿ ತೆಗೆದುಕೊಂಡ ಯಾವುದೇ ಆರ್ಥಿಕ ನಿರ್ಧಾರಗಳಿಗೆ ಜವಾಬ್ದಾರರಲ್ಲ.",
         "acknowledge": "ಮುಂದುವರಿಯುವ ಮೂಲಕ, ನೀವು ಈ ಹಕ್ಕು ನಿರಾಕರಣೆಯನ್ನು ಓದಿ, ಅರ್ಥಮಾಡಿಕೊಂಡು, ಒಪ್ಪಿಕೊಂಡಿದ್ದೀರಿ ಎಂದು ದೃಢಪಡಿಸುತ್ತೀರಿ.",
         "button": "ನಾನು ಅರ್ಥಮಾಡಿಕೊಂಡೆ, ಮುಂದುವರಿಸಿ"
+    },
+    "privacyBanner": {
+        "title": "Your Privacy First",
+        "message": "FinCalix does not collect personal or financial data. Anonymous analytics help us improve the app. Everything stays on your device.",
+        "viewPolicy": "View Policy",
+        "accept": "I Understand"
     }
 }

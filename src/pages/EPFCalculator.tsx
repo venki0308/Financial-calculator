@@ -54,9 +54,12 @@ export default function EPFCalculator() {
 
             for (let m = 0; m < 12; m++) {
                 const emp = salary * empPct / 100;
-                // standard rule: 8.33% to EPS (capped at 15000 basic usually, but here keeping simple logic per prior code)
-                // 3.67% to EPF out of the employer's 12%
-                const employer = salary * 3.67 / 100; 
+                // Employer 12% is split: EPS (capped at 8.33% × ₹15,000 = ₹1,250/mo), rest to EPF
+                // For basic > ₹15,000: Employer EPF = 12% × basic − ₹1,250
+                // For basic ≤ ₹15,000: Employer EPF = 12% − 8.33% = 3.67% × basic
+                const EPS_WAGE_CEILING = 15000;
+                const epsContrib = Math.min(salary * 0.0833, EPS_WAGE_CEILING * 0.0833);
+                const employer = (salary * 0.12) - epsContrib;
                 runningBal += emp + employer;
                 yearEmp += emp;
                 yearEmpler += employer;
@@ -112,7 +115,9 @@ export default function EPFCalculator() {
 
             for (let m = 0; m < 12; m++) {
                 const emp = simSalary * empPct / 100;
-                const employer = simSalary * 3.67 / 100; 
+                const EPS_WAGE_CEILING = 15000;
+                const epsContrib = Math.min(simSalary * 0.0833, EPS_WAGE_CEILING * 0.0833);
+                const employer = (simSalary * 0.12) - epsContrib;
                 simRunningBal += emp + employer;
             }
 

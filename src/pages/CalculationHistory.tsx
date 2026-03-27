@@ -3,9 +3,20 @@ import { ArrowLeft, Clock, Trash2 } from 'lucide-react';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { formatINR } from '../utils/calculations';
 
+function getPrimaryValue(resultValues: any): number {
+    if (typeof resultValues === 'number') return resultValues;
+    if (!resultValues || typeof resultValues !== 'object') return 0;
+    const rv = resultValues as Record<string, any>;
+    for (const key of ['primary', 'emi', 'maturity', 'totalPayment', 'totalAmount', 'futureValue', 'corpus', 'totalValue', 'total', 'netPay', 'totalSalary', 'taxPayable']) {
+        if (typeof rv[key] === 'number' && rv[key] > 0) return rv[key];
+    }
+    const firstNum = Object.values(rv).find((v) => typeof v === 'number' && v > 0);
+    return (firstNum as number) || 0;
+}
+
 export default function CalculationHistory() {
     const navigate = useNavigate();
-    const { history, clearHistory } = useCalculatorStore();
+    const { history, removeHistory, clearHistory } = useCalculatorStore();
 
     return (
         <div className="min-h-dvh bg-background pb-10 animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
@@ -34,12 +45,17 @@ export default function CalculationHistory() {
                 ) : (
                     <div className="space-y-3">
                         {history.map((item) => {
-                            const primaryValue = typeof item.resultValues === 'number' ? item.resultValues : (item.resultValues?.primary || 0);
+                            const primaryValue = getPrimaryValue(item.resultValues);
                             return (
                                 <div key={item.id} className="p-4 rounded-2xl bg-card border border-border">
                                     <div className="flex justify-between items-start mb-1">
-                                        <h3 className="text-foreground font-bold text-sm">{item.calculatorType}</h3>
-                                        <span className="text-[10px] text-muted-foreground">{new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        <h3 className="text-foreground font-bold text-sm flex-1 truncate pr-2">{item.calculatorType}</h3>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <span className="text-[10px] text-muted-foreground">{new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            <button onClick={() => removeHistory(item.id)} className="p-1 text-red-400 hover:text-red-500">
+                                                <Trash2 size={13} />
+                                            </button>
+                                        </div>
                                     </div>
                                     <p className="text-lg font-bold text-brand-blue">{formatINR(primaryValue)}</p>
                                     <p className="text-[10px] text-muted-foreground mt-1">{new Date(item.timestamp).toLocaleDateString()}</p>

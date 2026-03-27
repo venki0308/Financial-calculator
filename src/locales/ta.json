@@ -31,7 +31,9 @@
         "ageCalculatorDesc": "ஆண்டுகள், மாதங்கள் மற்றும் நாட்களில் உங்கள் சரியான வயதைக் கணக்கிடுங்கள்",
         "centralGovt": "மத்திய அரசு",
         "currentBalance": "தற்போதைய இருப்பு",
-        "monthlyIncome": "மாத வருமானம்"
+        "monthlyIncome": "மாத வருமானம்",
+        "myBudget": "My Budget",
+        "searchTools": "எந்த கால்குலேட்டரையும் தேடுங்கள்..."
     },
     "calculators": {
         "title": "அனைத்து கால்குலேட்டர்கள்",
@@ -46,7 +48,8 @@
             "property": "சொத்து",
             "business": "வணிகம்",
             "others": "பிற",
-            "tools": "கருவிகள்"
+            "tools": "கருவிகள்",
+            "loans": "Loans"
         },
         "emi": {
             "name": "கடன் EMI",
@@ -337,14 +340,24 @@
             "petrol": "பெட்ரோல்"
         },
         "paymentMethods": {
-            "Credit Card": "கிரெடிட் கார்டு"
+            "Credit Card": "கிரெடிட் கார்டு",
+            "Cash": "Cash",
+            "UPI": "UPI",
+            "Debit Card": "Debit Card"
         },
         "netWorth": "நிகர மதிப்பு",
         "updateNetWorth": "நிகர மதிப்பை புதுப்பிக்கவும்",
         "totalAssets": "மொத்த சொத்துக்கள்",
         "totalLiabilities": "மொத்த பொறுப்புகள்",
         "assets": "சொத்துக்கள்",
-        "liabilities": "பொறுப்புகள்"
+        "liabilities": "பொறுப்புகள்",
+        "alerts": {
+            "exceeded": "🚨 You exceeded your {{category}} budget by ₹{{amount}}.",
+            "usedPct": "⚠️ You have used {{pct}}% of your {{category}} budget.",
+            "savedWell": "🎉 Great job! You saved ₹{{amount}} this month ({{rate}}% savings rate)."
+        },
+        "subs": "Subs",
+        "subsSubtitle": "Subscriptions & recurring"
     },
     "schemes": {
         "title": "அரசு திட்டங்கள்",
@@ -393,7 +406,10 @@
         "catBanking": "வங்கி",
         "catPension": "ஓய்வூதியம்",
         "catEmployment": "வேலைவாய்ப்பு",
-        "catSocialWelfare": "சமூக நலன்"
+        "catSocialWelfare": "சமூக நலன்",
+        "catDigital": "Digital",
+        "catEnergy": "Energy",
+        "catYouth": "Youth"
     },
     "profile": {
         "title": "சுயவிவரம்",
@@ -405,7 +421,8 @@
         "calcHistory": "கணக்கீட்டு வரலாறு",
         "notifications": "அறிவிப்புகள்",
         "settings": "அமைப்புகள்",
-        "adminPanel": "நிர்வாகி பேனல்"
+        "adminPanel": "நிர்வாகி பேனல்",
+        "savedCalculations": "Saved Calculations"
     },
     "settings": {
         "title": "அமைப்புகள்",
@@ -465,7 +482,11 @@
         "investmentAmount": "முதலீட்டு தொகை",
         "all": "அனைத்தும்",
         "next": "அடுத்து",
-        "done": "முடிந்தது"
+        "done": "முடிந்தது",
+        "breakeven": "Calculate the point where total revenue equals total costs",
+        "cagr": "Calculate the compound annual growth rate",
+        "discount": "Calculate the final price after applying a discount and tax",
+        "overdraft": "Calculate interest on your overdraft limit based on utilization"
     },
     "units": {
         "squareMeter": "சதுர மீட்டர்",
@@ -758,5 +779,11 @@
         "generalBullet3": "FinCalix மற்றும் அதன் டெவலப்பர்கள் இந்த பயன்பாட்டைப் பயன்படுத்தி எடுக்கப்பட்ட எந்த நிதி முடிவுகளுக்கும் பொறுப்பேற்க மாட்டார்கள்.",
         "acknowledge": "தொடர்வதன் மூலம், இந்த மறுப்பை நீங்கள் படித்து, புரிந்துகொண்டு, ஒப்புக்கொண்டுள்ளீர்கள் என்பதை உறுதிப்படுத்துகிறீர்கள்.",
         "button": "புரிந்தது, தொடரவும்"
+    },
+    "privacyBanner": {
+        "title": "Your Privacy First",
+        "message": "FinCalix does not collect personal or financial data. Anonymous analytics help us improve the app. Everything stays on your device.",
+        "viewPolicy": "View Policy",
+        "accept": "I Understand"
     }
 }

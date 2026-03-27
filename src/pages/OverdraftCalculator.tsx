@@ -43,6 +43,7 @@ export default function OverdraftCalculator() {
   const [showSchedule, setShowSchedule] = useState(false);
   const [showPreclosure, setShowPreclosure] = useState(false);
   
+  const [excessPenaltyRate, setExcessPenaltyRate] = useState('2'); // additional % charged on excess utilization
   const [monthsRemaining, setMonthsRemaining] = useState('6');
   const [preclosurePenalty, setPreclosurePenalty] = useState('0');
 
@@ -79,7 +80,8 @@ export default function OverdraftCalculator() {
   
   // Penalty for excess
   const excess = isOverLimit ? utilizedNum - limitNum : 0;
-  const penaltyInterest = excess > 0 ? (excess * (rateNum + 2) * daysNum) / (365 * 100) : 0;
+  const excessPenaltyRateNum = parseFloat(excessPenaltyRate) || 2;
+  const penaltyInterest = excess > 0 ? (excess * (rateNum + excessPenaltyRateNum) * daysNum) / (365 * 100) : 0;
   
   const totalInterest = standardInterest + penaltyInterest;
   const processingFeeAmount = (limitNum * feePct) / 100;
@@ -114,7 +116,7 @@ export default function OverdraftCalculator() {
         }
         
         let intOfDay = dailyInterest;
-        if (isOverLimit) intOfDay += (excess * (rateNum + 2) / (365*100));
+        if (isOverLimit) intOfDay += (excess * (rateNum + excessPenaltyRateNum) / (365*100));
 
         rows.push({
             day: dayIndex,
@@ -309,6 +311,12 @@ export default function OverdraftCalculator() {
                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider block mb-1">Annual Charge ₹</span>
                      <input type="text" value={annualCharge} onChange={e=>setAnnualCharge(formatNumberExt(e.target.value))} placeholder="0"
                         className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-background border border-slate-300 dark:border-border text-sm font-semibold shadow-sm" />
+                 </div>
+                 <div className="col-span-2">
+                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider block mb-1">Excess Utilization Penalty (%)</span>
+                     <input type="number" step="0.5" value={excessPenaltyRate} onChange={e=>setExcessPenaltyRate(e.target.value)} placeholder="2"
+                        className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-background border border-slate-300 dark:border-border text-sm font-semibold shadow-sm" />
+                     <p className="text-[10px] text-muted-foreground mt-1">Added on top of base rate when utilized &gt; sanctioned limit. Typically 2%.</p>
                  </div>
              </div>
         </div>
