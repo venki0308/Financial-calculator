@@ -189,7 +189,6 @@ const GLOBAL_CSS = `
 
 /* ── Mobile (<768px) ── */
 @media(max-width:767px){
-  html,body{overflow-x:hidden}
 
   /* Hero */
   .fc-hero-section{padding-top:100px!important;padding-bottom:60px!important;padding-left:20px!important;padding-right:20px!important}
@@ -397,7 +396,7 @@ function HeroSection() {
                 </p>
 
                 <div className="fc-hero-pills" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', marginBottom: '40px' }}>
-                    {['30+ Calculators', '45 Govt Schemes', '5 Languages', '100% Free'].map(pill => (
+                    {['30+ Calculators', '45 Govt Schemes', '6 Languages', '100% Free'].map(pill => (
                         <span key={pill} className="fc-body" style={{ padding: '6px 14px', borderRadius: '100px', fontSize: '13px', color: '#C9A84C', background: 'rgba(201,168,76,.06)', border: '1px solid rgba(201,168,76,.12)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                             <span style={{ fontSize: '6px' }}>●</span>{pill}
                         </span>
@@ -552,7 +551,7 @@ function BentoGrid() {
                         </div>
                     </Reveal>
 
-                    {/* Card D — 5 Languages (col 9-13, row 3) */}
+                    {/* Card D — 6 Languages (col 9-13, row 3) */}
                     <Reveal delay={160} style={{ gridColumn: '9 / 13', gridRow: '3 / 4' }}>
                         <div className="fc-bento" style={{ height: '100%', padding: '24px' }}>
                             <div className="fc-mono" style={{ fontSize: '11px', color: '#C9A84C', fontWeight: 600, letterSpacing: '.1em', marginBottom: '16px' }}>6 LANGUAGES</div>
