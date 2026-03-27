@@ -212,29 +212,10 @@ export function calculateFD(principal: number, annualRate: number, years: number
 // ─── Indian Number Formatting ──────────────────────────────────────────────
 
 /**
- * Returns the currency symbol based on user preference stored in settings.
- * Reads directly from localStorage so it works outside React context.
- */
-export function getCurrencySymbol(): string {
-    try {
-        const s = localStorage.getItem('settings-storage');
-        if (s) {
-            const currency = JSON.parse(s)?.state?.currency;
-            if (currency === 'USD') return '$';
-            if (currency === 'EUR') return '€';
-            if (currency === 'GBP') return '£';
-            if (currency === 'AED') return 'د.إ';
-            if (currency === 'SGD') return 'S$';
-        }
-    } catch { /* ignore */ }
-    return '₹';
-}
-
-/**
  * Format number to Indian currency: ₹1,23,45,678
  */
 export function formatINR(v: number): string {
-    const sym = getCurrencySymbol();
+    const sym = '₹';
     const rounded = Math.round(v);
     const isNeg = rounded < 0;
     const str = Math.abs(rounded).toString();
@@ -253,7 +234,7 @@ export function formatINR(v: number): string {
  * Format number to short form: ₹45L, ₹1.2Cr, ₹5K
  */
 export function formatINRShort(v: number): string {
-    const sym = getCurrencySymbol();
+    const sym = '₹';
     const abs = Math.abs(Math.round(v));
     if (abs >= 10000000) {
         const cr = abs / 10000000;

@@ -292,6 +292,26 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             insights.push({ type: 'info', text: 'If you don\'t receive HRA, you can claim deduction under Section 80GG (up to ₹5,000/month).' });
             break;
         }
+        case 'scss': {
+            const investment = inputs.investment || 0;
+            const rate = inputs.rate || 8.2;
+            const annualInterest = results.annualInterest || 0;
+            if (investment < 3000000) {
+                const remaining = 3000000 - investment;
+                insights.push({ type: 'tip', text: `You can invest up to ${formatINR(remaining)} more in SCSS (max ₹30 Lakhs limit).` });
+            }
+            if (annualInterest > 50000) {
+                insights.push({ type: 'warning', text: 'Your annual interest exceeds ₹50,000 — TDS @ 10% will be deducted. Submit Form 15H to avoid it if income is below taxable limit.' });
+            } else {
+                insights.push({ type: 'positive', text: 'Annual interest is within ₹50,000 — no TDS deduction applicable.' });
+            }
+            insights.push({ type: 'info', text: 'SCSS investment qualifies for Section 80C deduction up to ₹1.5 lakh. Combine with PPF or ELSS for full 80C benefit.' });
+            if (rate >= 8.0) {
+                insights.push({ type: 'positive', text: `At ${rate}% p.a., SCSS offers one of the highest guaranteed returns for senior citizens — better than most bank FDs.` });
+            }
+            insights.push({ type: 'best', text: 'Best strategy: Invest the full ₹30L in SCSS for maximum guaranteed quarterly income. Pair with PMVVY for additional pension security.' });
+            break;
+        }
         default:
             break;
     }
