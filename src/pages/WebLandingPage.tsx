@@ -3,6 +3,28 @@ import type { ReactNode } from 'react';
 
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.fincalix.app';
 
+// ── Deterministic particles (no Math.random on render) ────
+const PARTICLES = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    left: `${((i * 4.73 + 7.3) % 80 + 10).toFixed(1)}%`,
+    duration: +(8 + (i % 13)).toFixed(1),
+    delay: +((i * 0.93 + 0.3) % 15).toFixed(1),
+    opacity: +(0.2 + (i % 5) * 0.08).toFixed(2),
+    size: 2 + (i % 2),
+}));
+
+// ── Screenshot cards ──────────────────────────────────────
+const SCREENSHOTS_DATA = [
+    { label: 'Home Dashboard',        caption: 'Your complete financial overview', bg: 'linear-gradient(135deg,#6D28D9 0%,#4C1D95 100%)', icon: '🏠' },
+    { label: '30+ Calculators',       caption: 'SIP, EMI, Tax and more',           bg: 'linear-gradient(135deg,#1D4ED8 0%,#1E3A8A 100%)', icon: '🧮' },
+    { label: 'Income Tax Calculator', caption: 'Old vs New Regime 2026-27',        bg: 'linear-gradient(135deg,#059669 0%,#064E3B 100%)', icon: '💼' },
+    { label: 'Government Schemes',    caption: '45+ schemes discovered',           bg: 'linear-gradient(135deg,#D97706 0%,#92400E 100%)', icon: '🏛️' },
+    { label: 'Expense Tracker',       caption: 'Track every rupee',                bg: 'linear-gradient(135deg,#DC2626 0%,#7F1D1D 100%)', icon: '📒' },
+    { label: 'Multiple Languages',    caption: 'Hindi, Telugu, Tamil & more',      bg: 'linear-gradient(135deg,#0D9488 0%,#134E4A 100%)', icon: '🌍' },
+    { label: 'Age Calculator',        caption: 'Know your generation',             bg: 'linear-gradient(135deg,#4F46E5 0%,#312E81 100%)', icon: '🎂' },
+    { label: 'Sukanya Samriddhi',     caption: 'Girl child savings scheme',        bg: 'linear-gradient(135deg,#DB2777 0%,#831843 100%)', icon: '👧' },
+];
+
 // ── Data ─────────────────────────────────────────────────
 const CALC_MODULES = [
     { emoji: '📈', name: 'SIP Calculator',      desc: 'Mutual Fund Returns',        cat: 'Investment' },
@@ -135,6 +157,45 @@ const GLOBAL_CSS = `
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:#020810}
 ::-webkit-scrollbar-thumb{background:rgba(201,168,76,.3);border-radius:3px}
+
+/* ── Hero orb float animations ── */
+@keyframes fc-orb-float-1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(80px,60px) scale(1.1)}66%{transform:translate(-40px,80px) scale(.9)}}
+@keyframes fc-orb-float-2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,100px)}}
+@keyframes fc-orb-float-3{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.2)}}
+
+/* ── Floating particles ── */
+@keyframes fc-particle-float{
+  0%{transform:translateY(100vh);opacity:0}
+  10%{opacity:var(--p-opacity,.4)}
+  90%{opacity:var(--p-opacity,.4)}
+  100%{transform:translateY(-100px);opacity:0}}
+
+/* ── Navbar Play Store badge — hide on mobile ── */
+.fc-nav-badge{display:inline-flex;align-items:center}
+@media(max-width:767px){.fc-nav-badge{display:none!important}}
+
+/* ── Screenshots carousel ── */
+.fc-carousel{scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+.fc-carousel::-webkit-scrollbar{display:none}
+
+/* ── Carousel arrows — desktop only ── */
+.fc-carousel-arrow{display:flex;align-items:center;justify-content:center}
+@media(max-width:767px){.fc-carousel-arrow{display:none!important}}
+
+.fc-hero-h1-size{font-size:clamp(48px,8vw,88px)}
+.fc-calc-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+.fc-footer-grid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+
+/* ── Mobile responsive ── */
+@media(max-width:767px){
+  .fc-section-pad{padding-top:60px!important;padding-bottom:60px!important;padding-left:20px!important;padding-right:20px!important}
+  .fc-calc-grid{grid-template-columns:repeat(2,1fr)!important}
+  .fc-footer-grid{grid-template-columns:1fr!important}
+  .fc-hero-h1-size{font-size:clamp(36px,10vw,64px)}
+}
+@media(min-width:768px) and (max-width:1023px){
+  .fc-calc-grid{grid-template-columns:repeat(3,1fr)!important}
+}
 `;
 
 // ── Scroll reveal ─────────────────────────────────────────
@@ -194,6 +255,28 @@ function FloatingBadge({ children }: { children: ReactNode }) {
     );
 }
 
+// ── Floating particles ────────────────────────────────────
+function Particles() {
+    return (
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+            {PARTICLES.map(p => (
+                <div key={p.id} style={{
+                    position: 'absolute',
+                    left: p.left,
+                    bottom: 0,
+                    width: `${p.size}px`,
+                    height: `${p.size}px`,
+                    borderRadius: '50%',
+                    background: '#C9A84C',
+                    boxShadow: '0 0 4px rgba(201,168,76,.8)',
+                    animation: `fc-particle-float ${p.duration}s ${p.delay}s linear infinite`,
+                    ['--p-opacity' as string]: String(p.opacity),
+                } as React.CSSProperties} />
+            ))}
+        </div>
+    );
+}
+
 // ── Footer social icon ────────────────────────────────────
 function FooterSocialIcon({ href, label, hoverBg, children }: { href: string; label: string; hoverBg: string; children: ReactNode }) {
     return (
@@ -227,15 +310,17 @@ function NavBar() {
                     <img src="/icons/fincalix-logo.png" alt="FinCalix" style={{ width: '30px', height: '30px', borderRadius: '8px' }} />
                     <span className="fc-display" style={{ fontSize: '18px', fontWeight: 700, color: '#C9A84C', letterSpacing: '-0.3px' }}>FinCalix</span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <a href="/privacy-policy" className="fc-body" style={{ fontSize: '13px', color: '#475569', textDecoration: 'none', transition: 'color .2s' }}
                         onMouseEnter={e => (e.currentTarget.style.color = '#94A3B8')}
                         onMouseLeave={e => (e.currentTarget.style.color = '#475569')}>Privacy</a>
-                    <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="fc-body"
-                        style={{ padding: '8px 18px', borderRadius: '100px', background: 'rgba(201,168,76,.1)', border: '1px solid rgba(201,168,76,.3)', color: '#C9A84C', fontSize: '13px', fontWeight: 600, textDecoration: 'none', transition: 'all .2s' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(201,168,76,.18)'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(201,168,76,.1)'; }}>
-                        Get App ↗
+                    {/* Play Store badge — hidden on mobile via .fc-nav-badge */}
+                    <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="fc-nav-badge"
+                        style={{ transition: 'all .2s ease' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)'; (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLElement).style.filter = 'none'; }}>
+                        <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                            alt="Get it on Google Play" style={{ height: '40px', width: 'auto', display: 'block' }} />
                     </a>
                 </div>
             </div>
@@ -247,16 +332,24 @@ function NavBar() {
 function HeroSection() {
     return (
         <section style={{ position: 'relative', minHeight: '100vh', width: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: '140px', paddingBottom: '100px', paddingLeft: '24px', paddingRight: '24px', textAlign: 'center', background: '#020810', overflow: 'hidden' }}>
-            {/* Background */}
-            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -10%,rgba(201,168,76,.12),transparent)' }} />
-            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 60% 40% at 80% 110%,rgba(59,130,246,.06),transparent)' }} />
+            {/* Layer 1 — base radial vignettes */}
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 80% 50% at 50% -10%,rgba(201,168,76,.1),transparent)' }} />
+            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 60% 40% at 80% 110%,rgba(59,130,246,.05),transparent)' }} />
+            {/* Layer 3 — grid overlay */}
             <div className="fc-grid-bg" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
-            {/* Orbs */}
+            {/* Layer 2 — animated orbs */}
             <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-                <div style={{ position: 'absolute', top: '10%', left: '15%', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle,rgba(201,168,76,.04),transparent 70%)', filter: 'blur(40px)', animation: 'fc-orb-1 18s ease-in-out infinite', willChange: 'transform' }} />
-                <div style={{ position: 'absolute', top: '50%', right: '5%', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle,rgba(59,130,246,.04),transparent 70%)', filter: 'blur(40px)', animation: 'fc-orb-2 22s ease-in-out infinite', willChange: 'transform' }} />
-                <div style={{ position: 'absolute', bottom: '15%', left: '5%', width: '350px', height: '350px', borderRadius: '50%', background: 'radial-gradient(circle,rgba(139,92,246,.04),transparent 70%)', filter: 'blur(40px)', animation: 'fc-orb-3 16s ease-in-out infinite', willChange: 'transform' }} />
+                {/* Orb 1 — Gold, top-left */}
+                <div style={{ position: 'absolute', top: '-200px', left: '-100px', width: '600px', height: '600px', borderRadius: '50%', background: 'radial-gradient(circle,rgba(201,168,76,.15),transparent 70%)', filter: 'blur(80px)', animation: 'fc-orb-float-1 12s ease-in-out infinite', willChange: 'transform' }} />
+                {/* Orb 2 — Blue, top-right */}
+                <div style={{ position: 'absolute', top: '-100px', right: '-150px', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle,rgba(59,130,246,.1),transparent 70%)', filter: 'blur(80px)', animation: 'fc-orb-float-2 15s ease-in-out infinite', willChange: 'transform' }} />
+                {/* Orb 3 — Purple, bottom-center */}
+                <div style={{ position: 'absolute', bottom: '-100px', left: '50%', width: '700px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle,rgba(139,92,246,.08),transparent 70%)', filter: 'blur(100px)', animation: 'fc-orb-float-3 18s ease-in-out infinite', willChange: 'transform' }} />
             </div>
+            {/* Layer 5 — floating particles */}
+            <Particles />
+            {/* Layer 4 — bottom fade */}
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '300px', background: 'linear-gradient(transparent,#020810)', pointerEvents: 'none', zIndex: 0 }} />
 
             {/* Content */}
             <div style={{ position: 'relative', zIndex: 1, maxWidth: '760px', margin: '0 auto', width: '100%' }}>
@@ -266,7 +359,7 @@ function HeroSection() {
                     </span>
                 </div>
 
-                <h1 className="fc-display fc-hero-h1" style={{ fontSize: 'clamp(48px,8vw,88px)', fontWeight: 800, lineHeight: 0.95, letterSpacing: '-0.03em', margin: '0 0 28px' }}>
+                <h1 className="fc-display fc-hero-h1 fc-hero-h1-size" style={{ fontWeight: 800, lineHeight: 0.95, letterSpacing: '-0.03em', margin: '0 0 28px' }}>
                     <span style={{ color: '#FFFFFF', display: 'block' }}>India's Smartest</span>
                     <span className="fc-gold-text" style={{ display: 'block' }}>Financial</span>
                     <span style={{ color: '#FFFFFF', display: 'block' }}>Calculator</span>
@@ -493,6 +586,68 @@ function BentoGrid() {
     );
 }
 
+// ── Screenshots carousel ──────────────────────────────────
+function ScreenshotsSection() {
+    const carouselRef = useRef<HTMLDivElement>(null);
+    const scroll = (dir: 1 | -1) => {
+        carouselRef.current?.scrollBy({ left: dir * 300, behavior: 'smooth' });
+    };
+    return (
+        <section className="fc-section-pad" style={{ background: '#020810', borderTop: '1px solid rgba(255,255,255,.04)', paddingTop: '96px', paddingBottom: '96px', paddingLeft: '0', paddingRight: '0', overflow: 'hidden' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto', paddingLeft: '24px', paddingRight: '24px' }}>
+                <Reveal className="text-center" style={{ marginBottom: '40px' }}>
+                    <h2 className="fc-display" style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 800, letterSpacing: '-0.04em', color: '#fff', marginBottom: '12px' }}>
+                        See FinCalix in Action
+                    </h2>
+                    <p className="fc-body" style={{ fontSize: '16px', color: '#94A3B8' }}>Real screenshots from the app</p>
+                </Reveal>
+            </div>
+
+            {/* Carousel + arrows wrapper */}
+            <div style={{ position: 'relative' }}>
+                {/* Left arrow */}
+                <button className="fc-carousel-arrow" onClick={() => scroll(-1)} aria-label="Scroll left"
+                    style={{ position: 'absolute', left: '16px', top: '44%', transform: 'translateY(-50%)', zIndex: 10, width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', cursor: 'pointer', color: '#E2E8F0', fontSize: '22px', lineHeight: 1, flexShrink: 0 }}>
+                    ‹
+                </button>
+
+                {/* Scrollable track */}
+                <div ref={carouselRef} className="fc-carousel"
+                    style={{ display: 'flex', gap: '20px', overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '40px 60px' }}>
+                    {SCREENSHOTS_DATA.map((item, i) => (
+                        <div key={i} style={{ scrollSnapAlign: 'start', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            {/* Card */}
+                            <div
+                                style={{ width: '260px', borderRadius: '32px', overflow: 'hidden', border: '1px solid rgba(255,255,255,.08)', boxShadow: '0 20px 60px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.04)', transition: 'transform .3s ease,box-shadow .3s ease', cursor: 'default' }}
+                                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'scale(1.03) translateY(-8px)'; el.style.boxShadow = '0 30px 80px rgba(0,0,0,.5),0 0 40px rgba(201,168,76,.1)'; }}
+                                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = '0 20px 60px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.04)'; }}>
+                                {/* Phone frame */}
+                                <div style={{ background: '#0B1929', borderRadius: '32px', padding: '12px' }}>
+                                    {/* Placeholder gradient — replace with <img> when screenshots are ready */}
+                                    <div style={{ width: '236px', aspectRatio: '9/19.5', borderRadius: '24px', background: item.bg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '14px', position: 'relative', overflow: 'hidden' }}>
+                                        <div style={{ fontSize: '52px', lineHeight: 1 }}>{item.icon}</div>
+                                        <div className="fc-display" style={{ fontSize: '14px', fontWeight: 700, color: '#fff', textAlign: 'center', padding: '0 16px', lineHeight: 1.3 }}>{item.label}</div>
+                                        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 30%,rgba(255,255,255,.07),transparent 60%)', pointerEvents: 'none' }} />
+                                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px', background: 'linear-gradient(transparent,rgba(0,0,0,.3))', pointerEvents: 'none' }} />
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Caption */}
+                            <p className="fc-body" style={{ marginTop: '14px', fontSize: '13px', color: '#94A3B8', textAlign: 'center', width: '260px', lineHeight: 1.5 }}>{item.caption}</p>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Right arrow */}
+                <button className="fc-carousel-arrow" onClick={() => scroll(1)} aria-label="Scroll right"
+                    style={{ position: 'absolute', right: '16px', top: '44%', transform: 'translateY(-50%)', zIndex: 10, width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.1)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', cursor: 'pointer', color: '#E2E8F0', fontSize: '22px', lineHeight: 1, flexShrink: 0 }}>
+                    ›
+                </button>
+            </div>
+        </section>
+    );
+}
+
 // ── Calculator spotlight grid ─────────────────────────────
 function CalculatorSpotlightGrid() {
     const [activeTab, setActiveTab] = useState('All');
@@ -526,7 +681,7 @@ function CalculatorSpotlightGrid() {
                 </div>
 
                 <div ref={gridRef} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}
-                    style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: '12px' }}>
+                    className="fc-calc-grid" style={{ display: 'grid', gap: '12px' }}>
                     {filtered.map((mod, i) => (
                         <Reveal key={mod.name} delay={Math.min(i * 30, 300)}>
                             <div className="fc-calc">
@@ -650,7 +805,7 @@ function Footer() {
     return (
         <footer style={{ width: '100%', boxSizing: 'border-box', background: '#020810', borderTop: '1px solid rgba(255,255,255,.06)' }}>
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '64px 24px 32px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '40px 24px', marginBottom: '48px' }}>
+                <div className="fc-footer-grid" style={{ display: 'grid', gap: '40px 24px', marginBottom: '48px' }}>
 
                     {/* Brand */}
                     <div>
@@ -758,6 +913,7 @@ export default function WebLandingPage() {
             <HeroSection />
             <StatsStrip />
             <BentoGrid />
+            <ScreenshotsSection />
             <CalculatorSpotlightGrid />
             <SocialProof />
             <FaqSection />
