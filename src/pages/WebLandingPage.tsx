@@ -265,107 +265,193 @@ function Navbar() {
 // ── 02 HERO ───────────────────────────────────────────────────────────────────
 function HeroSection() {
   const [imgFailed, setImgFailed] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const phoneW = isMobile ? 240 : 260;
+  const phoneH = isMobile ? 460 : 520;
+
   return (
-    <section style={{ background: '#fff', padding: '80px 0 60px', position: 'relative', overflow: 'hidden' }}>
+    <section style={{
+      width: '100%',
+      boxSizing: 'border-box',
+      padding: isMobile ? '80px 20px 60px' : '100px 24px 80px',
+      position: 'relative',
+      overflow: 'hidden',
+      backgroundColor: '#FFFFFF',
+    }}>
       {/* bg decoration */}
       <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '600px', height: '600px', background: 'radial-gradient(circle, #D8F3DC, transparent)', opacity: .5, filter: 'blur(80px)', pointerEvents: 'none', zIndex: 0 }} />
       <div style={{ position: 'absolute', bottom: 0, left: 0, width: '300px', height: '300px', background: 'radial-gradient(circle, #FEF6DC, transparent)', opacity: .6, filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0 }} />
 
-      <div className="fcl-container" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="fcl-hero-grid">
+      {/* Content wrapper — single column on mobile, 2-col on desktop */}
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        width: '100%',
+        position: 'relative',
+        zIndex: 1,
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: 'center',
+        gap: isMobile ? '48px' : '64px',
+        textAlign: isMobile ? 'center' : 'left',
+      }}>
 
-          {/* LEFT — 55% */}
-          <div style={{ flex: '0 0 55%', minWidth: 0 }}>
-            {/* badge */}
-            <div className="fcl-hero-anim" style={{ animationDelay: '200ms', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#F0F7F4', border: '1px solid #B7E4C7', borderRadius: '100px', padding: '6px 14px', marginBottom: '20px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#52B788', flexShrink: 0, animation: 'dotPulse 2s infinite' }} />
-              <span style={{ color: '#2D6A4F', fontSize: '13px', fontWeight: 600 }}>Budget 2026-27 Updated · Zero tax up to ₹12L</span>
-            </div>
-
-            {/* H1 */}
-            <h1 className="fcl-hero-anim" style={{
-              animationDelay: '350ms',
-              fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 900, lineHeight: 1.05,
-              letterSpacing: '-0.02em', color: '#0F1F18', marginBottom: '20px',
-            }}>
-              Calculate Smarter,<br />
-              <span style={{ color: '#2D6A4F' }}>Save More,</span><br />
-              Every Rupee.
-            </h1>
-
-            {/* sub */}
-            <p className="fcl-hero-anim" style={{
-              animationDelay: '500ms',
-              fontSize: 'clamp(15px, 2vw, 18px)', color: '#6B7280', lineHeight: 1.6,
-              maxWidth: '480px', marginBottom: '28px',
-            }}>
-              India's most complete financial calculator — SIP, EMI, Tax, PPF, GST and 25+ more tools. Free forever. Works offline. No login.
-            </p>
-
-            {/* CTA */}
-            <div className="fcl-hero-anim" style={{ animationDelay: '600ms', marginBottom: '16px' }}>
-              <PlayBadge height={56} />
-            </div>
-
-            {/* trust chips */}
-            <div className="fcl-hero-anim fcl-trust-chips" style={{ animationDelay: '700ms', display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '32px' }}>
-              {[
-                { icon: '🔒', text: 'Zero Data Collected' },
-                { icon: '📵', text: '100% Offline' },
-                { icon: '🇮🇳', text: 'Made for India' },
-              ].map(chip => (
-                <div key={chip.text} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#F0F7F4', border: '1px solid #B7E4C7', borderRadius: '100px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, color: '#2D6A4F' }}>
-                  <span>{chip.icon}</span>
-                  <span>{chip.text}</span>
-                </div>
-              ))}
-            </div>
+        {/* LEFT */}
+        <div style={{
+          flex: isMobile ? 'none' : '0 0 55%',
+          width: isMobile ? '100%' : 'auto',
+          maxWidth: isMobile ? '100%' : '580px',
+          zIndex: 1,
+        }}>
+          {/* badge */}
+          <div className="fcl-hero-anim" style={{ animationDelay: '200ms', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#F0F7F4', border: '1px solid #B7E4C7', borderRadius: '100px', padding: '6px 14px', marginBottom: '20px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#52B788', flexShrink: 0, animation: 'dotPulse 2s infinite' }} />
+            <span style={{ color: '#2D6A4F', fontSize: '13px', fontWeight: 600 }}>Budget 2026-27 Updated · Zero tax up to ₹12L</span>
           </div>
 
-          {/* RIGHT — 45% phone + floating cards */}
-          <div style={{ flex: '0 0 45%', display: 'flex', justifyContent: 'center', position: 'relative' }}>
-            <div className="fcl-hero-anim" style={{ animationDelay: '900ms', position: 'relative', width: '420px', height: '580px' }}>
+          {/* H1 */}
+          <h1 className="fcl-hero-anim" style={{
+            animationDelay: '350ms',
+            fontSize: isMobile ? 'clamp(36px, 10vw, 48px)' : '64px',
+            fontWeight: 900, lineHeight: 1.05,
+            letterSpacing: '-0.02em', color: '#0F1F18', marginBottom: '20px',
+          }}>
+            Calculate Smarter,<br />
+            <span style={{ color: '#2D6A4F' }}>Save More,</span><br />
+            Every Rupee.
+          </h1>
 
-              {/* Phone */}
-              <div style={{ position: 'absolute', left: '80px', top: '20px', width: '260px', borderRadius: '40px', border: '8px solid #1B3A2D', boxShadow: '0 40px 80px rgba(27,58,45,.20), 0 0 0 1px rgba(27,58,45,.08)', overflow: 'hidden', background: '#1B3A2D', animation: 'phoneFloat 5s ease-in-out infinite' }}>
-                <div style={{ width: '80px', height: '8px', background: 'rgba(255,255,255,.15)', borderRadius: '4px', margin: '12px auto 8px' }} />
-                {imgFailed ? (
-                  <div style={{ height: '520px', background: '#F7F9FC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ color: '#6B7280', fontSize: '14px', fontWeight: 600 }}>FinCalix App</span>
-                  </div>
-                ) : (
-                  <img src="/screenshots/screen1-home.png" alt="FinCalix App" onError={() => setImgFailed(true)}
-                    style={{ width: '100%', height: '520px', objectFit: 'cover', objectPosition: 'top', display: 'block', borderRadius: '34px' }} />
-                )}
+          {/* sub */}
+          <p className="fcl-hero-anim" style={{
+            animationDelay: '500ms',
+            fontSize: isMobile ? '16px' : '18px', color: '#6B7280', lineHeight: 1.6,
+            maxWidth: isMobile ? '100%' : '480px', marginBottom: '24px',
+          }}>
+            India's most complete financial calculator — SIP, EMI, Tax, PPF, GST and 25+ more tools. Free forever. Works offline. No login.
+          </p>
+
+          {/* CTA */}
+          <div className="fcl-hero-anim" style={{
+            animationDelay: '600ms', marginBottom: '16px',
+            display: 'flex', justifyContent: isMobile ? 'center' : 'flex-start',
+          }}>
+            <PlayBadge height={56} />
+          </div>
+
+          {/* trust chips */}
+          <div className="fcl-hero-anim" style={{
+            animationDelay: '700ms',
+            display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '28px',
+            justifyContent: isMobile ? 'center' : 'flex-start',
+          }}>
+            {[
+              { icon: '🔒', text: 'Zero Data Collected' },
+              { icon: '📵', text: '100% Offline' },
+              { icon: '🇮🇳', text: 'Made for India' },
+            ].map(chip => (
+              <div key={chip.text} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#F0F7F4', border: '1px solid #B7E4C7', borderRadius: '100px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, color: '#2D6A4F', whiteSpace: 'nowrap' }}>
+                <span>{chip.icon}</span>
+                <span>{chip.text}</span>
               </div>
+            ))}
+          </div>
+        </div>
 
-              {/* Card 1 — top right */}
-              <div className="fcl-float-card" style={{ position: 'absolute', right: 0, top: '60px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)', animation: 'float1 4s ease-in-out infinite', minWidth: '140px' }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F1F18' }}>📈 SIP Calculator</div>
-                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>Mutual Fund Returns</div>
-              </div>
+        {/* RIGHT — phone mockup */}
+        <div style={{
+          flex: isMobile ? 'none' : '0 0 45%',
+          width: isMobile ? '100%' : 'auto',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          position: 'relative',
+          minHeight: isMobile ? '500px' : '600px',
+        }}>
+          <div className="fcl-hero-anim" style={{
+            animationDelay: '900ms',
+            position: 'relative',
+            width: isMobile ? '280px' : '420px',
+            height: isMobile ? '500px' : '580px',
+          }}>
 
-              {/* Card 2 — bottom left */}
-              <div className="fcl-float-card" style={{ position: 'absolute', left: 0, bottom: '80px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)', animation: 'float2 5s ease-in-out 1s infinite', minWidth: '140px' }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F1F18' }}>🏠 EMI Calculator</div>
-                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>Home, Car, Personal</div>
-              </div>
+            {/* Phone frame */}
+            <div style={{
+              position: 'absolute',
+              left: isMobile ? '20px' : '80px',
+              top: '20px',
+              width: `${phoneW}px`,
+              borderRadius: '40px',
+              border: '8px solid #1B3A2D',
+              boxShadow: '0 40px 80px rgba(27,58,45,.20), 0 0 0 1px rgba(27,58,45,.08)',
+              overflow: 'hidden',
+              backgroundColor: '#1B3A2D',
+              animation: 'phoneFloat 5s ease-in-out infinite',
+              zIndex: 2,
+            }}>
+              <div style={{ width: '80px', height: '8px', background: 'rgba(255,255,255,.15)', borderRadius: '4px', margin: '12px auto 8px' }} />
+              {imgFailed ? (
+                <div style={{ height: `${phoneH}px`, background: '#F7F9FC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ color: '#6B7280', fontSize: '14px', fontWeight: 600 }}>FinCalix App</span>
+                </div>
+              ) : (
+                <img src="/screenshots/screen1-home.png" alt="FinCalix App" onError={() => setImgFailed(true)}
+                  style={{ width: '100%', height: `${phoneH}px`, objectFit: 'cover', objectPosition: 'top', display: 'block', borderRadius: '34px' }} />
+              )}
+            </div>
 
-              {/* Card 3 — left center */}
-              <div className="fcl-float-card" style={{ position: 'absolute', left: '-10px', top: '50%', transform: 'translateY(-50%)', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)', animation: 'float3 6s ease-in-out .5s infinite', minWidth: '150px' }}>
+            {/* Card 1 — top right (visible on all screens, tucked in on mobile) */}
+            <div style={{
+              position: 'absolute',
+              right: isMobile ? '-10px' : 0,
+              top: isMobile ? '-20px' : '60px',
+              background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px',
+              padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)',
+              animation: 'float1 4s ease-in-out infinite', zIndex: 3,
+            }}>
+              <div style={{ fontSize: isMobile ? '11px' : '13px', fontWeight: 700, color: '#0F1F18', whiteSpace: 'nowrap' }}>📈 SIP Calculator</div>
+              <div style={{ fontSize: isMobile ? '10px' : '11px', color: '#6B7280', marginTop: '2px', whiteSpace: 'nowrap' }}>Mutual Fund Returns</div>
+            </div>
+
+            {/* Card 2 — bottom left (visible on all screens, tucked in on mobile) */}
+            <div style={{
+              position: 'absolute',
+              left: isMobile ? '-10px' : 0,
+              bottom: isMobile ? '-10px' : '80px',
+              background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px',
+              padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)',
+              animation: 'float2 5s ease-in-out 1s infinite', zIndex: 3,
+            }}>
+              <div style={{ fontSize: isMobile ? '11px' : '13px', fontWeight: 700, color: '#0F1F18', whiteSpace: 'nowrap' }}>🏠 EMI Calculator</div>
+              <div style={{ fontSize: isMobile ? '10px' : '11px', color: '#6B7280', marginTop: '2px', whiteSpace: 'nowrap' }}>Home, Car, Personal</div>
+            </div>
+
+            {/* Card 3 — left center (desktop only — would overflow on mobile) */}
+            {!isMobile && (
+              <div style={{ position: 'absolute', left: '-10px', top: '50%', transform: 'translateY(-50%)', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)', animation: 'float3 6s ease-in-out .5s infinite', minWidth: '150px', zIndex: 3 }}>
                 <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F1F18' }}>💰 Budget 2026-27</div>
                 <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>Zero tax up to ₹12L</div>
               </div>
+            )}
 
-              {/* Card 4 — right center */}
-              <div className="fcl-float-card" style={{ position: 'absolute', right: '-10px', top: '50%', transform: 'translateY(-50%)', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)', animation: 'float4 4.5s ease-in-out 1.5s infinite', minWidth: '120px' }}>
+            {/* Card 4 — right center (desktop only — would overflow on mobile) */}
+            {!isMobile && (
+              <div style={{ position: 'absolute', right: '-10px', top: '50%', transform: 'translateY(-50%)', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)', animation: 'float4 4.5s ease-in-out 1.5s infinite', minWidth: '120px', zIndex: 3 }}>
                 <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F1F18' }}>📊 30+ Tools</div>
                 <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>All Free</div>
               </div>
-            </div>
+            )}
           </div>
-
         </div>
+
       </div>
     </section>
   );
