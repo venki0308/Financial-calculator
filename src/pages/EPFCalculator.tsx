@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, 
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -159,39 +159,73 @@ export default function EPFCalculator() {
     };
 
     const handleDownloadPDF = async () => {
-        const headers = ['Metric', 'Value'];
-        const data: (string | number)[][] = [
-            ['Basic Salary (Monthly)', fmtINR(basic)],
-            ['Employee Contribution', `${empPct}%`],
-            ['Annual Salary Hike', `${hike}%`],
-            ['Time to Retire', `${result.years} years (Age ${age} to ${retireAge})`],
-            ['--- Results ---', ''],
-            ['Total Employee Contribution', fmtINR(result.totalEmp)],
-            ['Total Employer EPF Share (3.67%)', fmtINR(result.totalEmployer)],
-            ['Total Interest Earned', fmtINR(result.totalInterest)],
-            ['Expected EPF Corpus', fmtINR(result.corpus)],
-            ['--- Advanced Analysis ---', ''],
-            ['Real Return (Inflation Adj.)', `${result.realReturn.toFixed(2)}%`],
-            ['Purchasing Power of Corpus', fmtINR(result.purchasingPower)],
-            ['Estimated Final Monthly Basic', fmtINR(result.finalMonthlySalary)],
-            ['Retirement Readiness (vs 20x Final Sal)', `${result.readinessPct.toFixed(1)}% achieved`],
-            ...(showWhatIf ? [
-                ['--- What-If Scenario ---', ''],
-                [`If Salary Hike was ${whatIfHike}% and Retirement at ${whatIfRetire}`, ''],
-                ['New Projected Corpus', fmtINR(whatIf.simBalance)],
-                ['Extra Wealth Generated', fmtINR(whatIf.addedWealth)]
-            ] : []),
-            ['--- Smart Insights ---', ''],
-            ['Insight', insight.msg],
-        ];
-
-        await exportToPDF('Smart EPF Statement', headers, data, 'EPF_Smart_Analysis');
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'EPF Calculator Report',
+            inputs: [
+                { label: 'Basic Monthly Salary', value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
+                { label: 'Employee Contribution', value: `${empPct}%` },
+                { label: 'EPF Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Current Age', value: `${age} Years` },
+                { label: 'Retirement Age', value: `${retireAge} Years` },
+                { label: 'Annual Salary Hike', value: `${hike}%` },
+                { label: 'Assumed Inflation', value: `${inflationRate}%` },
+            ],
+            results: [
+                { label: 'Expected EPF Corpus', value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: 'Total Employee Contribution', value: `₹${Math.round(result.totalEmp).toLocaleString('en-IN')}` },
+                { label: 'Total Employer EPF Share', value: `₹${Math.round(result.totalEmployer).toLocaleString('en-IN')}` },
+                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Years to Retirement', value: `${result.years} Years` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Employee Contributions', value: result.totalEmp, color: '#4F46E5' },
+                    { label: 'Employer Contributions', value: result.totalEmployer, color: '#F59E0B' },
+                    { label: 'Interest Earned', value: result.totalInterest, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Yearly EPF Growth Schedule',
+            projectionColumns: ['Year', 'Age', 'Employee Contrib', 'Employer Contrib', 'Interest', 'Closing Balance'],
+            projectionRows: result.schedule.map((r: any) => [
+                `Year ${r.year}`,
+                r.age,
+                `₹${Math.round(r.empContrib).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.emplerContrib).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.closingBal).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_EPF_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
-    const handleDownloadExcel = () => {
-        const headers = ['Age', 'Emp. Contrib', 'Employer Contrib', 'Interest', 'End Balance'];
-        const data = result.schedule.map(r => [r.age, Math.round(r.empContrib), Math.round(r.emplerContrib), Math.round(r.interest), Math.round(r.closingBal)]);
-        exportToExcel(headers, data, 'EPF_Schedule');
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'EPF Calculator Report',
+            inputs: [
+                { label: 'Basic Monthly Salary', value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
+                { label: 'Employee Contribution', value: `${empPct}%` },
+                { label: 'EPF Interest Rate', value: `${rate}%` },
+                { label: 'Current Age', value: `${age}` },
+                { label: 'Retirement Age', value: `${retireAge}` },
+            ],
+            results: [
+                { label: 'Expected EPF Corpus', value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: 'Total Employee Contribution', value: `₹${Math.round(result.totalEmp).toLocaleString('en-IN')}` },
+                { label: 'Total Employer Share', value: `₹${Math.round(result.totalEmployer).toLocaleString('en-IN')}` },
+                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Yearly EPF Growth',
+            projectionColumns: ['Year', 'Age', 'Employee Contrib', 'Employer Contrib', 'Interest', 'Closing Balance'],
+            projectionRows: result.schedule.map((r: any) => [r.year, r.age, Math.round(r.empContrib), Math.round(r.emplerContrib), Math.round(r.interest), Math.round(r.closingBal)]),
+            filename: `FinCalix_EPF_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold/50";

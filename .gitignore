@@ -47,3 +47,22 @@ coverage/
 *.jks
 android/app/keystore.properties
 keystore.properties
+
+# Build artifacts — APK / AAB / logs
+*.apk
+*.aab
+*.log
+*.xlsx
+status_out.txt
+out1.txt
+out2.txt
+errors.txt
+build_error*.txt
+build_output.log
+bundle_log.txt
+ts_errors.txt
+ts_errs*.txt
+tsc_out*.txt
+typescript_errors.txt
+trigger.txt
+missing_keys.json

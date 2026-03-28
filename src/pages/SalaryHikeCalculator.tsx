@@ -9,7 +9,7 @@ import { formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { Save, Check, Lock } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
@@ -92,27 +92,52 @@ export default function SalaryHikeCalculator() {
     }, [currentSalary, newSalaryInput, hikePct, period, periodUnit, mode]);
 
     const handleDownloadPDF = async () => {
-        const headers = ['Period', 'Monthly Salary', 'Cumulative Earnings'];
-        const data: (string | number)[][] = [];
-        let lastYear = 0;
-        result.projection.forEach(row => {
-            if (row.isNewYear || (row.month === 1 && row.year === 1)) {
-                // Year separator
-                data.push([`--- Year ${row.year} — After ${result.hikePctComputed.toFixed(1)}% Hike ---`, '', '']);
-            }
-            data.push([`Month ${row.month}`, formatINR(row.salary), formatINR(row.cumulative)]);
-        });
-        await exportToPDF('Salary Hike Projection', headers, data, 'Salary_Hike_Projection');
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'Salary Hike Calculator Report',
+            inputs: [
+                { label: 'Current Salary (Annual)', value: `₹${Math.round(result.currentAnnual).toLocaleString('en-IN')}` },
+                { label: 'Hike Percentage', value: `${result.hikePctComputed.toFixed(1)}%` },
+                { label: 'Period', value: `${period} ${periodUnit}` },
+            ],
+            results: [
+                { label: 'New Annual CTC', value: `₹${Math.round(result.newAnnual).toLocaleString('en-IN')}` },
+                { label: 'Hike Amount (Annual)', value: `₹${Math.round(result.hikeAmount * 12).toLocaleString('en-IN')}` },
+                { label: 'New Monthly Take-Home', value: `₹${Math.round(result.newMonthly).toLocaleString('en-IN')}` },
+                { label: 'Monthly Increase', value: `₹${Math.round(result.newMonthly - result.currentMonthly).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Monthly Salary Projection',
+            projectionColumns: ['Month', 'Monthly Salary', 'Cumulative Earnings'],
+            projectionRows: result.projection.map((r: any) => [
+                `Month ${r.month} (Yr ${r.year})`,
+                `₹${Math.round(r.salary).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_SalaryHike_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
     const handleDownloadExcel = async () => {
-        const headers = ['Month', 'Monthly Salary', 'Cumulative Earnings'];
-        const data = result.projection.map(row => [
-            row.month,
-            Math.round(row.salary),
-            Math.round(row.cumulative)
-        ]);
-        await exportToExcel(headers, data, 'Salary_Hike_Projection');
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'Salary Hike Calculator Report',
+            inputs: [
+                { label: 'Current Annual Salary', value: `₹${Math.round(result.currentAnnual).toLocaleString('en-IN')}` },
+                { label: 'Hike Percentage', value: `${result.hikePctComputed.toFixed(1)}%` },
+            ],
+            results: [
+                { label: 'New Annual CTC', value: `₹${Math.round(result.newAnnual).toLocaleString('en-IN')}` },
+                { label: 'New Monthly Take-Home', value: `₹${Math.round(result.newMonthly).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Monthly Salary Projection',
+            projectionColumns: ['Month', 'Year', 'Monthly Salary', 'Cumulative Earnings'],
+            projectionRows: result.projection.map((r: any) => [r.month, r.year, Math.round(r.salary), Math.round(r.cumulative)]),
+            filename: `FinCalix_SalaryHike_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     // History tracking

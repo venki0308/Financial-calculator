@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { calculateCompoundInterest, formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -97,35 +97,66 @@ export default function CompoundInterestCalculator() {
     };
 
     const handleDownloadPDF = async () => {
-        const headers = ['Parameter', 'Value'];
-        const data: (string | number)[][] = [
-            ['Principal', fmtINR(principal)],
-            ['Expected Return Rate', `${rate}% p.a.`],
-            ['Time Period', `${years} years`],
-            ['Compounding Frequency', freqOptions.find(o => o.val === freq)?.label || ''],
-            ['--- Results Summary ---', ''],
-            ['Total Amount', fmtINR(result.amount)],
-            ['Interest Earned', fmtINR(result.interest)],
-            ['Wealth Multiplier', `${(result.amount / principal).toFixed(2)}x`],
-            ['--- Advanced Details ---', ''],
-            ['Effective Annual Rate (EAR)', `${advanced.ear.toFixed(2)}%`],
-            ['Doubling Time (Rule of 72)', `${advanced.rule72.toFixed(1)} years`],
-            ['--- Inflation Impact ---', ''],
-            ['Assumed Inflation Rate', `${inflation}% p.a.`],
-            ['Real Maturity Value', fmtINR(advanced.realMaturity)],
-            ['Real Purchasing Power Gain', fmtINR(advanced.realGain)],
-            ['--- Smart Insights ---', ''],
-            ['Insight', insight.msg],
-            ['--- Growth Breakdown (First 5 Years) ---', ''],
-            ...advanced.table.slice(0, 5).map(r => [`Year ${r.year}`, `Balance: ${fmtINR(r.closing)}`]),
-        ];
-        await exportToPDF('Smart Compound Interest Analysis', headers, data, 'CI_Smart_Analysis');
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const freqLabel = (freqOptions || []).find((o: any) => o.val === freq)?.label || `${freq}x/year`;
+        const config: ExportConfig = {
+            title: 'Compound Interest Report',
+            inputs: [
+                { label: 'Principal Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Annual Rate of Interest', value: `${rate}%` },
+                { label: 'Time Period', value: `${years} Years` },
+                { label: 'Compounding Frequency', value: freqLabel },
+                { label: 'Assumed Inflation Rate', value: `${inflation}% p.a.` },
+            ],
+            results: [
+                { label: 'Total Amount', value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
+                { label: 'Interest Earned', value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
+                { label: 'Wealth Multiplier', value: `${(result.amount / principal).toFixed(2)}x` },
+                { label: 'Effective Annual Rate (EAR)', value: `${advanced.ear.toFixed(2)}%` },
+                { label: 'Doubling Time (Rule of 72)', value: `${advanced.rule72.toFixed(1)} years` },
+                { label: 'Real Maturity Value (Inflation-adj)', value: `₹${Math.round(advanced.realMaturity).toLocaleString('en-IN')}` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Principal Amount', value: principal, color: '#4F46E5' },
+                    { label: 'Interest Earned', value: result.interest, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Year-Wise Compound Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionRows: advanced.table.map((r: any) => [
+                `Year ${r.year}`,
+                `₹${Math.round(r.opening).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.closing).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_CompoundInterest_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
-    const handleDownloadExcel = () => {
-        const headers = ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'];
-        const data = advanced.table.map(r => [r.year, Math.round(r.opening), Math.round(r.interest), Math.round(r.closing)]);
-        exportToExcel(headers, data, 'CI_Growth_Table');
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'Compound Interest Report',
+            inputs: [
+                { label: 'Principal', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Rate', value: `${rate}%` },
+                { label: 'Period', value: `${years} Years` },
+            ],
+            results: [
+                { label: 'Total Amount', value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
+                { label: 'Interest Earned', value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Year-Wise Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionRows: advanced.table.map((r: any) => [r.year, Math.round(r.opening), Math.round(r.interest), Math.round(r.closing)]),
+            filename: `FinCalix_CompoundInterest_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     const freqOptions = [

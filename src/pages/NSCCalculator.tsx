@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
@@ -102,36 +102,73 @@ export default function NSCCalculator() {
         setTimeout(() => setSaved(false), 2000);
     };
 
-    const handlePDFExport = () => {
-        const headers = ['Parameter', 'Value'];
-        const data: (string | number)[][] = [
-            ['--- Inputs ---', ''],
-            ['Total Investment', fmtINR(investment)],
-            ['Interest Rate (p.a.)', `${rate}%`],
-            ['Annual Income', fmtINR(annualIncome)],
-            ['Tax Regime', taxRegime === 'old' ? 'Old Regime' : 'New Regime'],
-            ['Inflation Rate', `${inflation}% p.a.`],
-            ['--- Results ---', ''],
-            ['Maturity Amount (5 Years)', fmtINR(result.maturity)],
-            ['Total Interest Earned', fmtINR(result.totalInterest)],
-            ['--- Tax Breakdown ---', ''],
-            ['Eligible 80C Deduction', fmtINR(result.sec80cDeduction)],
-            ['Initial Tax Savings (80C)', fmtINR(result.taxSaving)],
-            ['Tax on 5th Yr Interest', fmtINR(result.taxOnInterest)],
-            ['Net Post-Tax Maturity', fmtINR(result.postTaxMaturity)],
-            ['Effective Post-Tax CAGR', `${result.postTaxCAGR.toFixed(2)}%`],
-            ['--- Real Return (Inflation Adj) ---', ''],
-            ['Purchasing Power (Real Value)', fmtINR(result.realValue)],
-            ['Real Return (CAGR - Inflation)', `${result.realReturn.toFixed(2)}% p.a.`],
-            ['--- Final Recommendation ---', ''],
-            [recommendation.title, recommendation.description]
-        ];
-
-        result.table.forEach(y => {
-            data.push([`Year ${y.year}`, fmtINR(y.openBal), fmtINR(y.interest), fmtINR(y.closeBal)]);
+    const handlePDFExport = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToPDF({
+            title: 'NSC (National Savings Certificate) Report',
+            inputs: [
+                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Tenure', value: '5 Years (fixed)' },
+                { label: 'Tax Regime', value: taxRegime === 'old' ? 'Old Regime' : 'New Regime' },
+            ],
+            results: [
+                { label: 'Maturity Amount (5 Years)', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Section 80C Deduction', value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
+                { label: 'Tax Saving (80C)', value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
+                { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+                { label: 'Inflation-Adjusted Value', value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Principal Invested', value: investment, color: '#4F46E5' },
+                    { label: 'Interest Earned', value: result.totalInterest, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'NSC Year-Wise Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionRows: result.table.map((y: any) => [
+                `Year ${y.year}`,
+                `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
+                `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_NSC_Report_${tag}`,
         });
+    };
 
-        exportToPDF('NSC Analysis Report', headers, data, 'NSC_Analysis');
+    const handleExcelExport = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToExcel({
+            title: 'NSC (National Savings Certificate) Report',
+            inputs: [
+                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Tenure', value: '5 Years (fixed)' },
+                { label: 'Tax Regime', value: taxRegime === 'old' ? 'Old Regime' : 'New Regime' },
+            ],
+            results: [
+                { label: 'Maturity Amount (5 Years)', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Section 80C Deduction', value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
+                { label: 'Tax Saving (80C)', value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
+                { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+                { label: 'Inflation-Adjusted Value', value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'NSC Year-Wise Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionRows: result.table.map((y: any) => [
+                `Year ${y.year}`,
+                `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
+                `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_NSC_Report_${tag}`,
+        });
     };
 
     const totalPages = Math.ceil(result.table.length / ITEMS_PER_PAGE);
@@ -213,6 +250,9 @@ export default function NSCCalculator() {
                                     <div className="flex items-center justify-end gap-2 border-b border-border pb-4">
                                         <button onClick={handlePDFExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-gold/10 text-brand-gold text-xs font-medium hover:bg-brand-gold/20 transition-colors">
                                             <FileText size={14} /> Export PDF
+                                        </button>
+                                        <button onClick={handleExcelExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-green/10 text-brand-green text-xs font-medium hover:bg-brand-green/20 transition-colors">
+                                            <Download size={14} /> Export Excel
                                         </button>
                                     </div>
 

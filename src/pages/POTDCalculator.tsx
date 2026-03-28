@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, ShieldAlert, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
@@ -136,40 +136,71 @@ export default function POTDCalculator() {
         setTimeout(() => setSaved(false), 2000);
     };
 
-    const handlePDFExport = () => {
-        const headers = ['Parameter', 'Value'];
-        const data: (string | number)[][] = [
-            ['--- Inputs ---', ''],
-            ['Investment Amount', fmtINR(investment)],
-            ['Tenure', `${years} Year(s)`],
-            ['Interest Rate', `${rate}% p.a. (Quarterly Compounding)`],
-            ['Annual Income', fmtINR(userIncome)],
-            ['Tax Regime', taxRegime === 'old' ? 'Old Regime' : 'New Regime'],
-            ['Inflation Rate', `${inflation}% p.a.`],
-            ['--- Results ---', ''],
-            ['Maturity Amount', fmtINR(result.maturity)],
-            ['Total Interest Earned', fmtINR(result.totalInterest)],
-            ['Effective Yield', `${result.effectiveYield.toFixed(2)}%`],
-            ['CAGR', `${result.cagr.toFixed(2)}%`],
-            ['--- Tax Breakdown ---', ''],
-            ['Estimated Tax on Interest (Total)', fmtINR(result.taxOnInterest)],
-            ['80C Tax Saving (Upfront)', fmtINR(result.taxBenefit80C)],
-            ['Post-Tax Maturity Value', fmtINR(result.postTaxMaturity)],
-            ['Post-Tax CAGR', `${result.postTaxCAGR.toFixed(2)}%`],
-            ['--- Alternative Scenarios ---', ''],
-            ['Equivalent Bank FD (Post-Tax Mat)', fmtINR(result.fdPostTaxMaturity)],
-            ['--- Real Return (Inflation Adj) ---', ''],
-            ['Purchasing Power of Return', fmtINR(result.realMaturity)],
-            ['Real Return CAGR', `${result.realReturn.toFixed(2)}%`],
-            ['--- Final Recommendation ---', ''],
-            [recommendation.title, recommendation.description]
-        ];
-
-        result.table.forEach(y => {
-            data.push([`Year ${y.year}`, `${fmtINR(y.openBal)} → ${fmtINR(y.closeBal)} (+${fmtINR(y.interest)})`]);
+    const handlePDFExport = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToPDF({
+            title: `Post Office Time Deposit (${years}-Year) Report`,
+            inputs: [
+                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: 'Tenure', value: `${years} Year${Number(years) > 1 ? 's' : ''}` },
+                { label: 'Interest Rate', value: `${rate}% p.a. (Quarterly Compounding)` },
+                { label: 'Section 80C Eligible', value: result.is5Year ? 'Yes (5-year deposit)' : 'No' },
+            ],
+            results: [
+                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Effective Annual Yield', value: `${result.effectiveYield.toFixed(2)}%` },
+                { label: 'CAGR', value: `${result.cagr.toFixed(2)}%` },
+                { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Principal Invested', value: investment, color: '#4F46E5' },
+                    { label: 'Interest Earned', value: result.totalInterest, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Year-Wise TD Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionRows: result.table.map((y: any) => [
+                `Year ${y.year}`,
+                `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
+                `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_POTD_Report_${tag}`,
         });
+    };
 
-        exportToPDF(`Post Office Time Deposit (${years}Y) Report`, headers, data, 'POTD_Analysis');
+    const handleExcelExport = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToExcel({
+            title: `Post Office Time Deposit (${years}-Year) Report`,
+            inputs: [
+                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: 'Tenure', value: `${years} Year${Number(years) > 1 ? 's' : ''}` },
+                { label: 'Interest Rate', value: `${rate}% p.a. (Quarterly Compounding)` },
+                { label: 'Section 80C Eligible', value: result.is5Year ? 'Yes (5-year deposit)' : 'No' },
+            ],
+            results: [
+                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Effective Annual Yield', value: `${result.effectiveYield.toFixed(2)}%` },
+                { label: 'CAGR', value: `${result.cagr.toFixed(2)}%` },
+                { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Year-Wise TD Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionRows: result.table.map((y: any) => [
+                `Year ${y.year}`,
+                `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
+                `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_POTD_Report_${tag}`,
+        });
     };
 
     const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue";
@@ -261,6 +292,9 @@ export default function POTDCalculator() {
                                     <div className="flex items-center justify-end gap-2 border-b border-border pb-4">
                                         <button onClick={handlePDFExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-blue/10 text-brand-blue text-xs font-medium hover:bg-brand-blue/20 transition-colors">
                                             <FileText size={14} /> Export PDF
+                                        </button>
+                                        <button onClick={handleExcelExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-green/10 text-brand-green text-xs font-medium hover:bg-brand-green/20 transition-colors">
+                                            <Download size={14} /> Export Excel
                                         </button>
                                     </div>
 

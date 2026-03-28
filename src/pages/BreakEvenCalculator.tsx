@@ -14,7 +14,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 
@@ -77,21 +77,61 @@ export default function BreakEvenCalculator() {
         setSaved(true); setTimeout(() => setSaved(false), 2000);
     };
 
-    const handlePDF = () => {
-        exportToPDF('Break-even Analysis', ['Metric', 'Value'], [
-            ['Fixed Costs', formatINR(fixed)], ['Selling Price/Unit', formatINR(price)], ['Variable Cost/Unit', formatINR(variable)],
-            ['---', '---'], ['Break Even Units', `${result.breakEvenUnits}`], ['Break Even Revenue', formatINR(result.breakEvenSales)],
-            ['Margin/Unit', formatINR(result.contribution)], ['Margin %', `${result.marginPct}%`],
-        ], 'BreakEven_Report', undefined, [
-            { label: 'Break-even Units', value: `${result.breakEvenUnits}`, color: [59, 130, 246] as [number, number, number] },
-            { label: 'Break-even Revenue', value: formatINR(result.breakEvenSales), color: [16, 185, 129] as [number, number, number] },
-        ]);
+    const handlePDF = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToPDF({
+            title: 'Break-Even Analysis Report',
+            inputs: [
+                { label: 'Fixed Costs', value: `₹${Math.round(fixed).toLocaleString('en-IN')}` },
+                { label: 'Selling Price per Unit', value: `₹${Math.round(price).toLocaleString('en-IN')}` },
+                { label: 'Variable Cost per Unit', value: `₹${Math.round(variable).toLocaleString('en-IN')}` },
+            ],
+            results: [
+                { label: 'Break-Even Units', value: `${Math.round(result.breakEvenUnits).toLocaleString('en-IN')} units` },
+                { label: 'Break-Even Revenue', value: `₹${Math.round(result.breakEvenSales).toLocaleString('en-IN')}` },
+                { label: 'Contribution Margin per Unit', value: `₹${Math.round(result.contribution).toLocaleString('en-IN')}` },
+                { label: 'Contribution Margin %', value: `${result.marginPct}%` },
+            ],
+            projectionTitle: 'Profit/Loss at Different Sales Volumes',
+            projectionColumns: ['Units Sold', 'Revenue', 'Total Cost', 'Profit/Loss', 'Margin %'],
+            projectionRows: result.projection.map((r: any) => [
+                Math.round(r.units).toLocaleString('en-IN'),
+                `₹${Math.round(r.revenue).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.totalCost).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.profit).toLocaleString('en-IN')}`,
+                r.revenue > 0 ? `${((r.profit / r.revenue) * 100).toFixed(1)}%` : '0%',
+            ]),
+            filename: `FinCalix_BreakEven_Report_${tag}`,
+        });
     };
 
-    const handleExcel = () => {
-        exportToExcel(['Units', 'Revenue', 'Total Cost', 'Profit'],
-            result.projection.map(p => [p.units, p.revenue, p.totalCost, p.profit]),
-            'BreakEven_Projection');
+    const handleExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToExcel({
+            title: 'Break-Even Analysis Report',
+            inputs: [
+                { label: 'Fixed Costs', value: `₹${Math.round(fixed).toLocaleString('en-IN')}` },
+                { label: 'Selling Price per Unit', value: `₹${price}` },
+                { label: 'Variable Cost per Unit', value: `₹${variable}` },
+            ],
+            results: [
+                { label: 'Break-Even Units', value: String(Math.round(result.breakEvenUnits)) },
+                { label: 'Break-Even Revenue', value: `₹${Math.round(result.breakEvenSales).toLocaleString('en-IN')}` },
+                { label: 'Contribution Margin %', value: `${result.marginPct}%` },
+            ],
+            projectionTitle: 'Profit/Loss Projection',
+            projectionColumns: ['Units Sold', 'Revenue', 'Total Cost', 'Profit/Loss', 'Margin %'],
+            projectionRows: result.projection.map((r: any) => [
+                Math.round(r.units),
+                Math.round(r.revenue),
+                Math.round(r.totalCost),
+                Math.round(r.profit),
+                r.revenue > 0 ? ((r.profit / r.revenue) * 100).toFixed(1) : '0',
+            ]),
+            filename: `FinCalix_BreakEven_Report_${tag}`,
+        });
     };
 
     const handleShare = async () => {

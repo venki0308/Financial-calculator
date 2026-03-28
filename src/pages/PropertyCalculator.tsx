@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { AnalyticsService } from '../lib/analytics';
-import { exportToPDF } from '../utils/exportUtils';
+import { exportToPDF } from '../utils/exportReport';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 
@@ -278,109 +278,207 @@ export default function PropertyCalculator() {
 
     // ── PDF Export ────────────────────────────────────────────────────────────
     const handleExportPDF = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         if (mode === 'land' && landResult) {
-            await exportToPDF('Land Value Report', ['Item', 'Value'], [
-                ['Area', `${landArea} ${UNIT_LABELS[landUnit]}`],
-                ['Price per Unit', fmt(Number(landPrice))],
-                ['---', '---'],
-                ['Estimated Land Value', fmt(landResult.totalValue)],
-            ], 'Land_Value_Report');
+            await exportToPDF({
+                title: 'Land Value Report',
+                inputs: [
+                    { label: 'Area', value: `${landArea} ${UNIT_LABELS[landUnit]}` },
+                    { label: 'Price per Unit', value: fmt(Number(landPrice)) },
+                ],
+                results: [
+                    { label: 'Base Land Value', value: fmt(landResult.baseValue) },
+                    { label: 'Premium Value', value: fmt(landResult.premiumValue) },
+                    { label: 'Estimated Land Value', value: fmt(landResult.totalValue) },
+                ],
+                projectionTitle: 'Area Conversions',
+                projectionColumns: ['Unit', 'Equivalent Area'],
+                projectionRows: landResult.conversions.map(c => [c.key, c.value]),
+                filename: `FinCalix_Land_Value_Report_${tag}`,
+            });
         } else if (mode === 'flat' && flatResult) {
-            await exportToPDF('Flat / Apartment Cost Report', ['Component', 'Amount'], [
-                ['Built-up Area', `${builtUp} sq.ft`],
-                ['Price per sq.ft', fmt(Number(ppsf))],
-                ['---', '---'],
-                ['Base Price', fmt(flatResult.basePrice)],
-                ['Parking Charges', fmt(flatResult.parkingAmt)],
-                ['Amenities Charges', fmt(flatResult.amenitiesAmt)],
-                ['Maintenance Deposit', fmt(flatResult.maintAmt)],
-                ['Subtotal', fmt(flatResult.subtotal)],
-                [`GST (${gstPct}%)`, fmt(flatResult.gstAmt)],
-                ['Total Property Cost', fmt(flatResult.totalCost)],
-            ], 'Flat_Cost_Report');
+            await exportToPDF({
+                title: 'Flat / Apartment Cost Report',
+                inputs: [
+                    { label: 'Built-up Area', value: `${builtUp} sq.ft` },
+                    { label: 'Price per sq.ft', value: fmt(Number(ppsf)) },
+                    { label: `GST Rate`, value: `${gstPct}%` },
+                ],
+                results: [
+                    { label: 'Base Price', value: fmt(flatResult.basePrice) },
+                    { label: 'Parking Charges', value: fmt(flatResult.parkingAmt) },
+                    { label: 'Amenities Charges', value: fmt(flatResult.amenitiesAmt) },
+                    { label: 'Maintenance Deposit', value: fmt(flatResult.maintAmt) },
+                    { label: 'Subtotal', value: fmt(flatResult.subtotal) },
+                    { label: `GST (${gstPct}%)`, value: fmt(flatResult.gstAmt) },
+                    { label: 'Total Property Cost', value: fmt(flatResult.totalCost) },
+                ],
+                projectionTitle: 'Cost Breakdown',
+                projectionColumns: ['Component', 'Amount'],
+                projectionRows: [
+                    ['Base Price', fmt(flatResult.basePrice)],
+                    ['Parking', fmt(flatResult.parkingAmt)],
+                    ['Amenities', fmt(flatResult.amenitiesAmt)],
+                    ['Maintenance Deposit', fmt(flatResult.maintAmt)],
+                    [`GST (${gstPct}%)`, fmt(flatResult.gstAmt)],
+                    ['Total', fmt(flatResult.totalCost)],
+                ],
+                filename: `FinCalix_Flat_Cost_Report_${tag}`,
+            });
         }
     };
 
     const handleStampDutyPDF = async () => {
         if (!sdResult) return;
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const stateName = STATE_RATES[sdState]?.name || sdState;
-        await exportToPDF('Stamp Duty & Registration Report', ['Component', 'Amount'], [
-            ['State', stateName],
-            ['Property Value', fmt(Number(sdValue))],
-            ['---', '---'],
-            [`Stamp Duty (${sdStampPct}%)`, fmt(sdResult.stamp)],
-            [`Registration Charges (${sdRegPct}%)`, fmt(sdResult.reg)],
-            ...(sdResult.transfer > 0 ? [[`Transfer Duty (${sdTransferPct}%)`, fmt(sdResult.transfer)] as [string, string]] : []),
-            ['---', '---'],
-            ['Total Registration Cost', fmt(sdResult.total)],
-            ['Grand Total (Property + Reg.)', fmt(Number(sdValue) + sdResult.total)],
-        ], 'Stamp_Duty_Report');
+        await exportToPDF({
+            title: 'Stamp Duty & Registration Report',
+            inputs: [
+                { label: 'State', value: stateName },
+                { label: 'Property Value', value: fmt(Number(sdValue)) },
+            ],
+            results: [
+                { label: `Stamp Duty (${sdStampPct}%)`, value: fmt(sdResult.stamp) },
+                { label: `Registration Charges (${sdRegPct}%)`, value: fmt(sdResult.reg) },
+                ...(sdResult.transfer > 0 ? [{ label: `Transfer Duty (${sdTransferPct}%)`, value: fmt(sdResult.transfer) }] : []),
+                { label: 'Total Registration Cost', value: fmt(sdResult.total) },
+                { label: 'Grand Total (Property + Reg.)', value: fmt(Number(sdValue) + sdResult.total) },
+            ],
+            projectionTitle: 'Cost Breakdown',
+            projectionColumns: ['Component', 'Rate', 'Amount'],
+            projectionRows: [
+                ['Stamp Duty', `${sdStampPct}%`, fmt(sdResult.stamp)],
+                ['Registration', `${sdRegPct}%`, fmt(sdResult.reg)],
+                ...(sdResult.transfer > 0 ? [['Transfer Duty', `${sdTransferPct}%`, fmt(sdResult.transfer)]] : []),
+                ['Total', '-', fmt(sdResult.total)],
+            ],
+            filename: `FinCalix_Stamp_Duty_Report_${tag}`,
+        });
     };
 
     const handleRentalYieldPDF = async () => {
         if (!ryResult) return;
-        await exportToPDF('Rental Yield Analysis Report', ['Metric', 'Value'], [
-            ['Property Value', fmt(Number(ryPropertyValue))],
-            ['Monthly Rent', fmt(Number(ryMonthlyRent))],
-            ['Monthly Maintenance', fmt(Number(ryMaintenance || '0'))],
-            ['Vacant Months/Year', `${ryVacancy} months`],
-            ['---', '---'],
-            ['Annual Rent Income', fmt(ryResult.annualRent)],
-            ['Gross Yield', `${ryResult.grossYield.toFixed(2)}%`],
-            ['Net Yield', `${ryResult.netYield.toFixed(2)}%`],
-            ['Payback Period', `${ryResult.paybackYears.toFixed(1)} years`],
-        ], 'Rental_Yield_Report');
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToPDF({
+            title: 'Rental Yield Analysis Report',
+            inputs: [
+                { label: 'Property Value', value: fmt(Number(ryPropertyValue)) },
+                { label: 'Monthly Rent', value: fmt(Number(ryMonthlyRent)) },
+                { label: 'Monthly Maintenance', value: fmt(Number(ryMaintenance || '0')) },
+                { label: 'Vacant Months/Year', value: `${ryVacancy} months` },
+            ],
+            results: [
+                { label: 'Annual Rent Income', value: fmt(ryResult.annualRent) },
+                { label: 'Gross Yield', value: `${ryResult.grossYield.toFixed(2)}%` },
+                { label: 'Net Yield', value: `${ryResult.netYield.toFixed(2)}%` },
+                { label: 'Payback Period', value: `${ryResult.paybackYears.toFixed(1)} years` },
+            ],
+            projectionTitle: 'Rental Yield Summary',
+            projectionColumns: ['Metric', 'Value'],
+            projectionRows: [
+                ['Annual Rent Income', fmt(ryResult.annualRent)],
+                ['Gross Yield', `${ryResult.grossYield.toFixed(2)}%`],
+                ['Net Yield', `${ryResult.netYield.toFixed(2)}%`],
+                ['Payback Period', `${ryResult.paybackYears.toFixed(1)} years`],
+            ],
+            filename: `FinCalix_Rental_Yield_Report_${tag}`,
+        });
     };
 
     const handleAppreciationPDF = async () => {
         if (!apResult) return;
-        await exportToPDF('Property Appreciation Forecast', ['Metric', 'Value'], [
-            ['Current Property Value', fmt(Number(apCurrentValue))],
-            ['Annual Appreciation Rate', `${apRate}%`],
-            ['---', '---'],
-            ...apResult.projections.map(p => [
-                `After ${p.years} Years`, `${fmt(p.value)} (Gain: ${fmt(p.gain)})`
-            ] as [string, string]),
-        ], 'Appreciation_Forecast');
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToPDF({
+            title: 'Property Appreciation Forecast',
+            inputs: [
+                { label: 'Current Property Value', value: fmt(Number(apCurrentValue)) },
+                { label: 'Annual Appreciation Rate', value: `${apRate}%` },
+            ],
+            results: apResult.projections.map(p => ({
+                label: `After ${p.years} Years`,
+                value: `${fmt(p.value)} (Gain: ${fmt(p.gain)})`,
+            })),
+            projectionTitle: 'Appreciation Projections',
+            projectionColumns: ['Period', 'Projected Value', 'Total Gain'],
+            projectionRows: apResult.projections.map(p => [
+                `${p.years} Years`,
+                fmt(p.value),
+                fmt(p.gain),
+            ]),
+            filename: `FinCalix_Appreciation_Forecast_${tag}`,
+        });
     };
 
     const handleHomeLoanPDF = async () => {
         if (!emiResult) return;
-        await exportToPDF('Home Loan EMI Report', ['Component', 'Amount'], [
-            ['Loan Amount', fmt(Number(loanAmt))],
-            ['Interest Rate', `${loanRate}% p.a.`],
-            ['Tenure', `${loanTenure} years`],
-            ['---', '---'],
-            ['Monthly EMI', fmt(emiResult.emi)],
-            ['Total Interest', fmt(emiResult.totalInterest)],
-            ['Total Payment', fmt(emiResult.totalPayment)],
-        ], 'Home_Loan_EMI_Report');
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToPDF({
+            title: 'Home Loan EMI Report',
+            inputs: [
+                { label: 'Loan Amount', value: fmt(Number(loanAmt)) },
+                { label: 'Interest Rate', value: `${loanRate}% p.a.` },
+                { label: 'Tenure', value: `${loanTenure} years` },
+            ],
+            results: [
+                { label: 'Monthly EMI', value: fmt(emiResult.emi) },
+                { label: 'Total Interest', value: fmt(emiResult.totalInterest) },
+                { label: 'Total Payment', value: fmt(emiResult.totalPayment) },
+            ],
+            projectionTitle: 'Loan Summary',
+            projectionColumns: ['Component', 'Amount'],
+            projectionRows: [
+                ['Loan Amount', fmt(Number(loanAmt))],
+                ['Total Interest', fmt(emiResult.totalInterest)],
+                ['Total Payment', fmt(emiResult.totalPayment)],
+                ['Monthly EMI', fmt(emiResult.emi)],
+            ],
+            filename: `FinCalix_Home_Loan_EMI_Report_${tag}`,
+        });
     };
 
     const handleVillaPDF = async () => {
         if (!villaResult) return;
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const totalBUA = villaResult.floors.reduce((sum, f) => sum + f.area, 0);
         const gradeName = CONSTRUCTION_GRADES.find(g => g.key === constGrade)?.label || constGrade;
-        await exportToPDF('Villa / Independent House Construction Report', ['Component', 'Amount'], [
-            ['Ground Floor Area', `${groundFloor || 0} sq.ft`],
-            ...(Number(firstFloor) > 0 ? [['First Floor Area', `${firstFloor} sq.ft`] as [string, string]] : []),
-            ...(Number(secondFloor) > 0 ? [['Second Floor Area', `${secondFloor} sq.ft`] as [string, string]] : []),
-            ['Total Built-up Area', `${totalBUA.toLocaleString('en-IN')} sq.ft`],
-            ['Construction Grade', gradeName],
-            ['Rate per sq.ft', fmt(Number(constRate))],
-            ...(Number(wallPerimeter) > 0 ? [['Compound Wall', `${wallPerimeter} ft @ ₹${wallRate}/ft`] as [string, string]] : []),
-            ['---', '---'],
-            ...villaResult.floors.map(f => [f.name, fmt(f.cost)] as [string, string]),
-            ['Construction Cost', fmt(villaResult.constructionCost)],
-            ...(villaResult.wallCost > 0 ? [['Compound Wall Cost', fmt(villaResult.wallCost)] as [string, string]] : []),
-            [`Electrical (${ohElectrical}%)`, fmt(villaResult.electrical)],
-            [`Plumbing (${ohPlumbing}%)`, fmt(villaResult.plumbing)],
-            [`Interior Works (${ohInterior}%)`, fmt(villaResult.interior)],
-            [`Miscellaneous (${ohMisc}%)`, fmt(villaResult.misc)],
-            ['---', '---'],
-            ['Total Construction Cost', fmt(villaResult.totalCost)],
-            ['Cost per sq.ft', `INR ${villaResult.costPerSqft.toLocaleString('en-IN')}`],
-        ], 'Villa_Construction_Report');
+        await exportToPDF({
+            title: 'Villa / Independent House Construction Report',
+            inputs: [
+                { label: 'Total Built-up Area', value: `${totalBUA.toLocaleString('en-IN')} sq.ft` },
+                { label: 'Construction Grade', value: gradeName },
+                { label: 'Rate per sq.ft', value: fmt(Number(constRate)) },
+                ...(Number(wallPerimeter) > 0 ? [{ label: 'Compound Wall', value: `${wallPerimeter} ft @ ₹${wallRate}/ft` }] : []),
+            ],
+            results: [
+                { label: 'Construction Cost', value: fmt(villaResult.constructionCost) },
+                ...(villaResult.wallCost > 0 ? [{ label: 'Compound Wall Cost', value: fmt(villaResult.wallCost) }] : []),
+                { label: `Electrical (${ohElectrical}%)`, value: fmt(villaResult.electrical) },
+                { label: `Plumbing (${ohPlumbing}%)`, value: fmt(villaResult.plumbing) },
+                { label: `Interior Works (${ohInterior}%)`, value: fmt(villaResult.interior) },
+                { label: `Miscellaneous (${ohMisc}%)`, value: fmt(villaResult.misc) },
+                { label: 'Total Construction Cost', value: fmt(villaResult.totalCost) },
+                { label: 'Cost per sq.ft', value: `₹${villaResult.costPerSqft.toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Floor-wise Cost Breakdown',
+            projectionColumns: ['Floor', 'Area (sq.ft)', 'Cost'],
+            projectionRows: [
+                ...villaResult.floors.map(f => [f.name, f.area.toLocaleString('en-IN'), fmt(f.cost)]),
+                ['Compound Wall', '-', fmt(villaResult.wallCost)],
+                [`Electrical (${ohElectrical}%)`, '-', fmt(villaResult.electrical)],
+                [`Plumbing (${ohPlumbing}%)`, '-', fmt(villaResult.plumbing)],
+                [`Interior (${ohInterior}%)`, '-', fmt(villaResult.interior)],
+                [`Misc (${ohMisc}%)`, '-', fmt(villaResult.misc)],
+                ['Total', totalBUA.toLocaleString('en-IN'), fmt(villaResult.totalCost)],
+            ],
+            filename: `FinCalix_Villa_Construction_Report_${tag}`,
+        });
     };
 
     return (

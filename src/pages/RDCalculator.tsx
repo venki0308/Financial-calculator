@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, 
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -136,38 +136,65 @@ export default function RDCalculator() {
     };
 
     const handleDownloadPDF = async () => {
-        const headers = ['Metric', 'Value'];
-        const data: (string | number)[][] = [
-            ['Monthly Deposit', fmtINR(monthly)],
-            ['Interest Rate (p.a.)', `${rate}%`],
-            ['Time Period', `${months} months`],
-            ['--- Results ---', ''],
-            ['Total Invested', fmtINR(result.invested)],
-            ['Interest Earned', fmtINR(result.totalInterest)],
-            ['Maturity Amount', fmtINR(result.maturity)],
-            ['--- Advanced Analysis ---', ''],
-            ['Effective Annual Yield (Quarterly Compounding)', `${result.effectiveYield.toFixed(2)}%`],
-            ['Real Return (Adjusted for Inflation)', `${result.realRate.toFixed(2)}%`],
-            ['Purchasing Power of Maturity', fmtINR(result.purchasingPower)],
-            ['Maturity Breakdown', `${result.principalPct.toFixed(1)}% Principal | ${result.interestPct.toFixed(1)}% Interest`],
-            ...(showWhatIf ? [
-                ['--- What-If Scenario ---', ''],
-                [`If Deposit increased by ${fmtINR(whatIfExtra)}/mo`, ''],
-                ['New Monthly Deposit', fmtINR(whatIf.newMonthly)],
-                ['New Maturity Amount', fmtINR(whatIf.newMaturity)],
-                ['Extra Wealth Generated', fmtINR(whatIf.addedWealth)]
-            ] : []),
-            ['--- Smart Insights ---', ''],
-            ['Insight', insight.msg],
-        ];
-
-        await exportToPDF('Smart RD Statement', headers, data, 'RD_Smart_Analysis');
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'Recurring Deposit (RD) Report',
+            inputs: [
+                { label: 'Monthly Deposit', value: `₹${monthly.toLocaleString('en-IN')}` },
+                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Tenure', value: `${months} Months` },
+                { label: 'Assumed Inflation', value: `${inflationRate}% p.a.` },
+            ],
+            results: [
+                { label: 'Total Invested', value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
+                { label: 'Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: 'Effective Annual Yield', value: `${result.effectiveYield.toFixed(2)}%` },
+                { label: 'Purchasing Power (Inflation-adj)', value: `₹${Math.round(result.purchasingPower).toLocaleString('en-IN')}` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Total Deposits', value: result.invested, color: '#4F46E5' },
+                    { label: 'Interest Earned', value: result.totalInterest, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Monthly RD Schedule',
+            projectionColumns: ['Month', 'Monthly Deposit', 'Interest Accrued', 'Cumulative Interest', 'Balance'],
+            projectionRows: result.schedule.map((r: any) => [
+                `Month ${r.month}`,
+                `₹${Math.round(r.deposit).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.interestEarned).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.cumInterest).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.balance).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_RD_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
-    const handleDownloadExcel = () => {
-        const headers = ['Month', 'Monthly Deposit', 'Cum. Interest', 'End Balance'];
-        const data = result.schedule.map(r => [r.month, Math.round(r.deposit), Math.round(r.cumInterest), Math.round(r.balance)]);
-        exportToExcel(headers, data, 'RD_Schedule');
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'Recurring Deposit (RD) Report',
+            inputs: [
+                { label: 'Monthly Deposit', value: `₹${monthly.toLocaleString('en-IN')}` },
+                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Tenure', value: `${months} Months` },
+            ],
+            results: [
+                { label: 'Total Invested', value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
+                { label: 'Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Monthly RD Schedule',
+            projectionColumns: ['Month', 'Monthly Deposit', 'Interest Accrued', 'Cumulative Interest', 'Balance'],
+            projectionRows: result.schedule.map((r: any) => [r.month, Math.round(r.deposit), Math.round(r.interestEarned), Math.round(r.cumInterest), Math.round(r.balance)]),
+            filename: `FinCalix_RD_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50";

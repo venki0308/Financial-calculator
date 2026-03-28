@@ -12,7 +12,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import SmartInsight from '../components/SmartInsight';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import ShareableCard from '../components/ShareableCard';
@@ -113,38 +113,65 @@ export default function SSYCalculator() {
         setTimeout(() => setSaved(false), 2000);
     };
 
-    const handleDownloadPDF = () => {
-        const chartCanvas = chartRef.current?.canvas;
-        const img = chartCanvas ? chartCanvas.toDataURL('image/png') : undefined;
-        exportToPDF(
-            'Sukanya Samriddhi Yojana – Report',
-            ['Parameter', 'Value'],
-            [
-                ['Annual Deposit', formatINR(annual)],
-                ['Interest Rate', `${rate}%`],
-                ['Child Age', `${childAge} years`],
-                ['Deposit Period', `${investYears} years`],
-                ['---', '---'],
-                ['Total Invested', formatINR(result.invested)],
-                ['Interest Earned', formatINR(result.totalInterest)],
-                ['Maturity Amount', formatINR(result.maturity)],
-                ['Maturity Age', `${result.maturityAge} years`],
+    const handleDownloadPDF = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToPDF({
+            title: 'Sukanya Samriddhi Yojana (SSY) Report',
+            inputs: [
+                { label: 'Annual Deposit', value: `₹${Math.round(annual).toLocaleString('en-IN')}` },
+                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Child Age', value: `${childAge} Years` },
+                { label: 'Deposit Period', value: `${investYears} Years (mandatory)` },
+                { label: 'Maturity Age', value: `${result.maturityAge} Years` },
             ],
-            'SSY_Calculation',
-            img,
-            [
-                { label: 'Invested', value: formatINR(result.invested), color: [59, 130, 246] },
-                { label: 'Interest', value: formatINR(result.totalInterest), color: [16, 185, 129] },
-            ]
-        );
+            results: [
+                { label: 'Total Amount Invested', value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
+                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Total Invested', value: result.invested, color: '#4F46E5' },
+                    { label: 'Interest Earned', value: result.totalInterest, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'SSY Yearly Growth (21 Years)',
+            projectionColumns: ['Year', 'Age', 'Annual Deposit', 'Interest', 'Balance', 'Cum. Deposit', 'Deposit Eligible'],
+            projectionRows: result.timeline.map((t: any) => [
+                `Year ${t.year}`,
+                t.age,
+                t.deposit > 0 ? `₹${Math.round(t.deposit).toLocaleString('en-IN')}` : '-',
+                `₹${Math.round(t.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(t.balance).toLocaleString('en-IN')}`,
+                `₹${Math.round(t.cumDeposit).toLocaleString('en-IN')}`,
+                t.deposit > 0 ? 'Yes' : 'No',
+            ]),
+            filename: `FinCalix_SSY_Report_${tag}`,
+        });
     };
 
-    const handleDownloadExcel = () => {
-        exportToExcel(
-            ['Year', 'Age', 'Deposit', 'Interest', 'Balance', 'Cumulative Deposit', 'Cumulative Interest'],
-            result.timeline.map(t => [t.year, t.age, t.deposit, t.interest, t.balance, t.cumDeposit, t.cumInterest]),
-            'SSY_YearWise'
-        );
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToExcel({
+            title: 'Sukanya Samriddhi Yojana (SSY) Report',
+            inputs: [
+                { label: 'Annual Deposit', value: `₹${Math.round(annual).toLocaleString('en-IN')}` },
+                { label: 'Interest Rate', value: `${rate}%` },
+                { label: 'Child Age', value: String(childAge) },
+            ],
+            results: [
+                { label: 'Total Invested', value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
+                { label: 'Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'SSY Yearly Growth',
+            projectionColumns: ['Year', 'Age', 'Deposit', 'Interest', 'Balance', 'Cumulative Deposit', 'Cumulative Interest'],
+            projectionRows: result.timeline.map((t: any) => [t.year, t.age, Math.round(t.deposit), Math.round(t.interest), Math.round(t.balance), Math.round(t.cumDeposit), Math.round(t.cumInterest)]),
+            filename: `FinCalix_SSY_Report_${tag}`,
+        });
     };
 
     const handleShare = async () => {

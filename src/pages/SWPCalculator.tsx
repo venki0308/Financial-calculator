@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, 
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -153,34 +153,70 @@ export default function SWPCalculator() {
     };
 
     const handleDownloadPDF = async () => {
-        const headers = ['Metric', 'Value'];
-        const data: (string | number)[][] = [
-            ['Total Investment', fmtINR(principal)],
-            ['Monthly Withdrawal', fmtINR(withdrawal)],
-            ['Expected Return', `${rate}% p.a.`],
-            ['Time Period', `${years} years`],
-            ['--- Results ---', ''],
-            ['Total Amount Withdrawn', fmtINR(result.totalWithdrawn)],
-            ['Final Balance', fmtINR(result.finalBalance)],
-            ['--- Advanced Analysis ---', ''],
-            ['Sustainable Duration', result.depletionMonth ? `${(result.depletionMonth/12).toFixed(1)} years (Depletes early)` : `${years} years (Sustainable)`],
-            ['Safe Withdrawal Rate (SWR)', `${result.swr.toFixed(1)}% (${result.swrRisk} Risk)`],
-            ['--- Inflation Impact ---', ''],
-            ['Assumed Inflation', `${inflation}% p.a.`],
-            [`Real Value of ${fmtINR(withdrawal)} in yr ${years}`, fmtINR(result.realWithdrawalValueAtEnd)],
-            ['--- Smart Insights ---', ''],
-            ['Insight', insight.msg],
-            ['--- Depletion Table (First 5 Yrs) ---', ''],
-            ...result.yearlySchedule.slice(0, 5).map(r => [`Year ${r.year}`, `Balance: ${fmtINR(r.close)}`]),
-        ];
-
-        await exportToPDF('Smart SWP Analysis', headers, data, 'SWP_Smart_Analysis');
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'SWP (Systematic Withdrawal Plan) Report',
+            inputs: [
+                { label: 'Invested Corpus', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Monthly Withdrawal', value: `₹${withdrawal.toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
+                { label: 'Withdrawal Period', value: `${years} Years` },
+            ],
+            results: [
+                { label: 'Total Amount Withdrawn', value: `₹${Math.round(result.totalWithdrawn).toLocaleString('en-IN')}` },
+                { label: 'Final Corpus Balance', value: `₹${Math.round(result.finalBalance).toLocaleString('en-IN')}` },
+                { label: 'Safe Withdrawal Rate', value: `${result.swr.toFixed(1)}% (${result.swrRisk} Risk)` },
+                { label: 'Corpus Status', value: result.depletionMonth ? `Depletes in ${(result.depletionMonth/12).toFixed(1)} years` : `Sustainable for ${years} years` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Total Withdrawn', value: result.totalWithdrawn, color: '#EF4444' },
+                    { label: 'Remaining Corpus', value: Math.max(0, result.finalBalance), color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Annual Withdrawal Schedule',
+            projectionColumns: ['Year', 'Opening Balance', 'Total Withdrawn', 'Returns Earned', 'Closing Balance'],
+            projectionRows: result.yearlySchedule.map((r: any) => [
+                `Year ${r.year}`,
+                `₹${Math.round(r.open).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.withdrawn).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.close).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_SWP_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
-    const handleDownloadExcel = () => {
-        const headers = ['Year', 'Opening Balance', 'Amount Withdrawn', 'Interest Earned', 'Closing Balance'];
-        const data = result.yearlySchedule.map(r => [r.year, Math.round(r.open), Math.round(r.withdrawn), Math.round(r.interest), Math.round(r.close)]);
-        exportToExcel(headers, data, 'SWP_Growth');
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'SWP (Systematic Withdrawal Plan) Report',
+            inputs: [
+                { label: 'Invested Corpus', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Monthly Withdrawal', value: `₹${withdrawal.toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
+                { label: 'Withdrawal Period', value: `${years} Years` },
+            ],
+            results: [
+                { label: 'Total Amount Withdrawn', value: `₹${Math.round(result.totalWithdrawn).toLocaleString('en-IN')}` },
+                { label: 'Final Corpus Balance', value: `₹${Math.round(result.finalBalance).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Annual Withdrawal Schedule',
+            projectionColumns: ['Year', 'Opening Balance', 'Total Withdrawn', 'Returns Earned', 'Closing Balance'],
+            projectionRows: result.yearlySchedule.map((r: any) => [
+                r.year,
+                Math.round(r.open),
+                Math.round(r.withdrawn),
+                Math.round(r.interest),
+                Math.round(r.close),
+            ]),
+            filename: `FinCalix_SWP_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50";

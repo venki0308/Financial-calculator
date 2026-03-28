@@ -15,7 +15,7 @@ import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 
@@ -80,25 +80,70 @@ export default function NPSCalculator() {
         setSaved(true); setTimeout(() => setSaved(false), 2000);
     };
 
-    const handleDownloadPDF = () => {
-        exportToPDF('NPS Retirement Report', ['Parameter', 'Value'], [
-            ['Monthly Contribution', formatINR(monthly)], ['Expected Return', `${rate}%`], ['Current Age', `${age}`], ['Retirement Age', `${retireAge}`],
-            ['Annuity %', `${annuityPct}%`], ['---', '---'],
-            ['Total Invested', formatINR(result.invested)], ['Total Corpus', formatINR(result.corpus)], ['Wealth Gained', formatINR(result.wealthGained)],
-            ['Lumpsum', formatINR(result.lumpsum)], ['Annuity Investment', formatINR(result.annuity)], ['Est. Monthly Pension', formatINR(result.monthlyPension)],
-        ], 'NPS_Report', undefined, [
-            { label: 'Invested', value: formatINR(result.invested), color: [59, 130, 246] },
-            { label: 'Wealth Gained', value: formatINR(result.wealthGained), color: [16, 185, 129] },
-            { label: 'Monthly Pension', value: formatINR(result.monthlyPension), color: [245, 158, 11] },
-        ]);
+    const handleDownloadPDF = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'NPS (National Pension System) Report',
+            inputs: [
+                { label: 'Monthly Contribution', value: `₹${Math.round(monthly).toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
+                { label: 'Current Age', value: `${age} Years` },
+                { label: 'Retirement Age', value: `${retireAge} Years` },
+                { label: 'Annuity Percentage', value: `${annuityPct}%` },
+                { label: 'Annuity Rate', value: `${annuityRate}% p.a.` },
+            ],
+            results: [
+                { label: 'Total Corpus at Retirement', value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: 'Total Invested', value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
+                { label: 'Wealth Gained', value: `₹${Math.round(result.wealthGained).toLocaleString('en-IN')}` },
+                { label: 'Lump Sum (60%)', value: `₹${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
+                { label: 'Annuity Amount (40%)', value: `₹${Math.round(result.annuity).toLocaleString('en-IN')}` },
+                { label: 'Est. Monthly Pension', value: `₹${Math.round(result.monthlyPension).toLocaleString('en-IN')}` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Total Invested', value: result.invested, color: '#4F46E5' },
+                    { label: 'Wealth Gained', value: result.wealthGained, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Yearly NPS Growth Schedule',
+            projectionColumns: ['Year', 'Age', 'Annual Contribution', 'Cumulative Contribution', 'Total Corpus'],
+            projectionRows: result.timeline.map((r: any) => [
+                `Year ${r.year}`,
+                r.age,
+                `₹${Math.round(r.contrib).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.cumContrib).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.corpus).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_NPS_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
-    const handleDownloadExcel = () => {
-        exportToExcel(
-            ['Year', 'Age', 'Annual Contribution', 'Cumulative Contribution', 'Corpus'],
-            result.timeline.map(t => [t.year, t.age, t.contrib, t.cumContrib, t.corpus]),
-            'NPS_Timeline'
-        );
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'NPS (National Pension System) Report',
+            inputs: [
+                { label: 'Monthly Contribution', value: `₹${Math.round(monthly).toLocaleString('en-IN')}` },
+                { label: 'Return Rate', value: `${rate}%` },
+                { label: 'Current Age', value: String(age) },
+                { label: 'Retirement Age', value: String(retireAge) },
+            ],
+            results: [
+                { label: 'Total Corpus', value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: 'Monthly Pension', value: `₹${Math.round(result.monthlyPension).toLocaleString('en-IN')}` },
+                { label: 'Lump Sum', value: `₹${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Yearly NPS Growth',
+            projectionColumns: ['Year', 'Age', 'Annual Contribution', 'Cumulative Contribution', 'Total Corpus'],
+            projectionRows: result.timeline.map((r: any) => [r.year, r.age, Math.round(r.contrib), Math.round(r.cumContrib), Math.round(r.corpus)]),
+            filename: `FinCalix_NPS_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     const handleShare = async () => {

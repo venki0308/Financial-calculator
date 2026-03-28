@@ -21,7 +21,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { calculateSIP, formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import SmartInsight from '../components/SmartInsight';
@@ -200,49 +200,85 @@ export default function SIPCalculator() {
     }, [savedCalculations, activeTab, monthly, rate, years, suInitial, suStepUp, suRate, suYears, goalTarget, goalYears, goalRate]);
 
     const handleDownloadPDF = async () => {
-        await new Promise(r => setTimeout(r, 150));
-        let chartImage: string | undefined = undefined;
-        if (chartRef.current) chartImage = chartRef.current.toBase64Image('image/png', 1.0);
-
-        const total = displayValues.invested + displayValues.returns;
-        const investedPct = ((displayValues.invested / total) * 100).toFixed(1);
-        const returnsPct = ((displayValues.returns / total) * 100).toFixed(1);
-        const chartSummary: { label: string; value: string; color: [number, number, number] }[] = [
-            { label: `Invested (${investedPct}%)`, value: formatINR(displayValues.invested), color: [79, 70, 229] },
-            { label: `Est. Returns (${returnsPct}%)`, value: formatINR(displayValues.returns), color: [16, 185, 129] },
-        ];
-
-        const headers = ['Metric', 'Value'];
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const tabLabel = activeTab === 'basic' ? 'Basic SIP' : activeTab === 'stepup' ? 'Step-Up SIP' : 'Goal SIP';
-        const data: string[][] =
-            activeTab === 'goal'
-                ? [
-                    ['Calculator Type', 'Goal SIP'],
-                    ['Target Amount', formatINR(goalTarget)],
-                    ['Investment Period', `${goalYears} Years`],
-                    ['Expected Return', `${goalRate}% p.a.`],
-                    ['---', '---'],
-                    ['Monthly SIP Required', formatINR(goalResult.monthlyNeeded)],
-                    ['Total to be Invested', formatINR(goalResult.totalInvested)],
-                    ['Estimated Returns', formatINR(goalResult.returns)],
-                ]
-                : [
-                    ['Calculator Type', tabLabel],
-                    [displayValues.label, formatINR(displayValues.primary)],
-                    ['Total Invested', formatINR(displayValues.invested)],
-                    ['Wealth Gained', formatINR(displayValues.returns)],
-                ];
-        exportToPDF(`SIP Investment Report — ${tabLabel}`, headers, data, 'SIP_Report', chartImage, chartSummary);
+        const config: ExportConfig = {
+            title: 'SIP Calculator Report',
+            subtitle: tabLabel,
+            inputs: activeTab === 'goal' ? [
+                { label: 'Target Amount', value: `₹${goalTarget.toLocaleString('en-IN')}` },
+                { label: 'Investment Period', value: `${goalYears} Years` },
+                { label: 'Expected Return', value: `${goalRate}% p.a.` },
+            ] : [
+                { label: 'Monthly SIP Amount', value: `₹${monthly.toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
+                { label: 'Investment Period', value: `${years} Years` },
+            ],
+            results: activeTab === 'goal' ? [
+                { label: 'Monthly SIP Required', value: `₹${Math.round(goalResult.monthlyNeeded).toLocaleString('en-IN')}` },
+                { label: 'Total to be Invested', value: `₹${Math.round(goalResult.totalInvested).toLocaleString('en-IN')}` },
+                { label: 'Estimated Returns', value: `₹${Math.round(goalResult.returns).toLocaleString('en-IN')}` },
+                { label: 'Target Amount', value: `₹${goalTarget.toLocaleString('en-IN')}` },
+            ] : [
+                { label: 'Total Invested', value: `₹${Math.round(displayValues.invested).toLocaleString('en-IN')}` },
+                { label: 'Estimated Returns', value: `₹${Math.round(displayValues.returns).toLocaleString('en-IN')}` },
+                { label: 'Total Value', value: `₹${Math.round(displayValues.primary).toLocaleString('en-IN')}` },
+            ],
+            chart: activeTab !== 'goal' ? {
+                type: 'pie',
+                segments: [
+                    { label: 'Amount Invested', value: displayValues.invested, color: '#4F46E5' },
+                    { label: 'Est. Returns', value: displayValues.returns, color: '#10B981' },
+                ],
+            } : undefined,
+            projectionTitle: 'Yearly Growth Schedule',
+            projectionColumns: ['Year', 'Amount Invested', 'Est. Returns', 'Total Value'],
+            projectionRows: (growthData || []).map((r: any) => [
+                `Year ${r.year}`,
+                `₹${Math.round(r.invested).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.returns).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.invested + r.returns).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_SIP_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
-    const handleDownloadExcel = () => {
-        const headers = ['Metric', 'Value'];
-        const data = [
-            [displayValues.label, displayValues.primary],
-            ['Total Invested', displayValues.invested],
-            ['Wealth Gained', displayValues.returns],
-        ];
-        exportToExcel(headers, data, 'SIP_Report');
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'SIP Calculator Report',
+            inputs: activeTab === 'goal' ? [
+                { label: 'Target Amount', value: `₹${goalTarget.toLocaleString('en-IN')}` },
+                { label: 'Investment Period', value: `${goalYears} Years` },
+                { label: 'Expected Return', value: `${goalRate}% p.a.` },
+            ] : [
+                { label: 'Monthly SIP Amount', value: `₹${monthly.toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
+                { label: 'Investment Period', value: `${years} Years` },
+            ],
+            results: activeTab === 'goal' ? [
+                { label: 'Monthly SIP Required', value: `₹${Math.round(goalResult.monthlyNeeded).toLocaleString('en-IN')}` },
+                { label: 'Total to be Invested', value: `₹${Math.round(goalResult.totalInvested).toLocaleString('en-IN')}` },
+                { label: 'Estimated Returns', value: `₹${Math.round(goalResult.returns).toLocaleString('en-IN')}` },
+            ] : [
+                { label: 'Total Invested', value: `₹${Math.round(displayValues.invested).toLocaleString('en-IN')}` },
+                { label: 'Estimated Returns', value: `₹${Math.round(displayValues.returns).toLocaleString('en-IN')}` },
+                { label: 'Total Value', value: `₹${Math.round(displayValues.primary).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Yearly Growth Schedule',
+            projectionColumns: ['Year', 'Amount Invested', 'Est. Returns', 'Total Value'],
+            projectionRows: (growthData || []).map((r: any) => [
+                r.year,
+                Math.round(r.invested),
+                Math.round(r.returns),
+                Math.round(r.invested + r.returns),
+            ]),
+            filename: `FinCalix_SIP_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     return (

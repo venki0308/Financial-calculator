@@ -16,7 +16,7 @@ import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { calculateFD, formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { triggerCalcNotification } from '../services/calcNotifications';
 
@@ -105,29 +105,66 @@ export default function FDCalculator() {
     }, [savedCalculations, principal, rate, years, compounding]);
 
     const handleDownloadPDF = async () => {
-        let chartImage: string | undefined = undefined;
-        if (chartRef.current) {
-            await new Promise(r => setTimeout(r, 100));
-            try { chartImage = chartRef.current.toBase64Image('image/png', 1.0); } catch { }
-        }
-        exportToPDF('FD Maturity Report', ['Metric', 'Value'], [
-            ['Deposit Amount', formatINR(principal)], ['Interest Rate', `${rate}%`], ['Tenure', `${years} years`],
-            ['Compounding', compounding === 4 ? 'Quarterly' : compounding === 12 ? 'Monthly' : compounding === 1 ? 'Yearly' : 'Daily'],
-            ['---', '---'], ['Total Invested', formatINR(principal)], ['Interest Earned', formatINR(result.interest)], ['Maturity Amount', formatINR(result.amount)],
-            ['---', '---'], ['Inflation Rate Assumed', `${inflation}%`], ['Inflation-adjusted Value', formatINR(inflationAdj.realValue)], ['Real Return', `${inflationAdj.realReturn}%`],
-        ], 'FD_Report', chartImage, [
-            { label: 'Invested', value: formatINR(principal), color: [79, 70, 229] as [number, number, number] },
-            { label: 'Interest', value: formatINR(result.interest), color: [16, 185, 129] as [number, number, number] },
-            { label: 'Maturity', value: formatINR(result.amount), color: [245, 158, 11] as [number, number, number] },
-        ]);
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const compLabel = compounding === 12 ? 'Monthly' : compounding === 4 ? 'Quarterly' : compounding === 365 ? 'Daily' : 'Yearly';
+        const config: ExportConfig = {
+            title: 'Fixed Deposit (FD) Report',
+            inputs: [
+                { label: 'Deposit Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Tenure', value: `${years} Years` },
+                { label: 'Compounding Frequency', value: compLabel },
+                { label: 'Assumed Inflation', value: `${inflation}% p.a.` },
+            ],
+            results: [
+                { label: 'Principal Invested', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Interest Earned', value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
+                { label: 'Maturity Amount', value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
+                { label: 'Inflation-Adjusted Value', value: `₹${Math.round(inflationAdj.realValue).toLocaleString('en-IN')}` },
+                { label: 'Real Return Rate', value: `${inflationAdj.realReturn}%` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Principal Invested', value: principal, color: '#4F46E5' },
+                    { label: 'Interest Earned', value: result.interest, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Year-Wise FD Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionRows: yearWise.map((r: any) => [
+                `Year ${r.year}`,
+                `₹${Math.round(r.value - r.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.value).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_FD_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
-    const handleDownloadExcel = () => {
-        exportToExcel(['Metric', 'Value'], [
-            ['Deposit Amount', principal], ['Interest Rate', rate], ['Tenure', years], ['Compounding', compounding],
-            ['Interest Earned', result.interest], ['Maturity Amount', result.amount],
-            ['Inflation-adj Value', inflationAdj.realValue],
-        ], 'FD_Report');
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'Fixed Deposit (FD) Report',
+            inputs: [
+                { label: 'Deposit Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Tenure', value: `${years} Years` },
+                { label: 'Compounding Frequency', value: String(compounding) },
+            ],
+            results: [
+                { label: 'Interest Earned', value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
+                { label: 'Maturity Amount', value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Year-Wise FD Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionRows: yearWise.map((r: any) => [r.year, Math.round(r.value - r.interest), Math.round(r.interest), Math.round(r.value)]),
+            filename: `FinCalix_FD_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     const handleShare = async () => {

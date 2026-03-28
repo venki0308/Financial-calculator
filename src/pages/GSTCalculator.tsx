@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -218,80 +218,152 @@ export default function GSTCalculator() {
     };
 
     const handleDownloadPDF = async () => {
-        let title = 'GST Calculation Report';
-        let headers = ['Component', 'Value'];
-        let data: (string | number)[][] = [];
-        let chartImage: string | undefined;
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        let inputs: Array<{ label: string; value: string }> = [];
+        let results: Array<{ label: string; value: string }> = [];
+        let projCols: string[] = [];
+        let projRows: Array<Array<string | number>> = [];
 
-        if (chartRef.current) {
-            await new Promise(r => setTimeout(r, 100));
-            try { chartImage = chartRef.current.toBase64Image('image/png', 1.0); } catch { }
-        }
-
-        if (mode === 'standard' && stdResult) {
-            title = `GST ${stdDirection === 'add' ? 'Addition' : 'Removal'} Report`;
-            data = [
-                ['Base Amount', formatINR(stdResult.base)],
-                ['GST Rate', `${stdRate}%`],
-                ...(isIGST ? [['IGST', formatINR(stdResult.igst)] as [string, string]] : [['CGST', formatINR(stdResult.cgst)] as [string, string], ['SGST', formatINR(stdResult.sgst)] as [string, string]]),
-                ['Total GST', formatINR(stdResult.gst)],
-                ['Final Amount', formatINR(stdResult.total)],
+        if (mode === 'standard' || mode === 'reverse') {
+            const r = (mode === 'standard' ? stdResult : reverseResult)!;
+            if (!r) return;
+            inputs = [
+                { label: 'Mode', value: mode === 'standard' ? 'Add GST (Exclusive to Inclusive)' : 'Remove GST (Inclusive to Exclusive)' },
+                { label: 'Amount', value: `₹${stdAmount.toLocaleString('en-IN')}` },
+                { label: 'GST Rate', value: `${stdRate}%` },
+                { label: 'Transaction Type', value: isIGST ? 'IGST (Inter-state)' : 'CGST + SGST (Intra-state)' },
             ];
-        } else if (mode === 'reverse' && reverseResult) {
-            title = 'GST Reverse Calculation Report';
-            data = [
-                ['Amount (incl. GST)', formatINR(stdAmount)],
-                ['GST Rate', `${stdRate}%`],
-                ['Base Price', formatINR(reverseResult.base)],
-                ...(isIGST ? [['IGST', formatINR(reverseResult.igst)] as [string, string]] : [['CGST', formatINR(reverseResult.cgst)] as [string, string], ['SGST', formatINR(reverseResult.sgst)] as [string, string]]),
-                ['Total GST', formatINR(reverseResult.gst)],
+            results = isIGST ? [
+                { label: 'Base Amount', value: `₹${Math.round(r.base).toLocaleString('en-IN')}` },
+                { label: 'IGST', value: `₹${Math.round(r.igst).toLocaleString('en-IN')}` },
+                { label: 'Total Amount', value: `₹${Math.round(r.total).toLocaleString('en-IN')}` },
+            ] : [
+                { label: 'Base Amount', value: `₹${Math.round(r.base).toLocaleString('en-IN')}` },
+                { label: 'CGST', value: `₹${Math.round(r.cgst).toLocaleString('en-IN')}` },
+                { label: 'SGST/UTGST', value: `₹${Math.round(r.sgst).toLocaleString('en-IN')}` },
+                { label: 'Total GST', value: `₹${Math.round(r.gst).toLocaleString('en-IN')}` },
+                { label: 'Total Amount', value: `₹${Math.round(r.total).toLocaleString('en-IN')}` },
             ];
-        } else if (mode === 'profit' && profitResult) {
-            title = 'GST Profit Margin Report';
-            data = [
-                ['Cost Price', formatINR(costPrice)],
-                ['Selling Price', formatINR(sellingPrice)],
-                ['Profit', formatINR(profitResult.profit)],
-                ['Profit %', `${profitResult.profitPct.toFixed(1)}%`],
-                ['GST on Sale', formatINR(profitResult.gstOnSale)],
-                ['GST on Purchase (ITC)', formatINR(profitResult.gstOnCost)],
-                ['Net GST Payable', formatINR(profitResult.netGst)],
-                ['Total with GST', formatINR(profitResult.totalWithGst)],
+            projCols = ['Component', 'Rate', 'Amount'];
+            projRows = isIGST ? [
+                ['Base Amount', '-', `₹${Math.round(r.base).toLocaleString('en-IN')}`],
+                ['IGST', `${stdRate}%`, `₹${Math.round(r.igst).toLocaleString('en-IN')}`],
+                ['Total', '-', `₹${Math.round(r.total).toLocaleString('en-IN')}`],
+            ] : [
+                ['Base Amount', '-', `₹${Math.round(r.base).toLocaleString('en-IN')}`],
+                ['CGST', `${stdRate / 2}%`, `₹${Math.round(r.cgst).toLocaleString('en-IN')}`],
+                ['SGST/UTGST', `${stdRate / 2}%`, `₹${Math.round(r.sgst).toLocaleString('en-IN')}`],
+                ['Total GST', `${stdRate}%`, `₹${Math.round(r.gst).toLocaleString('en-IN')}`],
+                ['Total Amount', '-', `₹${Math.round(r.total).toLocaleString('en-IN')}`],
             ];
-        } else if (mode === 'itc' && itcResult) {
-            title = 'Input Tax Credit Report';
-            headers = ['Component', 'Amount'];
-            data = [
-                ['GST Paid on Purchases (ITC)', formatINR(itcResult.itc)],
-                ['GST Collected on Sales', formatINR(itcResult.liability)],
-                ['Net GST Payable', formatINR(itcResult.netPayable)],
-                ...(itcResult.refund > 0 ? [['ITC Refund Available', formatINR(itcResult.refund)] as [string, string]] : []),
+        } else if (mode === 'profit') {
+            if (!profitResult) return;
+            inputs = [
+                { label: 'Cost Price', value: `₹${costPrice.toLocaleString('en-IN')}` },
+                { label: 'Selling Price', value: `₹${sellingPrice.toLocaleString('en-IN')}` },
+                { label: 'GST Rate', value: `${profitGstRate}%` },
+            ];
+            results = [
+                { label: 'Profit (Before GST)', value: `₹${Math.round(profitResult.profit).toLocaleString('en-IN')}` },
+                { label: 'Profit %', value: `${profitResult.profitPct.toFixed(2)}%` },
+                { label: 'GST on Sale', value: `₹${Math.round(profitResult.gstOnSale).toLocaleString('en-IN')}` },
+                { label: 'Net GST Payable', value: `₹${Math.round(profitResult.netGst).toLocaleString('en-IN')}` },
+                { label: 'Total with GST', value: `₹${Math.round(profitResult.totalWithGst).toLocaleString('en-IN')}` },
+            ];
+            projCols = ['Component', 'Amount'];
+            projRows = [
+                ['Cost Price', `₹${costPrice.toLocaleString('en-IN')}`],
+                ['Selling Price', `₹${sellingPrice.toLocaleString('en-IN')}`],
+                ['Profit', `₹${Math.round(profitResult.profit).toLocaleString('en-IN')}`],
+                ['GST on Sale', `₹${Math.round(profitResult.gstOnSale).toLocaleString('en-IN')}`],
+                ['GST on Cost', `₹${Math.round(profitResult.gstOnCost).toLocaleString('en-IN')}`],
+                ['Net GST Payable', `₹${Math.round(profitResult.netGst).toLocaleString('en-IN')}`],
+            ];
+        } else if (mode === 'itc') {
+            if (!itcResult) return;
+            inputs = [
+                { label: 'Input GST Paid', value: `₹${purchaseGst.toLocaleString('en-IN')}` },
+                { label: 'Output GST Collected', value: `₹${salesGst.toLocaleString('en-IN')}` },
+            ];
+            results = [
+                { label: 'ITC Available', value: `₹${Math.round(itcResult.itc).toLocaleString('en-IN')}` },
+                { label: 'GST Liability', value: `₹${Math.round(itcResult.liability).toLocaleString('en-IN')}` },
+                { label: 'Net GST Payable', value: `₹${Math.round(itcResult.netPayable).toLocaleString('en-IN')}` },
+                { label: 'ITC Refund', value: `₹${Math.round(itcResult.refund).toLocaleString('en-IN')}` },
+            ];
+            projCols = ['Component', 'Amount'];
+            projRows = [
+                ['Input GST (ITC)', `₹${Math.round(itcResult.itc).toLocaleString('en-IN')}`],
+                ['Output GST Liability', `₹${Math.round(itcResult.liability).toLocaleString('en-IN')}`],
+                ['Net Payable', `₹${Math.round(itcResult.netPayable).toLocaleString('en-IN')}`],
+                ['Refund', `₹${Math.round(itcResult.refund).toLocaleString('en-IN')}`],
             ];
         } else if (mode === 'invoice') {
-            title = 'GST Invoice';
-            headers = ['Item', 'Qty', 'Price', 'GST', 'Total'];
-            data = invoiceResult.map(i => [i.name, String(i.qty), formatINR(i.price), formatINR(i.gst), formatINR(i.total)]);
-            data.push(['', '', '', '', '']);
-            data.push(['Grand Total', '', formatINR(invoiceTotals.amount), formatINR(invoiceTotals.gst), formatINR(invoiceTotals.total)]);
+            inputs = [
+                { label: 'Invoice Type', value: invoiceIsIGST ? 'IGST (Inter-state)' : 'CGST+SGST (Intra-state)' },
+                { label: 'Total Line Items', value: String(invoiceItems.length) },
+            ];
+            results = [
+                { label: 'Invoice Sub-total', value: `₹${Math.round(invoiceTotals.amount).toLocaleString('en-IN')}` },
+                { label: 'Total GST', value: `₹${Math.round(invoiceTotals.gst).toLocaleString('en-IN')}` },
+                { label: 'Invoice Total', value: `₹${Math.round(invoiceTotals.total).toLocaleString('en-IN')}` },
+            ];
+            projCols = invoiceIsIGST
+                ? ['Item', 'Qty', 'Rate', 'GST%', 'Amount', 'IGST', 'Total']
+                : ['Item', 'Qty', 'Rate', 'GST%', 'Amount', 'CGST', 'SGST', 'Total'];
+            projRows = invoiceResult.map((item: any) => invoiceIsIGST ? [
+                item.name || `Item ${item.id}`, item.qty, `₹${item.price}`, `${item.rate}%`,
+                Math.round(item.amount), Math.round(item.igst), Math.round(item.total),
+            ] : [
+                item.name || `Item ${item.id}`, item.qty, `₹${item.price}`, `${item.rate}%`,
+                Math.round(item.amount), Math.round(item.cgst), Math.round(item.sgst), Math.round(item.total),
+            ]);
         }
 
-        await exportToPDF(title, headers, data, `GST_${mode}_Report`, chartImage);
+        await exportToPDF({
+            title: 'GST Calculator Report',
+            subtitle: `Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`,
+            inputs,
+            results,
+            projectionTitle: mode === 'invoice' ? 'Invoice Line Items' : 'GST Breakdown',
+            projectionColumns: projCols,
+            projectionRows: projRows,
+            filename: `FinCalix_GST_Report_${tag}`,
+        });
     };
 
     const handleDownloadExcel = async () => {
-        if (mode === 'invoice') {
-            await exportToExcel(
-                ['Item', 'Qty', 'Price', 'Amount', 'GST', 'Total'],
-                invoiceResult.map(i => [i.name, i.qty, i.price, i.amount, i.gst, i.total]),
-                'GST_Invoice'
-            );
-        } else {
-            let data: any[][] = [];
-            if (mode === 'standard' && stdResult) data = [['Base', stdResult.base], ['GST', stdResult.gst], ['Total', stdResult.total]];
-            else if (mode === 'reverse' && reverseResult) data = [['Total (incl. GST)', stdAmount], ['Base', reverseResult.base], ['GST', reverseResult.gst]];
-            else if (mode === 'itc' && itcResult) data = [['Input Tax', itcResult.itc], ['Output Tax', itcResult.liability], ['Net Payable', itcResult.netPayable]];
-            await exportToExcel(['Component', 'Value'], data, `GST_${mode}_Report`);
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        let inputs: Array<{ label: string; value: string }> = [];
+        let results: Array<{ label: string; value: string }> = [];
+        let projCols: string[] = [];
+        let projRows: Array<Array<string | number>> = [];
+
+        if (mode === 'standard' || mode === 'reverse') {
+            const r = (mode === 'standard' ? stdResult : reverseResult)!;
+            if (!r) return;
+            inputs = [{ label: 'Mode', value: mode }, { label: 'Amount', value: String(stdAmount) }, { label: 'GST Rate', value: `${stdRate}%` }];
+            results = [{ label: 'Base', value: String(Math.round(r.base)) }, { label: 'GST', value: String(Math.round(r.gst)) }, { label: 'Total', value: String(Math.round(r.total)) }];
+            projCols = ['Component', 'Amount'];
+            projRows = [['Base', Math.round(r.base)], ['CGST', Math.round(r.cgst)], ['SGST', Math.round(r.sgst)], ['IGST', Math.round(r.igst)], ['Total', Math.round(r.total)]];
+        } else if (mode === 'invoice') {
+            inputs = [{ label: 'Type', value: invoiceIsIGST ? 'IGST' : 'CGST+SGST' }];
+            results = [{ label: 'Sub-total', value: String(Math.round(invoiceTotals.amount)) }, { label: 'Total GST', value: String(Math.round(invoiceTotals.gst)) }, { label: 'Invoice Total', value: String(Math.round(invoiceTotals.total)) }];
+            projCols = ['Item', 'Qty', 'Price', 'GST%', 'Amount', 'GST', 'Total'];
+            projRows = invoiceResult.map((item: any) => [item.name || `Item ${item.id}`, item.qty, item.price, item.rate, Math.round(item.amount), Math.round(item.gst), Math.round(item.total)]);
         }
+
+        await exportToExcel({
+            title: 'GST Calculator Report',
+            inputs,
+            results,
+            projectionTitle: 'GST Breakdown',
+            projectionColumns: projCols,
+            projectionRows: projRows,
+            filename: `FinCalix_GST_Report_${tag}`,
+        });
     };
 
     const addInvoiceItem = () => {

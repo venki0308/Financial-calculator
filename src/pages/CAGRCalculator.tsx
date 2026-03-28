@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, 
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -113,38 +113,68 @@ export default function CAGRCalculator() {
     };
 
     const handleDownloadPDF = async () => {
-        const headers = ['Metric', 'Value'];
-        const data: (string | number)[][] = [
-            ['Initial Investment', fmtINR(initial)],
-            ['Final Value', fmtINR(final)],
-            ['Time Period', `${years} years`],
-            ['--- Results ---', ''],
-            ['Compound Annual Growth Rate (CAGR)', `${result.cagr.toFixed(2)}%`],
-            ['Absolute Return', `${result.absReturn.toFixed(2)}%`],
-            ['Total Profit Generated', fmtINR(final - initial)],
-            ['--- Advanced Analysis ---', ''],
-            ['Investment Quality', result.qualityTag],
-            ['Doubling Time (Rule 72)', result.doubleTime > 0 ? `${result.doubleTime.toFixed(1)} years` : 'N/A'],
-            ...(showGoal ? [
-                ['--- Goal Analysis ---', ''],
-                ['Target Amount', fmtINR(targetAmount)],
-                ['Goal Gap', goalData.achievable ? 'Goal Achieved' : fmtINR(goalData.gap)],
-                ['Required Time at Current CAGR', `${goalData.requiredYears.toFixed(1)} years total`],
-                ['Required CAGR for Current Time', `${goalData.requiredRate.toFixed(2)}% p.a.`]
-            ] : []),
-            ['--- Smart Insights ---', ''],
-            ['Insight', insight.msg],
-            ['--- Growth Bracket (First 5 Yrs) ---', ''],
-            ...result.schedule.slice(0, 5).map(r => [`Year ${r.year}`, `Value: ${fmtINR(r.value)} (+${r.growthPct.toFixed(1)}%)`]),
-        ];
-
-        await exportToPDF('Smart CAGR Analysis', headers, data, 'CAGR_Smart_Analysis');
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'CAGR Calculator Report',
+            inputs: [
+                { label: 'Initial Investment', value: `₹${initial.toLocaleString('en-IN')}` },
+                { label: 'Final Value', value: `₹${final.toLocaleString('en-IN')}` },
+                { label: 'Investment Period', value: `${years} Years` },
+            ],
+            results: [
+                { label: 'CAGR (Compound Annual Growth Rate)', value: `${result.cagr.toFixed(2)}%` },
+                { label: 'Absolute Return', value: `${result.absReturn.toFixed(2)}%` },
+                { label: 'Total Profit Generated', value: `₹${Math.round(final - initial).toLocaleString('en-IN')}` },
+                { label: 'Investment Quality', value: result.qualityTag },
+                { label: 'Doubling Time (Rule of 72)', value: result.doubleTime > 0 ? `${result.doubleTime.toFixed(1)} years` : 'N/A' },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Initial Investment', value: initial, color: '#4F46E5' },
+                    { label: 'Total Profit', value: final - initial, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Yearly Value Progression',
+            projectionColumns: ['Year', 'Year-End Value', 'Growth %', 'Absolute Return from Initial'],
+            projectionRows: result.schedule.map((r: any) => [
+                `Year ${r.year}`,
+                `₹${Math.round(r.value).toLocaleString('en-IN')}`,
+                `${Number(r.growthPct).toFixed(2)}%`,
+                `₹${Math.round(r.value - initial).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_CAGR_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
-    const handleDownloadExcel = () => {
-        const headers = ['Year', 'Year-End Value', 'Growth %'];
-        const data = result.schedule.map(r => [r.year, Math.round(r.value), r.growthPct.toFixed(2)]);
-        exportToExcel(headers, data, 'CAGR_Growth');
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'CAGR Calculator Report',
+            inputs: [
+                { label: 'Initial Investment', value: `₹${initial.toLocaleString('en-IN')}` },
+                { label: 'Final Value', value: `₹${final.toLocaleString('en-IN')}` },
+                { label: 'Investment Period', value: `${years} Years` },
+            ],
+            results: [
+                { label: 'CAGR', value: `${result.cagr.toFixed(2)}%` },
+                { label: 'Absolute Return', value: `${result.absReturn.toFixed(2)}%` },
+                { label: 'Total Profit', value: `₹${Math.round(final - initial).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Yearly Value Progression',
+            projectionColumns: ['Year', 'Year-End Value', 'Growth %', 'Absolute Return'],
+            projectionRows: result.schedule.map((r: any) => [
+                r.year,
+                Math.round(r.value),
+                Number(r.growthPct).toFixed(2),
+                Math.round(r.value - initial),
+            ]),
+            filename: `FinCalix_CAGR_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple/50";

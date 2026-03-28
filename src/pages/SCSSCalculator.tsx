@@ -12,7 +12,7 @@ import SmartInsight from '../components/SmartInsight';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import ShareableCard from '../components/ShareableCard';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 
@@ -97,39 +97,65 @@ export default function SCSSCalculator() {
         setTimeout(() => setSaved(false), 2000);
     };
 
-    const handleDownloadPDF = () => {
-        exportToPDF(
-            'SCSS Investment Report',
-            ['Parameter', 'Value'],
-            [
-                ['Investment Amount', formatINR(investment)],
-                ['Interest Rate (p.a.)', `${rate}%`],
-                ['Tenure', `${tenure} Years`],
-                ['---', '---'],
-                ['Quarterly Income', formatINR(result.quarterlyIncome)],
-                ['Annual Income', formatINR(result.annualInterest)],
-                ['Total Interest', formatINR(result.totalInterest)],
-                ['Maturity Amount', formatINR(result.maturityAmount)],
-                ...(result.tdsApplicable
-                    ? [['TDS (10% on interest)', `${formatINR(result.annualTDS)} p.a.`], ['Net Annual Income', formatINR(result.netAnnualIncome)]]
-                    : []),
+    const handleDownloadPDF = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToPDF({
+            title: 'SCSS (Senior Citizen Savings Scheme) Report',
+            inputs: [
+                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Tenure', value: `${tenure} Years` },
             ],
-            'SCSS_Report',
-            undefined,
-            [
-                { label: 'Investment', value: formatINR(investment), color: [59, 130, 246] },
-                { label: 'Total Interest', value: formatINR(result.totalInterest), color: [139, 92, 246] },
-                { label: 'Quarterly Income', value: formatINR(result.quarterlyIncome), color: [16, 185, 129] },
-            ]
-        );
+            results: [
+                { label: 'Quarterly Interest Payout', value: `₹${Math.round(result.quarterlyIncome).toLocaleString('en-IN')}` },
+                { label: 'Annual Interest', value: `₹${Math.round(result.annualInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Interest over Tenure', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Maturity Amount', value: `₹${Math.round(result.maturityAmount).toLocaleString('en-IN')}` },
+                ...(result.tdsApplicable ? [
+                    { label: 'Annual TDS (10%)', value: `₹${Math.round(result.annualTDS).toLocaleString('en-IN')}` },
+                    { label: 'Net Annual Income', value: `₹${Math.round(result.netAnnualIncome).toLocaleString('en-IN')}` },
+                ] : []),
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Principal Invested', value: investment, color: '#4F46E5' },
+                    { label: 'Total Interest', value: result.totalInterest, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Annual Interest Payout Schedule',
+            projectionColumns: ['Year', 'Annual Interest', 'TDS Deducted', 'Net Interest', 'Cumulative Interest'],
+            projectionRows: result.yearlyBreakdown.map((r: any) => [
+                `Year ${r.year}`,
+                `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.tds).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.netInterest).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.cumInterest).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_SCSS_Report_${tag}`,
+        });
     };
 
-    const handleDownloadExcel = () => {
-        exportToExcel(
-            ['Year', 'Annual Interest', 'TDS Deducted', 'Net Interest', 'Cumulative Interest'],
-            result.yearlyBreakdown.map(r => [r.year, r.interest, r.tds, r.netInterest, r.cumInterest]),
-            'SCSS_Yearly_Breakdown'
-        );
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToExcel({
+            title: 'SCSS (Senior Citizen Savings Scheme) Report',
+            inputs: [
+                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: 'Interest Rate', value: `${rate}%` },
+                { label: 'Tenure', value: `${tenure} Years` },
+            ],
+            results: [
+                { label: 'Quarterly Payout', value: `₹${Math.round(result.quarterlyIncome).toLocaleString('en-IN')}` },
+                { label: 'Total Interest', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Annual Payout Schedule',
+            projectionColumns: ['Year', 'Annual Interest', 'TDS Deducted', 'Net Interest', 'Cumulative Interest'],
+            projectionRows: result.yearlyBreakdown.map((r: any) => [r.year, Math.round(r.interest), Math.round(r.tds), Math.round(r.netInterest), Math.round(r.cumInterest)]),
+            filename: `FinCalix_SCSS_Report_${tag}`,
+        });
     };
 
     const handleShare = async () => {

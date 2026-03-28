@@ -918,7 +918,7 @@ function Footer() {
                         <p className="fc-sans" style={{ fontSize: '13px', color: 'rgba(255,255,255,.55)', lineHeight: 1.7, marginBottom: '16px' }}>
                             Made with ❤️ in India<br />Hyderabad, Telangana, India
                         </p>
-                        <span className="fc-sans" style={{ padding: '4px 10px', borderRadius: '100px', fontSize: '11px', background: 'rgba(212,160,23,.12)', border: '1px solid rgba(212,160,23,.3)', color: '#D4A017' }}>✦ v1.0.5</span>
+                        <span className="fc-sans" style={{ padding: '4px 10px', borderRadius: '100px', fontSize: '11px', background: 'rgba(212,160,23,.12)', border: '1px solid rgba(212,160,23,.3)', color: '#D4A017' }}>✦ v1.0.6</span>
                     </div>
                 </div>
 

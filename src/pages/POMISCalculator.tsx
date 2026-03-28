@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
@@ -136,40 +136,62 @@ export default function POMISCalculator() {
         setTimeout(() => setSaved(false), 2000);
     };
 
-    const handlePDFExport = () => {
-        const headers = ['Parameter', 'Value'];
-        const data: (string | number)[][] = [
-            ['--- Inputs ---', ''],
-            ['Investment Amount', fmtINR(result.clampedInvestment)],
-            ['Account Type', isJoint ? 'Joint' : 'Single'],
-            ['Interest Rate', `${rate}% p.a.`],
-            ['Annual Income', fmtINR(userIncome)],
-            ['Tax Regime', taxRegime === 'old' ? 'Old Regime' : 'New Regime'],
-            ['Inflation Rate', `${inflation}% p.a.`],
-            ['--- Results ---', ''],
-            ['Gross Monthly Income', fmtINR(result.monthlyIncome)],
-            ['Total Earnings (5Y)', fmtINR(result.totalInterest)],
-            ['Gross Annual Earnings', fmtINR(result.yearlyInterest)],
-            ['--- Tax Breakdown ---', ''],
-            ['Annual Tax Liability (IFOS)', fmtINR(result.annualTaxOnInterest)],
-            ['Net Monthly Income', fmtINR(result.netMonthlyAfterTax)],
-            ['Net Total Earnings (5Y)', fmtINR(result.netTotalInterest)],
-            ['Post-Tax Effective Yield', `${result.postTaxYield.toFixed(2)}%`],
-            ['--- Alternative Scenarios ---', ''],
-            ['Reinvest in RD Gain', fmtINR(result.reinvestGain)],
-            ['Equivalent FD (Post-Tax Int)', fmtINR(result.fdPostTaxInterest)],
-            ['--- Real Return (Inflation Adj) ---', ''],
-            ['Purchasing Power of Principal', fmtINR(result.realPrincipalValue)],
-            ['Real Return', `${result.realReturn.toFixed(2)}% p.a.`],
-            ['--- Final Recommendation ---', ''],
-            [recommendation.title, recommendation.description]
-        ];
-
-        result.annualSummary.forEach(y => {
-            data.push([`Year ${y.year} Total Payout`, fmtINR(y.payout)]);
+    const handlePDFExport = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToPDF({
+            title: 'Post Office MIS (Monthly Income Scheme) Report',
+            inputs: [
+                { label: 'Investment Amount', value: `₹${Math.round(result.clampedInvestment).toLocaleString('en-IN')}` },
+                { label: 'Account Type', value: isJoint ? 'Joint Account' : 'Single Account' },
+                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Tenure', value: '5 Years (60 months)' },
+            ],
+            results: [
+                { label: 'Monthly Income (Gross)', value: `₹${Math.round(result.monthlyIncome).toLocaleString('en-IN')}` },
+                { label: 'Annual Earnings', value: `₹${Math.round(result.yearlyInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Interest over 5 Years', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Net Monthly Income (After Tax)', value: `₹${Math.round(result.netMonthlyAfterTax).toLocaleString('en-IN')}` },
+                { label: 'Post-Tax Effective Yield', value: `${result.postTaxYield.toFixed(2)}%` },
+            ],
+            projectionTitle: 'Monthly Payout Schedule (60 Months)',
+            projectionColumns: ['Month', 'Monthly Payout', 'Cumulative Income'],
+            projectionRows: result.schedule.map((r: any) => [
+                `Month ${r.month}`,
+                `₹${Math.round(r.payout).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_POMIS_Report_${tag}`,
         });
+    };
 
-        exportToPDF('Post Office MIS Report', headers, data, 'POMIS_Analysis');
+    const handleExcelExport = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToExcel({
+            title: 'Post Office MIS (Monthly Income Scheme) Report',
+            inputs: [
+                { label: 'Investment Amount', value: `₹${Math.round(result.clampedInvestment).toLocaleString('en-IN')}` },
+                { label: 'Account Type', value: isJoint ? 'Joint Account' : 'Single Account' },
+                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Tenure', value: '5 Years (60 months)' },
+            ],
+            results: [
+                { label: 'Monthly Income (Gross)', value: `₹${Math.round(result.monthlyIncome).toLocaleString('en-IN')}` },
+                { label: 'Annual Earnings', value: `₹${Math.round(result.yearlyInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Interest over 5 Years', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Net Monthly Income (After Tax)', value: `₹${Math.round(result.netMonthlyAfterTax).toLocaleString('en-IN')}` },
+                { label: 'Post-Tax Effective Yield', value: `${result.postTaxYield.toFixed(2)}%` },
+            ],
+            projectionTitle: 'Monthly Payout Schedule (60 Months)',
+            projectionColumns: ['Month', 'Monthly Payout', 'Cumulative Income'],
+            projectionRows: result.schedule.map((r: any) => [
+                `Month ${r.month}`,
+                `₹${Math.round(r.payout).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_POMIS_Report_${tag}`,
+        });
     };
 
     const totalPages = Math.ceil(result.schedule.length / ITEMS_PER_PAGE);
@@ -266,6 +288,9 @@ export default function POMISCalculator() {
                                     <div className="flex items-center justify-end gap-2 border-b border-border pb-4">
                                         <button onClick={handlePDFExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-blue/10 text-brand-blue text-xs font-medium hover:bg-brand-blue/20 transition-colors">
                                             <FileText size={14} /> Export PDF
+                                        </button>
+                                        <button onClick={handleExcelExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-green/10 text-brand-green text-xs font-medium hover:bg-brand-green/20 transition-colors">
+                                            <Download size={14} /> Export Excel
                                         </button>
                                     </div>
 

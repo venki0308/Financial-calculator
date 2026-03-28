@@ -8,7 +8,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { formatINR, formatINRWords } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import ShareableCard from '../components/ShareableCard';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
@@ -104,25 +104,62 @@ export default function AdvancedPPFCalculator() {
     };
 
     const handlePDF = async () => {
-        const headers = ['Year', 'Contribution', 'Opening Balance', 'Interest Earned', 'Closing Balance'];
-        const data = schedule.map(r => [
-            r.year.toString(), formatINR(r.contribution), formatINR(r.opening),
-            formatINR(r.interest), formatINR(r.closing),
-        ]);
-        const summary = [
-            { label: 'Total Invested', value: formatINR(totalInvested), color: [16, 185, 129] as [number, number, number] },
-            { label: 'Interest Earned', value: formatINR(totalInterest), color: [245, 158, 11] as [number, number, number] },
-            { label: 'Maturity Value', value: formatINR(maturityValue), color: [139, 92, 246] as [number, number, number] },
-            { label: 'Interest Rate', value: `${rate}% p.a.`, color: [59, 130, 246] as [number, number, number] },
-            { label: 'Tenure', value: `${years} years`, color: [16, 185, 129] as [number, number, number] },
-        ];
-        await exportToPDF('PPF Calculator Report', headers, data, `FinCalix_PPF_${new Date().toISOString().slice(0, 10)}`, undefined, summary);
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const freqLabel = frequency === 'monthly' ? 'Monthly' : frequency === 'quarterly' ? 'Quarterly' : frequency === 'half-yearly' ? 'Half-Yearly' : 'Yearly';
+        await exportToPDF({
+            title: 'PPF (Public Provident Fund) Report',
+            inputs: [
+                { label: 'Contribution Frequency', value: freqLabel },
+                { label: 'Amount per Period', value: `₹${Math.round(amountPerPeriod).toLocaleString('en-IN')}` },
+                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Investment Period', value: `${years} Years` },
+            ],
+            results: [
+                { label: 'Total Amount Invested', value: `₹${Math.round(totalInvested).toLocaleString('en-IN')}` },
+                { label: 'Total Interest Earned', value: `₹${Math.round(totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Maturity Value', value: `₹${Math.round(maturityValue).toLocaleString('en-IN')}` },
+                { label: 'Wealth Multiplier', value: `${(maturityValue / totalInvested).toFixed(2)}x` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Total Invested', value: totalInvested, color: '#4F46E5' },
+                    { label: 'Interest Earned', value: totalInterest, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Yearly PPF Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Annual Deposit', 'Interest Earned', 'Closing Balance'],
+            projectionRows: schedule.map((r: any) => [
+                `Year ${r.year}`,
+                `₹${Math.round(r.opening || 0).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.contribution).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.closing).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_PPF_Report_${tag}`,
+        });
     };
 
     const handleExcel = async () => {
-        const headers = ['Year', 'Contribution', 'Opening Balance', 'Interest Earned', 'Closing Balance'];
-        const data = schedule.map(r => [r.year, r.contribution, r.opening, r.interest, r.closing]);
-        await exportToExcel(headers, data, `FinCalix_PPF_${new Date().toISOString().slice(0, 10)}`);
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToExcel({
+            title: 'PPF (Public Provident Fund) Report',
+            inputs: [
+                { label: 'Interest Rate', value: `${rate}%` },
+                { label: 'Investment Period', value: `${years} Years` },
+            ],
+            results: [
+                { label: 'Total Invested', value: `₹${Math.round(totalInvested).toLocaleString('en-IN')}` },
+                { label: 'Interest Earned', value: `₹${Math.round(totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Maturity Value', value: `₹${Math.round(maturityValue).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Yearly PPF Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Annual Deposit', 'Interest Earned', 'Closing Balance'],
+            projectionRows: schedule.map((r: any) => [r.year, Math.round(r.opening || 0), Math.round(r.contribution), Math.round(r.interest), Math.round(r.closing)]),
+            filename: `FinCalix_PPF_Report_${tag}`,
+        });
     };
 
     return (

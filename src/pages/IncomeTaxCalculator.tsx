@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, TrendingUp, Download, ExternalLink, ChevronDown, ChevronUp, Lightbulb, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { exportToPDF } from '../utils/exportUtils';
+import { exportToPDF, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { triggerCalcNotification } from '../services/calcNotifications';
 import DisclaimerComponent from '../components/DisclaimerComponent';
@@ -320,98 +320,84 @@ export default function IncomeTaxCalculator() {
 
     // ─── PDF Handler ──────────────────────────────────────────────────────────
     const handleDownloadPDF = async () => {
-        const headers = ['Particulars', 'Amount'];
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const modeLabel = inputMode === 'monthly' ? 'Monthly' : inputMode === 'annual' ? 'Annual' : inputMode === 'ctc' ? 'CTC' : 'Payslip';
-        const rows: (string | number)[][] = [
-            ['--- INCOME SUMMARY ---', ''],
-            ['Input Mode', modeLabel],
+
+        const inputFields: Array<{ label: string; value: string }> = [
+            { label: 'Financial Year', value: `FY ${fy}` },
+            { label: 'Input Mode', value: modeLabel },
+            { label: 'Tax Regime', value: regime === 'old' ? 'Old Regime' : 'New Regime' },
         ];
         if (inputMode === 'ctc') {
-            rows.push(
-                ['Annual CTC', fmt(num('ctcAmount'))],
-                ['Basic (40%)', fmt(num('ctcAmount') * 0.4)],
-                ['Employer PF', fmt(Math.min(num('ctcAmount') * 0.4 * 0.12, 21600))],
-                ['Gratuity', fmt(num('ctcAmount') * 0.4 * 0.0481)],
-                ['Gross Salary (In-hand)', fmt(ctcGross)],
+            inputFields.push(
+                { label: 'Annual CTC', value: fmt(num('ctcAmount')) },
+                { label: 'Gross Salary (In-hand)', value: fmt(ctcGross) },
             );
         } else {
-            rows.push(
-                ['Basic Salary', fmt(num('basicSalary') * multiplier)],
-                ['HRA', fmt(num('hra') * multiplier)],
-                ['Special Allowance', fmt(num('special') * multiplier)],
-                ['Transport Allowance', fmt(num('transportAllowance') * multiplier)],
-                ['Medical Allowance', fmt(num('medicalAllowance') * multiplier)],
-                ['Food Allowance', fmt(num('foodAllowance') * multiplier)],
-                ['LTA', fmt(num('lta') * multiplier)],
-                ['Bonus / Other Allowances', fmt(num('bonus') * multiplier)],
-                ['Other Income', fmt(num('otherIncome') * multiplier)],
+            inputFields.push(
+                { label: 'Basic Salary (Annual)', value: fmt(num('basicSalary') * multiplier) },
+                { label: 'HRA (Annual)', value: fmt(num('hra') * multiplier) },
+                { label: 'Special Allowance (Annual)', value: fmt(num('special') * multiplier) },
+                { label: 'Other Income (Annual)', value: fmt(num('otherIncome') * multiplier) },
             );
         }
-        rows.push(['Gross Annual Income', fmt(grossSalary)], ['---', '']);
-        // Payroll deductions
-        if (payrollDeductions.total > 0) {
-            rows.push(
-                ['--- PAYROLL DEDUCTIONS ---', ''],
-                ['Employee PF', fmt(payrollDeductions.pf)],
-                ['Professional Tax', fmt(payrollDeductions.pt)],
-                ['ESI', fmt(payrollDeductions.esi)],
-                ['NPS (Employee)', fmt(payrollDeductions.nps)],
-                ['Total Payroll Deductions', fmt(payrollDeductions.total)],
-                ['Net Salary after Payroll', fmt(netSalaryAfterPayroll)],
-                ['---', ''],
-            );
-        }
-        if (regime === 'old') {
-            rows.push(
-                ['--- DEDUCTION SUMMARY ---', ''],
-                ['Standard Deduction', fmt(50000)],
-                ['Section 80C', fmt(Math.min(num('section80C'), 150000))],
-                ['Section 80D', fmt(Math.min(num('section80D'), 25000))],
-                ['Section 80CCD(1B) NPS', fmt(Math.min(num('section80CCD'), 50000))],
-                ['Section 80E Education Loan', fmt(num('section80E'))],
-                ['Section 80G Donations', fmt(num('section80G'))],
-                ['Home Loan Interest (Sec 24)', fmt(Math.min(num('homeLoan'), 200000))],
-                ['HRA Exemption', fmt(hraExemption)],
-                ['Total Deductions', fmt(oldDeductions)],
-                ['---', ''],
-            );
-        } else {
-            rows.push(['Standard Deduction (New Regime)', fmt(75000)], ['---', '']);
-        }
-        rows.push(['Taxable Income', fmt(activeTaxableIncome)], ['---', ''], ['--- TAX SLAB BREAKDOWN ---', '']);
-        activeSlabs.forEach((slab) => {
-            if (activeTaxableIncome > slab.min) {
-                const upper = slab.max === Infinity ? activeTaxableIncome : slab.max;
-                const slabAmt = Math.max(0, Math.min(activeTaxableIncome, upper) - slab.min);
-                const slabTax = slabAmt * (slab.rate / 100);
-                const label = slab.max === Infinity ? `Above ${fmt(slab.min)}` : `${fmt(slab.min)} - ${fmt(slab.max)}`;
-                rows.push([`${label} @ ${slab.rate}%`, slab.rate === 0 ? 'Nil' : fmt(slabTax)]);
+        inputFields.push({ label: 'Gross Annual Income', value: fmt(grossSalary) });
+
+        const resultFields: Array<{ label: string; value: string }> = [
+            { label: 'Taxable Income', value: fmt(activeTaxableIncome) },
+            { label: 'Old Regime Tax', value: fmt(oldTotalTax) },
+            { label: 'New Regime Tax', value: fmt(newTotalTax) },
+            { label: `Recommended Regime`, value: `${betterRegime} Regime${saving > 0 ? ` (Save ${fmt(saving)})` : ''}` },
+            { label: 'Total Tax Liability', value: fmt(activeTotalTax) },
+            { label: 'Health & Education Cess (4%)', value: fmt(activeCess) },
+            { label: 'Net Annual Income', value: fmt(netAnnual) },
+            { label: 'Monthly Take-Home', value: fmt(monthlyTakeHome) },
+            { label: 'Effective Tax Rate', value: `${effectiveRate.toFixed(2)}%` },
+        ];
+
+        // Build slab breakdown comparing old vs new regime
+        const allSlabs = regime === 'new' ? NEW_REGIME : OLD_REGIME;
+        const slabRows: Array<Array<string | number>> = [];
+        const maxIncome = Math.max(oldTaxableIncome, newTaxableIncome);
+        const combinedSlabs = [...new Set([...OLD_REGIME.map(s => s.min), ...NEW_REGIME_2026_27.map(s => s.min)])].sort((a, b) => a - b);
+        for (let i = 0; i < combinedSlabs.length; i++) {
+            const slabMin = combinedSlabs[i];
+            const slabMax = i + 1 < combinedSlabs.length ? combinedSlabs[i + 1] : Infinity;
+            const oldSlab = OLD_REGIME.find(s => s.min === slabMin);
+            const newSlab = NEW_REGIME.find(s => s.min === slabMin);
+            const oldRate = oldSlab ? oldSlab.rate : OLD_REGIME.filter(s => s.min <= slabMin).pop()?.rate ?? 0;
+            const newRate = newSlab ? newSlab.rate : NEW_REGIME.filter(s => s.min <= slabMin).pop()?.rate ?? 0;
+            const label = slabMax === Infinity ? `Above ${fmt(slabMin)}` : `${fmt(slabMin)} – ${fmt(slabMax)}`;
+
+            const oldAmt = oldTaxableIncome > slabMin ? Math.min(oldTaxableIncome, slabMax === Infinity ? oldTaxableIncome : slabMax) - slabMin : 0;
+            const newAmt = newTaxableIncome > slabMin ? Math.min(newTaxableIncome, slabMax === Infinity ? newTaxableIncome : slabMax) - slabMin : 0;
+            const oldTaxAmt = oldAmt > 0 ? oldAmt * (oldRate / 100) : 0;
+            const newTaxAmt = newAmt > 0 ? newAmt * (newRate / 100) : 0;
+
+            if (oldAmt > 0 || newAmt > 0) {
+                slabRows.push([
+                    label,
+                    oldAmt > 0 ? fmt(oldAmt) : '-',
+                    `${oldRate}%`,
+                    oldTaxAmt > 0 ? fmt(oldTaxAmt) : 'Nil',
+                    `${newRate}%`,
+                    newTaxAmt > 0 ? fmt(newTaxAmt) : 'Nil',
+                ]);
             }
-        });
-        rows.push(
-            ['---', ''],
-            ['Income Tax (After Rebate)', fmt(activeAfterRebate)],
-        );
-        if (activeSurcharge > 0) {
-            rows.push(['Surcharge', fmt(activeSurcharge)]);
         }
-        rows.push(
-            ['Health & Education Cess (4%)', fmt(activeCess)],
-            ['Total Tax Liability', fmt(activeTotalTax)],
-            ['---', ''],
-            ['--- REGIME COMPARISON ---', ''],
-            ['Old Regime Tax', fmt(oldTotalTax)],
-            ['New Regime Tax', fmt(newTotalTax)],
-            [`Recommended: ${betterRegime} Regime`, saving > 0 ? `Save ${fmt(saving)}` : 'Equal'],
-            ['---', ''],
-            ['--- MONTHLY TAKE-HOME ---', ''],
-            ['Monthly Salary (Gross)', fmt(grossSalary / 12)],
-            ['Monthly Tax', fmt(monthlyTax)],
-            ['Monthly Take-Home', fmt(monthlyTakeHome)],
-            ['Net Annual Income', fmt(netAnnual)],
-            ['Effective Tax Rate', `${effectiveRate.toFixed(2)}%`],
-        );
-        await exportToPDF(`Income Tax Report - ${regime === 'old' ? 'Old' : 'New'} Regime (FY ${fy})`, headers, rows, `Income_Tax_Report_FY${fy}`);
+
+        const config: ExportConfig = {
+            title: 'Income Tax Calculator Report (FY 2026-27)',
+            subtitle: `Tax Regime: ${regime === 'old' ? 'Old Regime' : 'New Regime'}`,
+            inputs: inputFields,
+            results: resultFields,
+            projectionTitle: 'Tax Slab Breakdown',
+            projectionColumns: ['Slab', 'Taxable Amount', 'Old Rate', 'Old Tax', 'New Rate', 'New Tax'],
+            projectionRows: slabRows,
+            filename: `FinCalix_IncomeTax_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
     // ══════════════════════════════════════════════════════════════════════════

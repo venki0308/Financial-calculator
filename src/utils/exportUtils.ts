@@ -1315,3 +1315,472 @@ export const exportOverdraftExcel = async (data: OverdraftReportData): Promise<v
         showToast(`❌ Excel failed: ${err?.message ?? 'Unknown error'}`, true);
     }
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ─── Dedicated Loan Report Exports (EMI Calculator) ─────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface LoanReportData {
+    loanType: string;
+    principal: number;
+    rate: number;
+    months: number;
+    tenureYears: number;
+    emi: number;
+    totalInterest: number;
+    totalPayment: number;
+    method: string;
+    schedule: Array<{
+        month: number;
+        openingBalance: number;
+        emi: number;
+        principal: number;
+        interest: number;
+        closingBalance: number;
+        cumulativePrincipal: number;
+        cumulativeInterest: number;
+    }>;
+    filename: string;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+
+/** Format a number as "INR X,XX,XXX" (no rupee symbol, jsPDF-safe) */
+function fmtINR(n: number): string {
+    return 'INR ' + Math.round(n).toLocaleString('en-IN');
+}
+
+/** Build year-by-year summary from the month-by-month schedule */
+function buildYearlyRows(schedule: LoanReportData['schedule']): Array<{
+    year: number; opening: number; principalPaid: number;
+    interestPaid: number; closing: number; cumInterest: number;
+}> {
+    const rows: ReturnType<typeof buildYearlyRows> = [];
+    if (!schedule || schedule.length === 0) return rows;
+    let idx = 0;
+    let year = 1;
+    while (idx < schedule.length) {
+        const chunk = schedule.slice(idx, idx + 12);
+        rows.push({
+            year,
+            opening: chunk[0].openingBalance,
+            principalPaid: chunk.reduce((s, m) => s + m.principal, 0),
+            interestPaid: chunk.reduce((s, m) => s + m.interest, 0),
+            closing: chunk[chunk.length - 1].closingBalance,
+            cumInterest: chunk[chunk.length - 1].cumulativeInterest,
+        });
+        idx += 12;
+        year++;
+    }
+    return rows;
+}
+
+/** Draw a square pie chart on an offscreen 300×300 canvas and return PNG data-URL */
+function drawLoanPieChart(principal: number, totalInterest: number): string {
+    const canvas = document.createElement('canvas');
+    canvas.width = 300;
+    canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return '';
+
+    const cx = 150, cy = 150, r = 120;
+    const total = principal + totalInterest;
+    const pAngle = (principal / total) * 2 * Math.PI;
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, 300, 300);
+
+    // Principal slice — green
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + pAngle);
+    ctx.closePath();
+    ctx.fillStyle = '#10B981';
+    ctx.fill();
+
+    // Interest slice — orange-red
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, -Math.PI / 2 + pAngle, -Math.PI / 2 + 2 * Math.PI);
+    ctx.closePath();
+    ctx.fillStyle = '#EF4444';
+    ctx.fill();
+
+    // White slice dividers
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    // White center donut hole
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.42, 0, 2 * Math.PI);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill();
+
+    return canvas.toDataURL('image/png');
+}
+
+/** Add page footers with page numbers and disclaimer on every page */
+function addLoanPdfFooters(doc: jsPDF): void {
+    const total: number = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= total; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(130);
+        doc.text('FinCalix — Your Financial Companion', 14, 283);
+        doc.text(`Page ${i} / ${total}`, 196, 283, { align: 'right' });
+        doc.setFontSize(6.5);
+        doc.setTextColor(170);
+        doc.text(
+            'Disclaimer: This report is for informational purposes only and should not be considered financial advice.',
+            14, 289
+        );
+    }
+}
+
+// ─── exportLoanPDF ────────────────────────────────────────────────────────
+export const exportLoanPDF = async (data: LoanReportData): Promise<void> => {
+    try {
+        const {
+            loanType, principal, rate, months, tenureYears,
+            emi, totalInterest, totalPayment, method, schedule, filename,
+        } = data;
+
+        const doc = new jsPDF();
+        const principalPct = ((principal / totalPayment) * 100).toFixed(1);
+        const interestPct  = ((totalInterest / totalPayment) * 100).toFixed(1);
+
+        // ── SECTION 1: Header ──────────────────────────────────────────
+        doc.setFillColor(13, 59, 46);
+        doc.rect(0, 0, 210, 40, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.setTextColor(255, 255, 255);
+        doc.text('FinCalix', 14, 16);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(13);
+        doc.text(`${loanType} - Full Report`, 14, 27);
+
+        doc.setFontSize(9);
+        doc.setTextColor(180, 230, 200);
+        doc.text(
+            `Generated: ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}`,
+            14, 36
+        );
+
+        // Loan type badge (gold pill, top-right)
+        const badgeLabel = loanType.toUpperCase();
+        const badgeW = Math.max(badgeLabel.length * 2.1 + 12, 30);
+        const badgeX = 196 - badgeW;
+        doc.setFillColor(212, 160, 23);
+        doc.roundedRect(badgeX, 13, badgeW, 10, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(13, 59, 46);
+        doc.text(badgeLabel, badgeX + badgeW / 2, 19.5, { align: 'center' });
+
+        let y = 48;
+
+        // ── SECTION 2: Loan Summary Table ─────────────────────────────
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(13, 59, 46);
+        doc.text('Loan Summary', 14, y);
+        y += 4;
+
+        const summaryRows: string[][] = [
+            ['Loan Type',                 loanType],
+            ['Loan Amount',               fmtINR(principal)],
+            ['Interest Rate (p.a.)',      `${rate}%`],
+            ['Loan Tenure',               `${months} months (${tenureYears} ${tenureYears === 1 ? 'year' : 'years'})`],
+            ['Interest Method',           method === 'flat' ? 'Flat Rate' : 'Reducing Balance'],
+            ['Monthly EMI',               fmtINR(emi)],
+            ['Total Interest Payable',    fmtINR(totalInterest)],
+            ['Total Amount Payable',      fmtINR(totalPayment)],
+            ['Principal Share',           `${principalPct}%`],
+            ['Interest Share',            `${interestPct}%`],
+        ];
+        if (method === 'flat') {
+            summaryRows.splice(4, 0, ['Effective Reducing Rate (approx.)', `${(rate * 1.83).toFixed(2)}% p.a.`]);
+        }
+
+        autoTable(doc, {
+            startY: y,
+            head: [['Parameter', 'Value']],
+            body: summaryRows,
+            theme: 'grid',
+            headStyles: { fillColor: [13, 59, 46], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            alternateRowStyles: { fillColor: [240, 250, 244] },
+            styles: { fontSize: 9.5, cellPadding: 3 },
+            columnStyles: {
+                0: { cellWidth: 85, fontStyle: 'bold', textColor: [40, 40, 40] },
+                1: { cellWidth: 97, textColor: [15, 23, 42] },
+            },
+            margin: { left: 14, right: 14 },
+        });
+        y = (doc as any).lastAutoTable.finalY + 10;
+
+        // ── SECTION 3: Visual Summary (Pie Chart) ─────────────────────
+        const chartH = 86;   // 80mm chart + 6mm padding
+        const legendH = 36;  // 3-row legend
+        if (y + 16 + chartH + legendH > 278) {
+            doc.addPage();
+            y = 16;
+        }
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(13, 59, 46);
+        doc.text('Visual Summary — Principal vs Interest', 14, y);
+        y += 6;
+
+        const pieImg = drawLoanPieChart(principal, totalInterest);
+        if (pieImg) {
+            const sz = 80;
+            doc.addImage(pieImg, 'PNG', (210 - sz) / 2, y, sz, sz);
+        }
+        y += chartH;
+
+        const legendColors = [[16, 185, 129], [239, 68, 68], [79, 70, 229]] as const;
+        autoTable(doc, {
+            startY: y,
+            head: [],
+            body: [
+                ['', 'Principal Amount', fmtINR(principal), `${principalPct}%`],
+                ['', 'Total Interest',   fmtINR(totalInterest), `${interestPct}%`],
+                ['', 'Total Payable',    fmtINR(totalPayment), '100%'],
+            ],
+            theme: 'plain',
+            styles: { fontSize: 9.5, cellPadding: 2.5 },
+            columnStyles: {
+                0: { cellWidth: 9 },
+                1: { cellWidth: 72, fontStyle: 'bold', textColor: [40, 40, 40] },
+                2: { cellWidth: 55, fontStyle: 'bold' },
+                3: { cellWidth: 24, textColor: [100, 100, 100] },
+            },
+            margin: { left: (210 - 160) / 2, right: (210 - 160) / 2 },
+            didDrawCell: (d: any) => {
+                if (d.column.index === 0 && d.section === 'body' && d.row.index < 3) {
+                    const [r, g, b] = legendColors[d.row.index];
+                    doc.setFillColor(r, g, b);
+                    doc.circle(d.cell.x + 5, d.cell.y + d.cell.height / 2, 2.5, 'F');
+                }
+            },
+            didParseCell: (d: any) => {
+                if (d.column.index === 2 && d.section === 'body' && d.row.index < 3) {
+                    const [r, g, b] = legendColors[d.row.index];
+                    d.cell.styles.textColor = [r, g, b];
+                }
+            },
+        });
+
+        // ── SECTION 4: Yearly Breakdown ───────────────────────────────
+        doc.addPage();
+        y = 16;
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(13, 59, 46);
+        doc.text('Yearly Breakdown', 14, y);
+        y += 4;
+
+        const yearlyData = buildYearlyRows(schedule);
+        autoTable(doc, {
+            startY: y,
+            head: [['Year', 'Opening Balance', 'Principal Paid', 'Interest Paid', 'Closing Balance', 'Cumulative Interest']],
+            body: yearlyData.map(r => [
+                `Year ${r.year}`,
+                fmtINR(r.opening),
+                fmtINR(r.principalPaid),
+                fmtINR(r.interestPaid),
+                fmtINR(r.closing),
+                fmtINR(r.cumInterest),
+            ]),
+            theme: 'grid',
+            headStyles: { fillColor: [13, 59, 46], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8.5 },
+            alternateRowStyles: { fillColor: [240, 250, 244] },
+            styles: { fontSize: 8, cellPadding: 2.5 },
+            columnStyles: {
+                0: { cellWidth: 18, fontStyle: 'bold' },
+                1: { cellWidth: 34 },
+                2: { cellWidth: 33 },
+                3: { cellWidth: 33 },
+                4: { cellWidth: 34 },
+                5: { cellWidth: 30 },
+            },
+            margin: { left: 14, right: 14 },
+        });
+
+        // ── SECTION 5: Full Amortization Schedule ─────────────────────
+        doc.addPage();
+        y = 16;
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11);
+        doc.setTextColor(13, 59, 46);
+        doc.text('Full Amortization Schedule (Month-by-Month)', 14, y);
+        y += 4;
+
+        autoTable(doc, {
+            startY: y,
+            head: [['Month', 'EMI', 'Principal', 'Interest', 'Balance']],
+            body: (schedule || []).map(row => [
+                String(row.month),
+                fmtINR(row.emi),
+                fmtINR(row.principal),
+                fmtINR(row.interest),
+                fmtINR(row.closingBalance),
+            ]),
+            theme: 'grid',
+            headStyles: { fillColor: [13, 59, 46], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+            alternateRowStyles: { fillColor: [240, 250, 244] },
+            styles: { fontSize: 8, cellPadding: 2 },
+            columnStyles: {
+                0: { cellWidth: 18, fontStyle: 'bold', halign: 'center' },
+                1: { cellWidth: 41 },
+                2: { cellWidth: 41 },
+                3: { cellWidth: 41 },
+                4: { cellWidth: 41 },
+            },
+            margin: { left: 14, right: 14 },
+        });
+
+        // ── Footers on every page ──────────────────────────────────────
+        addLoanPdfFooters(doc);
+
+        // ── Save ──────────────────────────────────────────────────────
+        const pdfFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+        if (Capacitor.isNativePlatform()) {
+            showToast('⏳ Generating PDF…');
+            await saveOnNative(doc.output('blob'), pdfFilename);
+        } else {
+            doc.save(pdfFilename);
+            showToast('✅ PDF downloaded!');
+        }
+    } catch (err: any) {
+        console.error('[FinCalix] Loan PDF Error:', err);
+        showToast(`❌ PDF failed: ${err?.message ?? 'Unknown error'}`, true);
+    }
+};
+
+// ─── exportLoanExcel ─────────────────────────────────────────────────────
+export const exportLoanExcel = async (data: LoanReportData): Promise<void> => {
+    try {
+        const {
+            loanType, principal, rate, months, tenureYears,
+            emi, totalInterest, totalPayment, method, schedule, filename,
+        } = data;
+
+        const round = (n: number) => Math.round(n);
+        const wb = XLSX.utils.book_new();
+
+        // ── Sheet 1: Summary ──────────────────────────────────────────
+        const principalPct = +((principal / totalPayment) * 100).toFixed(2);
+        const interestPct  = +((totalInterest / totalPayment) * 100).toFixed(2);
+        const summaryRows: (string | number)[][] = [
+            ['FinCalix — Loan Report'],
+            [],
+            ['Parameter', 'Value'],
+            ['Loan Type',                   loanType],
+            ['Loan Amount (INR)',            round(principal)],
+            ['Interest Rate (% p.a.)',       rate],
+            ['Loan Tenure (months)',         months],
+            ['Loan Tenure (years)',          tenureYears],
+            ['Interest Method',             method === 'flat' ? 'Flat Rate' : 'Reducing Balance'],
+            ['Monthly EMI (INR)',            round(emi)],
+            ['Total Interest Payable (INR)', round(totalInterest)],
+            ['Total Amount Payable (INR)',   round(totalPayment)],
+            ['Principal Share (%)',          principalPct],
+            ['Interest Share (%)',           interestPct],
+            [],
+            ['Generated by FinCalix', new Date().toLocaleDateString('en-IN')],
+        ];
+        if (method === 'flat') {
+            summaryRows.splice(9, 0, ['Effective Reducing Rate (approx. % p.a.)', +((rate * 1.83).toFixed(2))]);
+        }
+
+        const ws1 = XLSX.utils.aoa_to_sheet(summaryRows);
+        ws1['!cols'] = [{ wch: 38 }, { wch: 24 }];
+        XLSX.utils.book_append_sheet(wb, ws1, 'Summary');
+
+        // ── Sheet 2: Yearly Breakdown ──────────────────────────────────
+        const yearlyData = buildYearlyRows(schedule);
+        const yHeaders = [
+            'Year', 'Opening Balance (INR)', 'Principal Paid (INR)',
+            'Interest Paid (INR)', 'Closing Balance (INR)', 'Cumulative Interest (INR)',
+        ];
+        const yRows = yearlyData.map(r => [
+            `Year ${r.year}`, round(r.opening), round(r.principalPaid),
+            round(r.interestPaid), round(r.closing), round(r.cumInterest),
+        ]);
+        const ws2 = XLSX.utils.aoa_to_sheet([yHeaders, ...yRows]);
+        ws2['!cols'] = yHeaders.map((h, i) => {
+            let max = h.length;
+            for (const row of yRows) max = Math.max(max, String(row[i]).length);
+            return { wch: Math.min(max + 3, 30) };
+        });
+        XLSX.utils.book_append_sheet(wb, ws2, 'Yearly Breakdown');
+
+        // ── Sheet 3: Amortization Schedule ────────────────────────────
+        const aHeaders = ['Month', 'EMI (INR)', 'Principal (INR)', 'Interest (INR)', 'Outstanding Balance (INR)'];
+        const aRows = (schedule || []).map(row => [
+            row.month, round(row.emi), round(row.principal),
+            round(row.interest), round(row.closingBalance),
+        ]);
+        const ws3 = XLSX.utils.aoa_to_sheet([aHeaders, ...aRows]);
+        ws3['!cols'] = aHeaders.map((h, i) => {
+            let max = h.length;
+            for (const row of aRows) max = Math.max(max, String(row[i]).length);
+            return { wch: Math.min(max + 3, 30) };
+        });
+        XLSX.utils.book_append_sheet(wb, ws3, 'Amortization Schedule');
+
+        // ── Save ──────────────────────────────────────────────────────
+        const xlsxFilename = filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`;
+        const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) as ArrayBuffer;
+        const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        if (Capacitor.isNativePlatform()) {
+            showToast('⏳ Generating Excel…');
+            await saveOnNative(blob, xlsxFilename);
+        } else {
+            browserDownload(blob, xlsxFilename);
+            showToast('✅ Excel downloaded!');
+        }
+    } catch (err: any) {
+        console.error('[FinCalix] Loan Excel Error:', err);
+        showToast(`❌ Excel failed: ${err?.message ?? 'Unknown error'}`, true);
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ─── Dedicated Loan Report Exports (EMI Calculator) ─────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface LoanReportData {
+    loanType: string;
+    principal: number;
+    rate: number;
+    months: number;
+    tenureYears: number;
+    emi: number;
+    totalInterest: number;
+    totalPayment: number;
+    method: string;
+    schedule: Array<{
+        month: number;
+        openingBalance: number;
+        emi: number;
+        principal: number;
+        interest: number;
+        closingBalance: number;
+        cumulativePrincipal: number;
+        cumulativeInterest: number;
+    }>;
+    filename: string;
+}
+

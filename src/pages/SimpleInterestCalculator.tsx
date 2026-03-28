@@ -9,7 +9,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 
@@ -142,73 +142,127 @@ export default function SimpleInterestCalculator() {
     }, [mode, principal, flatRate, annualRate, tenure, payFreq]);
 
     const handleDownloadPDF = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const freqName = FREQ_LABEL[payFreq];
-        // Summary section
-        const summaryHeaders = ['Field', 'Value'];
-        const summaryData: (string | number)[][] = [];
-        summaryData.push(['Mode', mode === 'flat' ? 'Flat ₹ Interest' : mode === 'simple' ? 'Simple Interest' : 'Compound Interest']);
-        summaryData.push(['Principal', formatINR(principal)]);
+
+        const inputs: Array<{ label: string; value: string }> = [
+            { label: 'Principal Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+            { label: 'Interest Mode', value: mode === 'flat' ? 'Flat Rate' : mode === 'simple' ? 'Simple Interest' : 'Compound Interest' },
+        ];
+        const results: Array<{ label: string; value: string }> = [];
+
         if (mode === 'flat') {
             const r = result as { monthlyInterest: number; equivalentMonthlyPct: number; equivalentAnnualPct: number; totalInterest: number; totalPayable: number };
-            summaryData.push(['Rate', `Rs.${flatRate} per Rs.100/month`]);
-            summaryData.push(['Monthly Interest', formatINR(r.monthlyInterest)]);
-            summaryData.push(['Equiv. Monthly %', `${r.equivalentMonthlyPct}%`]);
-            summaryData.push(['Equiv. Annual %', `${r.equivalentAnnualPct}%`]);
-            summaryData.push(['Total Interest', formatINR(r.totalInterest)]);
-            summaryData.push(['Total Payable', formatINR(r.totalPayable)]);
-            summaryData.push(['Payment Frequency', freqName]);
+            inputs.push(
+                { label: 'Rate', value: `₹${flatRate} per ₹100/month` },
+                { label: 'Tenure', value: `${tenure} Months` },
+                { label: 'Payment Frequency', value: freqName },
+            );
+            results.push(
+                { label: 'Monthly Interest', value: `₹${Math.round(r.monthlyInterest).toLocaleString('en-IN')}` },
+                { label: 'Equiv. Monthly Rate', value: `${r.equivalentMonthlyPct.toFixed(2)}%` },
+                { label: 'Equiv. Annual Rate', value: `${r.equivalentAnnualPct.toFixed(2)}%` },
+                { label: 'Total Interest', value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Payable', value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
+            );
         } else if (mode === 'simple') {
             const r = result as { totalInterest: number; totalAmount: number; monthlyEMI: number };
-            summaryData.push(['Annual Rate', `${annualRate}%`]);
-            summaryData.push(['Tenure', `${tenure} months`]);
-            summaryData.push(['Total Interest', formatINR(r.totalInterest)]);
-            summaryData.push(['Total Amount', formatINR(r.totalAmount)]);
-            summaryData.push(['Monthly EMI', formatINR(r.monthlyEMI)]);
-            summaryData.push(['Payment Frequency', freqName]);
-        } else {
-            const r = result as { compoundInterest: number; totalPayable: number; monthlyEMI: number };
-            summaryData.push(['Annual Rate', `${annualRate}%`]);
-            summaryData.push(['Tenure', `${tenure} months`]);
-            summaryData.push(['Compound Interest', formatINR(r.compoundInterest)]);
-            summaryData.push(['Total Payable', formatINR(r.totalPayable)]);
-            summaryData.push(['Monthly EMI', formatINR(r.monthlyEMI)]);
-        }
-
-        if (mode !== 'compound' && periodRows.length > 0) {
-            // Build a combined dataset: summary rows + blank separator + schedule header + data
-            const scheduleTitle = `${freqName} Interest Schedule`;
-            const scheduleHeader = ['Period', 'Due Date', 'Interest Payable', 'Cumulative'];
-            const scheduleData = periodRows.map(row => [
-                row.period,
-                row.dueDate,
-                formatINR(row.interest),
-                formatINR(row.cumulative),
-            ]);
-            await exportToPDF(
-                `Interest Calculator Report — ${scheduleTitle}`,
-                scheduleHeader,
-                scheduleData,
-                'Interest_Report'
+            inputs.push(
+                { label: 'Annual Rate', value: `${annualRate}%` },
+                { label: 'Tenure', value: `${tenure} Months` },
+                { label: 'Payment Frequency', value: freqName },
+            );
+            results.push(
+                { label: 'Total Interest (SI)', value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Amount', value: `₹${Math.round(r.totalAmount).toLocaleString('en-IN')}` },
+                { label: 'Monthly EMI', value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
             );
         } else {
-            await exportToPDF('Interest Calculator Report', summaryHeaders, summaryData, 'Interest_Report');
+            const r = result as { compoundInterest: number; totalPayable: number; monthlyEMI: number };
+            const compFreqLabel = compFreqOptions.find(f => f.val === compoundFreq)?.label || 'Monthly';
+            inputs.push(
+                { label: 'Annual Rate', value: `${annualRate}%` },
+                { label: 'Tenure', value: `${tenure} Months` },
+                { label: 'Compounding Frequency', value: compFreqLabel },
+            );
+            results.push(
+                { label: 'Compound Interest', value: `₹${Math.round(r.compoundInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Payable', value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
+                { label: 'Avg Monthly Payment', value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
+            );
         }
+
+        const config: ExportConfig = {
+            title: 'Interest Calculator Report',
+            subtitle: mode === 'flat' ? 'Flat Rate Interest' : mode === 'simple' ? 'Simple Interest' : 'Compound Interest',
+            inputs,
+            results,
+            projectionTitle: 'Payment Schedule',
+            projectionColumns: periodRows.length > 0 ? ['Period', 'Due Date', 'Interest', 'Cumulative Interest'] : undefined,
+            projectionRows: periodRows.map((r: any) => [
+                `Period ${r.period}`,
+                r.dueDate || '',
+                `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_Interest_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
     const handleDownloadExcel = async () => {
-        const headers = ['Field', 'Value'];
-        const data: (string | number)[][] = [['Mode', mode], ['Principal', principal]];
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+
+        const inputs: Array<{ label: string; value: string }> = [
+            { label: 'Principal', value: `₹${principal.toLocaleString('en-IN')}` },
+            { label: 'Mode', value: mode },
+        ];
+        const results: Array<{ label: string; value: string }> = [];
+
         if (mode === 'flat') {
             const r = result as { monthlyInterest: number; totalInterest: number; totalPayable: number };
-            data.push(['Rate (Rs./Rs.100)', flatRate], ['Monthly Interest', r.monthlyInterest], ['Total Interest', r.totalInterest], ['Total Payable', r.totalPayable]);
+            inputs.push({ label: 'Rate (₹/₹100/month)', value: String(flatRate) });
+            results.push(
+                { label: 'Monthly Interest', value: `₹${Math.round(r.monthlyInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Interest', value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Payable', value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
+            );
         } else if (mode === 'simple') {
             const r = result as { totalInterest: number; totalAmount: number; monthlyEMI: number };
-            data.push(['Rate (%)', annualRate], ['Tenure (months)', tenure], ['Total Interest', r.totalInterest], ['Total Amount', r.totalAmount], ['Monthly EMI', r.monthlyEMI]);
+            inputs.push(
+                { label: 'Rate (%)', value: String(annualRate) },
+                { label: 'Tenure (months)', value: String(tenure) },
+            );
+            results.push(
+                { label: 'Total Interest', value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Amount', value: `₹${Math.round(r.totalAmount).toLocaleString('en-IN')}` },
+                { label: 'Monthly EMI', value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
+            );
         } else {
             const r = result as { compoundInterest: number; totalPayable: number; monthlyEMI: number };
-            data.push(['Rate (%)', annualRate], ['Tenure (months)', tenure], ['CI', r.compoundInterest], ['Total Payable', r.totalPayable], ['Monthly EMI', r.monthlyEMI]);
+            inputs.push(
+                { label: 'Rate (%)', value: String(annualRate) },
+                { label: 'Tenure (months)', value: String(tenure) },
+            );
+            results.push(
+                { label: 'Compound Interest', value: `₹${Math.round(r.compoundInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Payable', value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
+                { label: 'Monthly EMI', value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
+            );
         }
-        await exportToExcel(headers, data, 'Interest_Report');
+
+        const config: ExportConfig = {
+            title: 'Interest Calculator Report',
+            inputs,
+            results,
+            projectionTitle: 'Payment Schedule',
+            projectionColumns: periodRows.length > 0 ? ['Period', 'Due Date', 'Interest', 'Cumulative'] : undefined,
+            projectionRows: periodRows.map((r: any) => [r.period, r.dueDate || '', Math.round(r.interest), Math.round(r.cumulative)]),
+            filename: `FinCalix_Interest_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     const modes: { key: Mode; label: string; color: string }[] = [

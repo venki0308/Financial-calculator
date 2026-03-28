@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, 
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
@@ -96,31 +96,61 @@ export default function GratuityCalculator() {
         setTimeout(() => setSaved(false), 2000);
     };
 
-    const handlePDFExport = () => {
-        const headers = ['Parameter', 'Value'];
-        const data: (string | number)[][] = [
-            ['Employer Type', employerType],
-            ['Last Drawn Salary (Basic+DA)', fmtINR(salary)],
-            ['Years of Service', `${years} years`],
-            ['Eligibility', result.isEligible ? 'Eligible (>= 4.5 Years)' : 'Not Eligible (< 4.5 Years)'],
-            ['Calculated Gratuity', fmtINR(result.gratuity)],
-            ['Tax Exemption Limit', employerType === 'Govt' ? 'Fully Exempt' : fmtINR(result.exemptionLimit)],
-            ['Taxable Gratuity', fmtINR(result.taxableGratuity)],
-            ['Estimated Tax', fmtINR(result.estimatedTax)],
-            ['Net In-Hand Gratuity', fmtINR(result.netGratuity)],
-            ['', ''],
-            ['Future Projection (addl. years)', `${projectionYears} years`],
-            ['Assumed Salary Hike', `${salaryHike}% p.a.`],
-            ['Projected Final Salary', fmtINR(result.projectedSalary)],
-            ['Projected Total Service', `${result.projectedTotalYears} years`],
-            ['Projected Future Gratuity', fmtINR(result.projectedGratuity)]
-        ];
-
-        result.yearWiseData.forEach(y => {
-            data.push([`Year ${y.year}`, y.eligible ? 'Yes' : 'No', fmtINR(y.gratuity)]);
+    const handlePDFExport = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToPDF({
+            title: 'Gratuity Calculator Report',
+            inputs: [
+                { label: 'Last Drawn Salary (Basic + DA)', value: `₹${Math.round(salary).toLocaleString('en-IN')}` },
+                { label: 'Years of Service', value: `${years} Years` },
+                { label: 'Employer Type', value: employerType },
+            ],
+            results: [
+                { label: 'Estimated Gratuity', value: `₹${Math.round(result.gratuity).toLocaleString('en-IN')}` },
+                { label: 'Tax Exemption Limit', value: `₹${Math.round(result.exemptionLimit).toLocaleString('en-IN')}` },
+                { label: 'Taxable Gratuity', value: `₹${Math.round(result.taxableGratuity).toLocaleString('en-IN')}` },
+                { label: 'Estimated Tax', value: `₹${Math.round(result.estimatedTax).toLocaleString('en-IN')}` },
+                { label: 'Net Gratuity (After Tax)', value: `₹${Math.round(result.netGratuity).toLocaleString('en-IN')}` },
+                { label: 'Eligibility', value: result.isEligible ? 'Eligible' : 'Not Eligible (< 5 years)' },
+            ],
+            projectionTitle: 'Year-Wise Service Impact',
+            projectionColumns: ['Year of Service', 'Gratuity Amount', 'Eligibility'],
+            projectionRows: result.yearWiseData.map((r: any) => [
+                `Year ${r.year}`,
+                `₹${Math.round(r.gratuity).toLocaleString('en-IN')}`,
+                r.eligible ? 'Eligible' : 'Not Eligible',
+            ]),
+            filename: `FinCalix_Gratuity_Report_${tag}`,
         });
+    };
 
-        exportToPDF('Gratuity Analysis Report', headers, data, 'Gratuity_Analysis');
+    const handleExcelExport = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        await exportToExcel({
+            title: 'Gratuity Calculator Report',
+            inputs: [
+                { label: 'Last Drawn Salary (Basic + DA)', value: `₹${Math.round(salary).toLocaleString('en-IN')}` },
+                { label: 'Years of Service', value: `${years} Years` },
+                { label: 'Employer Type', value: employerType },
+            ],
+            results: [
+                { label: 'Estimated Gratuity', value: String(Math.round(result.gratuity)) },
+                { label: 'Taxable Gratuity', value: String(Math.round(result.taxableGratuity)) },
+                { label: 'Estimated Tax', value: String(Math.round(result.estimatedTax)) },
+                { label: 'Net Gratuity (After Tax)', value: String(Math.round(result.netGratuity)) },
+                { label: 'Eligibility', value: result.isEligible ? 'Eligible' : 'Not Eligible (< 5 years)' },
+            ],
+            projectionTitle: 'Year-Wise Service Impact',
+            projectionColumns: ['Year of Service', 'Gratuity Amount', 'Eligibility'],
+            projectionRows: result.yearWiseData.map((r: any) => [
+                `Year ${r.year}`,
+                Math.round(r.gratuity),
+                r.eligible ? 'Eligible' : 'Not Eligible',
+            ]),
+            filename: `FinCalix_Gratuity_Report_${tag}`,
+        });
     };
 
     const totalPages = Math.ceil(result.yearWiseData.length / ITEMS_PER_PAGE);
@@ -245,6 +275,9 @@ export default function GratuityCalculator() {
                                     <div className="flex items-center justify-end gap-2 border-b border-border pb-4">
                                         <button onClick={handlePDFExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-blue/10 text-brand-blue text-xs font-medium hover:bg-brand-blue/20 transition-colors">
                                             <FileText size={14} /> Export PDF
+                                        </button>
+                                        <button onClick={handleExcelExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-blue/10 text-brand-blue text-xs font-medium hover:bg-brand-blue/20 transition-colors">
+                                            <FileText size={14} /> Export Excel
                                         </button>
                                     </div>
 

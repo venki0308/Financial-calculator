@@ -27,7 +27,7 @@ export default function About() {
                 <h2 style={{ fontSize: '2rem', fontWeight: 700, color: '#C9A84C', marginBottom: '8px', letterSpacing: '-0.5px' }}>FinCalix</h2>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', borderRadius: '20px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.25)', color: '#10B981', fontSize: '13px', fontWeight: 600 }}>
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
-                    v1.0.5
+                    v1.0.6
                 </div>
             </div>
 

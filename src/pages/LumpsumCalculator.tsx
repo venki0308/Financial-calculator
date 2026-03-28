@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Info, Save, Check, Target, TrendingU
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -118,41 +118,64 @@ export default function LumpsumCalculator() {
     };
 
     const handleDownloadPDF = async () => {
-        const headers = ['Metric', 'Value'];
-        const data: (string | number)[][] = [
-            ['Total Investment', fmtINR(principal)],
-            ['Expected Return', `${rate}% p.a. (${result.riskLevel} Risk)`],
-            ['Time Period', `${years} years`],
-            ['--- Results ---', ''],
-            ['Estimated Maturity Value', fmtINR(result.fv)],
-            ['Wealth Gained', fmtINR(result.fv - principal)],
-            ['Wealth Multiplier', `${result.wealthRatio.toFixed(2)}x`],
-            ['Effective CAGR', `${result.cagr.toFixed(2)}%`],
-            ['--- Inflation Analysis ---', ''],
-            ['Assumed Inflation Rate', `${inflation}% p.a.`],
-            ['Real Inflation-Adjusted Return', `${result.realRate.toFixed(2)}% p.a.`],
-            ['Real Maturity Value', fmtINR(result.realValue)],
-            ['Wealth Erosion Impact', `-${fmtINR(result.wealthErosion)}`],
-            ...(showGoal ? [
-                ['--- Goal Analysis ---', ''],
-                ['Target Amount', fmtINR(targetAmount)],
-                ['Goal Gap', goalData.achievable ? 'Goal Achieved' : fmtINR(goalData.gap)],
-                ['Required Time at Current Rate', `${goalData.requiredYears.toFixed(1)} years`],
-                ['Required Rate for Current Time', `${goalData.requiredRate.toFixed(2)}% p.a.`]
-            ] : []),
-            ['--- Smart Insights ---', ''],
-            ['Insight', insight.msg],
-            ['--- Growth Bracket (Summary) ---', ''],
-            ...result.table.slice(0, 5).map(r => [`Year ${r.year}`, `Balance: ${fmtINR(r.value)}`]),
-        ];
-
-        await exportToPDF('Smart Lumpsum Investment Analysis', headers, data, 'Lumpsum_Smart_Analysis');
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'Lumpsum Investment Report',
+            inputs: [
+                { label: 'Investment Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate', value: `${rate}% p.a. (${result.riskLevel} Risk)` },
+                { label: 'Investment Period', value: `${years} Years` },
+                { label: 'Inflation Rate', value: `${inflation}% p.a.` },
+            ],
+            results: [
+                { label: 'Maturity Value', value: `₹${Math.round(result.fv).toLocaleString('en-IN')}` },
+                { label: 'Wealth Gained', value: `₹${Math.round(result.fv - principal).toLocaleString('en-IN')}` },
+                { label: 'Wealth Multiplier', value: `${result.wealthRatio.toFixed(2)}x` },
+                { label: 'Effective CAGR', value: `${result.cagr.toFixed(2)}%` },
+                { label: 'Real Maturity Value (Inflation-adj)', value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Principal Invested', value: principal, color: '#4F46E5' },
+                    { label: 'Wealth Gained', value: result.fv - principal, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Yearly Growth Schedule',
+            projectionColumns: ['Year', 'Opening Value', 'Yearly Growth', 'Closing Value'],
+            projectionRows: result.table.map((r: any) => [
+                `Year ${r.year}`,
+                `₹${Math.round(r.value - r.yearlyGain).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.yearlyGain).toLocaleString('en-IN')}`,
+                `₹${Math.round(r.value).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_Lumpsum_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
-    const handleDownloadExcel = () => {
-        const headers = ['Year', 'Yearly Interest Added', 'Cumulative Gain', 'Closing Value'];
-        const data = result.table.map(r => [r.year, Math.round(r.yearlyGain), Math.round(r.gain), Math.round(r.value)]);
-        exportToExcel(headers, data, 'Lumpsum_Growth');
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const config: ExportConfig = {
+            title: 'Lumpsum Investment Report',
+            inputs: [
+                { label: 'Investment Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
+                { label: 'Investment Period', value: `${years} Years` },
+            ],
+            results: [
+                { label: 'Maturity Value', value: `₹${Math.round(result.fv).toLocaleString('en-IN')}` },
+                { label: 'Wealth Gained', value: `₹${Math.round(result.fv - principal).toLocaleString('en-IN')}` },
+                { label: 'CAGR', value: `${result.cagr.toFixed(2)}%` },
+            ],
+            projectionTitle: 'Yearly Growth Schedule',
+            projectionColumns: ['Year', 'Yearly Growth', 'Cumulative Gain', 'Closing Value'],
+            projectionRows: result.table.map((r: any) => [r.year, Math.round(r.yearlyGain), Math.round(r.gain), Math.round(r.value)]),
+            filename: `FinCalix_Lumpsum_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50";

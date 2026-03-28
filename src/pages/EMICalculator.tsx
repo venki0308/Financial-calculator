@@ -22,7 +22,7 @@ import {
     LOAN_TYPE_CONFIGS, type AmortizationRow, type ForeclosureResult, type PrepaymentInsight,
 } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { exportToPDF, exportToExcel } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import ShareableCard from '../components/ShareableCard';
@@ -220,49 +220,92 @@ export default function EMICalculator() {
 
     // ─── PDF Export ─────────────────────────────────────────────────────
     const handleDownloadPDF = async () => {
-        let chartImage: string | undefined;
-        if (chartRef.current) chartImage = chartRef.current.toBase64Image();
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
 
-        const headers = ['Month', 'Opening Bal', 'EMI', 'Principal', 'Interest', 'Closing Bal', 'Cum.P', 'Cum.I'];
-        const data = (result.schedule || []).map(row => [
-            row.month.toString(), formatINR(row.openingBalance), formatINR(row.emi),
-            formatINR(row.principal), formatINR(row.interest), formatINR(row.closingBalance),
-            formatINR(row.cumulativePrincipal), formatINR(row.cumulativeInterest),
-        ]);
-        const chartSummary: any[] = [
-            { label: 'Loan Type', value: loanType, color: [79, 70, 229] },
-            { label: 'Principal', value: formatINR(principal), color: [16, 185, 129] },
-            { label: 'Interest Rate', value: `${rate}% p.a.`, color: [59, 130, 246] },
-            { label: 'Tenure', value: `${tenureYears} years (${months} months)`, color: [139, 92, 246] },
-            { label: 'Monthly EMI', value: formatINR(result.emi), color: [245, 158, 11] },
-            { label: 'Total Interest', value: formatINR(result.totalInterest), color: [239, 68, 68] },
-            { label: 'Total Payment', value: formatINR(result.totalPayment), color: [16, 185, 129] },
-        ];
-
-        if (showForeclosure && foreclosureResult) {
-            chartSummary.push(
-                { label: '--- Foreclosure Details ---', value: '', color: [100, 116, 139] },
-                { label: 'Months Paid', value: `${foreclosureMonths} months`, color: [100, 116, 139] },
-                { label: 'Outstanding Principal', value: formatINR(foreclosureResult.outstandingPrincipal), color: [15, 23, 42] },
-                { label: 'Foreclosure Charge', value: formatINR(foreclosureResult.foreclosureCharge), color: [220, 38, 38] },
-                { label: 'Interest Saved', value: formatINR(foreclosureResult.interestSaved), color: [16, 185, 129] },
-                { label: 'Total Settlement', value: formatINR(foreclosureResult.totalSettlement), color: [79, 70, 229] },
-                { label: 'Net Benefit', value: formatINR(foreclosureResult.netBenefit), color: foreclosureResult.netBenefit >= 0 ? [16, 185, 129] : [220, 38, 38] }
-            );
+        // Build yearly breakdown from monthly schedule
+        const schedule = result.schedule || [];
+        const yearlyRows: Array<[number, string, string, string]> = [];
+        for (let y = 1; y <= Math.ceil(months / 12); y++) {
+            const monthSlice = schedule.filter((r: any) => r.month > (y-1)*12 && r.month <= y*12);
+            if (monthSlice.length === 0) continue;
+            const princPaid = monthSlice.reduce((s: number, r: any) => s + r.principal, 0);
+            const intPaid = monthSlice.reduce((s: number, r: any) => s + r.interest, 0);
+            const closing = monthSlice[monthSlice.length - 1]?.closingBalance ?? 0;
+            yearlyRows.push([
+                y,
+                `₹${Math.round(princPaid).toLocaleString('en-IN')}`,
+                `₹${Math.round(intPaid).toLocaleString('en-IN')}`,
+                `₹${Math.round(closing).toLocaleString('en-IN')}`,
+            ]);
         }
 
-        await exportToPDF(`${loanType} - Loan Report`, headers, data,
-            `FinCalix_${loanType.replace(/\s/g, '')}_${new Date().toISOString().slice(0, 10)}`, chartImage, chartSummary);
+        const config: ExportConfig = {
+            title: `${loanType} EMI Report`,
+            subtitle: `${method === 'flat' ? 'Flat Rate' : 'Reducing Balance'} Method`,
+            inputs: [
+                { label: 'Loan Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Annual Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Loan Tenure', value: `${tenureYears} Years (${months} months)` },
+                { label: 'Interest Method', value: method === 'flat' ? 'Flat Rate' : 'Reducing Balance' },
+            ],
+            results: [
+                { label: 'Monthly EMI', value: `₹${Math.round(result.emi).toLocaleString('en-IN')}` },
+                { label: 'Total Interest', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Payment', value: `₹${Math.round(result.totalPayment).toLocaleString('en-IN')}` },
+                { label: 'Loan Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Principal Amount', value: principal, color: '#10B981' },
+                    { label: 'Total Interest', value: result.totalInterest, color: '#EF4444' },
+                ],
+            },
+            projectionTitle: 'Amortization Schedule',
+            projectionColumns: ['Month', 'EMI (₹)', 'Principal (₹)', 'Interest (₹)', 'Balance (₹)'],
+            projectionRows: schedule.map((r: any) => [
+                r.month,
+                Math.round(r.emi),
+                Math.round(r.principal),
+                Math.round(r.interest),
+                Math.round(r.closingBalance),
+            ]),
+            filename: `FinCalix_${loanType.replace(/\s+/g,'')}_Report_${tag}`,
+        };
+        await exportToPDF(config);
     };
 
     const handleDownloadExcel = async () => {
-        const headers = ['Month', 'Opening Balance', 'EMI', 'Principal', 'Interest', 'Closing Balance', 'Cum. Principal', 'Cum. Interest'];
-        const data = (result.schedule || []).map(row => [
-            row.month, Math.round(row.openingBalance), Math.round(row.emi),
-            Math.round(row.principal), Math.round(row.interest), Math.round(row.closingBalance),
-            Math.round(row.cumulativePrincipal), Math.round(row.cumulativeInterest),
-        ]);
-        await exportToExcel(headers, data, `FinCalix_${loanType.replace(/\s/g, '')}_${new Date().toISOString().slice(0, 10)}`);
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const schedule = result.schedule || [];
+
+        const config: ExportConfig = {
+            title: `${loanType} EMI Report`,
+            inputs: [
+                { label: 'Loan Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Annual Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Loan Tenure', value: `${tenureYears} Years (${months} months)` },
+                { label: 'Interest Method', value: method === 'flat' ? 'Flat Rate' : 'Reducing Balance' },
+            ],
+            results: [
+                { label: 'Monthly EMI', value: `₹${Math.round(result.emi).toLocaleString('en-IN')}` },
+                { label: 'Total Interest', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Payment', value: `₹${Math.round(result.totalPayment).toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'Amortization Schedule',
+            projectionColumns: ['Month', 'EMI', 'Principal', 'Interest', 'Outstanding Balance'],
+            projectionRows: schedule.map((r: any) => [
+                r.month,
+                Math.round(r.emi),
+                Math.round(r.principal),
+                Math.round(r.interest),
+                Math.round(r.closingBalance),
+            ]),
+            filename: `FinCalix_${loanType.replace(/\s+/g,'')}_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     // ─── Insight styles ─────────────────────────────────────────────────

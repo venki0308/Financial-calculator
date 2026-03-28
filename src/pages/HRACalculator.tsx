@@ -4,7 +4,7 @@ import {ArrowLeft, ChevronDown, ChevronUp, Activity, BrainCircuit, FileText, Sha
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService, CrashlyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF } from '../utils/exportUtils';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { nativeShare } from '../utils/nativeShare';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -93,36 +93,74 @@ export default function HRACalculator() {
     const mult = viewMode === 'annual' ? 1 : (1 / 12);
     const periodLabel = viewMode === 'annual' ? 'Annual' : 'Monthly';
 
-    // 6. EXPORT PDF
+    // 6. EXPORT PDF / EXCEL
     const handleDownloadPDF = async () => {
-        const headers = ['Parameter', 'Value'];
-        const data: (string | number)[][] = [
-            ['Tax Regime', taxRegime === 'old' ? 'Old Regime' : 'New Regime'],
-            ['City Type', isMetro ? 'Metro (50% rule)' : 'Non-Metro (40% rule)'],
-            ['Basic Salary (Annual)', fmtINR(basic * 12)],
-            ['Dearness Allowance (Annual)', fmtINR(da * 12)],
-            ['HRA Received (Annual)', fmtINR(hra * 12)],
-            ['Rent Paid (Annual)', fmtINR(rent * 12)],
-            ['--- Calculation Breakdown ---', ''],
-            ['Condition 1: Actual HRA Received', fmtINR(actualResult.opt1)],
-            [`Condition 2: ${isMetro ? '50%' : '40%'} of Salary`, fmtINR(actualResult.opt2)],
-            ['Condition 3: Rent - 10% of Salary', fmtINR(actualResult.opt3)],
-            ['--- Final Exemption Summary ---', ''],
-            ['Exempted HRA (Annual)', fmtINR(actualResult.exempt)],
-            ['Taxable HRA (Annual)', fmtINR(actualResult.taxable)],
-            ['--- Tax Impact ---', ''],
-            ['Tax Slab', `${taxSlab}%`],
-            ['Estimated Tax Saved (Annual)', fmtINR(actualTaxSaved)],
-            ['--- Smart Insights ---', ''],
-            ['Insight', insight.msg],
-            ['--- Required Documents ---', ''],
-            ['1. Rent Receipts', 'Signed by landlord'],
-            ['2. Rental Agreement', 'Registered agreement'],
-            ['3. Landlord PAN', 'If rent > 1L/year'],
-            ['4. Payment Proof', 'Bank statement/UPI'],
-        ];
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const taxSaved = Math.round((actualResult.exempt * taxSlab) / 100);
+        const config: ExportConfig = {
+            title: 'HRA Tax Exemption Report',
+            inputs: [
+                { label: 'Tax Regime', value: taxRegime === 'old' ? 'Old Regime' : 'New Regime' },
+                { label: 'City Type', value: isMetro ? 'Metro City (50% rule)' : 'Non-Metro (40% rule)' },
+                { label: 'Basic Salary (Annual)', value: `₹${Math.round(basic * 12).toLocaleString('en-IN')}` },
+                { label: 'DA (Annual)', value: `₹${Math.round(da * 12).toLocaleString('en-IN')}` },
+                { label: 'HRA Received (Annual)', value: `₹${Math.round(hra * 12).toLocaleString('en-IN')}` },
+                { label: 'Rent Paid (Annual)', value: `₹${Math.round(rent * 12).toLocaleString('en-IN')}` },
+                { label: 'Tax Slab', value: `${taxSlab}%` },
+            ],
+            results: [
+                { label: 'Condition 1: Actual HRA Received', value: `₹${Math.round(actualResult.opt1).toLocaleString('en-IN')}` },
+                { label: `Condition 2: ${isMetro ? '50%' : '40%'} of Basic+DA`, value: `₹${Math.round(actualResult.opt2).toLocaleString('en-IN')}` },
+                { label: 'Condition 3: Rent - 10% of Salary', value: `₹${Math.round(actualResult.opt3).toLocaleString('en-IN')}` },
+                { label: 'HRA Exemption (Minimum of above)', value: `₹${Math.round(actualResult.exempt).toLocaleString('en-IN')}` },
+                { label: 'Taxable HRA', value: `₹${Math.round(actualResult.taxable).toLocaleString('en-IN')}` },
+                { label: 'Estimated Annual Tax Saving', value: `₹${taxSaved.toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'HRA Calculation Breakdown',
+            projectionColumns: ['Component', 'Amount', 'Notes'],
+            projectionRows: [
+                ['Actual HRA Received (Annual)', `₹${Math.round(hra * 12).toLocaleString('en-IN')}`, 'Condition 1'],
+                [`${isMetro ? '50%' : '40%'} of Basic+DA`, `₹${Math.round(actualResult.opt2).toLocaleString('en-IN')}`, 'Condition 2'],
+                ['Rent - 10% of Basic+DA', `₹${Math.round(actualResult.opt3).toLocaleString('en-IN')}`, 'Condition 3'],
+                ['HRA Exemption (Minimum)', `₹${Math.round(actualResult.exempt).toLocaleString('en-IN')}`, 'Tax-free'],
+                ['Taxable HRA', `₹${Math.round(actualResult.taxable).toLocaleString('en-IN')}`, 'Added to income'],
+                ['Tax Saving', `₹${taxSaved.toLocaleString('en-IN')}`, `At ${taxSlab}% slab`],
+            ],
+            filename: `FinCalix_HRA_Report_${tag}`,
+        };
+        await exportToPDF(config);
+    };
 
-        await exportToPDF('HRA Tax Optimization Report', headers, data, 'HRA_Calculator_Report');
+    const handleDownloadExcel = async () => {
+        const dt = new Date();
+        const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const taxSaved = Math.round((actualResult.exempt * taxSlab) / 100);
+        const config: ExportConfig = {
+            title: 'HRA Tax Exemption Report',
+            inputs: [
+                { label: 'Tax Regime', value: taxRegime },
+                { label: 'City Type', value: isMetro ? 'Metro' : 'Non-Metro' },
+                { label: 'Basic Salary (Annual)', value: `₹${Math.round(basic * 12).toLocaleString('en-IN')}` },
+                { label: 'HRA Received (Annual)', value: `₹${Math.round(hra * 12).toLocaleString('en-IN')}` },
+                { label: 'Rent Paid (Annual)', value: `₹${Math.round(rent * 12).toLocaleString('en-IN')}` },
+            ],
+            results: [
+                { label: 'HRA Exemption', value: `₹${Math.round(actualResult.exempt).toLocaleString('en-IN')}` },
+                { label: 'Taxable HRA', value: `₹${Math.round(actualResult.taxable).toLocaleString('en-IN')}` },
+                { label: 'Tax Saving', value: `₹${taxSaved.toLocaleString('en-IN')}` },
+            ],
+            projectionTitle: 'HRA Calculation Breakdown',
+            projectionColumns: ['Component', 'Amount', 'Notes'],
+            projectionRows: [
+                ['HRA Received', Math.round(hra * 12), 'Annual'],
+                ['HRA Exemption', Math.round(actualResult.exempt), 'Tax-free'],
+                ['Taxable HRA', Math.round(actualResult.taxable), 'Taxable'],
+                ['Tax Saving', taxSaved, `At ${taxSlab}%`],
+            ],
+            filename: `FinCalix_HRA_Report_${tag}`,
+        };
+        await exportToExcel(config);
     };
 
     const inputCls = "w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold/50";
@@ -273,12 +311,20 @@ export default function HRACalculator() {
 
                 {/* ACTION BUTTONS */}
                 {taxRegime === 'old' && (
-                    <button
-                        onClick={handleDownloadPDF}
-                        className="w-full py-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors active:bg-indigo-100 dark:active:bg-indigo-500/20"
-                    >
-                        <FileText size={18} /> Export PDF Report
-                    </button>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="flex-1 py-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors active:bg-indigo-100 dark:active:bg-indigo-500/20"
+                        >
+                            <FileText size={18} /> Export PDF
+                        </button>
+                        <button
+                            onClick={handleDownloadExcel}
+                            className="flex-1 py-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors active:bg-emerald-100 dark:active:bg-emerald-500/20"
+                        >
+                            📊 Export Excel
+                        </button>
+                    </div>
                 )}
 
                 {/* --- 3. SMART TAX SAVINGS ENGINE --- */}
