@@ -15,7 +15,7 @@ export interface LoanTypeConfig {
 export const LOAN_TYPE_CONFIGS: Record<string, LoanTypeConfig> = {
     'Home Loan': { label: 'Home Loan', defaultRate: 8.5, maxTenureYears: 30, minAmount: 100000, maxAmount: 100000000, icon: '🏠' },
     'Car Loan': { label: 'Car Loan', defaultRate: 9.5, maxTenureYears: 7, minAmount: 50000, maxAmount: 50000000, icon: '🚗' },
-    'Personal Loan': { label: 'Personal Loan', defaultRate: 13, maxTenureYears: 5, minAmount: 10000, maxAmount: 5000000, icon: '💳' },
+    'Personal Loan': { label: 'Personal Loan', defaultRate: 13, maxTenureYears: 7, minAmount: 10000, maxAmount: 5000000, icon: '💳' },
     'Education Loan': { label: 'Education Loan', defaultRate: 10, maxTenureYears: 15, minAmount: 50000, maxAmount: 50000000, icon: '🎓' },
 };
 
