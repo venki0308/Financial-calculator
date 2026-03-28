@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.fincalix.app';
+const PLAY_BADGE_URL = 'https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png';
 
 // ─── Calculator Data ──────────────────────────────────────────────────────────
 const CALC_TABS = [
@@ -76,6 +77,18 @@ const SCHEMES = [
   'PM SVANidhi', 'PMEGP', 'AM Ujjwala Yojana', 'Jal Jeevan Mission',
 ];
 
+// ─── Screenshot data ──────────────────────────────────────────────────────────
+const SCREENSHOTS = [
+  { src: '/screenshots/screen1-home.png',      alt: 'FinCalix Home Dashboard',  caption: 'Home Dashboard'       },
+  { src: '/screenshots/screen2-calculators.png',alt: '30+ Calculators',         caption: '30+ Calculators'      },
+  { src: '/screenshots/screen3-tax.png',        alt: 'Income Tax Calculator',   caption: 'Income Tax 2026-27'   },
+  { src: '/screenshots/screen4-schemes.png',    alt: 'Government Schemes',      caption: 'Govt Schemes'         },
+  { src: '/screenshots/screen5-expense.png',    alt: 'Expense Tracker',         caption: 'Expense Tracker'      },
+  { src: '/screenshots/screen6-language.png',   alt: 'Multiple Languages',      caption: '6 Indian Languages'   },
+  { src: '/screenshots/screen7-age.png',        alt: 'Age Calculator',          caption: 'Age Calculator'       },
+  { src: '/screenshots/screen8-sukanya.png',    alt: 'Sukanya Samriddhi',       caption: 'Sukanya Samriddhi'    },
+];
+
 // ─── Animations & global CSS ──────────────────────────────────────────────────
 const GLOBAL_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap');
@@ -129,6 +142,10 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overfl
 .fcl-expense-cols{display:flex;flex-direction:column;gap:32px}
 @media(min-width:768px){.fcl-expense-cols{flex-direction:row;align-items:center;gap:60px}}
 
+/* Screenshots carousel */
+.fcl-screenshots-row{display:flex;gap:16px;overflow-x:auto;padding:8px 4px 16px;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x mandatory}
+.fcl-screenshots-row::-webkit-scrollbar{display:none}
+
 /* Marquee */
 .fcl-marquee-track{display:flex;width:max-content;animation:fcl-marquee 30s linear infinite}
 .fcl-marquee-track:hover{animation-play-state:paused}
@@ -155,6 +172,12 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overfl
 }
 .fcl-gold-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(212,160,23,.5)}
 .fcl-gold-btn:active{transform:translateY(0)}
+
+/* Footer grid */
+.fcl-footer-grid{display:grid;grid-template-columns:1fr;gap:40px}
+@media(min-width:768px){.fcl-footer-grid{grid-template-columns:repeat(4,1fr);gap:48px}}
+.fcl-footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+@media(max-width:767px){.fcl-footer-bottom{flex-direction:column;align-items:center;text-align:center}}
 
 /* FAQ accordion */
 .fcl-faq{border-radius:14px;overflow:hidden;background:#fff;border:1.5px solid #E8EDF5;transition:border-color .25s,box-shadow .25s;margin-bottom:10px}
@@ -191,8 +214,34 @@ function Reveal({ children, delay = 0, className = '', style }: { children: Reac
   );
 }
 
+// ─── Official Google Play Badge ───────────────────────────────────────────────
+function PlayBadge({ height = 60 }: { height?: number }) {
+  return (
+    <a
+      href={PLAY_STORE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ display: 'inline-block' }}
+    >
+      <img
+        src={PLAY_BADGE_URL}
+        alt="Get it on Google Play"
+        style={{
+          height: `${height}px`,
+          cursor: 'pointer',
+          filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.2))',
+          transition: 'transform 0.2s ease',
+        }}
+        onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.05)')}
+        onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
+      />
+    </a>
+  );
+}
+
 // ─── Phone Mockup ─────────────────────────────────────────────────────────────
 function PhoneMockup() {
+  const [imgFailed, setImgFailed] = useState(false);
   const calcs = [
     { e: '📈', n: 'SIP' },     { e: '🏠', n: 'EMI' },
     { e: '💰', n: 'PPF' },     { e: '🧾', n: 'HRA' },
@@ -207,36 +256,45 @@ function PhoneMockup() {
       <div style={{
         width: '220px', background: '#0A1628', borderRadius: '36px', padding: '14px 10px',
         boxShadow: '0 32px 80px rgba(10,22,40,.6), 0 0 0 2px rgba(212,160,23,.3)',
+        overflow: 'hidden',
       }}>
         {/* notch */}
         <div style={{ width: '70px', height: '8px', background: '#1C2D48', borderRadius: '4px', margin: '0 auto 10px' }} />
-        {/* status bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px', marginBottom: '8px' }}>
-          <span style={{ color: 'rgba(255,255,255,.5)', fontSize: '9px', fontFamily: 'Inter,sans-serif' }}>9:41</span>
-          <span style={{ color: 'rgba(255,255,255,.5)', fontSize: '9px' }}>●●●</span>
-        </div>
-        {/* app bar */}
-        <div style={{ background: '#132035', borderRadius: '12px', padding: '10px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ color: '#D4A017', fontSize: '12px', fontWeight: 700, fontFamily: 'Manrope,sans-serif' }}>FinCalix</span>
-          <span style={{ fontSize: '14px' }}>🔍</span>
-        </div>
-        {/* calc grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '6px' }}>
-          {calcs.map(c => (
-            <div key={c.n} style={{
-              background: '#132035', borderRadius: '10px', padding: '8px 4px', textAlign: 'center',
-              border: '1px solid rgba(212,160,23,.12)',
-            }}>
-              <div style={{ fontSize: '16px', marginBottom: '2px' }}>{c.e}</div>
-              <div style={{ color: 'rgba(255,255,255,.75)', fontSize: '8px', fontFamily: 'Inter,sans-serif', lineHeight: 1.2 }}>{c.n}</div>
+        {/* screen area */}
+        <div style={{ borderRadius: '18px', overflow: 'hidden', position: 'relative', minHeight: '300px',
+          background: 'linear-gradient(160deg,#0F2040,#132035)' }}>
+          {!imgFailed ? (
+            <img
+              src="/screenshots/screen1-home.png"
+              alt="FinCalix App"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+              onError={() => setImgFailed(true)}
+            />
+          ) : (
+            /* fallback: code-drawn mockup */
+            <div style={{ padding: '8px' }}>
+              <div style={{ background: '#132035', borderRadius: '12px', padding: '10px', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ color: '#D4A017', fontSize: '12px', fontWeight: 700, fontFamily: 'Manrope,sans-serif' }}>FinCalix</span>
+                <span style={{ fontSize: '14px' }}>🔍</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '6px' }}>
+                {calcs.map(c => (
+                  <div key={c.n} style={{
+                    background: '#132035', borderRadius: '10px', padding: '8px 4px', textAlign: 'center',
+                    border: '1px solid rgba(212,160,23,.12)',
+                  }}>
+                    <div style={{ fontSize: '16px', marginBottom: '2px' }}>{c.e}</div>
+                    <div style={{ color: 'rgba(255,255,255,.75)', fontSize: '8px', fontFamily: 'Inter,sans-serif', lineHeight: 1.2 }}>{c.n}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '10px', padding: '6px 0' }}>
+                {['🏠','📊','💰','👤'].map(i => (
+                  <span key={i} style={{ fontSize: '16px', opacity: 0.6 }}>{i}</span>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-        {/* bottom nav */}
-        <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '10px', padding: '6px 0' }}>
-          {['🏠','📊','💰','👤'].map(i => (
-            <span key={i} style={{ fontSize: '16px', opacity: 0.6 }}>{i}</span>
-          ))}
+          )}
         </div>
       </div>
       {/* glow */}
@@ -319,15 +377,7 @@ function HeroSection() {
             <img src="/icons/fincalix-logo.png" alt="FinCalix" style={{ width: '36px', height: '36px', borderRadius: '10px' }} loading="lazy" />
             <span style={{ color: '#fff', fontWeight: 800, fontSize: '20px', fontFamily: 'Manrope,sans-serif', letterSpacing: '-0.03em' }}>FinCalix</span>
           </div>
-          <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer"
-            style={{
-              background: 'linear-gradient(135deg,#D4A017,#B8870F)', color: '#0A1628',
-              fontWeight: 700, fontSize: '13px', padding: '10px 20px', borderRadius: '100px',
-              textDecoration: 'none', fontFamily: 'Manrope,sans-serif', letterSpacing: '-0.01em',
-              boxShadow: '0 4px 16px rgba(212,160,23,.3)',
-            }}>
-            ↓ Download
-          </a>
+          <PlayBadge height={44} />
         </nav>
 
         {/* hero cols: text left, phone right */}
@@ -360,15 +410,12 @@ function HeroSection() {
               EMI · SIP · Tax · FD · PPF · GST&nbsp;—&nbsp;All Free, All Offline
             </p>
 
-            {/* CTA */}
-            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer"
-              className="fcl-gold-btn fcl-btn-full"
-              style={{ fontSize: '17px', padding: '18px 36px', marginBottom: '16px', display: 'flex' }}>
-              <span style={{ fontSize: '22px' }}>▶</span>
-              Download on Google Play
-            </a>
+            {/* CTA — official badge */}
+            <div style={{ marginBottom: '16px' }}>
+              <PlayBadge height={60} />
+            </div>
 
-            <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '13px', fontFamily: 'Inter,sans-serif', textAlign: 'center' }}>
+            <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '13px', fontFamily: 'Inter,sans-serif' }}>
               Free Forever · No Login Required · No Ads
             </p>
           </div>
@@ -582,7 +629,63 @@ function SocialProof() {
   );
 }
 
-// SECTION 7 — EXPENSE TRACKER HIGHLIGHT
+// SECTION 7 — APP SCREENSHOTS CAROUSEL
+function ScreenshotsSection() {
+  const GRADIENTS = [
+    'linear-gradient(135deg,#0A1628,#1a3a5c)',
+    'linear-gradient(135deg,#1a2a1a,#0a3020)',
+    'linear-gradient(135deg,#2a1a0a,#3a2010)',
+    'linear-gradient(135deg,#1a0a2a,#2a1040)',
+    'linear-gradient(135deg,#0a1a2a,#102040)',
+    'linear-gradient(135deg,#2a1a1a,#401020)',
+    'linear-gradient(135deg,#0a2a1a,#104030)',
+    'linear-gradient(135deg,#1a1a2a,#201040)',
+  ];
+  return (
+    <section className="fcl-section-pad" style={{ background: '#F8F9FA', padding: '56px 0' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
+        <Reveal>
+          <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+            <p style={{ color: '#D4A017', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', fontFamily: 'Inter,sans-serif', marginBottom: '8px' }}>APP PREVIEW</p>
+            <h2 style={{ color: '#0A1628', fontSize: '28px', fontWeight: 800, fontFamily: 'Manrope,sans-serif', letterSpacing: '-0.03em' }}>See FinCalix in Action</h2>
+          </div>
+        </Reveal>
+      </div>
+      <div className="fcl-screenshots-row" style={{ paddingLeft: '16px', paddingRight: '16px' }}>
+        {SCREENSHOTS.map((s, i) => (
+          <Reveal key={s.caption} delay={i * 60} style={{ flex: '0 0 auto', scrollSnapAlign: 'start' }}>
+            <div style={{ width: '160px' }}>
+              {/* card: gradient bg as fallback + img on top */}
+              <div style={{
+                width: '160px', height: '320px', borderRadius: '18px', overflow: 'hidden',
+                background: GRADIENTS[i % GRADIENTS.length],
+                boxShadow: '0 8px 32px rgba(10,22,40,.15)',
+                position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: '10px',
+              }}>
+                {/* fallback label (visible when img absent) */}
+                <span style={{
+                  position: 'absolute', color: 'rgba(255,255,255,.25)', fontSize: '11px',
+                  fontFamily: 'Inter,sans-serif', textAlign: 'center', padding: '0 8px', pointerEvents: 'none',
+                }}>{s.caption}</span>
+                {/* actual screenshot */}
+                <img
+                  src={s.src}
+                  alt={s.alt}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '18px', position: 'relative', zIndex: 1 }}
+                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                />
+              </div>
+              <p style={{ color: '#4A5B7A', fontSize: '12px', fontFamily: 'Inter,sans-serif', fontWeight: 600, textAlign: 'center' }}>{s.caption}</p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// SECTION 8 — EXPENSE TRACKER HIGHLIGHT
 function ExpenseTrackerSection() {
   const points = [
     'Category-wise expense tracking',
@@ -591,7 +694,7 @@ function ExpenseTrackerSection() {
     'PDF & Excel export',
   ];
   return (
-    <section className="fcl-section-pad" style={{ background: '#F8F9FA', padding: '56px 16px' }}>
+    <section className="fcl-section-pad" style={{ background: '#fff', padding: '56px 16px' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div className="fcl-expense-cols">
           {/* mockup */}
@@ -636,7 +739,7 @@ function ExpenseTrackerSection() {
   );
 }
 
-// SECTION 8 — FINAL CTA
+// SECTION 9 — FINAL CTA
 function FinalCTA() {
   return (
     <section style={{ background: 'linear-gradient(135deg,#0A1628 0%,#0F2040 100%)', padding: '80px 16px', position: 'relative', overflow: 'hidden' }}>
@@ -649,13 +752,10 @@ function FinalCTA() {
           <p style={{ color: 'rgba(255,255,255,.6)', fontSize: '16px', fontFamily: 'Inter,sans-serif', marginBottom: '36px', lineHeight: 1.6 }}>
             Join thousands of Indians using FinCalix to plan, save, and grow their wealth.
           </p>
-          <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer"
-            className="fcl-gold-btn fcl-btn-full"
-            style={{ fontSize: '18px', padding: '20px 40px', display: 'flex', animation: 'fcl-pulse-gold 2.5s infinite' }}>
-            <span style={{ fontSize: '24px' }}>▶</span>
-            Download Free on Google Play
-          </a>
-          <p style={{ color: 'rgba(255,255,255,.3)', fontSize: '12px', fontFamily: 'Inter,sans-serif', marginTop: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '14px' }}>
+            <PlayBadge height={64} />
+          </div>
+          <p style={{ color: 'rgba(255,255,255,.3)', fontSize: '12px', fontFamily: 'Inter,sans-serif' }}>
             Android · Free · No signup needed
           </p>
         </Reveal>
@@ -664,44 +764,145 @@ function FinalCTA() {
   );
 }
 
-// SECTION 9 — FOOTER
+// SECTION 10 — FOOTER (rebuilt with 4-column grid + legal links)
 function Footer() {
+  const headingStyle: React.CSSProperties = {
+    color: 'rgba(255,255,255,0.4)', fontSize: '11px', letterSpacing: '0.12em',
+    fontWeight: 600, textTransform: 'uppercase' as const, fontFamily: 'Inter,sans-serif',
+    marginBottom: '16px',
+  };
+  const linkStyle: React.CSSProperties = {
+    color: 'rgba(255,255,255,0.65)', fontSize: '14px', fontFamily: 'Inter,sans-serif',
+    textDecoration: 'none', display: 'block', transition: 'color 0.2s',
+  };
   return (
-    <footer style={{ background: '#060E1A', padding: '48px 16px 28px' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* top row */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '32px', marginBottom: '40px' }}>
+    <footer style={{
+      background: '#0A2E22',
+      borderTop: '1px solid rgba(255,255,255,0.08)',
+      padding: '64px 0 32px',
+    }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+        {/* 4-column grid */}
+        <div className="fcl-footer-grid">
+
+          {/* COLUMN 1 — Brand */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
               <img src="/icons/fincalix-logo.png" alt="FinCalix" style={{ width: '32px', height: '32px', borderRadius: '8px' }} loading="lazy" />
-              <span style={{ color: '#fff', fontWeight: 800, fontSize: '18px', fontFamily: 'Manrope,sans-serif' }}>FinCalix</span>
+              <span style={{ color: '#fff', fontWeight: 700, fontSize: '18px', fontFamily: 'Manrope,sans-serif' }}>FinCalix</span>
             </div>
-            <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '13px', fontFamily: 'Inter,sans-serif' }}>Your Financial Companion</p>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', fontFamily: 'Inter,sans-serif', marginBottom: '24px' }}>
+              Your Financial Companion
+            </p>
+            {/* social icons */}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {[
+                { href: 'https://instagram.com', label: 'Instagram', icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                  </svg>
+                )},
+                { href: 'https://youtube.com', label: 'YouTube', icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/>
+                  </svg>
+                )},
+                { href: 'mailto:support@fincalix.com', label: 'Email', icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                  </svg>
+                )},
+              ].map(s => (
+                <a key={s.label} href={s.href} target={s.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener noreferrer"
+                  aria-label={s.label}
+                  style={{
+                    width: '36px', height: '36px', borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'rgba(255,255,255,0.65)', cursor: 'pointer', textDecoration: 'none',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.15)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                >
+                  {s.icon}
+                </a>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '28px', flexWrap: 'wrap', alignItems: 'center' }}>
-            {[
-              { label: 'Privacy Policy', href: '/privacy-policy' },
-              { label: 'About',          href: '/about'          },
-              { label: 'Contact',        href: 'mailto:support@fincalix.com' },
-            ].map(l => (
-              <a key={l.label} href={l.href}
-                style={{ color: 'rgba(255,255,255,.45)', fontSize: '14px', fontFamily: 'Inter,sans-serif', textDecoration: 'none', transition: 'color .2s' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#D4A017')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,.45)')}>
-                {l.label}
-              </a>
-            ))}
+
+          {/* COLUMN 2 — Legal */}
+          <div>
+            <p style={headingStyle}>LEGAL</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[
+                { label: 'Privacy Policy',    href: '/privacy-policy'   },
+                { label: 'Terms of Service',  href: '/terms-of-service' },
+                { label: 'Data & Privacy',    href: '/data-privacy'     },
+                { label: 'About Us',          href: '/about'            },
+              ].map(l => (
+                <a key={l.label} href={l.href} style={linkStyle}
+                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#fff'; (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.65)'; (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none'; }}
+                >
+                  {l.label}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* COLUMN 3 — Download */}
+          <div>
+            <p style={headingStyle}>DOWNLOAD</p>
+            <div style={{ marginBottom: '16px' }}>
+              <PlayBadge height={44} />
+            </div>
+            <a href="mailto:support@fincalix.com" style={linkStyle}
+              onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.color = '#fff')}
+              onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.65)')}
+            >
+              support@fincalix.com
+            </a>
+          </div>
+
+          {/* COLUMN 4 — About */}
+          <div>
+            <p style={headingStyle}>ABOUT</p>
+            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '14px', fontFamily: 'Inter,sans-serif' }}>Made with ❤️ in India</p>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontFamily: 'Inter,sans-serif', marginTop: '4px' }}>Hyderabad, Telangana, India</p>
+            <div style={{
+              display: 'inline-flex', marginTop: '16px',
+              background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '100px', padding: '4px 12px',
+              color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontFamily: 'Inter,sans-serif',
+            }}>
+              ✦ v1.0.6
+            </div>
           </div>
         </div>
 
-        {/* divider */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,.06)', paddingTop: '24px', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-          <p style={{ color: 'rgba(255,255,255,.25)', fontSize: '13px', fontFamily: 'Inter,sans-serif' }}>
-            Made with ❤️ in India
+        {/* bottom bar */}
+        <div className="fcl-footer-bottom" style={{ marginTop: '48px', paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px', fontFamily: 'Inter,sans-serif' }}>
+            © 2026 FinCalix. All rights reserved.
           </p>
-          <p style={{ color: 'rgba(255,255,255,.25)', fontSize: '13px', fontFamily: 'Inter,sans-serif' }}>
-            © 2025 FinCalix · v1.0.6
-          </p>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            {[
+              { label: 'Privacy', href: '/privacy-policy'   },
+              { label: 'Terms',   href: '/terms-of-service' },
+              { label: 'About',   href: '/about'            },
+            ].map((l, i) => (
+              <span key={l.label} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                {i > 0 && <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '13px' }}>·</span>}
+                <a href={l.href} style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px', fontFamily: 'Inter,sans-serif', textDecoration: 'none', transition: 'color 0.2s' }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.7)')}
+                  onMouseLeave={e => ((e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.35)')}
+                >
+                  {l.label}
+                </a>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </footer>
@@ -730,6 +931,7 @@ export default function WebLandingPage() {
       <CategoryPills activeTab={activeTab} onTab={setActiveTab} />
       <FeaturesSection />
       <CalculatorShowcase activeTab={activeTab} onTab={setActiveTab} />
+      <ScreenshotsSection />
       <SchemesBanner />
       <SocialProof />
       <ExpenseTrackerSection />
