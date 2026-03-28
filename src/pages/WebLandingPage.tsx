@@ -302,46 +302,23 @@ function HeroSection() {
               India's most complete financial calculator — SIP, EMI, Tax, PPF, GST and 25+ more tools. Free forever. Works offline. No login.
             </p>
 
-            {/* social proof */}
-            <div className="fcl-hero-anim fcl-hero-social" style={{ animationDelay: '600ms', display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: '#D4A017', letterSpacing: '2px' }}>★★★★★</span>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: '#0F1F18' }}>4.8 Rating</span>
-                <span style={{ fontSize: '11px', color: '#6B7280' }}>on Play Store</span>
-              </div>
-              <div style={{ width: '1px', height: '40px', background: '#E5E7EB', flexShrink: 0 }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <span style={{ fontSize: '18px', fontWeight: 800, color: '#2D6A4F' }}>50K+</span>
-                <span style={{ fontSize: '11px', color: '#6B7280' }}>Downloads</span>
-              </div>
-              <div style={{ width: '1px', height: '40px', background: '#E5E7EB', flexShrink: 0 }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <span style={{ fontSize: '18px', fontWeight: 800, color: '#2D6A4F' }}>30+</span>
-                <span style={{ fontSize: '11px', color: '#6B7280' }}>Calculators</span>
-              </div>
-            </div>
-
             {/* CTA */}
-            <div className="fcl-hero-anim" style={{ animationDelay: '700ms', marginBottom: '16px' }}>
+            <div className="fcl-hero-anim" style={{ animationDelay: '600ms', marginBottom: '16px' }}>
               <PlayBadge height={56} />
             </div>
 
-            {/* social proof */}
-            <div className="fcl-hero-anim fcl-trust-chips" style={{ animationDelay: '800ms', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '16px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <span style={{ fontSize: '13px', color: '#D4A017', letterSpacing: '2px' }}>⭐⭐⭐⭐⭐</span>
-                <span style={{ fontSize: '12px', color: '#6B7280', fontWeight: 500 }}>4.8 Rating on Play Store</span>
-              </div>
-              <div style={{ width: '1px', height: '32px', background: '#E5E7EB', flexShrink: 0 }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <span style={{ fontSize: '15px', fontWeight: 800, color: '#2D6A4F' }}>1,000+</span>
-                <span style={{ fontSize: '12px', color: '#6B7280', fontWeight: 500 }}>Downloads</span>
-              </div>
-              <div style={{ width: '1px', height: '32px', background: '#E5E7EB', flexShrink: 0 }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <span style={{ fontSize: '15px', fontWeight: 800, color: '#2D6A4F' }}>30+</span>
-                <span style={{ fontSize: '12px', color: '#6B7280', fontWeight: 500 }}>Calculators</span>
-              </div>
+            {/* trust chips */}
+            <div className="fcl-hero-anim fcl-trust-chips" style={{ animationDelay: '700ms', display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '32px' }}>
+              {[
+                { icon: '🔒', text: 'Zero Data Collected' },
+                { icon: '📵', text: '100% Offline' },
+                { icon: '🇮🇳', text: 'Made for India' },
+              ].map(chip => (
+                <div key={chip.text} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#F0F7F4', border: '1px solid #B7E4C7', borderRadius: '100px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, color: '#2D6A4F' }}>
+                  <span>{chip.icon}</span>
+                  <span>{chip.text}</span>
+                </div>
+              ))}
             </div>
           </div>
 
