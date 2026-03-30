@@ -192,7 +192,9 @@ function PlayBadge({ height = 56 }: { height?: number }) {
       <img
         src={PLAY_BADGE_URL}
         alt="Get it on Google Play"
-        style={{ height: `${height}px`, cursor: 'pointer', filter: 'drop-shadow(0 4px 16px rgba(45,106,79,0.25))', transition: 'transform 0.2s ease', display: 'block' }}
+        width={646}
+        height={250}
+        style={{ height: `${height}px`, width: 'auto', cursor: 'pointer', filter: 'drop-shadow(0 4px 16px rgba(45,106,79,0.25))', transition: 'transform 0.2s ease', display: 'block' }}
         onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.04)')}
         onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
       />
@@ -240,7 +242,7 @@ function Navbar() {
       <div className="fcl-container" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="/icons/fincalix-logo.png" alt="FinCalix" style={{ width: '32px', height: '32px', borderRadius: '8px' }} loading="lazy" />
+          <img src="/icons/fincalix-logo.png" alt="FinCalix" width={32} height={32} style={{ width: '32px', height: '32px', borderRadius: '8px' }} loading="lazy" />
           <span style={{ color: '#1B3A2D', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.02em' }}>FinCalix</span>
         </div>
         {/* Desktop right */}
@@ -404,6 +406,10 @@ function HeroSection() {
                 </div>
               ) : (
                 <img src="/screenshots/screen1-home.png" alt="FinCalix App" onError={() => setImgFailed(true)}
+                  width={390} height={500}
+                  fetchPriority="high"
+                  loading="eager"
+                  decoding="async"
                   style={{ width: '100%', height: `${phoneH}px`, objectFit: 'cover', objectPosition: 'top', display: 'block', borderRadius: '34px' }} />
               )}
             </div>
@@ -588,7 +594,8 @@ function ScreenshotsCarousel() {
               >
                 <div style={{ height: '390px', borderRadius: '24px', overflow: 'hidden', position: 'relative', background: GRADIENTS[i % GRADIENTS.length], display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ color: 'rgba(255,255,255,.2)', fontSize: '11px', textAlign: 'center', padding: '0 8px', position: 'absolute' }}>{s.caption}</span>
-                  <img src={s.src} alt={s.caption} loading="lazy"
+                  <img src={s.src} alt={s.caption} loading="lazy" decoding="async"
+                    width={220} height={390}
                     style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '24px', position: 'relative', zIndex: 1 }}
                     onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                 </div>
@@ -922,7 +929,7 @@ function Footer() {
           {/* Col 1 — Brand */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <img src="/icons/fincalix-logo.png" alt="FinCalix" style={{ width: '32px', height: '32px', borderRadius: '8px' }} loading="lazy" />
+              <img src="/icons/fincalix-logo.png" alt="FinCalix" width={32} height={32} style={{ width: '32px', height: '32px', borderRadius: '8px' }} loading="lazy" />
               <span style={{ color: '#fff', fontWeight: 700, fontSize: '18px' }}>FinCalix</span>
             </div>
             <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '14px', marginBottom: '24px' }}>Your Financial Companion</p>
