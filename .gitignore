@@ -66,3 +66,5 @@ tsc_out*.txt
 typescript_errors.txt
 trigger.txt
 missing_keys.json
+
+.vercel
