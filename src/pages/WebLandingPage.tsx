@@ -279,7 +279,7 @@ function HeroSection() {
   const phoneH = isMobile ? 460 : 520;
 
   return (
-    <section style={{
+    <section id="hero" style={{
       width: '100%',
       boxSizing: 'border-box',
       padding: isMobile ? '80px 20px 60px' : '100px 24px 80px',
@@ -588,7 +588,7 @@ function ScreenshotsCarousel() {
               >
                 <div style={{ height: '390px', borderRadius: '24px', overflow: 'hidden', position: 'relative', background: GRADIENTS[i % GRADIENTS.length], display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ color: 'rgba(255,255,255,.2)', fontSize: '11px', textAlign: 'center', padding: '0 8px', position: 'absolute' }}>{s.caption}</span>
-                  <img src={s.src} alt={s.caption}
+                  <img src={s.src} alt={s.caption} loading="lazy"
                     style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '24px', position: 'relative', zIndex: 1 }}
                     onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                 </div>
@@ -611,7 +611,7 @@ function FeaturesGrid() {
   const [activeCat, setActiveCat] = useState<CatId>('all');
   const filtered = activeCat === 'all' ? FEATURES : FEATURES.filter(f => f.cat === activeCat);
   return (
-    <section className="fcl-section" style={{ background: '#F7F9FC', padding: '100px 0' }}>
+    <section id="features" className="fcl-section" style={{ background: '#F7F9FC', padding: '100px 0' }}>
       <div className="fcl-container">
         <Reveal>
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
@@ -850,7 +850,7 @@ function FAQSection() {
   const [open, setOpen] = useState<Record<number, boolean>>({});
   const toggle = (i: number) => setOpen(prev => ({ ...prev, [i]: !prev[i] }));
   return (
-    <section className="fcl-section" style={{ background: '#fff', padding: '100px 0' }}>
+    <section id="faq" className="fcl-section" style={{ background: '#fff', padding: '100px 0' }}>
       <div className="fcl-container">
         <Reveal>
           <div style={{ textAlign: 'center', marginBottom: '56px' }}>
@@ -861,14 +861,15 @@ function FAQSection() {
         <div className="fcl-faq-grid">
           {FAQS.map((f, i) => (
             <Reveal key={i} delay={i * 50}>
-              <div
-                style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', ...(open[i] ? { borderColor: '#B7E4C7', boxShadow: '0 4px 12px rgba(45,106,79,.1)' } : {}) }}
-                onClick={() => toggle(i)}
-              >
-                <div style={{ padding: '18px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+              <div style={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', overflow: 'hidden', ...(open[i] ? { borderColor: '#B7E4C7', boxShadow: '0 4px 12px rgba(45,106,79,.1)' } : {}) }}>
+                <button
+                  aria-expanded={!!open[i]}
+                  onClick={() => toggle(i)}
+                  style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '18px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', textAlign: 'left' }}
+                >
                   <span style={{ fontSize: '15px', fontWeight: 600, color: '#0F1F18', flex: 1 }}>{f.q}</span>
                   <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#F7F9FC', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2D6A4F', fontSize: '18px', fontWeight: 400, flexShrink: 0, transition: 'transform .2s ease', transform: open[i] ? 'rotate(45deg)' : 'none' }}>+</span>
-                </div>
+                </button>
                 {open[i] && (
                   <div style={{ padding: '0 20px 18px', fontSize: '14px', color: '#6B7280', lineHeight: 1.6, background: '#FAFAFA', borderTop: '1px solid #F3F4F6' }}>
                     {f.a}
@@ -1004,17 +1005,19 @@ export default function WebLandingPage() {
   return (
     <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", minWidth: 0, overflowX: 'hidden', background: '#fff' }}>
       <Navbar />
-      <HeroSection />
-      <StatsBar />
-      <PersonaSection />
-      <ScreenshotsCarousel />
-      <FeaturesGrid />
-      <SchemesBanner />
-      <ExpenseTrackerSection />
-      <TrustSection />
-      <HowItWorks />
-      <FAQSection />
-      <FinalCTA />
+      <main>
+        <HeroSection />
+        <StatsBar />
+        <PersonaSection />
+        <ScreenshotsCarousel />
+        <FeaturesGrid />
+        <SchemesBanner />
+        <ExpenseTrackerSection />
+        <TrustSection />
+        <HowItWorks />
+        <FAQSection />
+        <FinalCTA />
+      </main>
       <Footer />
     </div>
   );
