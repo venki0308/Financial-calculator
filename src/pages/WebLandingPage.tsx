@@ -7,14 +7,14 @@ const PLAY_BADGE_URL = 'https://play.google.com/intl/en_us/badges/static/images/
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const SCREENSHOTS = [
-  { src: '/screenshots/screen1-home.png',        caption: 'Home Dashboard'     },
-  { src: '/screenshots/screen2-calculators.png', caption: '30+ Calculators'    },
-  { src: '/screenshots/screen3-tax.png',         caption: 'Income Tax 2026-27' },
-  { src: '/screenshots/screen4-schemes.png',     caption: 'Govt Schemes'       },
-  { src: '/screenshots/screen5-expense.png',     caption: 'Expense Tracker'    },
-  { src: '/screenshots/screen6-language.png',    caption: '6 Languages'        },
-  { src: '/screenshots/screen7-age.png',         caption: 'Age Calculator'     },
-  { src: '/screenshots/screen8-sukanya.png',     caption: 'Sukanya Samriddhi'  },
+  { src: '/screenshots/screen1-home.webp',        caption: 'Home Dashboard'     },
+  { src: '/screenshots/screen2-calculators.webp', caption: '30+ Calculators'    },
+  { src: '/screenshots/screen3-tax.webp',         caption: 'Income Tax 2026-27' },
+  { src: '/screenshots/screen4-schemes.webp',     caption: 'Govt Schemes'       },
+  { src: '/screenshots/screen5-expense.webp',     caption: 'Expense Tracker'    },
+  { src: '/screenshots/screen6-language.webp',    caption: '6 Languages'        },
+  { src: '/screenshots/screen7-age.webp',         caption: 'Age Calculator'     },
+  { src: '/screenshots/screen8-sukanya.webp',     caption: 'Sukanya Samriddhi'  },
 ];
 
 const SCHEMES_R1 = [
@@ -242,7 +242,7 @@ function Navbar() {
       <div className="fcl-container" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img src="/icons/fincalix-logo.png" alt="FinCalix" width={32} height={32} style={{ width: '32px', height: '32px', borderRadius: '8px' }} loading="lazy" />
+          <img src="/icons/fincalix-logo.png" alt="FinCalix" width={32} height={32} style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover', objectPosition: 'center' }} loading="lazy" />
           <span style={{ color: '#1B3A2D', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.02em' }}>FinCalix</span>
         </div>
         {/* Desktop right */}
@@ -405,7 +405,7 @@ function HeroSection() {
                   <span style={{ color: '#6B7280', fontSize: '14px', fontWeight: 600 }}>FinCalix App</span>
                 </div>
               ) : (
-                <img src="/screenshots/screen1-home.png" alt="FinCalix App" onError={() => setImgFailed(true)}
+                <img src="/screenshots/screen1-home.webp" alt="FinCalix App" onError={() => setImgFailed(true)}
                   width={390} height={500}
                   fetchPriority="high"
                   loading="eager"
@@ -929,7 +929,7 @@ function Footer() {
           {/* Col 1 — Brand */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <img src="/icons/fincalix-logo.png" alt="FinCalix" width={32} height={32} style={{ width: '32px', height: '32px', borderRadius: '8px' }} loading="lazy" />
+              <img src="/icons/fincalix-logo.png" alt="FinCalix" width={32} height={32} style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover', objectPosition: 'center' }} loading="lazy" />
               <span style={{ color: '#fff', fontWeight: 700, fontSize: '18px' }}>FinCalix</span>
             </div>
             <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '14px', marginBottom: '24px' }}>Your Financial Companion</p>

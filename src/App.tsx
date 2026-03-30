@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { App as CapApp } from '@capacitor/app';
 import { useSettingsStore } from './store/useSettingsStore';
 import { CrashlyticsService } from './lib/analytics';
@@ -11,75 +11,86 @@ import { FeatureFlagService } from './services/featureFlags.service';
 import { UpdateChecker } from './components/UpdateChecker';
 import { APP_VERSION } from './config/app';
 import { Capacitor } from '@capacitor/core';
-import Layout from './components/Layout';
-import Home from './pages/Home';
-import Calculators from './pages/Calculators';
-import Schemes from './pages/Schemes';
-import SchemeDetail from './pages/SchemeDetail';
-import ExpenseTracker from './pages/ExpenseTracker';
-import Profile from './pages/Profile';
-import Settings from './pages/Settings';
-
-// Calculators
-import EMICalculator from './pages/EMICalculator';
-import SIPCalculator from './pages/SIPCalculator';
-import FDCalculator from './pages/FDCalculator';
-import CompoundInterestCalculator from './pages/CompoundInterestCalculator';
-import IncomeTaxCalculator from './pages/IncomeTaxCalculator';
-import SalaryHikeCalculator from './pages/SalaryHikeCalculator';
-import HRACalculator from './pages/HRACalculator';
-import RDCalculator from './pages/RDCalculator';
-import SimpleInterestCalculator from './pages/SimpleInterestCalculator';
-import LumpsumCalculator from './pages/LumpsumCalculator';
-import SWPCalculator from './pages/SWPCalculator';
-
-// PPF Calculators
-import AdvancedPPFCalculator from './pages/AdvancedPPFCalculator';
-import NPSCalculator from './pages/NPSCalculator';
-import EPFCalculator from './pages/EPFCalculator';
-import GratuityCalculator from './pages/GratuityCalculator';
-import SSYCalculator from './pages/SSYCalculator';
-import NSCCalculator from './pages/NSCCalculator';
-import KVPCalculator from './pages/KVPCalculator';
-import POMISCalculator from './pages/POMISCalculator';
-import SCSSCalculator from './pages/SCSSCalculator';
-import POTDCalculator from './pages/POTDCalculator';
-import BreakEvenCalculator from './pages/BreakEvenCalculator';
-import OverdraftCalculator from './pages/OverdraftCalculator';
-import CAGRCalculator from './pages/CAGRCalculator';
-
-// New Calculators
-import PropertyCalculator from './pages/PropertyCalculator';
-import GSTCalculator from './pages/GSTCalculator';
-import ScientificCalculator from './pages/ScientificCalculator';
-import BudgetTracker from './pages/BudgetTracker';
-import GoalPlanner from './pages/GoalPlanner';
-import AIFinancialAssistant from './pages/AIFinancialAssistant';
-import CompareCalculator from './pages/CompareCalculator';
-import AgeCalculator from './pages/AgeCalculator';
-import WorldClock from './pages/WorldClock';
-
-
-// Support Pages
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
-import About from './pages/About';
-import DataSafety from './pages/DataSafety';
-import SavedCalculations from './pages/SavedCalculations';
-import CalculationHistory from './pages/CalculationHistory';
-import BookmarkedSchemes from './pages/BookmarkedSchemes';
-import Notifications from './pages/Notifications';
-
-
-import GlobalDisclaimerModal from './components/GlobalDisclaimerModal';
 import { NotificationScheduler } from './services/NotificationScheduler';
-import ValidatorPage from './pages/ValidatorPage';
-import { PdfActionSheet } from './components/PdfActionSheet';
+
+// WebLandingPage — static import (first page web users see, must not lazy-load)
 import WebLandingPage from './pages/WebLandingPage';
-import WebPrivacyPolicy from './pages/legal/PrivacyPolicy';
-import WebAbout from './pages/legal/About';
-import WebDataPrivacy from './pages/legal/DataPrivacy';
-import WebTermsOfService from './pages/legal/TermsOfService';
+
+// App layout + main pages — lazy loaded
+const Layout                     = lazy(() => import('./components/Layout'));
+const Home                       = lazy(() => import('./pages/Home'));
+const Calculators                = lazy(() => import('./pages/Calculators'));
+const Schemes                    = lazy(() => import('./pages/Schemes'));
+const SchemeDetail               = lazy(() => import('./pages/SchemeDetail'));
+const ExpenseTracker             = lazy(() => import('./pages/ExpenseTracker'));
+const Profile                    = lazy(() => import('./pages/Profile'));
+const Settings                   = lazy(() => import('./pages/Settings'));
+
+// Calculator pages — lazy loaded
+const EMICalculator              = lazy(() => import('./pages/EMICalculator'));
+const SIPCalculator              = lazy(() => import('./pages/SIPCalculator'));
+const FDCalculator               = lazy(() => import('./pages/FDCalculator'));
+const CompoundInterestCalculator = lazy(() => import('./pages/CompoundInterestCalculator'));
+const IncomeTaxCalculator        = lazy(() => import('./pages/IncomeTaxCalculator'));
+const SalaryHikeCalculator       = lazy(() => import('./pages/SalaryHikeCalculator'));
+const HRACalculator              = lazy(() => import('./pages/HRACalculator'));
+const RDCalculator               = lazy(() => import('./pages/RDCalculator'));
+const SimpleInterestCalculator   = lazy(() => import('./pages/SimpleInterestCalculator'));
+const LumpsumCalculator          = lazy(() => import('./pages/LumpsumCalculator'));
+const SWPCalculator              = lazy(() => import('./pages/SWPCalculator'));
+const CAGRCalculator             = lazy(() => import('./pages/CAGRCalculator'));
+
+// PPF / Retirement / Post-Office Calculators — lazy loaded
+const AdvancedPPFCalculator      = lazy(() => import('./pages/AdvancedPPFCalculator'));
+const NPSCalculator              = lazy(() => import('./pages/NPSCalculator'));
+const EPFCalculator              = lazy(() => import('./pages/EPFCalculator'));
+const GratuityCalculator         = lazy(() => import('./pages/GratuityCalculator'));
+const SSYCalculator              = lazy(() => import('./pages/SSYCalculator'));
+const NSCCalculator              = lazy(() => import('./pages/NSCCalculator'));
+const KVPCalculator              = lazy(() => import('./pages/KVPCalculator'));
+const POMISCalculator            = lazy(() => import('./pages/POMISCalculator'));
+const SCSSCalculator             = lazy(() => import('./pages/SCSSCalculator'));
+const POTDCalculator             = lazy(() => import('./pages/POTDCalculator'));
+const BreakEvenCalculator        = lazy(() => import('./pages/BreakEvenCalculator'));
+const OverdraftCalculator        = lazy(() => import('./pages/OverdraftCalculator'));
+
+// New Calculators — lazy loaded
+const PropertyCalculator         = lazy(() => import('./pages/PropertyCalculator'));
+const GSTCalculator              = lazy(() => import('./pages/GSTCalculator'));
+const ScientificCalculator       = lazy(() => import('./pages/ScientificCalculator'));
+const BudgetTracker              = lazy(() => import('./pages/BudgetTracker'));
+const GoalPlanner                = lazy(() => import('./pages/GoalPlanner'));
+const AIFinancialAssistant       = lazy(() => import('./pages/AIFinancialAssistant'));
+const CompareCalculator          = lazy(() => import('./pages/CompareCalculator'));
+const AgeCalculator              = lazy(() => import('./pages/AgeCalculator'));
+const WorldClock                 = lazy(() => import('./pages/WorldClock'));
+
+// Support Pages — lazy loaded
+const PrivacyPolicy              = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService             = lazy(() => import('./pages/TermsOfService'));
+const About                      = lazy(() => import('./pages/About'));
+const DataSafety                 = lazy(() => import('./pages/DataSafety'));
+const SavedCalculations          = lazy(() => import('./pages/SavedCalculations'));
+const CalculationHistory         = lazy(() => import('./pages/CalculationHistory'));
+const BookmarkedSchemes          = lazy(() => import('./pages/BookmarkedSchemes'));
+const Notifications              = lazy(() => import('./pages/Notifications'));
+const ValidatorPage              = lazy(() => import('./pages/ValidatorPage'));
+
+// App-level modals — lazy loaded (native app only)
+const GlobalDisclaimerModal      = lazy(() => import('./components/GlobalDisclaimerModal'));
+const PdfActionSheet             = lazy(() => import('./components/PdfActionSheet').then(m => ({ default: m.PdfActionSheet })));
+
+// Web legal pages — lazy loaded
+const WebPrivacyPolicy           = lazy(() => import('./pages/legal/PrivacyPolicy'));
+const WebAbout                   = lazy(() => import('./pages/legal/About'));
+const WebDataPrivacy             = lazy(() => import('./pages/legal/DataPrivacy'));
+const WebTermsOfService          = lazy(() => import('./pages/legal/TermsOfService'));
+
+const LazyFallback = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: '14px', color: '#666' }}>
+        Loading...
+    </div>
+);
 
 // Toast component for back-press notification
 function BackToast({ visible }: { visible: boolean }) {
@@ -100,7 +111,6 @@ function AppContent() {
     const lastBackPress = useRef<number>(0);
     const [showBackToast, setShowBackToast] = useState(false);
 
-    // Attach active screen to Crashlytics on every route change (Part 6)
     useCrashContext();
     const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -109,7 +119,6 @@ function AppContent() {
         document.documentElement.classList.toggle('light', !darkMode);
     }, [darkMode]);
 
-    // Analytics + Crashlytics + Feature Flags init
     useEffect(() => {
         const initAnalytics = async () => {
             setupErrorHandling();
@@ -117,16 +126,13 @@ function AppContent() {
             await CrashlyticsService.setCustomKey('app_version', APP_VERSION);
             await CrashlyticsService.setCustomKey('platform', Capacitor.getPlatform());
             await FeatureFlagService.load();
-            // Initialize generic analytics wrapper
             await AnalyticsService.initialize();
             AnalyticsService.trackScreenView({ screen_name: 'App_Open' });
         };
         initAnalytics();
-        // Run notification scheduler (at most once every 23h)
         NotificationScheduler.initialize();
     }, []);
 
-    // Android hardware back button — double-tap to exit on home, navigate back elsewhere
     useEffect(() => {
         if (!Capacitor.isNativePlatform()) return;
 
@@ -134,10 +140,8 @@ function AppContent() {
             if (location.pathname === '/') {
                 const now = Date.now();
                 if (now - lastBackPress.current < 2000) {
-                    // Second press within 2 seconds — exit app
                     CapApp.exitApp();
                 } else {
-                    // First press — show toast
                     lastBackPress.current = now;
                     setShowBackToast(true);
                     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -160,83 +164,84 @@ function AppContent() {
             <BackToast visible={showBackToast} />
             <UpdateChecker />
             <PdfActionSheet />
-            <Routes>
-                {/* Support pages (no nav bar) */}
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/terms-of-service" element={<TermsOfService />} />
-                <Route path="/data-safety" element={<DataSafety />} />
+            <Suspense fallback={LazyFallback}>
+                <Routes>
+                    {/* Support pages (no nav bar) */}
+                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/terms-of-service" element={<TermsOfService />} />
+                    <Route path="/data-safety" element={<DataSafety />} />
 
-                {/* Main app — all routes public, no auth required */}
-                <Route element={<Layout />}>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/calculators" element={<Calculators />} />
-                    <Route path="/schemes" element={<Schemes />} />
-                    <Route path="/scheme/:id" element={<SchemeDetail />} />
-                    <Route path="/expenses" element={<ExpenseTracker />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/profile/saved" element={<SavedCalculations />} />
-                    <Route path="/profile/history" element={<CalculationHistory />} />
-                    <Route path="/profile/bookmarks" element={<BookmarkedSchemes />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/notifications" element={<Notifications />} />
-                    <Route path="/about" element={<About />} />
+                    {/* Main app — all routes public, no auth required */}
+                    <Route element={<Layout />}>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/calculators" element={<Calculators />} />
+                        <Route path="/schemes" element={<Schemes />} />
+                        <Route path="/scheme/:id" element={<SchemeDetail />} />
+                        <Route path="/expenses" element={<ExpenseTracker />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/profile/saved" element={<SavedCalculations />} />
+                        <Route path="/profile/history" element={<CalculationHistory />} />
+                        <Route path="/profile/bookmarks" element={<BookmarkedSchemes />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="/notifications" element={<Notifications />} />
+                        <Route path="/about" element={<About />} />
 
-                    {/* Calculators */}
-                    <Route path="/calculator/loan-emi" element={<EMICalculator />} />
-                    <Route path="/calculator/sip" element={<SIPCalculator />} />
-                    <Route path="/calculator/fixed-deposit" element={<FDCalculator />} />
-                    <Route path="/calculator/compound-interest" element={<CompoundInterestCalculator />} />
-                    <Route path="/calculator/income-tax" element={<IncomeTaxCalculator />} />
-                    <Route path="/calculator/salary-hike" element={<SalaryHikeCalculator />} />
-                    <Route path="/calculator/hra" element={<HRACalculator />} />
-                    <Route path="/calculator/recurring-deposit" element={<RDCalculator />} />
-                    <Route path="/calculator/simple-interest" element={<SimpleInterestCalculator />} />
-                    <Route path="/calculator/lumpsum" element={<LumpsumCalculator />} />
-                    <Route path="/calculator/swp" element={<SWPCalculator />} />
-                    <Route path="/calculator/cagr" element={<CAGRCalculator />} />
-                    <Route path="/calculator/step-up-sip" element={<Navigate to="/calculator/sip" replace />} />
-                    <Route path="/calculator/goal-sip" element={<Navigate to="/calculator/sip" replace />} />
-                    <Route path="/calculator/ppf" element={<AdvancedPPFCalculator />} />
-                    <Route path="/calculator/nps" element={<NPSCalculator />} />
-                    <Route path="/calculator/epf" element={<EPFCalculator />} />
-                    <Route path="/calculator/gratuity" element={<GratuityCalculator />} />
-                    <Route path="/calculator/sukanya-samriddhi" element={<SSYCalculator />} />
-                    <Route path="/calculator/nsc" element={<NSCCalculator />} />
-                    <Route path="/calculator/kvp" element={<KVPCalculator />} />
-                    <Route path="/calculator/post-office-mis" element={<POMISCalculator />} />
-                    <Route path="/calculator/senior-citizen-savings" element={<SCSSCalculator />} />
-                    <Route path="/calculator/post-office-td" element={<POTDCalculator />} />
-                    
-                    <Route path="/calculator/break-even" element={<BreakEvenCalculator />} />
-                    <Route path="/calculator/overdraft" element={<OverdraftCalculator />} />
+                        {/* Calculators */}
+                        <Route path="/calculator/loan-emi" element={<EMICalculator />} />
+                        <Route path="/calculator/sip" element={<SIPCalculator />} />
+                        <Route path="/calculator/fixed-deposit" element={<FDCalculator />} />
+                        <Route path="/calculator/compound-interest" element={<CompoundInterestCalculator />} />
+                        <Route path="/calculator/income-tax" element={<IncomeTaxCalculator />} />
+                        <Route path="/calculator/salary-hike" element={<SalaryHikeCalculator />} />
+                        <Route path="/calculator/hra" element={<HRACalculator />} />
+                        <Route path="/calculator/recurring-deposit" element={<RDCalculator />} />
+                        <Route path="/calculator/simple-interest" element={<SimpleInterestCalculator />} />
+                        <Route path="/calculator/lumpsum" element={<LumpsumCalculator />} />
+                        <Route path="/calculator/swp" element={<SWPCalculator />} />
+                        <Route path="/calculator/cagr" element={<CAGRCalculator />} />
+                        <Route path="/calculator/step-up-sip" element={<Navigate to="/calculator/sip" replace />} />
+                        <Route path="/calculator/goal-sip" element={<Navigate to="/calculator/sip" replace />} />
+                        <Route path="/calculator/ppf" element={<AdvancedPPFCalculator />} />
+                        <Route path="/calculator/nps" element={<NPSCalculator />} />
+                        <Route path="/calculator/epf" element={<EPFCalculator />} />
+                        <Route path="/calculator/gratuity" element={<GratuityCalculator />} />
+                        <Route path="/calculator/sukanya-samriddhi" element={<SSYCalculator />} />
+                        <Route path="/calculator/nsc" element={<NSCCalculator />} />
+                        <Route path="/calculator/kvp" element={<KVPCalculator />} />
+                        <Route path="/calculator/post-office-mis" element={<POMISCalculator />} />
+                        <Route path="/calculator/senior-citizen-savings" element={<SCSSCalculator />} />
+                        <Route path="/calculator/post-office-td" element={<POTDCalculator />} />
 
-                    {/* New Calculators */}
-                    <Route path="/calculator/property" element={<PropertyCalculator />} />
-                    <Route path="/calculator/advanced-sip" element={<Navigate to="/calculator/sip" replace />} />
-                    <Route path="/calculator/gst" element={<GSTCalculator />} />
-                    <Route path="/calculator/car-loan" element={<EMICalculator />} />
-                    <Route path="/calculator/personal-loan" element={<EMICalculator />} />
-                    <Route path="/calculator/education-loan" element={<EMICalculator />} />
-                    <Route path="/budget-tracker" element={<BudgetTracker />} />
-                    <Route path="/goal-planner" element={<GoalPlanner />} />
-                    <Route path="/financial-advisor" element={<AIFinancialAssistant />} />
-                    <Route path="/ai-advisor" element={<Navigate to="/financial-advisor" replace />} />
-                    <Route path="/compare" element={<CompareCalculator />} />
-                    <Route path="/calculator/scientific" element={<ScientificCalculator />} />
-                    <Route path="/calculator/age" element={<AgeCalculator />} />
-                    <Route path="/world-clock" element={<WorldClock />} />
-                    <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
-                    <Route path="/dev/validator" element={<ValidatorPage />} />
-                </Route>
+                        <Route path="/calculator/break-even" element={<BreakEvenCalculator />} />
+                        <Route path="/calculator/overdraft" element={<OverdraftCalculator />} />
 
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                        {/* New Calculators */}
+                        <Route path="/calculator/property" element={<PropertyCalculator />} />
+                        <Route path="/calculator/advanced-sip" element={<Navigate to="/calculator/sip" replace />} />
+                        <Route path="/calculator/gst" element={<GSTCalculator />} />
+                        <Route path="/calculator/car-loan" element={<EMICalculator />} />
+                        <Route path="/calculator/personal-loan" element={<EMICalculator />} />
+                        <Route path="/calculator/education-loan" element={<EMICalculator />} />
+                        <Route path="/budget-tracker" element={<BudgetTracker />} />
+                        <Route path="/goal-planner" element={<GoalPlanner />} />
+                        <Route path="/financial-advisor" element={<AIFinancialAssistant />} />
+                        <Route path="/ai-advisor" element={<Navigate to="/financial-advisor" replace />} />
+                        <Route path="/compare" element={<CompareCalculator />} />
+                        <Route path="/calculator/scientific" element={<ScientificCalculator />} />
+                        <Route path="/calculator/age" element={<AgeCalculator />} />
+                        <Route path="/world-clock" element={<WorldClock />} />
+                        <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
+                        <Route path="/dev/validator" element={<ValidatorPage />} />
+                    </Route>
+
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </Suspense>
         </>
     );
 }
 
 export default function App() {
-    // Dev mode: ?dev=true in URL sets localStorage flag, persists for session
     const urlParams = new URLSearchParams(window.location.search);
     const isDevUrl = urlParams.get('dev') === 'true';
     if (isDevUrl) {
@@ -256,17 +261,19 @@ export default function App() {
         );
     }
 
-    // CASE 3: Regular browser visitor → landing page + legal routes
+    // CASE 3: Regular browser visitor → landing page + legal routes only
     return (
         <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<WebLandingPage />} />
-                <Route path="/privacy-policy" element={<WebPrivacyPolicy />} />
-                <Route path="/about" element={<WebAbout />} />
-                <Route path="/data-privacy" element={<WebDataPrivacy />} />
-                <Route path="/terms-of-service" element={<WebTermsOfService />} />
-                <Route path="*" element={<WebLandingPage />} />
-            </Routes>
+            <Suspense fallback={LazyFallback}>
+                <Routes>
+                    <Route path="/" element={<WebLandingPage />} />
+                    <Route path="/privacy-policy" element={<WebPrivacyPolicy />} />
+                    <Route path="/about" element={<WebAbout />} />
+                    <Route path="/data-privacy" element={<WebDataPrivacy />} />
+                    <Route path="/terms-of-service" element={<WebTermsOfService />} />
+                    <Route path="*" element={<WebLandingPage />} />
+                </Routes>
+            </Suspense>
         </BrowserRouter>
     );
 }
