@@ -1,0 +1,5 @@
+﻿d87f9f4 fix: add 1024x1024 master icon for Android launcher (v1.0.8)
+175fba9 chore: bump version to 1.0.7 versionCode 8
+854d445 fix: add global GA4 page view tracker and fix event names
+34a5a48 feat: apply India tax & scheme changes effective April 1, 2026 (FY 2026-27)
+9377b04 fix: revert screenshot srcs back to .png (webp files not yet created)
