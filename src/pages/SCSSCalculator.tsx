@@ -331,7 +331,10 @@ export default function SCSSCalculator() {
                     {showPenalty && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
-                                <p className="text-slate-500 dark:text-slate-400 text-xs">Premature closure allowed after 1 year with penalty deducted from principal:</p>
+                                <div className="flex items-start gap-2 p-3 rounded-xl bg-slate-500/10 border border-slate-500/20">
+                                    <p className="text-slate-600 dark:text-slate-400 font-bold text-xs">Before 1 year</p>
+                                    <p className="text-slate-500 dark:text-slate-400 text-xs ml-auto">❌ Closure NOT permitted</p>
+                                </div>
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-center p-3 rounded-xl bg-red-500/10 border border-red-500/20">
                                         <div>
@@ -345,12 +348,22 @@ export default function SCSSCalculator() {
                                     </div>
                                     <div className="flex justify-between items-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
                                         <div>
-                                            <p className="text-amber-600 dark:text-amber-400 font-bold text-xs">After 2 years</p>
+                                            <p className="text-amber-600 dark:text-amber-400 font-bold text-xs">After 2 years, before maturity</p>
                                             <p className="text-slate-500 dark:text-slate-400 text-xs">1% penalty on principal</p>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-amber-600 dark:text-amber-400 font-bold text-xs">−{formatINR(result.penaltyAfter2Yrs)}</p>
                                             <p className="text-slate-700 dark:text-slate-200 text-xs font-semibold">You get {formatINR(result.amtAfter2Yrs)}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                                        <div>
+                                            <p className="text-green-600 dark:text-green-400 font-bold text-xs">At maturity ({tenure} years)</p>
+                                            <p className="text-slate-500 dark:text-slate-400 text-xs">No penalty — full amount paid</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-green-600 dark:text-green-400 font-bold text-xs">No deduction</p>
+                                            <p className="text-slate-700 dark:text-slate-200 text-xs font-semibold">You get {formatINR(result.maturityAmount)}</p>
                                         </div>
                                     </div>
                                 </div>

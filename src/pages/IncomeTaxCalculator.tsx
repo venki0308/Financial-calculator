@@ -232,11 +232,14 @@ export default function IncomeTaxCalculator() {
     const hraExemption = useMemo(() => {
         const hraRcvd = num('hraReceived') * multiplier;
         const rentPaid = num('rentPaid') * multiplier;
-        const basicPlusDA = (num('basicSalary') + num('da')) * multiplier;
+        // In CTC mode basicSalary field is 0 — derive basic as 40% of CTC instead
+        const basicPlusDA = inputMode === 'ctc'
+            ? num('ctcAmount') * 0.4
+            : (num('basicSalary') + num('da')) * multiplier;
         const isMetro = inputs.isMetro === 'true';
         if (!rentPaid || !hraRcvd) return 0;
         return Math.max(0, Math.min(hraRcvd, rentPaid - basicPlusDA * 0.1, basicPlusDA * (isMetro ? 0.5 : 0.4)));
-    }, [inputs, num, multiplier]);
+    }, [inputs, num, multiplier, inputMode]);
 
     // ─── Old Regime Deductions (always computed for comparison) ────────────────
     const oldDeductions = useMemo(() => {

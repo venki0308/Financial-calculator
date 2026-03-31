@@ -157,10 +157,10 @@ export default function SalaryHikeCalculator() {
     // Track recent
     useEffect(() => {
         try {
-            const recent: string[] = JSON.parse(localStorage.getItem('recentCalculators') || '[]');
+            const recent: string[] = JSON.parse(localStorage.getItem('fincalix_recently_used') || '[]');
             const path = window.location.pathname;
-            const updated = [path, ...recent.filter((p) => p !== path)].slice(0, 4);
-            localStorage.setItem('recentCalculators', JSON.stringify(updated));
+            const updated = [path, ...recent.filter((p) => p !== path)].slice(0, 6);
+            localStorage.setItem('fincalix_recently_used', JSON.stringify(updated));
         } catch { }
     }, []);
 

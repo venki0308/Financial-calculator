@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, 
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
@@ -63,7 +63,11 @@ export default function GratuityCalculator() {
         // Future Projection
         const projectedSalary = salary * Math.pow(1 + salaryHike / 100, projectionYears);
         const projectedTotalYears = years + projectionYears;
-        const projectedGratuity = (projectedSalary * 15 * projectedTotalYears) / 26;
+        const ELIGIBILITY_THRESHOLD = 4 + 240 / 365;
+        const projectedRounded = (projectedTotalYears >= ELIGIBILITY_THRESHOLD && projectedTotalYears < 5) ? 5 : Math.round(projectedTotalYears);
+        const projectedGratuity = projectedTotalYears >= ELIGIBILITY_THRESHOLD
+            ? (projectedSalary * 15 * projectedRounded) / 26
+            : 0;
 
         // Use standard DecisionEngine
         const recommendation = DecisionEngine.getRecommendation({

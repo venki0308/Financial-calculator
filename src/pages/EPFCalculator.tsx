@@ -51,6 +51,8 @@ export default function EPFCalculator() {
             let yearEmp = 0;
             let yearEmpler = 0;
             let runningBal = openingBal;
+            let yearlyInterest = 0;
+            const monthlyRate = rate / 100 / 12;
 
             for (let m = 0; m < 12; m++) {
                 const emp = salary * empPct / 100;
@@ -61,11 +63,12 @@ export default function EPFCalculator() {
                 const epsContrib = Math.min(salary * 0.0833, EPS_WAGE_CEILING * 0.0833);
                 const employer = (salary * 0.12) - epsContrib;
                 runningBal += emp + employer;
+                // Interest on closing balance of each month (EPFO method)
+                yearlyInterest += runningBal * monthlyRate;
                 yearEmp += emp;
                 yearEmpler += employer;
             }
 
-            const yearlyInterest = runningBal * (rate / 100);
             balance = runningBal + yearlyInterest;
             totalEmp += yearEmp;
             totalEmployer += yearEmpler;
@@ -109,9 +112,10 @@ export default function EPFCalculator() {
         let simBalance = 0;
         let simSalary = basic;
 
+        const simMonthlyRate = rate / 100 / 12;
         for (let y = 0; y < simYears; y++) {
-            let simOpeningBal = simBalance;
-            let simRunningBal = simOpeningBal;
+            let simRunningBal = simBalance;
+            let simYearlyInterest = 0;
 
             for (let m = 0; m < 12; m++) {
                 const emp = simSalary * empPct / 100;
@@ -119,10 +123,10 @@ export default function EPFCalculator() {
                 const epsContrib = Math.min(simSalary * 0.0833, EPS_WAGE_CEILING * 0.0833);
                 const employer = (simSalary * 0.12) - epsContrib;
                 simRunningBal += emp + employer;
+                simYearlyInterest += simRunningBal * simMonthlyRate;
             }
 
-            const yearlyInterest = simRunningBal * (rate / 100);
-            simBalance = simRunningBal + yearlyInterest;
+            simBalance = simRunningBal + simYearlyInterest;
 
             simSalary *= (1 + whatIfHike / 100);
         }

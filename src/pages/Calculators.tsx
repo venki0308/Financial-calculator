@@ -41,7 +41,7 @@ export default function Calculators() {
 
     useEffect(() => {
         try {
-            const stored = JSON.parse(localStorage.getItem('recentCalculators') || '[]');
+            const stored = JSON.parse(localStorage.getItem('fincalix_recently_used') || '[]');
             setRecentPaths(stored);
         } catch { }
     }, []);
