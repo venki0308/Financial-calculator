@@ -182,7 +182,7 @@ export default function SCSSCalculator() {
                 {/* Inputs */}
                 <div className="space-y-3">
                     <NumberInput label="Investment Amount" value={investment} onChange={setInvestment} min={1000} max={3000000} prefix="₹" helperText="Max: ₹30 Lakhs" />
-                    <NumberInput label="Interest Rate (p.a.)" value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText="Current rate: 8.2% (Q4 FY2025-26)" />
+                    <NumberInput label="Interest Rate (p.a.)" value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText="Current rate: 8.2% (Q1 FY2026-27)" />
 
                     {/* Tenure Toggle */}
                     <div className="space-y-1.5">

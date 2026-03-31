@@ -192,6 +192,9 @@ export default function IncomeTaxCalculator() {
         hraReceived: '',
         rentPaid: '',
         isMetro: 'false',
+        // Children's allowances (Old Regime, Sec 10(14))
+        childEducationAllowance: '',
+        childHostelAllowance: '',
     });
 
     const set = useCallback((k: string, v: string) => setInputs((p) => ({ ...p, [k]: v })), []);
@@ -238,6 +241,10 @@ export default function IncomeTaxCalculator() {
     // ─── Old Regime Deductions (always computed for comparison) ────────────────
     const oldDeductions = useMemo(() => {
         const stdDed = 50000;
+        // Children's allowance exemption: max ₹3,000/month × 2 children = ₹72,000/yr (education)
+        //                                 max ₹9,000/month × 2 children = ₹216,000/yr (hostel)
+        const childEduExempt = Math.min(num('childEducationAllowance') * multiplier, 72000);
+        const childHostelExempt = Math.min(num('childHostelAllowance') * multiplier, 216000);
         return (
             stdDed +
             Math.min(num('section80C'), 150000) +
@@ -246,9 +253,11 @@ export default function IncomeTaxCalculator() {
             num('section80E') +
             num('section80G') +
             Math.min(num('homeLoan'), 200000) +
-            hraExemption
+            hraExemption +
+            childEduExempt +
+            childHostelExempt
         );
-    }, [inputs, num, hraExemption]);
+    }, [inputs, num, hraExemption, multiplier]);
 
     // ─── Select correct slab table based on FY ─────────────────────────────────
     const NEW_REGIME = fy === '2026-27' ? NEW_REGIME_2026_27 : NEW_REGIME_2025_26;
@@ -585,7 +594,7 @@ export default function IncomeTaxCalculator() {
                                 <InputRow label={`Rent Paid (${inputMode === 'monthly' ? 'Monthly' : 'Annual'})`} k="rentPaid" value={inputs.rentPaid} onChange={set} />
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" checked={inputs.isMetro === 'true'} onChange={(e) => set('isMetro', e.target.checked ? 'true' : 'false')} className="w-4 h-4 accent-brand-purple" />
-                                    <span className="text-slate-600 dark:text-muted-foreground text-xs">Metro city (Mumbai, Delhi, Kolkata, Chennai)</span>
+                                    <span className="text-slate-600 dark:text-muted-foreground text-xs">Metro city (Mumbai, Delhi, Kolkata, Chennai, Bengaluru, Pune, Hyderabad, Ahmedabad)</span>
                                 </label>
                                 <div className="bg-brand-green/10 border border-brand-green/20 rounded-xl p-3 flex justify-between">
                                     <span className="text-brand-green text-xs font-semibold">HRA Exemption</span>
@@ -615,6 +624,8 @@ export default function IncomeTaxCalculator() {
                             <CollapsibleSection title="Additional Deductions">
                                 <InputRow label="Section 80E (Education Loan Interest)" k="section80E" value={inputs.section80E} onChange={set} hint="No upper limit" />
                                 <InputRow label="Section 80G (Donations)" k="section80G" value={inputs.section80G} onChange={set} hint="Amount varies by donee" />
+                                <InputRow label={`Children's Education Allowance (${inputMode === 'monthly' || inputMode === 'payslip' ? 'Monthly' : 'Annual'})`} k="childEducationAllowance" value={inputs.childEducationAllowance} onChange={set} hint="Exempt up to ₹3,000/month per child (max 2 children) — Sec 10(14)" />
+                                <InputRow label={`Children's Hostel Allowance (${inputMode === 'monthly' || inputMode === 'payslip' ? 'Monthly' : 'Annual'})`} k="childHostelAllowance" value={inputs.childHostelAllowance} onChange={set} hint="Exempt up to ₹9,000/month per child (max 2 children) — Sec 10(14)" />
                             </CollapsibleSection>
 
                             <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex justify-between items-center">

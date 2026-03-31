@@ -253,7 +253,7 @@ export default function NPSCalculator() {
                                 {[
                                     { title: 'Section 80CCD(1)', desc: 'Employee contribution: Deduction up to 10% of salary (max ₹1.5L under 80C umbrella).' },
                                     { title: 'Section 80CCD(1B)', desc: 'Additional ₹50,000 deduction exclusively for NPS, beyond the 80C limit.' },
-                                    { title: 'Section 80CCD(2)', desc: "Employer contribution: Up to 14% of salary (Central Govt) or 10% (others) — no upper cap under 80C." },
+                                    { title: 'Section 80CCD(2)', desc: "Employer contribution: Up to 14% of salary for ALL employees (Central Govt & private sector) from FY 2026-27 — no upper cap under 80C. Available under both Old & New Regime." },
                                     { title: 'Tax-free Lumpsum', desc: '60% of corpus at retirement is tax-free. Only annuity income is taxed as per slab.' },
                                     { title: 'Total Potential Saving', desc: `Up to ₹${Math.min(monthly * 12, 200000).toLocaleString('en-IN')} per year in tax deductions.` },
                                 ].map((item, i) => (

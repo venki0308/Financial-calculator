@@ -275,7 +275,7 @@ export default function HRACalculator() {
                     <div className="flex items-center justify-between p-4 bg-card border border-border rounded-xl">
                         <div>
                             <p className="text-foreground font-bold text-xs uppercase tracking-wider mb-0.5">Metro City Residence</p>
-                            <p className="text-muted-foreground text-[10px]">Delhi, Mumbai, Chennai, Kolkata (50% rule)</p>
+                            <p className="text-muted-foreground text-[10px]">Delhi, Mumbai, Chennai, Kolkata, Bengaluru, Pune, Hyderabad, Ahmedabad (50% rule)</p>
                         </div>
                         <button onClick={() => setIsMetro(p => !p)} className={`w-12 h-7 rounded-full p-0.5 transition-colors ${isMetro ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
                             <motion.div layout className={`w-6 h-6 rounded-full bg-white shadow ${isMetro ? 'ml-auto' : 'ml-0'}`} />

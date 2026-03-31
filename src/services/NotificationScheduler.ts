@@ -5,7 +5,7 @@
 
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
-import { useNotificationStore, AppNotification } from '../store/useNotificationStore';
+import { useNotificationStore } from '../store/useNotificationStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { dailyQuotes } from '../data/quotes';
@@ -123,8 +123,24 @@ function checkTaxAlerts() {
         addNotif({
             type: 'tax_alert',
             title: '📁 ITR Filing Reminder',
-            body: 'Income Tax Return (ITR) deadline is typically July 31. File early to avoid penalties.',
+            body: 'ITR-1 & ITR-2 deadline: July 31. ITR-3 & ITR-4 (business/profession) deadline: August 31. File early to avoid penalties.',
             icon: '📁',
+            route: '/calculator/income-tax',
+        });
+    } else if (month === 8) {
+        addNotif({
+            type: 'tax_alert',
+            title: '📁 ITR-3 & ITR-4 Deadline',
+            body: 'Last date to file ITR-3 & ITR-4 (business/profession income) is August 31. Avoid ₹5,000 late filing fee.',
+            icon: '📁',
+            route: '/calculator/income-tax',
+        });
+    } else if (month === 4 && day <= 7) {
+        addNotif({
+            type: 'tax_alert',
+            title: '🎯 New Financial Year 2026-27',
+            body: 'FY 2026-27 has begun! Key changes: New Income Tax Act 2025 in effect, zero tax up to ₹12L (New Regime), HRA 50% rule now covers 8 cities, NPS employer deduction 14% for all. Update your tax plan now.',
+            icon: '🎯',
             route: '/calculator/income-tax',
         });
     }
