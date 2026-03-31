@@ -4,6 +4,7 @@ import { App as CapApp } from '@capacitor/app';
 import { useSettingsStore } from './store/useSettingsStore';
 import { CrashlyticsService } from './lib/analytics';
 import { useCrashContext } from './hooks/useCrashContext';
+import { usePageViewTracker } from './hooks/usePageViewTracker';
 import { AnalyticsService } from './services/analyticsService';
 import { setupErrorHandling } from './utils/errorHandler';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -112,6 +113,7 @@ function AppContent() {
     const [showBackToast, setShowBackToast] = useState(false);
 
     useCrashContext();
+    usePageViewTracker();
     const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {

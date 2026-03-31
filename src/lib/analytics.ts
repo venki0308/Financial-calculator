@@ -149,12 +149,12 @@ export const AnalyticsService = {
 
     /** Call when calculation is saved */
     async trackCalculationSaved(calculatorType: string) {
-        CoreAnalyticsService.trackEvent('CALCULATION_SAVED', { calculator_type: calculatorType, platform });
+        CoreAnalyticsService.trackEvent('calculation_saved', { calculator_type: calculatorType, platform });
     },
 
     /** Call when a government scheme page is opened */
     async trackSchemeViewed(schemeName: string, schemeType: string) {
-        CoreAnalyticsService.trackEvent('SCHEME_VIEWED', {
+        CoreAnalyticsService.trackEvent('scheme_viewed', {
             scheme_name: schemeName,
             scheme_type: schemeType,
             platform,
@@ -163,7 +163,7 @@ export const AnalyticsService = {
 
     /** Call when an expense entry is created */
     async trackExpenseAdded(category: string, amount: number) {
-        CoreAnalyticsService.trackEvent('EXPENSE_ADDED', {
+        CoreAnalyticsService.trackEvent('expense_added', {
             category,
             amount_range: getAmountRange(amount),
             platform,
@@ -172,7 +172,7 @@ export const AnalyticsService = {
 
     /** Call when budget is set */
     async trackBudgetSet(monthlyIncome: number) {
-        CoreAnalyticsService.trackEvent('BUDGET_SET', {
+        CoreAnalyticsService.trackEvent('budget_set', {
             income_range: getAmountRange(monthlyIncome),
             platform,
         });
@@ -180,7 +180,7 @@ export const AnalyticsService = {
 
     /** Call on language change in Settings */
     async trackLanguageChanged(language: string) {
-        CoreAnalyticsService.trackEvent('LANGUAGE_CHANGED', { language, platform });
+        CoreAnalyticsService.trackEvent('language_changed', { language, platform });
         // Setting user property logic would fall here if we add it to the wrapper
         // Currently skipping user prop explicitly since generic Analytics is anonymous
     },

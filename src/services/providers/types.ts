@@ -2,11 +2,11 @@
  * Standardized Event Names
  */
 export enum AnalyticsEvent {
-    SCREEN_VIEW = 'SCREEN_VIEW',
-    FEATURE_USAGE_TIME = 'FEATURE_USAGE_TIME',
-    CALCULATION_EVENT = 'CALCULATION_EVENT',
-    EXPORT_EVENT = 'EXPORT_EVENT',
-    ERROR_EVENT = 'ERROR_EVENT',
+    SCREEN_VIEW = 'screen_view',
+    FEATURE_USAGE_TIME = 'feature_usage_time',
+    CALCULATION_EVENT = 'calculation_event',
+    EXPORT_EVENT = 'export_event',
+    ERROR_EVENT = 'error_event',
 }
 
 /**
