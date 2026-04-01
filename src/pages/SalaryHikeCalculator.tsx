@@ -322,8 +322,8 @@ export default function SalaryHikeCalculator() {
     }, [savedCalculations, currentSalary, hikePct, period, periodUnit, mode, result.hikePctComputed, ctcAmount, variablePct, achievementPct, fixedHikePct]);
 
     const modeOptions: { key: 'findHike' | 'findSalary' | 'ctcBreakdown'; label: string }[] = [
-        { key: 'findHike', label: 'Find Hike %' },
-        { key: 'findSalary', label: 'Find New Salary' },
+        { key: 'findSalary', label: 'Find Hike %' },
+        { key: 'findHike', label: 'Find New Salary' },
         { key: 'ctcBreakdown', label: 'Full CTC Breakdown' },
     ];
 
