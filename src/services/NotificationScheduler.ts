@@ -9,6 +9,8 @@ import { useNotificationStore } from '../store/useNotificationStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { dailyQuotes } from '../data/quotes';
+import { RemoteConfigService } from './remoteConfig.service';
+import { APP_VERSION } from '../config/app';
 
 const LAST_RUN_KEY = 'fincalix_scheduler_last_run';
 const MIN_INTERVAL_MS = 23 * 60 * 60 * 1000; // 23 hours
@@ -34,6 +36,7 @@ function shouldRun(): boolean {
 }
 
 function checkEMIReminders() {
+    if (!useSettingsStore.getState().notifications.calcReminders) return;
     const today = new Date();
     const dayOfMonth = today.getDate();
     
@@ -67,6 +70,7 @@ function checkEMIReminders() {
 }
 
 function checkSIPReminders() {
+    if (!useSettingsStore.getState().notifications.calcReminders) return;
     const today = new Date();
     const dayOfMonth = today.getDate();
     // SIP reminder on 1st week
@@ -82,6 +86,7 @@ function checkSIPReminders() {
 }
 
 function checkTaxAlerts() {
+    if (!useSettingsStore.getState().notifications.calcReminders) return;
     const today = new Date();
     const month = today.getMonth() + 1; // 1-12
     const day = today.getDate();
@@ -147,6 +152,7 @@ function checkTaxAlerts() {
 }
 
 function checkSavingsInsight() {
+    if (!useSettingsStore.getState().notifications.priceAlerts) return;
     const savedCalcs = localStorage.getItem('fincalix-calculator-store');
     if (!savedCalcs) return;
 
@@ -275,6 +281,26 @@ export function simulateAllNotifications() {
     });
 }
 
+async function checkAppUpdate() {
+    if (!useSettingsStore.getState().notifications.appUpdates) return;
+    try {
+        const config = await RemoteConfigService.getConfig();
+        if (!RemoteConfigService.isUpdateAvailable(APP_VERSION, config.latestVersion)) return;
+        const LAST_KEY = 'fincalix_last_update_notif_version';
+        if (localStorage.getItem(LAST_KEY) === config.latestVersion) return;
+        addNotif({
+            type: 'app_update',
+            title: `🆕 FinCalix v${config.latestVersion} Available`,
+            body: config.updateMessage.message || 'A new version of FinCalix is available with new features and improvements. Tap to update now!',
+            icon: '🆕',
+            route: '/__update',
+        });
+        localStorage.setItem(LAST_KEY, config.latestVersion);
+    } catch {
+        // Network unavailable — skip silently
+    }
+}
+
 function seedInitialNotifications() {
     const SEED_KEY = 'fincalix_scheduler_first_seed';
     if (localStorage.getItem(SEED_KEY)) return;
@@ -334,6 +360,7 @@ export const NotificationScheduler = {
         checkTaxAlerts();
         checkSavingsInsight();
         checkDailyQuote();
+        checkAppUpdate(); // async, fire-and-forget
     },
 };
 

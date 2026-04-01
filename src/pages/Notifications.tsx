@@ -1,17 +1,34 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bell, CheckCheck, Trash2, BellOff } from 'lucide-react';
+import { RemoteConfigService } from '../services/remoteConfig.service';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
 import { AnalyticsService } from '../lib/analytics';
 import { useNotificationStore, AppNotification } from '../store/useNotificationStore';
 
 const TYPE_META: Record<string, { emoji: string; color: string; bg: string }> = {
+    // Scheduler notifications
     emi_reminder:    { emoji: '💳', color: '#3B82F6', bg: 'bg-blue-50 dark:bg-blue-500/10' },
-    sip_reminder:   { emoji: '📈', color: '#10B981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-    tax_alert:      { emoji: '⚠️', color: '#F59E0B', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+    sip_reminder:    { emoji: '📈', color: '#10B981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    tax_alert:       { emoji: '⚠️', color: '#F59E0B', bg: 'bg-amber-50 dark:bg-amber-500/10' },
     savings_insight: { emoji: '💡', color: '#8B5CF6', bg: 'bg-violet-50 dark:bg-violet-500/10' },
-    bill_payment:   { emoji: '🧾', color: '#EF4444', bg: 'bg-red-50 dark:bg-red-500/10' },
-    general:        { emoji: '🔔', color: '#6B7280', bg: 'bg-slate-50 dark:bg-card border-border' },
+    bill_payment:    { emoji: '🧾', color: '#EF4444', bg: 'bg-red-50 dark:bg-red-500/10' },
+    // Calculator notifications
+    emi_saved:       { emoji: '🏦', color: '#3B82F6', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    tax_reminder:    { emoji: '📋', color: '#F59E0B', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+    budget_alert_80: { emoji: '⚠️', color: '#F59E0B', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+    budget_exceeded: { emoji: '🚨', color: '#EF4444', bg: 'bg-red-50 dark:bg-red-500/10' },
+    goal_achieved:   { emoji: '🎯', color: '#10B981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    goal_milestone:  { emoji: '🏆', color: '#10B981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    sip_due:         { emoji: '📈', color: '#10B981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    fd_maturity:     { emoji: '🏛️', color: '#3B82F6', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    od_saved:        { emoji: '💳', color: '#3B82F6', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    daily_quote:     { emoji: '💡', color: '#8B5CF6', bg: 'bg-violet-50 dark:bg-violet-500/10' },
+    ppf_reminder:    { emoji: '🛡️', color: '#10B981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    tax_opportunity: { emoji: '💰', color: '#10B981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    // System
+    app_update:      { emoji: '🆕', color: '#6366F1', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
+    general:         { emoji: '🔔', color: '#6B7280', bg: 'bg-slate-50 dark:bg-card border-border' },
 };
 
 function timeAgo(iso: string): string {
@@ -57,7 +74,7 @@ function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10, height: 0 }}
-            className={`relative rounded-2xl border transition-all ${isUnread
+            className={`group relative rounded-2xl border transition-all ${isUnread
                 ? 'bg-white dark:bg-card border-slate-200 dark:border-indigo-500/30 shadow-sm'
                 : 'bg-muted/30 border-slate-100 dark:border-slate-700/30'
             }`}
@@ -100,7 +117,11 @@ export default function Notifications() {
     const hasAny = groups.today.length + groups.week.length + groups.older.length > 0;
 
     const handleClick = (n: AppNotification) => {
-        if (n.actionRoute) navigate(n.actionRoute);
+        if (n.type === 'app_update') {
+            RemoteConfigService.openPlayStore();
+            return;
+        }
+        if (n.actionRoute && n.actionRoute !== '/__update') navigate(n.actionRoute);
     };
 
     return (
