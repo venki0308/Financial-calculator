@@ -43,7 +43,7 @@ export default function TaxInputGroup({ income, setIncome, regime, setRegime }: 
           </button>
         </div>
         <p className="text-[10px] text-muted-foreground mt-1.5">
-          {regime === 'new' ? 'Standard Deduction ₹75K. Tax-free up to ₹7.75L.' : 'Standard Deduction ₹50K. Tax-free up to ₹5.5L. Allows 80C.'}
+          {regime === 'new' ? 'Standard Deduction ₹75K. Tax-free up to ₹7.75L.' : 'Standard Deduction ₹50K. Tax-free up to ₹5.5L. Allows Sec 80C/123.'}
         </p>
       </div>
     </div>

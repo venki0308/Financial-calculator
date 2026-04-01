@@ -143,10 +143,10 @@ function getWarning(k: string, rawValue: string): string | undefined {
     const limit = LIMITS[k];
     if (!limit || val <= limit) return undefined;
     const labels: Record<string, string> = {
-        section80C: 'Section 80C',
-        section80D: 'Section 80D',
-        section80CCD: 'Section 80CCD(1B)',
-        homeLoan: 'Home Loan Interest (Sec 24)',
+        section80C: 'Section 80C (Sec 123)',
+        section80D: 'Section 80D (Sec 126)',
+        section80CCD: 'Section 80CCD(1B) (Sec 124)',
+        homeLoan: 'Home Loan Interest (Sec 24B / 22)',
     };
     return `You entered ${fmt(val)} in ${labels[k]}. Maximum allowed is ${fmt(limit)}. Only ${fmt(limit)} will be considered.`;
 }
@@ -311,7 +311,7 @@ export default function IncomeTaxCalculator() {
         if (bothZero || grossSalary === 0) return '';
         if (betterRegime === 'Old') {
             const totalDedUsed = oldDeductions - 50000; // exclude std deduction
-            return `Old Regime saves ${fmt(saving)} because your deductions (80C, 80D, HRA, etc.) total ${fmt(totalDedUsed)}, which reduces your taxable income significantly. With deductions exceeding ${fmt(75000 - 50000)} (difference between new std deduction and old), the old regime is more beneficial.`;
+            return `Old Regime saves ${fmt(saving)} because your deductions (80C/123, 80D/126, HRA, etc.) total ${fmt(totalDedUsed)}, which reduces your taxable income significantly. With deductions exceeding ${fmt(75000 - 50000)} (difference between new std deduction and old), the old regime is more beneficial.`;
         }
         return `New Regime saves ${fmt(saving)} because the higher standard deduction of ${fmt(75000)} and revised tax slabs offset your old regime deductions of ${fmt(oldDeductions - 50000)}. The new regime offers simpler filing with lower rates.`;
     }, [bothZero, grossSalary, betterRegime, saving, oldDeductions]);
@@ -321,10 +321,10 @@ export default function IncomeTaxCalculator() {
         const t: string[] = [];
         if (grossSalary === 0) return t;
         const used80C = Math.min(num('section80C'), 150000);
-        if (used80C < 150000) t.push(`Invest ${fmt(150000 - used80C)} more under Section 80C (PPF, ELSS, LIC, etc.) — max limit Rs 1,50,000.`);
-        if (num('section80D') < 25000) t.push(`Claim health insurance under Section 80D — up to Rs 25,000 for self & family.`);
-        if (!num('section80CCD') && regime === 'old') t.push(`NPS contribution under Section 80CCD(1B) offers additional deduction up to Rs 50,000 (old regime only).`);
-        if (!num('homeLoan')) t.push(`Home loan interest under Section 24 allows deduction up to Rs 2,00,000.`);
+        if (used80C < 150000) t.push(`Invest ${fmt(150000 - used80C)} more under Sec 80C / Sec 123 (PPF, ELSS, LIC, etc.) — max limit Rs 1,50,000.`);
+        if (num('section80D') < 25000) t.push(`Claim health insurance under Sec 80D / Sec 126 — up to Rs 25,000 for self & family.`);
+        if (!num('section80CCD') && regime === 'old') t.push(`NPS contribution under Sec 80CCD(1B) / Sec 124 offers additional deduction up to Rs 50,000 (old regime only).`);
+        if (!num('homeLoan')) t.push(`Home loan interest under Sec 24B / Sec 22 (ITA 2025) allows deduction up to Rs 2,00,000.`);
         return t;
     }, [inputs, grossSalary, num]);
 
@@ -581,7 +581,7 @@ export default function IncomeTaxCalculator() {
                                 No income tax payable under the new regime.
                             </p>
                             <p className="text-emerald-600 dark:text-emerald-500 text-[10px] text-center mt-0.5">
-                                Taxable income is within Rs 12,00,000 exemption limit (Sec 87A — Budget {fy === '2026-27' ? '2026' : '2025'})
+                                Taxable income is within Rs 12,00,000 exemption limit (Sec 87A / 156 — Budget {fy === '2026-27' ? '2026' : '2025'})
                             </p>
                         </div>
                     )}
@@ -603,7 +603,7 @@ export default function IncomeTaxCalculator() {
                                     <span className="text-brand-green text-xs font-semibold">HRA Exemption</span>
                                     <span className="text-brand-green font-bold text-sm">{fmt(hraExemption)}</span>
                                 </div>
-                                <InputRow label="Home Loan Interest (Section 24)" k="homeLoan" value={inputs.homeLoan} onChange={set} hint="Max Rs 2,00,000 per year" warning={getWarning('homeLoan', inputs.homeLoan)} />
+                                <InputRow label="Home Loan Interest (Sec 24B / 22)" k="homeLoan" value={inputs.homeLoan} onChange={set} hint="Max Rs 2,00,000 per year — ITA 2025 Sec 22" warning={getWarning('homeLoan', inputs.homeLoan)} />
                             </CollapsibleSection>
                         </div>
 
@@ -616,17 +616,17 @@ export default function IncomeTaxCalculator() {
                             </div>
 
                             <CollapsibleSection title="Investment Deductions">
-                                <InputRow label="Section 80C (PPF, ELSS, LIC)" k="section80C" value={inputs.section80C} onChange={set} hint="Max Rs 1,50,000" warning={getWarning('section80C', inputs.section80C)} />
-                                <InputRow label="Section 80CCD(1B) — NPS" k="section80CCD" value={inputs.section80CCD} onChange={set} hint="Max Rs 50,000" warning={getWarning('section80CCD', inputs.section80CCD)} />
+                                <InputRow label="Sec 80C / 123 (PPF, ELSS, LIC)" k="section80C" value={inputs.section80C} onChange={set} hint="Max Rs 1,50,000 — ITA 2025 Sec 123" warning={getWarning('section80C', inputs.section80C)} />
+                                <InputRow label="Sec 80CCD(1B) / 124 — NPS" k="section80CCD" value={inputs.section80CCD} onChange={set} hint="Max Rs 50,000 — ITA 2025 Sec 124" warning={getWarning('section80CCD', inputs.section80CCD)} />
                             </CollapsibleSection>
 
                             <CollapsibleSection title="Insurance & Medical">
-                                <InputRow label="Section 80D (Health Insurance)" k="section80D" value={inputs.section80D} onChange={set} hint="Max Rs 25,000 (self & family)" warning={getWarning('section80D', inputs.section80D)} />
+                                <InputRow label="Sec 80D / 126 (Health Insurance)" k="section80D" value={inputs.section80D} onChange={set} hint="Max Rs 25,000 (self & family) — ITA 2025 Sec 126" warning={getWarning('section80D', inputs.section80D)} />
                             </CollapsibleSection>
 
                             <CollapsibleSection title="Additional Deductions">
-                                <InputRow label="Section 80E (Education Loan Interest)" k="section80E" value={inputs.section80E} onChange={set} hint="No upper limit" />
-                                <InputRow label="Section 80G (Donations)" k="section80G" value={inputs.section80G} onChange={set} hint="Amount varies by donee" />
+                                <InputRow label="Sec 80E / 129 (Education Loan Interest)" k="section80E" value={inputs.section80E} onChange={set} hint="No upper limit — ITA 2025 Sec 129" />
+                                <InputRow label="Sec 80G / 133 (Donations)" k="section80G" value={inputs.section80G} onChange={set} hint="Amount varies by donee — ITA 2025 Sec 133" />
                                 <InputRow label={`Children's Education Allowance (${inputMode === 'monthly' || inputMode === 'payslip' ? 'Monthly' : 'Annual'})`} k="childEducationAllowance" value={inputs.childEducationAllowance} onChange={set} hint="Exempt up to ₹3,000/month per child (max 2 children) — Sec 10(14)" />
                                 <InputRow label={`Children's Hostel Allowance (${inputMode === 'monthly' || inputMode === 'payslip' ? 'Monthly' : 'Annual'})`} k="childHostelAllowance" value={inputs.childHostelAllowance} onChange={set} hint="Exempt up to ₹9,000/month per child (max 2 children) — Sec 10(14)" />
                             </CollapsibleSection>
@@ -647,10 +647,10 @@ export default function IncomeTaxCalculator() {
                             <div>
                                 <p className="text-brand-purple font-semibold text-sm">New Regime — FY {fy}</p>
                                 <p className="text-muted-foreground dark:text-muted-foreground text-xs mt-1">
-                                    Standard deduction of Rs 75,000 applied automatically. No manual deductions (HRA, 80C, 80D, etc.) available in the new regime.
+                                    Standard deduction of Rs 75,000 applied automatically. No manual deductions (HRA, 80C/123, 80D/126, etc.) available in the new regime.
                                 </p>
                                 <p className="text-brand-purple text-[10px] mt-1 font-semibold">
-                                    No tax if taxable income ≤ Rs 12,00,000 (Section 87A full rebate — Budget 2025)
+                                    No tax if taxable income ≤ Rs 12,00,000 (Sec 87A / Sec 156 full rebate — Income Tax Act, 2025)
                                 </p>
                             </div>
                         </div>
@@ -695,7 +695,7 @@ export default function IncomeTaxCalculator() {
                                 { label: `Less: ${regime === 'new' ? 'Standard Deduction' : 'Total Deductions'}`, val: -activeDeductions, color: 'text-blue-400' },
                                 { label: 'Taxable Income', val: activeTaxableIncome, color: 'text-brand-purple', bold: true },
                                 { label: 'Income Tax (slab-wise)', val: activeRawTax, color: 'text-muted-foreground' },
-                                ...(activeRawTax !== activeAfterRebate ? [{ label: 'Less: Rebate u/s 87A', val: -(activeRawTax - activeAfterRebate), color: 'text-emerald-500' }] : []),
+                                ...(activeRawTax !== activeAfterRebate ? [{ label: 'Less: Rebate u/s 87A / Sec 156', val: -(activeRawTax - activeAfterRebate), color: 'text-emerald-500' }] : []),
                                 { label: 'Income Tax (after rebate)', val: activeAfterRebate, color: 'text-red-400' },
                                 ...(activeSurcharge > 0 ? [{ label: 'Surcharge', val: activeSurcharge, color: 'text-amber-500' }] : []),
                                 { label: 'Health & Education Cess (4%)', val: activeCess, color: 'text-orange-400' },

@@ -147,7 +147,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             }
 
             if (principal >= 1500000) {
-                insights.push({ type: 'tip', text: 'Consider Tax Saving FD (5-year lock-in) for Section 80C deduction up to ₹1.5L.' });
+                insights.push({ type: 'tip', text: 'Consider Tax Saving FD (5-year lock-in) for Sec 80C / Sec 123 deduction up to ₹1.5L.' });
             }
 
             // Best option: monthly compounding
@@ -167,7 +167,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 insights.push({ type: 'positive', text: 'No income tax payable under the new regime — ₹12L rebate applies!' });
             }
             if (taxable > 1500000) {
-                insights.push({ type: 'tip', text: 'Consider maximizing Section 80C (₹1.5L), NPS (₹50K), and health insurance (₹25K) to save tax.' });
+                insights.push({ type: 'tip', text: 'Consider maximizing Sec 80C/123 (₹1.5L), NPS Sec 80CCD(1B)/124 (₹50K), and health insurance Sec 80D/126 (₹25K) to save tax.' });
             }
             if (taxable > 2400000) {
                 insights.push({ type: 'info', text: 'At your income level, compare both old and new tax regimes to find the lower tax option.' });
@@ -202,7 +202,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
         case 'ppf': {
             const invested = inputs.annual || 0;
             if (invested < 150000) {
-                insights.push({ type: 'tip', text: `You can invest up to ₹1.5L/year in PPF. Currently investing ${formatINR(invested)} — ${formatINR(150000 - invested)} more is eligible for 80C.` });
+                insights.push({ type: 'tip', text: `You can invest up to ₹1.5L/year in PPF. Currently investing ${formatINR(invested)} — ${formatINR(150000 - invested)} more is eligible for Sec 80C / Sec 123.` });
             }
             insights.push({ type: 'info', text: 'PPF has a 15-year lock-in (extendable by 5). Interest is fully tax-free.' });
             insights.push({ type: 'best', text: 'PPF is one of the safest instruments — guaranteed returns with sovereign guarantee + EEE tax status.' });
@@ -211,7 +211,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
         case 'nps': {
             const monthly = inputs.monthly || 0;
             const years = inputs.years || 0;
-            insights.push({ type: 'tip', text: 'NPS gives additional ₹50,000 tax deduction under Section 80CCD(1B) — over and above 80C limit.' });
+            insights.push({ type: 'tip', text: 'NPS gives additional ₹50,000 tax deduction under Sec 80CCD(1B) / Sec 124 — over and above Sec 80C / 123 limit.' });
             insights.push({ type: 'info', text: '60% of NPS corpus is tax-free at retirement. 40% must be used for annuity.' });
 
             // What-if: increase monthly by 2000
@@ -224,7 +224,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 }
             }
 
-            insights.push({ type: 'best', text: 'NPS is ideal for retirement — low-cost, diversified, and gives up to ₹2L tax savings (80C + 80CCD1B).' });
+            insights.push({ type: 'best', text: 'NPS is ideal for retirement — low-cost, diversified, and gives up to ₹2L tax savings (Sec 80C/123 + Sec 80CCD(1B)/124).' });
             break;
         }
         case 'lumpsum': {
@@ -289,7 +289,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
         }
         case 'hra': {
             insights.push({ type: 'tip', text: 'HRA exemption is the minimum of: actual HRA, 50%/40% of salary, or rent paid minus 10% of salary.' });
-            insights.push({ type: 'info', text: 'If you don\'t receive HRA, you can claim deduction under Section 80GG (up to ₹5,000/month).' });
+            insights.push({ type: 'info', text: 'If you don\'t receive HRA, you can claim deduction under Sec 80GG (up to ₹5,000/month).' });
             break;
         }
         case 'scss': {
@@ -305,7 +305,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             } else {
                 insights.push({ type: 'positive', text: 'Annual interest is within ₹50,000 — no TDS deduction applicable.' });
             }
-            insights.push({ type: 'info', text: 'SCSS investment qualifies for Section 80C deduction up to ₹1.5 lakh. Combine with PPF or ELSS for full 80C benefit.' });
+            insights.push({ type: 'info', text: 'SCSS investment qualifies for Sec 80C / Sec 123 deduction up to ₹1.5 lakh. Combine with PPF or ELSS for full benefit.' });
             if (rate >= 8.0) {
                 insights.push({ type: 'positive', text: `At ${rate}% p.a., SCSS offers one of the highest guaranteed returns for senior citizens — better than most bank FDs.` });
             }

@@ -58,7 +58,7 @@ const DISCLAIMER_CONTENT: Record<ModuleName, DisclaimerConfig> = {
     hra: {
         icon: ClipboardList,
         title: "HRA Exemption",
-        text: "HRA exemption is calculated based on Section 10(13A) of the Income Tax Act. It requires valid rent receipts and PAN details of the landlord for higher amounts. Ensure compliance for accurate tax exemptions.",
+        text: "HRA exemption is calculated based on Sec 10(13A) of the Income Tax Act, 2025 (effective April 1, 2026). It requires valid rent receipts and PAN details of the landlord for higher amounts. Ensure compliance for accurate tax exemptions.",
         colorClass
     },
     gratuity: {

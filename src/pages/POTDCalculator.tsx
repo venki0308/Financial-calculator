@@ -145,7 +145,7 @@ export default function POTDCalculator() {
                 { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
                 { label: 'Tenure', value: `${years} Year${Number(years) > 1 ? 's' : ''}` },
                 { label: 'Interest Rate', value: `${rate}% p.a. (Quarterly Compounding)` },
-                { label: 'Section 80C Eligible', value: result.is5Year ? 'Yes (5-year deposit)' : 'No' },
+                { label: 'Sec 80C / 123 Eligible', value: result.is5Year ? 'Yes (5-year deposit)' : 'No' },
             ],
             results: [
                 { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
@@ -182,7 +182,7 @@ export default function POTDCalculator() {
                 { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
                 { label: 'Tenure', value: `${years} Year${Number(years) > 1 ? 's' : ''}` },
                 { label: 'Interest Rate', value: `${rate}% p.a. (Quarterly Compounding)` },
-                { label: 'Section 80C Eligible', value: result.is5Year ? 'Yes (5-year deposit)' : 'No' },
+                { label: 'Sec 80C / 123 Eligible', value: result.is5Year ? 'Yes (5-year deposit)' : 'No' },
             ],
             results: [
                 { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
@@ -242,7 +242,7 @@ export default function POTDCalculator() {
                             ))}
                         </div>
                         {years === '5' && (
-                            <p className="text-brand-green text-[10px] mt-1.5 font-semibold">✓ 5-Year TD is eligible for Section 80C deduction</p>
+                            <p className="text-brand-green text-[10px] mt-1.5 font-semibold">✓ 5-Year TD is eligible for Sec 80C / Sec 123 (ITA 2025) deduction</p>
                         )}
                     </div>
 
@@ -319,12 +319,12 @@ export default function POTDCalculator() {
                                             {result.is5Year ? (
                                                 <div className="p-3 rounded-xl bg-brand-green/10 border border-brand-green/20 flex gap-3">
                                                     <Info size={16} className="text-brand-green shrink-0 mt-0.5" />
-                                                    <p className="text-[11px] font-medium text-brand-green">Selected 5-Year tenure locks you in but grants 80C deductions.</p>
+                                                    <p className="text-[11px] font-medium text-brand-green">Selected 5-Year tenure locks you in but grants Sec 80C / 123 deductions.</p>
                                                 </div>
                                             ) : (
                                                 <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex gap-3">
                                                     <Info size={16} className="text-orange-500 shrink-0 mt-0.5" />
-                                                    <p className="text-[11px] font-medium text-foreground">Current {years}Y tenure has no 80C tax benefit. Upgrade to 5Y if you need to save tax.</p>
+                                                    <p className="text-[11px] font-medium text-foreground">Current {years}Y tenure has no Sec 80C / 123 tax benefit. Upgrade to 5Y if you need to save tax.</p>
                                                 </div>
                                             )}
                                         </div>
@@ -352,7 +352,7 @@ export default function POTDCalculator() {
                                             </div>
                                             {result.taxBenefit80C > 0 && (
                                                 <div className="flex justify-between items-center py-1">
-                                                    <span className="text-muted-foreground text-[11px]">Upfront 80C Tax Saving</span>
+                                                    <span className="text-muted-foreground text-[11px]">Upfront Sec 80C/123 Tax Saving</span>
                                                     <span className="text-brand-green font-bold text-[11px] font-mono">+{fmtINR(result.taxBenefit80C)}</span>
                                                 </div>
                                             )}

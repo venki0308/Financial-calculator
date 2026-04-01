@@ -264,7 +264,7 @@ export default function AdvancedPPFCalculator() {
                         { icon: '🔒', text: `Lock-in period: ${PPF_LOCK_IN_YEARS} years (extendable in ${PPF_EXTENSION_YEARS}-year blocks)`, type: 'info' },
                         { icon: '💰', text: `Partial withdrawal allowed from Year ${PPF_WITHDRAWAL_YEAR} onwards (max 50% of balance at end of 4th year)`, type: 'tip' },
                         { icon: '🏦', text: `Loan against PPF available from Year ${PPF_LOAN_START_YEAR} to Year ${PPF_LOAN_END_YEAR} (max 25% of balance)`, type: 'tip' },
-                        { icon: '📋', text: `Tax benefit under Section 80C: Up to ₹1,50,000/year. Interest & maturity fully tax-free (EEE status)`, type: 'positive' },
+                        { icon: '📋', text: `Tax benefit under Sec 80C / Sec 123 (ITA 2025): Up to ₹1,50,000/year. Interest & maturity fully tax-free (EEE status)`, type: 'positive' },
                         { icon: '⚡', text: `Sovereign guarantee — one of India's safest instruments`, type: 'positive' },
                     ].map((item, i) => (
                         <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border ${
@@ -354,7 +354,7 @@ export default function AdvancedPPFCalculator() {
                     details={[
                         { label: 'Total Invested', value: formatINR(totalInvested) },
                         { label: 'Interest Earned', value: formatINR(totalInterest) },
-                        { label: 'Tax Benefit (80C)', value: `Up to ₹1,50,000/yr` },
+                        { label: 'Tax Benefit (Sec 80C/123)', value: `Up to ₹1,50,000/yr` },
                     ]}
                     gradient="from-emerald-600 via-teal-500 to-cyan-600"
                 />

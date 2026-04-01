@@ -255,7 +255,7 @@ export function simulateAllNotifications() {
     addNotif({
         type: 'tax_alert',
         title: '⚠️ [TEST] Tax Alert',
-        body: 'Test: Financial year ends in 30 days. Complete your 80C investments.',
+        body: 'Test: Financial year ends in 30 days. Complete your Sec 80C / 123 investments.',
         icon: '⚠️',
         route: '/calculator/income-tax',
     });

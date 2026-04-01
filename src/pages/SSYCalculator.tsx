@@ -252,7 +252,7 @@ export default function SSYCalculator() {
                         <AlertCircle size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
                         <div>
                             <h3 className="text-foreground font-bold text-xs">Maximum Annual Deposit: ₹1,50,000</h3>
-                            <p className="text-muted-foreground text-[11px] mt-1">Minimum ₹250/year required to keep account active. Tax deduction under Section 80C available.</p>
+                            <p className="text-muted-foreground text-[11px] mt-1">Minimum ₹250/year required to keep account active. Tax deduction under Sec 80C / Sec 123 (ITA 2025) available.</p>
                         </div>
                     </div>
                 </div>
@@ -330,7 +330,7 @@ export default function SSYCalculator() {
                                     { icon: Calendar, title: 'Tenure', desc: 'Deposit for 15 years. Account matures 21 years from opening.' },
                                     { icon: AlertCircle, title: 'Deposit Limits', desc: 'Minimum ₹250/year, Maximum ₹1,50,000/year.' },
                                     { icon: GraduationCap, title: 'Partial Withdrawal', desc: '50% withdrawal after child turns 18, for higher education only.' },
-                                    { icon: Heart, title: 'Tax Benefits', desc: 'Deposits qualify for 80C deduction. Interest and maturity are tax-free (EEE status).' },
+                                    { icon: Heart, title: 'Tax Benefits', desc: 'Deposits qualify for Sec 80C / Sec 123 (ITA 2025) deduction. Interest and maturity are tax-free (EEE status).' },
                                     { icon: Info, title: 'Premature Closure', desc: 'Allowed after 5 years in case of medical emergency or death of account holder.' },
                                 ].map((rule, i) => (
                                     <div key={i} className="flex items-start gap-3">

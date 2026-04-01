@@ -116,8 +116,8 @@ export default function NSCCalculator() {
             results: [
                 { label: 'Maturity Amount (5 Years)', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
                 { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Section 80C Deduction', value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
-                { label: 'Tax Saving (80C)', value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
+                { label: 'Sec 80C / 123 Deduction', value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
+                { label: 'Tax Saving (Sec 80C/123)', value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
                 { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
                 { label: 'Inflation-Adjusted Value', value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
             ],
@@ -154,8 +154,8 @@ export default function NSCCalculator() {
             results: [
                 { label: 'Maturity Amount (5 Years)', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
                 { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Section 80C Deduction', value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
-                { label: 'Tax Saving (80C)', value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
+                { label: 'Sec 80C / 123 Deduction', value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
+                { label: 'Tax Saving (Sec 80C/123)', value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
                 { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
                 { label: 'Inflation-Adjusted Value', value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
             ],
@@ -281,7 +281,7 @@ export default function NSCCalculator() {
 
                                         <div className="space-y-2 bg-background p-3 rounded-xl border border-border">
                                             <div className="flex items-center justify-between pb-2 mb-2 border-b border-border border-dashed">
-                                                <span className="text-muted-foreground text-xs font-semibold">80C Deduction Claim</span>
+                                                <span className="text-muted-foreground text-xs font-semibold">Sec 80C / 123 Deduction</span>
                                                 <span className="text-brand-green font-bold text-xs">{fmtINR(result.sec80cDeduction)}</span>
                                             </div>
                                             <div className="flex items-center justify-between pb-2 mb-2 border-b border-border border-dashed">

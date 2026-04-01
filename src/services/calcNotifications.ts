@@ -41,7 +41,7 @@ export function triggerCalcNotification(data: CalcNotifData) {
             break;
         case 'tax_reminder':
             title = `Tax Filing Season — ${data.metadata.monthYear}`;
-            body = `FY 2026-27 ends March 31. Check your tax liability and complete 80C investments.`;
+            body = `FY 2026-27 ends March 31. Check your tax liability and complete Sec 80C / 123 investments.`;
             icon = '📋';
             category = 'reminder';
             actionRoute = '/calculator/income-tax';
@@ -113,7 +113,7 @@ export function triggerCalcNotification(data: CalcNotifData) {
             break;
         case 'ppf_reminder':
             title = `PPF Contribution Due`;
-            body = `Invest in PPF before March 31 to claim 80C deduction. Maximum: ₹1,50,000/year.`;
+            body = `Invest in PPF before March 31 to claim Sec 80C / Sec 123 deduction. Maximum: ₹1,50,000/year.`;
             icon = '🛡️';
             category = 'reminder';
             actionRoute = '/calculator/ppf-advanced';
@@ -121,7 +121,7 @@ export function triggerCalcNotification(data: CalcNotifData) {
             break;
         case 'tax_opportunity':
             title = `Tax Saving Opportunity`;
-            body = `You have ₹${formatINR(data.metadata.remaining80c)} left in 80C limit. Invest in ELSS, PPF, or insurance before March 31.`;
+            body = `You have ₹${formatINR(data.metadata.remaining80c)} left in Sec 80C / 123 limit. Invest in ELSS, PPF, or insurance before March 31.`;
             icon = '💰';
             category = 'insight';
             actionRoute = '/calculator/income-tax';

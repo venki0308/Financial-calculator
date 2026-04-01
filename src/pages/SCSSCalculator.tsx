@@ -281,7 +281,7 @@ export default function SCSSCalculator() {
                                     { title: 'Interest Taxability', desc: 'SCSS interest is fully taxable as per your income slab. It does not enjoy Section 80TTB exemption.' },
                                     { title: 'TDS Threshold', desc: 'TDS @ 10% is deducted if annual interest exceeds ₹50,000 for senior citizens (60+). PAN must be linked.' },
                                     { title: 'Form 15H', desc: 'Senior citizens with income below taxable limit can submit Form 15H annually to prevent TDS deduction.' },
-                                    { title: 'Section 80C Benefit', desc: 'SCSS investment qualifies for deduction under Section 80C up to ₹1.5 lakh per financial year.' },
+                                    { title: 'Sec 80C / Sec 123 Benefit', desc: 'SCSS investment qualifies for deduction under Sec 80C (Sec 123 under ITA 2025) up to ₹1.5 lakh per financial year.' },
                                     { title: 'Joint Account', desc: 'Can be held jointly with spouse. Only the first holder is considered for the investment limit and eligibility.' },
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-start gap-3">

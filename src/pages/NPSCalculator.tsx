@@ -251,9 +251,9 @@ export default function NPSCalculator() {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
                                 {[
-                                    { title: 'Section 80CCD(1)', desc: 'Employee contribution: Deduction up to 10% of salary (max ₹1.5L under 80C umbrella).' },
-                                    { title: 'Section 80CCD(1B)', desc: 'Additional ₹50,000 deduction exclusively for NPS, beyond the 80C limit.' },
-                                    { title: 'Section 80CCD(2)', desc: "Employer contribution: Up to 14% of salary for ALL employees (Central Govt & private sector) from FY 2026-27 — no upper cap under 80C. Available under both Old & New Regime." },
+                                    { title: 'Sec 80CCD(1) / Sec 124', desc: 'Employee contribution: Deduction up to 10% of salary (max ₹1.5L under 80C/123 umbrella).' },
+                                    { title: 'Sec 80CCD(1B) / Sec 124', desc: 'Additional ₹50,000 deduction exclusively for NPS, beyond the 80C/123 limit.' },
+                                    { title: 'Sec 80CCD(2) / Sec 124', desc: "Employer contribution: Up to 14% of salary for ALL employees (Central Govt & private sector) from FY 2026-27 — no upper cap under 80C/123. Available under both Old & New Regime." },
                                     { title: 'Tax-free Lumpsum', desc: '60% of corpus at retirement is tax-free. Only annuity income is taxed as per slab.' },
                                     { title: 'Total Potential Saving', desc: `Up to ₹${Math.min(monthly * 12, 200000).toLocaleString('en-IN')} per year in tax deductions.` },
                                 ].map((item, i) => (
