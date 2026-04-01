@@ -1057,10 +1057,29 @@ const LiveClockCard = memo(function LiveClockCard({ clock, index, onDetail, onRe
     );
 });
 
+// Lightweight time getter for the Add panel — skips DST iteration entirely
+// getTimeData is too heavy (calls getNextDST which iterates 365 days × ~100 timezones = ~73K locale calls)
+function getAddPanelTimeData(iana: string, now: Date) {
+    try {
+        const parts = new Intl.DateTimeFormat('en-IN', {
+            timeZone: iana, hour: '2-digit', minute: '2-digit', hour12: true,
+        }).formatToParts(now);
+        const displayHour = parts.find(p => p.type === 'hour')?.value || '12';
+        const displayMin = parts.find(p => p.type === 'minute')?.value || '00';
+        const ampm = parts.find(p => p.type === 'dayPeriod')?.value?.toUpperCase() || 'AM';
+        const offsetStr = new Intl.DateTimeFormat('en-US', {
+            timeZone: iana, timeZoneName: 'shortOffset',
+        }).formatToParts(now).find(p => p.type === 'timeZoneName')?.value || 'UTC';
+        return { displayHour, displayMin, ampm, offsetStr };
+    } catch {
+        return { displayHour: '12', displayMin: '00', ampm: 'AM', offsetStr: 'UTC' };
+    }
+}
+
 const LiveAddZoneItem = memo(function LiveAddZoneItem({ tz, onAdd }: { tz: TimezoneInfo; onAdd: () => void }) {
     const now = useSharedTime();
     const meta = getCountryMeta(tz.iana);
-    const td = getTimeData(tz.iana, now);
+    const td = getAddPanelTimeData(tz.iana, now);
     
     return (
         <button onClick={onAdd}
