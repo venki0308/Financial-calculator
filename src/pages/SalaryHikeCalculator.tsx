@@ -7,8 +7,7 @@ import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { Save, Check, Lock } from 'lucide-react';
-import { useAuthStore } from '../store/useAuthStore';
+import { Save, Check } from 'lucide-react';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
@@ -19,9 +18,8 @@ export default function SalaryHikeCalculator() {
     useTrackCalculator();
     const navigate = useNavigate();
 
-    // Mode: 'findHike' = Find Hike % by entering current & new salary
-    //        'findSalary' = Find New Salary by entering current salary & hike %
-    const [mode, setMode] = useState<'findHike' | 'findSalary'>('findSalary');
+    // Mode: 'findHike' | 'findSalary' | 'ctcBreakdown'
+    const [mode, setMode] = useState<'findHike' | 'findSalary' | 'ctcBreakdown'>('findSalary');
 
     const [currentSalary, setCurrentSalary] = useState(1300000);
     const [newSalaryInput, setNewSalaryInput] = useState(1800000);
@@ -29,22 +27,27 @@ export default function SalaryHikeCalculator() {
     const [period, setPeriod] = useState(1);
     const [periodUnit, setPeriodUnit] = useState<'months' | 'years'>('years');
     const [isSaved, setIsSaved] = useState(false);
-    const { addHistory, addSaved, savedCalculations } = useCalculatorStore(); const [showInfo, setShowInfo] = useState(false);
+    const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
+    const [showInfo, setShowInfo] = useState(false);
 
-    const totalMonths = periodUnit === 'years' ? period * 12 : period;
+    // CTC Breakdown mode inputs
+    const [ctcAmount, setCtcAmount] = useState(1500000);
+    const [variablePct, setVariablePct] = useState(20);
+    const [achievementPct, setAchievementPct] = useState(100);
+    const [fixedHikePct, setFixedHikePct] = useState(10);
+    const [variableHikePct, setVariableHikePct] = useState(10);
+    const [useCustomVariableHike, setUseCustomVariableHike] = useState(false);
 
     const result = useMemo(() => {
         let computedHikePct: number;
-        let computedNewSalary: number; // annual
-        let hikeAmount: number; // annual
+        let computedNewSalary: number;
+        let hikeAmount: number;
 
         if (mode === 'findHike') {
-            // User entered current & new annual salary → compute hike %
             hikeAmount = newSalaryInput - currentSalary;
             computedHikePct = currentSalary > 0 ? (hikeAmount / currentSalary) * 100 : 0;
             computedNewSalary = newSalaryInput;
         } else {
-            // User entered current annual salary & hike % → compute new annual salary
             computedHikePct = hikePct;
             hikeAmount = currentSalary * (hikePct / 100);
             computedNewSalary = currentSalary + hikeAmount;
@@ -54,16 +57,13 @@ export default function SalaryHikeCalculator() {
         const newMonthly = computedNewSalary / 12;
         const hikeMonthly = hikeAmount / 12;
 
-        // Build month-wise projection
         const projection: { month: number; salary: number; cumulative: number; year: number; isNewYear: boolean }[] = [];
         let cumulative = 0;
         const yearsToProject = periodUnit === 'years' ? period : Math.ceil(period / 12);
         const maxYears = Math.max(yearsToProject + 1, 2);
 
         for (let yr = 1; yr <= maxYears; yr++) {
-            // Reset cumulative at the start of each year
             cumulative = 0;
-            // For year 1 use current monthly, for subsequent years apply compounded hike
             const monthlySalary = yr === 1 ? currentMonthly : (currentSalary * Math.pow(1 + computedHikePct / 100, yr - 1)) / 12;
             for (let m = 1; m <= 12; m++) {
                 cumulative += monthlySalary;
@@ -91,9 +91,112 @@ export default function SalaryHikeCalculator() {
         };
     }, [currentSalary, newSalaryInput, hikePct, period, periodUnit, mode]);
 
+    // CTC Breakdown computation
+    const ctcResult = useMemo(() => {
+        const varPct = Math.min(Math.max(variablePct, 0), 100) / 100;
+        const achPct = Math.min(Math.max(achievementPct, 0), 150) / 100;
+        const effVariableHike = useCustomVariableHike ? variableHikePct : fixedHikePct;
+
+        // Current breakdown
+        const currentFixed = ctcAmount * (1 - varPct);
+        const currentVariableTarget = ctcAmount * varPct;
+        const currentVariableActual = currentVariableTarget * achPct;
+
+        // New fixed pay
+        const newFixed = currentFixed * (1 + fixedHikePct / 100);
+        const fixedHikeAmount = newFixed - currentFixed;
+
+        // New variable target
+        const newVariableTarget = newFixed / (1 - varPct) * varPct; // based on new CTC where variable% is maintained
+        // New CTC = New Fixed / (1 - variable%) — i.e., variable stays same % of new CTC
+        const newCTC = newFixed / (1 - varPct);
+        const newVariableActual = newVariableTarget * achPct;
+
+        // PF & take-home estimate
+        const basic = newFixed * 0.5; // Basic = 50% of Fixed
+        const pfAnnual = basic * 0.12; // Employee PF = 12% of basic
+        const profTaxAnnual = 200 * 12; // ₹200/month standard
+        const estimatedTakeHomeAnnual = newFixed - pfAnnual - profTaxAnnual;
+        const estimatedTakeHomeMonthly = estimatedTakeHomeAnnual / 12;
+        const inHandPct = ctcAmount > 0 ? (estimatedTakeHomeAnnual / newCTC) * 100 : 0;
+
+        // Variable achievement scenarios
+        const varAt80 = currentVariableTarget * 0.8;
+        const varAt100 = currentVariableTarget;
+        const varAt120 = currentVariableTarget * 1.2;
+
+        // Year-wise projection for CTC breakdown
+        const ctcProjection: { year: number; fixed: number; variableTarget: number; variablePayout: number; totalCTC: number }[] = [];
+        const yearsToProject = periodUnit === 'years' ? period : Math.ceil(period / 12);
+        const maxYears = Math.max(yearsToProject + 1, 2);
+        for (let yr = 1; yr <= maxYears; yr++) {
+            const yFixed = yr === 1 ? currentFixed : currentFixed * Math.pow(1 + fixedHikePct / 100, yr - 1);
+            const yVarTarget = yr === 1 ? currentVariableTarget : currentVariableTarget * Math.pow(1 + effVariableHike / 100, yr - 1);
+            const yVarPayout = yVarTarget * achPct;
+            const yTotalCTC = yFixed + yVarTarget;
+            ctcProjection.push({ year: yr, fixed: Math.round(yFixed), variableTarget: Math.round(yVarTarget), variablePayout: Math.round(yVarPayout), totalCTC: Math.round(yTotalCTC) });
+        }
+
+        return {
+            currentFixed,
+            currentVariableTarget,
+            currentVariableActual,
+            newFixed,
+            fixedHikeAmount,
+            newVariableTarget,
+            newVariableActual,
+            newCTC,
+            basic,
+            pfAnnual,
+            profTaxAnnual,
+            estimatedTakeHomeAnnual,
+            estimatedTakeHomeMonthly,
+            inHandPct,
+            varAt80,
+            varAt100,
+            varAt120,
+            ctcProjection,
+            effVariableHike,
+        };
+    }, [ctcAmount, variablePct, achievementPct, fixedHikePct, variableHikePct, useCustomVariableHike, period, periodUnit]);
+
     const handleDownloadPDF = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+
+        if (mode === 'ctcBreakdown') {
+            const config: ExportConfig = {
+                title: 'Salary Hike — Full CTC Breakdown Report',
+                inputs: [
+                    { label: 'Current CTC (Annual)', value: `₹${Math.round(ctcAmount).toLocaleString('en-IN')}` },
+                    { label: 'Variable Pay %', value: `${variablePct}%` },
+                    { label: 'Achievement %', value: `${achievementPct}%` },
+                    { label: 'Fixed Pay Hike %', value: `${fixedHikePct}%` },
+                    { label: 'Variable Hike %', value: `${ctcResult.effVariableHike}%` },
+                ],
+                results: [
+                    { label: 'Current Fixed Pay (Annual)', value: `₹${Math.round(ctcResult.currentFixed).toLocaleString('en-IN')}` },
+                    { label: 'New Fixed Pay (Annual)', value: `₹${Math.round(ctcResult.newFixed).toLocaleString('en-IN')}` },
+                    { label: 'New CTC (Annual)', value: `₹${Math.round(ctcResult.newCTC).toLocaleString('en-IN')}` },
+                    { label: 'Variable Payout (at achievement %)', value: `₹${Math.round(ctcResult.newVariableActual).toLocaleString('en-IN')}` },
+                    { label: 'Est. Take-Home (Monthly)', value: `₹${Math.round(ctcResult.estimatedTakeHomeMonthly).toLocaleString('en-IN')}` },
+                    { label: 'In-Hand % of new CTC', value: `${ctcResult.inHandPct.toFixed(1)}%` },
+                ],
+                projectionTitle: 'Year-wise CTC Projection',
+                projectionColumns: ['Year', 'Fixed Pay', 'Variable Target', 'Variable Payout', 'Total CTC'],
+                projectionRows: ctcResult.ctcProjection.map(r => [
+                    `Year ${r.year}`,
+                    `₹${r.fixed.toLocaleString('en-IN')}`,
+                    `₹${r.variableTarget.toLocaleString('en-IN')}`,
+                    `₹${r.variablePayout.toLocaleString('en-IN')}`,
+                    `₹${r.totalCTC.toLocaleString('en-IN')}`,
+                ]),
+                filename: `FinCalix_CTC_Breakdown_${tag}`,
+            };
+            await exportToPDF(config);
+            return;
+        }
+
         const config: ExportConfig = {
             title: 'Salary Hike Calculator Report',
             inputs: [
@@ -122,6 +225,31 @@ export default function SalaryHikeCalculator() {
     const handleDownloadExcel = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+
+        if (mode === 'ctcBreakdown') {
+            const config: ExportConfig = {
+                title: 'Salary Hike — Full CTC Breakdown Report',
+                inputs: [
+                    { label: 'Current CTC (Annual)', value: `₹${Math.round(ctcAmount).toLocaleString('en-IN')}` },
+                    { label: 'Variable Pay %', value: `${variablePct}%` },
+                    { label: 'Achievement %', value: `${achievementPct}%` },
+                    { label: 'Fixed Pay Hike %', value: `${fixedHikePct}%` },
+                ],
+                results: [
+                    { label: 'Current Fixed Pay', value: `₹${Math.round(ctcResult.currentFixed).toLocaleString('en-IN')}` },
+                    { label: 'New Fixed Pay', value: `₹${Math.round(ctcResult.newFixed).toLocaleString('en-IN')}` },
+                    { label: 'New CTC', value: `₹${Math.round(ctcResult.newCTC).toLocaleString('en-IN')}` },
+                    { label: 'Est. Monthly Take-Home', value: `₹${Math.round(ctcResult.estimatedTakeHomeMonthly).toLocaleString('en-IN')}` },
+                ],
+                projectionTitle: 'Year-wise CTC Projection',
+                projectionColumns: ['Year', 'Fixed Pay', 'Variable Target', 'Variable Payout', 'Total CTC'],
+                projectionRows: ctcResult.ctcProjection.map(r => [r.year, r.fixed, r.variableTarget, r.variablePayout, r.totalCTC]),
+                filename: `FinCalix_CTC_Breakdown_${tag}`,
+            };
+            await exportToExcel(config);
+            return;
+        }
+
         const config: ExportConfig = {
             title: 'Salary Hike Calculator Report',
             inputs: [
@@ -146,13 +274,17 @@ export default function SalaryHikeCalculator() {
             addHistory({
                 id: `SalaryHike-${Date.now()}`,
                 calculatorType: 'Salary Hike Calculator',
-                inputValues: { currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit, mode },
-                resultValues: { primary: result.newSalary, ...result },
+                inputValues: mode === 'ctcBreakdown'
+                    ? { ctcAmount, variablePct, achievementPct, fixedHikePct, mode }
+                    : { currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit, mode },
+                resultValues: mode === 'ctcBreakdown'
+                    ? { primary: ctcResult.newCTC, ...ctcResult }
+                    : { primary: result.newSalary, ...result },
                 timestamp: Date.now(),
             });
         }, 1000);
         return () => clearTimeout(timer);
-    }, [currentSalary, hikePct, newSalaryInput, period, periodUnit, mode, result.newSalary, addHistory]);
+    }, [currentSalary, hikePct, newSalaryInput, period, periodUnit, mode, result.newSalary, ctcAmount, variablePct, achievementPct, fixedHikePct, ctcResult.newCTC, addHistory]);
 
     // Track recent
     useEffect(() => {
@@ -168,8 +300,12 @@ export default function SalaryHikeCalculator() {
         addSaved({
             id: `SalaryHike-Save-${Date.now()}`,
             calculatorType: 'Salary Hike Calculator',
-            inputValues: { currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit },
-            resultValues: { primary: result.newSalary, ...result },
+            inputValues: mode === 'ctcBreakdown'
+                ? { ctcAmount, variablePct, achievementPct, fixedHikePct, mode }
+                : { currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit },
+            resultValues: mode === 'ctcBreakdown'
+                ? { primary: ctcResult.newCTC, ...ctcResult }
+                : { primary: result.newSalary, ...result },
             timestamp: Date.now(),
         });
         setIsSaved(true);
@@ -177,14 +313,24 @@ export default function SalaryHikeCalculator() {
 
     const isAlreadySaved = useMemo(() => {
         return savedCalculations.some(
-            (s) => s.calculatorType === 'Salary Hike Calculator' && JSON.stringify(s.inputValues) === JSON.stringify({ currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit })
+            (s) => s.calculatorType === 'Salary Hike Calculator' && JSON.stringify(s.inputValues) === JSON.stringify(
+                mode === 'ctcBreakdown'
+                    ? { ctcAmount, variablePct, achievementPct, fixedHikePct, mode }
+                    : { currentSalary, hikePct: mode === 'findHike' ? result.hikePctComputed : hikePct, period, periodUnit }
+            )
         );
-    }, [savedCalculations, currentSalary, hikePct, period, periodUnit, mode, result.hikePctComputed]);
+    }, [savedCalculations, currentSalary, hikePct, period, periodUnit, mode, result.hikePctComputed, ctcAmount, variablePct, achievementPct, fixedHikePct]);
+
+    const modeOptions: { key: 'findHike' | 'findSalary' | 'ctcBreakdown'; label: string }[] = [
+        { key: 'findHike', label: 'Find Hike %' },
+        { key: 'findSalary', label: 'Find New Salary' },
+        { key: 'ctcBreakdown', label: 'Full CTC Breakdown' },
+    ];
 
     return (
         <div className="min-h-dvh bg-white dark:bg-background animate-fade-in">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A]  px-4 pt-14 pb-3 border-b border-slate-200 dark:border-border">
+            <div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A] px-4 pt-14 pb-3 border-b border-slate-200 dark:border-border">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border">
@@ -210,164 +356,414 @@ export default function SalaryHikeCalculator() {
             </div>
 
             <div className="px-4 pb-32 pt-4">
-                {/* Mode Selector — matching reference design */}
+                {/* Mode Selector — 3 modes */}
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border mb-4 mt-2">
-                    <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold mb-3 uppercase tracking-wider">Quarter Of Return Filing</p>
-                    <div className="flex gap-3">
-                        <label
-                            className={`flex-1 flex items-center gap-2.5 p-3 rounded-xl cursor-pointer transition-all border ${mode === 'findHike' ? 'bg-brand-green/10 border-brand-green/30 dark:bg-brand-green/5' : 'bg-white dark:bg-card border-border border-slate-200 dark:border-border'}`}
-                            onClick={() => setMode('findHike')}
-                        >
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${mode === 'findHike' ? 'border-brand-green' : 'border-slate-300 dark:border-slate-600'}`}>
-                                {mode === 'findHike' && <div className="w-2.5 h-2.5 rounded-full bg-brand-green" />}
-                            </div>
-                            <span className={`text-xs font-medium ${mode === 'findHike' ? 'text-slate-900 dark:text-foreground' : 'text-muted-foreground'}`}>Find Hike Percentage By Salary</span>
-                        </label>
-                        <label
-                            className={`flex-1 flex items-center gap-2.5 p-3 rounded-xl cursor-pointer transition-all border ${mode === 'findSalary' ? 'bg-brand-green/10 border-brand-green/30 dark:bg-brand-green/5' : 'bg-white dark:bg-card border-border border-slate-200 dark:border-border'}`}
-                            onClick={() => setMode('findSalary')}
-                        >
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${mode === 'findSalary' ? 'border-brand-green' : 'border-slate-300 dark:border-slate-600'}`}>
-                                {mode === 'findSalary' && <div className="w-2.5 h-2.5 rounded-full bg-brand-green" />}
-                            </div>
-                            <span className={`text-xs font-medium ${mode === 'findSalary' ? 'text-slate-900 dark:text-foreground' : 'text-muted-foreground'}`}>Find New Salary by Hike Percentage</span>
-                        </label>
+                    <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold mb-3 uppercase tracking-wider">Calculator Mode</p>
+                    <div className="flex gap-2">
+                        {modeOptions.map(opt => (
+                            <label
+                                key={opt.key}
+                                className={`flex-1 flex items-center gap-2 p-2.5 rounded-xl cursor-pointer transition-all border ${mode === opt.key ? 'bg-brand-green/10 border-brand-green/30 dark:bg-brand-green/5' : 'bg-white dark:bg-card border-slate-200 dark:border-border'}`}
+                                onClick={() => setMode(opt.key)}
+                            >
+                                <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${mode === opt.key ? 'border-brand-green' : 'border-slate-300 dark:border-slate-600'}`}>
+                                    {mode === opt.key && <div className="w-2 h-2 rounded-full bg-brand-green" />}
+                                </div>
+                                <span className={`text-[10px] font-medium leading-tight ${mode === opt.key ? 'text-slate-900 dark:text-foreground' : 'text-muted-foreground'}`}>{opt.label}</span>
+                            </label>
+                        ))}
                     </div>
                 </div>
 
-                {/* Input Fields */}
-                <div className="space-y-3 mb-5">
-                    <NumberInput
-                        label="Current Salary"
-                        value={currentSalary}
-                        onChange={setCurrentSalary}
-                        min={1000}
-                        max={100000000}
-                        prefix="₹"
-                        helperText="₹1,000 - ₹10,00,00,000"
-                    />
+                {/* ── MODES 1 & 2: existing inputs ── */}
+                {mode !== 'ctcBreakdown' && (
+                    <>
+                        <div className="space-y-3 mb-5">
+                            <NumberInput
+                                label="Current Salary"
+                                value={currentSalary}
+                                onChange={setCurrentSalary}
+                                min={1000}
+                                max={100000000}
+                                prefix="₹"
+                                helperText="₹1,000 - ₹10,00,00,000"
+                            />
 
-                    {mode === 'findHike' ? (
-                        <NumberInput
-                            label="New Salary"
-                            value={newSalaryInput}
-                            onChange={setNewSalaryInput}
-                            min={1000}
-                            max={100000000}
-                            prefix="₹"
-                            helperText="₹1,000 - ₹10,00,00,000"
-                        />
-                    ) : (
-                        <NumberInput
-                            label="Expected Hike Percentage"
-                            value={hikePct}
-                            onChange={setHikePct}
-                            min={0}
-                            max={200}
-                            suffix="%"
-                            step={0.5}
-                            helperText="0% - 200%"
-                        />
-                    )}
+                            {mode === 'findHike' ? (
+                                <NumberInput
+                                    label="New Salary"
+                                    value={newSalaryInput}
+                                    onChange={setNewSalaryInput}
+                                    min={1000}
+                                    max={100000000}
+                                    prefix="₹"
+                                    helperText="₹1,000 - ₹10,00,00,000"
+                                />
+                            ) : (
+                                <NumberInput
+                                    label="Expected Hike Percentage"
+                                    value={hikePct}
+                                    onChange={setHikePct}
+                                    min={0}
+                                    max={200}
+                                    suffix="%"
+                                    step={0.5}
+                                    helperText="0% - 200%"
+                                />
+                            )}
 
-                    <div>
-                        <div className="flex rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border p-1 mb-2">
-                            {(['months', 'years'] as const).map((u) => (
-                                <button
-                                    key={u}
-                                    onClick={() => {
-                                        if (u === 'years' && periodUnit === 'months') setPeriod(Math.round(period / 12) || 1);
-                                        if (u === 'months' && periodUnit === 'years') setPeriod(period * 12);
-                                        setPeriodUnit(u);
-                                    }}
-                                    className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all capitalize ${periodUnit === u ? 'bg-brand-green text-white' : 'text-muted-foreground'}`}
-                                >
-                                    {u}
-                                </button>
-                            ))}
+                            <div>
+                                <div className="flex rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border p-1 mb-2">
+                                    {(['months', 'years'] as const).map((u) => (
+                                        <button
+                                            key={u}
+                                            onClick={() => {
+                                                if (u === 'years' && periodUnit === 'months') setPeriod(Math.round(period / 12) || 1);
+                                                if (u === 'months' && periodUnit === 'years') setPeriod(period * 12);
+                                                setPeriodUnit(u);
+                                            }}
+                                            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all capitalize ${periodUnit === u ? 'bg-brand-green text-white' : 'text-muted-foreground'}`}
+                                        >
+                                            {u}
+                                        </button>
+                                    ))}
+                                </div>
+                                <NumberInput
+                                    label="Projection Period"
+                                    value={period}
+                                    onChange={setPeriod}
+                                    min={1}
+                                    max={periodUnit === 'months' ? 120 : 10}
+                                    suffix={periodUnit === 'months' ? ' months' : ' years'}
+                                    helperText={periodUnit === 'months' ? '1 - 120 months' : '1 - 10 years'}
+                                />
+                            </div>
                         </div>
-                        <NumberInput
-                            label="Projection Period"
-                            value={period}
-                            onChange={setPeriod}
-                            min={periodUnit === 'months' ? 1 : 1}
-                            max={periodUnit === 'months' ? 120 : 10}
-                            suffix={periodUnit === 'months' ? ' months' : ' years'}
-                            helperText={periodUnit === 'months' ? '1 - 120 months' : '1 - 10 years'}
-                        />
-                    </div>
-                </div>
 
-                {/* Result Card */}
-                <motion.div layout className="p-5 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 shadow-sm">
-                    <div className="text-center mb-4">
-                        {mode === 'findHike' ? (
-                            <>
-                                <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Hike Percentage</p>
+                        {/* Result Card — existing modes */}
+                        <motion.div layout className="p-5 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 shadow-sm">
+                            <div className="text-center mb-4">
+                                {mode === 'findHike' ? (
+                                    <>
+                                        <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Hike Percentage</p>
+                                        <motion.p
+                                            key={result.hikePctComputed}
+                                            initial={{ scale: 0.9, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            className="text-3xl font-bold text-brand-green"
+                                        >
+                                            {result.hikePctComputed.toFixed(2)}%
+                                        </motion.p>
+                                        <p className="text-brand-blue text-sm font-medium mt-1">Hike Amount: {formatINR(result.hikeMonthly)}/month ({formatINR(result.hikeAmount)}/year)</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Salary After Hike</p>
+                                        <motion.p
+                                            key={result.newSalary}
+                                            initial={{ scale: 0.9, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            className="text-3xl font-bold text-brand-green"
+                                        >
+                                            {formatINR(result.newSalary)}
+                                        </motion.p>
+                                        <p className="text-brand-blue text-sm font-medium mt-1">Annual Increase: {formatINR(result.annualIncrease)}</p>
+                                    </>
+                                )}
+                            </div>
+
+                            <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-border">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs">Current Annual Salary</span>
+                                    <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(result.currentAnnual)}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs">Current Monthly Salary</span>
+                                    <span className="font-semibold text-sm text-slate-600 dark:text-slate-300">{formatINR(result.currentMonthly)}</span>
+                                </div>
+                                {mode === 'findHike' && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">New Annual Salary</span>
+                                        <span className="font-semibold text-sm text-brand-blue">{formatINR(newSalaryInput)}</span>
+                                    </div>
+                                )}
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs">Hike Percentage</span>
+                                    <span className="font-semibold text-sm text-brand-green">{result.hikePctComputed.toFixed(2)}%</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs">Hike Amount (Annual)</span>
+                                    <span className="font-semibold text-sm text-brand-green">{formatINR(result.hikeAmount)}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs">Hike Amount (Monthly)</span>
+                                    <span className="font-semibold text-sm text-brand-green">{formatINR(result.hikeMonthly)}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs">New Annual Salary</span>
+                                    <span className="font-semibold text-sm text-brand-blue">{formatINR(result.newAnnual)}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-muted-foreground text-xs">New Monthly Salary</span>
+                                    <span className="font-semibold text-sm text-brand-blue">{formatINR(result.newMonthly)}</span>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+
+                {/* ── MODE 3: Full CTC Breakdown ── */}
+                {mode === 'ctcBreakdown' && (
+                    <>
+                        <div className="space-y-3 mb-5">
+                            <NumberInput
+                                label="Current Fixed CTC (Annual)"
+                                value={ctcAmount}
+                                onChange={setCtcAmount}
+                                min={100000}
+                                max={100000000}
+                                prefix="₹"
+                                helperText="Total annual CTC package"
+                            />
+                            <NumberInput
+                                label="Variable Pay Component"
+                                value={variablePct}
+                                onChange={setVariablePct}
+                                min={0}
+                                max={50}
+                                suffix="%"
+                                step={1}
+                                helperText="% of CTC offered as performance bonus"
+                            />
+                            <NumberInput
+                                label="Achievement vs Target"
+                                value={achievementPct}
+                                onChange={setAchievementPct}
+                                min={0}
+                                max={150}
+                                suffix="%"
+                                step={5}
+                                helperText="Your performance achievement % (default 100%)"
+                            />
+                            <NumberInput
+                                label="Hike % on Fixed Pay"
+                                value={fixedHikePct}
+                                onChange={setFixedHikePct}
+                                min={0}
+                                max={100}
+                                suffix="%"
+                                step={0.5}
+                                helperText="Expected hike percentage on fixed pay"
+                            />
+                            <div className="flex items-center gap-3 px-1">
+                                <input
+                                    type="checkbox"
+                                    id="customVarHike"
+                                    checked={useCustomVariableHike}
+                                    onChange={e => setUseCustomVariableHike(e.target.checked)}
+                                    className="w-4 h-4 accent-brand-green"
+                                />
+                                <label htmlFor="customVarHike" className="text-xs text-muted-foreground cursor-pointer">
+                                    Set different hike % for variable pay (optional)
+                                </label>
+                            </div>
+                            {useCustomVariableHike && (
+                                <NumberInput
+                                    label="Hike % on Variable Pay"
+                                    value={variableHikePct}
+                                    onChange={setVariableHikePct}
+                                    min={0}
+                                    max={100}
+                                    suffix="%"
+                                    step={0.5}
+                                    helperText="Defaults to same as fixed pay hike"
+                                />
+                            )}
+
+                            {/* Projection period */}
+                            <div>
+                                <div className="flex rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border p-1 mb-2">
+                                    {(['months', 'years'] as const).map((u) => (
+                                        <button
+                                            key={u}
+                                            onClick={() => {
+                                                if (u === 'years' && periodUnit === 'months') setPeriod(Math.round(period / 12) || 1);
+                                                if (u === 'months' && periodUnit === 'years') setPeriod(period * 12);
+                                                setPeriodUnit(u);
+                                            }}
+                                            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all capitalize ${periodUnit === u ? 'bg-brand-green text-white' : 'text-muted-foreground'}`}
+                                        >
+                                            {u}
+                                        </button>
+                                    ))}
+                                </div>
+                                <NumberInput
+                                    label="Projection Period"
+                                    value={period}
+                                    onChange={setPeriod}
+                                    min={1}
+                                    max={periodUnit === 'months' ? 120 : 10}
+                                    suffix={periodUnit === 'months' ? ' months' : ' years'}
+                                    helperText={periodUnit === 'months' ? '1 - 120 months' : '1 - 10 years'}
+                                />
+                            </div>
+                        </div>
+
+                        {/* CTC Breakdown Results */}
+                        <motion.div layout className="rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 shadow-sm overflow-hidden">
+                            {/* Hero */}
+                            <div className="p-5 text-center border-b border-slate-100 dark:border-border">
+                                <p className="text-muted-foreground text-sm mb-1">New Total CTC (Annual)</p>
                                 <motion.p
-                                    key={result.hikePctComputed}
+                                    key={ctcResult.newCTC}
                                     initial={{ scale: 0.9, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     className="text-3xl font-bold text-brand-green"
                                 >
-                                    {result.hikePctComputed.toFixed(2)}%
+                                    {formatINR(ctcResult.newCTC)}
                                 </motion.p>
-                                <p className="text-brand-blue text-sm font-medium mt-1">Hike Amount: {formatINR(result.hikeMonthly)}/month ({formatINR(result.hikeAmount)}/year)</p>
-                            </>
-                        ) : (
-                            <>
-                                <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Salary After Hike</p>
-                                <motion.p
-                                    key={result.newSalary}
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    className="text-3xl font-bold text-brand-green"
-                                >
-                                    {formatINR(result.newSalary)}
-                                </motion.p>
-                                <p className="text-brand-blue text-sm font-medium mt-1">Annual Increase: {formatINR(result.annualIncrease)}</p>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Breakdown */}
-                    <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-border">
-                        <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground text-xs">Current Annual Salary</span>
-                            <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(result.currentAnnual)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground text-xs">Current Monthly Salary</span>
-                            <span className="font-semibold text-sm text-slate-600 dark:text-slate-300">{formatINR(result.currentMonthly)}</span>
-                        </div>
-                        {mode === 'findHike' && (
-                            <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground text-xs">New Annual Salary</span>
-                                <span className="font-semibold text-sm text-brand-blue">{formatINR(newSalaryInput)}</span>
+                                <p className="text-brand-blue text-sm font-medium mt-1">
+                                    Est. Take-Home: {formatINR(ctcResult.estimatedTakeHomeMonthly)}/month
+                                </p>
+                                <p className="text-muted-foreground text-xs mt-0.5">
+                                    In-hand ≈ {ctcResult.inHandPct.toFixed(1)}% of new CTC
+                                </p>
                             </div>
-                        )}
-                        <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground text-xs">Hike Percentage</span>
-                            <span className="font-semibold text-sm text-brand-green">{result.hikePctComputed.toFixed(2)}%</span>
+
+                            {/* Fixed Pay Section */}
+                            <div className="px-5 pt-4 pb-3 border-b border-slate-100 dark:border-border">
+                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">Fixed Pay</p>
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">Current Fixed Pay (Annual)</span>
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(ctcResult.currentFixed)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">Current Fixed Pay (Monthly)</span>
+                                        <span className="font-semibold text-sm text-slate-600 dark:text-slate-300">{formatINR(ctcResult.currentFixed / 12)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">New Fixed Pay (Annual)</span>
+                                        <span className="font-semibold text-sm text-brand-green">{formatINR(ctcResult.newFixed)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">New Fixed Pay (Monthly)</span>
+                                        <span className="font-semibold text-sm text-brand-green">{formatINR(ctcResult.newFixed / 12)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">Fixed Pay Hike Amount</span>
+                                        <span className="font-semibold text-sm text-brand-blue">{formatINR(ctcResult.fixedHikeAmount)} /yr ({formatINR(ctcResult.fixedHikeAmount / 12)}/mo)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Variable Pay Section */}
+                            <div className="px-5 pt-4 pb-3 border-b border-slate-100 dark:border-border">
+                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">Variable Pay</p>
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">Current Variable Target (Annual)</span>
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(ctcResult.currentVariableTarget)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">Actual Payout (at {achievementPct}% achievement)</span>
+                                        <span className="font-semibold text-sm text-brand-blue">{formatINR(ctcResult.currentVariableActual)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">New Variable Target (Annual)</span>
+                                        <span className="font-semibold text-sm text-brand-green">{formatINR(ctcResult.newVariableTarget)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">New Payout (at {achievementPct}% achievement)</span>
+                                        <span className="font-semibold text-sm text-brand-green">{formatINR(ctcResult.newVariableActual)}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Take-Home Estimate */}
+                            <div className="px-5 pt-4 pb-3 border-b border-slate-100 dark:border-border">
+                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">Estimated Take-Home (New Fixed)</p>
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">Basic (50% of new fixed)</span>
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(ctcResult.basic)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">PF Deduction (12% of basic)</span>
+                                        <span className="font-semibold text-sm text-red-400">-{formatINR(ctcResult.pfAnnual)}/yr</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-muted-foreground text-xs">Professional Tax</span>
+                                        <span className="font-semibold text-sm text-red-400">-{formatINR(ctcResult.profTaxAnnual)}/yr</span>
+                                    </div>
+                                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-border pt-2 mt-1">
+                                        <span className="text-slate-700 dark:text-foreground text-xs font-bold">Est. Take-Home (Annual)</span>
+                                        <span className="font-bold text-sm text-brand-green">{formatINR(ctcResult.estimatedTakeHomeAnnual)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-slate-700 dark:text-foreground text-xs font-bold">Est. Take-Home (Monthly)</span>
+                                        <span className="font-bold text-sm text-brand-green">{formatINR(ctcResult.estimatedTakeHomeMonthly)}</span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground mt-2 italic">* Estimate only. Excludes income tax, gratuity, ESIC, and other company-specific deductions.</p>
+                            </div>
+
+                            {/* Smart Insight — Variable achievement scenarios */}
+                            <div className="px-5 pt-4 pb-4">
+                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">Variable Pay — Achievement Scenarios</p>
+                                <div className="p-3 rounded-xl bg-brand-blue/5 border border-brand-blue/15 text-xs text-muted-foreground leading-relaxed">
+                                    Your variable pay target is <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.currentVariableTarget)}/year</span>.{' '}
+                                    At <span className="text-amber-500 font-semibold">80% achievement</span> you receive <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.varAt80)}</span>.{' '}
+                                    At <span className="text-brand-green font-semibold">100%</span> you receive <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.varAt100)}</span>.{' '}
+                                    At <span className="text-brand-blue font-semibold">120% stretch</span> you receive <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.varAt120)}</span>.
+                                </div>
+                                <div className="grid grid-cols-3 gap-2 mt-3">
+                                    {[
+                                        { label: '80% Achievement', val: ctcResult.varAt80, color: 'text-amber-500', bg: 'bg-amber-500/8' },
+                                        { label: '100% Achievement', val: ctcResult.varAt100, color: 'text-brand-green', bg: 'bg-brand-green/8' },
+                                        { label: '120% Stretch', val: ctcResult.varAt120, color: 'text-brand-blue', bg: 'bg-brand-blue/8' },
+                                    ].map(s => (
+                                        <div key={s.label} className={`${s.bg} rounded-xl p-2.5 text-center`}>
+                                            <p className={`text-[10px] font-semibold ${s.color}`}>{s.label}</p>
+                                            <p className="text-slate-800 dark:text-foreground font-bold text-xs mt-0.5">{formatINR(s.val)}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Year-wise Projection Table */}
+                        <div className="rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 overflow-hidden">
+                            <div className="px-4 py-3 border-b border-slate-100 dark:border-border">
+                                <p className="text-sm font-bold text-slate-900 dark:text-foreground">Year-wise CTC Projection</p>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-xs">
+                                    <thead>
+                                        <tr className="bg-slate-50 dark:bg-slate-800/50">
+                                            <th className="px-3 py-2 text-left text-muted-foreground font-semibold whitespace-nowrap">Year</th>
+                                            <th className="px-3 py-2 text-right text-muted-foreground font-semibold whitespace-nowrap">Fixed Pay</th>
+                                            <th className="px-3 py-2 text-right text-muted-foreground font-semibold whitespace-nowrap">Var. Target</th>
+                                            <th className="px-3 py-2 text-right text-muted-foreground font-semibold whitespace-nowrap">Var. Payout</th>
+                                            <th className="px-3 py-2 text-right text-muted-foreground font-semibold whitespace-nowrap">Total CTC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {ctcResult.ctcProjection.map((row, i) => (
+                                            <tr key={row.year} className={`border-t border-slate-50 dark:border-slate-800 ${i === 0 ? 'bg-slate-50/50 dark:bg-slate-800/20' : ''}`}>
+                                                <td className="px-3 py-2.5 font-semibold text-slate-700 dark:text-foreground whitespace-nowrap">Yr {row.year}</td>
+                                                <td className="px-3 py-2.5 text-right text-slate-600 dark:text-slate-300 whitespace-nowrap">{formatINR(row.fixed)}</td>
+                                                <td className="px-3 py-2.5 text-right text-slate-600 dark:text-slate-300 whitespace-nowrap">{formatINR(row.variableTarget)}</td>
+                                                <td className="px-3 py-2.5 text-right text-brand-blue font-medium whitespace-nowrap">{formatINR(row.variablePayout)}</td>
+                                                <td className="px-3 py-2.5 text-right text-brand-green font-bold whitespace-nowrap">{formatINR(row.totalCTC)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground text-xs">Hike Amount (Annual)</span>
-                            <span className="font-semibold text-sm text-brand-green">{formatINR(result.hikeAmount)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground text-xs">Hike Amount (Monthly)</span>
-                            <span className="font-semibold text-sm text-brand-green">{formatINR(result.hikeMonthly)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground text-xs">New Annual Salary</span>
-                            <span className="font-semibold text-sm text-brand-blue">{formatINR(result.newAnnual)}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-muted-foreground text-xs">New Monthly Salary</span>
-                            <span className="font-semibold text-sm text-brand-blue">{formatINR(result.newMonthly)}</span>
-                        </div>
-                    </div>
-                </motion.div>
+                    </>
+                )}
 
                 {/* Action Buttons */}
                 <motion.button
@@ -397,7 +793,7 @@ export default function SalaryHikeCalculator() {
                 {/* Disclaimer */}
                 <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50 dark:bg-brand-blue/5 border border-blue-100 dark:border-brand-blue/15">
                     <p className="text-muted-foreground dark:text-muted-foreground text-[10px] leading-relaxed italic">
-                        📐 This is a projection only. Actual hikes depend on company performance, individual performance, and market conditions. For reference purposes only.
+                        📐 This is a projection only. Actual hikes depend on company performance, individual performance, and market conditions. Take-home estimates exclude income tax, ESIC, and other company-specific deductions.
                     </p>
                 </div>
 
@@ -408,7 +804,6 @@ export default function SalaryHikeCalculator() {
                 />
 
                 <div className="mt-8">
-                    
                     <DisclaimerComponent module="general" />
                 </div>
             </div>
