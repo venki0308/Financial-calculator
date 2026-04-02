@@ -13,8 +13,13 @@
         <item name="windowNoTitle">true</item>
         <!-- Dark background prevents white flash while WebView/JS loads -->
         <item name="android:windowBackground">@color/appBackground</item>
+        <!-- colorBackground covers the window layer that native dialogs sit on top of.
+             Without this, the layer beneath native dialogs is transparent and shows
+             the WebView content (including the app logo) through the dialog scrim. -->
+        <item name="android:colorBackground">@color/appBackground</item>
         <item name="android:windowIsTranslucent">false</item>
-        <!-- Light mode: dark status bar icons (visible on light bg) -->
+        <!-- Default: dark status bar icons (visible on light bg).
+             Overridden at runtime by @capacitor/status-bar on theme change. -->
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>

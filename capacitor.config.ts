@@ -9,6 +9,12 @@ const config: CapacitorConfig = {
     // Ensures SPA routing works — all unknown paths fall back to index.html
     url: undefined,
   },
+  android: {
+    // Fill the area NOT covered by HTML content with the app's dark background.
+    // This ensures native dialogs (date picker, language picker, etc.) sit on top
+    // of a solid dark layer — not a transparent WebView showing the logo.
+    backgroundColor: '#0F172A',
+  },
 };
 
 export default config;

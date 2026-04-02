@@ -200,16 +200,19 @@ export default function Settings() {
             {/* Language Picker Sheet */}
             <BottomSheet isOpen={showLangPicker} onClose={() => setShowLangPicker(false)} title={t('settings.selectLanguage')}>
                 <div className="space-y-2">
-                    {languages.map(lang => (
-                        <button key={lang.code} onClick={() => changeLanguage(lang.code)}
-                            className={`w-full flex items-center justify-between p-4 rounded-xl transition-colors ${i18n.language.startsWith(lang.code) ? 'bg-brand-green/10 border-2 border-brand-green' : 'bg-dark-bg border-2 border-transparent hover:bg-card'}`}>
-                            <div className="flex flex-col items-start">
-                                <span className="text-foreground font-medium text-sm">{lang.nativeName}</span>
-                                <span className="text-muted-foreground text-xs">{lang.name}</span>
-                            </div>
-                            {i18n.language.startsWith(lang.code) && <Check size={18} className="text-brand-green" />}
-                        </button>
-                    ))}
+                    {languages.map(lang => {
+                        const isActive = i18n.language.startsWith(lang.code);
+                        return (
+                            <button key={lang.code} onClick={() => changeLanguage(lang.code)}
+                                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-colors ${isActive ? 'bg-brand-green/10 border-brand-green' : 'bg-slate-800 dark:bg-slate-800 border-slate-700 dark:border-slate-700 hover:border-slate-500'}`}>
+                                <div className="flex flex-col items-start">
+                                    <span className="text-white font-medium text-sm">{lang.nativeName}</span>
+                                    <span className="text-slate-400 text-xs">{lang.name}</span>
+                                </div>
+                                {isActive && <Check size={18} className="text-brand-green flex-shrink-0" />}
+                            </button>
+                        );
+                    })}
                 </div>
             </BottomSheet>
 

@@ -13,6 +13,7 @@ import { UpdateChecker } from './components/UpdateChecker';
 import { APP_VERSION } from './config/app';
 import { Capacitor } from '@capacitor/core';
 import { NotificationScheduler } from './services/NotificationScheduler';
+import { StatusBar, Style } from '@capacitor/status-bar';
 
 // WebLandingPage — static import (first page web users see, must not lazy-load)
 import WebLandingPage from './pages/WebLandingPage';
@@ -119,6 +120,15 @@ function AppContent() {
     useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
         document.documentElement.classList.toggle('light', !darkMode);
+
+        // Sync the native Android status bar icons with the current theme.
+        // Runs on mount (with persisted darkMode value) AND on every toggle.
+        // Style.Light = light/white icons  → use on dark backgrounds
+        // Style.Dark  = dark/black icons   → use on light backgrounds
+        if (Capacitor.isNativePlatform()) {
+            StatusBar.setStyle({ style: darkMode ? Style.Light : Style.Dark }).catch(() => {});
+            StatusBar.setBackgroundColor({ color: darkMode ? '#0F172A' : '#F8FAFC' }).catch(() => {});
+        }
     }, [darkMode]);
 
     useEffect(() => {

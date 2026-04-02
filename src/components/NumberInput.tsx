@@ -65,11 +65,18 @@ export default function NumberInput({ label, value, onChange, min, max, prefix, 
                     ref={inputRef}
                     type={focused ? 'number' : 'text'}
                     inputMode="decimal"
+                    pattern="[0-9]*"
                     value={displayValue}
                     onChange={handleChange}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                     step={step}
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    data-gramm="false"
+                    data-gramm_editor="false"
+                    data-enable-grammarly="false"
                     className="flex-1 bg-transparent text-slate-900 dark:text-foreground text-lg font-bold outline-none w-full"
                     readOnly={!focused}
                 />
