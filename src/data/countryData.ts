@@ -295,7 +295,7 @@ export const TIMEZONE_META: Record<string, CountryMeta> = {
         phoneCode: '+421', countryCode: 'SK', countryName: 'Slovakia', region: 'Europe'
     },
     'Europe/Zagreb': {
-        flag: 'HR', currencySymbol: 'kn', currencyName: 'Croatian Kuna',
+        flag: 'HR', currencySymbol: '€', currencyName: 'Euro',
         phoneCode: '+385', countryCode: 'HR', countryName: 'Croatia', region: 'Europe'
     },
     'Europe/Sarajevo': {
@@ -501,7 +501,245 @@ export const TIMEZONE_META: Record<string, CountryMeta> = {
     'Africa/Harare': {
         flag: 'ZW', currencySymbol: '$', currencyName: 'Zimbabwean Dollar',
         phoneCode: '+263', countryCode: 'ZW', countryName: 'Zimbabwe', region: 'Africa'
-    }
+    },
+
+    // ── ASIA (additional) ──
+    'Indian/Maldives': {
+        flag: 'MV', currencySymbol: 'Rf', currencyName: 'Maldivian Rufiyaa',
+        phoneCode: '+960', countryCode: 'MV', countryName: 'Maldives', region: 'Asia'
+    },
+    'Asia/Damascus': {
+        flag: 'SY', currencySymbol: '£', currencyName: 'Syrian Pound',
+        phoneCode: '+963', countryCode: 'SY', countryName: 'Syria', region: 'Asia'
+    },
+    'Asia/Aden': {
+        flag: 'YE', currencySymbol: '﷼', currencyName: 'Yemeni Rial',
+        phoneCode: '+967', countryCode: 'YE', countryName: 'Yemen', region: 'Asia'
+    },
+    'Asia/Nicosia': {
+        flag: 'CY', currencySymbol: '€', currencyName: 'Euro',
+        phoneCode: '+357', countryCode: 'CY', countryName: 'Cyprus', region: 'Asia'
+    },
+    'Asia/Macau': {
+        flag: 'MO', currencySymbol: 'P', currencyName: 'Macanese Pataca',
+        phoneCode: '+853', countryCode: 'MO', countryName: 'Macau', region: 'Asia'
+    },
+    'Asia/Brunei': {
+        flag: 'BN', currencySymbol: 'B$', currencyName: 'Brunei Dollar',
+        phoneCode: '+673', countryCode: 'BN', countryName: 'Brunei', region: 'Asia'
+    },
+
+    // ── EUROPE (additional) ──
+    'Europe/Ljubljana': {
+        flag: 'SI', currencySymbol: '€', currencyName: 'Euro',
+        phoneCode: '+386', countryCode: 'SI', countryName: 'Slovenia', region: 'Europe'
+    },
+    'Europe/Skopje': {
+        flag: 'MK', currencySymbol: 'ден', currencyName: 'Macedonian Denar',
+        phoneCode: '+389', countryCode: 'MK', countryName: 'North Macedonia', region: 'Europe'
+    },
+    'Europe/Chisinau': {
+        flag: 'MD', currencySymbol: 'L', currencyName: 'Moldovan Leu',
+        phoneCode: '+373', countryCode: 'MD', countryName: 'Moldova', region: 'Europe'
+    },
+    'Europe/Andorra': {
+        flag: 'AD', currencySymbol: '€', currencyName: 'Euro',
+        phoneCode: '+376', countryCode: 'AD', countryName: 'Andorra', region: 'Europe'
+    },
+    'Europe/Monaco': {
+        flag: 'MC', currencySymbol: '€', currencyName: 'Euro',
+        phoneCode: '+377', countryCode: 'MC', countryName: 'Monaco', region: 'Europe'
+    },
+    'Europe/Luxembourg': {
+        flag: 'LU', currencySymbol: '€', currencyName: 'Euro',
+        phoneCode: '+352', countryCode: 'LU', countryName: 'Luxembourg', region: 'Europe'
+    },
+    'Europe/Tirane': {
+        flag: 'AL', currencySymbol: 'L', currencyName: 'Albanian Lek',
+        phoneCode: '+355', countryCode: 'AL', countryName: 'Albania', region: 'Europe'
+    },
+
+    // ── AMERICAS (additional) ──
+    'America/Phoenix': {
+        flag: 'US', currencySymbol: '$', currencyName: 'US Dollar',
+        phoneCode: '+1', countryCode: 'US', countryName: 'United States', region: 'America'
+    },
+    'America/Montreal': {
+        flag: 'CA', currencySymbol: 'CA$', currencyName: 'Canadian Dollar',
+        phoneCode: '+1', countryCode: 'CA', countryName: 'Canada', region: 'America'
+    },
+    'America/Edmonton': {
+        flag: 'CA', currencySymbol: 'CA$', currencyName: 'Canadian Dollar',
+        phoneCode: '+1', countryCode: 'CA', countryName: 'Canada', region: 'America'
+    },
+    'America/Monterrey': {
+        flag: 'MX', currencySymbol: '$', currencyName: 'Mexican Peso',
+        phoneCode: '+52', countryCode: 'MX', countryName: 'Mexico', region: 'America'
+    },
+    'America/Santo_Domingo': {
+        flag: 'DO', currencySymbol: '$', currencyName: 'Dominican Peso',
+        phoneCode: '+1', countryCode: 'DO', countryName: 'Dominican Republic', region: 'America'
+    },
+    'America/El_Salvador': {
+        flag: 'SV', currencySymbol: '$', currencyName: 'US Dollar',
+        phoneCode: '+503', countryCode: 'SV', countryName: 'El Salvador', region: 'America'
+    },
+    'America/Tegucigalpa': {
+        flag: 'HN', currencySymbol: 'L', currencyName: 'Honduran Lempira',
+        phoneCode: '+504', countryCode: 'HN', countryName: 'Honduras', region: 'America'
+    },
+    'America/Managua': {
+        flag: 'NI', currencySymbol: 'C$', currencyName: 'Nicaraguan Cordoba',
+        phoneCode: '+505', countryCode: 'NI', countryName: 'Nicaragua', region: 'America'
+    },
+    'America/Guatemala': {
+        flag: 'GT', currencySymbol: 'Q', currencyName: 'Guatemalan Quetzal',
+        phoneCode: '+502', countryCode: 'GT', countryName: 'Guatemala', region: 'America'
+    },
+    'America/Paramaribo': {
+        flag: 'SR', currencySymbol: '$', currencyName: 'Surinamese Dollar',
+        phoneCode: '+597', countryCode: 'SR', countryName: 'Suriname', region: 'America'
+    },
+
+    // ── AFRICA (additional) ──
+    'Africa/Maputo': {
+        flag: 'MZ', currencySymbol: 'MT', currencyName: 'Mozambican Metical',
+        phoneCode: '+258', countryCode: 'MZ', countryName: 'Mozambique', region: 'Africa'
+    },
+    'Africa/Luanda': {
+        flag: 'AO', currencySymbol: 'Kz', currencyName: 'Angolan Kwanza',
+        phoneCode: '+244', countryCode: 'AO', countryName: 'Angola', region: 'Africa'
+    },
+    'Indian/Antananarivo': {
+        flag: 'MG', currencySymbol: 'Ar', currencyName: 'Malagasy Ariary',
+        phoneCode: '+261', countryCode: 'MG', countryName: 'Madagascar', region: 'Africa'
+    },
+    'Africa/Kigali': {
+        flag: 'RW', currencySymbol: 'Fr', currencyName: 'Rwandan Franc',
+        phoneCode: '+250', countryCode: 'RW', countryName: 'Rwanda', region: 'Africa'
+    },
+    'Africa/Gaborone': {
+        flag: 'BW', currencySymbol: 'P', currencyName: 'Botswana Pula',
+        phoneCode: '+267', countryCode: 'BW', countryName: 'Botswana', region: 'Africa'
+    },
+    'Africa/Windhoek': {
+        flag: 'NA', currencySymbol: '$', currencyName: 'Namibian Dollar',
+        phoneCode: '+264', countryCode: 'NA', countryName: 'Namibia', region: 'Africa'
+    },
+    'Africa/Mogadishu': {
+        flag: 'SO', currencySymbol: 'Sh', currencyName: 'Somali Shilling',
+        phoneCode: '+252', countryCode: 'SO', countryName: 'Somalia', region: 'Africa'
+    },
+    'Africa/Djibouti': {
+        flag: 'DJ', currencySymbol: 'Fr', currencyName: 'Djiboutian Franc',
+        phoneCode: '+253', countryCode: 'DJ', countryName: 'Djibouti', region: 'Africa'
+    },
+    'Africa/Nouakchott': {
+        flag: 'MR', currencySymbol: 'UM', currencyName: 'Mauritanian Ouguiya',
+        phoneCode: '+222', countryCode: 'MR', countryName: 'Mauritania', region: 'Africa'
+    },
+    'Africa/Bamako': {
+        flag: 'ML', currencySymbol: 'Fr', currencyName: 'West African CFA franc',
+        phoneCode: '+223', countryCode: 'ML', countryName: 'Mali', region: 'Africa'
+    },
+    'Africa/Niamey': {
+        flag: 'NE', currencySymbol: 'Fr', currencyName: 'West African CFA franc',
+        phoneCode: '+227', countryCode: 'NE', countryName: 'Niger', region: 'Africa'
+    },
+    'Africa/Ouagadougou': {
+        flag: 'BF', currencySymbol: 'Fr', currencyName: 'West African CFA franc',
+        phoneCode: '+226', countryCode: 'BF', countryName: 'Burkina Faso', region: 'Africa'
+    },
+    'Africa/Banjul': {
+        flag: 'GM', currencySymbol: 'D', currencyName: 'Gambian Dalasi',
+        phoneCode: '+220', countryCode: 'GM', countryName: 'Gambia', region: 'Africa'
+    },
+    'Africa/Lome': {
+        flag: 'TG', currencySymbol: 'Fr', currencyName: 'West African CFA franc',
+        phoneCode: '+228', countryCode: 'TG', countryName: 'Togo', region: 'Africa'
+    },
+    'Africa/Libreville': {
+        flag: 'GA', currencySymbol: 'Fr', currencyName: 'Central African CFA franc',
+        phoneCode: '+241', countryCode: 'GA', countryName: 'Gabon', region: 'Africa'
+    },
+    'Africa/Brazzaville': {
+        flag: 'CG', currencySymbol: 'Fr', currencyName: 'Central African CFA franc',
+        phoneCode: '+242', countryCode: 'CG', countryName: 'Republic of Congo', region: 'Africa'
+    },
+    'Africa/Kinshasa': {
+        flag: 'CD', currencySymbol: 'Fr', currencyName: 'Congolese Franc',
+        phoneCode: '+243', countryCode: 'CD', countryName: 'DR Congo', region: 'Africa'
+    },
+
+    // ── AUSTRALIA ──
+    'Australia/Sydney': {
+        flag: 'AU', currencySymbol: 'A$', currencyName: 'Australian Dollar',
+        phoneCode: '+61', countryCode: 'AU', countryName: 'Australia', region: 'Oceania'
+    },
+    'Australia/Melbourne': {
+        flag: 'AU', currencySymbol: 'A$', currencyName: 'Australian Dollar',
+        phoneCode: '+61', countryCode: 'AU', countryName: 'Australia', region: 'Oceania'
+    },
+    'Australia/Brisbane': {
+        flag: 'AU', currencySymbol: 'A$', currencyName: 'Australian Dollar',
+        phoneCode: '+61', countryCode: 'AU', countryName: 'Australia', region: 'Oceania'
+    },
+    'Australia/Perth': {
+        flag: 'AU', currencySymbol: 'A$', currencyName: 'Australian Dollar',
+        phoneCode: '+61', countryCode: 'AU', countryName: 'Australia', region: 'Oceania'
+    },
+    'Australia/Adelaide': {
+        flag: 'AU', currencySymbol: 'A$', currencyName: 'Australian Dollar',
+        phoneCode: '+61', countryCode: 'AU', countryName: 'Australia', region: 'Oceania'
+    },
+    'Australia/Darwin': {
+        flag: 'AU', currencySymbol: 'A$', currencyName: 'Australian Dollar',
+        phoneCode: '+61', countryCode: 'AU', countryName: 'Australia', region: 'Oceania'
+    },
+    'Australia/Hobart': {
+        flag: 'AU', currencySymbol: 'A$', currencyName: 'Australian Dollar',
+        phoneCode: '+61', countryCode: 'AU', countryName: 'Australia', region: 'Oceania'
+    },
+
+    // ── PACIFIC / OCEANIA ──
+    'Pacific/Auckland': {
+        flag: 'NZ', currencySymbol: 'NZ$', currencyName: 'New Zealand Dollar',
+        phoneCode: '+64', countryCode: 'NZ', countryName: 'New Zealand', region: 'Oceania'
+    },
+    'Pacific/Fiji': {
+        flag: 'FJ', currencySymbol: '$', currencyName: 'Fijian Dollar',
+        phoneCode: '+679', countryCode: 'FJ', countryName: 'Fiji', region: 'Oceania'
+    },
+    'Pacific/Port_Moresby': {
+        flag: 'PG', currencySymbol: 'K', currencyName: 'Papua New Guinean Kina',
+        phoneCode: '+675', countryCode: 'PG', countryName: 'Papua New Guinea', region: 'Oceania'
+    },
+    'Pacific/Guam': {
+        flag: 'GU', currencySymbol: '$', currencyName: 'US Dollar',
+        phoneCode: '+1', countryCode: 'GU', countryName: 'Guam', region: 'Oceania'
+    },
+    'Pacific/Apia': {
+        flag: 'WS', currencySymbol: 'T', currencyName: 'Samoan Tala',
+        phoneCode: '+685', countryCode: 'WS', countryName: 'Samoa', region: 'Oceania'
+    },
+    'Pacific/Tongatapu': {
+        flag: 'TO', currencySymbol: 'T$', currencyName: 'Tongan Paanga',
+        phoneCode: '+676', countryCode: 'TO', countryName: 'Tonga', region: 'Oceania'
+    },
+    'Pacific/Noumea': {
+        flag: 'NC', currencySymbol: 'Fr', currencyName: 'CFP Franc',
+        phoneCode: '+687', countryCode: 'NC', countryName: 'New Caledonia', region: 'Oceania'
+    },
+    'Pacific/Tahiti': {
+        flag: 'PF', currencySymbol: 'Fr', currencyName: 'CFP Franc',
+        phoneCode: '+689', countryCode: 'PF', countryName: 'French Polynesia', region: 'Oceania'
+    },
+
+    // ── UTC ──
+    'UTC': {
+        flag: '', currencySymbol: '', currencyName: 'Universal',
+        phoneCode: '', countryCode: '', countryName: 'Universal Time', region: 'Global'
+    },
 };
 
 // Get metadata for any IANA timezone (falls back to derived info if not in map)

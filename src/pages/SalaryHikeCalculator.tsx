@@ -48,9 +48,8 @@ function estimateTaxOnIncome(annual: number): number {
         tax += taxable * slab.rate;
         prev = slab.upto;
     }
-    // Rebate u/s 156 (87A): no tax if taxable ≤ 12L
-    const taxableAfterStdDed = annual - 75000;
-    if (taxableAfterStdDed <= 1200000) return 0;
+    // Rebate u/s 87A: no tax if taxable income (after std ded, already deducted by caller) ≤ 12L
+    if (annual <= 1200000) return 0;
     return tax * 1.04; // + 4% cess
 }
 
@@ -474,8 +473,8 @@ export default function SalaryHikeCalculator() {
     }, [savedCalculations, currentSalary, hikePct, period, periodUnit, mode, result.hikePctComputed, ctcAmount, variablePct, achievementPct, fixedHikePct, offerA_salary, offerB_salary]);
 
     const modeOptions: { key: 'findHike' | 'findSalary' | 'ctcBreakdown' | 'compare'; label: string }[] = [
-        { key: 'findSalary', label: 'Find Hike %' },
-        { key: 'findHike', label: 'Find New Salary' },
+        { key: 'findSalary', label: 'Find New Salary' },
+        { key: 'findHike', label: 'Find Hike %' },
         { key: 'ctcBreakdown', label: 'CTC Breakdown' },
         { key: 'compare', label: 'Compare Offers' },
     ];
