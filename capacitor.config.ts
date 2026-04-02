@@ -13,7 +13,7 @@ const config: CapacitorConfig = {
     // Fill the area NOT covered by HTML content with the app's dark background.
     // This ensures native dialogs (date picker, language picker, etc.) sit on top
     // of a solid dark layer — not a transparent WebView showing the logo.
-    backgroundColor: '#0F172A',
+    backgroundColor: '#0F1923',
   },
 };
 
