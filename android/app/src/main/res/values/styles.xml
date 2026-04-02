@@ -18,9 +18,9 @@
              the WebView content (including the app logo) through the dialog scrim. -->
         <item name="android:colorBackground">@color/appBackground</item>
         <item name="android:windowIsTranslucent">false</item>
-        <!-- Default: dark status bar icons (visible on light bg).
+        <!-- Default: light status bar icons (visible on dark bg) since app starts in dark mode.
              Overridden at runtime by @capacitor/status-bar on theme change. -->
-        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 

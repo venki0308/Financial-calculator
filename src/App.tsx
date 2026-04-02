@@ -121,13 +121,26 @@ function AppContent() {
         document.documentElement.classList.toggle('dark', darkMode);
         document.documentElement.classList.toggle('light', !darkMode);
 
-        // Sync the native Android status bar icons with the current theme.
+        // Sync the native Android status bar with the current theme.
         // Runs on mount (with persisted darkMode value) AND on every toggle.
         // Style.Light = light/white icons  → use on dark backgrounds
         // Style.Dark  = dark/black icons   → use on light backgrounds
         if (Capacitor.isNativePlatform()) {
-            StatusBar.setStyle({ style: darkMode ? Style.Light : Style.Dark }).catch(() => {});
-            StatusBar.setBackgroundColor({ color: darkMode ? '#0F172A' : '#F8FAFC' }).catch(() => {});
+            const applyStatusBar = async () => {
+                try {
+                    // Ensure the status bar is NOT overlaying the WebView content
+                    await StatusBar.setOverlaysWebView({ overlay: false });
+                    await StatusBar.setStyle({
+                        style: darkMode ? Style.Light : Style.Dark,
+                    });
+                    await StatusBar.setBackgroundColor({
+                        color: darkMode ? '#0F1923' : '#FFFFFF',
+                    });
+                } catch (_) {
+                    // Swallow — status bar API may not be available on all devices
+                }
+            };
+            applyStatusBar();
         }
     }, [darkMode]);
 
