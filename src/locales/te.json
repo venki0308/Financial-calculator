@@ -261,6 +261,8 @@
         "dashboardSubtitle": "అవలోకనం & అంతర్దృష్టులు",
         "budgetSubtitle": "బడ్జెట్ సెటప్ & పరిమితులు",
         "dailySubtitle": "రోజువారీ ఖర్చులను ట్రాక్ చేయండి",
+        "weekly": "వారం",
+        "weeklySubtitle": "వారాంతర అవలోకనం",
         "reportsSubtitle": "అనలిటిక్స్ & PDF ఎగుమతి",
         "totalSpentMonth": "ఈ నెలలో మొత్తం ఖర్చు",
         "budgetUsedLabel": "ఉపయోగించిన బడ్జెట్",

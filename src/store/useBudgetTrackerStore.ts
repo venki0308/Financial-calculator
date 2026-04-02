@@ -57,6 +57,51 @@ export interface HealthScore {
 
 export type PaymentMethod = 'Cash' | 'UPI' | 'Debit Card' | 'Credit Card';
 
+export type EntryType = 'expense' | 'income' | 'investment';
+
+export type InvestmentType =
+    | 'cash_savings'
+    | 'gold'
+    | 'silver'
+    | 'stocks'
+    | 'mutual_funds'
+    | 'fixed_deposit'
+    | 'ppf_epf'
+    | 'crypto'
+    | 'real_estate'
+    | 'other_investment';
+
+export const INVESTMENT_TYPES: {
+    id: InvestmentType;
+    label: string;
+    icon: string;
+    color: string;
+    description: string;
+}[] = [
+    { id: 'cash_savings', label: 'Cash / Savings', icon: '💵', color: '#22c55e', description: 'Money saved in bank or cash' },
+    { id: 'gold', label: 'Gold', icon: '🥇', color: '#f59e0b', description: 'Physical gold, gold bonds, gold ETF' },
+    { id: 'silver', label: 'Silver', icon: '🥈', color: '#94a3b8', description: 'Physical silver or silver ETF' },
+    { id: 'stocks', label: 'Stocks / Equity', icon: '📈', color: '#3b82f6', description: 'Direct equity investments' },
+    { id: 'mutual_funds', label: 'Mutual Funds / SIP', icon: '📊', color: '#8b5cf6', description: 'Mutual fund investments and SIPs' },
+    { id: 'fixed_deposit', label: 'Fixed Deposit / RD', icon: '🏦', color: '#06b6d4', description: 'FD, RD, or post office deposits' },
+    { id: 'ppf_epf', label: 'PPF / EPF / NPS', icon: '🏛', color: '#10b981', description: 'Provident fund and pension savings' },
+    { id: 'crypto', label: 'Crypto', icon: '₿', color: '#f97316', description: 'Cryptocurrency investments' },
+    { id: 'real_estate', label: 'Real Estate', icon: '🏠', color: '#84cc16', description: 'Property or REIT investments' },
+    { id: 'other_investment', label: 'Other Investment', icon: '💼', color: '#a78bfa', description: 'Any other investment type' },
+];
+
+export const INCOME_CATEGORIES = [
+    { id: 'salary', name: 'Salary', icon: '💼' },
+    { id: 'freelance', name: 'Freelance', icon: '💻' },
+    { id: 'business', name: 'Business', icon: '🏢' },
+    { id: 'interest', name: 'Interest', icon: '🏦' },
+    { id: 'dividend', name: 'Dividend', icon: '📈' },
+    { id: 'rental', name: 'Rental', icon: '🏠' },
+    { id: 'gift', name: 'Gift', icon: '🎁' },
+    { id: 'refund', name: 'Refund', icon: '↩️' },
+    { id: 'other_income', name: 'Other', icon: '📌' },
+] as const;
+
 export interface BudgetEntry {
     id: string;
     category: string;       // Built-in category key OR custom category id
@@ -66,6 +111,8 @@ export interface BudgetEntry {
     description: string;
     date: string;           // ISO string (e.g. "2026-03-05T10:00:00.000Z")
     paymentMethod?: PaymentMethod;
+    entryType?: EntryType;        // 'expense' | 'income' | 'investment'
+    investmentType?: InvestmentType; // only when entryType === 'investment'
 }
 
 
@@ -309,7 +356,7 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
         }),
         {
             name: 'budget-tracker-storage',
-            version: 2,
+            version: 3,
             migrate: (persistedState: unknown, fromVersion: number) => {
                 const state = persistedState as Record<string, unknown>;
                 // v0 → v1: rename categoryId → category on all entries
@@ -332,6 +379,15 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
                         state.monthlyBalances = {};
                     }
                     delete state.currentBalance;
+                }
+                // v2 → v3: add entryType to existing entries (default: 'expense')
+                if (fromVersion < 3 && Array.isArray(state.entries)) {
+                    state.entries = (state.entries as Record<string, unknown>[]).map((e) => {
+                        if (!e.entryType) {
+                            return { ...e, entryType: 'expense' };
+                        }
+                        return e;
+                    });
                 }
                 return state;
             },

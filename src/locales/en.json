@@ -267,6 +267,8 @@
         "dashboardSubtitle": "Overview & insights",
         "budgetSubtitle": "Budget setup & limits",
         "dailySubtitle": "Track daily expenses",
+        "weekly": "Weekly",
+        "weeklySubtitle": "Weekly overview",
         "reportsSubtitle": "Analytics & PDF export",
         "totalSpentMonth": "Total Spent This Month",
         "budgetUsedLabel": "Budget used",

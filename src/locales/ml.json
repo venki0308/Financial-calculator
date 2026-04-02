@@ -261,6 +261,8 @@
         "dashboardSubtitle": "അവലോകനവും ഉൾക്കാഴ്ചകളും",
         "budgetSubtitle": "ബജറ്റ് സജ്ജീകരണവും പരിധികളും",
         "dailySubtitle": "ദൈനംദിന ചെലവുകൾ ട്രാക്ക് ചെയ്യുക",
+        "weekly": "വാരം",
+        "weeklySubtitle": "വാരാന്ത്യ അവലോകനം",
         "reportsSubtitle": "അനലിറ്റിക്സും PDF കയറ്റുമതിയും",
         "totalSpentMonth": "ഈ മാസത്തെ ആകെ ചെലവ്",
         "budgetUsedLabel": "ഉപയോഗിച്ച ബജറ്റ്",

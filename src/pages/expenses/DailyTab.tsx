@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Edit3, Check, X, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useBudgetTrackerStore, EXPENSE_CATEGORIES, type PaymentMethod } from '../../store/useBudgetTrackerStore';
+import { useBudgetTrackerStore, EXPENSE_CATEGORIES, INVESTMENT_TYPES, INCOME_CATEGORIES, type PaymentMethod, type EntryType, type InvestmentType } from '../../store/useBudgetTrackerStore';
 import DateInput from '../../components/DateInput';
 
 const PAYMENT_METHODS: { id: PaymentMethod; icon: string }[] = [
@@ -57,6 +57,9 @@ export default function DailyTab() {
     const [fAmount, setFAmount] = useState('');
     const [fDesc, setFDesc] = useState('');
     const [fPayment, setFPayment] = useState<PaymentMethod>('UPI');
+    const [fEntryType, setFEntryType] = useState<EntryType>('expense');
+    const [fInvestmentType, setFInvestmentType] = useState<InvestmentType>('mutual_funds');
+    const [activeSubTab, setActiveSubTab] = useState<EntryType>('expense');
 
     const isDirty = initialFormState ? (
         fCategory !== initialFormState.category ||
@@ -72,7 +75,16 @@ export default function DailyTab() {
         [entries, selectedDate]
     );
 
-    const todayTotal = dayEntries.reduce((s, e) => s + e.amount, 0);
+    const filteredEntries = useMemo(() => {
+        return dayEntries.filter(e => {
+            const type = e.entryType || 'expense';
+            return type === activeSubTab;
+        });
+    }, [dayEntries, activeSubTab]);
+
+    const todayTotal = dayEntries.filter(e => (e.entryType || 'expense') === 'expense').reduce((s, e) => s + e.amount, 0);
+    const todayIncome = dayEntries.filter(e => e.entryType === 'income').reduce((s, e) => s + e.amount, 0);
+    const todayInvestment = dayEntries.filter(e => e.entryType === 'investment').reduce((s, e) => s + e.amount, 0);
 
     const selectedCatBudget = (categoryBudgets as unknown as Record<string, number>)[fCategory] || 0;
     const selectedCatSpent = getMonthlySpentByCategory(fCategory);
@@ -104,17 +116,21 @@ export default function DailyTab() {
             const localIso = `${selectedDate}T${timeStr}`;
 
             addEntry({
-                category: fCategory,
+                category: fEntryType === 'investment' ? (fInvestmentType || 'other_investment') : fCategory,
                 amount: parseFloat(fAmount),
-                description: fDesc || t(`expenses.categories.${fCategory}`),
+                description: fDesc || (fEntryType === 'investment' ? (INVESTMENT_TYPES.find(t => t.id === fInvestmentType)?.label || 'Investment') : fEntryType === 'income' ? 'Income' : t(`expenses.categories.${fCategory}`)),
                 date: localIso,
                 paymentMethod: fPayment,
+                entryType: fEntryType,
+                investmentType: fEntryType === 'investment' ? fInvestmentType : undefined,
             });
         }
         setFCategory('food');
         setFAmount('');
         setFDesc('');
         setFPayment('UPI');
+        setFEntryType('expense');
+        setFInvestmentType('mutual_funds');
         setInitialFormState(null);
         setShowAddForm(false);
     };
@@ -124,6 +140,8 @@ export default function DailyTab() {
         setFAmount('');
         setFDesc('');
         setFPayment('UPI');
+        setFEntryType('expense');
+        setFInvestmentType('mutual_funds');
         setInitialFormState({ category: 'food', amount: '', desc: '', payment: 'UPI' });
         setEditingId(null);
         setShowAddForm(true);
@@ -179,6 +197,21 @@ export default function DailyTab() {
             >
                 <Plus size={20} /> {t('expenses.addNewExpense')}
             </motion.button>
+
+            {/* Sub-tab Switcher */}
+            <div className="flex gap-1 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-1">
+                {([{ id: 'expense' as EntryType, label: '💸 Expenses', bg: 'bg-red-500' }, { id: 'income' as EntryType, label: '💰 Income', bg: 'bg-emerald-500' }, { id: 'investment' as EntryType, label: '📈 Investments', bg: 'bg-blue-500' }]).map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveSubTab(tab.id)}
+                        className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
+                            activeSubTab === tab.id ? `${tab.bg} text-white shadow` : 'text-muted-foreground'
+                        }`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
 
             {/* Quick Add Shortcuts */}
             <div>
@@ -275,9 +308,13 @@ export default function DailyTab() {
                             {isToday ? t('expenses.todaySpending') : t('expenses.selectedDaySpending')}
                         </p>
                         <p className="text-2xl font-extrabold text-brand-purple mt-0.5">₹{todayTotal.toLocaleString('en-IN')}</p>
-                        <p className="text-muted-foreground text-xs mt-0.5">{dayEntries.length} {dayEntries.length === 1 ? t('expenses.transaction') : t('expenses.transactions')}</p>
                     </div>
                     <div className="text-4xl">💸</div>
+                </div>
+                <div className="flex gap-2 text-[10px] font-semibold">
+                    <span className="flex-1 text-center py-1.5 rounded-lg bg-red-500/10 text-red-400">Spent: ₹{todayTotal.toLocaleString('en-IN')}</span>
+                    <span className={`flex-1 text-center py-1.5 rounded-lg ${todayIncome > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-100 dark:bg-white/5 text-muted-foreground'}`}>Earned: ₹{todayIncome.toLocaleString('en-IN')}</span>
+                    <span className={`flex-1 text-center py-1.5 rounded-lg ${todayInvestment > 0 ? 'bg-blue-500/10 text-blue-400' : 'bg-slate-100 dark:bg-white/5 text-muted-foreground'}`}>Invested: ₹{todayInvestment.toLocaleString('en-IN')}</span>
                 </div>
                 {(() => {
                     const dailyBudget = Object.values(categoryBudgets as unknown as Record<string, number>).reduce((a, b) => a + b, 0) / 30;
@@ -290,19 +327,30 @@ export default function DailyTab() {
                 })()}
             </div>
 
-            {/* Expenses List */}
+            {/* Entries List */}
             <div>
-                <h3 className="text-slate-900 dark:text-foreground font-bold text-sm mb-3">{t('expenses.expenses')}</h3>
-                {dayEntries.length === 0 && (
+                <h3 className="text-slate-900 dark:text-foreground font-bold text-sm mb-3">
+                    {activeSubTab === 'expense' ? t('expenses.expenses') : activeSubTab === 'income' ? 'Income' : 'Investments'}
+                </h3>
+                {filteredEntries.length === 0 && (
                     <div className="text-center py-10 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
-                        <p className="text-4xl mb-2">🌿</p>
-                        <p className="text-muted-foreground text-sm">{t('expenses.noExpensesDay')}</p>
-                        <button onClick={openAddForm} className="mt-3 text-brand-purple text-xs font-semibold">+ {t('expenses.addExpense')}</button>
+                        <p className="text-4xl mb-2">{activeSubTab === 'expense' ? '🌿' : activeSubTab === 'income' ? '💰' : '📈'}</p>
+                        <p className="text-muted-foreground text-sm">
+                            {activeSubTab === 'expense' ? t('expenses.noExpensesDay') : activeSubTab === 'income' ? 'No income recorded today' : 'No investments recorded today'}
+                        </p>
+                        <button onClick={openAddForm} className="mt-3 text-brand-purple text-xs font-semibold">+ {activeSubTab === 'expense' ? t('expenses.addExpense') : activeSubTab === 'income' ? 'Add Income' : 'Add Investment'}</button>
                     </div>
                 )}
                 <div className="space-y-2">
-                    {dayEntries.map((exp) => {
-                        const cat = EXPENSE_CATEGORIES.find((c) => c.id === (exp.category || exp.categoryId));
+                    {filteredEntries.map((exp) => {
+                        const type = exp.entryType || 'expense';
+                        const cat = type === 'investment'
+                            ? INVESTMENT_TYPES.find(t => t.id === exp.investmentType)
+                            : type === 'income'
+                            ? INCOME_CATEGORIES.find(c => c.id === exp.category)
+                            : EXPENSE_CATEGORIES.find((c) => c.id === (exp.category || exp.categoryId));
+                        const amtColor = type === 'income' ? 'text-emerald-400' : type === 'investment' ? 'text-blue-400' : 'text-red-400';
+                        const prefix = type === 'income' ? '+' : type === 'investment' ? '' : '-';
                         return (
                             <div key={exp.id} className="relative rounded-2xl bg-red-500 overflow-hidden mb-2">
                                 <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center text-foreground">
@@ -311,23 +359,26 @@ export default function DailyTab() {
                                 <motion.div
                                     drag="x"
                                     dragConstraints={{ left: -80, right: 0 }}
-                                    onDragEnd={(e, info) => { if (info.offset.x < -50) deleteEntry(exp.id); }}
+                                    onDragEnd={(_e, info) => { if (info.offset.x < -50) deleteEntry(exp.id); }}
                                     className="bg-white dark:bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-3 flex items-center gap-3 relative z-10 cursor-pointer"
                                     onClick={() => startEdit(exp.id)}
                                 >
                                     <div className="w-10 h-10 rounded-xl bg-brand-purple/10 flex items-center justify-center text-xl flex-shrink-0">
-                                        {cat?.icon || '📌'}
+                                        {cat && 'icon' in cat ? cat.icon : '📌'}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-slate-800 dark:text-foreground text-sm font-semibold truncate">{exp.description}</p>
                                         <p className="text-muted-foreground text-[10px]">
-                                            {t(`expenses.categories.${cat?.id || 'others'}`)} · {formatDate(exp.date)}
+                                            {type === 'investment'
+                                                ? (INVESTMENT_TYPES.find(t => t.id === exp.investmentType)?.label || 'Investment')
+                                                : t(`expenses.categories.${(cat as any)?.id || 'others'}`)}
+                                            {' · '}{formatDate(exp.date)}
                                             {exp.paymentMethod && (
                                                 <span className="ml-1 px-1.5 py-0.5 bg-brand-purple/10 text-brand-purple rounded text-[9px] font-bold">{t(`expenses.paymentMethods.${exp.paymentMethod}`)}</span>
                                             )}
                                         </p>
                                     </div>
-                                    <p className="text-red-400 font-bold text-sm mr-1">-₹{exp.amount.toLocaleString('en-IN')}</p>
+                                    <p className={`${amtColor} font-bold text-sm mr-1`}>{prefix}₹{exp.amount.toLocaleString('en-IN')}</p>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); deleteEntry(exp.id); }}
                                         className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors flex-shrink-0"
@@ -362,28 +413,79 @@ export default function DailyTab() {
                             <div className="flex-shrink-0 px-6 pt-5 pb-2">
                                 <div className="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5" />
                                 <h3 className="text-foreground font-bold text-lg mb-2">
-                                    {editingId ? t('expenses.editExpenseTitle', 'Edit Expense') : t('expenses.addExpenseTitle')}
+                                    {editingId ? t('expenses.editExpenseTitle', 'Edit Entry') : fEntryType === 'expense' ? t('expenses.addExpenseTitle') : fEntryType === 'income' ? 'Add Income' : 'Add Investment'}
                                 </h3>
                             </div>
 
                             {/* Scrollable form content */}
                             <div className="flex-1 overflow-y-auto px-6 pb-2">
                             <div className="space-y-3">
-                                {/* Category */}
-                                <div>
-                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.category')}</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {EXPENSE_CATEGORIES.map((cat) => (
-                                            <button
-                                                key={cat.id}
-                                                onClick={() => setFCategory(cat.id)}
-                                                className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fCategory === cat.id ? 'bg-brand-purple text-white' : 'bg-card border-border text-slate-300'}`}
-                                            >
-                                                {cat.icon}<br />{t(`expenses.categories.${cat.id}`).split(' ')[0]}
-                                            </button>
-                                        ))}
+                                {/* Entry Type Selector */}
+                                {!editingId && (
+                                    <div>
+                                        <label className="text-muted-foreground text-xs mb-1 block">Entry Type</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {([{ id: 'expense' as EntryType, emoji: '💸', label: 'Expense', bg: 'bg-red-500' }, { id: 'income' as EntryType, emoji: '💰', label: 'Income', bg: 'bg-emerald-500' }, { id: 'investment' as EntryType, emoji: '📈', label: 'Investment', bg: 'bg-blue-500' }]).map(et => (
+                                                <button
+                                                    key={et.id}
+                                                    onClick={() => { setFEntryType(et.id); if (et.id === 'income') setFCategory('salary'); else if (et.id === 'expense') setFCategory('food'); }}
+                                                    className={`p-2.5 rounded-xl text-center text-xs font-bold transition-all ${fEntryType === et.id ? `${et.bg} text-white` : 'bg-card border-border text-slate-300'}`}
+                                                >
+                                                    {et.emoji}<br />{et.label}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
+
+                                {/* Category / Investment Type */}
+                                {fEntryType === 'investment' ? (
+                                    <div>
+                                        <label className="text-muted-foreground text-xs mb-1 block">Investment Type</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {INVESTMENT_TYPES.map(inv => (
+                                                <button
+                                                    key={inv.id}
+                                                    onClick={() => setFInvestmentType(inv.id)}
+                                                    className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fInvestmentType === inv.id ? 'text-white' : 'bg-card border-border text-slate-300'}`}
+                                                    style={fInvestmentType === inv.id ? { backgroundColor: inv.color } : {}}
+                                                >
+                                                    {inv.icon}<br />{inv.label.split('/')[0].trim()}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : fEntryType === 'income' ? (
+                                    <div>
+                                        <label className="text-muted-foreground text-xs mb-1 block">Income Source</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {INCOME_CATEGORIES.map(cat => (
+                                                <button
+                                                    key={cat.id}
+                                                    onClick={() => setFCategory(cat.id)}
+                                                    className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fCategory === cat.id ? 'bg-emerald-500 text-white' : 'bg-card border-border text-slate-300'}`}
+                                                >
+                                                    {cat.icon}<br />{cat.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.category')}</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {EXPENSE_CATEGORIES.map((cat) => (
+                                                <button
+                                                    key={cat.id}
+                                                    onClick={() => setFCategory(cat.id)}
+                                                    className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fCategory === cat.id ? 'bg-brand-purple text-white' : 'bg-card border-border text-slate-300'}`}
+                                                >
+                                                    {cat.icon}<br />{t(`expenses.categories.${cat.id}`).split(' ')[0]}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Budget warning */}
                                 {selectedCatBudget > 0 && (
@@ -395,7 +497,9 @@ export default function DailyTab() {
 
                                 {/* Amount */}
                                 <div>
-                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.amountLabel')} *</label>
+                                    <label className="text-muted-foreground text-xs mb-1 block">
+                                        {fEntryType === 'expense' ? t('expenses.amountLabel') : fEntryType === 'income' ? 'Amount Received' : 'Amount Invested'} *
+                                    </label>
                                     <input
                                         type="number"
                                         value={fAmount}
@@ -413,7 +517,7 @@ export default function DailyTab() {
                                         type="text"
                                         value={fDesc}
                                         onChange={(e) => setFDesc(e.target.value)}
-                                        placeholder={t('expenses.descriptionPlaceholder')}
+                                        placeholder={fEntryType === 'expense' ? t('expenses.descriptionPlaceholder') : fEntryType === 'income' ? 'Source of income' : 'e.g. SIP in Axis Bluechip, 10g gold'}
                                         className="w-full px-4 py-3 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple"
                                     />
                                 </div>

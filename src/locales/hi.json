@@ -259,6 +259,8 @@
         "dashboardSubtitle": "अवलोकन और अंतर्दृष्टि",
         "budgetSubtitle": "बजेट सेटअप और सीमाएं",
         "dailySubtitle": "दैनिक खर्चों को ट्रैक करें",
+        "weekly": "साप्ताहिक",
+        "weeklySubtitle": "साप्ताहिक अवलोकन",
         "reportsSubtitle": "विश्लेषण और पीडीएफ निर्यात",
         "totalSpentMonth": "इस महीने का कुल खर्च",
         "budgetUsedLabel": "बजेट उपयोग किया गया",

@@ -261,6 +261,8 @@
         "dashboardSubtitle": "ಅವಲೋಕನ ಮತ್ತು ಒಳನೋಟಗಳು",
         "budgetSubtitle": "ಬಜೆಟ್ ಸೆಟಪ್ ಮತ್ತು ಮಿತಿಗಳು",
         "dailySubtitle": "ದೈನಂದಿನ ವೆಚ್ಚಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ",
+        "weekly": "ವಾರ",
+        "weeklySubtitle": "ವಾರದ ಅವಲೋಕನ",
         "reportsSubtitle": "ಅನಾಲಿಟಿಕ್ಸ್ ಮತ್ತು PDF ರಫ್ತು",
         "totalSpentMonth": "ಈ ತಿಂಗಳ ಒಟ್ಟು ವೆಚ್ಚ",
         "budgetUsedLabel": "ಬಳಸಿದ ಬಜೆಟ್",

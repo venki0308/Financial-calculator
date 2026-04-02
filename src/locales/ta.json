@@ -261,6 +261,8 @@
         "dashboardSubtitle": "கண்ணோட்டம் & நுண்ணறிவு",
         "budgetSubtitle": "பட்ஜெட் அமைப்பு & வரம்புகள்",
         "dailySubtitle": "தினசரி செலவுகளைக் கண்காணிக்கவும்",
+        "weekly": "வாரம்",
+        "weeklySubtitle": "வாராந்திர கண்ணோட்டம்",
         "reportsSubtitle": "பகுப்பாய்வு & PDF ஏற்றுமதி",
         "totalSpentMonth": "இந்த மாத மொத்த செலவு",
         "budgetUsedLabel": "பயன்படுத்தப்பட்ட பட்ஜெட்",
