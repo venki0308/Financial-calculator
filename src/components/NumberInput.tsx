@@ -57,6 +57,8 @@ export default function NumberInput({ label, value, onChange, min, max, prefix, 
                 : 'bg-white dark:bg-card border-slate-200 dark:border-border shadow-sm dark:shadow-none'
                 }`}
             onClick={() => inputRef.current?.focus()}
+            onContextMenu={(e) => e.preventDefault()}
+            style={{ userSelect: 'none' }}
         >
             <label className="block text-xs font-medium text-slate-500 dark:text-muted-foreground mb-2">{label}</label>
             <div className="flex items-center gap-1">
@@ -70,13 +72,15 @@ export default function NumberInput({ label, value, onChange, min, max, prefix, 
                     onChange={handleChange}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
-                    step={step}
                     autoComplete="off"
                     autoCorrect="off"
+                    autoCapitalize="off"
                     spellCheck={false}
                     data-gramm="false"
                     data-gramm_editor="false"
                     data-enable-grammarly="false"
+                    onContextMenu={(e) => e.preventDefault()}
+                    onSelect={(e) => e.preventDefault()}
                     className="flex-1 bg-transparent text-slate-900 dark:text-foreground text-lg font-bold outline-none w-full"
                     readOnly={!focused}
                 />

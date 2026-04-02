@@ -165,6 +165,33 @@ function AppContent() {
         };
         initAnalytics();
         NotificationScheduler.initialize();
+
+        // ── Android WebView Input Bug Fix ──────────────────────────────
+        // Prevent Android clipboard toolbar by clearing rogue selections
+        const onSelectionChange = () => {
+            const selection = window.getSelection();
+            if (selection && selection.toString().length > 0) {
+                const activeEl = document.activeElement;
+                if (!activeEl || (activeEl.tagName !== 'INPUT' && activeEl.tagName !== 'TEXTAREA')) {
+                    selection.removeAllRanges();
+                }
+            }
+        };
+        document.addEventListener('selectionchange', onSelectionChange);
+
+        // Prevent context menu everywhere except actual input / textarea
+        const onContextMenu = (e: Event) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        };
+        document.addEventListener('contextmenu', onContextMenu);
+
+        return () => {
+            document.removeEventListener('selectionchange', onSelectionChange);
+            document.removeEventListener('contextmenu', onContextMenu);
+        };
     }, []);
 
     useEffect(() => {

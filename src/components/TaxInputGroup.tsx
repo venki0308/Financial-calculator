@@ -18,9 +18,17 @@ export default function TaxInputGroup({ income, setIncome, regime, setRegime }: 
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium text-sm">₹</span>
           <input 
-            type="number" 
+            type="text" 
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={income} 
-            onChange={e => setIncome(Number(e.target.value) || 0)} 
+            onChange={e => setIncome(Number(e.target.value.replace(/[^0-9]/g, '')) || 0)} 
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            onContextMenu={(e) => e.preventDefault()}
+            onSelect={(e) => e.preventDefault()}
             className="w-full bg-background border border-border rounded-lg pl-8 pr-3 py-2 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue" 
           />
         </div>

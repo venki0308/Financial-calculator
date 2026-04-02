@@ -471,3 +471,61 @@ input[type="number"]::-webkit-inner-spin-button {
 .safe-area-top {
     padding-top: calc(env(safe-area-inset-top, 24px) + 0.75rem);
 }
+
+/* ═══════════════════════════════════════════════════════
+   Android WebView — Input Selection & Clipboard Fix
+   Prevents cursor teardrops, floating clipboard toolbar,
+   and "Select all ⋮" context menu from overlapping UI.
+   ═══════════════════════════════════════════════════════ */
+
+/* 1. Disable text selection on all non-input elements */
+*:not(input):not(textarea):not([contenteditable="true"]) {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* 2. Re-enable selection ONLY on actual input elements */
+input,
+textarea,
+[contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+/* 3. Suppress cursor handle overlapping via plaintext-only editing */
+input {
+    -webkit-user-modify: read-write-plaintext-only;
+    caret-color: auto;
+}
+
+/* 4. Critical: prevent context menu on common non-input elements */
+body, div, span, p, h1, h2, h3, h4, h5, h6, button, label, a, li, ul, ol, nav, section, article, header, footer, main, aside {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* 5. Numeric inputs — extra bottom padding so the cursor handle
+      (teardrop) does not overlap the next input field below */
+input[type="text"],
+input[type="number"],
+input[inputmode="numeric"],
+input[inputmode="decimal"] {
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+}
+
+/* 6. Suppress selection highlight color globally */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 7. Hide text selection background inside inputs on Android */
+input::selection {
+    background: rgba(99, 102, 241, 0.15);
+}
+
+input::-moz-selection {
+    background: rgba(99, 102, 241, 0.15);
+}

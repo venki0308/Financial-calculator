@@ -14,6 +14,11 @@ const config: CapacitorConfig = {
     // This ensures native dialogs (date picker, language picker, etc.) sit on top
     // of a solid dark layer — not a transparent WebView showing the logo.
     backgroundColor: '#0F1923',
+    // captureInput: tells Capacitor to handle input events more aggressively,
+    // preventing Android's native text selection layer from activating.
+    captureInput: true,
+    webContentsDebuggingEnabled: false,
+    loggingBehavior: 'none' as any,
   },
 };
 
