@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Android keyboard toolbar / clipboard overlay suppression ────────────────
+   type="text" + inputMode="numeric" avoids the Android enhanced input toolbar
+   that type="number" triggers (Samsung/AOSP clipboard suggestion bar).
+   These rules further disable text-selection callouts on numeric inputs.       */
+input[inputmode="numeric"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: none;
+}
+input:focus {
+  outline: none;
+}
+
 @layer base {
   :root {
     --background: #ffffff;

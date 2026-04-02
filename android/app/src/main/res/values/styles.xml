@@ -21,7 +21,7 @@
         <!-- Default: light status bar icons (visible on dark bg) since app starts in dark mode.
              Overridden at runtime by @capacitor/status-bar on theme change. -->
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@color/appBackground</item>
     </style>
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">

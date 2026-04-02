@@ -114,7 +114,7 @@ export default function SchemeDetail() {
                         <div className="flex items-start gap-3">
                             <Building2 size={20} className="text-muted-foreground flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-muted-foreground text-sm font-medium mb-1">Government Mission â€” No Individual Application</p>
+                                <p className="text-muted-foreground text-sm font-medium mb-1">Government Mission {'\u2014'} No Individual Application</p>
                                 <p className="text-muted-foreground dark:text-muted-foreground text-sm">This program is implemented by government agencies and does not require individual application. Citizens benefit through government-delivered services and infrastructure.</p>
                             </div>
                         </div>
@@ -195,7 +195,7 @@ export default function SchemeDetail() {
                 {/* Notes */}
                 {scheme.notes && (
                     <div className="p-3 rounded-xl bg-brand-blue/5 border border-brand-blue/15 text-slate-600 dark:text-muted-foreground text-[12px] mb-4 italic">
-                        ðŸ“Œ {scheme.notes}
+                        📌 {scheme.notes}
                     </div>
                 )}
 

@@ -99,12 +99,19 @@ const InputRow = memo(({ label, k, value, onChange, prefix = '₹', hint, warnin
         <div className={`flex items-center gap-2 bg-slate-50 dark:bg-card border-border border rounded-xl px-3 py-2.5 transition-colors ${warning ? 'border-amber-400 dark:border-amber-500' : 'border-border focus-within:border-brand-purple'}`}>
             {prefix && <span className="text-brand-purple font-bold text-sm flex-shrink-0">{prefix}</span>}
             <input
-                type="number"
-                inputMode="decimal"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                data-gramm="false"
+                data-gramm_editor="false"
+                data-enable-grammarly="false"
                 value={value}
                 onChange={(e) => onChange(k, e.target.value)}
                 placeholder="0"
-                className="flex-1 bg-transparent text-slate-900 dark:text-foreground text-sm font-semibold outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="flex-1 bg-transparent text-slate-900 dark:text-foreground text-sm font-semibold outline-none"
             />
         </div>
         {warning && (
@@ -195,6 +202,9 @@ export default function IncomeTaxCalculator() {
         // Children's allowances (Old Regime, Sec 10(14))
         childEducationAllowance: '',
         childHostelAllowance: '',
+        // Variable / performance pay (fully taxable)
+        variablePay: '',
+        annualBonus: '',
     });
 
     const set = useCallback((k: string, v: string) => setInputs((p) => ({ ...p, [k]: v })), []);
@@ -214,8 +224,9 @@ export default function IncomeTaxCalculator() {
     }, [inputMode, inputs, num]);
 
     // ─── Gross Income (always annual internally) ──────────────────────────────
-    const allEarnings = num('basicSalary') + num('da') + num('hra') + num('special') + num('lta') + num('bonus') + num('otherIncome') + num('transportAllowance') + num('medicalAllowance') + num('foodAllowance');
-    const grossSalary = inputMode === 'ctc' ? ctcGross : allEarnings * multiplier;
+    const allEarnings = num('basicSalary') + num('da') + num('hra') + num('special') + num('lta') + num('bonus') + num('otherIncome') + num('transportAllowance') + num('medicalAllowance') + num('foodAllowance') + num('variablePay') + num('annualBonus');
+    // CTC mode: gross is auto-derived; variable pay & bonus are additional annual amounts on top
+    const grossSalary = inputMode === 'ctc' ? ctcGross + num('variablePay') + num('annualBonus') : allEarnings * multiplier;
 
     // ─── Payroll Deductions ───────────────────────────────────────────────────
     const payrollDeductions = useMemo(() => {
@@ -354,6 +365,8 @@ export default function IncomeTaxCalculator() {
                 { label: 'Other Income (Annual)', value: fmt(num('otherIncome') * multiplier) },
             );
         }
+        if (num('variablePay') > 0) inputFields.push({ label: 'Variable Pay / Performance Bonus', value: fmt(num('variablePay') * (inputMode === 'ctc' ? 1 : multiplier)) });
+        if (num('annualBonus') > 0) inputFields.push({ label: 'Annual Bonus / Ex-Gratia', value: fmt(num('annualBonus') * (inputMode === 'ctc' ? 1 : multiplier)) });
         inputFields.push({ label: 'Gross Annual Income', value: fmt(grossSalary) });
 
         const resultFields: Array<{ label: string; value: string }> = [
@@ -518,6 +531,8 @@ export default function IncomeTaxCalculator() {
                                 ))}
                             </div>
                         )}
+                        <InputRow label="Variable Pay / Performance Bonus" k="variablePay" value={inputs.variablePay} onChange={set} hint="Annual variable component — fully taxable" />
+                        <InputRow label="Annual Bonus / Ex-Gratia" k="annualBonus" value={inputs.annualBonus} onChange={set} hint="Statutory or performance bonus — fully taxable" />
                         <InputRow label="Other Income (FD interest, rental, etc.)" k="otherIncome" value={inputs.otherIncome} onChange={set} />
                     </div>
                 ) : (
@@ -535,6 +550,8 @@ export default function IncomeTaxCalculator() {
                             <InputRow label="Food Allowance" k="foodAllowance" value={inputs.foodAllowance} onChange={set} />
                             <InputRow label="LTA (Leave Travel Allowance)" k="lta" value={inputs.lta} onChange={set} />
                             <InputRow label="Bonus & Other Allowances" k="bonus" value={inputs.bonus} onChange={set} />
+                            <InputRow label="Variable Pay / Performance Bonus" k="variablePay" value={inputs.variablePay} onChange={set} hint="Annual variable component — fully taxable" />
+                            <InputRow label="Annual Bonus / Ex-Gratia" k="annualBonus" value={inputs.annualBonus} onChange={set} hint="Statutory or performance bonus — fully taxable" />
                             <InputRow label="Other Income (FD interest, rental, etc.)" k="otherIncome" value={inputs.otherIncome} onChange={set} />
                         </div>
 
@@ -564,6 +581,12 @@ export default function IncomeTaxCalculator() {
                             <span className="text-muted-foreground dark:text-muted-foreground text-xs">Gross Annual Income</span>
                             <span className="font-extrabold text-slate-900 dark:text-foreground text-base">{fmt(grossSalary)}</span>
                         </div>
+                        {(num('variablePay') > 0 || num('annualBonus') > 0) && (
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground dark:text-muted-foreground text-xs">Variable Pay / Bonus</span>
+                                <span className="font-semibold text-amber-500 text-sm">{fmt((num('variablePay') + num('annualBonus')) * (inputMode === 'ctc' ? 1 : multiplier))}</span>
+                            </div>
+                        )}
                         <div className="flex justify-between items-center">
                             <span className="text-muted-foreground dark:text-muted-foreground text-xs">Standard Deduction</span>
                             <span className="font-bold text-blue-500 text-sm">-{fmt(regime === 'new' ? newStdDed : 50000)}</span>

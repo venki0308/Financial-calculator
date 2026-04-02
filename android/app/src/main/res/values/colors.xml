@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#1B3A2D</color>
-    <color name="colorPrimaryDark">#0F1923</color>
+    <color name="colorPrimaryDark">#0F172A</color>
     <color name="colorAccent">#10B981</color>
-    <!-- App shell background — prevents white flash while WebView loads -->
-    <color name="appBackground">#0F1923</color>
-    <color name="background">#0F1923</color>
+    <!-- App shell background — must match CSS dark mode body bg (#0F172A) -->
+    <color name="appBackground">#0F172A</color>
+    <color name="background">#0F172A</color>
 </resources>

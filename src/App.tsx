@@ -128,13 +128,20 @@ function AppContent() {
         if (Capacitor.isNativePlatform()) {
             const applyStatusBar = async () => {
                 try {
-                    // Ensure the status bar is NOT overlaying the WebView content
+                    // Keep the status bar separate from the WebView (not overlaying)
                     await StatusBar.setOverlaysWebView({ overlay: false });
+
+                    // Style.Dark  = dark/black icons → use on LIGHT backgrounds
+                    // Style.Light = light/white icons → use on DARK backgrounds
                     await StatusBar.setStyle({
                         style: darkMode ? Style.Light : Style.Dark,
                     });
+
+                    // Background must exactly match the CSS body background
+                    // Dark  = #0F172A  (from index.css  html.dark body)
+                    // Light = #F8FAFC  (from index.css  html.light body)
                     await StatusBar.setBackgroundColor({
-                        color: darkMode ? '#0F1923' : '#FFFFFF',
+                        color: darkMode ? '#0F172A' : '#F8FAFC',
                     });
                 } catch (_) {
                     // Swallow — status bar API may not be available on all devices
@@ -185,11 +192,11 @@ function AppContent() {
 
     return (
         <>
-            <GlobalDisclaimerModal />
             <BackToast visible={showBackToast} />
             <UpdateChecker />
-            <PdfActionSheet />
             <Suspense fallback={LazyFallback}>
+                <GlobalDisclaimerModal />
+                <PdfActionSheet />
                 <Routes>
                     {/* Support pages (no nav bar) */}
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />

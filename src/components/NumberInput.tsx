@@ -63,8 +63,8 @@ export default function NumberInput({ label, value, onChange, min, max, prefix, 
                 {prefix && !focused && <span className="text-slate-700 dark:text-slate-300 text-lg font-semibold">{prefix}</span>}
                 <input
                     ref={inputRef}
-                    type={focused ? 'number' : 'text'}
-                    inputMode="decimal"
+                    type="text"
+                    inputMode="numeric"
                     pattern="[0-9]*"
                     value={displayValue}
                     onChange={handleChange}
