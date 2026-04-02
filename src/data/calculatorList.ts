@@ -1,4 +1,4 @@
-import { Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare, Calendar, Globe } from 'lucide-react';
+import { Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare, Calendar, Globe, Shield } from 'lucide-react';
 
 export interface CalcItem { 
     nameKey: string; 
@@ -59,4 +59,5 @@ export const allCalcs: CalcItem[] = [
     // Tools
     { nameKey: 'calculators.age.name', descKey: 'calculators.age.desc', icon: Calendar, color: '#F97316', path: '/calculator/age', category: 'tools', keywords: ['age', 'date', 'birth', 'generation'] },
     { nameKey: 'calculators.scientific.name', descKey: 'calculators.scientific.desc', icon: Calculator, color: '#3B82F6', path: '/calculator/scientific', category: 'tools', keywords: ['scientific', 'calculator', 'math', 'log', 'sin'] },
+    { nameKey: 'calculators.insurance.name', descKey: 'calculators.insurance.desc', icon: Shield, color: '#10B981', path: '/calculator/insurance', category: 'tools', keywords: ['insurance', 'health', 'life', 'term', 'premium', 'cover', 'policy'] },
 ];

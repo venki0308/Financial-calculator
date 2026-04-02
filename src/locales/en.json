@@ -248,6 +248,10 @@
         "scientific": {
             "name": "Scientific Calculator",
             "desc": "Advanced mathematical functions and calculations"
+        },
+        "insurance": {
+            "name": "Insurance Calculator",
+            "desc": "Compare health & life insurance plans and premiums"
         }
     },
     "expenses": {

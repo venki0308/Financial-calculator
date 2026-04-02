@@ -66,6 +66,7 @@ const AIFinancialAssistant       = lazy(() => import('./pages/AIFinancialAssista
 const CompareCalculator          = lazy(() => import('./pages/CompareCalculator'));
 const AgeCalculator              = lazy(() => import('./pages/AgeCalculator'));
 const WorldClock                 = lazy(() => import('./pages/WorldClock'));
+const InsuranceCalculator        = lazy(() => import('./pages/InsuranceCalculator'));
 
 // Support Pages — lazy loaded
 const PrivacyPolicy              = lazy(() => import('./pages/PrivacyPolicy'));
@@ -262,6 +263,7 @@ function AppContent() {
                         <Route path="/calculator/scientific" element={<ScientificCalculator />} />
                         <Route path="/calculator/age" element={<AgeCalculator />} />
                         <Route path="/world-clock" element={<WorldClock />} />
+                        <Route path="/calculator/insurance" element={<InsuranceCalculator />} />
                         <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
                         <Route path="/dev/validator" element={<ValidatorPage />} />
                     </Route>

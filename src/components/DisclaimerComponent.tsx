@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Lightbulb, BarChart2, ClipboardList, TrendingUp, Landmark, ShieldCheck, Target, CreditCard, AlertCircle, Scale, Building2, Briefcase } from 'lucide-react';
 
-export type ModuleName = 'advisor' | 'emi' | 'tax' | 'sip' | 'fd' | 'rd' | 'ppf' | 'hra' | 'gratuity' | 'gst' | 'goal' | 'expense' | 'overdraft' | 'schemes' | 'compare' | 'general' | 'time' | 'scientific' | 'swp' | 'cagr' | 'lumpsum' | 'epf' | 'nps' | 'ssy' | 'nsc' | 'kvp' | 'pomis' | 'potd' | 'scss' | 'budget';
+export type ModuleName = 'advisor' | 'emi' | 'tax' | 'sip' | 'fd' | 'rd' | 'ppf' | 'hra' | 'gratuity' | 'gst' | 'goal' | 'expense' | 'overdraft' | 'schemes' | 'compare' | 'general' | 'time' | 'scientific' | 'swp' | 'cagr' | 'lumpsum' | 'epf' | 'nps' | 'ssy' | 'nsc' | 'kvp' | 'pomis' | 'potd' | 'scss' | 'budget' | 'insurance';
 
 interface DisclaimerConfig {
     icon: React.ElementType;
@@ -191,6 +191,12 @@ const DISCLAIMER_CONTENT: Record<ModuleName, DisclaimerConfig> = {
         icon: CreditCard,
         title: "Budget Data",
         text: "All budget and expense data is stored locally on your device. Insights and recommendations are generated algorithmically and should not be considered professional financial advice. Consult a financial advisor for personalized guidance.",
+        colorClass
+    },
+    insurance: {
+        icon: ShieldCheck,
+        title: "Insurance Estimates",
+        text: "Premium estimates are indicative and based on general actuarial factors. Actual premiums vary by insurer, underwriting criteria, medical history, and policy terms. This tool is for comparison purposes only — always obtain official quotes from insurers before purchasing.",
         colorClass
     },
 };
