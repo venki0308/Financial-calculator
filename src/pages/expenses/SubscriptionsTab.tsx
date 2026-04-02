@@ -7,6 +7,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, Subscription, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 import BottomSheet from '../../components/BottomSheet';
+import DateInput from '../../components/DateInput';
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const COLOR_TAGS = [
@@ -543,10 +544,9 @@ export default function SubscriptionsTab() {
                         <label className="text-xs font-bold text-muted-foreground">Next Due Date</label>
                         <div className="relative">
                             <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                            <input
-                                type="date"
+                            <DateInput
                                 value={formData.nextDueDate || ''}
-                                onChange={e => updateField({ nextDueDate: e.target.value })}
+                                onChange={v => updateField({ nextDueDate: v })}
                                 className="w-full bg-slate-50 dark:bg-card border-transparent border rounded-xl pl-10 pr-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple"
                             />
                         </div>

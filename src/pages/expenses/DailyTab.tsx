@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Edit3, Check, X, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES, type PaymentMethod } from '../../store/useBudgetTrackerStore';
+import DateInput from '../../components/DateInput';
 
 const PAYMENT_METHODS: { id: PaymentMethod; icon: string }[] = [
     { id: 'Cash', icon: '💵' },
@@ -253,11 +254,10 @@ export default function DailyTab() {
                     <ChevronLeft size={18} className="text-muted-foreground" />
                 </button>
                 <div className="relative flex-1">
-                    <input
-                        type="date"
+                    <DateInput
                         value={selectedDate}
+                        onChange={setSelectedDate}
                         max={toDateInput(new Date())}
-                        onChange={(e) => setSelectedDate(e.target.value)}
                         className="w-full px-4 py-3 rounded-xl bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-foreground text-sm font-semibold outline-none"
                     />
                     {!isToday && <div className="absolute top-2 right-4 w-2 h-2 rounded-full border-2 border-white dark:border-slate-800 bg-brand-purple" />}

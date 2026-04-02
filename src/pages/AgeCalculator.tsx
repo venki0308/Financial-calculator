@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Star, Clock, Cake, Info, Activity, Wind, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
-
+import DateInput from '../components/DateInput';
 
 import { triggerCalcNotification } from '../services/calcNotifications';
 import DisclaimerComponent from '../components/DisclaimerComponent';
@@ -91,7 +91,9 @@ export default function AgeCalculator() {
                 {/* Date Input */}
                 <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 shadow-sm dark:shadow-none">
                     <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Date of Birth</label>
-                    <input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)}
+                    <DateInput
+                        value={birthDate}
+                        onChange={setBirthDate}
                         max={today.toISOString().slice(0, 10)}
                         className="w-full py-3 px-4 rounded-xl bg-slate-50 dark:bg-card border-border border border-border text-slate-900 dark:text-foreground text-lg font-semibold" />
                 </div>

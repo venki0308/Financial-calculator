@@ -8,6 +8,7 @@ import { AnalyticsService } from '../lib/analytics';
 import { useNavigate } from 'react-router-dom';
 import NumberInput from '../components/NumberInput';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
+import DateInput from '../components/DateInput';
 
 // Helper to extract number
 const parseFormattedNumber = (value: string): number => {
@@ -287,12 +288,12 @@ export default function OverdraftCalculator() {
              <div className="grid grid-cols-2 gap-3">
                  <div>
                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block mb-1">Start Date</span>
-                     <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}
+                     <DateInput value={startDate} onChange={setStartDate}
                         className="w-full px-3 py-3 rounded-xl bg-white dark:bg-background border border-slate-300 dark:border-border text-sm font-semibold shadow-sm" />
                  </div>
                  <div>
                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block mb-1">End Date</span>
-                     <input type="date" value={endDate} onChange={e=>setEndDate(e.target.value)}
+                     <DateInput value={endDate} onChange={setEndDate}
                         className="w-full px-3 py-3 rounded-xl bg-white dark:bg-background border border-slate-300 dark:border-border text-sm font-semibold shadow-sm" />
                  </div>
              </div>
