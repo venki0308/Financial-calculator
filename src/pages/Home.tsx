@@ -379,7 +379,7 @@ export default function Home() {
                 </motion.button>
             </section>
 
-            {/* AI Advisor & Goal Planner */}
+            {/* Financial Advisor & Goal Planner */}
             <section className="mb-8 grid grid-cols-2 gap-3">
                 <motion.button
                     whileTap={{ scale: 0.95 }}

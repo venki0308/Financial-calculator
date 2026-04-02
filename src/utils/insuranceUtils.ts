@@ -173,7 +173,7 @@ export function calculateHealthPremiums(inputs: HealthInsuranceInputs): HealthIn
       waitingPeriod: preExisting ? 2 : 0,
       coverBonusPerYear: 1.0,
       rating: 4.6,
-      highlights: ['100% NCB — cover doubles every year', 'Chronic disease mgmt', 'Global coverage option', 'Wellness rewards program'],
+      highlights: ['100% NCB — cover doubles in 1 claim-free year', 'Chronic disease mgmt', 'Global coverage option', 'Wellness rewards program'],
     },
   ];
 
@@ -350,7 +350,9 @@ export function calculateLifePremiums(inputs: LifeInsuranceInputs): LifeInsuranc
     const totalPaid = annualPremium * effectivePPT;
     // Endowment returns ~5-6% on maturity
     const assumedReturn = 0.055;
-    const maturityBenefit = Math.round(annualPremium * ((Math.pow(1 + assumedReturn, policyTerm) - 1) / assumedReturn));
+    // FV of premiums at end of PPT, then compounded for remaining years
+    const fvAtPPT = annualPremium * ((Math.pow(1 + assumedReturn, effectivePPT) - 1) / assumedReturn);
+    const maturityBenefit = Math.round(fvAtPPT * Math.pow(1 + assumedReturn, policyTerm - effectivePPT));
     const deathBenefit = Math.max(coverAmount, maturityBenefit);
 
     const cashflows: { amount: number; date: Date }[] = [];
@@ -394,11 +396,11 @@ export function calculateLifePremiums(inputs: LifeInsuranceInputs): LifeInsuranc
     const ulipMultiplier = 6.0;
     const annualPremium = Math.round(termBase * ulipMultiplier * gst);
     const totalPaid = annualPremium * effectivePPT;
-    // Assuming moderate equity-biased ULIP returns ~10%
-    const assumedReturn = 0.10;
     // After mortality + fund management charges (effective ~8%)
     const effectiveAnnualReturn = 0.08;
-    const maturityBenefit = Math.round(annualPremium * 0.95 * ((Math.pow(1 + effectiveAnnualReturn, policyTerm) - 1) / effectiveAnnualReturn));
+    // FV of premiums (with 0.95 charge factor) at end of PPT, then compounded for remaining years
+    const fvAtPPT = annualPremium * 0.95 * ((Math.pow(1 + effectiveAnnualReturn, effectivePPT) - 1) / effectiveAnnualReturn);
+    const maturityBenefit = Math.round(fvAtPPT * Math.pow(1 + effectiveAnnualReturn, policyTerm - effectivePPT));
     const deathBenefit = Math.max(coverAmount, maturityBenefit);
 
     const cashflows: { amount: number; date: Date }[] = [];

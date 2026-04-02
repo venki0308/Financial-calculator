@@ -21,7 +21,7 @@ const ROUTE_NAMES: Record<string, string> = {
     '/about': 'About',
     '/budget-tracker': 'Budget Tracker',
     '/goal-planner': 'Goal Planner',
-    '/financial-advisor': 'AI Financial Advisor',
+    '/financial-advisor': 'Financial Advisor',
     '/compare': 'Compare Calculators',
     '/world-clock': 'World Clock',
 
@@ -58,6 +58,8 @@ const ROUTE_NAMES: Record<string, string> = {
     '/calculator/car-loan': 'Car Loan EMI Calculator',
     '/calculator/personal-loan': 'Personal Loan EMI Calculator',
     '/calculator/education-loan': 'Education Loan EMI Calculator',
+    '/calculator/insurance': 'Insurance Calculator',
+    '/insurance-compare': 'Health Insurance Compare',
 
     // Legal & support
     '/privacy-policy': 'Privacy Policy',

@@ -63,7 +63,7 @@ const FEATURES = [
   { icon:'📦', name:'GST Invoice',           desc:'Tax-compliant invoice builder',     cat:'business'    },
   { icon:'📉', name:'Break-even Analysis',   desc:'Profit threshold calculator',       cat:'business'    },
   { icon:'🏗️', name:'Property Value',       desc:'Real estate return on investment',  cat:'investments' },
-  { icon:'🤖', name:'AI Advisor',            desc:'AI-powered financial insights',     cat:'all'         },
+  { icon:'🤖', name:'AI Advisor',            desc:'Smart personalized insights',     cat:'all'         },
   { icon:'📒', name:'Expense Tracker',       desc:'Track every rupee spent',           cat:'all'         },
   { icon:'🎂', name:'Age Calculator',        desc:'Exact age & life milestones',       cat:'all'         },
 ];

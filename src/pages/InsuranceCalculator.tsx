@@ -410,6 +410,11 @@ export default function InsuranceCalculator() {
   const [lifePolicyTerm, setLifePolicyTerm] = useState(25);
   const [lifePremiumTerm, setLifePremiumTerm] = useState(25);
 
+  // Clamp premium payment term if policy term is reduced below it
+  useEffect(() => {
+    if (lifePremiumTerm > lifePolicyTerm) setLifePremiumTerm(lifePolicyTerm);
+  }, [lifePolicyTerm]);
+
   // ─── Calculations ───────────────────────────────────────────────────
   const healthResult = useMemo(() => calculateHealthPremiums({
     age: healthAge,

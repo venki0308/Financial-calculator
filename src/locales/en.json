@@ -252,6 +252,10 @@
         "insurance": {
             "name": "Insurance Calculator",
             "desc": "Compare health & life insurance plans and premiums"
+        },
+        "insuranceCompare": {
+            "name": "Health Insurance",
+            "desc": "Compare top 8 plans side-by-side"
         }
     },
     "expenses": {
