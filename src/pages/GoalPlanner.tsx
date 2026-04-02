@@ -1,15 +1,15 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home, GraduationCap, Car, Umbrella, Target, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Home, GraduationCap, Car, Umbrella, Target, TrendingUp, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { formatINR } from '../utils/calculations';
+import { exportToPDF, type ExportConfig, dateTag } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useNotificationStore } from '../store/useNotificationStore';
-import { useRef } from 'react';
 
 interface GoalPreset {
     id: string;
@@ -105,6 +105,44 @@ export default function GoalPlanner() {
         }
         return data;
     }, [targetYears, expectedReturn, result.monthlySIP, currentSavings]);
+
+    const handleDownloadPDF = async () => {
+        const config: ExportConfig = {
+            title: 'Goal Planner Report',
+            subtitle: selectedGoal ? selectedGoal.label : 'Custom Goal',
+            inputs: [
+                { label: 'Goal', value: selectedGoal ? selectedGoal.label : 'Custom' },
+                { label: 'Current Cost', value: `₹${currentCost.toLocaleString('en-IN')}` },
+                { label: 'Current Savings', value: `₹${currentSavings.toLocaleString('en-IN')}` },
+                { label: 'Target Years', value: `${targetYears} Years` },
+                { label: 'Inflation Rate', value: `${inflationRate}% p.a.` },
+                { label: 'Expected Return', value: `${expectedReturn}% p.a.` },
+            ],
+            results: [
+                { label: 'Monthly SIP Needed', value: `₹${Math.round(result.monthlySIP).toLocaleString('en-IN')}` },
+                { label: 'Total Investment', value: `₹${Math.round(result.totalInvested).toLocaleString('en-IN')}` },
+                { label: 'Returns Earned', value: `₹${Math.round(result.wealthGained).toLocaleString('en-IN')}` },
+                { label: 'Future Target Cost', value: `₹${Math.round(result.targetFV).toLocaleString('en-IN')}` },
+                { label: 'Real Rate of Return', value: `${(result.realRate * 100).toFixed(2)}%` },
+            ],
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Total Investment', value: result.totalInvested, color: '#4F46E5' },
+                    { label: 'Returns Earned', value: result.wealthGained, color: '#10B981' },
+                ],
+            },
+            projectionTitle: 'Year-wise Growth Projection',
+            projectionColumns: ['Year', 'Amount Invested', 'Portfolio Value'],
+            projectionRows: projection.map(p => [
+                `Year ${p.year}`,
+                `₹${Math.round(p.invested).toLocaleString('en-IN')}`,
+                `₹${Math.round(p.value).toLocaleString('en-IN')}`,
+            ]),
+            filename: `FinCalix_Goal_Planner_${dateTag()}`,
+        };
+        await exportToPDF(config);
+    };
 
     return (
         <div className="min-h-dvh bg-background animate-fade-in">
@@ -256,6 +294,14 @@ export default function GoalPlanner() {
                                 </div>
                             </div>
                         )}
+
+                        {/* Export PDF */}
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="w-full mt-4 flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-colors hover:bg-brand-blue/10 active:scale-95"
+                        >
+                            <FileText size={20} /> Export Report
+                        </button>
                     </div>
                 )}
 

@@ -40,7 +40,12 @@ const calcMeta: Record<string, { label: string; icon: any; color: string; gradie
     'GST Calculator (profit)': { label: 'GST Profit Margin', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
     'GST Calculator (itc)': { label: 'GST ITC', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
     'GST Calculator (invoice)': { label: 'GST Invoice', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
-    // GenericCalculator-based types
+    // Short-ID keys used by individual calculator pages
+    'swp': { label: 'SWP Calculator', icon: TrendingUp, color: '#EF4444', gradient: 'from-red-600/20 to-orange-600/20' },
+    'rd': { label: 'RD Calculator', icon: PiggyBank, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
+    'ci': { label: 'Compound Interest', icon: Calculator, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
+    'cagr': { label: 'CAGR Calculator', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
+    // GenericCalculator-based types (full name keys)
     'CAGR Calculator': { label: 'CAGR Calculator', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
     'Gratuity Calculator': { label: 'Gratuity Calculator', icon: Briefcase, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
     'HRA Calculator': { label: 'HRA Calculator', icon: Home, color: '#10B981', gradient: 'from-green-600/20 to-emerald-600/20' },
@@ -53,6 +58,7 @@ const calcMeta: Record<string, { label: string; icon: any; color: string; gradie
     'Post Office TD': { label: 'Post Office TD', icon: PiggyBank, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
     'Post Office MIS': { label: 'Post Office MIS', icon: PiggyBank, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
     'SWP Calculator': { label: 'SWP Calculator', icon: TrendingUp, color: '#EF4444', gradient: 'from-red-600/20 to-orange-600/20' },
+    'Villa Construction': { label: 'Villa Construction', icon: Home, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
     'Land Value': { label: 'Land Value Calculator', icon: Home, color: '#22C55E', gradient: 'from-green-600/20 to-emerald-600/20' },
     'Flat Price': { label: 'Flat Price Calculator', icon: Home, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
     'Simple Interest': { label: 'Simple Interest', icon: Calculator, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },

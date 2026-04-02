@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
 import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
+import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
 import { allCalcs } from '../data/calculatorList';
 import { schemes } from '../data/schemes';
 import { useNotificationStore } from '../store/useNotificationStore';
@@ -68,12 +70,28 @@ export default function Home() {
         AnalyticsService.trackScreen('Home');
     }, []);
 
-    useEffect(() => {
+    const loadRecent = useCallback(() => {
         try {
             const stored = JSON.parse(localStorage.getItem('fincalix_recently_used') || '[]');
-            setRecentPaths(stored);
+            if (stored.length > 0) setRecentPaths(stored);
         } catch { }
     }, []);
+
+    // Read recently-used with a delayed retry for Android WebView timing
+    useEffect(() => {
+        loadRecent();
+        const timer = setTimeout(loadRecent, 300);
+        return () => clearTimeout(timer);
+    }, [loadRecent]);
+
+    // Re-read when app comes back from background (Android)
+    useEffect(() => {
+        if (!Capacitor.isNativePlatform()) return;
+        const listener = CapApp.addListener('appStateChange', ({ isActive }) => {
+            if (isActive) loadRecent();
+        });
+        return () => { listener.then(l => l.remove()); };
+    }, [loadRecent]);
 
     const searchResults = useMemo(() => {
         const empty = { calcOnly: [] as any[], schemeResults: [] as any[], utilityResults: [] as any[], all: [] as any[] };

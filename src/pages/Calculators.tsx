@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChevronRight, Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare, Calendar, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -39,12 +39,19 @@ export default function Calculators() {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [recentPaths, setRecentPaths] = useState<string[]>([]);
 
-    useEffect(() => {
+    const loadRecent = useCallback(() => {
         try {
             const stored = JSON.parse(localStorage.getItem('fincalix_recently_used') || '[]');
-            setRecentPaths(stored);
+            if (stored.length > 0) setRecentPaths(stored);
         } catch { }
     }, []);
+
+    // Read recently-used with a delayed retry for Android WebView timing
+    useEffect(() => {
+        loadRecent();
+        const timer = setTimeout(loadRecent, 300);
+        return () => clearTimeout(timer);
+    }, [loadRecent]);
 
     // Deduplicate by path (compound interest appears in loans + banking)
     const uniqueCalcs = allCalcs.filter((c, i, arr) =>

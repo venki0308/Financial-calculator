@@ -70,7 +70,8 @@ export function PdfActionSheet() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 0.5 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black z-[10000]"
+                        className="fixed inset-0 bg-black"
+                        style={{ zIndex: 99999 }}
                         onClick={hideActionSheet}
                     />
                     {/* Bottom Sheet UI */}
@@ -79,9 +80,15 @@ export function PdfActionSheet() {
                         animate={{ y: 0 }}
                         exit={{ y: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed bottom-0 left-0 right-0 bg-white dark:bg-card rounded-t-3xl shadow-2xl z-[10001] overflow-hidden max-w-md mx-auto"
+                        className="fixed bottom-0 left-0 right-0 bg-white dark:bg-card rounded-t-3xl shadow-2xl max-w-md mx-auto"
+                        style={{
+                            zIndex: 100000,
+                            maxHeight: '70vh',
+                            overflowY: 'auto',
+                            paddingBottom: 'env(safe-area-inset-bottom, 24px)',
+                        }}
                     >
-                        <div className="p-6">
+                        <div className="p-6" style={{ minHeight: 200 }}>
                             <div className="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-foreground">File Ready</h3>

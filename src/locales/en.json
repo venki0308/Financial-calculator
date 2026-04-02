@@ -24,7 +24,7 @@
         "popularCalcs": "Popular Calculators",
         "currentBalance": "Current Balance",
         "monthlyIncome": "Monthly Income",
-        "financialAdvisorDesc": "AI-Powered personalized insights",
+        "financialAdvisorDesc": "Smart personalized insights",
         "goalPlannerDesc": "Plan & achieve your financial targets",
         "compareScenarios": "Compare Scenarios",
         "compareScenariosDesc": "Compare different investments side-by-side",
@@ -561,7 +561,7 @@
     },
     "advisor": {
         "title": "Financial Advisor",
-        "subtitle": "AI-Powered Financial Planning",
+        "subtitle": "Smart Financial Planning",
         "step1": "Your Income",
         "step2": "Select Goals",
         "step3": "Your Plan",
