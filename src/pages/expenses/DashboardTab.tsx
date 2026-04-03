@@ -695,7 +695,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                 {recentExpenses.length === 0 ? (
                     <div className="py-5">
                         <div className="text-center mb-3">
-                            <Wallet className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                            <Wallet className="w-10 h-10 mx-auto text-slate-400 dark:text-slate-600 mb-2" />
                             <p className="text-muted-foreground text-sm">{t('expenses.noExpensesMonth')}</p>
                         </div>
                         {/* Smart Daily Nudges (Part 6) */}

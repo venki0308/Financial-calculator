@@ -212,11 +212,11 @@ export default function FDCalculator() {
                     </motion.p>
 
                     <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="p-2.5 rounded-xl bg-slate-800/50 text-center">
+                        <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-center">
                             <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Invested</p>
                             <p className="text-foreground font-bold text-sm">{formatINR(principal)}</p>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-slate-800/50 text-center">
+                        <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-center">
                             <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Interest</p>
                             <p className="text-brand-green font-bold text-sm">{formatINR(result.interest)}</p>
                         </div>
@@ -258,10 +258,10 @@ export default function FDCalculator() {
                     {showCompare && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="rounded-2xl bg-card border border-border overflow-hidden">
-                                <div className="grid grid-cols-3 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-800/50"><span>Frequency</span><span>Interest</span><span>Maturity</span></div>
+                                <div className="grid grid-cols-3 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-100 dark:bg-slate-800/50"><span>Frequency</span><span>Interest</span><span>Maturity</span></div>
                                 {compoundingComparison.map((c, i) => (
-                                    <div key={i} className={`grid grid-cols-3 text-[11px] p-2.5 ${c.freq === compounding ? 'bg-brand-purple/10 border-l-2 border-brand-purple' : i % 2 === 0 ? 'bg-card' : 'bg-slate-800/20'}`}>
-                                        <span className={`${c.freq === compounding ? 'text-brand-purple font-bold' : 'text-slate-300'}`}>{c.label}</span>
+                                    <div key={i} className={`grid grid-cols-3 text-[11px] p-2.5 ${c.freq === compounding ? 'bg-brand-purple/10 border-l-2 border-brand-purple' : i % 2 === 0 ? 'bg-card' : 'bg-slate-50 dark:bg-slate-800/20'}`}>
+                                        <span className={`${c.freq === compounding ? 'text-brand-purple font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{c.label}</span>
                                         <span className="text-brand-green">{formatINR(c.interest)}</span>
                                         <span className="text-foreground font-bold">{formatINR(c.maturity)}</span>
                                     </div>

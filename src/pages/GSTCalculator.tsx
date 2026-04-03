@@ -426,7 +426,7 @@ export default function GSTCalculator() {
                                 onClick={() => { setMode(m.key); setSaved(false); }}
                                 className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border ${active
                                     ? 'bg-brand-purple border-brand-purple text-white shadow-lg shadow-brand-purple/20'
-                                    : 'bg-card border-border text-muted-foreground hover:text-slate-300'
+                                    : 'bg-card border-border text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300'
                                     }`}
                             >
                                 <Icon size={14} />
@@ -526,12 +526,12 @@ export default function GSTCalculator() {
                                     <p className="text-3xl font-bold text-foreground">{formatINR(profitResult.totalWithGst)}</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3 mb-4">
-                                    <div className="p-3 rounded-xl bg-slate-800/30 text-center">
+                                    <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 text-center">
                                         <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Profit</p>
                                         <p className="text-brand-green font-bold text-sm">{formatINR(profitResult.profit)}</p>
                                         <p className="text-[10px] text-muted-foreground">{profitResult.profitPct.toFixed(1)}%</p>
                                     </div>
-                                    <div className="p-3 rounded-xl bg-slate-800/30 text-center">
+                                    <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 text-center">
                                         <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Net GST</p>
                                         <p className="text-amber-400 font-bold text-sm">{formatINR(profitResult.netGst)}</p>
                                         <p className="text-[10px] text-muted-foreground">payable to govt</p>
@@ -656,7 +656,7 @@ export default function GSTCalculator() {
                                     <tbody>
                                         {invoiceResult.map(item => (
                                             <tr key={item.id} className="border-b border-border/20">
-                                                <td className="py-2 text-slate-300">{item.name}</td>
+                                                <td className="py-2 text-slate-600 dark:text-slate-300">{item.name}</td>
                                                 <td className="py-2 text-right text-foreground">{formatINR(item.amount)}</td>
                                                 <td className="py-2 text-right text-brand-green">{formatINR(item.gst)}</td>
                                                 <td className="py-2 text-right text-foreground font-bold">{formatINR(item.total)}</td>
@@ -730,7 +730,7 @@ function ToggleIGST({ value, onChange }: { value: boolean; onChange: (v: boolean
                 <Info size={14} className="text-muted-foreground" />
                 <span className="text-foreground text-xs font-medium">Interstate (IGST)</span>
             </div>
-            <button onClick={() => onChange(!value)} className={`w-11 h-6 rounded-full p-1 transition-colors ${value ? 'bg-brand-purple' : 'bg-slate-700'}`}>
+            <button onClick={() => onChange(!value)} className={`w-11 h-6 rounded-full p-1 transition-colors ${value ? 'bg-brand-purple' : 'bg-slate-300 dark:bg-slate-700'}`}>
                 <motion.div animate={{ x: value ? 20 : 0 }} className="w-4 h-4 rounded-full bg-white shadow-sm" />
             </button>
         </div>
@@ -781,7 +781,7 @@ function ResultCard({ result, rate, isIGST, chartData, chartRef, showBreakdown, 
                             {[5, 12, 18, 28].map(r => {
                                 const g = result.base * (r / 100);
                                 return (
-                                    <div key={r} className={`flex justify-between items-center py-2 px-3 rounded-lg ${r === rate ? 'bg-brand-purple/10 border border-brand-purple/30' : 'bg-slate-800/20'}`}>
+                                    <div key={r} className={`flex justify-between items-center py-2 px-3 rounded-lg ${r === rate ? 'bg-brand-purple/10 border border-brand-purple/30' : 'bg-slate-100 dark:bg-slate-800/20'}`}>
                                         <span className="text-xs text-muted-foreground">{r}% GST</span>
                                         <div className="text-right">
                                             <span className="text-xs text-foreground font-bold">{formatINR(result.base + g)}</span>

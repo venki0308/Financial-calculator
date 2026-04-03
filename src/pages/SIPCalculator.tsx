@@ -312,7 +312,7 @@ export default function SIPCalculator() {
                             onClick={() => setActiveTab(tab.key)}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-semibold rounded-lg transition-all ${activeTab === tab.key
                                     ? 'bg-brand-green text-black shadow-lg shadow-brand-green/20'
-                                    : 'text-muted-foreground hover:text-slate-300'
+                                    : 'text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300'
                                 }`}
                         >
                             <tab.icon size={13} />

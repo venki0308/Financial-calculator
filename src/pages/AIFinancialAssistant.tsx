@@ -9,6 +9,7 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF } from '../utils/exportUtils';
 import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
+import { useAppColors } from '../theme/useAppColors';
 
 interface GoalPlan {
     goalId: string;
@@ -47,9 +48,10 @@ const goalsMeta = [
 ];
 
 export default function AIFinancialAssistant() {
-    useEffect(() => { AnalyticsService.trackScreen('Financial_Advisor'); }, []);
-    const navigate = useNavigate();
     const { t } = useTranslation();
+    const navigate = useNavigate();
+    const c = useAppColors();
+    useEffect(() => { AnalyticsService.trackScreen('Financial_Advisor'); }, []);
 
     // Build goals with translated labels
     const goals = goalsMeta.map(g => ({ ...g, label: t(`advisor.goals.${g.id}`) }));
@@ -388,7 +390,7 @@ export default function AIFinancialAssistant() {
                                 <p className="text-muted-foreground text-sm mb-2">{t('advisor.financialScore')}</p>
                                 <div className="relative w-32 h-32 mx-auto mb-3">
                                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
-                                        <circle cx="60" cy="60" r="50" stroke="#1E293B" strokeWidth="10" fill="none" />
+                                        <circle cx="60" cy="60" r="50" stroke={c.border} strokeWidth="10" fill="none" />
                                         <motion.circle
                                             cx="60" cy="60" r="50"
                                             stroke={plan.score >= 70 ? '#10B981' : plan.score >= 40 ? '#F59E0B' : '#EF4444'}

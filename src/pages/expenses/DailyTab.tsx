@@ -275,7 +275,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                                 </div>
                             </div>
                             <div className="flex gap-3">
-                                <button onClick={() => setEditingQA(null)} className="flex-1 py-3 rounded-xl bg-slate-700 text-slate-300 font-medium text-sm">{t('common.cancel')}</button>
+                                <button onClick={() => setEditingQA(null)} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium text-sm">{t('common.cancel')}</button>
                                 <button onClick={saveQuickAdd} className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm">Save</button>
                             </div>
                         </motion.div>
@@ -431,7 +431,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                                                 <button
                                                     key={et.id}
                                                     onClick={() => { setFEntryType(et.id); if (et.id === 'income') setFCategory('salary'); else if (et.id === 'expense') setFCategory('food'); }}
-                                                    className={`p-2.5 rounded-xl text-center text-xs font-bold transition-all ${fEntryType === et.id ? `${et.bg} text-white` : 'bg-card border-border text-slate-300'}`}
+                                                    className={`p-2.5 rounded-xl text-center text-xs font-bold transition-all ${fEntryType === et.id ? `${et.bg} text-white` : 'bg-card border-border text-slate-600 dark:text-slate-300'}`}
                                                 >
                                                     {et.emoji}<br />{et.label}
                                                 </button>
@@ -449,7 +449,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                                                 <button
                                                     key={inv.id}
                                                     onClick={() => setFInvestmentType(inv.id)}
-                                                    className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fInvestmentType === inv.id ? 'text-white' : 'bg-card border-border text-slate-300'}`}
+                                                    className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fInvestmentType === inv.id ? 'text-white' : 'bg-card border-border text-slate-600 dark:text-slate-300'}`}
                                                     style={fInvestmentType === inv.id ? { backgroundColor: inv.color } : {}}
                                                 >
                                                     {inv.icon}<br />{inv.label.split('/')[0].trim()}
@@ -551,7 +551,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                             {/* Sticky action buttons - always visible */}
                             <div className="flex-shrink-0 px-6 pt-3 pb-4 border-t border-slate-700/60">
                                 <div className="flex gap-3">
-                                    <button onClick={() => setShowAddForm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-slate-300 font-medium text-sm transition-colors hover:bg-slate-600">{t('common.cancel')}</button>
+                                    <button onClick={() => setShowAddForm(false)} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium text-sm transition-colors hover:bg-slate-200 dark:hover:bg-slate-600">{t('common.cancel')}</button>
                                     <motion.button
                                         whileTap={isDirty && isValid ? { scale: 0.97 } : {}}
                                         onClick={handleSaveEntry}

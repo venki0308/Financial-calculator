@@ -160,16 +160,16 @@ export default function ValidatorPage() {
     const categories = [...new Set(tests.map(t => t.category))];
 
     return (
-        <div className="min-h-dvh bg-slate-50 dark:bg-background">
-            <div className="sticky top-0 z-10 bg-slate-50/95 dark:bg-[#0F172A]  px-4 pt-14 pb-3 border-b border-border">
+        <div className="min-h-dvh bg-background">
+            <div className="sticky top-0 z-10 bg-background/95  px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-                        <ArrowLeft size={18} className="text-slate-600 dark:text-muted-foreground" />
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
+                        <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div className="flex-1">
                         <div className="flex items-center gap-2">
                             <Beaker size={16} className="text-indigo-500" />
-                            <h1 className="text-base font-bold text-slate-900 dark:text-foreground">Financial Formula Validator</h1>
+                            <h1 className="text-base font-bold text-foreground">Financial Formula Validator</h1>
                         </div>
                         <p className="text-muted-foreground text-xs">Dev Tool · Internal Testing Only</p>
                     </div>
@@ -196,7 +196,7 @@ export default function ValidatorPage() {
                     </div>
                 </div>
 
-                <div className="h-2 rounded-full bg-slate-200 dark:bg-card border-border overflow-hidden">
+                <div className="h-2 rounded-full bg-border overflow-hidden">
                     <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${(passed / tests.length) * 100}%` }} />
                 </div>
                 <p className="text-center text-xs text-muted-foreground">{passed}/{tests.length} tests passing ({Math.round(passed / tests.length * 100)}%)</p>
@@ -218,7 +218,7 @@ export default function ValidatorPage() {
                                             'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20'
                                         }`}>
                                             <div className="flex items-center justify-between mb-2">
-                                                <p className="text-sm font-semibold text-slate-900 dark:text-foreground">{test.name}</p>
+                                                <p className="text-sm font-semibold text-foreground">{test.name}</p>
                                                 {status === 'pass' ? <CheckCircle size={16} className="text-emerald-500" /> :
                                                  status === 'warn' ? <AlertCircle size={16} className="text-amber-500" /> :
                                                  <XCircle size={16} className="text-red-500" />}
@@ -226,7 +226,7 @@ export default function ValidatorPage() {
                                             <div className="grid grid-cols-3 gap-2 text-xs">
                                                 <div>
                                                     <p className="text-muted-foreground">Expected</p>
-                                                    <p className="font-mono font-bold text-slate-900 dark:text-foreground">₹{test.expected.toLocaleString('en-IN')}</p>
+                                                    <p className="font-mono font-bold text-foreground">₹{test.expected.toLocaleString('en-IN')}</p>
                                                 </div>
                                                 <div>
                                                     <p className="text-muted-foreground">Actual</p>

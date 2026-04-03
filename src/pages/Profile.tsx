@@ -93,7 +93,7 @@ export default function Profile() {
                                 <h2 className="text-foreground font-semibold text-lg truncate">{user.name}</h2>
                                 <button
                                     onClick={() => { setNameInput(user.name); setEditingName(true); }}
-                                    className="p-1 rounded-lg text-muted-foreground hover:text-slate-300 transition-colors"
+                                    className="p-1 rounded-lg text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                                 >
                                     <Pencil size={14} />
                                 </button>

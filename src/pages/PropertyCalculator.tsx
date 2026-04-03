@@ -588,7 +588,7 @@ export default function PropertyCalculator() {
                                                             onChange={e => setIsDTCP(e.target.checked)}
                                                             className="w-5 h-5 rounded border-border bg-dark-bg accent-brand-green"
                                                         />
-                                                        <label htmlFor="dtcp_rera" className="text-xs text-slate-300 font-medium select-none">DTCP / RERA Approved</label>
+                                                        <label htmlFor="dtcp_rera" className="text-xs text-slate-600 dark:text-slate-300 font-medium select-none">DTCP / RERA Approved</label>
                                                     </div>
                                                 </motion.div>
                                             )}
@@ -655,7 +655,7 @@ export default function PropertyCalculator() {
                                             >
                                                 Save
                                             </button>
-                                            <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-700 text-slate-300 text-xs font-bold">
+                                            <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
                                                 📄 PDF
                                             </button>
                                         </div>
@@ -776,7 +776,7 @@ export default function PropertyCalculator() {
                                         <div className="grid grid-cols-2 gap-2">
                                             <button onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Flat Price', inputValues: { builtUp, carpet, ppsf, parking, amenities, maint, gstPct }, resultValues: { primary: flatResult.totalCost }, timestamp: Date.now() })}
                                                 className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">Save</button>
-                                            <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-700 text-slate-300 text-xs font-bold">📄 PDF</button>
+                                            <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 PDF</button>
                                         </div>
                                     </motion.div>
                                 )}
@@ -867,7 +867,7 @@ export default function PropertyCalculator() {
                                                     {villaResult.floors.map((f: any) => (
                                                         <tr key={f.name} className="border-b border-border/30">
                                                             <td className="py-2.5 text-foreground font-medium">{f.name}</td>
-                                                            <td className="py-2.5 text-right text-slate-300">{f.area.toLocaleString('en-IN')}</td>
+                                                            <td className="py-2.5 text-right text-slate-600 dark:text-slate-300">{f.area.toLocaleString('en-IN')}</td>
                                                             <td className="py-2.5 text-right text-brand-green font-medium">{fmt(f.cost)}</td>
                                                         </tr>
                                                     ))}
@@ -883,7 +883,7 @@ export default function PropertyCalculator() {
                                             <CostRow label={`Electrical (${ohElectrical}%)`} value={villaResult.electrical} accent="text-yellow-400" />
                                             <CostRow label={`Plumbing (${ohPlumbing}%)`} value={villaResult.plumbing} accent="text-blue-400" />
                                             <CostRow label={`Interior (${ohInterior}%)`} value={villaResult.interior} accent="text-brand-purple" />
-                                            <CostRow label={`Miscellaneous (${ohMisc}%)`} value={villaResult.misc} accent="text-slate-300" />
+                                            <CostRow label={`Miscellaneous (${ohMisc}%)`} value={villaResult.misc} accent="text-slate-600 dark:text-slate-300" />
                                             <div className="border-t border-brand-green/30 pt-2 mt-2">
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-foreground text-sm font-bold">Total Construction Cost</span>
@@ -902,7 +902,7 @@ export default function PropertyCalculator() {
                                         <div className="grid grid-cols-2 gap-2">
                                             <button onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Villa Construction', inputValues: { groundFloor, firstFloor, secondFloor, constRate }, resultValues: { primary: villaResult.totalCost }, timestamp: Date.now() })}
                                                 className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">Save</button>
-                                            <button onClick={handleVillaPDF} className="py-3 rounded-xl bg-slate-700 text-slate-300 text-xs font-bold">📄 PDF</button>
+                                            <button onClick={handleVillaPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 PDF</button>
                                         </div>
                                     </motion.div>
                                 )}
@@ -1032,7 +1032,7 @@ export default function PropertyCalculator() {
                                             { label: 'Net Yield', value: `${ryResult.netYield.toFixed(2)}%`, color: 'text-brand-gold' },
                                             { label: 'Payback Period', value: `${ryResult.paybackYears.toFixed(1)} yrs`, color: 'text-brand-purple' },
                                         ].map(s => (
-                                            <div key={s.label} className="text-center p-3 rounded-xl bg-slate-800/30">
+                                            <div key={s.label} className="text-center p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30">
                                                 <p className="text-muted-foreground text-[9px] uppercase font-bold">{s.label}</p>
                                                 <p className={`font-bold text-sm mt-1 ${s.color}`}>{s.value}</p>
                                             </div>
@@ -1059,7 +1059,7 @@ export default function PropertyCalculator() {
                             {apResult && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-2">
                                     {apResult.projections.map((p: { years: number; value: number; gain: number }) => (
-                                        <div key={p.years} className="flex justify-between items-center p-3 rounded-xl bg-slate-800/30">
+                                        <div key={p.years} className="flex justify-between items-center p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30">
                                             <div>
                                                 <p className="text-foreground font-bold text-sm">{p.years} Years</p>
                                                 <p className="text-muted-foreground text-[10px]">Gain: {fmt(p.gain)}</p>

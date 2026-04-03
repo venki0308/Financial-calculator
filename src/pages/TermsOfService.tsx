@@ -78,7 +78,7 @@ export default function TermsOfService() {
                         {/* Divider (except after last) */}
                         {idx < sections.length - 1 && (
                             <div className="pt-2">
-                                <div className="h-px bg-slate-800/80" />
+                                <div className="h-px bg-border" />
                             </div>
                         )}
                     </motion.section>
@@ -91,12 +91,12 @@ export default function TermsOfService() {
                     transition={{ delay: 0.6 }}
                     className="pt-6 space-y-4"
                 >
-                    <div className="h-px bg-slate-800/80" />
+                    <div className="h-px bg-border" />
                     <p className="text-muted-foreground text-xs leading-relaxed">
                         By using this app, you acknowledge and agree to the terms outlined above.
                     </p>
                     <div className="flex justify-center">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/50 text-[10px] text-muted-foreground font-medium">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card border border-border text-[10px] text-muted-foreground font-medium">
                             Last updated · March 2026
                         </span>
                     </div>

@@ -248,8 +248,8 @@ export default function PrivacyPolicy() {
                 {/* Footer */}
                 <div className="pt-6 pb-4 border-t border-border text-center space-y-2">
                     <p className="text-muted-foreground text-[11px] font-semibold">{t('privacyPolicy.footerTitle')}</p>
-                    <p className="text-slate-600 text-[10px]">{t('privacyPolicy.footerMade')}</p>
-                    <p className="text-slate-600 text-[10px]">&copy; {new Date().getFullYear()} FinCalix. All rights reserved.</p>
+                    <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.footerMade')}</p>
+                    <p className="text-muted-foreground text-[10px]">&copy; {new Date().getFullYear()} FinCalix. All rights reserved.</p>
                 </div>
             </div>
         </div>

@@ -190,16 +190,16 @@ export default function NPSCalculator() {
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20">
                     <h3 className="text-foreground font-bold text-sm mb-2 flex items-center gap-2"><IndianRupee size={16} className="text-amber-400" /> Retirement Income Projection</h3>
                     <div className="grid grid-cols-2 gap-3 mb-3">
-                        <div className="p-2.5 rounded-xl bg-slate-800/50">
+                        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                             <p className="text-muted-foreground text-[9px] uppercase font-bold">Monthly Pension</p>
                             <p className="text-amber-400 font-bold text-lg">{formatINR(result.monthlyPension)}</p>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-slate-800/50">
+                        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                             <p className="text-muted-foreground text-[9px] uppercase font-bold">Annual Pension</p>
                             <p className="text-amber-400 font-bold text-lg">{formatINR(result.monthlyPension * 12)}</p>
                         </div>
                     </div>
-                    <div className="p-2.5 rounded-xl bg-slate-800/50">
+                    <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                         <p className="text-muted-foreground text-[9px] uppercase font-bold">Annuity Investment</p>
                         <p className="text-foreground font-bold text-sm">{formatINR(result.annuity)} <span className="text-muted-foreground text-xs">({annuityPct}% of corpus → {annuityRate}% annuity rate)</span></p>
                     </div>
@@ -278,9 +278,9 @@ export default function NPSCalculator() {
                     {showTimeline && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="rounded-2xl bg-card border border-border overflow-hidden">
-                                <div className="grid grid-cols-4 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-800/50"><span>Year</span><span>Age</span><span>Contrib.</span><span>Corpus</span></div>
+                                <div className="grid grid-cols-4 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-100 dark:bg-slate-800/50"><span>Year</span><span>Age</span><span>Contrib.</span><span>Corpus</span></div>
                                 {result.timeline.map((t, i) => (
-                                    <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${i % 2 === 0 ? 'bg-card' : 'bg-slate-800/20'} text-slate-300`}>
+                                    <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${i % 2 === 0 ? 'bg-card' : 'bg-slate-50 dark:bg-slate-800/20'} text-slate-600 dark:text-slate-300`}>
                                         <span>{t.year}</span><span>{t.age}</span><span>{formatINR(t.cumContrib)}</span><span className="font-bold text-foreground">{formatINR(t.corpus)}</span>
                                     </div>
                                 ))}

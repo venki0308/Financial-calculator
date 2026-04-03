@@ -300,11 +300,11 @@ export default function SSYCalculator() {
                     {showTimeline && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="rounded-2xl bg-card border border-border overflow-hidden">
-                                <div className="grid grid-cols-5 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-800/50">
+                                <div className="grid grid-cols-5 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-100 dark:bg-slate-800/50">
                                     <span>Year</span><span>Age</span><span>Deposit</span><span>Interest</span><span>Balance</span>
                                 </div>
                                 {result.timeline.map((t, i) => (
-                                    <div key={i} className={`grid grid-cols-5 text-[10px] p-2 ${i % 2 === 0 ? 'bg-card' : 'bg-slate-800/20'} ${t.deposit === 0 ? 'text-muted-foreground' : 'text-slate-300'}`}>
+                                    <div key={i} className={`grid grid-cols-5 text-[10px] p-2 ${i % 2 === 0 ? 'bg-card' : 'bg-slate-50 dark:bg-slate-800/20'} ${t.deposit === 0 ? 'text-muted-foreground' : 'text-slate-600 dark:text-slate-300'}`}>
                                         <span>{t.year}</span>
                                         <span>{t.age}</span>
                                         <span>{t.deposit > 0 ? formatINR(t.deposit) : '—'}</span>
