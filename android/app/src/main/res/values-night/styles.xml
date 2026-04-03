@@ -7,7 +7,14 @@
         <item name="android:windowBackground">@color/appBackground</item>
         <item name="android:colorBackground">@color/appBackground</item>
         <item name="android:windowIsTranslucent">false</item>
+
+        <!-- Status bar: NOT translucent — has solid color -->
+        <item name="android:windowTranslucentStatus">false</item>
+        <!-- Dark mode: dark status bar background -->
+        <item name="android:statusBarColor">#FF0F172A</item>
+        <!-- false = light/white icons on dark background -->
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:statusBarColor">@color/appBackground</item>
+        <!-- Content does NOT draw behind status bar -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
 </resources>
