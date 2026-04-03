@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff, ChevronLeft, ChevronRight, Activity, ChevronDown, ChevronUp, Edit2, Repeat, Target, PiggyBank, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
+import { getCategoryDisplayName } from '../../utils/categoryUtils';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { generateInsights, getDailyNudges } from '../../services/InsightEngine';
@@ -512,7 +513,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                         className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all ${isSelected ? 'bg-brand-purple/10 ring-1 ring-brand-purple scale-105' : 'hover:bg-slate-50 dark:hover:bg-white/5 opacity-80 hover:opacity-100'}`}
                                     >
                                         <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${isSelected ? 'animate-pulse' : ''}`} style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                        <span className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate">{cat.icon} {t(`expenses.categories.${cat.id}`)}</span>
+                                        <span className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate">{cat.icon} {getCategoryDisplayName(cat.id)}</span>
                                         <span className={`text-[10px] font-bold ml-auto ${isSelected ? 'text-brand-purple' : 'text-slate-700 dark:text-foreground'}`}>₹{cat.total.toLocaleString('en-IN')}</span>
                                     </div>
                                 );
@@ -537,7 +538,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                             return (
                                 <div key={cat.id}>
                                     <div className="flex items-center justify-between mb-1">
-                                        <span className="text-xs font-semibold text-slate-700 dark:text-foreground">{cat.icon} {t(`expenses.categories.${cat.id}`)}</span>
+                                        <span className="text-xs font-semibold text-slate-700 dark:text-foreground">{cat.icon} {getCategoryDisplayName(cat.id)}</span>
                                         <div className="flex items-center gap-2">
                                             <span className={`text-[10px] font-bold ${textColor}`}>{cat.pct.toFixed(0)}%</span>
                                             <span className="text-[9px] text-muted-foreground">{statusLabel}</span>
@@ -725,7 +726,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                         {cat?.icon || '📌'}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-slate-800 dark:text-foreground text-xs font-semibold truncate">{exp.description || t(`expenses.categories.${cat?.id || 'others'}`)}</p>
+                                        <p className="text-slate-800 dark:text-foreground text-xs font-semibold truncate">{exp.description || getCategoryDisplayName(cat?.id || 'others')}</p>
                                         <p className="text-muted-foreground text-[10px]">
                                             {new Date(exp.date).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}
                                         </p>

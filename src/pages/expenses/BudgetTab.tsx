@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
+import { useBudgetTrackerStore, EXPENSE_CATEGORIES, INVESTMENT_TYPES } from '../../store/useBudgetTrackerStore';
+import { getCategoryDisplayName } from '../../utils/categoryUtils';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
@@ -22,10 +23,12 @@ export default function BudgetTab() {
         monthlyIncome, setMonthlyIncome,
         fixedExpenses, setFixedExpenses, addCustomFixed, removeCustomFixed,
         categoryBudgets, setCategoryBudgets,
+        investmentTargets, setInvestmentTargets, getTotalInvestmentTargets,
         getTotalFixed,
     } = useBudgetTrackerStore();
 
     const [showFixed, setShowFixed] = useState(true);
+    const [showInvestments, setShowInvestments] = useState(false);
     const [showCategories, setShowCategories] = useState(false);
     const [newFixedLabel, setNewFixedLabel] = useState('');
     const [newFixedAmount, setNewFixedAmount] = useState('');
@@ -37,7 +40,8 @@ export default function BudgetTab() {
         () => Object.values(categoryBudgets).reduce((s, v) => s + v, 0),
         [categoryBudgets]
     );
-    const availableForSavings = monthlyIncome - totalFixed - totalCategoryBudgets;
+    const totalInvestments = getTotalInvestmentTargets();
+    const availableForSavings = monthlyIncome - totalFixed - totalCategoryBudgets - totalInvestments;
 
     const handleSave = () => {
         setSaved(true);
@@ -160,6 +164,69 @@ export default function BudgetTab() {
                 </AnimatePresence>
             </div>
 
+            {/* ── Monthly Investment Targets ──────────────────────────────── */}
+            <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden">
+                <button
+                    onClick={() => setShowInvestments(!showInvestments)}
+                    className="w-full flex items-center justify-between p-4"
+                >
+                    <div>
+                        <p className="font-bold text-slate-900 dark:text-foreground text-sm text-left">📈 Monthly Investment Targets</p>
+                        <p className="text-muted-foreground text-xs mt-0.5 text-left">How much you plan to invest each month</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-blue-500 font-bold text-sm">₹{totalInvestments.toLocaleString('en-IN')}</span>
+                        {showInvestments ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
+                    </div>
+                </button>
+
+                <AnimatePresence>
+                    {showInvestments && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="px-4 pb-4 space-y-3 border-t border-slate-100 dark:border-white/10 pt-3">
+                                {INVESTMENT_TYPES.map((inv) => {
+                                    const value = investmentTargets[inv.id] || 0;
+                                    return (
+                                        <div key={inv.id} className="flex items-center gap-1.5">
+                                            <span className="text-xl w-8 text-center">{inv.icon}</span>
+                                            <div className="flex-1">
+                                                <p className="text-muted-foreground text-xs font-medium mb-1">{inv.label}</p>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-1 bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 flex-1">
+                                                        <span className="text-muted-foreground text-sm">₹</span>
+                                                        <input
+                                                            type="number"
+                                                            value={value || ''}
+                                                            onChange={(e) => setInvestmentTargets({ [inv.id]: Number(e.target.value) })}
+                                                            placeholder="0"
+                                                            className="flex-1 bg-transparent text-slate-900 dark:text-foreground text-sm font-semibold outline-none"
+                                                        />
+                                                    </div>
+                                                    <input
+                                                        type="range"
+                                                        min="0"
+                                                        max="100000"
+                                                        step="500"
+                                                        value={value}
+                                                        onChange={(e) => setInvestmentTargets({ [inv.id]: Number(e.target.value) })}
+                                                        className="w-20 h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-500"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
             {/* Category Budget Limits */}
             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden">
                 <button
@@ -193,7 +260,7 @@ export default function BudgetTab() {
                                             <div className="flex items-center justify-between mb-1">
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xl w-6 text-center">{cat.icon}</span>
-                                                    <p className="text-muted-foreground text-xs font-medium">{t(`expenses.categories.${cat.id}`)}</p>
+                                                    <p className="text-muted-foreground text-xs font-medium">{getCategoryDisplayName(cat.id)}</p>
                                                 </div>
                                                 <div className="bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 flex items-center min-w-[80px]">
                                                     <span className="text-muted-foreground text-xs px-1">₹</span>
@@ -233,10 +300,10 @@ export default function BudgetTab() {
                     <div className="w-24 h-24 flex-shrink-0 relative">
                         <Doughnut 
                             data={{
-                                labels: [t('expenses.fixedExpenses'), t('expenses.categoryBudgetLimits'), t('expenses.estSavings')],
+                                labels: [t('expenses.fixedExpenses'), 'Investments', t('expenses.categoryBudgetLimits'), t('expenses.estSavings')],
                                 datasets: [{
-                                    data: [totalFixed, totalCategoryBudgets, Math.max(availableForSavings, 0)],
-                                    backgroundColor: ['#f87171', '#fb923c', '#4ade80'],
+                                    data: [totalFixed, totalInvestments, totalCategoryBudgets, Math.max(availableForSavings, 0)],
+                                    backgroundColor: ['#f87171', '#3b82f6', '#fb923c', '#4ade80'],
                                     borderWidth: 0,
                                 }]
                             }}
@@ -254,6 +321,7 @@ export default function BudgetTab() {
                     <div className="flex flex-col gap-2 flex-1 pt-1 border-brand-purple/20">
                         {[
                             { label: t('expenses.fixedExpenses'), value: totalFixed, color: 'text-red-400', bg: 'bg-red-400', sign: '-' },
+                            { label: 'Investments', value: totalInvestments, color: 'text-blue-400', bg: 'bg-blue-400', sign: '-' },
                             { label: t('expenses.categoryBudgetLimits'), value: totalCategoryBudgets, color: 'text-orange-400', bg: 'bg-orange-400', sign: '-' },
                             { label: t('expenses.estSavings'), value: availableForSavings, color: availableForSavings < 0 ? 'text-red-400' : 'text-green-500', bg: availableForSavings < 0 ? 'bg-red-400' : 'bg-green-500', sign: availableForSavings < 0 ? '' : '+' },
                         ].map((row) => (

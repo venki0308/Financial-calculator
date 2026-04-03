@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, Subscription, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
+import { getCategoryDisplayName } from '../../utils/categoryUtils';
 import BottomSheet from '../../components/BottomSheet';
 import DateInput from '../../components/DateInput';
 
@@ -561,7 +562,7 @@ export default function SubscriptionsTab() {
                             className="w-full bg-slate-50 dark:bg-card border-transparent border rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple appearance-none cursor-pointer"
                         >
                             {EXPENSE_CATEGORIES.map(c => (
-                                <option key={c.id} value={c.id}>{c.icon} {t(`expenses.categories.${c.id}`)}</option>
+                                <option key={c.id} value={c.id}>{c.icon} {getCategoryDisplayName(c.id)}</option>
                             ))}
                         </select>
                     </div>

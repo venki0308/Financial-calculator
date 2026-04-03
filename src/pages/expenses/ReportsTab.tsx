@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 import { getReportInsights } from '../../services/InsightEngine';
 import { useAppColors } from '../../theme/useAppColors';
+import { getCategoryDisplayName } from '../../utils/categoryUtils';
 import {
     Chart as ChartJS, ArcElement, Tooltip, Legend,
     CategoryScale, LinearScale, PointElement, LineElement,
@@ -101,7 +102,7 @@ export default function ReportsTab() {
         return Object.entries(map)
             .map(([id, total]) => {
                 const cat = EXPENSE_CATEGORIES.find((c) => c.id === id);
-                return { id, name: t(`expenses.categories.${id}`), icon: cat?.icon || '📌', total };
+                return { id, name: getCategoryDisplayName(id), icon: cat?.icon || '📌', total };
             })
             .sort((a, b) => b.total - a.total);
     }, [activeEntries, t]);
@@ -125,7 +126,7 @@ export default function ReportsTab() {
         return EXPENSE_CATEGORIES.map((cat) => {
             const budget = (categoryBudgets as unknown as Record<string, number>)[cat.id] || 0;
             const actual = activeEntries.filter((e) => (e.category || e.categoryId) === cat.id).reduce((s, e) => s + e.amount, 0);
-            return { category: cat.icon + ' ' + t(`expenses.categories.${cat.id}`).split(' ')[0], budget, actual };
+            return { category: cat.icon + ' ' + getCategoryDisplayName(cat.id).split(' ')[0], budget, actual };
         }).filter((row) => row.budget > 0 || row.actual > 0);
     }, [activeEntries, categoryBudgets, t]);
 

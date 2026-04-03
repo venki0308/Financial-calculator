@@ -156,6 +156,12 @@ const defaultCategoryBudgets: CategoryBudgets = {
     healthcare: 0, education: 0, groceries: 0, personalCare: 0, others: 0,
 };
 
+export interface InvestmentTargets {
+    [key: string]: number;
+}
+
+const defaultInvestmentTargets: InvestmentTargets = {};
+
 const defaultFixedExpenses: FixedExpenses = {
     rent: 0, utilities: 0, mobile: 0, insurance: 0, emi: 0, others: [],
 };
@@ -166,6 +172,7 @@ interface BudgetTrackerState {
     savingsGoal: number;
     fixedExpenses: FixedExpenses;
     categoryBudgets: CategoryBudgets;
+    investmentTargets: InvestmentTargets;
     // Month-specific tracking
     monthlyBalances: Record<string, { manual?: number; auto?: number }>;
     // Custom user-defined categories (backward compat)
@@ -185,6 +192,8 @@ interface BudgetTrackerState {
     setMonthlyBudget: (v: number) => void;  // compat alias
     setFixedExpenses: (v: Partial<FixedExpenses>) => void;
     setCategoryBudgets: (v: Partial<CategoryBudgets>) => void;
+    setInvestmentTargets: (v: Partial<InvestmentTargets>) => void;
+    getTotalInvestmentTargets: () => number;
     addCustomFixed: (label: string, amount: number) => void;
     removeCustomFixed: (id: string) => void;
 
@@ -223,6 +232,7 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
             savingsGoal: 0,
             fixedExpenses: defaultFixedExpenses,
             categoryBudgets: defaultCategoryBudgets,
+            investmentTargets: defaultInvestmentTargets,
             monthlyBalances: {},
             categories: [],
             entries: [],
@@ -246,6 +256,19 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
             setCategoryBudgets: (v) => set((s) => ({
                 categoryBudgets: { ...s.categoryBudgets, ...v },
             })),
+
+            setInvestmentTargets: (v) => set((s) => {
+                const merged: InvestmentTargets = { ...s.investmentTargets };
+                for (const [key, val] of Object.entries(v)) {
+                    if (val !== undefined) merged[key] = val;
+                }
+                return { investmentTargets: merged };
+            }),
+
+            getTotalInvestmentTargets: () => {
+                const targets = get().investmentTargets;
+                return Object.values(targets).reduce((sum, val) => sum + (val || 0), 0);
+            },
 
             addCustomFixed: (label, amount) => set((s) => ({
                 fixedExpenses: {

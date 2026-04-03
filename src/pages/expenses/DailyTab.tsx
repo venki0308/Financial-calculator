@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES, INVESTMENT_TYPES, INCOME_CATEGORIES, type PaymentMethod, type EntryType, type InvestmentType } from '../../store/useBudgetTrackerStore';
+import { getCategoryDisplayName } from '../../utils/categoryUtils';
 import DateInput from '../../components/DateInput';
 
 const PAYMENT_METHODS: { id: PaymentMethod; icon: string }[] = [
@@ -106,7 +107,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
             updateEntry(editingId, {
                 category: fCategory,
                 amount: parseFloat(fAmount),
-                description: fDesc || t(`expenses.categories.${fCategory}`),
+                description: fDesc || getCategoryDisplayName(fCategory),
                 paymentMethod: fPayment,
             });
             setEditingId(null);
@@ -118,7 +119,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
             addEntry({
                 category: fEntryType === 'investment' ? (fInvestmentType || 'other_investment') : fCategory,
                 amount: parseFloat(fAmount),
-                description: fDesc || (fEntryType === 'investment' ? (INVESTMENT_TYPES.find(t => t.id === fInvestmentType)?.label || 'Investment') : fEntryType === 'income' ? 'Income' : t(`expenses.categories.${fCategory}`)),
+                description: fDesc || (fEntryType === 'investment' ? (INVESTMENT_TYPES.find(t => t.id === fInvestmentType)?.label || 'Investment') : fEntryType === 'income' ? 'Income' : getCategoryDisplayName(fCategory)),
                 date: localIso,
                 paymentMethod: fPayment,
                 entryType: fEntryType,
@@ -373,7 +374,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                                         <p className="text-muted-foreground text-[10px]">
                                             {type === 'investment'
                                                 ? (INVESTMENT_TYPES.find(t => t.id === exp.investmentType)?.label || 'Investment')
-                                                : t(`expenses.categories.${(cat as any)?.id || 'others'}`)}
+                                                : getCategoryDisplayName((cat as any)?.id || 'others')}
                                             {' · '}{formatDate(exp.date)}
                                             {exp.paymentMethod && (
                                                 <span className="ml-1 px-1.5 py-0.5 bg-brand-purple/10 text-brand-purple rounded text-[9px] font-bold">{t(`expenses.paymentMethods.${exp.paymentMethod}`)}</span>
@@ -482,7 +483,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                                                     onClick={() => setFCategory(cat.id)}
                                                     className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fCategory === cat.id ? 'bg-brand-purple text-white' : 'bg-card border-border text-slate-300'}`}
                                                 >
-                                                    {cat.icon}<br />{t(`expenses.categories.${cat.id}`).split(' ')[0]}
+                                                    {cat.icon}<br />{getCategoryDisplayName(cat.id).split(' ')[0]}
                                                 </button>
                                             ))}
                                         </div>
