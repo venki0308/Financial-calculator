@@ -38,19 +38,32 @@ export default function TermsOfService() {
         <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />}>
             {/* Header badge */}
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-                <div style={{ width: '72px', height: '72px', borderRadius: '20px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', margin: '0 auto 16px' }}>📜</div>
-                <div style={{ display: 'inline-block', padding: '6px 18px', borderRadius: '20px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: c.textSecondary, fontSize: '12px', fontWeight: 600, letterSpacing: '1.5px' }}>
+                <div style={{
+                    width: '72px', height: '72px', borderRadius: '20px',
+                    background: c.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)',
+                    border: `1px solid rgba(59,130,246,${c.isDark ? '0.3' : '0.2'})`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '32px', margin: '0 auto 16px'
+                }}>
+                    📜
+                </div>
+                <div style={{
+                    display: 'inline-block', padding: '6px 18px', borderRadius: '20px',
+                    background: c.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+                    border: `1px solid ${c.border}`, color: c.textSecondary,
+                    fontSize: '12px', fontWeight: 600, letterSpacing: '1.5px'
+                }}>
                     {t.subtitle}
                 </div>
             </div>
 
             {/* Numbered sections */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '48px' }}>
-                {SECTIONS(t).map(sec => (
+                {SECTIONS(t).map((sec: any) => (
                     <div
                         key={sec.n}
                         style={{
-                            background: c.card, border: '1px solid rgba(255,255,255,0.07)',
+                            background: c.card, border: `1px solid ${c.border}`,
                             borderRadius: '16px', padding: '24px', display: 'flex', gap: '20px', alignItems: 'flex-start',
                         }}
                     >
@@ -59,6 +72,7 @@ export default function TermsOfService() {
                                 width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
                                 background: sec.color, display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 color: '#fff', fontSize: '16px', fontWeight: 700,
+                                boxShadow: `0 4px 12px ${sec.color}30`
                             }}
                         >
                             {sec.n}
@@ -72,9 +86,13 @@ export default function TermsOfService() {
             </div>
 
             {/* Closing */}
-            <div style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '14px', padding: '20px 24px', textAlign: 'center', marginBottom: '32px' }}>
-                <p style={{ color: '#e2e8f0', fontSize: '14px', lineHeight: 1.7, margin: '0 0 8px' }}>{t.closing}</p>
-                <p style={{ color: '#4A5568', fontSize: '12px', margin: 0 }}>{t.updated}</p>
+            <div style={{
+                background: c.isDark ? 'rgba(201,168,76,0.08)' : 'rgba(201,168,76,0.05)',
+                border: `1px solid rgba(201,168,76,${c.isDark ? '0.25' : '0.15'})`,
+                borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '32px'
+            }}>
+                <p style={{ color: c.text, fontSize: '14px', lineHeight: 1.7, margin: '0 0 10px', fontWeight: 500 }}>{t.closing}</p>
+                <p style={{ color: c.textSecondary, fontSize: '12px', margin: 0 }}>{t.updated}</p>
             </div>
 
             <div style={{ textAlign: 'center' }}>

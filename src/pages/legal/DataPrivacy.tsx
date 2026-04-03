@@ -12,10 +12,21 @@ const T = {
 
 function Section({ icon, color, title, children }: { icon: string; color: string; title: string; children: React.ReactNode }) {
     const colors = useAppColors();
+    const bgOpacity = colors.isDark ? '30' : '20';
     return (
         <section style={{ marginBottom: '44px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>{icon}</div>
+                <div style={{ 
+                    width: '40px', 
+                    height: '40px', 
+                    borderRadius: '12px', 
+                    background: `${color}${bgOpacity}`, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    fontSize: '20px', 
+                    flexShrink: 0 
+                }}>{icon}</div>
                 <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: colors.text, margin: 0 }}>{title}</h2>
             </div>
             <div style={{ color: colors.textSecondary, fontSize: '14px', lineHeight: 1.8 }}>{children}</div>
@@ -28,11 +39,26 @@ export default function DataPrivacy() {
     const colors = useAppColors();
     const t = T[lang];
 
+    const goldColor = colors.isDark ? '#C9A84C' : '#A68A3D';
+    const emeraldColor = colors.isDark ? '#10B981' : '#059669';
+    const blueColor = colors.isDark ? '#3B82F6' : '#2563EB';
+
     return (
         <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />}>
             {/* Hero */}
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-                <div style={{ width: '72px', height: '72px', borderRadius: '20px', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', margin: '0 auto 20px' }}>🛡️</div>
+                <div style={{ 
+                    width: '72px', 
+                    height: '72px', 
+                    borderRadius: '20px', 
+                    background: colors.isDark ? 'rgba(16,185,129,0.15)' : 'rgba(16,185,129,0.1)', 
+                    border: `1px solid ${colors.isDark ? 'rgba(16,185,129,0.3)' : 'rgba(16,185,129,0.2)'}`, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    fontSize: '32px', 
+                    margin: '0 auto 20px' 
+                }}>🛡️</div>
                 <h2 style={{ fontSize: 'clamp(1.4rem,4vw,2rem)', fontWeight: 700, color: colors.text, marginBottom: '12px' }}>{t.hero}</h2>
                 <p style={{ color: colors.textSecondary, fontSize: '15px', lineHeight: 1.65, maxWidth: '600px', margin: '0 auto' }}>{t.heroSub}</p>
             </div>
@@ -64,7 +90,7 @@ export default function DataPrivacy() {
                     'All calculations happen locally on your device',
                 ].map(item => (
                     <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px 0', borderBottom: `1px solid ${colors.border}` }}>
-                        <span style={{ color: '#10B981', fontSize: '16px', flexShrink: 0 }}>✅</span>
+                        <span style={{ color: emeraldColor, fontSize: '16px', flexShrink: 0 }}>✅</span>
                         <span>{item}</span>
                     </div>
                 ))}
@@ -80,7 +106,7 @@ export default function DataPrivacy() {
                         { label: 'DATA USED TO TRACK USERS', value: 'No' },
                     ].map((row, i) => (
                         <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', padding: '14px 18px', borderBottom: i < 4 ? `1px solid ${colors.border}` : 'none' }}>
-                            <div style={{ color: '#C9A84C', fontSize: '12px', fontWeight: 600 }}>{row.label}</div>
+                            <div style={{ color: goldColor, fontSize: '12px', fontWeight: 600 }}>{row.label}</div>
                             <div style={{ color: colors.textSecondary, fontSize: '13px' }}>{row.value}</div>
                         </div>
                     ))}
@@ -88,13 +114,13 @@ export default function DataPrivacy() {
             </Section>
 
             <Section icon="✉️" color="#3B82F6" title={t.s.contact}>
-                <a href="mailto:support@fincalix.com" style={{ display: 'inline-block', background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '12px', padding: '14px 20px', color: '#C9A84C', fontWeight: 600, textDecoration: 'none', fontSize: '14px' }}>
+                <a href="mailto:support@fincalix.com" style={{ display: 'inline-block', background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '12px', padding: '14px 20px', color: goldColor, fontWeight: 600, textDecoration: 'none', fontSize: '14px' }}>
                     📧 support@fincalix.com
                 </a>
             </Section>
 
             <div style={{ paddingTop: '24px', borderTop: `1px solid ${colors.border}`, display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between' }}>
-                <a href="/privacy-policy" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px', background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', color: '#C9A84C', fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>
+                <a href="/privacy-policy" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px', background: colors.isDark ? 'rgba(201,168,76,0.1)' : 'rgba(201,168,76,0.05)', border: `1px solid ${colors.isDark ? 'rgba(201,168,76,0.3)' : 'rgba(201,168,76,0.2)'}`, color: goldColor, fontWeight: 600, fontSize: '14px', textDecoration: 'none' }}>
                     Read Full Privacy Policy →
                 </a>
                 <PlayStoreBadge />

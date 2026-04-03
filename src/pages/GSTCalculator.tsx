@@ -26,6 +26,7 @@ import {
 import { Pie, Bar } from 'react-chartjs-2';
 import { AnalyticsService } from '../lib/analytics';
 import { triggerCalcNotification } from '../services/calcNotifications';
+import { useAppColors } from '../theme/useAppColors';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
@@ -83,6 +84,7 @@ export default function GSTCalculator() {
     const [invoiceIsIGST, setInvoiceIsIGST] = useState(false);
 
     const chartRef = useRef<any>(null);
+    const c = useAppColors();
 
     // ── Standard/Reverse calculation ──
     const stdResult = useMemo(() => {
@@ -163,19 +165,19 @@ export default function GSTCalculator() {
         if (mode === 'standard' && stdResult) {
             return {
                 labels: ['Base Amount', 'GST Amount'],
-                datasets: [{ data: [stdResult.base, stdResult.gst], backgroundColor: ['#4F46E5', '#10B981'], borderColor: ['#4F46E540', '#10B98140'], borderWidth: 1 }]
+                datasets: [{ data: [stdResult.base, stdResult.gst], backgroundColor: ['#4F46E5', '#10B981'], borderColor: [c.card, c.card], borderWidth: 2 }]
             };
         }
         if (mode === 'reverse' && reverseResult) {
             return {
                 labels: ['Base Amount', 'GST Amount'],
-                datasets: [{ data: [reverseResult.base, reverseResult.gst], backgroundColor: ['#4F46E5', '#10B981'], borderColor: ['#4F46E540', '#10B98140'], borderWidth: 1 }]
+                datasets: [{ data: [reverseResult.base, reverseResult.gst], backgroundColor: ['#4F46E5', '#10B981'], borderColor: [c.card, c.card], borderWidth: 2 }]
             };
         }
         if (mode === 'invoice') {
             return {
                 labels: ['Taxable Amount', 'Total GST'],
-                datasets: [{ data: [invoiceTotals.amount, invoiceTotals.gst], backgroundColor: ['#4F46E5', '#10B981'], borderColor: ['#4F46E540', '#10B98140'], borderWidth: 1 }]
+                datasets: [{ data: [invoiceTotals.amount, invoiceTotals.gst], backgroundColor: ['#4F46E5', '#10B981'], borderColor: [c.card, c.card], borderWidth: 2 }]
             };
         }
         if (mode === 'itc' && itcResult) {
@@ -184,13 +186,13 @@ export default function GSTCalculator() {
                 datasets: [{
                     data: [itcResult.itc, itcResult.liability, itcResult.netPayable],
                     backgroundColor: ['#3B82F6', '#EF4444', '#F59E0B'],
-                    borderColor: ['#3B82F640', '#EF444440', '#F59E0B40'],
-                    borderWidth: 1,
+                    borderColor: [c.card, c.card, c.card],
+                    borderWidth: 2,
                 }],
             };
         }
         return null;
-    }, [mode, stdResult, reverseResult, invoiceTotals, itcResult]);
+    }, [mode, stdResult, reverseResult, invoiceTotals, itcResult, c.card]);
 
     const handleSave = () => {
         let inputValues: any = {};

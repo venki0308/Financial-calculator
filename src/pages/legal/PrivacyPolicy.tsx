@@ -104,7 +104,7 @@ const T = {
             thirdParty: 'ಮೂರನೇ ವ್ಯಕ್ತಿ ಸೇವೆಗಳು',
             financial: 'ನಿಮ್ಮ ಹಣಕಾಸು ಡೇಟಾ',
             children: 'ಮಕ್ಕಳ ಗೌಪ್ಯತೆ',
-            security: 'ಡೇಟಾ ಭದ್ರತೆ',
+            security: 'ದತ್ತಾಂಶ ಸುರಕ್ಷತೆ',
             rights: 'ನಿಮ್ಮ ಹಕ್ಕುಗಳು',
             changes: 'ಈ ನೀತಿಯಲ್ಲಿ ಬದಲಾವಣೆಗಳು',
             contact: 'ಸಂಪರ್ಕಿಸಿ',
@@ -118,42 +118,64 @@ const T = {
 
 // ── Shared section components ────────────────────────────
 function Section({ icon, color, title, children }: { icon: string; color: string; title: string; children: React.ReactNode }) {
-    const colors = useAppColors();
+    const c = useAppColors();
     return (
         <section style={{ marginBottom: '44px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '18px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+                <div style={{
+                    width: '40px', height: '40px', borderRadius: '12px',
+                    background: c.isDark ? `${color}20` : `${color}15`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '20px', flexShrink: 0,
+                    border: `1px solid ${color}${c.isDark ? '30' : '20'}`
+                }}>
                     {icon}
                 </div>
-                <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: colors.text, margin: 0 }}>{title}</h2>
+                <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: c.text, margin: 0 }}>{title}</h2>
             </div>
-            <div style={{ color: colors.textSecondary, fontSize: '14px', lineHeight: 1.8 }}>{children}</div>
+            <div style={{ color: c.textSecondary, fontSize: '14px', lineHeight: 1.8 }}>{children}</div>
         </section>
     );
 }
 
 function Card({ children, color }: { children: React.ReactNode; color?: string }) {
-    const colors = useAppColors();
+    const c = useAppColors();
     return (
-        <div style={{ background: color || colors.card, border: `1px solid ${colors.border}`, borderRadius: '14px', padding: '16px 20px', margin: '12px 0' }}>
+        <div style={{
+            background: color || c.card,
+            border: `1px solid ${c.border}`,
+            borderRadius: '14px', padding: '16px 20px', margin: '12px 0'
+        }}>
             {children}
         </div>
     );
 }
 
 function GoldBox({ children }: { children: React.ReactNode }) {
-    const colors = useAppColors();
+    const c = useAppColors();
+    const gold = '#C9A84C';
     return (
-        <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.25)', borderRadius: '14px', padding: '16px 20px', margin: '14px 0', color: colors.text, fontSize: '14px', lineHeight: 1.7 }}>
+        <div style={{
+            background: c.isDark ? 'rgba(201,168,76,0.08)' : 'rgba(201,168,76,0.05)',
+            border: `1px solid ${gold}${c.isDark ? '40' : '25'}`,
+            borderRadius: '14px', padding: '16px 20px', margin: '14px 0',
+            color: c.text, fontSize: '14px', lineHeight: 1.7
+        }}>
             {children}
         </div>
     );
 }
 
 function GreenBox({ children }: { children: React.ReactNode }) {
-    const colors = useAppColors();
+    const c = useAppColors();
+    const green = '#10B981';
     return (
-        <div style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '14px', padding: '16px 20px', margin: '14px 0', color: colors.text, fontSize: '14px', lineHeight: 1.7 }}>
+        <div style={{
+            background: c.isDark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.05)',
+            border: `1px solid ${green}${c.isDark ? '40' : '25'}`,
+            borderRadius: '14px', padding: '16px 20px', margin: '14px 0',
+            color: c.text, fontSize: '14px', lineHeight: 1.7
+        }}>
             {children}
         </div>
     );
@@ -170,7 +192,7 @@ function Bullets({ items }: { items: string[] }) {
 // ── Page ─────────────────────────────────────────────────
 export default function PrivacyPolicy() {
     const [lang, setLang] = useState<Lang>('en');
-    const colors = useAppColors();
+    const c = useAppColors();
     const t = T[lang];
 
     return (
@@ -181,16 +203,22 @@ export default function PrivacyPolicy() {
         >
             {/* Hero */}
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-                <div style={{ width: '72px', height: '72px', borderRadius: '20px', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', margin: '0 auto 20px' }}>
+                <div style={{
+                    width: '72px', height: '72px', borderRadius: '20px',
+                    background: c.isDark ? 'rgba(139,92,246,0.15)' : 'rgba(139,92,246,0.1)',
+                    border: `1px solid rgba(139,92,246,${c.isDark ? '0.3' : '0.2'})`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '32px', margin: '0 auto 20px'
+                }}>
                     🛡️
                 </div>
-                <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 700, color: colors.text, marginBottom: '12px' }}>{t.hero}</h2>
-                <p style={{ color: colors.textSecondary, fontSize: '15px', lineHeight: 1.65, maxWidth: '600px', margin: '0 auto' }}>{t.heroSub}</p>
+                <h2 style={{ fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 700, color: c.text, marginBottom: '12px' }}>{t.hero}</h2>
+                <p style={{ color: c.textSecondary, fontSize: '15px', lineHeight: 1.65, maxWidth: '600px', margin: '0 auto' }}>{t.heroSub}</p>
             </div>
 
             {/* 1 */}
             <Section icon="👁️" color="#8B5CF6" title={t.s.collect}>
-                <p style={{ marginBottom: '10px' }}>FinCalix does <strong style={{ color: colors.text }}>NOT</strong> collect any personal information whatsoever.</p>
+                <p style={{ marginBottom: '10px' }}>FinCalix does <strong style={{ color: c.text }}>NOT</strong> collect any personal information whatsoever.</p>
                 <Bullets items={[
                     'No name, email address, phone number, or postal address is collected',
                     'No financial data (salary, investments, EMI amounts) is collected',
@@ -202,7 +230,7 @@ export default function PrivacyPolicy() {
 
             {/* 2 */}
             <Section icon="📱" color="#3B82F6" title={t.s.storage}>
-                <p style={{ marginBottom: '10px' }}>FinCalix stores the following data <strong style={{ color: colors.text }}>locally on your device only</strong> using your browser's LocalStorage:</p>
+                <p style={{ marginBottom: '10px' }}>FinCalix stores the following data <strong style={{ color: c.text }}>locally on your device only</strong> using your browser's LocalStorage:</p>
                 <Bullets items={[
                     'Calculation inputs — Numbers you enter in calculators',
                     'Recently used calculators — For quick access on the home screen',
@@ -228,13 +256,13 @@ export default function PrivacyPolicy() {
                         <div>
                             <div style={{ color: '#10B981', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>What Is Collected</div>
                             {['Which calculator was used', 'Session duration', 'Device type', 'App version', 'Country'].map(item => (
-                                <div key={item} style={{ color: colors.textSecondary, fontSize: '13px', padding: '4px 0', borderBottom: `1px solid ${colors.border}` }}>• {item}</div>
+                                <div key={item} style={{ color: c.textSecondary, fontSize: '13px', padding: '4px 0', borderBottom: `1px solid ${c.border}` }}>• {item}</div>
                             ))}
                         </div>
                         <div>
                             <div style={{ color: '#EF4444', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Never Collected</div>
                             {['Your calculation inputs', 'Financial figures', 'Personal identity', 'Name or email', 'Browsing history'].map(item => (
-                                <div key={item} style={{ color: colors.textSecondary, fontSize: '13px', padding: '4px 0', borderBottom: `1px solid ${colors.border}` }}>• {item}</div>
+                                <div key={item} style={{ color: c.textSecondary, fontSize: '13px', padding: '4px 0', borderBottom: `1px solid ${c.border}` }}>• {item}</div>
                             ))}
                         </div>
                     </div>
@@ -246,8 +274,8 @@ export default function PrivacyPolicy() {
             <Section icon="🔗" color="#3B82F6" title={t.s.thirdParty}>
                 <p style={{ marginBottom: '14px' }}>FinCalix uses the following third-party service for analytics:</p>
                 <Card>
-                    <div style={{ color: colors.text, fontWeight: 600, marginBottom: '6px' }}>Google Analytics / Firebase</div>
-                    <div style={{ color: colors.textSecondary, fontSize: '13px' }}>Anonymous usage statistics only. No personal data is transmitted.</div>
+                    <div style={{ color: c.text, fontWeight: 600, marginBottom: '6px' }}>Google Analytics / Firebase</div>
+                    <div style={{ color: c.textSecondary, fontSize: '13px' }}>Anonymous usage statistics only. No personal data is transmitted.</div>
                 </Card>
                 <p style={{ marginTop: '12px' }}>No advertising networks, tracking pixels, or data-selling services are used.</p>
             </Section>
@@ -291,7 +319,7 @@ export default function PrivacyPolicy() {
                     ].map(card => (
                         <Card key={card.title}>
                             <div style={{ color: '#C9A84C', fontWeight: 600, fontSize: '14px', marginBottom: '8px' }}>{card.title}</div>
-                            <div style={{ color: colors.textSecondary, fontSize: '13px', lineHeight: 1.6 }}>{card.text}</div>
+                            <div style={{ color: c.textSecondary, fontSize: '13px', lineHeight: 1.6 }}>{card.text}</div>
                         </Card>
                     ))}
                 </div>
@@ -333,10 +361,13 @@ export default function PrivacyPolicy() {
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '8px',
                             padding: '12px 24px', borderRadius: '12px',
-                            background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)',
+                            background: c.isDark ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.08)',
+                            border: `1px solid rgba(16,185,129,${c.isDark ? '0.3' : '0.2'})`,
                             color: '#10B981', fontWeight: 600, fontSize: '14px', textDecoration: 'none',
-                            transition: 'background 0.2s',
+                            transition: 'all 0.2s',
                         }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(16,185,129,0.15)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = c.isDark ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.08)'; }}
                     >
                         🛡️ View Data & Privacy (Play Store Data Safety)
                     </a>
@@ -344,7 +375,7 @@ export default function PrivacyPolicy() {
             </Section>
 
             {/* Play Store */}
-            <div style={{ textAlign: 'center', paddingTop: '32px', borderTop: `1px solid ${colors.border}` }}>
+            <div style={{ textAlign: 'center', paddingTop: '32px', borderTop: `1px solid ${c.border}` }}>
                 <PlayStoreBadge />
             </div>
         </LegalLayout>

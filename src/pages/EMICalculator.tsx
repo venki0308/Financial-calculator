@@ -6,6 +6,7 @@ import {
     Calculator, TrendingDown, FileText, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
+import { useAppColors } from '../theme/useAppColors';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Chart as ChartJS, ArcElement, Tooltip, Legend,
@@ -70,6 +71,7 @@ export default function EMICalculator() {
     const { addHistory, addSaved, updateSaved, savedCalculations } = useCalculatorStore();
     const chartRef = useRef<any>(null);
 
+    const c = useAppColors();
     const config = LOAN_TYPE_CONFIGS[loanType];
     const months = tenureUnit === 'years' ? tenure * 12 : tenure;
     const tenureYears = tenureUnit === 'years' ? tenure : Math.round(tenure / 12);
@@ -120,8 +122,8 @@ export default function EMICalculator() {
         datasets: [{
             data: [principal, result.totalInterest],
             backgroundColor: ['#10B981', '#F59E0B'],
-            borderColor: ['#10B98140', '#F59E0B40'],
-            borderWidth: 1,
+            borderColor: [c.card, c.card],
+            borderWidth: 2,
         }]
     };
 

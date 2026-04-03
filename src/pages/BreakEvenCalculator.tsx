@@ -215,12 +215,12 @@ export default function BreakEvenCalculator() {
                     {showProjection && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="rounded-2xl bg-card border border-border overflow-hidden">
-                                <div className="grid grid-cols-4 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-800/50"><span>Units</span><span>Revenue</span><span>Cost</span><span>Profit</span></div>
+                                <div className="grid grid-cols-4 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-100 dark:bg-slate-800/50"><span>Units</span><span>Revenue</span><span>Cost</span><span>Profit</span></div>
                                 {result.projection.map((p, i) => (
-                                    <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${p.units === result.breakEvenUnits ? 'bg-green-500/10 border-l-2 border-green-500' : i % 2 === 0 ? 'bg-card' : 'bg-slate-800/20'}`}>
-                                        <span className="text-slate-300">{p.units}</span>
-                                        <span className="text-blue-400">{formatINR(p.revenue)}</span>
-                                        <span className="text-orange-400">{formatINR(p.totalCost)}</span>
+                                    <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${p.units === result.breakEvenUnits ? 'bg-green-500/10 border-l-2 border-green-500' : i % 2 === 0 ? 'bg-card' : 'bg-slate-100 dark:bg-slate-800/20'}`}>
+                                        <span className="text-slate-600 dark:text-slate-300">{p.units}</span>
+                                        <span className="text-blue-600 dark:text-blue-400">{formatINR(p.revenue)}</span>
+                                        <span className="text-orange-600 dark:text-orange-400">{formatINR(p.totalCost)}</span>
                                         <span className={`font-bold ${p.profit >= 0 ? 'text-brand-green' : 'text-red-400'}`}>{formatINR(p.profit)}</span>
                                     </div>
                                 ))}
