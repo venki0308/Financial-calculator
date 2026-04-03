@@ -15,6 +15,7 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useAppColors } from '../theme/useAppColors';
 import ShareableCard from '../components/ShareableCard';
 import { nativeShare } from '../utils/nativeShare';
 
@@ -28,6 +29,7 @@ export default function SSYCalculator() {
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
     const chartRef = useRef<any>(null);
+    const c = useAppColors();
 
     const [annual, setAnnual] = useState(50000);
     const [rate, setRate] = useState(8.2);
@@ -87,10 +89,10 @@ export default function SSYCalculator() {
         datasets: [{
             data: [result.invested, result.totalInterest],
             backgroundColor: ['#3B82F6', '#10B981'],
-            borderColor: ['#1E293B', '#1E293B'],
+            borderColor: [c.card, c.card],
             borderWidth: 2,
         }]
-    }), [result]);
+    }), [result, c.card]);
 
     // Year-wise bar chart
     const barData = useMemo(() => ({
@@ -261,7 +263,7 @@ export default function SSYCalculator() {
                 <div className="p-4 rounded-2xl bg-card border border-border">
                     <h3 className="text-foreground font-bold text-sm mb-3">Investment vs Interest</h3>
                     <div className="w-48 h-48 mx-auto">
-                        <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#94A3B8', font: { size: 11 } } } } }} />
+                        <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: c.textSecondary, font: { size: 11 } } } } }} />
                     </div>
                 </div>
 
@@ -276,10 +278,10 @@ export default function SSYCalculator() {
                                 responsive: true,
                                 maintainAspectRatio: false,
                                 scales: {
-                                    y: { stacked: true, grid: { color: '#1E293B' }, ticks: { color: '#64748B', font: { size: 8 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
-                                    x: { stacked: true, grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 8 }, maxRotation: 45 } }
+                                    y: { stacked: true, grid: { color: c.border }, ticks: { color: c.textMuted, font: { size: 8 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
+                                    x: { stacked: true, grid: { display: false }, ticks: { color: c.textMuted, font: { size: 8 }, maxRotation: 45 } }
                                 },
-                                plugins: { legend: { labels: { color: '#94A3B8', font: { size: 10 } } } }
+                                plugins: { legend: { labels: { color: c.textSecondary, font: { size: 10 } } } }
                             }}
                         />
                     </div>

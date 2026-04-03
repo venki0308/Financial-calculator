@@ -19,6 +19,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { triggerCalcNotification } from '../services/calcNotifications';
+import { useAppColors } from '../theme/useAppColors';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
@@ -36,6 +37,7 @@ export default function FDCalculator() {
     const [showCompare, setShowCompare] = useState(false);
     const [showGrowth, setShowGrowth] = useState(false);
     const chartRef = useRef<any>(null);
+    const c = useAppColors();
 
     const result = useMemo(() => calculateFD(principal, rate, years, compounding), [principal, rate, years, compounding]);
 
@@ -75,7 +77,7 @@ export default function FDCalculator() {
 
     const chartData = {
         labels: ['Invested', 'Interest Earned'],
-        datasets: [{ data: [principal, result.interest], backgroundColor: ['#4F46E5', '#10B981'], borderColor: ['#1E293B', '#1E293B'], borderWidth: 2 }]
+        datasets: [{ data: [principal, result.interest], backgroundColor: ['#4F46E5', '#10B981'], borderColor: [c.card, c.card], borderWidth: 2 }]
     };
 
     const growthBarData = useMemo(() => ({
@@ -282,10 +284,10 @@ export default function FDCalculator() {
                                     <Bar data={growthBarData} options={{
                                         responsive: true, maintainAspectRatio: false,
                                         scales: {
-                                            y: { stacked: true, grid: { color: '#1E293B' }, ticks: { color: '#64748B', font: { size: 8 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
-                                            x: { stacked: true, grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 10 } } },
+                                            y: { stacked: true, grid: { color: c.border }, ticks: { color: c.textMuted, font: { size: 8 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
+                                            x: { stacked: true, grid: { display: false }, ticks: { color: c.textMuted, font: { size: 10 } } },
                                         },
-                                        plugins: { legend: { labels: { color: '#94A3B8', font: { size: 10 } } } }
+                                        plugins: { legend: { labels: { color: c.textSecondary, font: { size: 10 } } } }
                                     }} />
                                 </div>
                             </div>

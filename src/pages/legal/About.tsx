@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import LegalLayout, { LangSelector, PlayStoreBadge, type Lang } from './LegalLayout';
+import { useAppColors } from '../../theme/useAppColors';
 
 const T = {
     en: { title: 'About FinCalix', updated: 'Last Updated: March 2026', s: { ref: 'Reference Tool', accuracy: 'Data Accuracy', official: 'Official Sources', resources: 'Key Resources' } },
@@ -18,6 +19,7 @@ const RESOURCES = [
 export default function About() {
     const [lang, setLang] = useState<Lang>('en');
     const t = T[lang];
+    const c = useAppColors();
 
     return (
         <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />}>
@@ -50,7 +52,7 @@ export default function About() {
                     <div
                         key={card.title}
                         style={{
-                            background: '#0F1E35', border: `1px solid ${card.color}25`,
+                            background: c.card, border: `1px solid ${card.color}25`,
                             borderLeft: `3px solid ${card.color}`,
                             borderRadius: '14px', padding: '20px 24px',
                             display: 'flex', gap: '16px', alignItems: 'flex-start',
@@ -59,7 +61,7 @@ export default function About() {
                         <span style={{ fontSize: '22px', flexShrink: 0, marginTop: '2px' }}>{card.icon}</span>
                         <div>
                             <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: card.color, margin: '0 0 8px' }}>{card.title}</h3>
-                            <p style={{ color: '#94A3B8', fontSize: '14px', lineHeight: 1.7, margin: 0 }}>{card.text}</p>
+                            <p style={{ color: c.textSecondary, fontSize: '14px', lineHeight: 1.7, margin: 0 }}>{card.text}</p>
                         </div>
                     </div>
                 ))}
@@ -67,7 +69,7 @@ export default function About() {
 
             {/* Key resources */}
             <section style={{ marginBottom: '40px' }}>
-                <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: '#fff', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid rgba(201,168,76,0.15)' }}>
+                <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: c.text, marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid rgba(201,168,76,0.15)' }}>
                     {t.s.resources}
                 </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -79,7 +81,7 @@ export default function About() {
                             rel="noopener noreferrer"
                             style={{
                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                background: '#0F1E35', border: '1px solid rgba(255,255,255,0.07)',
+                                background: c.card, border: '1px solid rgba(255,255,255,0.07)',
                                 borderRadius: '12px', padding: '14px 18px', textDecoration: 'none',
                                 transition: 'border-color 0.2s',
                             }}
@@ -88,7 +90,7 @@ export default function About() {
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <span style={{ fontSize: '18px' }}>{r.icon}</span>
-                                <span style={{ color: '#fff', fontSize: '14px', fontWeight: 500 }}>{r.name}</span>
+                                <span style={{ color: c.text, fontSize: '14px', fontWeight: 500 }}>{r.name}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ color: '#4A5568', fontSize: '12px' }}>{r.domain}</span>
@@ -103,7 +105,7 @@ export default function About() {
             <section style={{ marginBottom: '40px' }}>
                 <div style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '14px', padding: '20px 24px' }}>
                     <div style={{ color: '#C9A84C', fontWeight: 600, marginBottom: '8px' }}>📧 Contact</div>
-                    <a href="mailto:support@fincalix.com" style={{ color: '#94A3B8', fontSize: '14px', textDecoration: 'none' }}>support@fincalix.com</a>
+                    <a href="mailto:support@fincalix.com" style={{ color: c.textSecondary, fontSize: '14px', textDecoration: 'none' }}>support@fincalix.com</a>
                     <div style={{ color: '#4A5568', fontSize: '13px', marginTop: '6px' }}>FinCalix Team · Hyderabad, Telangana, India</div>
                 </div>
             </section>

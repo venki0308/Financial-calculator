@@ -1,4 +1,6 @@
 import { Capacitor } from '@capacitor/core';
+import { useSettingsStore } from '../store/useSettingsStore';
+import { darkColors, lightColors } from '../theme/colors';
 
 /**
  * Cross-platform share utility.
@@ -37,6 +39,9 @@ export async function nativeShare(title: string, text: string, url?: string): Pr
 }
 
 function showToast(message: string) {
+    const isDark = useSettingsStore.getState().darkMode;
+    const c = isDark ? darkColors : lightColors;
+
     const el = document.createElement('div');
     el.textContent = message;
     Object.assign(el.style, {
@@ -44,14 +49,16 @@ function showToast(message: string) {
         bottom: '110px',
         left: '50%',
         transform: 'translateX(-50%)',
-        background: '#10B981',
-        color: '#fff',
+        background: c.card,
+        color: c.text,
+        border: `1px solid ${c.border}`,
+        borderLeft: `4px solid ${isDark ? '#10B981' : '#059669'}`,
         padding: '10px 20px',
         borderRadius: '12px',
         fontSize: '14px',
         fontWeight: '600',
         zIndex: '99999',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        boxShadow: isDark ? '0 4px 12px rgba(0,0,0,0.5)' : '0 4px 12px rgba(0,0,0,0.1)',
     });
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 2500);

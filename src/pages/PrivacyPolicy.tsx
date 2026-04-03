@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, Lock, Eye, EyeOff, Server, Users, FileText, Mail, Globe, Smartphone } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useAppColors } from '../theme/useAppColors';
 
 function Section({ number, title, icon: Icon, children }: { number: number; title: string; icon: any; children: React.ReactNode }) {
     return (
@@ -36,6 +37,7 @@ const languages = [
 export default function PrivacyPolicy() {
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
+    const c = useAppColors();
 
     return (
         <div className="min-h-dvh bg-background pb-10" style={{ maxWidth: 428, margin: '0 auto' }}>
@@ -99,14 +101,14 @@ export default function PrivacyPolicy() {
                         <li dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec2Li3') }}></li>
                         <li dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec2Li4') }}></li>
                     </ul>
-                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 mt-2">
-                        <p className="text-emerald-400 text-[11px] font-semibold">{t('privacyPolicy.sec2BoxTitle')}</p>
-                        <ul className="list-disc pl-4 text-emerald-300/80 text-[11px] mt-1 space-y-0.5">
+                    <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', borderColor: 'rgba(16, 185, 129, 0.2)' }} className="p-3 rounded-xl border mt-2">
+                        <p style={{ color: '#10B981' }} className="text-[11px] font-semibold">{t('privacyPolicy.sec2BoxTitle')}</p>
+                        <ul className="list-disc pl-4 text-emerald-500/80 text-[11px] mt-1 space-y-0.5">
                             <li>{t('privacyPolicy.sec2BoxLi1')}</li>
                             <li>{t('privacyPolicy.sec2BoxLi2')}</li>
                             <li>{t('privacyPolicy.sec2BoxLi3')}</li>
                         </ul>
-                        <p className="text-emerald-400 text-[11px] font-semibold mt-1.5">{t('privacyPolicy.sec2BoxEnd')}</p>
+                        <p style={{ color: '#10B981' }} className="text-[11px] font-semibold mt-1.5">{t('privacyPolicy.sec2BoxEnd')}</p>
                     </div>
                 </Section>
 
@@ -114,9 +116,9 @@ export default function PrivacyPolicy() {
                 <Section number={3} title={t('privacyPolicy.sec3Title')} icon={EyeOff}>
                     <p dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec3Desc') }}></p>
                     <div className="grid grid-cols-2 gap-2 mt-1">
-                        <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                            <p className="text-blue-400 text-[10px] font-bold uppercase mb-1">{t('privacyPolicy.whatIsCollected')}</p>
-                            <ul className="text-blue-300/70 text-[10px] space-y-0.5">
+                        <div className="p-2.5 rounded-xl border" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', borderColor: 'rgba(59, 130, 246, 0.2)' }}>
+                            <p className="text-blue-500 text-[10px] font-bold uppercase mb-1">{t('privacyPolicy.whatIsCollected')}</p>
+                            <ul className="text-blue-500/80 text-[10px] space-y-0.5">
                                 <li>{t('privacyPolicy.sec3IsLi1')}</li>
                                 <li>{t('privacyPolicy.sec3IsLi2')}</li>
                                 <li>{t('privacyPolicy.sec3IsLi3')}</li>
@@ -124,9 +126,9 @@ export default function PrivacyPolicy() {
                                 <li>{t('privacyPolicy.sec3IsLi5')}</li>
                             </ul>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
-                            <p className="text-red-400 text-[10px] font-bold uppercase mb-1">{t('privacyPolicy.whatIsNotCollected')}</p>
-                            <ul className="text-red-300/70 text-[10px] space-y-0.5">
+                        <div className="p-2.5 rounded-xl border" style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
+                            <p className="text-red-500 text-[10px] font-bold uppercase mb-1">{t('privacyPolicy.whatIsNotCollected')}</p>
+                            <ul className="text-red-500/80 text-[10px] space-y-0.5">
                                 <li>{t('privacyPolicy.sec3NotLi1')}</li>
                                 <li>{t('privacyPolicy.sec3NotLi2')}</li>
                                 <li>{t('privacyPolicy.sec3NotLi3')}</li>
@@ -142,9 +144,9 @@ export default function PrivacyPolicy() {
                 <Section number={4} title={t('privacyPolicy.sec4Title')} icon={Server}>
                     <p>{t('privacyPolicy.sec4Desc')}</p>
                     <div className="space-y-2 mt-1">
-                        <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-foreground text-[11px] font-bold">{t('privacyPolicy.gaTitle')}</p>
-                            <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.gaDesc')}</p>
+                        <div className="p-2.5 rounded-xl border" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                            <p style={{ color: c.text }} className="text-[11px] font-bold">{t('privacyPolicy.gaTitle')}</p>
+                            <p style={{ color: c.textSecondary }} className="text-[10px]">{t('privacyPolicy.gaDesc')}</p>
                         </div>
                     </div>
                     <p className="mt-1">{t('privacyPolicy.sec4End')}</p>
@@ -152,9 +154,9 @@ export default function PrivacyPolicy() {
 
                 {/* Section 5 */}
                 <Section number={5} title={t('privacyPolicy.sec5Title')} icon={Lock}>
-                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                        <p className="text-amber-400 text-[11px] font-semibold">{t('privacyPolicy.sec5BoxTitle')}</p>
-                        <ul className="list-disc pl-4 text-amber-300/80 text-[11px] mt-1 space-y-0.5">
+                    <div className="p-3 rounded-xl border" style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.2)' }}>
+                        <p className="text-amber-500 text-[11px] font-semibold">{t('privacyPolicy.sec5BoxTitle')}</p>
+                        <ul className="list-disc pl-4 text-amber-500/80 text-[11px] mt-1 space-y-0.5">
                             <li dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec5Li1') }}></li>
                             <li dangerouslySetInnerHTML={{ __html: t('privacyPolicy.sec5Li2') }}></li>
                             <li>{t('privacyPolicy.sec5Li3')}</li>
@@ -182,17 +184,17 @@ export default function PrivacyPolicy() {
                 {/* Section 8 */}
                 <Section number={8} title={t('privacyPolicy.sec8Title')} icon={FileText}>
                     <div className="space-y-2">
-                        <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-foreground text-[11px] font-bold">{t('privacyPolicy.accessTitle')}</p>
-                            <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.accessDesc')}</p>
+                        <div className="p-2.5 rounded-xl border" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                            <p style={{ color: c.text }} className="text-[11px] font-bold">{t('privacyPolicy.accessTitle')}</p>
+                            <p style={{ color: c.textSecondary }} className="text-[10px]">{t('privacyPolicy.accessDesc')}</p>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-foreground text-[11px] font-bold">{t('privacyPolicy.deleteTitle')}</p>
-                            <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.deleteDesc')}</p>
+                        <div className="p-2.5 rounded-xl border" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                            <p style={{ color: c.text }} className="text-[11px] font-bold">{t('privacyPolicy.deleteTitle')}</p>
+                            <p style={{ color: c.textSecondary }} className="text-[10px]">{t('privacyPolicy.deleteDesc')}</p>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-slate-800/50 border border-slate-700/50">
-                            <p className="text-foreground text-[11px] font-bold">{t('privacyPolicy.portabilityTitle')}</p>
-                            <p className="text-muted-foreground text-[10px]">{t('privacyPolicy.portabilityDesc')}</p>
+                        <div className="p-2.5 rounded-xl border" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                            <p style={{ color: c.text }} className="text-[11px] font-bold">{t('privacyPolicy.portabilityTitle')}</p>
+                            <p style={{ color: c.textSecondary }} className="text-[10px]">{t('privacyPolicy.portabilityDesc')}</p>
                         </div>
                     </div>
                 </Section>
@@ -221,9 +223,9 @@ export default function PrivacyPolicy() {
                 {/* Section 11 — Analytics & Crash Reporting */}
                 <Section number={11} title={t('privacyPolicy.sec11Title')} icon={Shield}>
                     <p>{t('privacyPolicy.sec11Desc')}</p>
-                    <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 mt-2">
-                        <p className="text-blue-500 dark:text-blue-400 text-[11px] font-semibold mb-1">{t('privacyPolicy.sec11BoxTitle')}</p>
-                        <ul className="list-disc pl-4 text-slate-700 dark:text-blue-300/80 text-[11px] space-y-0.5 font-medium">
+                    <div className="p-3 rounded-xl border mt-2" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', borderColor: 'rgba(59, 130, 246, 0.2)' }}>
+                        <p className="text-blue-500 text-[11px] font-semibold mb-1">{t('privacyPolicy.sec11BoxTitle')}</p>
+                        <ul className="list-disc pl-4 text-[11px] space-y-0.5 font-medium" style={{ color: c.textSecondary }}>
                             <li>{t('privacyPolicy.sec11BoxLi1')}</li>
                             <li>{t('privacyPolicy.sec11BoxLi2')}</li>
                             <li>{t('privacyPolicy.sec11BoxLi3')}</li>

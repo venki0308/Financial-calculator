@@ -17,6 +17,7 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useAppColors } from '../theme/useAppColors';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
@@ -26,6 +27,7 @@ export default function BreakEvenCalculator() {
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
     const chartRef = useRef<any>(null);
+    const c = useAppColors();
 
     const [fixed, setFixed] = useState(50000);
     const [price, setPrice] = useState(200);
@@ -180,10 +182,10 @@ export default function BreakEvenCalculator() {
                         <Line ref={chartRef} data={chartData} options={{
                             responsive: true, maintainAspectRatio: false,
                             scales: {
-                                y: { grid: { color: '#1E293B' }, ticks: { color: '#64748B', font: { size: 8 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
-                                x: { grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 9 } }, title: { display: true, text: 'Units', color: '#64748B', font: { size: 9 } } },
+                                y: { grid: { color: c.border }, ticks: { color: c.textMuted, font: { size: 8 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
+                                x: { grid: { display: false }, ticks: { color: c.textMuted, font: { size: 9 } }, title: { display: true, text: 'Units', color: c.textMuted, font: { size: 9 } } },
                             },
-                            plugins: { legend: { labels: { color: '#94A3B8', font: { size: 10 } } } }
+                            plugins: { legend: { labels: { color: c.textSecondary, font: { size: 10 } } } }
                         }} />
                     </div>
                     <p className="text-muted-foreground text-[10px] mt-2 text-center">Green & Red lines cross at the break-even point ({result.breakEvenUnits} units)</p>
@@ -196,8 +198,8 @@ export default function BreakEvenCalculator() {
                         <Bar data={profitChart} options={{
                             responsive: true, maintainAspectRatio: false,
                             scales: {
-                                y: { grid: { color: '#1E293B' }, ticks: { color: '#64748B', font: { size: 8 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
-                                x: { grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 9 } }, title: { display: true, text: 'Units', color: '#64748B', font: { size: 9 } } },
+                                y: { grid: { color: c.border }, ticks: { color: c.textMuted, font: { size: 8 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
+                                x: { grid: { display: false }, ticks: { color: c.textMuted, font: { size: 9 } }, title: { display: true, text: 'Units', color: c.textMuted, font: { size: 9 } } },
                             },
                             plugins: { legend: { display: false } }
                         }} />

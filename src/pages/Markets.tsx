@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { RefreshCcw, TrendingUp, TrendingDown } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { useAppColors } from '../theme/useAppColors';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
 
@@ -31,6 +32,7 @@ function genData(tf: string) {
 export default function Markets() {
     const [tf, setTf] = useState('1M');
     const [now] = useState(new Date());
+    const c = useAppColors();
     const chartInfo = useMemo(() => genData(tf), [tf]);
 
     const chartData = {
@@ -54,8 +56,8 @@ export default function Markets() {
 
     const chartOpts: any = {
         responsive: true, maintainAspectRatio: false,
-        scales: { x: { display: true, grid: { display: false }, ticks: { color: '#6B7280', font: { size: 10 }, maxTicksLimit: 6 } }, y: { display: false } },
-        plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1E293B', titleColor: '#F8FAFC', bodyColor: '#F8FAFC', borderColor: '#334155', borderWidth: 1, cornerRadius: 8, padding: 8, callbacks: { label: (c: any) => `₹${c.parsed.y.toLocaleString('en-IN')}` } } },
+        scales: { x: { display: true, grid: { display: false }, ticks: { color: c.textMuted, font: { size: 10 }, maxTicksLimit: 6 } }, y: { display: false } },
+        plugins: { legend: { display: false }, tooltip: { backgroundColor: c.card, titleColor: c.text, bodyColor: c.text, borderColor: c.border, borderWidth: 1, cornerRadius: 8, padding: 8, callbacks: { label: (c: any) => `₹${c.parsed.y.toLocaleString('en-IN')}` } } },
         interaction: { intersect: false, mode: 'index' },
     };
 

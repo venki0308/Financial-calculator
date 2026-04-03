@@ -15,6 +15,7 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useAppColors } from '../theme/useAppColors';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -23,6 +24,7 @@ export default function SCSSCalculator() {
     useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
+    const c = useAppColors();
 
     const [investment, setInvestment] = useState(1500000);
     const [rate, setRate] = useState(8.2);
@@ -80,10 +82,10 @@ export default function SCSSCalculator() {
         datasets: [{
             data: [investment, result.totalInterest],
             backgroundColor: ['#3B82F6', '#8B5CF6'],
-            borderColor: ['#1E293B', '#1E293B'],
+            borderColor: [c.card, c.card],
             borderWidth: 2,
         }],
-    }), [investment, result.totalInterest]);
+    }), [investment, result.totalInterest, c.card]);
 
     const handleSave = () => {
         addSaved({
@@ -247,7 +249,7 @@ export default function SCSSCalculator() {
                 <div className="p-4 rounded-2xl bg-card border border-border">
                     <h3 className="text-foreground font-bold text-sm mb-3">Principal vs Interest</h3>
                     <div className="w-44 h-44 mx-auto">
-                        <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#94A3B8', font: { size: 11 } } } } }} />
+                        <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: c.textSecondary, font: { size: 11 } } } } }} />
                     </div>
                 </div>
 

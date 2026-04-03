@@ -10,6 +10,7 @@ import { Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import { formatINR, calculateSIP } from '../utils/calculations';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { useAppColors } from '../theme/useAppColors';
 
 import { AnalyticsService } from '../lib/analytics';
 import { exportComparisonPDF, exportSIPComparisonPDF, exportFDComparisonPDF } from '../utils/exportUtils';
@@ -57,6 +58,7 @@ export default function CompareCalculator() {
     const navigate = useNavigate();
     const [selectedType, setSelectedType] = useState<CompareType>('emi');
     const chartRef = useRef<any>(null);
+    const c = useAppColors();
 
     // EMI states
     const [emiA, setEmiA] = useState({ principal: 2000000, rate: 8.5, years: 20 });
@@ -361,10 +363,10 @@ export default function CompareCalculator() {
                                 responsive: true,
                                 maintainAspectRatio: false,
                                 scales: {
-                                    y: { stacked: true, grid: { color: '#1E293B' }, ticks: { color: '#64748B', font: { size: 9 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
-                                    x: { stacked: true, grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 11 } } }
+                                    y: { stacked: true, grid: { color: c.border }, ticks: { color: c.textMuted, font: { size: 9 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
+                                    x: { stacked: true, grid: { display: false }, ticks: { color: c.textMuted, font: { size: 11 } } }
                                 },
-                                plugins: { legend: { labels: { color: '#94A3B8', font: { size: 10 } } } }
+                                plugins: { legend: { labels: { color: c.textSecondary, font: { size: 10 } } } }
                             }}
                         />
                     </div>

@@ -8,6 +8,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { Capacitor } from '@capacitor/core';
 import { sanitizeForPDF } from './exportUtils';
+import { useSettingsStore } from '../store/useSettingsStore';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -104,6 +105,7 @@ function drawPie(segments: ChartSegment[]): string {
 // ─── Shared internals ─────────────────────────────────────────────────────────
 
 function showToast(msg: string, isError = false) {
+    const isDark = useSettingsStore.getState().darkMode;
     const old = document.getElementById('fncx-toast');
     if (old) old.remove();
     const t = document.createElement('div');
@@ -111,9 +113,9 @@ function showToast(msg: string, isError = false) {
     t.textContent = msg;
     Object.assign(t.style, {
         position: 'fixed', bottom: '110px', left: '50%', transform: 'translateX(-50%)',
-        background: isError ? '#ef4444' : '#10B981', color: '#fff',
+        background: isError ? (isDark ? '#ef4444' : '#dc2626') : (isDark ? '#10B981' : '#059669'), color: '#ffffff',
         padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: '600',
-        zIndex: '99999', boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        zIndex: '99999', boxShadow: isDark ? '0 4px 20px rgba(0,0,0,0.5)' : '0 4px 20px rgba(0,0,0,0.1)',
         whiteSpace: 'nowrap', maxWidth: '90vw', textAlign: 'center',
     });
     document.body.appendChild(t);

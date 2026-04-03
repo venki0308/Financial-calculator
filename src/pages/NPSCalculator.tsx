@@ -18,6 +18,7 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useAppColors } from '../theme/useAppColors';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement);
 
@@ -29,6 +30,7 @@ export default function NPSCalculator() {
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
     const chartRef = useRef<any>(null);
+    const c = useAppColors();
 
     const [monthly, setMonthly] = useState(5000);
     const [rate, setRate] = useState(10);
@@ -64,8 +66,8 @@ export default function NPSCalculator() {
 
     const pieData = useMemo(() => ({
         labels: ['Total Invested', 'Wealth Gained'],
-        datasets: [{ data: [result.invested, result.wealthGained], backgroundColor: ['#3B82F6', '#10B981'], borderColor: ['#1E293B', '#1E293B'], borderWidth: 2 }]
-    }), [result]);
+        datasets: [{ data: [result.invested, result.wealthGained], backgroundColor: ['#3B82F6', '#10B981'], borderColor: [c.card, c.card], borderWidth: 2 }]
+    }), [result, c.card]);
 
     const corpusChart = useMemo(() => ({
         labels: result.timeline.map(t => `Age ${t.age}`),
@@ -206,7 +208,7 @@ export default function NPSCalculator() {
                 {/* Pie Chart */}
                 <div className="p-4 rounded-2xl bg-card border border-border">
                     <h3 className="text-foreground font-bold text-sm mb-3">Investment vs Returns</h3>
-                    <div className="w-48 h-48 mx-auto"><Pie data={pieData} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#94A3B8', font: { size: 11 } } } } }} /></div>
+                    <div className="w-48 h-48 mx-auto"><Pie data={pieData} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: c.textSecondary, font: { size: 11 } } } } }} /></div>
                 </div>
 
                 {/* Corpus Growth Line Chart */}
@@ -216,10 +218,10 @@ export default function NPSCalculator() {
                         <Line ref={chartRef} data={corpusChart} options={{
                             responsive: true, maintainAspectRatio: false,
                             scales: {
-                                y: { grid: { color: '#1E293B' }, ticks: { color: '#64748B', font: { size: 8 }, callback: (v: any) => v >= 10000000 ? `${(v / 10000000).toFixed(1)}Cr` : v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
-                                x: { grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 8 }, maxTicksLimit: 8 } },
+                                y: { grid: { color: c.border }, ticks: { color: c.textMuted, font: { size: 8 }, callback: (v: any) => v >= 10000000 ? `${(v / 10000000).toFixed(1)}Cr` : v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
+                                x: { grid: { display: false }, ticks: { color: c.textMuted, font: { size: 8 }, maxTicksLimit: 8 } },
                             },
-                            plugins: { legend: { labels: { color: '#94A3B8', font: { size: 10 } } } }
+                            plugins: { legend: { labels: { color: c.textSecondary, font: { size: 10 } } } }
                         }} />
                     </div>
                 </div>

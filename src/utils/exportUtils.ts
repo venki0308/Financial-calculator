@@ -2,6 +2,8 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { Capacitor } from '@capacitor/core';
+import { useSettingsStore } from '../store/useSettingsStore';
+import { darkColors, lightColors } from '../theme/colors';
 
 // ─── Toast notification ────────────────────────────────────────────────────
 // ─── PDF text sanitizer (strips emoji that jsPDF can't render) ─────────────
@@ -33,6 +35,8 @@ const originalText = (jsPDF.prototype as any).text;
 };
 
 function showToast(message: string, isError = false) {
+    const isDark = useSettingsStore.getState().darkMode;
+    const c = isDark ? darkColors : lightColors;
     const old = document.getElementById('fncx-toast');
     if (old) old.remove();
     const t = document.createElement('div');
@@ -40,9 +44,11 @@ function showToast(message: string, isError = false) {
     t.textContent = message;
     Object.assign(t.style, {
         position: 'fixed', bottom: '110px', left: '50%', transform: 'translateX(-50%)',
-        background: isError ? '#ef4444' : '#10B981', color: '#fff',
+        background: c.card, color: c.text,
+        border: `1px solid ${c.border}`,
+        borderLeft: `4px solid ${isError ? (isDark ? '#ef4444' : '#dc2626') : (isDark ? '#10B981' : '#059669')}`,
         padding: '12px 22px', borderRadius: '12px', fontSize: '14px', fontWeight: '600',
-        zIndex: '99999', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', whiteSpace: 'nowrap',
+        zIndex: '99999', boxShadow: isDark ? '0 4px 20px rgba(0,0,0,0.5)' : '0 4px 20px rgba(0,0,0,0.1)', whiteSpace: 'nowrap',
         maxWidth: '90vw', textAlign: 'center',
     });
     document.body.appendChild(t);

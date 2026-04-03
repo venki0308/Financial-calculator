@@ -10,6 +10,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { useSettingsStore } from '../store/useSettingsStore';
+import { useAppColors } from '../theme/useAppColors';
 
 /* ────────────────────────── constants ────────────────────────── */
 
@@ -153,13 +154,14 @@ function CalendarModal({ isDark, selected, initialYear, initialMonth, max, min, 
     const [year, setYear]   = useState(initialYear);
     const [month, setMonth] = useState(initialMonth);
     const [showYearPicker, setShowYearPicker] = useState(false);
+    const c = useAppColors();
 
     /* ── theme colors ──────────────────────────────────────────── */
-    const bg          = isDark ? '#0f172a' : '#ffffff';
-    const surface     = isDark ? '#1e293b' : '#f1f5f9';
-    const textPrimary = isDark ? '#f1f5f9' : '#0f172a';
-    const textMuted   = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.45)';
-    const border      = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+    const bg          = c.card;
+    const surface     = c.bg;
+    const textPrimary = c.text;
+    const textMuted   = c.textMuted;
+    const border      = c.border;
     const accent      = '#14b8a6';   // teal-500 — selected highlight
     const todayRing   = isDark ? '#6366f1' : '#818cf8'; // indigo
 

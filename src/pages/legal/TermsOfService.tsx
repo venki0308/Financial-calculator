@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import LegalLayout, { LangSelector, PlayStoreBadge, type Lang } from './LegalLayout';
+import { useAppColors } from '../../theme/useAppColors';
 
 const T = {
     en: { title: 'Terms of Service', subtitle: 'USAGE AGREEMENT', updated: 'Last updated · March 2026', s1: 'For Reference Only', s2: 'Not Financial Advice', s3: 'Government Schemes', s4: 'Liability', closing: 'By using this app, you acknowledge and agree to the terms outlined above.' },
@@ -31,13 +32,14 @@ const SECTIONS = (t: any) => [
 export default function TermsOfService() {
     const [lang, setLang] = useState<Lang>('en');
     const t = T[lang];
+    const c = useAppColors();
 
     return (
         <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />}>
             {/* Header badge */}
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
                 <div style={{ width: '72px', height: '72px', borderRadius: '20px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px', margin: '0 auto 16px' }}>📜</div>
-                <div style={{ display: 'inline-block', padding: '6px 18px', borderRadius: '20px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#94A3B8', fontSize: '12px', fontWeight: 600, letterSpacing: '1.5px' }}>
+                <div style={{ display: 'inline-block', padding: '6px 18px', borderRadius: '20px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: c.textSecondary, fontSize: '12px', fontWeight: 600, letterSpacing: '1.5px' }}>
                     {t.subtitle}
                 </div>
             </div>
@@ -48,7 +50,7 @@ export default function TermsOfService() {
                     <div
                         key={sec.n}
                         style={{
-                            background: '#0F1E35', border: '1px solid rgba(255,255,255,0.07)',
+                            background: c.card, border: '1px solid rgba(255,255,255,0.07)',
                             borderRadius: '16px', padding: '24px', display: 'flex', gap: '20px', alignItems: 'flex-start',
                         }}
                     >
@@ -62,8 +64,8 @@ export default function TermsOfService() {
                             {sec.n}
                         </div>
                         <div>
-                            <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#fff', margin: '0 0 10px', lineHeight: 1.3 }}>{sec.title}</h3>
-                            <p style={{ color: '#94A3B8', fontSize: '14px', lineHeight: 1.75, margin: 0 }}>{sec.text}</p>
+                            <h3 style={{ fontSize: '1rem', fontWeight: 600, color: c.text, margin: '0 0 10px', lineHeight: 1.3 }}>{sec.title}</h3>
+                            <p style={{ color: c.textSecondary, fontSize: '14px', lineHeight: 1.75, margin: 0 }}>{sec.text}</p>
                         </div>
                     </div>
                 ))}

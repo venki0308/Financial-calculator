@@ -25,6 +25,7 @@ import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import SmartInsight from '../components/SmartInsight';
+import { useAppColors } from '../theme/useAppColors';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { nativeShare } from '../utils/nativeShare';
@@ -59,6 +60,7 @@ export default function SIPCalculator() {
     const [isSaved, setIsSaved] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
     const chartRef = useRef<any>(null);
+    const c = useAppColors();
 
     // Basic SIP state
     const [monthly, setMonthly] = useState(5000);
@@ -127,8 +129,8 @@ export default function SIPCalculator() {
         datasets: [{
             data: [displayValues.invested, displayValues.returns],
             backgroundColor: ['#4F46E5', '#10B981'],
-            borderColor: ['#4F46E540', '#10B98140'],
-            borderWidth: 1,
+            borderColor: [c.card, c.card],
+            borderWidth: 2,
         }]
     };
 
@@ -410,8 +412,8 @@ export default function SIPCalculator() {
                                     responsive: true,
                                     maintainAspectRatio: false,
                                     scales: {
-                                        y: { stacked: true, grid: { color: '#1E293B' }, ticks: { color: '#64748B', font: { size: 10 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
-                                        x: { stacked: true, grid: { display: false }, ticks: { color: '#64748B', font: { size: 9 } } }
+                                        y: { stacked: true, grid: { color: c.border }, ticks: { color: c.textMuted, font: { size: 10 }, callback: (v: any) => v >= 100000 ? `${(v / 100000).toFixed(0)}L` : `${(v / 1000).toFixed(0)}K` } },
+                                        x: { stacked: true, grid: { display: false }, ticks: { color: c.textMuted, font: { size: 9 } } }
                                     },
                                     plugins: { legend: { display: false } }
                                 }}

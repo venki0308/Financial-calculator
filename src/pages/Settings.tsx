@@ -11,6 +11,7 @@ import { AnalyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { APP_VERSION } from '../config/app';
+import { useAppColors } from '../theme/useAppColors';
 
 
 const languages = [
@@ -32,6 +33,7 @@ export default function Settings() {
     const [showNotif, setShowNotif] = useState(false);
     const [showLangPicker, setShowLangPicker] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
+    const c = useAppColors();
 
     const currentLang = languages.find(l => i18n.language.startsWith(l.code)) || languages[0];
 
@@ -204,10 +206,14 @@ export default function Settings() {
                         const isActive = i18n.language.startsWith(lang.code);
                         return (
                             <button key={lang.code} onClick={() => changeLanguage(lang.code)}
-                                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-colors ${isActive ? 'bg-brand-green/10 border-brand-green' : 'bg-slate-800 dark:bg-slate-800 border-slate-700 dark:border-slate-700 hover:border-slate-500'}`}>
+                                style={{
+                                    backgroundColor: isActive ? 'rgba(16, 185, 129, 0.1)' : c.card,
+                                    borderColor: isActive ? '#10B981' : c.border
+                                }}
+                                className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-colors hover:opacity-80`}>
                                 <div className="flex flex-col items-start">
-                                    <span className="text-white font-medium text-sm">{lang.nativeName}</span>
-                                    <span className="text-slate-400 text-xs">{lang.name}</span>
+                                    <span style={{ color: c.text }} className="font-medium text-sm">{lang.nativeName}</span>
+                                    <span style={{ color: c.textSecondary }} className="text-xs">{lang.name}</span>
                                 </div>
                                 {isActive && <Check size={18} className="text-brand-green flex-shrink-0" />}
                             </button>
@@ -246,14 +252,14 @@ export default function Settings() {
                     <>
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[10000]" onClick={() => setShowClearConfirm(false)} />
                         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="fixed inset-0 z-[10001] flex items-center justify-center p-4 pointer-events-none">
-                            <div className="bg-card border-border border-2 border-slate-600 rounded-2xl w-full max-w-sm shadow-2xl pointer-events-auto p-6">
+                            <div style={{ backgroundColor: c.card, borderColor: c.border }} className="border-2 rounded-2xl w-full max-w-sm shadow-2xl pointer-events-auto p-6">
                                 <div className="flex justify-center mb-4">
                                     <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center"><Trash2 size={32} className="text-red-500" /></div>
                                 </div>
-                                <h3 className="text-xl font-bold text-foreground text-center mb-2">Clear All Data?</h3>
-                                <p className="text-slate-300 text-center text-sm mb-6">This will erase ALL data — bookmarks, saved calculations, expense entries, budgets, and settings. The app will restart like a fresh installation.</p>
+                                <h3 style={{ color: c.text }} className="text-xl font-bold text-center mb-2">Clear All Data?</h3>
+                                <p style={{ color: c.textSecondary }} className="text-center text-sm mb-6">This will erase ALL data — bookmarks, saved calculations, expense entries, budgets, and settings. The app will restart like a fresh installation.</p>
                                 <div className="flex gap-3">
-                                    <button onClick={() => setShowClearConfirm(false)} className="flex-1 py-3 rounded-xl bg-slate-700 text-foreground font-semibold text-sm border-2 border-slate-500">Cancel</button>
+                                    <button onClick={() => setShowClearConfirm(false)} style={{ backgroundColor: c.inputBg, color: c.text, borderColor: c.border }} className="flex-1 py-3 rounded-xl font-semibold text-sm border-2">Cancel</button>
                                     <button onClick={handleClearData} className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold text-sm border-2 border-red-500">Clear</button>
                                 </div>
                             </div>

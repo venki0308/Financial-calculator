@@ -4,6 +4,7 @@ import { Download, TrendingUp, TrendingDown, PiggyBank, Lightbulb } from 'lucide
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 import { getReportInsights } from '../../services/InsightEngine';
+import { useAppColors } from '../../theme/useAppColors';
 import {
     Chart as ChartJS, ArcElement, Tooltip, Legend,
     CategoryScale, LinearScale, PointElement, LineElement,
@@ -28,6 +29,7 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 export default function ReportsTab() {
     const { t } = useTranslation();
     const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, netWorthHistory, insights, subscriptions } = useBudgetTrackerStore();
+    const c = useAppColors();
 
     const pieChartRef = useRef<any>(null);
 
@@ -343,7 +345,7 @@ export default function ReportsTab() {
                                         ref={pieChartRef}
                                         data={{
                                             labels: categoryData.map((c) => `${c.icon} ${c.name}`),
-                                            datasets: [{ data: categoryData.map((c) => c.total), backgroundColor: COLORS, borderWidth: 2, borderColor: '#ffffff10' }],
+                                            datasets: [{ data: categoryData.map((c) => c.total), backgroundColor: COLORS, borderWidth: 2, borderColor: c.border }],
                                         }}
                                         options={{
                                             responsive: true,
@@ -390,7 +392,7 @@ export default function ReportsTab() {
                                     plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
                                     scales: {
                                         x: { grid: { display: false } },
-                                        y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,0.1)' } }
+                                        y: { beginAtZero: true, grid: { color: c.border } }
                                     },
                                 }}
                             />
@@ -416,7 +418,7 @@ export default function ReportsTab() {
                                     plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
                                     scales: {
                                         x: { grid: { display: false } },
-                                        y: { grid: { color: 'rgba(148,163,184,0.1)' } }
+                                        y: { grid: { color: c.border } }
                                     }
                                 }}
                             />
@@ -440,7 +442,7 @@ export default function ReportsTab() {
                                     plugins: { legend: { position: 'bottom', align: 'start', labels: { boxWidth: 12, font: { size: 10 } } }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
                                     scales: { 
                                         x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                                        y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,0.1)' } } 
+                                        y: { beginAtZero: true, grid: { color: c.border } } 
                                     },
                                 }}
                             />

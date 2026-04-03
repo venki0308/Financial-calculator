@@ -12,6 +12,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
+import { useAppColors } from '../theme/useAppColors';
 
 type InsuranceTab = 'health' | 'life';
 
@@ -202,6 +203,7 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
 }
 
 function ScoreDial({ score }: { score: number }) {
+  const c = useAppColors();
   const R = 90;
   const circ = Math.PI * R;
   const color = score <= 40 ? '#ef4444' : score <= 75 ? '#f59e0b' : '#22c55e';
@@ -226,7 +228,7 @@ function ScoreDial({ score }: { score: number }) {
           transition={{ duration: 0.9, ease: 'easeOut' }}
         />
         <text x="100" y="82" textAnchor="middle" fontSize="40" fontWeight="900" fill={color}>{score}</text>
-        <text x="100" y="100" textAnchor="middle" fontSize="11" fill="#94a3b8">/100</text>
+        <text x="100" y="100" textAnchor="middle" fontSize="11" fill={c.textMuted}>/100</text>
       </svg>
       <span className="text-sm font-bold mt-1" style={{ color }}>{label}</span>
     </div>

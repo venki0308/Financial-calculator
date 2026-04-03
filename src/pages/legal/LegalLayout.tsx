@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useAppColors } from '../../theme/useAppColors';
 
 // ── Language types ───────────────────────────────────────
 export type Lang = 'en' | 'hi' | 'te' | 'ta' | 'kn';
@@ -14,6 +15,7 @@ export const LANG_OPTIONS: { code: Lang; label: string }[] = [
 
 // ── Language selector dropdown ───────────────────────────
 export function LangSelector({ lang, onChange }: { lang: Lang; onChange: (l: Lang) => void }) {
+    const c = useAppColors();
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     const current = LANG_OPTIONS.find(l => l.code === lang)!;
@@ -33,9 +35,9 @@ export function LangSelector({ lang, onChange }: { lang: Lang; onChange: (l: Lan
                 style={{
                     display: 'flex', alignItems: 'center', gap: '6px',
                     padding: '7px 12px', borderRadius: '10px',
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    color: '#94A3B8', fontSize: '13px', cursor: 'pointer',
+                    background: c.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+                    border: `1px solid ${c.border}`,
+                    color: c.textSecondary, fontSize: '13px', cursor: 'pointer',
                     fontFamily: 'Poppins, sans-serif', whiteSpace: 'nowrap',
                 }}
             >
@@ -46,7 +48,7 @@ export function LangSelector({ lang, onChange }: { lang: Lang; onChange: (l: Lan
                 <div
                     style={{
                         position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                        background: '#0F1E35', border: '1px solid rgba(255,255,255,0.1)',
+                        background: c.card, border: `1px solid ${c.border}`,
                         borderRadius: '12px', overflow: 'hidden', zIndex: 200,
                         minWidth: '150px', boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
                     }}
@@ -59,7 +61,7 @@ export function LangSelector({ lang, onChange }: { lang: Lang; onChange: (l: Lan
                                 display: 'block', width: '100%', padding: '10px 16px',
                                 textAlign: 'left',
                                 background: l.code === lang ? 'rgba(201,168,76,0.12)' : 'transparent',
-                                color: l.code === lang ? '#C9A84C' : '#94A3B8',
+                                color: l.code === lang ? '#C9A84C' : c.textSecondary,
                                 fontSize: '13px', cursor: 'pointer',
                                 fontFamily: 'Poppins, sans-serif', border: 'none',
                                 transition: 'background 0.15s',
@@ -108,6 +110,8 @@ export default function LegalLayout({
     children: ReactNode;
     langBar?: ReactNode;
 }) {
+    const c = useAppColors();
+
     useEffect(() => {
         if (!document.querySelector('link[data-fc-poppins]')) {
             const link = document.createElement('link');
@@ -120,12 +124,12 @@ export default function LegalLayout({
     }, [title]);
 
     return (
-        <div style={{ fontFamily: "'Poppins', sans-serif", background: '#0A1628', color: '#fff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ fontFamily: "'Poppins', sans-serif", background: c.bg, color: c.text, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             {/* Header */}
             <header
                 style={{
-                    borderBottom: '1px solid rgba(201,168,76,0.15)',
-                    background: 'rgba(5,13,26,0.95)',
+                    borderBottom: `1px solid ${c.border}`,
+                    background: c.isDark ? 'rgba(5,13,26,0.95)' : 'rgba(255,255,255,0.95)',
                     position: 'sticky', top: 0, zIndex: 50,
                     backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
                 }}
@@ -142,7 +146,7 @@ export default function LegalLayout({
                     </a>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         {langBar}
-                        <a href="/" style={{ fontSize: '12px', color: '#4A5568', textDecoration: 'none', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <a href="/" style={{ fontSize: '12px', color: c.textSecondary, textDecoration: 'none', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
                             ← Home
                         </a>
                     </div>
@@ -154,22 +158,22 @@ export default function LegalLayout({
                 <p style={{ color: '#C9A84C', fontSize: '11px', fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', marginBottom: '10px' }}>
                     {updated}
                 </p>
-                <h1 style={{ fontSize: 'clamp(1.7rem, 5vw, 2.6rem)', fontWeight: 700, letterSpacing: '-0.8px', lineHeight: 1.1, marginBottom: '40px', color: '#fff' }}>
+                <h1 style={{ fontSize: 'clamp(1.7rem, 5vw, 2.6rem)', fontWeight: 700, letterSpacing: '-0.8px', lineHeight: 1.1, marginBottom: '40px', color: c.text }}>
                     {title}
                 </h1>
                 {children}
             </main>
 
             {/* Footer */}
-            <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: '#050D1A', padding: '24px', textAlign: 'center', fontSize: '12px', color: '#4A5568' }}>
+            <footer style={{ borderTop: `1px solid ${c.border}`, background: c.card, padding: '24px', textAlign: 'center', fontSize: '12px', color: c.textSecondary }}>
                 <div style={{ marginBottom: '8px' }}>FinCalix — Smart Financial Planning Tool</div>
                 <div>
                     Made with ❤️ in India ·{' '}
-                    <a href="/privacy-policy" style={{ color: '#94A3B8', textDecoration: 'none' }}>Privacy</a>
+                    <a href="/privacy-policy" style={{ color: c.textSecondary, textDecoration: 'none' }}>Privacy</a>
                     {' · '}
-                    <a href="/terms-of-service" style={{ color: '#94A3B8', textDecoration: 'none' }}>Terms</a>
+                    <a href="/terms-of-service" style={{ color: c.textSecondary, textDecoration: 'none' }}>Terms</a>
                     {' · '}
-                    <a href="/about" style={{ color: '#94A3B8', textDecoration: 'none' }}>About</a>
+                    <a href="/about" style={{ color: c.textSecondary, textDecoration: 'none' }}>About</a>
                     {' · '}© 2026 FinCalix. All rights reserved.
                 </div>
             </footer>
