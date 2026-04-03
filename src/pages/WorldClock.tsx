@@ -1303,10 +1303,10 @@ export default function WorldClock() {
             {/* Success Toast */}
             <AnimatePresence>
                 {toastMessage && (
-                    <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} 
-                    className="fixed bottom-24 left-4 right-4 z-[60] flex justify-center pointer-events-none">
-                        <div className="bg-foreground text-background px-4 py-2 rounded-full shadow-xl flex items-center gap-2 text-sm font-medium">
-                            <Globe size={14} className="text-primary" />
+                    <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }}
+                    className="fixed bottom-32 left-4 right-4 z-[99999] flex justify-center pointer-events-none">
+                        <div className="bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 text-sm font-semibold">
+                            <Globe size={16} />
                             {toastMessage}
                         </div>
                     </motion.div>
