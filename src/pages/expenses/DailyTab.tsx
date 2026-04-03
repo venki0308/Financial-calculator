@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit3, Check, X, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
+import { Plus, Trash2, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES, INVESTMENT_TYPES, INCOME_CATEGORIES, type PaymentMethod, type EntryType, type InvestmentType } from '../../store/useBudgetTrackerStore';
 import DateInput from '../../components/DateInput';
@@ -33,7 +33,7 @@ function toDateInput(d: Date) {
     return `${y}-${m}-${day}`;
 }
 
-export default function DailyTab() {
+export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}) {
     const { t } = useTranslation();
     const { entries, addEntry, deleteEntry, updateEntry, categoryBudgets, getEntriesByDate, getMonthlySpentByCategory } = useBudgetTrackerStore();
 
@@ -146,6 +146,8 @@ export default function DailyTab() {
         setEditingId(null);
         setShowAddForm(true);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { if (openOnMount) openAddForm(); }, [openOnMount]);
 
     const startEdit = (id: string) => {
         const e = entries.find(e => e.id === id);

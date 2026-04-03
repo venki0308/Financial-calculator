@@ -77,7 +77,7 @@ export default function ExpenseTracker() {
                         return (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
+                                onClick={() => { setActiveTab(tab.id); setShowAddExpense(false); }}
                                 className={`flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl transition-all text-center ${isActive
                                     ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/30'
                                     : 'text-muted-foreground dark:text-muted-foreground hover:bg-white dark:hover:bg-white/5'
@@ -109,7 +109,7 @@ export default function ExpenseTracker() {
                             />
                         )}
                         {activeTab === 'budget' && <BudgetTab />}
-                        {activeTab === 'daily' && <DailyTab />}
+                        {activeTab === 'daily' && <DailyTab openOnMount={showAddExpense} />}
                         {activeTab === 'weekly' && <WeeklyTab />}
                         {activeTab === 'reports' && <ReportsTab />}
                         {activeTab === 'subs' && <SubscriptionsTab />}

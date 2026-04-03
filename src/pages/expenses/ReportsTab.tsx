@@ -454,7 +454,7 @@ export default function ReportsTab() {
                             <div className="space-y-3">
                                 {categoryData.slice(0, 5).map((cat, i) => (
                                     <div key={cat.id} className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0" style={{ backgroundColor: COLORS[i] }}>
+                                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }}>
                                             {i + 1}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -465,7 +465,7 @@ export default function ReportsTab() {
                                                     animate={{ width: `${maxCategoryTotal > 0 ? (cat.total / maxCategoryTotal) * 100 : 0}%` }}
                                                     transition={{ duration: 0.6 }}
                                                     className="h-full rounded-full"
-                                                    style={{ backgroundColor: COLORS[i] }}
+                                                    style={{ backgroundColor: COLORS[i % COLORS.length] }}
                                                 />
                                             </div>
                                         </div>

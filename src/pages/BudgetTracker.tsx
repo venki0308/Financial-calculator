@@ -52,7 +52,7 @@ export default function BudgetTracker() {
                         <ArrowLeft size={18} />
                     </button>
                     <div className="flex-1">
-                        <h1 className="text-slate-900 dark:text-foreground font-bold text-base">Expense Tracker</h1>
+                        <h1 className="text-slate-900 dark:text-foreground font-bold text-base">Budget Tracker</h1>
                         <p className="text-muted-foreground text-[11px]">{tabLabels[activeTab]}</p>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-brand-purple/10 flex items-center justify-center text-xl">💰</div>
@@ -66,7 +66,7 @@ export default function BudgetTracker() {
                         return (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
+                                onClick={() => { setActiveTab(tab.id); setShowAddExpense(false); }}
                                 className={`flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl transition-all text-center ${isActive ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/30' : 'text-muted-foreground dark:text-muted-foreground hover:bg-white dark:hover:bg-white/5'}`}
                             >
                                 <Icon size={16} />
@@ -91,7 +91,7 @@ export default function BudgetTracker() {
                             <DashboardTab onAddExpense={handleAddExpenseFromDashboard} onViewAll={() => setActiveTab('daily')} />
                         )}
                         {activeTab === 'budget' && <BudgetTab />}
-                        {activeTab === 'daily' && <DailyTab />}
+                        {activeTab === 'daily' && <DailyTab openOnMount={showAddExpense} />}
                         {activeTab === 'reports' && <ReportsTab />}
                     </motion.div>
                 </AnimatePresence>
