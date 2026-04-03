@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF } from '../utils/exportUtils';
+import { exportToPDF as exportToPDFNew, dateTag, type ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
 import { useAppColors } from '../theme/useAppColors';
@@ -273,24 +273,69 @@ export default function AIFinancialAssistant() {
 
     const handleDownloadPDF = async () => {
         if (!plan) return;
-        const headers = ['Category', 'Details'];
-        const data: (string | number)[][] = [
-            ['Monthly Salary', formatINR(salary)],
-            ['Monthly Expenses', formatINR(expenses)],
-            ['Monthly Surplus', formatINR(salary - expenses - emi)],
-            ['Financial Health Score', `${plan.score}/100`],
-            ['---', '---'],
-            ['SELECTED GOALS', selectedGoals.map(g => goals.find(gl => gl.id === g)?.label).join(', ')],
-            ['Total Monthly SIP Needed', formatINR(plan.totalMonthlySIP)],
-            ['---', '---'],
+        const tag = dateTag();
+
+        const inputs: ExportConfig['inputs'] = [
+            { label: 'Monthly Salary', value: formatINR(salary) },
+            { label: 'Age', value: `${age} years` },
+            { label: 'Monthly Expenses', value: formatINR(expenses) },
+            { label: 'Existing Savings', value: formatINR(savings) },
+            { label: 'Existing EMI', value: formatINR(emi) },
+            { label: 'Selected Goals', value: selectedGoals.map(g => goals.find(gl => gl.id === g)?.label).join(', ') },
         ];
+
+        const results: ExportConfig['results'] = [
+            { label: 'Financial Health Score', value: `${plan.score}/100` },
+            { label: 'Monthly Surplus', value: formatINR(salary - expenses - emi) },
+            { label: 'Total Monthly SIP Needed', value: formatINR(plan.totalMonthlySIP) },
+            { label: '50/30/20 — Needs (50%)', value: formatINR(plan.needs50) },
+            { label: '50/30/20 — Wants (30%)', value: formatINR(plan.wants30) },
+            { label: '50/30/20 — Savings (20%)', value: formatINR(plan.savings20) },
+            { label: 'Max EMI Allowed', value: formatINR(plan.maxEmiAllowed) },
+            { label: 'EMI-to-Income Ratio', value: `${plan.emiRatio.toFixed(1)}%` },
+        ];
+
+        // Goal-wise breakdown as projection table
+        const goalRows: (string | number)[][] = [];
         plan.goalPlans.forEach(gp => {
-            data.push([`Goal: ${gp.goalLabel}`, `SIP: ${formatINR(gp.monthlySIP)}/mo | Target: ${formatINR(gp.targetCorpus)}`]);
-            gp.recommendations.forEach(r => { data.push([r.title, `${r.value} - ${r.detail}`]); });
-            data.push(['---', '---']);
+            goalRows.push([gp.goalLabel, formatINR(gp.monthlySIP) + '/mo', formatINR(gp.targetCorpus), gp.timeline]);
+            gp.recommendations.forEach(r => {
+                goalRows.push(['  ' + r.title, r.value, r.detail, '']);
+            });
         });
-        plan.alerts.forEach(a => { data.push([a.type === 'warning' ? '⚠ Alert' : '✓ Positive', a.text]); });
-        await exportToPDF('Financial Plan Report', headers, data, 'FinCalix_Financial_Plan');
+
+        // Alerts as additional table
+        const alertRows = plan.alerts.map(a => [
+            a.type === 'warning' ? 'Warning' : 'Positive',
+            a.text,
+        ]);
+
+        const config: ExportConfig = {
+            title: 'Financial Plan Report',
+            subtitle: 'AI-Powered Financial Advisor',
+            inputs,
+            results,
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Expenses', value: expenses, color: '#EF4444' },
+                    { label: 'EMI', value: emi || 1, color: '#F59E0B' },
+                    { label: 'Investments (SIP)', value: plan.totalMonthlySIP, color: '#10B981' },
+                    { label: 'Remaining', value: Math.max(0, salary - expenses - emi - plan.totalMonthlySIP), color: '#6366F1' },
+                ],
+            },
+            projectionTitle: 'Goal-wise Investment Plan',
+            projectionColumns: ['Goal', 'Monthly SIP', 'Target Corpus', 'Timeline'],
+            projectionRows: goalRows,
+            additionalTables: alertRows.length > 0 ? [{
+                title: 'Alerts & Recommendations',
+                columns: ['Type', 'Details'],
+                rows: alertRows,
+            }] : [],
+            filename: `FinCalix_Financial_Plan_${tag}`,
+        };
+
+        await exportToPDFNew(config);
     };
 
     return (

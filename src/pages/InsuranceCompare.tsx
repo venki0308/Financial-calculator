@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft, Shield, Minus, AlertTriangle,
   ChevronDown, ChevronUp, Users, Baby, UserPlus,
@@ -243,6 +244,7 @@ const childAgeLabel = (age: number): string => {
 // ─── Main Component ─────────────────────────────────────────────────────────────
 
 export default function InsuranceCompare() {
+  const { t } = useTranslation();
   useEffect(() => { AnalyticsService.trackScreen('Insurance_Compare'); }, []);
   const navigate = useNavigate();
 
@@ -261,6 +263,33 @@ export default function InsuranceCompare() {
   const [step, setStep] = useState<'profile' | 'results'>('profile');
   const [openChecklist, setOpenChecklist] = useState<Set<number>>(new Set());
   const [showBreakdown, setShowBreakdown] = useState(false);
+
+  // ── Translated constants ─────────────────────────────────────────────────────
+  const CHECKLIST_KEYS = ['roomRent','restoration','ncb','ped','renew','csr','tpa'] as const;
+  const tChecklist = useMemo(() => CHECKLIST_KEYS.map(k => ({
+    title: t(`ins.checklist.${k}Title`), body: t(`ins.checklist.${k}Body`),
+  })), [t]);
+
+  const IRDAI_KEYS = ['noAge','pedWait','lifetime','moratorium','renewCap','freeLook','cashless','gst','portability','ombudsman'] as const;
+  const tIrdaiRights = useMemo(() => IRDAI_KEYS.map(k => ({
+    title: t(`ins.irdaiRights.${k}Title`), body: t(`ins.irdaiRights.${k}Body`),
+  })), [t]);
+
+  const HOW_TO_BUY_NUMS = [1,2,3,4,5,6,7] as const;
+  const tHowToBuy = useMemo(() => HOW_TO_BUY_NUMS.map(n => ({
+    step: n, title: t(`ins.howToBuy.step${n}Title`), body: t(`ins.howToBuy.step${n}Body`),
+  })), [t]);
+
+  const tPriorityOptions = useMemo(() => [
+    { id: 'csr', label: t('ins.compare.priorityHighestCSR') },
+    { id: 'restoration', label: t('ins.compare.priorityRestore') },
+    { id: 'network', label: t('ins.compare.priorityNetwork') },
+    { id: 'opd', label: t('ins.compare.priorityOPD') },
+    { id: 'wellness', label: t('ins.compare.priorityWellness') },
+    { id: 'claim_speed', label: t('ins.compare.priorityFastClaims') },
+    { id: 'senior', label: t('ins.compare.prioritySenior') },
+    { id: 'child', label: t('ins.compare.priorityChild') },
+  ], [t]);
 
   // ── Family helpers ────────────────────────────────────────────────────────────
   const addChild = useCallback(() => { if (children.length < 4) setChildren(p => [...p, 5]); }, [children.length]);
@@ -327,25 +356,25 @@ export default function InsuranceCompare() {
     return 'Good coverage for your family profile. Ensure you have restoration benefit and no room rent capping in your plan.';
   }, [adequacyScore, cityType, sumInsured]);
 
-  // ── Personalised checklist ────────────────────────────────────────────────────
+  // ── Personalised checklist ───────���──────────────────────���─────────────────────
   const profileChecklist = useMemo(() => {
-    const items = [...BASE_CHECKLIST];
+    const items = [...tChecklist];
     if (children.some(c => c <= 4))
-      items.push({ title: 'Newborn Coverage Clause', body: 'Newborns should be covered from Day 1 or within 90 days without a fresh waiting period. Check the exact newborn clause in the Policy Wording document — not the brochure.' });
+      items.push({ title: t('ins.checklist.newbornCoverTitle'), body: t('ins.checklist.newbornCoverBody') });
     if (children.some(c => c < 18))
-      items.push({ title: 'Vaccination Coverage for Children', body: 'Some plans cover routine vaccinations under OPD benefit. Check if this is included or available as an add-on.' });
+      items.push({ title: t('ins.checklist.vaccineTitle'), body: t('ins.checklist.vaccineBody') });
     if (seniorParents.length > 0)
-      items.push({ title: 'Senior Co-payment Clause', body: 'Many plans add a co-payment clause for members above 60 — meaning you pay 10–20% of every claim. Look specifically for plans with ZERO co-payment regardless of age.' });
+      items.push({ title: t('ins.checklist.seniorCopayTitle'), body: t('ins.checklist.seniorCopayBody') });
     if (seniorParents.length > 0)
-      items.push({ title: 'Separate Senior Citizen Plan Consideration', body: 'Including parents above 60 in a family floater raises the entire family\'s premium significantly. Often cheaper to buy a dedicated senior citizen plan for parents and keep the family floater for younger members. Get quotes both ways from IRDAI-registered insurers.' });
+      items.push({ title: t('ins.checklist.seniorSeparateTitle'), body: t('ins.checklist.seniorSeparateBody') });
     if (elderlyParents.length > 0)
-      items.push({ title: 'Elderly Member Coverage Limitations', body: 'Above age 70, very few insurers accept new proposals. If a parent has an existing policy, NEVER let it lapse — renewal cannot be denied under IRDAI rules. If no existing policy, check IRDAI\'s list of senior-friendly products at irdai.gov.in.' });
+      items.push({ title: t('ins.checklist.elderlyTitle'), body: t('ins.checklist.elderlyBody') });
     if (hasPreExisting)
-      items.push({ title: 'Pre-Existing Disease Declaration', body: 'Disclose ALL pre-existing conditions accurately. Under IRDAI\'s moratorium rules, after 5 years of continuous coverage your insurer CANNOT reject claims citing non-disclosure (except proven fraud).' });
+      items.push({ title: t('ins.checklist.pedDeclareTitle'), body: t('ins.checklist.pedDeclareBody') });
     if (sumInsured < 10 && cityType === 'metro')
-      items.push({ title: 'Sum Insured Adequacy Warning', body: `In metro cities, a single surgery with ICU stay costs ₹3–8 lakhs. ${fmtL(sumInsured)} cover is inadequate for metro hospitals. Consider ₹15–25L minimum for families in Mumbai, Delhi, Bengaluru, Chennai, Hyderabad.` });
+      items.push({ title: t('ins.checklist.siWarnTitle'), body: t('ins.checklist.siWarnBody') });
     if (allAges.length >= 5)
-      items.push({ title: 'Floater vs Individual Cover Strategy', body: 'With 5+ members, probability of multiple claims increases. Consider individual covers for high-risk members (seniors, pre-existing conditions) and keeping the floater only for younger, healthy members. Get quotes for both structures.' });
+      items.push({ title: t('ins.checklist.floaterTitle'), body: t('ins.checklist.floaterBody') });
     return items;
   }, [children, parents, seniorParents.length, elderlyParents.length, hasPreExisting, sumInsured, cityType, allAges.length]);
 
@@ -362,8 +391,8 @@ export default function InsuranceCompare() {
           <div className="flex items-center gap-2">
             <Shield size={18} className="text-emerald-400" />
             <div>
-              <h1 className="text-lg font-bold text-foreground">Health Insurance</h1>
-              <p className="text-muted-foreground text-xs">IRDAI-based coverage simulator</p>
+              <h1 className="text-lg font-bold text-foreground">{t('ins.compare.title')}</h1>
+              <p className="text-muted-foreground text-xs">{t('ins.compare.subtitle')}</p>
             </div>
           </div>
         </div>
@@ -445,7 +474,7 @@ export default function InsuranceCompare() {
                           <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
                             <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
                               <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
-                              Newborns must be added to policy within 90 days of birth. Verify this clause with your insurer.
+                              {t('ins.health.newbornWarn')}
                             </p>
                           </div>
                         )}
@@ -453,7 +482,7 @@ export default function InsuranceCompare() {
                           <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
                             <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
                               <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
-                              Children above 25 need a separate individual policy — they cannot be on a family floater.
+                              {t('ins.health.childAbove25')}
                             </p>
                           </div>
                         )}
@@ -496,7 +525,7 @@ export default function InsuranceCompare() {
                           <div className="mt-2 p-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
                             <p className="text-[11px] text-red-400 flex items-start gap-1.5">
                               <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
-                              Very few plans accept new proposals above 70. If they have an existing policy, ensure renewal continuity. IRDAI mandates lifetime renewability if renewed without break.
+                              {t('ins.health.parent70Warn')}
                             </p>
                           </div>
                         )}
@@ -504,7 +533,7 @@ export default function InsuranceCompare() {
                           <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
                             <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
                               <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
-                              Consider a separate senior citizen plan for parents 60+. Combining with family floater significantly increases everyone's premium.
+                              {t('ins.health.parent60Warn')}
                             </p>
                           </div>
                         )}
@@ -586,7 +615,7 @@ export default function InsuranceCompare() {
                 onClick={() => { setStep('results'); setOpenChecklist(new Set()); setShowBreakdown(false); }}
                 className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20">
                 <Shield size={18} />
-                Analyse My Coverage Need
+                {t('ins.compare.analyzeButton')}
               </motion.button>
             </motion.div>
           )}
@@ -716,10 +745,10 @@ export default function InsuranceCompare() {
 
               {/* Card D — IRDAI Rights */}
               <div className="p-4 rounded-2xl bg-card border border-border">
-                <p className="text-sm font-bold text-foreground mb-0.5">Your Rights Under IRDAI</p>
-                <p className="text-[10px] text-muted-foreground mb-3">These protections apply to every insurer</p>
+                <p className="text-sm font-bold text-foreground mb-0.5">{t('ins.health.rightsTitle')}</p>
+                <p className="text-[10px] text-muted-foreground mb-3">{t('ins.health.rightsSubtitle')}</p>
                 <div className="space-y-3">
-                  {IRDAI_RIGHTS.map((right, i) => (
+                  {tIrdaiRights.map((right, i) => (
                     <div key={i} className="flex items-start gap-2.5">
                       <Shield size={13} className="text-emerald-400 flex-shrink-0 mt-0.5" />
                       <div>
@@ -736,9 +765,9 @@ export default function InsuranceCompare() {
 
               {/* Card E — How to Buy */}
               <div className="p-4 rounded-2xl bg-card border border-border">
-                <p className="text-sm font-bold text-foreground mb-4">How to Buy — Advisor's Step-by-Step</p>
+                <p className="text-sm font-bold text-foreground mb-4">{t('ins.health.howToBuyTitle')}</p>
                 <div className="space-y-4">
-                  {HOW_TO_BUY.map(s => (
+                  {tHowToBuy.map(s => (
                     <div key={s.step} className="flex items-start gap-3">
                       <div className="w-7 h-7 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <span className="text-[11px] font-black text-emerald-400">{s.step}</span>
@@ -755,7 +784,7 @@ export default function InsuranceCompare() {
               {/* Back button */}
               <button onClick={() => setStep('profile')}
                 className="w-full py-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
-                ← Edit Family Profile
+                ← {t('ins.compare.editProfile')}
               </button>
 
               {/* Disclaimer */}

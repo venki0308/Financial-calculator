@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import {
@@ -258,14 +259,14 @@ function AccordionItem({ title, body, idx, open, onToggle }: {
   );
 }
 
-function VerdictBadge({ verdict }: { verdict: 'best' | 'acceptable' | 'avoid' | 'complex' }) {
+function VerdictBadge({ verdict, label }: { verdict: 'best' | 'acceptable' | 'avoid' | 'complex'; label?: string }) {
   const config = {
-    best: { label: 'BEST CHOICE', cls: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
-    acceptable: { label: 'ACCEPTABLE', cls: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
-    avoid: { label: 'AVOID', cls: 'bg-red-500/20 text-red-400 border-red-500/30' },
-    complex: { label: 'EVALUATE CAREFULLY', cls: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+    best: { fallback: 'BEST CHOICE', cls: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+    acceptable: { fallback: 'ACCEPTABLE', cls: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+    avoid: { fallback: 'AVOID', cls: 'bg-red-500/20 text-red-400 border-red-500/30' },
+    complex: { fallback: 'EVALUATE CAREFULLY', cls: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   }[verdict];
-  return <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${config.cls}`}>{config.label}</span>;
+  return <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${config.cls}`}>{label || config.fallback}</span>;
 }
 
 // ─── Static data ────────────────────────────────────────────────────────────────
@@ -413,6 +414,7 @@ const LIFE_PLAN_TYPES: {
 // ─── Main component ─────────────────────────────────────────────────────────────
 
 export default function InsuranceCalculator() {
+  const { t } = useTranslation();
   useEffect(() => { AnalyticsService.trackScreen('Insurance_Calculator'); }, []);
   useTrackCalculator();
   const navigate = useNavigate();
@@ -440,6 +442,36 @@ export default function InsuranceCalculator() {
   const [dependents, setDependents] = useState(2);
   const [outstandingLoans, setOutstandingLoans] = useState(0);
   const [policyTerm, setPolicyTerm] = useState(25);
+  const [customCover, setCustomCover] = useState(0);
+
+  // ── Translated constants ─────────────────────────────────────────────────────
+  const CHECKLIST_KEYS = ['roomRent','restoration','ncb','ped','renew','csr','tpa'] as const;
+  const tChecklist = useMemo(() => CHECKLIST_KEYS.map(k => ({
+    title: t(`ins.checklist.${k}Title`), body: t(`ins.checklist.${k}Body`),
+  })), [t]);
+
+  const IRDAI_KEYS = ['noAge','pedWait','lifetime','moratorium','renewCap','freeLook','cashless','gst','portability','ombudsman'] as const;
+  const tIrdaiRights = useMemo(() => IRDAI_KEYS.map(k => ({
+    title: t(`ins.irdaiRights.${k}Title`), body: t(`ins.irdaiRights.${k}Body`),
+  })), [t]);
+
+  const HOW_TO_BUY_NUMS = [1,2,3,4,5,6,7] as const;
+  const tHowToBuy = useMemo(() => HOW_TO_BUY_NUMS.map(n => ({
+    step: n, title: t(`ins.howToBuy.step${n}Title`), body: t(`ins.howToBuy.step${n}Body`),
+  })), [t]);
+
+  const LIFE_FACT_KEYS = ['f1','f2','f3','f4','f5','f6','f7'] as const;
+  const tLifeFacts = useMemo(() => LIFE_FACT_KEYS.map(k => t(`ins.lifeFacts.${k}`)), [t]);
+
+  const PLAN_KEYS = ['term','trop','endowment','ulip'] as const;
+  const tPlanTypes = useMemo(() => PLAN_KEYS.map((k, i) => ({
+    ...LIFE_PLAN_TYPES[i],
+    title: t(`ins.planTypes.${k}.title`),
+    what: t(`ins.planTypes.${k}.what`),
+    premiumRange: t(`ins.planTypes.${k}.premiumRange`),
+    xirr: t(`ins.planTypes.${k}.xirr`),
+    note: t(`ins.planTypes.${k}.note`),
+  })), [t]);
 
   // ── Derived ─────────────────────────────────────────────────────────────────
   const allAges = useMemo(() => {
@@ -489,57 +521,33 @@ export default function InsuranceCalculator() {
 
   // ── Profile-based checklist ──────────────────────────────────────────────────
   const profileChecklist = useMemo(() => {
-    const items = [...BASE_CHECKLIST];
+    const items = [...tChecklist];
     if (children.some(c => c <= 4))
-      items.push({
-        title: 'Newborn Coverage Clause',
-        body: 'Newborns should be covered from Day 1 or within 90 days without a fresh waiting period. Check the exact newborn clause in the policy wording document — not the brochure.',
-      });
+      items.push({ title: t('ins.checklist.newbornCoverTitle'), body: t('ins.checklist.newbornCoverBody') });
     if (children.some(c => c < 18))
-      items.push({
-        title: 'Vaccination Coverage for Children',
-        body: 'Some plans cover routine vaccinations under OPD benefit. Check if this is included or available as an add-on. Useful for families with young children.',
-      });
+      items.push({ title: t('ins.checklist.vaccineTitle'), body: t('ins.checklist.vaccineBody') });
     if (parents.some(a => a >= 60))
-      items.push({
-        title: 'Senior Co-payment Clause',
-        body: 'Many plans add a co-payment clause for members above 60 — meaning you pay 10–20% of every claim. This defeats the purpose of insurance for seniors. Look specifically for plans with ZERO co-payment regardless of age.',
-      });
+      items.push({ title: t('ins.checklist.seniorCopayTitle'), body: t('ins.checklist.seniorCopayBody') });
     if (parents.some(a => a >= 60))
-      items.push({
-        title: 'Separate Senior Citizen Plan Consideration',
-        body: 'Including parents above 60 in a family floater raises the entire family\'s premium significantly. Often it is cheaper to buy a dedicated senior citizen plan for parents and keep the main family floater for younger members. Get quotes both ways from IRDAI-registered insurers before deciding.',
-      });
+      items.push({ title: t('ins.checklist.seniorSeparateTitle'), body: t('ins.checklist.seniorSeparateBody') });
     if (parents.some(a => a >= 70))
-      items.push({
-        title: 'Elderly Member Coverage Limitations',
-        body: 'Above age 70, very few insurers accept new proposals. If a parent has an existing policy, NEVER let it lapse — renewal cannot be denied under IRDAI rules. If no existing policy, check IRDAI\'s list of senior-friendly products at irdai.gov.in.',
-      });
+      items.push({ title: t('ins.checklist.elderlyTitle'), body: t('ins.checklist.elderlyBody') });
     if (preExisting)
-      items.push({
-        title: 'Pre-Existing Disease Declaration',
-        body: 'Disclose ALL pre-existing conditions accurately in your proposal form. Under IRDAI\'s moratorium period rules (5 years as of 2024), after 5 years of continuous coverage, your insurer CANNOT reject claims citing non-disclosure (except proven fraud). Never hide conditions — claims get rejected at the worst time.',
-      });
+      items.push({ title: t('ins.checklist.pedDeclareTitle'), body: t('ins.checklist.pedDeclareBody') });
     if (si < 1000000 && city === 'metro')
-      items.push({
-        title: 'Sum Insured Adequacy Warning',
-        body: 'In metro cities, a single surgery with ICU stay costs ₹3–8 lakhs on average. A cardiac bypass or cancer treatment can cost ₹8–20 lakhs. ₹5L cover is inadequate for metro hospitals. Consider ₹15–25L minimum for families in Mumbai, Delhi, Bengaluru, Chennai, Hyderabad.',
-      });
+      items.push({ title: t('ins.checklist.siWarnTitle'), body: t('ins.checklist.siWarnBody') });
     if (allAges.length >= 5)
-      items.push({
-        title: 'Floater vs Individual Cover Strategy',
-        body: 'Family floaters assume not all members claim in the same year. With 5+ members, the probability of multiple claims increases. Consider buying individual covers for high-risk members (seniors, those with pre-existing conditions) and keeping the floater only for younger, healthy members. Get quotes for both structures.',
-      });
+      items.push({ title: t('ins.checklist.floaterTitle'), body: t('ins.checklist.floaterBody') });
     return items;
-  }, [children, parents, preExisting, si, city, allAges.length]);
+  }, [children, parents, preExisting, si, city, allAges.length, t, tChecklist]);
 
   // ── SI advisory ──────────────────────────────────────────────────────────────
   const siAdvisory = useMemo(() => {
-    if (si <= 500000) return { type: 'warn' as const, text: '⚠ Medical inflation is 14%/yr in India. ₹5L may be insufficient for metro hospitals by 2030. Consider ₹10L minimum.' };
-    if (si <= 1500000) return { type: 'ok' as const, text: '✓ Good for most Indian families in Tier 1/2 cities.' };
-    if (si <= 5000000) return { type: 'ok' as const, text: '✓ Comprehensive. Covers most hospitalisation scenarios including ICU + surgery.' };
-    return { type: 'info' as const, text: 'For high-risk families or those planning treatment abroad.' };
-  }, [si]);
+    if (si <= 500000) return { type: 'warn' as const, text: '⚠ ' + t('ins.health.siWarn') };
+    if (si <= 1500000) return { type: 'ok' as const, text: '✓ ' + t('ins.health.siOkLow') };
+    if (si <= 5000000) return { type: 'ok' as const, text: '✓ ' + t('ins.health.siOkHigh') };
+    return { type: 'info' as const, text: t('ins.health.siInfo') };
+  }, [si, t]);
 
   // ── Life results ─────────────────────────────────────────────────────────────
   const coverRec = useMemo(() => ({
@@ -548,23 +556,25 @@ export default function InsuranceCalculator() {
     withLoans: annualIncome * 15 + outstandingLoans,
   }), [annualIncome, outstandingLoans]);
 
-  const recCoverCr = annualIncome > 0 ? Math.max((annualIncome * 20) / 10000000, 0.5) : 1;
+  // Active cover: use custom if set, else recommended (income × 20)
+  const activeCover = customCover > 0 ? customCover : coverRec.recommended;
+  const activeCoverCr = Math.max(activeCover / 10000000, 0.5);
 
   const termRange = useMemo(
-    () => calcTermRange(lifeAge, lifeGender, lifeSmoker, recCoverCr, policyTerm),
-    [lifeAge, lifeGender, lifeSmoker, recCoverCr, policyTerm],
+    () => calcTermRange(lifeAge, lifeGender, lifeSmoker, activeCoverCr, policyTerm),
+    [lifeAge, lifeGender, lifeSmoker, activeCoverCr, policyTerm],
   );
   const termRange20 = useMemo(
-    () => calcTermRange(lifeAge, lifeGender, lifeSmoker, recCoverCr, 20),
-    [lifeAge, lifeGender, lifeSmoker, recCoverCr],
+    () => calcTermRange(lifeAge, lifeGender, lifeSmoker, activeCoverCr, 20),
+    [lifeAge, lifeGender, lifeSmoker, activeCoverCr],
   );
   const termRange30 = useMemo(
-    () => calcTermRange(lifeAge, lifeGender, lifeSmoker, recCoverCr, 30),
-    [lifeAge, lifeGender, lifeSmoker, recCoverCr],
+    () => calcTermRange(lifeAge, lifeGender, lifeSmoker, activeCoverCr, 30),
+    [lifeAge, lifeGender, lifeSmoker, activeCoverCr],
   );
   const termRange40 = useMemo(
-    () => calcTermRange(lifeAge, lifeGender, lifeSmoker, recCoverCr, 40),
-    [lifeAge, lifeGender, lifeSmoker, recCoverCr],
+    () => calcTermRange(lifeAge, lifeGender, lifeSmoker, activeCoverCr, 40),
+    [lifeAge, lifeGender, lifeSmoker, activeCoverCr],
   );
 
   const tax80C = useMemo(() => {
@@ -607,8 +617,8 @@ export default function InsuranceCalculator() {
               <ArrowLeft size={18} className="text-muted-foreground" />
             </button>
             <div>
-              <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">Insurance Simulator</h1>
-              <p className="text-muted-foreground text-xs">IRDAI-based educational tool</p>
+              <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">{t('ins.title')}</h1>
+              <p className="text-muted-foreground text-xs">{t('ins.subtitle')}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -627,8 +637,8 @@ export default function InsuranceCalculator() {
         {/* ─── Tab Switcher ─────────────────────────────────────────────────── */}
         <div className="flex gap-1 bg-card border border-border rounded-xl p-1 mb-5">
           {([
-            { key: 'health' as InsuranceTab, label: 'Health Insurance', icon: HeartPulse },
-            { key: 'life' as InsuranceTab, label: 'Life Insurance', icon: Shield },
+            { key: 'health' as InsuranceTab, label: t('ins.healthTab'), icon: HeartPulse },
+            { key: 'life' as InsuranceTab, label: t('ins.lifeTab'), icon: Shield },
           ] as const).map(tab => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-semibold rounded-lg transition-all ${
@@ -647,29 +657,29 @@ export default function InsuranceCalculator() {
             <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
               <div className="flex items-center gap-2 mb-4">
                 <Users size={15} className="text-brand-green" />
-                <h2 className="text-sm font-bold text-slate-900 dark:text-foreground">Who needs coverage?</h2>
+                <h2 className="text-sm font-bold text-slate-900 dark:text-foreground">{t('ins.health.whoNeeds')}</h2>
               </div>
 
               {/* Self */}
               <div className="mb-3">
-                <NumberInput label="Self — Age" value={selfAge} onChange={setSelfAge} min={18} max={80} suffix=" years" />
+                <NumberInput label={t('ins.health.selfAge')} value={selfAge} onChange={setSelfAge} min={18} max={80} suffix=" years" />
               </div>
 
               {/* Spouse */}
               {hasSpouse ? (
                 <div className="mb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-muted-foreground">Spouse</span>
+                    <span className="text-xs font-semibold text-muted-foreground">{t('ins.health.spouse')}</span>
                     <button onClick={() => setHasSpouse(false)} className="p-1 rounded-lg hover:bg-muted">
                       <X size={14} className="text-muted-foreground" />
                     </button>
                   </div>
-                  <NumberInput label="Spouse — Age" value={spouseAge} onChange={setSpouseAge} min={18} max={80} suffix=" years" />
+                  <NumberInput label={t('ins.health.spouseAge')} value={spouseAge} onChange={setSpouseAge} min={18} max={80} suffix=" years" />
                 </div>
               ) : (
                 <button onClick={() => setHasSpouse(true)}
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-brand-green/40 text-brand-green text-xs font-semibold mb-3 hover:bg-brand-green/5 transition-colors">
-                  <Plus size={14} /> Add Spouse
+                  <Plus size={14} /> {t('ins.health.addSpouse')}
                 </button>
               )}
 
@@ -689,7 +699,7 @@ export default function InsuranceCalculator() {
                     <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
                       <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
                         <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
-                        Newborns must be added to policy within 90 days of birth. Verify this clause with your insurer.
+                        {t('ins.health.newbornWarn')}
                       </p>
                     </div>
                   )}
@@ -697,7 +707,7 @@ export default function InsuranceCalculator() {
                     <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
                       <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
                         <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
-                        Children above 25 need a separate individual policy — they cannot be on a family floater.
+                        {t('ins.health.childAbove25')}
                       </p>
                     </div>
                   )}
@@ -706,7 +716,7 @@ export default function InsuranceCalculator() {
               {children.length < 4 && (
                 <button onClick={addChild}
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-blue-500/40 text-blue-400 text-xs font-semibold mb-3 hover:bg-blue-500/5 transition-colors">
-                  <Plus size={14} /> Add Child
+                  <Plus size={14} /> {t('ins.health.addChild')}
                 </button>
               )}
 
@@ -714,7 +724,7 @@ export default function InsuranceCalculator() {
               {parents.map((age, i) => (
                 <div key={i} className="mb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-muted-foreground">Parent / In-law {i + 1}</span>
+                    <span className="text-xs font-semibold text-muted-foreground">{t('ins.health.parentLabel', { n: i + 1 })}</span>
                     <button onClick={() => removeParent(i)} className="p-1 rounded-lg hover:bg-muted">
                       <X size={14} className="text-muted-foreground" />
                     </button>
@@ -724,7 +734,7 @@ export default function InsuranceCalculator() {
                     <div className="mt-2 p-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
                       <p className="text-[11px] text-red-400 flex items-start gap-1.5">
                         <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
-                        Very few plans accept new proposals above 70. If they have an existing policy, ensure renewal continuity. IRDAI mandates lifetime renewability if renewed without break.
+                        {t('ins.health.parent70Warn')}
                       </p>
                     </div>
                   )}
@@ -732,7 +742,7 @@ export default function InsuranceCalculator() {
                     <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
                       <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
                         <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
-                        Consider a separate senior citizen plan for parents 60+. Combining with family floater significantly increases everyone's premium.
+                        {t('ins.health.parent60Warn')}
                       </p>
                     </div>
                   )}
@@ -741,14 +751,14 @@ export default function InsuranceCalculator() {
               {parents.length < 4 && (
                 <button onClick={addParent}
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-purple-500/40 text-purple-400 text-xs font-semibold hover:bg-purple-500/5 transition-colors">
-                  <Plus size={14} /> Add Parent / In-law
+                  <Plus size={14} /> {t('ins.health.addParent')}
                 </button>
               )}
             </div>
 
             {/* SECTION 2 — Coverage Details */}
             <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-foreground mb-4">Coverage Details</h2>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-foreground mb-4">{t('ins.health.coverageDetails')}</h2>
               <PillSelector label="Sum Insured (Coverage)" options={SUM_INSURED_OPTIONS} value={si} onChange={v => { setSi(v); setHealthCalced(false); }} />
               <div className={`mb-4 px-3 py-2.5 rounded-xl text-[11px] font-medium ${
                 siAdvisory.type === 'warn' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
@@ -762,7 +772,7 @@ export default function InsuranceCalculator() {
             {/* SECTION 3 — Calculate */}
             <button onClick={() => setHealthCalced(true)}
               className="w-full py-4 rounded-2xl bg-brand-green text-black font-bold text-sm shadow-lg shadow-brand-green/20 active:scale-[0.98] transition-transform">
-              Calculate My Coverage Need
+              {t('ins.health.calcButton')}
             </button>
 
             {/* ── RESULTS ─────────────────────────────────────────────────────── */}
@@ -772,8 +782,8 @@ export default function InsuranceCalculator() {
 
                   {/* CARD A — Coverage Adequacy Score */}
                   <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-                    <p className="text-sm font-bold text-foreground mb-0.5">Your Coverage Adequacy</p>
-                    <p className="text-[10px] text-muted-foreground mb-3">Scored against city-level medical costs and family risk profile</p>
+                    <p className="text-sm font-bold text-foreground mb-0.5">{t('ins.health.adequacyTitle')}</p>
+                    <p className="text-[10px] text-muted-foreground mb-3">{t('ins.health.adequacySubtitle')}</p>
                     <ScoreDial score={adequacyScore} />
                     <p className="text-[11px] text-muted-foreground leading-relaxed mt-4 text-center px-2">{adequacyExplanation}</p>
                     <div className="mt-4 grid grid-cols-3 gap-2">
@@ -792,7 +802,7 @@ export default function InsuranceCalculator() {
 
                   {/* CARD B — Estimated Premium Range */}
                   <div className="p-4 rounded-2xl bg-gradient-to-br from-brand-green/5 to-emerald-500/5 border border-brand-green/20">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Estimated Annual Premium Range</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">{t('ins.health.premiumTitle')}</p>
                     <p className="text-[9px] text-muted-foreground mb-3">Based on IRDAI actuarial rating factors · {allAges.length} member{allAges.length !== 1 ? 's' : ''} · {fmtCr(si)} cover · {city}</p>
                     <p className="text-2xl font-black text-foreground mb-0.5">{fmtRange(premiumData.lo, premiumData.hi)}</p>
                     <p className="text-brand-green text-sm font-semibold mb-4">
@@ -803,7 +813,7 @@ export default function InsuranceCalculator() {
                     <button
                       onClick={() => setShowPremiumBreakdown(v => !v)}
                       className="w-full flex items-center justify-between py-2.5 px-3 rounded-xl bg-white/60 dark:bg-black/10 border border-brand-green/15 mb-3">
-                      <span className="text-[11px] font-semibold text-foreground">Per-member breakdown</span>
+                      <span className="text-[11px] font-semibold text-foreground">{t('ins.health.memberBreakdown')}</span>
                       {showPremiumBreakdown
                         ? <ChevronUp size={14} className="text-muted-foreground" />
                         : <ChevronDown size={14} className="text-muted-foreground" />}
@@ -820,11 +830,11 @@ export default function InsuranceCalculator() {
                               </div>
                             ))}
                             <div className="border-t border-border pt-1.5 flex items-center justify-between">
-                              <span className="text-[11px] text-muted-foreground">Family floater discount</span>
+                              <span className="text-[11px] text-muted-foreground">{t('ins.health.floaterDiscount')}</span>
                               <span className="text-[11px] font-bold text-brand-green">−{premiumData.floaterPct}%</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-[11px] font-bold text-foreground">Total</span>
+                              <span className="text-[11px] font-bold text-foreground">{t('ins.health.total')}</span>
                               <span className="text-[11px] font-black text-foreground">{fmtRange(premiumData.lo, premiumData.hi)}</span>
                             </div>
                           </div>
@@ -834,7 +844,7 @@ export default function InsuranceCalculator() {
 
                     {preExisting && (
                       <p className="text-[10px] text-amber-400 mb-3 flex items-center gap-1">
-                        <AlertTriangle size={11} /> Pre-existing loading of 20% applied
+                        <AlertTriangle size={11} /> {t('ins.health.preExistingLoading')}
                       </p>
                     )}
                     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-border">
@@ -846,8 +856,8 @@ export default function InsuranceCalculator() {
 
                   {/* CARD C — Personalised Checklist */}
                   <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-                    <p className="text-sm font-bold text-foreground mb-0.5">Your Personalised Checklist</p>
-                    <p className="text-[10px] text-muted-foreground mb-4">Based on your family profile — tap each item for details</p>
+                    <p className="text-sm font-bold text-foreground mb-0.5">{t('ins.health.checklistTitle')}</p>
+                    <p className="text-[10px] text-muted-foreground mb-4">{t('ins.health.checklistSubtitle')}</p>
                     <div className="space-y-2">
                       {profileChecklist.map((item, i) => (
                         <AccordionItem key={i} idx={i} title={item.title} body={item.body}
@@ -858,10 +868,10 @@ export default function InsuranceCalculator() {
 
                   {/* CARD D — IRDAI Rights */}
                   <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-                    <p className="text-sm font-bold text-foreground mb-0.5">Your Rights Under IRDAI</p>
-                    <p className="text-[10px] text-muted-foreground mb-3">These protections apply to every insurer</p>
+                    <p className="text-sm font-bold text-foreground mb-0.5">{t('ins.health.rightsTitle')}</p>
+                    <p className="text-[10px] text-muted-foreground mb-3">{t('ins.health.rightsSubtitle')}</p>
                     <div className="space-y-3">
-                      {IRDAI_HEALTH_RIGHTS.map((right, i) => (
+                      {tIrdaiRights.map((right, i) => (
                         <div key={i} className="flex items-start gap-2.5">
                           <Shield size={13} className="text-brand-green flex-shrink-0 mt-0.5" />
                           <div>
@@ -872,15 +882,15 @@ export default function InsuranceCalculator() {
                       ))}
                     </div>
                     <p className="text-[9px] text-muted-foreground mt-4 pt-3 border-t border-border leading-relaxed">
-                      Source: IRDAI Annual Report 2023–24, IRDAI Master Circular on Health Insurance 2024, IRDAI HIR 2016, IRDAI Circular January 2025, 56th GST Council 2025
+                      {t('ins.health.rightsSource')}
                     </p>
                   </div>
 
                   {/* CARD E — How to Buy */}
                   <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-                    <p className="text-sm font-bold text-foreground mb-4">How to Buy — Advisor's Step-by-Step</p>
+                    <p className="text-sm font-bold text-foreground mb-4">{t('ins.health.howToBuyTitle')}</p>
                     <div className="space-y-4">
-                      {HOW_TO_BUY_STEPS.map((s) => (
+                      {tHowToBuy.map((s) => (
                         <div key={s.step} className="flex items-start gap-3">
                           <div className="w-7 h-7 rounded-full bg-brand-green/15 flex items-center justify-center flex-shrink-0 mt-0.5">
                             <span className="text-[11px] font-black text-brand-green">{s.step}</span>
@@ -896,15 +906,15 @@ export default function InsuranceCalculator() {
 
                   {/* Final Disclaimer */}
                   <div className="p-4 rounded-2xl border border-slate-200 dark:border-border bg-slate-50 dark:bg-slate-800/30">
-                    <p className="text-[10px] font-bold text-foreground mb-1">FinCalix Health Insurance Simulator</p>
+                    <p className="text-[10px] font-bold text-foreground mb-1">{t('ins.health.disclaimerTitle')}</p>
                     <p className="text-[10px] text-muted-foreground leading-relaxed mb-2">
-                      Provides educational guidance based on IRDAI regulations and actuarial principles. Premium estimates are ranges — actual premiums depend on your health declaration, insurer underwriting, and plan features.
+                      {t('ins.health.disclaimerBody1')}
                     </p>
                     <p className="text-[10px] text-muted-foreground leading-relaxed mb-2">
-                      FinCalix does <span className="font-bold text-foreground">NOT</span> sell insurance, does <span className="font-bold text-foreground">NOT</span> partner with any insurer, and does <span className="font-bold text-foreground">NOT</span> receive commission. This tool helps you understand what you need — you make your own informed choice directly with IRDAI-registered insurers.
+                      {t('ins.health.disclaimerBody2')}
                     </p>
                     <p className="text-[10px] text-muted-foreground">
-                      Verify all insurer data at: <span className="font-semibold text-foreground">irdai.gov.in</span>
+                      {t('ins.health.disclaimerBody3')}
                     </p>
                   </div>
 
@@ -920,22 +930,22 @@ export default function InsuranceCalculator() {
 
             {/* Inputs */}
             <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-foreground mb-4">Life Cover Calculator</h2>
-              <NumberInput label="Your Age" value={lifeAge} onChange={setLifeAge} min={18} max={65} suffix=" years" />
+              <h2 className="text-sm font-bold text-slate-900 dark:text-foreground mb-4">{t('ins.life.calcTitle')}</h2>
+              <NumberInput label={t('ins.life.yourAge')} value={lifeAge} onChange={setLifeAge} min={18} max={65} suffix=" years" />
               <div className="h-3" />
               <PillSelector label="Gender"
                 options={[{ label: '👨 Male', value: 'male' as const }, { label: '👩 Female', value: 'female' as const }]}
                 value={lifeGender} onChange={setLifeGender} />
               <Toggle label="Smoker / Tobacco User?" value={lifeSmoker} onChange={setLifeSmoker} />
-              <NumberInput label="Annual Income" value={annualIncome} onChange={setAnnualIncome} min={100000} max={100000000} prefix="₹" helperText="Gross annual income" />
+              <NumberInput label={t('ins.life.annualIncome')} value={annualIncome} onChange={setAnnualIncome} min={100000} max={100000000} prefix="₹" helperText={t('ins.life.annualIncomeHelper')} />
               <div className="h-3" />
               <PillSelector label="Number of Dependents"
                 options={[0, 1, 2, 3].map(n => ({ label: n === 0 ? 'None' : String(n), value: n })).concat([{ label: '4+', value: 4 }])}
                 value={dependents} onChange={setDependents} />
-              <NumberInput label="Outstanding Loans Total" value={outstandingLoans} onChange={setOutstandingLoans}
-                min={0} max={100000000} prefix="₹" helperText="Home loan + car loan + other" />
+              <NumberInput label={t('ins.life.outstandingLoans')} value={outstandingLoans} onChange={setOutstandingLoans}
+                min={0} max={100000000} prefix="₹" helperText={t('ins.life.loansHelper')} />
               <div className="h-3" />
-              <p className="text-xs font-medium text-muted-foreground mb-2">Policy Term</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2">{t('ins.life.policyTerm')}</p>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-lg font-bold text-foreground">{policyTerm} years</span>
                 <span className="text-[10px] text-muted-foreground">10 — 40 years</span>
@@ -946,28 +956,43 @@ export default function InsuranceCalculator() {
               <div className="flex justify-between text-[9px] text-muted-foreground mt-1">
                 {[10, 15, 20, 25, 30, 35, 40].map(y => <span key={y}>{y}</span>)}
               </div>
+              <div className="h-3" />
+              <NumberInput label={t('ins.life.customCover')} value={customCover} onChange={setCustomCover}
+                min={0} max={1000000000} step={1000000} prefix="₹"
+                helperText={t('ins.life.customCoverHelper')} />
             </div>
 
             {/* R1 — Recommended Cover */}
             <div className="p-4 rounded-2xl bg-gradient-to-br from-brand-green/5 to-emerald-500/5 border border-brand-green/20">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Recommended Life Cover</p>
-              <p className="text-[9px] text-muted-foreground mb-4">Human Life Value method — IRDAI advisor standard</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">{t('ins.life.recTitle')}</p>
+              <p className="text-[9px] text-muted-foreground mb-4">{t('ins.life.recSubtitle')}</p>
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between px-1">
-                  <p className="text-xs text-muted-foreground">Minimum (income × 15)</p>
+                  <p className="text-xs text-muted-foreground">{t('ins.life.minimum')}</p>
                   <span className="text-sm font-bold text-foreground">{fmtCr(coverRec.minimum)}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-xl bg-brand-green/10 border border-brand-green/25">
+                <div className={`flex items-center justify-between p-3 rounded-xl ${
+                  customCover <= 0 ? 'bg-brand-green/10 border border-brand-green/25' : 'bg-slate-50 dark:bg-slate-800/30'
+                }`}>
                   <div>
-                    <p className="text-xs font-bold text-foreground">Recommended (income × 20)</p>
-                    <p className="text-[9px] text-brand-green font-semibold mt-0.5">IRDAI advisor consensus</p>
+                    <p className="text-xs font-bold text-foreground">{t('ins.life.recommended')}</p>
+                    <p className="text-[9px] text-brand-green font-semibold mt-0.5">{t('ins.life.irdaiConsensus')}</p>
                   </div>
-                  <span className="text-xl font-black text-brand-green">{fmtCr(coverRec.recommended)}</span>
+                  <span className={`text-xl font-black ${customCover <= 0 ? 'text-brand-green' : 'text-foreground'}`}>{fmtCr(coverRec.recommended)}</span>
                 </div>
                 {outstandingLoans > 0 && (
                   <div className="flex items-center justify-between px-1">
-                    <p className="text-xs text-muted-foreground">With your loans (income × 15 + loans)</p>
+                    <p className="text-xs text-muted-foreground">{t('ins.life.withLoans')}</p>
                     <span className="text-sm font-bold text-amber-400">{fmtCr(coverRec.withLoans)}</span>
+                  </div>
+                )}
+                {customCover > 0 && (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/10 border border-blue-500/25">
+                    <div>
+                      <p className="text-xs font-bold text-foreground">{t('ins.life.chosenCover')}</p>
+                      <p className="text-[9px] text-blue-500 font-semibold mt-0.5">{t('ins.life.customAmount')}</p>
+                    </div>
+                    <span className="text-xl font-black text-blue-500">{fmtCr(customCover)}</span>
                   </div>
                 )}
               </div>
@@ -975,10 +1000,10 @@ export default function InsuranceCalculator() {
 
             {/* R2 — Plan type comparison */}
             <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-              <p className="text-sm font-bold text-foreground mb-1">Which Life Insurance Type Is Right?</p>
-              <p className="text-[10px] text-muted-foreground mb-4">IRDAI advisor consensus — unbiased product comparison</p>
+              <p className="text-sm font-bold text-foreground mb-1">{t('ins.life.planTypeTitle')}</p>
+              <p className="text-[10px] text-muted-foreground mb-4">{t('ins.life.planTypeSubtitle')}</p>
               <div className="space-y-3">
-                {LIFE_PLAN_TYPES.map((plan, i) => {
+                {tPlanTypes.map((plan, i) => {
                   const Icon = plan.icon;
                   return (
                     <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -992,18 +1017,18 @@ export default function InsuranceCalculator() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap mb-0.5">
                               <h3 className="text-sm font-bold text-foreground">{plan.title}</h3>
-                              <VerdictBadge verdict={plan.verdict} />
+                              <VerdictBadge verdict={plan.verdict} label={t(`ins.verdicts.${plan.verdict}`)} />
                             </div>
                             <p className="text-[11px] text-muted-foreground">{plan.what}</p>
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2 mb-3">
                           <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
-                            <p className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Premium Range</p>
+                            <p className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">{t('ins.life.premiumRange')}</p>
                             <p className="text-[10px] font-semibold text-foreground">{plan.premiumRange}</p>
                           </div>
                           <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
-                            <p className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">XIRR / Return</p>
+                            <p className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">{t('ins.life.xirrReturn')}</p>
                             <p className={`text-[10px] font-bold ${
                               plan.verdict === 'best' ? 'text-muted-foreground'
                               : plan.verdict === 'avoid' ? 'text-red-400'
@@ -1024,20 +1049,20 @@ export default function InsuranceCalculator() {
 
             {/* R3 — Premium Simulator */}
             <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-              <p className="text-sm font-bold text-foreground mb-1">Estimated Term Premium Range</p>
-              <p className="text-[10px] text-muted-foreground mb-4">Pure term — most cost-efficient · For {fmtCr(coverRec.recommended)} recommended cover</p>
+              <p className="text-sm font-bold text-foreground mb-1">{t('ins.life.premiumSimTitle')}</p>
+              <p className="text-[10px] text-muted-foreground mb-4">Pure term — most cost-efficient · For {fmtCr(activeCover)} {customCover > 0 ? 'chosen' : 'recommended'} cover</p>
 
               <div className="p-3 rounded-2xl bg-brand-green/10 border border-brand-green/20 mb-4">
-                <p className="text-[10px] text-muted-foreground mb-1">{fmtCr(coverRec.recommended)} cover · {policyTerm}-year term</p>
+                <p className="text-[10px] text-muted-foreground mb-1">{fmtCr(activeCover)} cover · {policyTerm}-year term</p>
                 <p className="text-xl font-black text-foreground">{fmtRange(termRange.lo, termRange.hi)}<span className="text-xs font-normal text-muted-foreground"> /year</span></p>
                 <p className="text-brand-green text-xs font-semibold mt-0.5">
                   ≈ {fmtRange(Math.round(termRange.lo / 12 / 50) * 50, Math.round(termRange.hi / 12 / 50) * 50)} /month
                 </p>
-                {lifeGender === 'female' && <p className="text-[10px] text-emerald-400 mt-1.5">✓ Female discount (15–20%) applied</p>}
-                {lifeSmoker && <p className="text-[10px] text-amber-400 mt-1.5">⚠ Smoker loading (50–80%) applied</p>}
+                {lifeGender === 'female' && <p className="text-[10px] text-emerald-400 mt-1.5">✓ {t('ins.life.femaleDiscount')}</p>}
+                {lifeSmoker && <p className="text-[10px] text-amber-400 mt-1.5">⚠ {t('ins.life.smokerLoading')}</p>}
               </div>
 
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Compare by Policy Term</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('ins.life.compareByTerm')}</p>
               <div className="space-y-1.5 mb-4">
                 {[{ term: 20, range: termRange20 }, { term: 30, range: termRange30 }, { term: 40, range: termRange40 }].map(({ term, range }) => (
                   <div key={term} className={`flex items-center justify-between p-2.5 rounded-xl ${
@@ -1050,45 +1075,45 @@ export default function InsuranceCalculator() {
               </div>
 
               <p className="text-[10px] text-muted-foreground leading-relaxed">
-                Actual premium depends on health declaration, smoking status, occupation, and insurer underwriting. Always get quotes from 2–3 IRDAI-registered insurers.
+                {t('ins.life.premiumNote')}
               </p>
             </div>
 
             {/* R4 — 80C Tax Benefit */}
             <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-              <p className="text-sm font-bold text-foreground mb-1">Tax Benefit on Life Insurance Premium</p>
-              <p className="text-[10px] text-muted-foreground mb-4">Section 80C — Old Tax Regime only</p>
+              <p className="text-sm font-bold text-foreground mb-1">{t('ins.life.taxTitle')}</p>
+              <p className="text-[10px] text-muted-foreground mb-4">{t('ins.life.taxSubtitle')}</p>
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Est. annual premium (low estimate)</span>
+                  <span className="text-xs text-muted-foreground">{t('ins.life.estPremium')}</span>
                   <span className="text-xs font-semibold text-foreground">{fmt(termRange.lo)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">80C deduction (max ₹1,50,000)</span>
+                  <span className="text-xs text-muted-foreground">{t('ins.life.ded80C')}</span>
                   <span className="text-xs font-bold text-brand-green">{fmt(tax80C.ded)}</span>
                 </div>
                 <div className="pt-2 border-t border-border space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Tax saved @ 30% slab (incl. 4% cess)</span>
+                    <span className="text-xs text-muted-foreground">{t('ins.life.taxSaved30')}</span>
                     <span className="text-xs font-bold text-emerald-400">{fmt(tax80C.saved30)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Tax saved @ 20% slab (incl. 4% cess)</span>
+                    <span className="text-xs text-muted-foreground">{t('ins.life.taxSaved20')}</span>
                     <span className="text-xs font-bold text-brand-green">{fmt(tax80C.saved20)}</span>
                   </div>
                 </div>
               </div>
               <div className="mt-3 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                <p className="text-[10px] text-amber-400">New tax regime has no 80C deduction for life insurance premiums.</p>
+                <p className="text-[10px] text-amber-400">{t('ins.life.newRegimeNote')}</p>
               </div>
             </div>
 
             {/* R5 — IRDAI Life Protections */}
             <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-              <p className="text-sm font-bold text-foreground mb-1">Your Rights — Life Insurance</p>
-              <p className="text-[10px] text-muted-foreground mb-3">IRDAI regulatory protections for all policyholders</p>
+              <p className="text-sm font-bold text-foreground mb-1">{t('ins.life.lifeRightsTitle')}</p>
+              <p className="text-[10px] text-muted-foreground mb-3">{t('ins.life.lifeRightsSubtitle')}</p>
               <div className="space-y-2.5">
-                {IRDAI_LIFE_FACTS.map((fact, i) => (
+                {tLifeFacts.map((fact, i) => (
                   <div key={i} className="flex items-start gap-2">
                     <CheckCircle size={13} className="text-brand-green flex-shrink-0 mt-0.5" />
                     <p className="text-[11px] text-muted-foreground leading-relaxed">{fact}</p>
@@ -1100,8 +1125,8 @@ export default function InsuranceCalculator() {
             {/* Life Disclaimer */}
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-border">
               <p className="text-[10px] text-muted-foreground leading-relaxed">
-                <span className="font-bold text-foreground">Disclaimer: </span>
-                Life insurance premium estimates are based on published industry ranges and IRDAI actuarial principles. Actual premiums depend on health declaration, lifestyle, and insurer underwriting. This is an educational tool — not financial advice. Always consult an IRDAI-registered financial advisor before purchasing. Verify the Claim Settlement Ratio of any insurer at irdai.gov.in before buying.
+                <span className="font-bold text-foreground">{t('ins.life.disclaimer')}</span>
+                {t('ins.life.lifeDisclaimer')}
               </p>
             </div>
 
