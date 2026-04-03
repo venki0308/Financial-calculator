@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { Home, Calculator, FileText, Wallet, User } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -8,6 +9,16 @@ export default function Layout() {
     const location = useLocation();
     const { t } = useTranslation();
     useScrollToTop();
+
+    // Fix ghost caret cursor bug in Android WebView when navigating
+    useEffect(() => {
+        if (
+            document.activeElement &&
+            (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')
+        ) {
+            (document.activeElement as HTMLElement).blur();
+        }
+    }, [location.pathname]);
 
     const tabs = [
         { to: '/', icon: Home, label: t('nav.home') },

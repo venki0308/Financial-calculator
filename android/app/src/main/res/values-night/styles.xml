@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark mode: white status bar icons (visible on dark bg) -->
+    <!-- Dark mode override: white status bar icons (visible on dark bg) -->
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -8,13 +8,11 @@
         <item name="android:colorBackground">@color/appBackground</item>
         <item name="android:windowIsTranslucent">false</item>
 
-        <!-- Status bar: NOT translucent — has solid color -->
         <item name="android:windowTranslucentStatus">false</item>
-        <!-- Dark mode: dark status bar background -->
-        <item name="android:statusBarColor">#FF0F172A</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
         <!-- false = light/white icons on dark background -->
         <item name="android:windowLightStatusBar">false</item>
-        <!-- Content does NOT draw behind status bar -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="windowActionModeOverlay">true</item>
     </style>
 </resources>

@@ -124,32 +124,19 @@ function AppContent() {
         document.documentElement.classList.toggle('light', !darkMode);
 
         // Sync the native Android status bar with the current theme.
-        // Runs on mount (with persisted darkMode value) AND on every toggle.
-        // Style.Light = light/white icons  → use on dark backgrounds
-        // Style.Dark  = dark/black icons   → use on light backgrounds
         if (Capacitor.isNativePlatform()) {
-            const applyStatusBar = async () => {
-                try {
-                    // Keep the status bar separate from the WebView (not overlaying)
-                    await StatusBar.setOverlaysWebView({ overlay: false });
-
-                    // Style.Dark  = dark/black icons → use on LIGHT backgrounds
-                    // Style.Light = light/white icons → use on DARK backgrounds
-                    await StatusBar.setStyle({
-                        style: darkMode ? Style.Light : Style.Dark,
-                    });
-
-                    // Background must exactly match the CSS body background
-                    // Dark  = #0F172A  (from index.css  html.dark body)
-                    // Light = #F8FAFC  (from index.css  html.light body)
-                    await StatusBar.setBackgroundColor({
-                        color: darkMode ? '#0F172A' : '#F8FAFC',
-                    });
-                } catch (_) {
-                    // Swallow — status bar API may not be available on all devices
+            try {
+                // Use ONLY the native bridge for icon color and background handling.
+                // The Capacitor StatusBar plugin internally conflicts with the
+                // modern WindowInsetsControllerCompat API on API 35+ devices, causing
+                // theme styles to toggle randomly or revert to wrong icon colors.
+                const bridge = (window as any).FinCalixBridge;
+                if (bridge && bridge.setStatusBarStyle) {
+                    bridge.setStatusBarStyle(darkMode);
                 }
-            };
-            applyStatusBar();
+            } catch (_) {
+                // Bridge not available — running on web or old native
+            }
         }
     }, [darkMode]);
 
@@ -167,6 +154,10 @@ function AppContent() {
         NotificationScheduler.initialize();
 
         // ── Android WebView Input Bug Fix ──────────────────────────────
+        // Layer 2 (JS) defense — the native onActionModeStarted in
+        // MainActivity.java is the primary kill-switch for the Android
+        // clipboard toolbar. These JS handlers are a secondary safety net.
+
         // Prevent Android clipboard toolbar by clearing rogue selections
         const onSelectionChange = () => {
             const selection = window.getSelection();
@@ -179,18 +170,44 @@ function AppContent() {
         };
         document.addEventListener('selectionchange', onSelectionChange);
 
-        // Prevent context menu everywhere except actual input / textarea
+        // Block context menu on ALL elements — the native ActionMode
+        // override handles clipboard, so we don't need web context menus.
         const onContextMenu = (e: Event) => {
+            e.preventDefault();
+        };
+        document.addEventListener('contextmenu', onContextMenu);
+
+        // Prevent selectstart on non-input elements to stop Android
+        // from ever starting text selection outside input fields.
+        const onSelectStart = (e: Event) => {
             const target = e.target as HTMLElement;
             if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
                 e.preventDefault();
             }
         };
-        document.addEventListener('contextmenu', onContextMenu);
+        document.addEventListener('selectstart', onSelectStart);
+
+        // On scroll/touchmove, blur the active input to dismiss any
+        // lingering cursor teardrops that persist above followingfields.
+        const onTouchMove = () => {
+            const active = document.activeElement as HTMLElement;
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+                // Small delay so the scroll initiates before blur
+                requestAnimationFrame(() => {
+                    // Only blur if user is actually scrolling, not just adjusting
+                    // the cursor position within the field.
+                    const selection = window.getSelection();
+                    if (selection) selection.removeAllRanges();
+                });
+            }
+        };
+        document.addEventListener('touchmove', onTouchMove, { passive: true });
 
         return () => {
             document.removeEventListener('selectionchange', onSelectionChange);
             document.removeEventListener('contextmenu', onContextMenu);
+            document.removeEventListener('selectstart', onSelectStart);
+            document.removeEventListener('touchmove', onTouchMove);
         };
     }, []);
 

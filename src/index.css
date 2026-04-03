@@ -7,8 +7,8 @@
    that type="number" triggers (Samsung/AOSP clipboard suggestion bar).
    These rules further disable text-selection callouts on numeric inputs.       */
 input[inputmode="numeric"] {
-  -webkit-user-select: text;
-  user-select: text;
+  -webkit-user-select: none;
+  user-select: none;
   -webkit-touch-callout: none;
 }
 input:focus {
@@ -476,9 +476,12 @@ input[type="number"]::-webkit-inner-spin-button {
    Android WebView — Input Selection & Clipboard Fix
    Prevents cursor teardrops, floating clipboard toolbar,
    and "Select all ⋮" context menu from overlapping UI.
+
+   Primary fix:  native onActionModeStarted() in MainActivity.java
+   Secondary:    CSS rules below + JS listeners in App.tsx
    ═══════════════════════════════════════════════════════ */
 
-/* 1. Disable text selection on all non-input elements */
+/* 1. Disable text selection on ALL non-input elements */
 *:not(input):not(textarea):not([contenteditable="true"]) {
     -webkit-user-select: none;
     user-select: none;
@@ -493,39 +496,37 @@ textarea,
     user-select: text;
 }
 
-/* 3. Suppress cursor handle overlapping via plaintext-only editing */
+/* 3. Suppress cursor handle overlapping via plaintext-only editing.
+      This tells the WebView to treat the input as a simple plaintext
+      field, which avoids the rich-text selection handles Android uses. */
 input {
     -webkit-user-modify: read-write-plaintext-only;
     caret-color: auto;
+    /* Prevent Android from auto-sizing text in inputs */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
-/* 4. Critical: prevent context menu on common non-input elements */
+/* 4. Critical: prevent context menu + touch callout on common elements */
 body, div, span, p, h1, h2, h3, h4, h5, h6, button, label, a, li, ul, ol, nav, section, article, header, footer, main, aside {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
 }
 
-/* 5. Numeric inputs — extra bottom padding so the cursor handle
-      (teardrop) does not overlap the next input field below */
-input[type="text"],
-input[type="number"],
-input[inputmode="numeric"],
-input[inputmode="decimal"] {
-    padding-bottom: 12px;
-    margin-bottom: 4px;
-}
-
-/* 6. Suppress selection highlight color globally */
+/* 5. Suppress selection highlight color globally */
 * {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* 7. Hide text selection background inside inputs on Android */
-input::selection {
+/* 6. Minimal selection highlight inside inputs (reduces visual noise
+      from the Android blue selection handles) */
+input::selection,
+textarea::selection {
     background: rgba(99, 102, 241, 0.15);
 }
 
-input::-moz-selection {
+input::-moz-selection,
+textarea::-moz-selection {
     background: rgba(99, 102, 241, 0.15);
-}
+}

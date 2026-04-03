@@ -13,20 +13,21 @@
         <item name="windowNoTitle">true</item>
         <!-- Dark background prevents white flash while WebView/JS loads -->
         <item name="android:windowBackground">@color/appBackground</item>
-        <!-- colorBackground covers the window layer that native dialogs sit on top of.
-             Without this, the layer beneath native dialogs is transparent and shows
-             the WebView content (including the app logo) through the dialog scrim. -->
         <item name="android:colorBackground">@color/appBackground</item>
         <item name="android:windowIsTranslucent">false</item>
 
-        <!-- Status bar: NOT translucent — has solid color -->
+        <!-- Status bar: transparent so CSS body bg shows through.
+             On API 35+ this is ignored (edge-to-edge enforced),
+             on older APIs it gives a transparent status bar bg. -->
         <item name="android:windowTranslucentStatus">false</item>
-        <!-- Status bar color matches app dark background -->
-        <item name="android:statusBarColor">#FF0F172A</item>
-        <!-- false = white/light icons on dark background (visible in dark mode) -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <!-- false = light/white icons (visible on dark bg at launch) -->
         <item name="android:windowLightStatusBar">false</item>
-        <!-- Content does NOT draw behind status bar -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+
+        <!-- Suppress floating "Select all / Copy / Paste" toolbar
+             by overlaying it on the action bar area (which we hide). -->
+        <item name="windowActionModeOverlay">true</item>
     </style>
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">

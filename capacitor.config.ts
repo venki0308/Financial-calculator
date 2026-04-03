@@ -11,9 +11,8 @@ const config: CapacitorConfig = {
   },
   android: {
     // Fill the area NOT covered by HTML content with the app's dark background.
-    // This ensures native dialogs (date picker, language picker, etc.) sit on top
-    // of a solid dark layer — not a transparent WebView showing the logo.
-    backgroundColor: '#0F172A',
+    // Allow the native Activity background (which matches dark/light mode dynamically) to show through.
+    backgroundColor: '#00000000',
     // captureInput: tells Capacitor to handle input events more aggressively,
     // preventing Android's native text selection layer from activating.
     captureInput: true,
