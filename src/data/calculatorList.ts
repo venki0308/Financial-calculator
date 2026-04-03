@@ -60,6 +60,7 @@ export const allCalcs: CalcItem[] = [
     // Tools
     { nameKey: 'calculators.age.name', descKey: 'calculators.age.desc', icon: Calendar, color: '#F97316', path: '/calculator/age', category: 'tools', keywords: ['age', 'date', 'birth', 'generation'] },
     { nameKey: 'calculators.scientific.name', descKey: 'calculators.scientific.desc', icon: Calculator, color: '#3B82F6', path: '/calculator/scientific', category: 'tools', keywords: ['scientific', 'calculator', 'math', 'log', 'sin'] },
-    { nameKey: 'calculators.insurance.name', descKey: 'calculators.insurance.desc', icon: Shield, color: '#10B981', path: '/calculator/insurance', category: 'tools', keywords: ['insurance', 'health', 'life', 'term', 'premium', 'cover', 'policy'] },
-    { nameKey: 'calculators.insuranceCompare.name', descKey: 'calculators.insuranceCompare.desc', icon: GitCompare, color: '#06B6D4', path: '/insurance-compare', category: 'tools', keywords: ['insurance', 'compare', 'health', 'plan', 'comparison', 'csr'] },
+    // Insurance
+    { nameKey: 'calculators.insurance.name', descKey: 'calculators.insurance.desc', icon: Shield, color: '#10B981', path: '/calculator/insurance', category: 'insurance', keywords: ['insurance', 'health', 'life', 'term', 'premium', 'cover', 'policy'] },
+    { nameKey: 'calculators.insuranceCompare.name', descKey: 'calculators.insuranceCompare.desc', icon: GitCompare, color: '#06B6D4', path: '/insurance-compare', category: 'insurance', keywords: ['insurance', 'compare', 'health', 'plan', 'comparison', 'csr'] },
 ];

@@ -14,8 +14,8 @@ export function useTrackCalculator() {
 
     useEffect(() => {
         const path = location.pathname;
-        // Only track calculator paths
-        if (!path.startsWith('/calculator/')) return;
+        // Only track calculator/tool paths
+        if (!path.startsWith('/calculator/') && !path.startsWith('/insurance')) return;
 
         // 1. Update "Recently Used" in localStorage
         try {

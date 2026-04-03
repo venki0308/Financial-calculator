@@ -47,7 +47,8 @@
             "business": "व्यापार",
             "others": "अन्य",
             "tools": "टूल्स",
-            "loans": "ऋण"
+            "loans": "ऋण",
+            "insurance": "बीमा"
         },
         "emi": {
             "name": "ऋण ईएमआई",

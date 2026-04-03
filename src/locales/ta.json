@@ -49,7 +49,8 @@
             "business": "வணிகம்",
             "others": "பிற",
             "tools": "கருவிகள்",
-            "loans": "Loans"
+            "loans": "Loans",
+            "insurance": "காச்பீடு"
         },
         "emi": {
             "name": "கடன் EMI",

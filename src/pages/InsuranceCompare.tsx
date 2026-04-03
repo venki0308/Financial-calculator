@@ -9,6 +9,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { AnalyticsService } from '../lib/analytics';
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
@@ -246,6 +247,7 @@ const childAgeLabel = (age: number): string => {
 export default function InsuranceCompare() {
   const { t } = useTranslation();
   useEffect(() => { AnalyticsService.trackScreen('Insurance_Compare'); }, []);
+  useTrackCalculator();
   const navigate = useNavigate();
 
   // ── Profile state ─────────────────────────────────────────────────────────────

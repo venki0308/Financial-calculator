@@ -44,7 +44,7 @@ export default function About() {
                     fontWeight: 600 
                 }}>
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: emeraldColor, display: 'inline-block' }} />
-                    v1.0.8
+                    v1.0.9
                 </div>
             </div>
 

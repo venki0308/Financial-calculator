@@ -49,7 +49,8 @@
             "business": "వ్యాపారం",
             "others": "ఇతరములు",
             "tools": "టూల్స్",
-            "loans": "Loans"
+            "loans": "Loans",
+            "insurance": "బీమా"
         },
         "emi": {
             "name": "లోన్ EMI",

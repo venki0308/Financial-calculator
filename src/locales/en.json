@@ -47,6 +47,7 @@
             "property": "Property",
             "business": "Business",
             "others": "Others",
+            "insurance": "Insurance",
             "tools": "Tools"
         },
         "emi": {

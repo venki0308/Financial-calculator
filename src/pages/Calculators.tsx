@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronRight, Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare, Calendar, Globe } from 'lucide-react';
+import { Search, ChevronRight, Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare, Calendar, Globe, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { AnalyticsService } from '../lib/analytics';
@@ -26,10 +26,11 @@ const categoryMeta: Record<string, { icon: React.ElementType; color: string; bg:
     postOffice: { icon: Mail, color: '#F43F5E', bg: '#F43F5E15' },
     business: { icon: Briefcase, color: '#06B6D4', bg: '#06B6D415' },
     property: { icon: Building2, color: '#F97316', bg: '#F9731615' },
+    insurance: { icon: Shield, color: '#10B981', bg: '#10B98115' },
     tools: { icon: Calculator, color: '#EC4899', bg: '#EC489915' },
 };
 
-const categoryOrder = ['all', 'taxSalary', 'loans', 'investments', 'banking', 'retirement', 'postOffice', 'business', 'property', 'tools'];
+const categoryOrder = ['all', 'taxSalary', 'loans', 'investments', 'banking', 'retirement', 'postOffice', 'business', 'property', 'insurance', 'tools'];
 
 export default function Calculators() {
     useEffect(() => { AnalyticsService.trackScreen('Calculators_List'); }, []);
