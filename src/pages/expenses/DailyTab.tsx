@@ -550,7 +550,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                             </div>{/* end scrollable area */}
 
                             {/* Sticky action buttons - always visible */}
-                            <div className="flex-shrink-0 px-6 pt-3 pb-4 border-t border-slate-700/60">
+                            <div className="flex-shrink-0 px-6 pt-3 border-t border-slate-700/60" style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 12px))' }}>
                                 <div className="flex gap-3">
                                     <button onClick={() => setShowAddForm(false)} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium text-sm transition-colors hover:bg-slate-200 dark:hover:bg-slate-600">{t('common.cancel')}</button>
                                     <motion.button
