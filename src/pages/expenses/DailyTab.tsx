@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { Plus, Trash2, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, EXPENSE_CATEGORIES, INVESTMENT_TYPES, INCOME_CATEGORIES, type PaymentMethod, type EntryType, type InvestmentType } from '../../store/useBudgetTrackerStore';
@@ -248,6 +249,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
             </div>
 
             {/* Edit Quick Add Modal */}
+            {createPortal(
             <AnimatePresence>
                 {editingQA !== null && (
                     <motion.div
@@ -282,7 +284,9 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                         </motion.div>
                     </motion.div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence>,
+            document.body
+            )}
 
             {/* Date Navigator */}
             <div className="flex items-center gap-2">
@@ -398,6 +402,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
 
 
             {/* Add Expense Modal */}
+            {createPortal(
             <AnimatePresence>
                 {showAddForm && (
                     <motion.div
@@ -566,7 +571,9 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                         </motion.div>
                     </motion.div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence>,
+            document.body
+            )}
         </div>
     );
 }

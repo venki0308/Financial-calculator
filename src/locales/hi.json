@@ -237,6 +237,10 @@
         "worldClock": {
             "name": "विश्व घड़ी"
         },
+        "advancedMortgage": {
+            "name": "Advanced Mortgage Calculator",
+            "desc": "Calculate home loan with prepayments, extra EMI and 80C/24 tax benefits"
+        },
         "personalLoan": {
             "name": "व्यक्तिगत ऋण",
             "desc": "व्यक्तिगत ऋण के लिए ईएमआई और ब्याज की गणना करें"

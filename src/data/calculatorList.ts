@@ -17,6 +17,7 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.hra.name', descKey: 'calculators.hra.desc', icon: GraduationCap, color: '#F59E0B', path: '/calculator/hra', category: 'taxSalary', keywords: ['hra', 'house', 'rent', 'allowance'] },
 
     // Loans
+    { nameKey: 'calculators.advancedMortgage.name', descKey: 'calculators.advancedMortgage.desc', icon: Landmark, color: '#3B82F6', path: '/calculator/mortgage-calculator', category: 'loans', keywords: ['mortgage', 'home', 'loan', 'prepayment', 'tax', '80c', '24'] },
     { nameKey: 'calculators.personalLoan.name', descKey: 'calculators.personalLoan.desc', icon: Calculator, color: '#8B5CF6', path: '/calculator/personal-loan', category: 'loans', keywords: ['personal', 'loan', 'finance', 'cash'] },
     { nameKey: 'calculators.educationLoan.name', descKey: 'calculators.educationLoan.desc', icon: GraduationCap, color: '#F59E0B', path: '/calculator/education-loan', category: 'loans', keywords: ['education', 'loan', 'student', 'study', 'college'] },
     { nameKey: 'calculators.emi.name', descKey: 'calculators.emi.desc', icon: Calculator, color: '#10B981', path: '/calculator/loan-emi', category: 'loans', keywords: ['emi', 'home', 'loan', 'mortgage'] },

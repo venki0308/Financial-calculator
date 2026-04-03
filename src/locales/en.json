@@ -237,6 +237,10 @@
         "worldClock": {
             "name": "World Clock"
         },
+        "advancedMortgage": {
+            "name": "Mortgage Calculator",
+            "desc": "Calculate home loan with prepayments, extra EMI & 80C/24 tax benefits"
+        },
         "personalLoan": {
             "name": "Personal Loan",
             "desc": "Calculate EMI and interest for personal loans"

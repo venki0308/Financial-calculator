@@ -58,6 +58,7 @@ const OverdraftCalculator        = lazy(() => import('./pages/OverdraftCalculato
 
 // New Calculators — lazy loaded
 const PropertyCalculator         = lazy(() => import('./pages/PropertyCalculator'));
+const AdvancedMortgageCalculator = lazy(() => import('./pages/AdvancedMortgageCalculator'));
 const GSTCalculator              = lazy(() => import('./pages/GSTCalculator'));
 const ScientificCalculator       = lazy(() => import('./pages/ScientificCalculator'));
 const BudgetTracker              = lazy(() => import('./pages/BudgetTracker'));
@@ -295,6 +296,7 @@ function AppContent() {
 
                         {/* New Calculators */}
                         <Route path="/calculator/property" element={<PropertyCalculator />} />
+                        <Route path="/calculator/mortgage-calculator" element={<AdvancedMortgageCalculator />} />
                         <Route path="/calculator/advanced-sip" element={<Navigate to="/calculator/sip" replace />} />
                         <Route path="/calculator/gst" element={<GSTCalculator />} />
                         <Route path="/calculator/car-loan" element={<EMICalculator />} />

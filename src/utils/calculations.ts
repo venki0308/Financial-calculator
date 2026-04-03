@@ -306,3 +306,201 @@ export function formatINRWords(v: number): string {
 export function generateLoanName(loanType: string, principal: number, tenureYears: number): string {
     return `${loanType} - ${formatINRShort(principal)} - ${tenureYears}yr`;
 }
+
+// ─── Advanced Mortgage & Prepayment Calculation ──────────────────────────────
+
+export interface PrepaymentConfig {
+    lumpSums: { month: number; amount: number }[];
+    monthlyExtraEMI: number;
+    mode: 'reduce_tenure' | 'reduce_emi';
+}
+
+export interface AdvancedMortgageResult {
+    emi: number;
+    originalEmi: number;
+    totalInterest: number;
+    totalPayment: number;
+    interestSaved: number;
+    timeSavedMonths: number;
+    schedule: AmortizationRow[];
+    taxBenefits: TaxBenefitResult;
+}
+
+export interface TaxBenefitResult {
+    total80C: number;
+    total24: number;
+    schedule: { year: number; principal: number; interest: number; deduction80C: number; deduction24: number }[];
+}
+
+export function calculateAdvancedMortgage(principal: number, annualRate: number, months: number, config: PrepaymentConfig): AdvancedMortgageResult {
+    const r = annualRate / 12 / 100;
+    
+    // Calculate base EMI (original without any prepayments)
+    let originalEmi = 0;
+    if (r === 0) {
+        originalEmi = principal / months;
+    } else {
+        originalEmi = (principal * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1);
+    }
+    
+    // In India, EMIs are usually rounded up
+    originalEmi = Math.ceil(originalEmi);
+
+    let currentEmi = originalEmi;
+    let balance = principal;
+    const schedule: AmortizationRow[] = [];
+    
+    let cumPrincipal = 0;
+    let cumInterest = 0;
+    
+    // Sort lumpSums by month for easy access
+    const lumpSumsMap = new Map<number, number>();
+    config.lumpSums.forEach(ls => {
+        lumpSumsMap.set(ls.month, (lumpSumsMap.get(ls.month) || 0) + ls.amount);
+    });
+
+    let m = 1;
+    let remainingOriginalMonths = months;
+
+    while (balance > 0 && m <= months * 2) { // cap at double the months just to prevent infinite loops theoretically
+        const openingBalance = balance;
+        const interestPart = balance * r;
+        
+        let paymentDue = currentEmi + config.monthlyExtraEMI;
+        let lumpSumThisMonth = lumpSumsMap.get(m) || 0;
+        
+        // Total cash ready to pay this month
+        let totalPaymentThisMonth = paymentDue + lumpSumThisMonth;
+
+        // If paying more than balance + interest, cap it at remaining balance
+        if (totalPaymentThisMonth >= (balance + interestPart)) {
+            totalPaymentThisMonth = balance + interestPart;
+        }
+
+        const actualEmiPaid = totalPaymentThisMonth;
+        const principalPart = actualEmiPaid - interestPart;
+
+        balance = balance - principalPart;
+
+        cumPrincipal += principalPart;
+        cumInterest += interestPart;
+
+        schedule.push({
+            month: m,
+            openingBalance: Math.round(openingBalance * 100) / 100,
+            emi: Math.round(actualEmiPaid),
+            principal: Math.round(principalPart * 100) / 100,
+            interest: Math.round(interestPart * 100) / 100,
+            closingBalance: Math.max(0, Math.round(balance * 100) / 100),
+            cumulativePrincipal: Math.round(cumPrincipal * 100) / 100,
+            cumulativeInterest: Math.round(cumInterest * 100) / 100,
+        });
+
+        remainingOriginalMonths--;
+
+        if (balance <= 0) break;
+
+        // Recalculate EMI if mode is reduce_emi and a lump sum was paid
+        if (config.mode === 'reduce_emi' && lumpSumThisMonth > 0 && remainingOriginalMonths > 0) {
+            // Recalculate PMT with current balance and remaining original months
+            if (r > 0) {
+                currentEmi = (balance * r * Math.pow(1 + r, remainingOriginalMonths)) / (Math.pow(1 + r, remainingOriginalMonths) - 1);
+            } else {
+                currentEmi = balance / remainingOriginalMonths;
+            }
+            currentEmi = Math.ceil(currentEmi); // Adjust new EMI
+        }
+
+        m++;
+    }
+
+    const totalInterest = cumInterest;
+    const totalPayment = principal + totalInterest;
+    
+    // Calculate hypothentical original interest to find true savings
+    let originalTotalInterest = 0;
+    if (r > 0) {
+        let tempBal = principal;
+        for (let i = 0; i < months; i++) {
+            let intP = tempBal * r;
+            let prinP = originalEmi - intP;
+            if (tempBal + intP < originalEmi) {
+                prinP = tempBal;
+            }
+            tempBal -= prinP;
+            originalTotalInterest += intP;
+            if(tempBal <= 0) break;
+        }
+    } else {
+        originalTotalInterest = 0;
+    }
+
+    const interestSaved = Math.max(0, originalTotalInterest - totalInterest);
+    const timeSavedMonths = Math.max(0, months - schedule.length);
+
+    // Calculate Tax Benefits
+    const taxBenefits = calculateTaxBenefits(schedule);
+
+    return {
+        emi: originalEmi,
+        originalEmi,
+        totalInterest: Math.round(totalInterest),
+        totalPayment: Math.round(totalPayment),
+        interestSaved: Math.round(interestSaved),
+        timeSavedMonths,
+        schedule,
+        taxBenefits
+    };
+}
+
+export function calculateTaxBenefits(schedule: AmortizationRow[]): TaxBenefitResult {
+    // 80C Max: 1.5L
+    // Section 24 Max: 2L
+    const MAX_80C = 150000;
+    const MAX_24 = 200000;
+
+    let total80C = 0;
+    let total24 = 0;
+
+    const yearlySchedule: TaxBenefitResult['schedule'] = [];
+
+    let yearPrin = 0;
+    let yearInt = 0;
+    let currentYear = 1;
+
+    for (let i = 0; i < schedule.length; i++) {
+        yearPrin += schedule[i].principal;
+        yearInt += schedule[i].interest;
+
+        if ((i + 1) % 12 === 0 || i === schedule.length - 1) {
+            const deduction80C = Math.min(yearPrin, MAX_80C);
+            const deduction24 = Math.min(yearInt, MAX_24);
+
+            total80C += deduction80C;
+            total24 += deduction24;
+
+            yearlySchedule.push({
+                year: currentYear,
+                principal: Math.round(yearPrin),
+                interest: Math.round(yearInt),
+                deduction80C: Math.round(deduction80C),
+                deduction24: Math.round(deduction24)
+            });
+
+            yearPrin = 0;
+            yearInt = 0;
+            currentYear++;
+        }
+    }
+
+    return {
+        total80C: Math.round(total80C),
+        total24: Math.round(total24),
+        schedule: yearlySchedule
+    };
+}
+
+export function calculateLTV(loanAmount: number, propertyValue: number): number {
+    if (propertyValue <= 0) return 0;
+    return (loanAmount / propertyValue) * 100;
+}
