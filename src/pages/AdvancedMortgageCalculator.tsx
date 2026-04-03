@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Info, Plus, Trash2, ChevronDown, ChevronUp, Calculator, Home, AlertTriangle, AlertCircle, CheckCircle2, IndianRupee, Receipt } from 'lucide-react';
+import { ArrowLeft, Info, Plus, Trash2, ChevronDown, ChevronUp, Calculator, Home, AlertTriangle, AlertCircle, CheckCircle2, IndianRupee, Receipt, FileText, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import NumberInput from '../components/NumberInput';
@@ -11,6 +11,7 @@ import {
     formatINRShort,
 } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
+import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 
@@ -44,6 +45,8 @@ export default function AdvancedMortgageCalculator() {
     // ─── Computed Values ────────────────────────────────────────────────────
     const loanAmount = Math.max(0, propertyValue - downPayment);
     const ltv = calculateLTV(loanAmount, propertyValue);
+    // RBI tiered LTV: ≤₹30L → 90%, ₹30L–₹75L → 80%, >₹75L → 75%
+    const maxLtv = loanAmount <= 3000000 ? 90 : loanAmount <= 7500000 ? 80 : 75;
     const months = tenureYears * 12;
 
     const result = useMemo(() => {
@@ -105,6 +108,114 @@ export default function AdvancedMortgageCalculator() {
         setLumpSums(lumpSums.map(ls => ls.id === id ? { ...ls, [field]: value } : ls));
     };
 
+    // ─── Export helpers ──────────────────────────────────────────────────
+    const buildExportConfig = (forExcel = false): ExportConfig => {
+        const tag = dateTag();
+        const emiRatio = monthlyIncome > 0 ? (result.originalEmi / monthlyIncome) * 100 : 0;
+        const affordStatus = emiRatio > 50 ? 'HIGH RISK (>50%)' : emiRatio > 40 ? 'CAUTION (>40%)' : 'SAFE';
+
+        const inputs: ExportConfig['inputs'] = [
+            { label: 'Property Value', value: formatINR(propertyValue) },
+            { label: 'Down Payment', value: formatINR(downPayment) },
+            { label: 'Loan Amount', value: formatINR(loanAmount) },
+            { label: 'LTV (Loan to Value)', value: `${ltv.toFixed(1)}% (RBI max: ${maxLtv}%)` },
+            { label: 'Interest Rate', value: `${interestRate}% p.a.` },
+            { label: 'Tenure', value: `${tenureYears} Years (${months} months)` },
+            ...(monthlyIncome > 0 ? [{ label: 'Monthly Income', value: formatINR(monthlyIncome) }] : []),
+        ];
+
+        const results: ExportConfig['results'] = [
+            { label: 'Monthly EMI', value: formatINR(result.originalEmi) },
+            { label: 'Total Interest', value: formatINR(result.totalInterest) },
+            { label: 'Total Payment', value: formatINR(result.totalPayment) },
+            ...(monthlyIncome > 0 ? [
+                { label: 'EMI to Income Ratio', value: `${emiRatio.toFixed(1)}%` },
+                { label: 'Affordability Status', value: affordStatus },
+            ] : []),
+            ...(enablePrepayment ? [
+                { label: 'Prepayment Strategy', value: prepaymentMode === 'reduce_tenure' ? 'Reduce Tenure' : 'Reduce EMI' },
+                ...(monthlyExtraEMI > 0 ? [{ label: 'Monthly Extra EMI', value: formatINR(monthlyExtraEMI) }] : []),
+                ...(result.interestSaved > 0 ? [{ label: 'Interest Saved', value: formatINR(result.interestSaved) }] : []),
+                ...(result.timeSavedMonths > 0 ? [{ label: 'Time Saved', value: `${Math.floor(result.timeSavedMonths / 12)}y ${result.timeSavedMonths % 12}m` }] : []),
+            ] : []),
+            { label: 'Sec 80C (Principal) — Total', value: formatINR(result.taxBenefits.total80C) },
+            { label: 'Sec 24(b) (Interest) — Total', value: formatINR(result.taxBenefits.total24) },
+        ];
+
+        // Year-wise summary: aggregate monthly schedule into annual rows
+        const yearlyMap = new Map<number, { principal: number; interest: number; totalPaid: number; closingBalance: number }>();
+        result.schedule.forEach(row => {
+            const yr = Math.ceil(row.month / 12);
+            const existing = yearlyMap.get(yr) || { principal: 0, interest: 0, totalPaid: 0, closingBalance: 0 };
+            existing.principal += row.principal;
+            existing.interest += row.interest;
+            existing.totalPaid += row.emi;
+            existing.closingBalance = row.closingBalance;
+            yearlyMap.set(yr, existing);
+        });
+
+        const yearlyRows = Array.from(yearlyMap.entries()).map(([yr, d]) => [
+            yr,
+            forExcel ? Math.round(d.totalPaid) : formatINR(d.totalPaid),
+            forExcel ? Math.round(d.principal) : formatINR(d.principal),
+            forExcel ? Math.round(d.interest) : formatINR(d.interest),
+            forExcel ? Math.round(d.closingBalance) : formatINR(d.closingBalance),
+        ]);
+
+        const taxRows = result.taxBenefits.schedule.map(t => [
+            t.year,
+            forExcel ? t.principal : formatINR(t.principal),
+            forExcel ? t.interest : formatINR(t.interest),
+            forExcel ? t.deduction80C : formatINR(t.deduction80C),
+            forExcel ? t.deduction24 : formatINR(t.deduction24),
+            forExcel ? (t.deduction80C + t.deduction24) : formatINR(t.deduction80C + t.deduction24),
+        ]);
+
+        return {
+            title: 'Advanced Mortgage Report',
+            subtitle: 'Home Loan Analysis',
+            inputs,
+            results,
+            chart: {
+                type: 'pie',
+                segments: [
+                    { label: 'Principal', value: loanAmount, color: '#10B981' },
+                    { label: 'Total Interest', value: result.totalInterest, color: '#F59E0B' },
+                ],
+            },
+            projectionTitle: 'Monthly Amortization Schedule',
+            projectionColumns: ['Month', 'Payment', 'Principal', 'Interest', 'Balance'],
+            projectionRows: result.schedule.map(r => [
+                r.month,
+                forExcel ? Math.round(r.emi) : formatINR(r.emi),
+                forExcel ? Math.round(r.principal) : formatINR(r.principal),
+                forExcel ? Math.round(r.interest) : formatINR(r.interest),
+                forExcel ? Math.round(r.closingBalance) : formatINR(r.closingBalance),
+            ]),
+            additionalTables: [
+                {
+                    title: 'Year-wise Summary',
+                    columns: ['Year', 'Total Paid', 'Principal', 'Interest', 'Balance'],
+                    rows: yearlyRows,
+                },
+                {
+                    title: 'Tax Benefits (Year-wise)',
+                    columns: ['Year', 'Principal Paid', 'Interest Paid', '80C Deduction', '24(b) Deduction', 'Total Benefit'],
+                    rows: taxRows,
+                },
+            ],
+            filename: `FinCalix_Mortgage_Report_${tag}`,
+        };
+    };
+
+    const handleDownloadPDF = async () => {
+        await exportToPDF(buildExportConfig(false));
+    };
+
+    const handleDownloadExcel = async () => {
+        await exportToExcel(buildExportConfig(true));
+    };
+
     // ─── Render ─────────────────────────────────────────────────────────────
     return (
         <div className="min-h-screen pb-safe-nav" style={{ backgroundColor: c.bg, color: c.text }}>
@@ -158,10 +269,10 @@ export default function AdvancedMortgageCalculator() {
                         </div>
                         <div className="text-right">
                             <p className="text-sm font-medium" style={{ color: c.textSecondary }}>LTV (Loan to Value)</p>
-                            <p className={`text-xl font-bold ${ltv > 80 ? 'text-red-500' : 'text-emerald-500'}`}>
+                            <p className={`text-xl font-bold ${ltv > maxLtv ? 'text-red-500' : 'text-emerald-500'}`}>
                                 {ltv.toFixed(1)}%
                             </p>
-                            {ltv > 80 && <p className="text-xs mt-1 text-red-500">Usually max 80% permitted</p>}
+                            {ltv > maxLtv && <p className="text-xs mt-1 text-red-500">RBI max: {maxLtv}% for this loan size</p>}
                         </div>
                     </div>
 
@@ -329,7 +440,7 @@ export default function AdvancedMortgageCalculator() {
                                                         <input
                                                             type="number"
                                                             value={ls.month}
-                                                            onChange={(e) => updateLumpSum(ls.id, 'month', parseInt(e.target.value) || 0)}
+                                                            onChange={(e) => updateLumpSum(ls.id, 'month', Math.max(1, parseInt(e.target.value) || 1))}
                                                             className="w-full bg-transparent outline-none font-medium text-sm border-b focus:border-emerald-500 transition-colors"
                                                             style={{ color: c.text, borderColor: c.border }}
                                                             min={1}
@@ -392,6 +503,20 @@ export default function AdvancedMortgageCalculator() {
                     </div>
                 </div>
 
+                {/* Export Buttons */}
+                <div className="grid grid-cols-2 gap-3">
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadPDF}
+                        className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border font-bold text-sm"
+                        style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
+                        <FileText size={18} className="text-violet-500" /> Export PDF
+                    </motion.button>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadExcel}
+                        className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border font-bold text-sm"
+                        style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
+                        <Download size={18} className="text-emerald-500" /> Export Excel
+                    </motion.button>
+                </div>
+
                 {/* Savings Banner */}
                 {enablePrepayment && (result.interestSaved > 0 || result.timeSavedMonths > 0) && (
                     <div className="p-4 rounded-xl border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between" 
@@ -434,7 +559,7 @@ export default function AdvancedMortgageCalculator() {
                         <h2 className="font-semibold text-lg">Income Tax Benefits</h2>
                     </div>
                     <p className="text-sm" style={{ color: c.textSecondary }}>
-                        Based on Indian tax laws (Old Regime): Section 80C covers Principal up to ₹1.5L/yr, and Section 24 covers Interest up to ₹2L/yr.
+                        Based on Indian tax laws (Old Regime): Section 80C covers Principal up to ₹1.5L/yr (only after possession), and Section 24(b) covers Interest up to ₹2L/yr for self-occupied property.
                     </p>
                     
                     <div className="grid grid-cols-2 gap-4 mt-4">
@@ -505,10 +630,10 @@ export default function AdvancedMortgageCalculator() {
                                             className="px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
                                             style={{ backgroundColor: c.bg, color: c.text, border: `1px solid ${c.border}` }}
                                         >
-                                            Prev Year
+                                            ← Prev
                                         </button>
                                         <span className="text-sm font-medium" style={{ color: c.textSecondary }}>
-                                            Year {Math.floor(amortPage * ROWS_PER_PAGE / 12) + 1} of {Math.ceil(result.schedule.length / 12)}
+                                            Yr {amortPage * 2 + 1}–{Math.min((amortPage + 1) * 2, Math.ceil(result.schedule.length / 12))} of {Math.ceil(result.schedule.length / 12)}
                                         </span>
                                         <button
                                             onClick={() => setAmortPage(p => Math.min(totalPages - 1, p + 1))}
@@ -516,7 +641,7 @@ export default function AdvancedMortgageCalculator() {
                                             className="px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
                                             style={{ backgroundColor: c.bg, color: c.text, border: `1px solid ${c.border}` }}
                                         >
-                                            Next Year
+                                            Next →
                                         </button>
                                     </div>
                                 )}

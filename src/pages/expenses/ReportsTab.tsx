@@ -85,7 +85,7 @@ export default function ReportsTab() {
         ? (hasMonthData ? getTotalFixed() : 0)
         : (hasYearData ? getTotalFixed() * 12 : 0);
     const totalFixed = effectiveFixed;
-    const totalDaily = activeEntries.reduce((s, e) => s + e.amount, 0);
+    const totalDaily = activeEntries.filter(e => (e.entryType || "expense") === "expense").reduce((s, e) => s + e.amount, 0);
     const totalSubs = period === 'month' ? activeSubsMonthly : activeSubsMonthly * 12;
     const totalExpenses = totalFixed + totalDaily + (hasData ? totalSubs : 0);
     const income = (period === 'month' ? (hasMonthData ? monthlyIncome : 0) : (hasYearData ? monthlyIncome * 12 : 0));

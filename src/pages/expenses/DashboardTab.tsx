@@ -119,7 +119,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
     const effectiveFixed = hasMonthData ? getTotalFixed() : 0;
     const effectiveIncome = hasMonthData ? monthlyIncome : 0;
     const totalFixed = effectiveFixed;
-    const totalDaily = monthEntries.reduce((s, e) => s + e.amount, 0);
+    const totalDaily = monthEntries.filter(e => (e.entryType || 'expense') === 'expense').reduce((s, e) => s + e.amount, 0);
     const totalSpent = totalFixed + totalDaily + (hasMonthData ? activeSubsMonthly : 0);
     const savings = effectiveIncome - totalSpent;
     const savingsRate = effectiveIncome > 0 ? (savings / effectiveIncome) * 100 : 0;

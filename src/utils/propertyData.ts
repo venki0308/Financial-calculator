@@ -27,6 +27,10 @@ export const STATE_RATES: Record<string, { name: string; stamp: number; reg: num
     rajasthan: { name: 'Rajasthan', stamp: 6, reg: 1, transfer: 0 },
     kerala: { name: 'Kerala', stamp: 8, reg: 2, transfer: 0 },
     westbengal: { name: 'West Bengal', stamp: 6, reg: 1, transfer: 0 },
+    uttarpradesh: { name: 'Uttar Pradesh', stamp: 7, reg: 1, transfer: 0 },
+    haryana: { name: 'Haryana', stamp: 7, reg: 1, transfer: 0 },
+    punjab: { name: 'Punjab', stamp: 7, reg: 1, transfer: 0 },
+    madhyapradesh: { name: 'Madhya Pradesh', stamp: 7.5, reg: 1, transfer: 0 },
 };
 
 // ─── Construction Grades ─────────────────────────────────────────────────────

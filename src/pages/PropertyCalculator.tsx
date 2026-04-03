@@ -195,7 +195,8 @@ export default function PropertyCalculator() {
         const amenitiesAmt = Number(amenities) || 0;
         const maintAmt = Number(maint) || 0;
         const subtotal = basePrice + parkingAmt + amenitiesAmt + maintAmt;
-        const gstAmt = (basePrice) * (Number(gstPct) / 100);
+        // Under GST, parking & amenities paid to developer are taxable; maintenance deposit is exempt
+        const gstAmt = (basePrice + parkingAmt + amenitiesAmt) * (Number(gstPct) / 100);
         const totalCost = subtotal + gstAmt;
         setFlatResult({ basePrice, parkingAmt, amenitiesAmt, maintAmt, subtotal, gstAmt, totalCost });
         scrollToResult();

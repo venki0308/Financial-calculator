@@ -1,0 +1,407 @@
+﻿diff --git a/dist/index.html b/dist/index.html
+index 31b729e..026715f 100644
+--- a/dist/index.html
++++ b/dist/index.html
+@@ -167,7 +167,7 @@
+     ]
+   }
+   </script>
+-  <script type="module" crossorigin src="/assets/index-DrlXxM7P.js"></script>
++  <script type="module" crossorigin src="/assets/index-DVIzot2v.js"></script>
+   <link rel="stylesheet" crossorigin href="/assets/index-pE0xZ0-O.css">
+ </head>
+ 
+diff --git a/src/pages/AdvancedMortgageCalculator.tsx b/src/pages/AdvancedMortgageCalculator.tsx
+index 3ab6a2d..6b4a81a 100644
+--- a/src/pages/AdvancedMortgageCalculator.tsx
++++ b/src/pages/AdvancedMortgageCalculator.tsx
+@@ -1,6 +1,6 @@
+ import { useState, useMemo, useEffect } from 'react';
+ import { useNavigate } from 'react-router-dom';
+-import { ArrowLeft, Info, Plus, Trash2, ChevronDown, ChevronUp, Calculator, Home, AlertTriangle, AlertCircle, CheckCircle2, IndianRupee, Receipt } from 'lucide-react';
++import { ArrowLeft, Info, Plus, Trash2, ChevronDown, ChevronUp, Calculator, Home, AlertTriangle, AlertCircle, CheckCircle2, IndianRupee, Receipt, FileText, Download } from 'lucide-react';
+ import { motion, AnimatePresence } from 'framer-motion';
+ import { useAppColors } from '../theme/useAppColors';
+ import NumberInput from '../components/NumberInput';
+@@ -11,6 +11,7 @@ import {
+     formatINRShort,
+ } from '../utils/calculations';
+ import { AnalyticsService } from '../lib/analytics';
++import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
+ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+ import { Pie } from 'react-chartjs-2';
+ 
+@@ -44,6 +45,8 @@ export default function AdvancedMortgageCalculator() {
+     // ΓöÇΓöÇΓöÇ Computed Values ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+     const loanAmount = Math.max(0, propertyValue - downPayment);
+     const ltv = calculateLTV(loanAmount, propertyValue);
++    // RBI tiered LTV: ΓëñΓé╣30L ΓåÆ 90%, Γé╣30LΓÇôΓé╣75L ΓåÆ 80%, >Γé╣75L ΓåÆ 75%
++    const maxLtv = loanAmount <= 3000000 ? 90 : loanAmount <= 7500000 ? 80 : 75;
+     const months = tenureYears * 12;
+ 
+     const result = useMemo(() => {
+@@ -105,6 +108,114 @@ export default function AdvancedMortgageCalculator() {
+         setLumpSums(lumpSums.map(ls => ls.id === id ? { ...ls, [field]: value } : ls));
+     };
+ 
++    // ΓöÇΓöÇΓöÇ Export helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
++    const buildExportConfig = (forExcel = false): ExportConfig => {
++        const tag = dateTag();
++        const emiRatio = monthlyIncome > 0 ? (result.originalEmi / monthlyIncome) * 100 : 0;
++        const affordStatus = emiRatio > 50 ? 'HIGH RISK (>50%)' : emiRatio > 40 ? 'CAUTION (>40%)' : 'SAFE';
++
++        const inputs: ExportConfig['inputs'] = [
++            { label: 'Property Value', value: formatINR(propertyValue) },
++            { label: 'Down Payment', value: formatINR(downPayment) },
++            { label: 'Loan Amount', value: formatINR(loanAmount) },
++            { label: 'LTV (Loan to Value)', value: `${ltv.toFixed(1)}% (RBI max: ${maxLtv}%)` },
++            { label: 'Interest Rate', value: `${interestRate}% p.a.` },
++            { label: 'Tenure', value: `${tenureYears} Years (${months} months)` },
++            ...(monthlyIncome > 0 ? [{ label: 'Monthly Income', value: formatINR(monthlyIncome) }] : []),
++        ];
++
++        const results: ExportConfig['results'] = [
++            { label: 'Monthly EMI', value: formatINR(result.originalEmi) },
++            { label: 'Total Interest', value: formatINR(result.totalInterest) },
++            { label: 'Total Payment', value: formatINR(result.totalPayment) },
++            ...(monthlyIncome > 0 ? [
++                { label: 'EMI to Income Ratio', value: `${emiRatio.toFixed(1)}%` },
++                { label: 'Affordability Status', value: affordStatus },
++            ] : []),
++            ...(enablePrepayment ? [
++                { label: 'Prepayment Strategy', value: prepaymentMode === 'reduce_tenure' ? 'Reduce Tenure' : 'Reduce EMI' },
++                ...(monthlyExtraEMI > 0 ? [{ label: 'Monthly Extra EMI', value: formatINR(monthlyExtraEMI) }] : []),
++                ...(result.interestSaved > 0 ? [{ label: 'Interest Saved', value: formatINR(result.interestSaved) }] : []),
++                ...(result.timeSavedMonths > 0 ? [{ label: 'Time Saved', value: `${Math.floor(result.timeSavedMonths / 12)}y ${result.timeSavedMonths % 12}m` }] : []),
++            ] : []),
++            { label: 'Sec 80C (Principal) ΓÇö Total', value: formatINR(result.taxBenefits.total80C) },
++            { label: 'Sec 24(b) (Interest) ΓÇö Total', value: formatINR(result.taxBenefits.total24) },
++        ];
++
++        // Year-wise summary: aggregate monthly schedule into annual rows
++        const yearlyMap = new Map<number, { principal: number; interest: number; totalPaid: number; closingBalance: number }>();
++        result.schedule.forEach(row => {
++            const yr = Math.ceil(row.month / 12);
++            const existing = yearlyMap.get(yr) || { principal: 0, interest: 0, totalPaid: 0, closingBalance: 0 };
++            existing.principal += row.principal;
++            existing.interest += row.interest;
++            existing.totalPaid += row.emi;
++            existing.closingBalance = row.closingBalance;
++            yearlyMap.set(yr, existing);
++        });
++
++        const yearlyRows = Array.from(yearlyMap.entries()).map(([yr, d]) => [
++            yr,
++            forExcel ? Math.round(d.totalPaid) : formatINR(d.totalPaid),
++            forExcel ? Math.round(d.principal) : formatINR(d.principal),
++            forExcel ? Math.round(d.interest) : formatINR(d.interest),
++            forExcel ? Math.round(d.closingBalance) : formatINR(d.closingBalance),
++        ]);
++
++        const taxRows = result.taxBenefits.schedule.map(t => [
++            t.year,
++            forExcel ? t.principal : formatINR(t.principal),
++            forExcel ? t.interest : formatINR(t.interest),
++            forExcel ? t.deduction80C : formatINR(t.deduction80C),
++            forExcel ? t.deduction24 : formatINR(t.deduction24),
++            forExcel ? (t.deduction80C + t.deduction24) : formatINR(t.deduction80C + t.deduction24),
++        ]);
++
++        return {
++            title: 'Advanced Mortgage Report',
++            subtitle: 'Home Loan Analysis',
++            inputs,
++            results,
++            chart: {
++                type: 'pie',
++                segments: [
++                    { label: 'Principal', value: loanAmount, color: '#10B981' },
++                    { label: 'Total Interest', value: result.totalInterest, color: '#F59E0B' },
++                ],
++            },
++            projectionTitle: 'Monthly Amortization Schedule',
++            projectionColumns: ['Month', 'Payment', 'Principal', 'Interest', 'Balance'],
++            projectionRows: result.schedule.map(r => [
++                r.month,
++                forExcel ? Math.round(r.emi) : formatINR(r.emi),
++                forExcel ? Math.round(r.principal) : formatINR(r.principal),
++                forExcel ? Math.round(r.interest) : formatINR(r.interest),
++                forExcel ? Math.round(r.closingBalance) : formatINR(r.closingBalance),
++            ]),
++            additionalTables: [
++                {
++                    title: 'Year-wise Summary',
++                    columns: ['Year', 'Total Paid', 'Principal', 'Interest', 'Balance'],
++                    rows: yearlyRows,
++                },
++                {
++                    title: 'Tax Benefits (Year-wise)',
++                    columns: ['Year', 'Principal Paid', 'Interest Paid', '80C Deduction', '24(b) Deduction', 'Total Benefit'],
++                    rows: taxRows,
++                },
++            ],
++            filename: `FinCalix_Mortgage_Report_${tag}`,
++        };
++    };
++
++    const handleDownloadPDF = async () => {
++        await exportToPDF(buildExportConfig(false));
++    };
++
++    const handleDownloadExcel = async () => {
++        await exportToExcel(buildExportConfig(true));
++    };
++
+     // ΓöÇΓöÇΓöÇ Render ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+     return (
+         <div className="min-h-screen pb-safe-nav" style={{ backgroundColor: c.bg, color: c.text }}>
+@@ -158,10 +269,10 @@ export default function AdvancedMortgageCalculator() {
+                         </div>
+                         <div className="text-right">
+                             <p className="text-sm font-medium" style={{ color: c.textSecondary }}>LTV (Loan to Value)</p>
+-                            <p className={`text-xl font-bold ${ltv > 80 ? 'text-red-500' : 'text-emerald-500'}`}>
++                            <p className={`text-xl font-bold ${ltv > maxLtv ? 'text-red-500' : 'text-emerald-500'}`}>
+                                 {ltv.toFixed(1)}%
+                             </p>
+-                            {ltv > 80 && <p className="text-xs mt-1 text-red-500">Usually max 80% permitted</p>}
++                            {ltv > maxLtv && <p className="text-xs mt-1 text-red-500">RBI max: {maxLtv}% for this loan size</p>}
+                         </div>
+                     </div>
+ 
+@@ -329,7 +440,7 @@ export default function AdvancedMortgageCalculator() {
+                                                         <input
+                                                             type="number"
+                                                             value={ls.month}
+-                                                            onChange={(e) => updateLumpSum(ls.id, 'month', parseInt(e.target.value) || 0)}
++                                                            onChange={(e) => updateLumpSum(ls.id, 'month', Math.max(1, parseInt(e.target.value) || 1))}
+                                                             className="w-full bg-transparent outline-none font-medium text-sm border-b focus:border-emerald-500 transition-colors"
+                                                             style={{ color: c.text, borderColor: c.border }}
+                                                             min={1}
+@@ -392,6 +503,20 @@ export default function AdvancedMortgageCalculator() {
+                     </div>
+                 </div>
+ 
++                {/* Export Buttons */}
++                <div className="grid grid-cols-2 gap-3">
++                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadPDF}
++                        className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border font-bold text-sm"
++                        style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
++                        <FileText size={18} className="text-violet-500" /> Export PDF
++                    </motion.button>
++                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadExcel}
++                        className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border font-bold text-sm"
++                        style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
++                        <Download size={18} className="text-emerald-500" /> Export Excel
++                    </motion.button>
++                </div>
++
+                 {/* Savings Banner */}
+                 {enablePrepayment && (result.interestSaved > 0 || result.timeSavedMonths > 0) && (
+                     <div className="p-4 rounded-xl border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between" 
+@@ -434,7 +559,7 @@ export default function AdvancedMortgageCalculator() {
+                         <h2 className="font-semibold text-lg">Income Tax Benefits</h2>
+                     </div>
+                     <p className="text-sm" style={{ color: c.textSecondary }}>
+-                        Based on Indian tax laws (Old Regime): Section 80C covers Principal up to Γé╣1.5L/yr, and Section 24 covers Interest up to Γé╣2L/yr.
++                        Based on Indian tax laws (Old Regime): Section 80C covers Principal up to Γé╣1.5L/yr (only after possession), and Section 24(b) covers Interest up to Γé╣2L/yr for self-occupied property.
+                     </p>
+                     
+                     <div className="grid grid-cols-2 gap-4 mt-4">
+@@ -505,10 +630,10 @@ export default function AdvancedMortgageCalculator() {
+                                             className="px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                                             style={{ backgroundColor: c.bg, color: c.text, border: `1px solid ${c.border}` }}
+                                         >
+-                                            Prev Year
++                                            ΓåÉ Prev
+                                         </button>
+                                         <span className="text-sm font-medium" style={{ color: c.textSecondary }}>
+-                                            Year {Math.floor(amortPage * ROWS_PER_PAGE / 12) + 1} of {Math.ceil(result.schedule.length / 12)}
++                                            Yr {amortPage * 2 + 1}ΓÇô{Math.min((amortPage + 1) * 2, Math.ceil(result.schedule.length / 12))} of {Math.ceil(result.schedule.length / 12)}
+                                         </span>
+                                         <button
+                                             onClick={() => setAmortPage(p => Math.min(totalPages - 1, p + 1))}
+@@ -516,7 +641,7 @@ export default function AdvancedMortgageCalculator() {
+                                             className="px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                                             style={{ backgroundColor: c.bg, color: c.text, border: `1px solid ${c.border}` }}
+                                         >
+-                                            Next Year
++                                            Next ΓåÆ
+                                         </button>
+                                     </div>
+                                 )}
+diff --git a/src/pages/BudgetTracker.tsx b/src/pages/BudgetTracker.tsx
+index 2fc74b2..ee185bf 100644
+--- a/src/pages/BudgetTracker.tsx
++++ b/src/pages/BudgetTracker.tsx
+@@ -43,7 +43,10 @@ export default function BudgetTracker() {
+     return (
+         <div className="min-h-dvh bg-slate-50 dark:bg-background animate-fade-in">
+             {/* Header */}
+-            <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A]  border-b border-slate-200 dark:border-white/10 pt-14">
++            <div
++                className="sticky top-0 z-30 bg-slate-50/95 dark:bg-[#0F172A] border-b border-slate-200 dark:border-white/10"
++                style={{ paddingTop: "calc(env(safe-area-inset-top, 24px) + 0px)" }}
++            >
+                 <div className="flex items-center gap-4 px-4 py-3">
+                     <button
+                         onClick={() => navigate(-1)}
+diff --git a/src/pages/PropertyCalculator.tsx b/src/pages/PropertyCalculator.tsx
+index b513703..4d38339 100644
+--- a/src/pages/PropertyCalculator.tsx
++++ b/src/pages/PropertyCalculator.tsx
+@@ -195,7 +195,8 @@ export default function PropertyCalculator() {
+         const amenitiesAmt = Number(amenities) || 0;
+         const maintAmt = Number(maint) || 0;
+         const subtotal = basePrice + parkingAmt + amenitiesAmt + maintAmt;
+-        const gstAmt = (basePrice) * (Number(gstPct) / 100);
++        // Under GST, parking & amenities paid to developer are taxable; maintenance deposit is exempt
++        const gstAmt = (basePrice + parkingAmt + amenitiesAmt) * (Number(gstPct) / 100);
+         const totalCost = subtotal + gstAmt;
+         setFlatResult({ basePrice, parkingAmt, amenitiesAmt, maintAmt, subtotal, gstAmt, totalCost });
+         scrollToResult();
+diff --git a/src/pages/expenses/DailyTab.tsx b/src/pages/expenses/DailyTab.tsx
+index 7bff1dc..bada8c0 100644
+--- a/src/pages/expenses/DailyTab.tsx
++++ b/src/pages/expenses/DailyTab.tsx
+@@ -155,10 +155,12 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
+         const e = entries.find(e => e.id === id);
+         if (!e) return;
+         setEditingId(id);
++        setFEntryType(e.entryType || 'expense');
+         setFCategory(e.category);
+         setFAmount(e.amount.toString());
+         setFDesc(e.description);
+         setFPayment(e.paymentMethod || 'UPI');
++        if (e.entryType === 'investment' && e.investmentType) setFInvestmentType(e.investmentType);
+         setInitialFormState({ category: e.category, amount: e.amount.toString(), desc: e.description, payment: e.paymentMethod || 'UPI' });
+         setShowAddForm(true);
+     };
+diff --git a/src/pages/expenses/DashboardTab.tsx b/src/pages/expenses/DashboardTab.tsx
+index b09dd80..29bee47 100644
+--- a/src/pages/expenses/DashboardTab.tsx
++++ b/src/pages/expenses/DashboardTab.tsx
+@@ -119,7 +119,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: {
+     const effectiveFixed = hasMonthData ? getTotalFixed() : 0;
+     const effectiveIncome = hasMonthData ? monthlyIncome : 0;
+     const totalFixed = effectiveFixed;
+-    const totalDaily = monthEntries.reduce((s, e) => s + e.amount, 0);
++    const totalDaily = monthEntries.filter(e => (e.entryType || 'expense') === 'expense').reduce((s, e) => s + e.amount, 0);
+     const totalSpent = totalFixed + totalDaily + (hasMonthData ? activeSubsMonthly : 0);
+     const savings = effectiveIncome - totalSpent;
+     const savingsRate = effectiveIncome > 0 ? (savings / effectiveIncome) * 100 : 0;
+diff --git a/src/pages/expenses/ReportsTab.tsx b/src/pages/expenses/ReportsTab.tsx
+index 3e4f6d4..155549a 100644
+--- a/src/pages/expenses/ReportsTab.tsx
++++ b/src/pages/expenses/ReportsTab.tsx
+@@ -85,7 +85,7 @@ export default function ReportsTab() {
+         ? (hasMonthData ? getTotalFixed() : 0)
+         : (hasYearData ? getTotalFixed() * 12 : 0);
+     const totalFixed = effectiveFixed;
+-    const totalDaily = activeEntries.reduce((s, e) => s + e.amount, 0);
++    const totalDaily = activeEntries.filter(e => (e.entryType || "expense") === "expense").reduce((s, e) => s + e.amount, 0);
+     const totalSubs = period === 'month' ? activeSubsMonthly : activeSubsMonthly * 12;
+     const totalExpenses = totalFixed + totalDaily + (hasData ? totalSubs : 0);
+     const income = (period === 'month' ? (hasMonthData ? monthlyIncome : 0) : (hasYearData ? monthlyIncome * 12 : 0));
+diff --git a/src/utils/exportReport.ts b/src/utils/exportReport.ts
+index 609c3d0..077a3f4 100644
+--- a/src/utils/exportReport.ts
++++ b/src/utils/exportReport.ts
+@@ -28,6 +28,12 @@ export interface ExportConfig {
+     projectionColumns?: string[];
+     projectionRows?: Array<Array<string | number>>;
+     notes?: string;
++    /** Extra tables rendered after the main projection (each gets its own page in PDF / sheet in Excel) */
++    additionalTables?: Array<{
++        title: string;
++        columns: string[];
++        rows: Array<Array<string | number>>;
++    }>;
+     filename: string;
+ }
+ 
+@@ -346,6 +352,45 @@ export async function exportToPDF(config: ExportConfig): Promise<void> {
+             });
+         }
+ 
++        // ΓöÇΓöÇ 5b. Additional tables (each starts on a new page) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
++        if (config.additionalTables?.length) {
++            for (const table of config.additionalTables) {
++                doc.addPage();
++                let ay = 20;
++
++                doc.setFontSize(10);
++                doc.setTextColor(13, 59, 46);
++                doc.setFont('helvetica', 'bold');
++                doc.text(table.title, 14, ay);
++                ay += 3;
++
++                const acw = 182 / table.columns.length;
++                const aDef: Record<number, { cellWidth: number }> = {};
++                table.columns.forEach((_, i) => { aDef[i] = { cellWidth: acw }; });
++
++                autoTable(doc, {
++                    startY: ay,
++                    head: [table.columns.map(h => san(h) as string)],
++                    body: table.rows.map(row => row.map(c => san(c))),
++                    theme: 'striped',
++                    headStyles: { fillColor: [13, 59, 46], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
++                    alternateRowStyles: { fillColor: [240, 253, 244] },
++                    styles: { fontSize: 7.5, cellPadding: 1.5, overflow: 'hidden' },
++                    columnStyles: aDef,
++                    margin: { left: 14, right: 14 },
++                    didDrawPage: (d: any) => {
++                        if (d.pageNumber > 1) {
++                            doc.setFillColor(13, 59, 46);
++                            doc.rect(0, 0, pw, 10, 'F');
++                            doc.setFontSize(7);
++                            doc.setTextColor(255, 255, 255);
++                            doc.text(`${title} ΓÇö ${table.title} (continued)`, 14, 7);
++                        }
++                    },
++                });
++            }
++        }
++
+         // ΓöÇΓöÇ 6. Footer on every page ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+         addFooters(doc, title);
+ 
+@@ -416,6 +461,24 @@ export async function exportToExcel(config: ExportConfig): Promise<void> {
+             XLSX.utils.book_append_sheet(wb, sheet2, 'Projections');
+         }
+ 
++        // ΓöÇΓöÇ Additional sheets ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
++        if (config.additionalTables?.length) {
++            for (const table of config.additionalTables) {
++                const tData: (string | number)[][] = [table.columns, ...table.rows];
++                const ws = XLSX.utils.aoa_to_sheet(tData);
++                ws['!cols'] = table.columns.map((h, colIdx) => {
++                    let maxLen = h.length;
++                    table.rows.forEach(row => {
++                        const cell = row[colIdx];
++                        if (cell !== undefined) maxLen = Math.max(maxLen, String(cell).length);
++                    });
++                    return { wch: Math.min(maxLen + 2, 30) };
++                });
++                // Sheet name max 31 chars
++                XLSX.utils.book_append_sheet(wb, ws, table.title.slice(0, 31));
++            }
++        }
++
+         // ΓöÇΓöÇ Save ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+         const out = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+         const blob = new Blob([out], {
+diff --git a/src/utils/propertyData.ts b/src/utils/propertyData.ts
+index 8f7e767..3d689a4 100644
+--- a/src/utils/propertyData.ts
++++ b/src/utils/propertyData.ts
+@@ -27,6 +27,10 @@ export const STATE_RATES: Record<string, { name: string; stamp: number; reg: num
+     rajasthan: { name: 'Rajasthan', stamp: 6, reg: 1, transfer: 0 },
+     kerala: { name: 'Kerala', stamp: 8, reg: 2, transfer: 0 },
+     westbengal: { name: 'West Bengal', stamp: 6, reg: 1, transfer: 0 },
++    uttarpradesh: { name: 'Uttar Pradesh', stamp: 7, reg: 1, transfer: 0 },
++    haryana: { name: 'Haryana', stamp: 7, reg: 1, transfer: 0 },
++    punjab: { name: 'Punjab', stamp: 7, reg: 1, transfer: 0 },
++    madhyapradesh: { name: 'Madhya Pradesh', stamp: 7.5, reg: 1, transfer: 0 },
+ };
+ 
+ // ΓöÇΓöÇΓöÇ Construction Grades ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ

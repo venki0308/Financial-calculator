@@ -155,10 +155,12 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
         const e = entries.find(e => e.id === id);
         if (!e) return;
         setEditingId(id);
+        setFEntryType(e.entryType || 'expense');
         setFCategory(e.category);
         setFAmount(e.amount.toString());
         setFDesc(e.description);
         setFPayment(e.paymentMethod || 'UPI');
+        if (e.entryType === 'investment' && e.investmentType) setFInvestmentType(e.investmentType);
         setInitialFormState({ category: e.category, amount: e.amount.toString(), desc: e.description, payment: e.paymentMethod || 'UPI' });
         setShowAddForm(true);
     };

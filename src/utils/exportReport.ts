@@ -28,6 +28,12 @@ export interface ExportConfig {
     projectionColumns?: string[];
     projectionRows?: Array<Array<string | number>>;
     notes?: string;
+    /** Extra tables rendered after the main projection (each gets its own page in PDF / sheet in Excel) */
+    additionalTables?: Array<{
+        title: string;
+        columns: string[];
+        rows: Array<Array<string | number>>;
+    }>;
     filename: string;
 }
 
@@ -346,6 +352,45 @@ export async function exportToPDF(config: ExportConfig): Promise<void> {
             });
         }
 
+        // ── 5b. Additional tables (each starts on a new page) ────────────
+        if (config.additionalTables?.length) {
+            for (const table of config.additionalTables) {
+                doc.addPage();
+                let ay = 20;
+
+                doc.setFontSize(10);
+                doc.setTextColor(13, 59, 46);
+                doc.setFont('helvetica', 'bold');
+                doc.text(table.title, 14, ay);
+                ay += 3;
+
+                const acw = 182 / table.columns.length;
+                const aDef: Record<number, { cellWidth: number }> = {};
+                table.columns.forEach((_, i) => { aDef[i] = { cellWidth: acw }; });
+
+                autoTable(doc, {
+                    startY: ay,
+                    head: [table.columns.map(h => san(h) as string)],
+                    body: table.rows.map(row => row.map(c => san(c))),
+                    theme: 'striped',
+                    headStyles: { fillColor: [13, 59, 46], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+                    alternateRowStyles: { fillColor: [240, 253, 244] },
+                    styles: { fontSize: 7.5, cellPadding: 1.5, overflow: 'hidden' },
+                    columnStyles: aDef,
+                    margin: { left: 14, right: 14 },
+                    didDrawPage: (d: any) => {
+                        if (d.pageNumber > 1) {
+                            doc.setFillColor(13, 59, 46);
+                            doc.rect(0, 0, pw, 10, 'F');
+                            doc.setFontSize(7);
+                            doc.setTextColor(255, 255, 255);
+                            doc.text(`${title} — ${table.title} (continued)`, 14, 7);
+                        }
+                    },
+                });
+            }
+        }
+
         // ── 6. Footer on every page ───────────────────────────────────────
         addFooters(doc, title);
 
@@ -414,6 +459,24 @@ export async function exportToExcel(config: ExportConfig): Promise<void> {
             });
 
             XLSX.utils.book_append_sheet(wb, sheet2, 'Projections');
+        }
+
+        // ── Additional sheets ─────────────────────────────────────────────
+        if (config.additionalTables?.length) {
+            for (const table of config.additionalTables) {
+                const tData: (string | number)[][] = [table.columns, ...table.rows];
+                const ws = XLSX.utils.aoa_to_sheet(tData);
+                ws['!cols'] = table.columns.map((h, colIdx) => {
+                    let maxLen = h.length;
+                    table.rows.forEach(row => {
+                        const cell = row[colIdx];
+                        if (cell !== undefined) maxLen = Math.max(maxLen, String(cell).length);
+                    });
+                    return { wch: Math.min(maxLen + 2, 30) };
+                });
+                // Sheet name max 31 chars
+                XLSX.utils.book_append_sheet(wb, ws, table.title.slice(0, 31));
+            }
         }
 
         // ── Save ──────────────────────────────────────────────────────────
