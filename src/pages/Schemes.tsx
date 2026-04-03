@@ -1,11 +1,9 @@
-import { useState, useEffect} from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ChevronRight, Bookmark, Users, GraduationCap, Tractor, Building2, UserCheck, Shield, Home as HomeIcon, Landmark, Heart, Briefcase, HandHeart, Clock, ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { schemes, schemeCategories } from '../data/schemes';
 import { useSchemeStore } from '../store/useSchemeStore';
-import BottomSheet from '../components/BottomSheet';
 import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -19,11 +17,11 @@ export default function Schemes() {
     const [search, setSearch] = useState('');
     const [selectedCat, setSelectedCat] = useState('');
 
-    const filtered = schemes.filter((s) => {
-        const matchSearch = !search || s.name.toLowerCase().includes(search.toLowerCase()) || s.category.toLowerCase().includes(search.toLowerCase());
+    const filtered = useMemo(() => schemes.filter((s) => {
+        const matchSearch = !search || s.name.toLowerCase().includes(search.toLowerCase()) || s.category.toLowerCase().includes(search.toLowerCase()) || s.description.toLowerCase().includes(search.toLowerCase());
         const matchCat = !selectedCat || s.category === selectedCat;
         return matchSearch && matchCat;
-    });
+    }), [search, selectedCat]);
 
     return (
         <div className="px-4 pt-14 animate-fade-in">
@@ -57,11 +55,11 @@ export default function Schemes() {
 
             {/* Scheme Cards */}
             <div className="space-y-3 mb-6">
-                {filtered.map((scheme, i) => {
+                {filtered.map((scheme) => {
                     const isBookmarked = bookmarkedSchemes.includes(scheme.id);
                     return (
-                        <motion.div key={scheme.id} whileTap={{ scale: 0.98 }}
-                            className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border animate-slide-up" style={{ animationDelay: `${i * 30}ms` }}>
+                        <div key={scheme.id}
+                            className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border active:scale-[0.98] transition-transform">
                             <div className="flex items-start justify-between mb-2">
                                 <div className="flex gap-1.5 flex-wrap">
                                     <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-brand-blue/15 text-brand-blue">{t('schemes.centralGovt')}</span>
@@ -79,7 +77,7 @@ export default function Schemes() {
                                     <ChevronRight size={16} className="text-muted-foreground" />
                                 </div>
                             </button>
-                        </motion.div>
+                        </div>
                     );
                 })}
             </div>
