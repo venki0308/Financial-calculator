@@ -1,10 +1,10 @@
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import {
   ArrowLeft, Info, Share2, Shield, HeartPulse,
   CheckCircle, AlertTriangle, ChevronDown, ChevronUp,
-  Plus, X, TrendingUp, Banknote, Award, Users,
+  Plus, X, TrendingUp, Banknote, Users,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
@@ -15,7 +15,7 @@ import { nativeShare } from '../utils/nativeShare';
 
 type InsuranceTab = 'health' | 'life';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ─── Constants ─────────────────────────────────────────────────────────────────
 
 const SUM_INSURED_OPTIONS = [
   { label: '₹3L', value: 300000 },
@@ -33,7 +33,7 @@ const CITY_OPTIONS: { label: string; value: 'metro' | 'tier2' | 'tier3' }[] = [
   { label: 'Tier 3', value: 'tier3' },
 ];
 
-// ─── Formatting helpers ───────────────────────────────────────────────────────
+// ─── Formatting ─────────────────────────────────────────────────────────────────
 
 function fmt(n: number): string {
   return '₹' + Math.round(n).toLocaleString('en-IN');
@@ -49,81 +49,97 @@ function fmtRange(lo: number, hi: number): string {
   return `${fmt(lo)} — ${fmt(hi)}`;
 }
 
-// ─── Health calculation ───────────────────────────────────────────────────────
+// ─── Health Calculations ────────────────────────────────────────────────────────
 
 function getAgeBase(age: number): [number, number] {
-  if (age <= 30) return [2800, 4500];
-  if (age <= 40) return [4000, 6500];
-  if (age <= 50) return [7000, 12000];
-  if (age <= 60) return [12000, 22000];
-  if (age <= 70) return [22000, 42000];
-  if (age <= 80) return [38000, 70000];
-  return [55000, 95000];
+  if (age <= 17) return [2000, 4000];
+  if (age <= 30) return [3500, 6000];
+  if (age <= 40) return [5500, 9500];
+  if (age <= 50) return [9000, 16000];
+  if (age <= 60) return [15000, 28000];
+  if (age <= 70) return [28000, 55000];
+  if (age <= 80) return [50000, 90000];
+  return [80000, 140000];
 }
 
-function getCovMul(si: number): number {
-  if (si <= 300000) return 0.6;
-  if (si <= 500000) return 0.8;
-  if (si <= 1000000) return 1.0;
-  if (si <= 1500000) return 1.25;
-  if (si <= 2500000) return 1.6;
-  if (si <= 5000000) return 2.2;
-  return 3.0;
+function getSiMul(si: number): number {
+  if (si <= 300000) return 0.55;
+  if (si <= 500000) return 0.75;
+  if (si <= 1000000) return 1.00;
+  if (si <= 1500000) return 1.30;
+  if (si <= 2500000) return 1.70;
+  if (si <= 5000000) return 2.40;
+  return 3.20;
 }
 
-function floaterFactor(n: number): number {
+function getCityMul(city: 'metro' | 'tier2' | 'tier3'): number {
+  return city === 'metro' ? 1.25 : city === 'tier2' ? 1.00 : 0.82;
+}
+
+function getFloaterFactor(n: number): number {
   if (n <= 1) return 1.0;
-  if (n === 2) return 0.85;
-  if (n === 3) return 0.80;
-  if (n === 4) return 0.75;
-  return 0.72;
+  if (n === 2) return 0.82;
+  if (n === 3) return 0.76;
+  if (n === 4) return 0.72;
+  return 0.68;
 }
 
-function calcHealthRange(
-  ages: number[], si: number,
-  city: 'metro' | 'tier2' | 'tier3', preExisting: boolean
-): { lo: number; hi: number } {
-  if (!ages.length) return { lo: 0, hi: 0 };
-  const covMul = getCovMul(si);
-  const cityMul = city === 'metro' ? 1.2 : city === 'tier2' ? 1.0 : 0.85;
-  const ff = floaterFactor(ages.length);
-  const preLo = preExisting ? 1.15 : 1.0;
-  const preHi = preExisting ? 1.35 : 1.0;
-  let sumLo = 0, sumHi = 0;
-  for (const a of ages) { const [l, h] = getAgeBase(a); sumLo += l; sumHi += h; }
-  return {
-    lo: Math.round((sumLo * covMul * cityMul * preLo * ff) / 100) * 100,
-    hi: Math.round((sumHi * covMul * cityMul * preHi * ff) / 100) * 100,
-  };
+function getMemberPremium(age: number, si: number, city: 'metro' | 'tier2' | 'tier3', preExisting: boolean): [number, number] {
+  const [bLo, bHi] = getAgeBase(age);
+  const mul = getSiMul(si) * getCityMul(city) * (preExisting ? 1.20 : 1.00);
+  return [
+    Math.round((bLo * mul) / 100) * 100,
+    Math.round((bHi * mul) / 100) * 100,
+  ];
 }
 
-function calcAdequacy(si: number, city: 'metro' | 'tier2' | 'tier3', ages: number[]): number {
+function calcAdequacy(
+  si: number,
+  city: 'metro' | 'tier2' | 'tier3',
+  allAges: number[],
+  parentAges: number[],
+  preExisting: boolean,
+): number {
   const siL = si / 100000;
-  let score = 0;
+  let base = 0;
+
   if (city === 'metro') {
-    if (siL <= 5) score = 30 + (siL / 5) * 10;
-    else if (siL <= 10) score = 55 + ((siL - 5) / 5) * 15;
-    else if (siL <= 25) score = 70 + ((siL - 10) / 15) * 15;
-    else score = 85 + Math.min(15, ((siL - 25) / 75) * 15);
+    if (siL <= 3) base = 20;
+    else if (siL <= 5) base = 35;
+    else if (siL <= 10) base = 60;
+    else if (siL <= 15) base = 72;
+    else if (siL <= 25) base = 82;
+    else if (siL <= 50) base = 90;
+    else base = 97;
   } else if (city === 'tier2') {
-    if (siL <= 5) score = 40 + (siL / 5) * 20;
-    else if (siL <= 10) score = 65 + ((siL - 5) / 5) * 15;
-    else score = 80 + Math.min(20, ((siL - 10) / 90) * 20);
+    if (siL <= 5) base = 45;
+    else if (siL <= 10) base = 70;
+    else if (siL <= 15) base = 80;
+    else if (siL <= 25) base = 90;
+    else base = 93;
   } else {
-    if (siL <= 5) score = 55 + (siL / 5) * 15;
-    else if (siL <= 10) score = 70 + ((siL - 5) / 5) * 15;
-    else score = 85 + Math.min(15, ((siL - 10) / 90) * 15);
+    if (siL <= 5) base = 55;
+    else if (siL <= 10) base = 78;
+    else if (siL <= 25) base = 92;
+    else base = 95;
   }
-  const avgAge = ages.length ? ages.reduce((a, b) => a + b, 0) / ages.length : 30;
-  if (avgAge > 60) score -= 15;
-  else if (avgAge > 50) score -= 8;
-  else if (avgAge > 45) score -= 4;
-  if (ages.length >= 5) score -= 10;
-  else if (ages.length >= 4) score -= 5;
-  return Math.max(0, Math.min(100, Math.round(score)));
+
+  // Risk deductions
+  if (preExisting) base -= 8;
+  if (parentAges.some(a => a >= 70)) base -= 18;
+  else if (parentAges.some(a => a >= 60)) base -= 10;
+  if (allAges.length >= 5) base -= 7;
+  if (allAges.some(a => a <= 1)) base -= 5;
+
+  // Strengths
+  if (!preExisting) base += 5;
+  if (allAges.every(a => a < 40)) base += 5;
+  if (city === 'tier3') base += 3;
+
+  return Math.max(0, Math.min(100, Math.round(base)));
 }
 
-// ─── Life calculation ─────────────────────────────────────────────────────────
+// ─── Life Calculations ──────────────────────────────────────────────────────────
 
 function getTermBase(age: number): [number, number] {
   if (age <= 25) return [5500, 8000];
@@ -151,7 +167,7 @@ function calcTermRange(
   };
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Sub-components ─────────────────────────────────────────────────────────────
 
 function PillSelector<T extends string | number>({
   label, options, value, onChange,
@@ -185,25 +201,34 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
   );
 }
 
-function ScoreBar({ score }: { score: number }) {
-  const label = score <= 40
-    ? 'Underinsured — Consider increasing cover'
-    : score <= 65 ? 'Adequate for basic hospitalisation'
-    : score <= 85 ? 'Good coverage for most scenarios'
-    : 'Comprehensive — Well protected';
-  const barColor = score <= 40 ? 'bg-red-500' : score <= 65 ? 'bg-amber-500' : 'bg-brand-green';
-  const textColor = score <= 40 ? 'text-red-400' : score <= 65 ? 'text-amber-400' : 'text-brand-green';
+function ScoreDial({ score }: { score: number }) {
+  const R = 90;
+  const circ = Math.PI * R;
+  const color = score <= 40 ? '#ef4444' : score <= 75 ? '#f59e0b' : '#22c55e';
+  const label = score <= 40 ? 'Critically Underinsured'
+    : score <= 60 ? 'Underinsured'
+    : score <= 75 ? 'Adequate for basics'
+    : score <= 88 ? 'Well covered'
+    : 'Comprehensively covered';
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <span className={`text-2xl font-black ${textColor}`}>{score}<span className="text-sm font-normal text-muted-foreground">/100</span></span>
-        <span className={`text-xs font-semibold ${textColor} text-right max-w-[55%]`}>{label}</span>
-      </div>
-      <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-        <motion.div initial={{ width: 0 }} animate={{ width: `${score}%` }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className={`h-full rounded-full ${barColor}`} />
-      </div>
+    <div className="flex flex-col items-center py-2">
+      <svg viewBox="0 0 200 110" className="w-56 h-[130px]" style={{ overflow: 'visible' }}>
+        <path d="M10 110 A 90 90 0 0 1 190 110"
+          fill="none" strokeWidth="14" strokeLinecap="round"
+          className="stroke-slate-200 dark:stroke-slate-700" />
+        <motion.path
+          d="M10 110 A 90 90 0 0 1 190 110"
+          fill="none" stroke={color} strokeWidth="14" strokeLinecap="round"
+          strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }}
+          animate={{ strokeDashoffset: circ * (1 - score / 100) }}
+          transition={{ duration: 0.9, ease: 'easeOut' }}
+        />
+        <text x="100" y="82" textAnchor="middle" fontSize="40" fontWeight="900" fill={color}>{score}</text>
+        <text x="100" y="100" textAnchor="middle" fontSize="11" fill="#94a3b8">/100</text>
+      </svg>
+      <span className="text-sm font-bold mt-1" style={{ color }}>{label}</span>
     </div>
   );
 }
@@ -241,7 +266,149 @@ function VerdictBadge({ verdict }: { verdict: 'best' | 'acceptable' | 'avoid' | 
   return <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${config.cls}`}>{config.label}</span>;
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Static data ────────────────────────────────────────────────────────────────
+
+const BASE_CHECKLIST: { title: string; body: string }[] = [
+  {
+    title: 'No Room Rent Capping',
+    body: 'Ensure the plan has NO sub-limit on room rent. A plan capping room rent at ₹5,000/day in a metro hospital means ALL linked charges (doctor fees, nursing, procedures) are also proportionally reduced. Avoid any plan with room rent sub-limits.',
+  },
+  {
+    title: 'Sum Insured Restoration',
+    body: 'After one member uses up the sum insured, it should automatically restore — either once per year or unlimited. This is critical for families where multiple members may need hospitalisation. Ask: "Does restoration apply to the same illness or a different illness?" Unlimited is better.',
+  },
+  {
+    title: 'No Claim Bonus (NCB)',
+    body: 'Every claim-free year should increase your sum insured by 10–50% at no extra cost. Check: 1) What % NCB per year? 2) Is NCB protected after a small claim? 3) What is the maximum NCB cap? (50% is good, 100% is excellent)',
+  },
+  {
+    title: 'Pre-Existing Disease Waiting Period',
+    body: 'IRDAI 2025 rules: maximum PED waiting period is now 36 months (3 years) for new policies. Shorter is better. Look for plans with 36-month or less PED waiting. After the waiting period, your pre-existing conditions must be covered. Never hide a pre-existing condition — it is the #1 cause of claim rejection.',
+  },
+  {
+    title: 'Lifetime Renewability',
+    body: 'Under IRDAI HIR 2016 Regulation 12, any policy renewed without a break cannot be denied renewal due to age. Ensure the policy explicitly states "Lifelong Renewable". Never let your health policy lapse — you lose accumulated waiting period credits.',
+  },
+  {
+    title: 'Claim Settlement Ratio (CSR)',
+    body: 'CSR = claims settled / claims received × 100. Look for CSR above 95%. Verify from IRDAI\'s official annual report at irdai.gov.in — not from broker or comparison websites. Also check the Complaint Volume per 10,000 claims — lower complaints = smoother process.',
+  },
+  {
+    title: 'In-House vs TPA Claim Processing',
+    body: 'Insurers that process claims in-house (no Third Party Administrator) typically settle faster and with fewer disputes. When buying, ask the insurer: "Who processes my cashless claims at the hospital?" In-house = better.',
+  },
+];
+
+const IRDAI_HEALTH_RIGHTS = [
+  { title: 'No Age Limit for New Policies', body: 'Insurers cannot deny new health insurance based on age. (IRDAI 2025 guideline)' },
+  { title: 'Maximum 36-Month PED Waiting Period', body: 'Waiting period for pre-existing diseases capped at 36 months for new policies. (IRDAI 2025)' },
+  { title: 'Lifetime Renewability', body: 'No policy can be denied renewal due to age if renewed without break. (IRDAI HIR 2016 Reg 12)' },
+  { title: '5-Year Moratorium Period', body: 'After 5 years continuous coverage, insurer cannot reject claims citing non-disclosure (except fraud). (IRDAI Master Circular 2024)' },
+  { title: '10% Renewal Premium Cap for 65+', body: 'Insurers cannot increase renewal premium for policyholders above 65 by more than 10% per year. (IRDAI Circular January 2025)' },
+  { title: 'Free 30-Day Policy Review', body: 'You can return the policy within 30 days for a full refund if unsatisfied. (IRDAI free-look rule)' },
+  { title: 'Cashless Everywhere', body: 'Emergency cashless treatment allowed even at non-network hospitals. (IRDAI initiative 2024)' },
+  { title: 'GST-Free Individual Premiums', body: 'Individual health insurance premiums are GST exempt from September 22, 2025. (56th GST Council)' },
+  { title: 'Portability Right', body: 'Switch insurer without losing accrued waiting period benefits. Apply 45 days before renewal.' },
+  { title: 'Insurance Ombudsman', body: 'Free dispute resolution if claim is rejected. File at irdai.gov.in — no lawyer needed.' },
+];
+
+const HOW_TO_BUY_STEPS = [
+  {
+    step: 1,
+    title: 'Fix your sum insured first',
+    body: 'Before comparing premiums, decide your sum insured. Rule of thumb: 1 year of gross income OR minimum ₹10L for Tier 2/3, ₹15–25L for metro. Medical inflation is 14%/year in India — choose a sum insured that will still be adequate in 10 years.',
+  },
+  {
+    step: 2,
+    title: 'Shortlist 3–4 insurers using IRDAI data',
+    body: 'Go to irdai.gov.in → Statistics → Annual Report. Check Claim Settlement Ratio and Complaint Volume per 10,000 claims. Focus on insurers with CSR above 95% AND complaint ratio below 20.',
+  },
+  {
+    step: 3,
+    title: 'Read the Policy Wording — not the brochure',
+    body: 'The brochure shows benefits. The Policy Wording Document shows exclusions, sub-limits, and conditions. Search for: "room rent", "co-pay", "sub-limit", "waiting period", "restoration". These are your risk areas.',
+  },
+  {
+    step: 4,
+    title: 'Get quotes for the same sum insured from 3 insurers',
+    body: 'Visit 3 insurer websites directly and get quotes for identical sum insured and members. Do not compare a ₹10L plan from one insurer with a ₹5L plan from another.',
+  },
+  {
+    step: 5,
+    title: 'Check network hospitals in your city',
+    body: 'Visit the insurer\'s website directly and search your preferred hospital name in their network. Do not rely on broker sites for this check — hospital lists change frequently.',
+  },
+  {
+    step: 6,
+    title: 'Buy directly from the insurer website',
+    body: 'Buying directly (insurer website or app) is cheaper than through a broker — no commission loading. You can still use a broker for advice, but buy direct to avoid markup.',
+  },
+  {
+    step: 7,
+    title: 'Declare everything honestly',
+    body: 'Fill the proposal form yourself. Disclose all pre-existing conditions, past surgeries, family medical history. Non-disclosure = claim rejection at the worst possible time.',
+  },
+];
+
+const IRDAI_LIFE_FACTS = [
+  'Free-look period: 30 days to return the policy for a full refund',
+  'Grace period: 30 days for premium payment before the policy lapses',
+  'Revival: A lapsed policy can be revived within 5 years by paying arrears + interest',
+  'Nomination: Always nominate a beneficiary — mandatory under the Insurance Act',
+  'Assignment: Policy can be assigned to a bank as collateral for a loan',
+  'Suicide clause: After 12 months of policy, death by suicide is also covered',
+  'IRDAI Ombudsman: Free dispute resolution at irdai.gov.in if a claim is rejected',
+];
+
+const LIFE_PLAN_TYPES: {
+  verdict: 'best' | 'acceptable' | 'avoid' | 'complex';
+  title: string; what: string; premiumRange: string;
+  maturity: string; xirr: string; note: string;
+  icon: React.ElementType; color: string; gradFrom: string;
+}[] = [
+  {
+    verdict: 'best',
+    title: 'Pure Term Insurance',
+    what: 'Pays the death benefit only. Zero maturity payout.',
+    premiumRange: '₹6,000–₹18,000 for ₹1Cr (age 25–35, non-smoker, 30yr)',
+    maturity: 'None',
+    xirr: 'N/A — pure protection',
+    note: 'For every ₹1Cr of protection, pure term costs ₹6,000–₹18,000/year. This is the most cost-efficient life cover available. Invest the premium savings in mutual funds via SIP.',
+    icon: Shield, color: 'text-emerald-400', gradFrom: 'from-emerald-500/10',
+  },
+  {
+    verdict: 'acceptable',
+    title: 'Term + Return of Premium (TROP)',
+    what: 'Pays all premiums back if you survive the full policy term.',
+    premiumRange: '₹18,000–₹35,000 for ₹1Cr cover',
+    maturity: '100% premiums returned at maturity',
+    xirr: '2.5%–4% effective XIRR',
+    note: 'You get your premiums back, but the effective return is only 2.5–4% XIRR — below inflation and below FD rates. Better than Endowment. Choose only if you cannot tolerate paying for pure term.',
+    icon: HeartPulse, color: 'text-blue-400', gradFrom: 'from-blue-500/10',
+  },
+  {
+    verdict: 'avoid',
+    title: 'Endowment / Money Back Plan',
+    what: 'A mix of life insurance + guaranteed savings.',
+    premiumRange: '₹60,000–₹1,20,000 for ₹1Cr cover',
+    maturity: 'Lower than premiums paid in real terms',
+    xirr: '3.5%–5.5% effective XIRR',
+    note: 'You pay 6–8x more premium than term for the same cover. Returns are below Fixed Deposit rates. Classic trap: mixing insurance with investment destroys both. Use term + SIP instead.',
+    icon: Banknote, color: 'text-amber-400', gradFrom: 'from-amber-500/10',
+  },
+  {
+    verdict: 'complex',
+    title: 'ULIP (Market-Linked Plan)',
+    what: 'Life insurance combined with a market-linked investment fund.',
+    premiumRange: '₹25,000–₹60,000 per year',
+    maturity: 'Market-linked (equity/debt)',
+    xirr: '7%–11% if equity performs; high charges in years 1–5',
+    note: 'ULIPs can generate decent returns over 15+ years if equity performs. But high charges in years 1–5 significantly reduce real XIRR. Better alternative for most: pure term + separate ELSS SIP.',
+    icon: TrendingUp, color: 'text-purple-400', gradFrom: 'from-purple-500/10',
+  },
+];
+
+// ─── Main component ─────────────────────────────────────────────────────────────
 
 export default function InsuranceCalculator() {
   useEffect(() => { AnalyticsService.trackScreen('Insurance_Calculator'); }, []);
@@ -250,7 +417,7 @@ export default function InsuranceCalculator() {
   const [activeTab, setActiveTab] = useState<InsuranceTab>('health');
   const [showInfo, setShowInfo] = useState(false);
 
-  // ── Health state ─────────────────────────────────────────────────────
+  // ── Health state ─────────────────────────────────────────────────────────────
   const [selfAge, setSelfAge] = useState(30);
   const [hasSpouse, setHasSpouse] = useState(false);
   const [spouseAge, setSpouseAge] = useState(28);
@@ -261,8 +428,9 @@ export default function InsuranceCalculator() {
   const [preExisting, setPreExisting] = useState(false);
   const [healthCalced, setHealthCalced] = useState(false);
   const [openChecklist, setOpenChecklist] = useState<Set<number>>(new Set());
+  const [showPremiumBreakdown, setShowPremiumBreakdown] = useState(false);
 
-  // ── Life state ───────────────────────────────────────────────────────
+  // ── Life state ───────────────────────────────────────────────────────────────
   const [lifeAge, setLifeAge] = useState(30);
   const [lifeGender, setLifeGender] = useState<'male' | 'female'>('male');
   const [lifeSmoker, setLifeSmoker] = useState(false);
@@ -271,7 +439,7 @@ export default function InsuranceCalculator() {
   const [outstandingLoans, setOutstandingLoans] = useState(0);
   const [policyTerm, setPolicyTerm] = useState(25);
 
-  // ── Family ages ──────────────────────────────────────────────────────
+  // ── Derived ─────────────────────────────────────────────────────────────────
   const allAges = useMemo(() => {
     const ages = [selfAge];
     if (hasSpouse) ages.push(spouseAge);
@@ -279,17 +447,99 @@ export default function InsuranceCalculator() {
     return ages;
   }, [selfAge, hasSpouse, spouseAge, children, parents]);
 
-  // ── Health results ───────────────────────────────────────────────────
-  const healthRange = useMemo(
-    () => calcHealthRange(allAges, si, city, preExisting),
-    [allAges, si, city, preExisting]
-  );
+  // ── Premium breakdown ────────────────────────────────────────────────────────
+  const premiumData = useMemo(() => {
+    const members: { label: string; lo: number; hi: number }[] = [];
+    const add = (label: string, age: number) => {
+      const [lo, hi] = getMemberPremium(age, si, city, preExisting);
+      members.push({ label, lo, hi });
+    };
+    add(`Self (age ${selfAge})`, selfAge);
+    if (hasSpouse) add(`Spouse (age ${spouseAge})`, spouseAge);
+    children.forEach((age, i) => add(`Child ${i + 1} (age ${age === 0 ? '<1' : age})`, age));
+    parents.forEach((age, i) => add(`Parent ${i + 1} (age ${age})`, age));
+    const rawLo = members.reduce((s, m) => s + m.lo, 0);
+    const rawHi = members.reduce((s, m) => s + m.hi, 0);
+    const ff = getFloaterFactor(members.length);
+    return {
+      members,
+      rawLo, rawHi,
+      floaterPct: Math.round((1 - ff) * 100),
+      lo: Math.round(rawLo * ff / 100) * 100,
+      hi: Math.round(rawHi * ff / 100) * 100,
+    };
+  }, [selfAge, hasSpouse, spouseAge, children, parents, si, city, preExisting]);
+
+  // ── Adequacy score ───────────────────────────────────────────────────────────
   const adequacyScore = useMemo(
-    () => calcAdequacy(si, city, allAges),
-    [si, city, allAges]
+    () => calcAdequacy(si, city, allAges, parents, preExisting),
+    [si, city, allAges, parents, preExisting],
   );
 
-  // ── Life results ─────────────────────────────────────────────────────
+  const adequacyExplanation = useMemo(() => {
+    const cityLabel = city === 'metro' ? 'metro cities' : city === 'tier2' ? 'Tier 2 cities' : 'your city';
+    if (adequacyScore < 50)
+      return `A single ICU surgery in ${cityLabel} can cost ₹3–8 lakhs. Your current cover of ${fmtCr(si)} may not be sufficient for major hospitalisation.`;
+    if (adequacyScore <= 75)
+      return 'Your cover is adequate for most routine hospitalisations. Consider increasing for critical illness or surgical emergencies.';
+    return 'Good coverage for your family profile. Ensure you have restoration benefit and no room rent capping in your plan.';
+  }, [adequacyScore, city, si]);
+
+  // ── Profile-based checklist ──────────────────────────────────────────────────
+  const profileChecklist = useMemo(() => {
+    const items = [...BASE_CHECKLIST];
+    if (children.some(c => c <= 4))
+      items.push({
+        title: 'Newborn Coverage Clause',
+        body: 'Newborns should be covered from Day 1 or within 90 days without a fresh waiting period. Check the exact newborn clause in the policy wording document — not the brochure.',
+      });
+    if (children.some(c => c < 18))
+      items.push({
+        title: 'Vaccination Coverage for Children',
+        body: 'Some plans cover routine vaccinations under OPD benefit. Check if this is included or available as an add-on. Useful for families with young children.',
+      });
+    if (parents.some(a => a >= 60))
+      items.push({
+        title: 'Senior Co-payment Clause',
+        body: 'Many plans add a co-payment clause for members above 60 — meaning you pay 10–20% of every claim. This defeats the purpose of insurance for seniors. Look specifically for plans with ZERO co-payment regardless of age.',
+      });
+    if (parents.some(a => a >= 60))
+      items.push({
+        title: 'Separate Senior Citizen Plan Consideration',
+        body: 'Including parents above 60 in a family floater raises the entire family\'s premium significantly. Often it is cheaper to buy a dedicated senior citizen plan for parents and keep the main family floater for younger members. Get quotes both ways from IRDAI-registered insurers before deciding.',
+      });
+    if (parents.some(a => a >= 70))
+      items.push({
+        title: 'Elderly Member Coverage Limitations',
+        body: 'Above age 70, very few insurers accept new proposals. If a parent has an existing policy, NEVER let it lapse — renewal cannot be denied under IRDAI rules. If no existing policy, check IRDAI\'s list of senior-friendly products at irdai.gov.in.',
+      });
+    if (preExisting)
+      items.push({
+        title: 'Pre-Existing Disease Declaration',
+        body: 'Disclose ALL pre-existing conditions accurately in your proposal form. Under IRDAI\'s moratorium period rules (5 years as of 2024), after 5 years of continuous coverage, your insurer CANNOT reject claims citing non-disclosure (except proven fraud). Never hide conditions — claims get rejected at the worst time.',
+      });
+    if (si < 1000000 && city === 'metro')
+      items.push({
+        title: 'Sum Insured Adequacy Warning',
+        body: 'In metro cities, a single surgery with ICU stay costs ₹3–8 lakhs on average. A cardiac bypass or cancer treatment can cost ₹8–20 lakhs. ₹5L cover is inadequate for metro hospitals. Consider ₹15–25L minimum for families in Mumbai, Delhi, Bengaluru, Chennai, Hyderabad.',
+      });
+    if (allAges.length >= 5)
+      items.push({
+        title: 'Floater vs Individual Cover Strategy',
+        body: 'Family floaters assume not all members claim in the same year. With 5+ members, the probability of multiple claims increases. Consider buying individual covers for high-risk members (seniors, those with pre-existing conditions) and keeping the floater only for younger, healthy members. Get quotes for both structures.',
+      });
+    return items;
+  }, [children, parents, preExisting, si, city, allAges.length]);
+
+  // ── SI advisory ──────────────────────────────────────────────────────────────
+  const siAdvisory = useMemo(() => {
+    if (si <= 500000) return { type: 'warn' as const, text: '⚠ Medical inflation is 14%/yr in India. ₹5L may be insufficient for metro hospitals by 2030. Consider ₹10L minimum.' };
+    if (si <= 1500000) return { type: 'ok' as const, text: '✓ Good for most Indian families in Tier 1/2 cities.' };
+    if (si <= 5000000) return { type: 'ok' as const, text: '✓ Comprehensive. Covers most hospitalisation scenarios including ICU + surgery.' };
+    return { type: 'info' as const, text: 'For high-risk families or those planning treatment abroad.' };
+  }, [si]);
+
+  // ── Life results ─────────────────────────────────────────────────────────────
   const coverRec = useMemo(() => ({
     minimum: annualIncome * 15,
     recommended: annualIncome * 20,
@@ -300,19 +550,19 @@ export default function InsuranceCalculator() {
 
   const termRange = useMemo(
     () => calcTermRange(lifeAge, lifeGender, lifeSmoker, recCoverCr, policyTerm),
-    [lifeAge, lifeGender, lifeSmoker, recCoverCr, policyTerm]
+    [lifeAge, lifeGender, lifeSmoker, recCoverCr, policyTerm],
   );
   const termRange20 = useMemo(
     () => calcTermRange(lifeAge, lifeGender, lifeSmoker, recCoverCr, 20),
-    [lifeAge, lifeGender, lifeSmoker, recCoverCr]
+    [lifeAge, lifeGender, lifeSmoker, recCoverCr],
   );
   const termRange30 = useMemo(
     () => calcTermRange(lifeAge, lifeGender, lifeSmoker, recCoverCr, 30),
-    [lifeAge, lifeGender, lifeSmoker, recCoverCr]
+    [lifeAge, lifeGender, lifeSmoker, recCoverCr],
   );
   const termRange40 = useMemo(
     () => calcTermRange(lifeAge, lifeGender, lifeSmoker, recCoverCr, 40),
-    [lifeAge, lifeGender, lifeSmoker, recCoverCr]
+    [lifeAge, lifeGender, lifeSmoker, recCoverCr],
   );
 
   const tax80C = useMemo(() => {
@@ -320,26 +570,7 @@ export default function InsuranceCalculator() {
     return { ded, saved30: Math.round(ded * 0.30 * 1.04), saved20: Math.round(ded * 0.20 * 1.04) };
   }, [termRange.lo]);
 
-  // ── Contextual health tips ────────────────────────────────────────────
-  const healthTips = useMemo(() => {
-    const tips: string[] = [];
-    if (children.some(c => c <= 5))
-      tips.push("Newborns must be added to the policy within 90 days of birth to avoid a waiting period. Check your insurer's specific clause.");
-    if (parents.some(a => a >= 60 && a < 70))
-      tips.push('Including parents above 60 in a family floater significantly raises the premium for everyone. Consider buying a separate senior citizen plan for parents — cheaper overall.');
-    if (parents.some(a => a >= 70))
-      tips.push('For parents above 70, very few comprehensive plans are available. Always compare at least 3 quotes directly from IRDAI-registered insurers before deciding.');
-    if (si < 1000000 && city === 'metro')
-      tips.push(`₹${(si / 100000).toFixed(0)}L may be insufficient in metro cities. A single ICU stay in Mumbai or Delhi can cost ₹3–8L. Metro families should aim for ₹15–25L minimum.`);
-    if (preExisting)
-      tips.push("Disclose all pre-existing conditions accurately. Non-disclosure is the #1 reason for claim rejection. IRDAI's 5-year moratorium protects you after continuous coverage.");
-    if (allAges.length >= 5)
-      tips.push('Family floaters work on the assumption that not all members claim in the same year. With 5+ members, consider individual policies for high-risk members + floater for healthy ones.');
-    tips.push("Buy health insurance when you're young and healthy. Premiums are lowest, waiting periods complete earlier, and NCB accumulates faster. Delaying by 5 years can double your premium.");
-    return tips;
-  }, [children, parents, si, city, preExisting, allAges.length]);
-
-  // ── Helpers ───────────────────────────────────────────────────────────
+  // ── Family helpers ───────────────────────────────────────────────────────────
   const addChild = () => { if (children.length < 4) setChildren(p => [...p, 5]); };
   const removeChild = (i: number) => setChildren(p => p.filter((_, idx) => idx !== i));
   const updateChild = (i: number, v: number) => setChildren(p => p.map((c, idx) => idx === i ? v : c));
@@ -350,102 +581,10 @@ export default function InsuranceCalculator() {
     const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n;
   });
 
-  // ── SI advisory ───────────────────────────────────────────────────────
-  const siAdvisory = useMemo(() => {
-    if (si <= 500000) return { type: 'warn' as const, text: '⚠ Medical inflation is 14%/yr in India. ₹5L may be insufficient for metro hospitals by 2030. Consider ₹10L minimum.' };
-    if (si <= 1500000) return { type: 'ok' as const, text: '✓ Good for most Indian families in Tier 1/2 cities.' };
-    if (si <= 5000000) return { type: 'ok' as const, text: '✓ Comprehensive. Covers most hospitalisation scenarios including ICU + surgery.' };
-    return { type: 'info' as const, text: 'For high-risk families or those planning treatment abroad.' };
-  }, [si]);
-
-  // ── Static content ────────────────────────────────────────────────────
-  const irdaiHealthFacts = [
-    'Waiting period for PED: MAX 36 months (reduced from 48 months — IRDAI 2025 rule)',
-    'Moratorium period: 5 years (after which insurer cannot reject claims for non-disclosure)',
-    'No age limit: Insurers cannot deny a new policy based on age alone (IRDAI 2025 rule)',
-    'Lifetime renewability: No exit age if renewed without break (IRDAI HIR 2016 Reg 12)',
-    'Premium cap for 65+: Max 10% annual increase for senior policyholders (IRDAI Jan 2025)',
-    'Portability right: Switch insurer without losing accumulated waiting period credits',
-    '30-day initial waiting period: Standard for all illnesses except accidents',
-    'Cashless Everywhere: Emergency cashless at non-network hospitals (IRDAI 2024 initiative)',
-    'GST exempt: Individual health insurance premiums are GST-free from September 22, 2025',
-  ];
-
-  const irdaiLifeFacts = [
-    'Free-look period: 30 days to return the policy for a full refund',
-    'Grace period: 30 days for premium payment before the policy lapses',
-    'Revival: A lapsed policy can be revived within 5 years by paying arrears + interest',
-    'Nomination: Always nominate a beneficiary — mandatory under the Insurance Act',
-    'Assignment: Policy can be assigned to a bank as collateral for a loan',
-    'Suicide clause: After 12 months of policy, death by suicide is also covered',
-    'IRDAI Ombudsman: Free dispute resolution at irdai.gov.in if a claim is rejected',
-  ];
-
-  const advisorChecklist = [
-    { title: 'Room Rent Cap', body: 'Avoid plans with room rent sub-limits. A ₹5,000/day cap on a ₹15,000/day room means all other bills are also proportionally reduced — you end up paying 66% of the total bill out-of-pocket.' },
-    { title: 'Co-payment Clause', body: 'If a plan has 20% co-pay, you pay ₹20,000 on a ₹1L claim. Avoid co-pay plans if possible, especially for senior members where claim amounts are typically higher.' },
-    { title: 'Sum Insured Restoration', body: 'After one family member exhausts the cover in a policy year, restoration refills it for the same or a different member. This is critical for families sharing a floater policy.' },
-    { title: 'No-Claim Bonus (NCB)', body: 'For every claim-free year, your sum insured increases by 10–50% at no extra cost. Check the NCB % and whether it is protected even after a claim is made.' },
-    { title: 'Pre-existing Disease Waiting Period', body: 'All plans have a 1–4 year wait for PED. IRDAI now caps this at 36 months. Shorter waiting period = better plan for those with existing health conditions.' },
-    { title: 'Network Hospital Check', body: 'Before buying, check if your preferred hospital is in the insurer\'s cashless network. Visit the insurer website directly — not a broker or aggregator site — for the most accurate list.' },
-    { title: 'Claim Settlement Ratio (CSR)', body: 'CSR above 95% is considered good. Check IRDAI\'s annual report at irdai.gov.in for the latest verified data. Third-party broker sites may show outdated or adjusted numbers.' },
-    { title: 'In-House vs TPA Claims', body: 'Insurers with in-house claim teams process claims significantly faster than those using Third Party Administrators (TPAs). Always ask: who handles your claim when you are hospitalised?' },
-    { title: 'Sub-limits on Specific Procedures', body: 'Some plans cap specific treatments like cataract surgery or maternity at fixed amounts regardless of actual costs. Always read the full Policy Wording document — not just the sales brochure.' },
-    { title: 'Free-Look Period', body: 'You get 15–30 days after receiving the policy document to review it and return it for a full refund. Use this time to read the complete policy wording carefully, not just the highlights.' },
-  ];
-
-  const lifeTypes: {
-    verdict: 'best' | 'acceptable' | 'avoid' | 'complex';
-    title: string; what: string; premiumRange: string;
-    maturity: string; xirr: string; note: string;
-    icon: React.ElementType; color: string; gradFrom: string;
-  }[] = [
-    {
-      verdict: 'best',
-      title: 'Pure Term Insurance',
-      what: 'Pays the death benefit only. Zero maturity payout.',
-      premiumRange: '₹6,000–₹18,000 for ₹1Cr (age 25–35, non-smoker, 30yr)',
-      maturity: 'None',
-      xirr: 'N/A — pure protection',
-      note: 'For every ₹1Cr of protection, pure term costs ₹6,000–₹18,000/year. This is the most cost-efficient life cover available. Invest the premium savings in mutual funds via SIP.',
-      icon: Shield, color: 'text-emerald-400', gradFrom: 'from-emerald-500/10',
-    },
-    {
-      verdict: 'acceptable',
-      title: 'Term + Return of Premium (TROP)',
-      what: 'Pays all premiums back if you survive the full policy term.',
-      premiumRange: '₹18,000–₹35,000 for ₹1Cr cover',
-      maturity: '100% premiums returned at maturity',
-      xirr: '2.5%–4% effective XIRR',
-      note: 'You get your premiums back, but the effective return is only 2.5–4% XIRR — below inflation and below FD rates. Better than Endowment. Choose only if you cannot tolerate paying for pure term.',
-      icon: HeartPulse, color: 'text-blue-400', gradFrom: 'from-blue-500/10',
-    },
-    {
-      verdict: 'avoid',
-      title: 'Endowment / Money Back Plan',
-      what: 'A mix of life insurance + guaranteed savings.',
-      premiumRange: '₹60,000–₹1,20,000 for ₹1Cr cover',
-      maturity: 'Lower than premiums paid in real terms',
-      xirr: '3.5%–5.5% effective XIRR',
-      note: 'You pay 6–8x more premium than term for the same cover. Returns are below Fixed Deposit rates. Classic trap: mixing insurance with investment destroys both. Use term + SIP instead.',
-      icon: Banknote, color: 'text-amber-400', gradFrom: 'from-amber-500/10',
-    },
-    {
-      verdict: 'complex',
-      title: 'ULIP (Market-Linked Plan)',
-      what: 'Life insurance combined with a market-linked investment fund.',
-      premiumRange: '₹25,000–₹60,000 per year',
-      maturity: 'Market-linked (equity/debt)',
-      xirr: '7%–11% if equity performs; high charges in years 1–5',
-      note: 'ULIPs can generate decent returns over 15+ years if equity performs. But high charges in years 1–5 significantly reduce real XIRR. Better alternative for most: pure term + separate ELSS SIP.',
-      icon: TrendingUp, color: 'text-purple-400', gradFrom: 'from-purple-500/10',
-    },
-  ];
-
   const handleShare = async () => {
     if (activeTab === 'health') {
       await nativeShare('Health Insurance Simulator — FinCalix',
-        `🏥 Health Insurance Estimate\n\nMembers: ${allAges.length} | Cover: ${fmtCr(si)} | ${city.charAt(0).toUpperCase() + city.slice(1)}\nEst. Annual Premium: ${fmtRange(healthRange.lo, healthRange.hi)}\nAdequacy Score: ${adequacyScore}/100\n\nEstimated with FinCalix 🧮`
+        `🏥 Health Insurance Estimate\n\nMembers: ${allAges.length} | Cover: ${fmtCr(si)} | ${city.charAt(0).toUpperCase() + city.slice(1)}\nEst. Annual Premium: ${fmtRange(premiumData.lo, premiumData.hi)}\nAdequacy Score: ${adequacyScore}/100\n\nEstimated with FinCalix 🧮`
       );
     } else {
       await nativeShare('Life Insurance Simulator — FinCalix',
@@ -454,11 +593,11 @@ export default function InsuranceCalculator() {
     }
   };
 
-  // ─────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-dvh bg-white dark:bg-background animate-fade-in">
 
-      {/* ─── Header ──────────────────────────────────────────────────────── */}
+      {/* ─── Header ──────────────────────────────────────────────────────────── */}
       <div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A] px-4 pt-14 pb-3 border-b border-slate-200 dark:border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -483,7 +622,7 @@ export default function InsuranceCalculator() {
 
       <div className="px-4 pb-32 pt-4">
 
-        {/* ─── Tab Switcher ─────────────────────────────────────────────── */}
+        {/* ─── Tab Switcher ─────────────────────────────────────────────────── */}
         <div className="flex gap-1 bg-card border border-border rounded-xl p-1 mb-5">
           {([
             { key: 'health' as InsuranceTab, label: 'Health Insurance', icon: HeartPulse },
@@ -498,7 +637,7 @@ export default function InsuranceCalculator() {
           ))}
         </div>
 
-        {/* ═══════════════════════ HEALTH TAB ════════════════════════════ */}
+        {/* ═══════════════════════ HEALTH TAB ════════════════════════════════ */}
         {activeTab === 'health' && (
           <div className="space-y-4">
 
@@ -544,10 +683,21 @@ export default function InsuranceCalculator() {
                     </button>
                   </div>
                   <NumberInput label={`Child ${i + 1} Age`} value={age} onChange={v => updateChild(i, v)} min={0} max={25} suffix=" years" />
+                  {age === 0 && (
+                    <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                      <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
+                        <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
+                        Newborns must be added to policy within 90 days of birth. Verify this clause with your insurer.
+                      </p>
+                    </div>
+                  )}
                   {age >= 25 && (
-                    <p className="text-[11px] text-amber-400 mt-1.5 flex items-center gap-1">
-                      <AlertTriangle size={11} /> Children above 25 need separate individual cover
-                    </p>
+                    <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                      <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
+                        <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
+                        Children above 25 need a separate individual policy — they cannot be on a family floater.
+                      </p>
+                    </div>
                   )}
                 </div>
               ))}
@@ -568,19 +718,19 @@ export default function InsuranceCalculator() {
                     </button>
                   </div>
                   <NumberInput label={`Parent ${i + 1} Age`} value={age} onChange={v => updateParent(i, v)} min={40} max={90} suffix=" years" />
-                  {age >= 80 && (
+                  {age >= 70 && (
                     <div className="mt-2 p-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
                       <p className="text-[11px] text-red-400 flex items-start gap-1.5">
                         <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
-                        Very few insurers accept new proposals beyond age 80. Existing policy renewals are protected under IRDAI guidelines.
+                        Very few plans accept new proposals above 70. If they have an existing policy, ensure renewal continuity. IRDAI mandates lifetime renewability if renewed without break.
                       </p>
                     </div>
                   )}
-                  {age >= 70 && age < 80 && (
+                  {age >= 60 && age < 70 && (
                     <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
                       <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
                         <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
-                        Parents above 70 are classified as elderly by insurers. Premium will be significantly higher and options limited. Consider a dedicated senior citizen plan.
+                        Consider a separate senior citizen plan for parents 60+. Combining with family floater significantly increases everyone's premium.
                       </p>
                     </div>
                   )}
@@ -607,42 +757,23 @@ export default function InsuranceCalculator() {
               <Toggle label="Pre-existing Conditions?" value={preExisting} onChange={v => { setPreExisting(v); setHealthCalced(false); }} />
             </div>
 
-            {/* SECTION 3 — Calculate button */}
+            {/* SECTION 3 — Calculate */}
             <button onClick={() => setHealthCalced(true)}
               className="w-full py-4 rounded-2xl bg-brand-green text-black font-bold text-sm shadow-lg shadow-brand-green/20 active:scale-[0.98] transition-transform">
-              Calculate Coverage Need
+              Calculate My Coverage Need
             </button>
 
-            {/* ── RESULTS ────────────────────────────────────────────────── */}
+            {/* ── RESULTS ─────────────────────────────────────────────────────── */}
             <AnimatePresence>
               {healthCalced && (
                 <motion.div key="health-results" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
 
-                  {/* R1 — Premium Range */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-brand-green/5 to-emerald-500/5 border border-brand-green/20">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Estimated Annual Premium Range</p>
-                    <p className="text-[9px] text-muted-foreground mb-3">Based on IRDAI actuarial factors · {allAges.length} member{allAges.length !== 1 ? 's' : ''} · {fmtCr(si)} cover · {city}</p>
-                    <p className="text-2xl font-black text-foreground mb-0.5">{fmtRange(healthRange.lo, healthRange.hi)}</p>
-                    <p className="text-brand-green text-sm font-semibold mb-4">
-                      ≈ {fmtRange(Math.round(healthRange.lo / 12 / 100) * 100, Math.round(healthRange.hi / 12 / 100) * 100)} per month
-                    </p>
-                    {preExisting && (
-                      <p className="text-[10px] text-amber-400 mb-3 flex items-center gap-1">
-                        <AlertTriangle size={11} /> Pre-existing loading of 15–35% applied
-                      </p>
-                    )}
-                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-border">
-                      <p className="text-[10px] text-muted-foreground leading-relaxed">
-                        This is an estimated range based on IRDAI actuarial factors. Actual premium varies by insurer, plan features, and your health profile. Always get quotes from 2–3 insurers directly.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* R2 — Adequacy Score */}
+                  {/* CARD A — Coverage Adequacy Score */}
                   <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-                    <p className="text-sm font-bold text-foreground mb-1">Is Your Coverage Adequate?</p>
-                    <p className="text-[10px] text-muted-foreground mb-4">Scored against city-level medical costs and family risk profile</p>
-                    <ScoreBar score={adequacyScore} />
+                    <p className="text-sm font-bold text-foreground mb-0.5">Your Coverage Adequacy</p>
+                    <p className="text-[10px] text-muted-foreground mb-3">Scored against city-level medical costs and family risk profile</p>
+                    <ScoreDial score={adequacyScore} />
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mt-4 text-center px-2">{adequacyExplanation}</p>
                     <div className="mt-4 grid grid-cols-3 gap-2">
                       {[
                         { label: 'Cover', val: fmtCr(si) },
@@ -657,53 +788,121 @@ export default function InsuranceCalculator() {
                     </div>
                   </div>
 
-                  {/* R3 — IRDAI Rights */}
-                  <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-                    <p className="text-sm font-bold text-foreground mb-1">Your Rights Under IRDAI (2025)</p>
-                    <p className="text-[10px] text-muted-foreground mb-3">Source: IRDAI Master Circular 2024, IRDAI HIR 2016, IRDAI Circular Jan 2025</p>
-                    <div className="space-y-2.5">
-                      {irdaiHealthFacts.map((fact, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <CheckCircle size={13} className="text-brand-green flex-shrink-0 mt-0.5" />
-                          <p className="text-[11px] text-muted-foreground leading-relaxed">{fact}</p>
-                        </div>
-                      ))}
+                  {/* CARD B — Estimated Premium Range */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-brand-green/5 to-emerald-500/5 border border-brand-green/20">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Estimated Annual Premium Range</p>
+                    <p className="text-[9px] text-muted-foreground mb-3">Based on IRDAI actuarial rating factors · {allAges.length} member{allAges.length !== 1 ? 's' : ''} · {fmtCr(si)} cover · {city}</p>
+                    <p className="text-2xl font-black text-foreground mb-0.5">{fmtRange(premiumData.lo, premiumData.hi)}</p>
+                    <p className="text-brand-green text-sm font-semibold mb-4">
+                      ≈ {fmtRange(Math.round(premiumData.lo / 12 / 100) * 100, Math.round(premiumData.hi / 12 / 100) * 100)} per month
+                    </p>
+
+                    {/* Per-member breakdown */}
+                    <button
+                      onClick={() => setShowPremiumBreakdown(v => !v)}
+                      className="w-full flex items-center justify-between py-2.5 px-3 rounded-xl bg-white/60 dark:bg-black/10 border border-brand-green/15 mb-3">
+                      <span className="text-[11px] font-semibold text-foreground">Per-member breakdown</span>
+                      {showPremiumBreakdown
+                        ? <ChevronUp size={14} className="text-muted-foreground" />
+                        : <ChevronDown size={14} className="text-muted-foreground" />}
+                    </button>
+                    <AnimatePresence>
+                      {showPremiumBreakdown && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }} className="overflow-hidden mb-3">
+                          <div className="space-y-1.5 p-3 rounded-xl bg-white/60 dark:bg-black/10 border border-border">
+                            {premiumData.members.map((m, i) => (
+                              <div key={i} className="flex items-center justify-between">
+                                <span className="text-[11px] text-muted-foreground">{m.label}</span>
+                                <span className="text-[11px] font-semibold text-foreground">{fmtRange(m.lo, m.hi)}</span>
+                              </div>
+                            ))}
+                            <div className="border-t border-border pt-1.5 flex items-center justify-between">
+                              <span className="text-[11px] text-muted-foreground">Family floater discount</span>
+                              <span className="text-[11px] font-bold text-brand-green">−{premiumData.floaterPct}%</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold text-foreground">Total</span>
+                              <span className="text-[11px] font-black text-foreground">{fmtRange(premiumData.lo, premiumData.hi)}</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {preExisting && (
+                      <p className="text-[10px] text-amber-400 mb-3 flex items-center gap-1">
+                        <AlertTriangle size={11} /> Pre-existing loading of 20% applied
+                      </p>
+                    )}
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-border">
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        This range is based on IRDAI actuarial rating factors. Actual premium depends on your health declaration, insurer underwriting, and the specific plan features you choose. Premium varies across insurers — always get quotes from at least 2–3 IRDAI-registered insurers before deciding.
+                      </p>
                     </div>
                   </div>
 
-                  {/* R4 — Advisor Checklist */}
+                  {/* CARD C — Personalised Checklist */}
                   <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
-                    <p className="text-sm font-bold text-foreground mb-1">Advisor Checklist — What to Verify</p>
-                    <p className="text-[10px] text-muted-foreground mb-4">Tap each item for detailed explanation</p>
+                    <p className="text-sm font-bold text-foreground mb-0.5">Your Personalised Checklist</p>
+                    <p className="text-[10px] text-muted-foreground mb-4">Based on your family profile — tap each item for details</p>
                     <div className="space-y-2">
-                      {advisorChecklist.map((item, i) => (
+                      {profileChecklist.map((item, i) => (
                         <AccordionItem key={i} idx={i} title={item.title} body={item.body}
                           open={openChecklist.has(i)} onToggle={() => toggleChecklist(i)} />
                       ))}
                     </div>
                   </div>
 
-                  {/* R5 — Advisory Tips */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/5 to-indigo-500/5 border border-blue-500/20">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Award size={15} className="text-blue-400" />
-                      <p className="text-sm font-bold text-foreground">Insurance Advisor Tips</p>
-                    </div>
+                  {/* CARD D — IRDAI Rights */}
+                  <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
+                    <p className="text-sm font-bold text-foreground mb-0.5">Your Rights Under IRDAI</p>
+                    <p className="text-[10px] text-muted-foreground mb-3">These protections apply to every insurer</p>
                     <div className="space-y-3">
-                      {healthTips.map((tip, i) => (
-                        <div key={i} className="flex items-start gap-2">
-                          <span className="text-blue-400 font-black text-sm flex-shrink-0 mt-0.5">→</span>
-                          <p className="text-[11px] text-muted-foreground leading-relaxed">{tip}</p>
+                      {IRDAI_HEALTH_RIGHTS.map((right, i) => (
+                        <div key={i} className="flex items-start gap-2.5">
+                          <Shield size={13} className="text-brand-green flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-[11px] font-bold text-foreground">{right.title}</p>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">{right.body}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[9px] text-muted-foreground mt-4 pt-3 border-t border-border leading-relaxed">
+                      Source: IRDAI Annual Report 2023–24, IRDAI Master Circular on Health Insurance 2024, IRDAI HIR 2016, IRDAI Circular January 2025, 56th GST Council 2025
+                    </p>
+                  </div>
+
+                  {/* CARD E — How to Buy */}
+                  <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
+                    <p className="text-sm font-bold text-foreground mb-4">How to Buy — Advisor's Step-by-Step</p>
+                    <div className="space-y-4">
+                      {HOW_TO_BUY_STEPS.map((s) => (
+                        <div key={s.step} className="flex items-start gap-3">
+                          <div className="w-7 h-7 rounded-full bg-brand-green/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-[11px] font-black text-brand-green">{s.step}</span>
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-bold text-foreground mb-0.5">{s.title}</p>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">{s.body}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Disclaimer */}
-                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-border">
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">
-                      <span className="font-bold text-foreground">Disclaimer: </span>
-                      FinCalix Insurance Simulator provides educational estimates based on IRDAI actuarial principles. This is NOT financial advice and does NOT represent any specific insurer's pricing. Actual premiums depend on your health profile, insurer underwriting, and plan features. Always compare quotes from IRDAI-registered insurers at irdai.gov.in before purchasing. FinCalix does not sell insurance.
+                  {/* Final Disclaimer */}
+                  <div className="p-4 rounded-2xl border border-slate-200 dark:border-border bg-slate-50 dark:bg-slate-800/30">
+                    <p className="text-[10px] font-bold text-foreground mb-1">FinCalix Health Insurance Simulator</p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed mb-2">
+                      Provides educational guidance based on IRDAI regulations and actuarial principles. Premium estimates are ranges — actual premiums depend on your health declaration, insurer underwriting, and plan features.
+                    </p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed mb-2">
+                      FinCalix does <span className="font-bold text-foreground">NOT</span> sell insurance, does <span className="font-bold text-foreground">NOT</span> partner with any insurer, and does <span className="font-bold text-foreground">NOT</span> receive commission. This tool helps you understand what you need — you make your own informed choice directly with IRDAI-registered insurers.
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      Verify all insurer data at: <span className="font-semibold text-foreground">irdai.gov.in</span>
                     </p>
                   </div>
 
@@ -713,7 +912,7 @@ export default function InsuranceCalculator() {
           </div>
         )}
 
-        {/* ═══════════════════════ LIFE TAB ══════════════════════════════ */}
+        {/* ═══════════════════════ LIFE TAB ═══════════════════════════════════ */}
         {activeTab === 'life' && (
           <div className="space-y-4">
 
@@ -777,7 +976,7 @@ export default function InsuranceCalculator() {
               <p className="text-sm font-bold text-foreground mb-1">Which Life Insurance Type Is Right?</p>
               <p className="text-[10px] text-muted-foreground mb-4">IRDAI advisor consensus — unbiased product comparison</p>
               <div className="space-y-3">
-                {lifeTypes.map((plan, i) => {
+                {LIFE_PLAN_TYPES.map((plan, i) => {
                   const Icon = plan.icon;
                   return (
                     <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -887,7 +1086,7 @@ export default function InsuranceCalculator() {
               <p className="text-sm font-bold text-foreground mb-1">Your Rights — Life Insurance</p>
               <p className="text-[10px] text-muted-foreground mb-3">IRDAI regulatory protections for all policyholders</p>
               <div className="space-y-2.5">
-                {irdaiLifeFacts.map((fact, i) => (
+                {IRDAI_LIFE_FACTS.map((fact, i) => (
                   <div key={i} className="flex items-start gap-2">
                     <CheckCircle size={13} className="text-brand-green flex-shrink-0 mt-0.5" />
                     <p className="text-[11px] text-muted-foreground leading-relaxed">{fact}</p>
@@ -896,7 +1095,7 @@ export default function InsuranceCalculator() {
               </div>
             </div>
 
-            {/* Disclaimer */}
+            {/* Life Disclaimer */}
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-border">
               <p className="text-[10px] text-muted-foreground leading-relaxed">
                 <span className="font-bold text-foreground">Disclaimer: </span>

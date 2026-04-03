@@ -1,41 +1,15 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Shield, Plus, Minus, X, Check, AlertTriangle,
-  ChevronDown, ChevronUp, Star, Users, Baby, UserPlus,
-  Heart, Building2, Activity, Zap, Info, Award
+  ArrowLeft, Shield, Minus, AlertTriangle,
+  ChevronDown, ChevronUp, Users, Baby, UserPlus,
+  Heart, CheckCircle, Info,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { AnalyticsService } from '../lib/analytics';
-import {
-  INSURERS, COVERAGE_FEATURES, INSURER_FEATURES,
-  getCategories, getFeatureForInsurer, getRecommendations,
-  type FamilyProfile, type Recommendation, type Insurer
-} from '../data/insuranceData';
 
-// ── Helpers ──────────────────────────────────────────────────
-
-const childAgeLabel = (age: number): string => {
-  if (age < 1) return 'Newborn (under 1 year)';
-  if (age <= 4) return 'Toddler';
-  if (age <= 12) return 'School age';
-  if (age <= 17) return 'Teenager';
-  return 'Young adult';
-};
-
-const IMPORTANCE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  critical: { bg: 'bg-red-500/10', text: 'text-red-400', label: 'Critical' },
-  important: { bg: 'bg-amber-500/10', text: 'text-amber-400', label: 'Important' },
-  good_to_have: { bg: 'bg-blue-500/10', text: 'text-blue-400', label: 'Nice to Have' },
-};
-
-const COVERED_ICONS: Record<string, { icon: typeof Check; color: string; label: string }> = {
-  yes: { icon: Check, color: 'text-emerald-400', label: 'Covered' },
-  no: { icon: X, color: 'text-red-400', label: 'Not Covered' },
-  partial: { icon: AlertTriangle, color: 'text-amber-400', label: 'Partial' },
-  addon: { icon: Plus, color: 'text-blue-400', label: 'Add-on' },
-};
+// ─── Constants ──────────────────────────────────────────────────────────────────
 
 const SUM_INSURED_OPTIONS = [
   { label: '₹5L', value: 5 },
@@ -57,19 +31,222 @@ const PRIORITY_OPTIONS = [
   { id: 'child', label: 'Child Focused' },
 ];
 
-const RANK_STYLES = [
-  { bg: 'from-amber-500/20 to-yellow-600/10', border: 'border-amber-500/40', badge: 'bg-amber-500', text: 'text-amber-400' },
-  { bg: 'from-slate-300/10 to-gray-400/5', border: 'border-slate-400/30', badge: 'bg-slate-400', text: 'text-slate-300' },
-  { bg: 'from-orange-700/15 to-amber-800/5', border: 'border-orange-600/30', badge: 'bg-orange-600', text: 'text-orange-400' },
+// ─── Formatting ─────────────────────────────────────────────────────────────────
+
+function fmt(n: number): string {
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+
+function fmtL(lakhs: number): string {
+  if (lakhs >= 100) return `₹${lakhs / 100}Cr`;
+  return `₹${lakhs}L`;
+}
+
+function fmtRange(lo: number, hi: number): string {
+  return `${fmt(lo)} — ${fmt(hi)}`;
+}
+
+// ─── Health Calculations ────────────────────────────────────────────────────────
+
+function getAgeBase(age: number): [number, number] {
+  if (age <= 17) return [2000, 4000];
+  if (age <= 30) return [3500, 6000];
+  if (age <= 40) return [5500, 9500];
+  if (age <= 50) return [9000, 16000];
+  if (age <= 60) return [15000, 28000];
+  if (age <= 70) return [28000, 55000];
+  if (age <= 80) return [50000, 90000];
+  return [80000, 140000];
+}
+
+function getSiMul(siL: number): number {
+  // siL in lakhs
+  if (siL <= 3) return 0.55;
+  if (siL <= 5) return 0.75;
+  if (siL <= 10) return 1.00;
+  if (siL <= 15) return 1.30;
+  if (siL <= 25) return 1.70;
+  if (siL <= 50) return 2.40;
+  return 3.20;
+}
+
+function getCityMul(city: 'metro' | 'tier2' | 'tier3'): number {
+  return city === 'metro' ? 1.25 : city === 'tier2' ? 1.00 : 0.82;
+}
+
+function getFloaterFactor(n: number): number {
+  if (n <= 1) return 1.0;
+  if (n === 2) return 0.82;
+  if (n === 3) return 0.76;
+  if (n === 4) return 0.72;
+  return 0.68;
+}
+
+function getMemberPremium(age: number, siL: number, city: 'metro' | 'tier2' | 'tier3', preExisting: boolean): [number, number] {
+  const [bLo, bHi] = getAgeBase(age);
+  const mul = getSiMul(siL) * getCityMul(city) * (preExisting ? 1.20 : 1.00);
+  return [
+    Math.round((bLo * mul) / 100) * 100,
+    Math.round((bHi * mul) / 100) * 100,
+  ];
+}
+
+function calcAdequacy(
+  siL: number,
+  city: 'metro' | 'tier2' | 'tier3',
+  allAges: number[],
+  parentAges: number[],
+  preExisting: boolean,
+): number {
+  let base = 0;
+  if (city === 'metro') {
+    if (siL <= 3) base = 20;
+    else if (siL <= 5) base = 35;
+    else if (siL <= 10) base = 60;
+    else if (siL <= 15) base = 72;
+    else if (siL <= 25) base = 82;
+    else if (siL <= 50) base = 90;
+    else base = 97;
+  } else if (city === 'tier2') {
+    if (siL <= 5) base = 45;
+    else if (siL <= 10) base = 70;
+    else if (siL <= 15) base = 80;
+    else if (siL <= 25) base = 90;
+    else base = 93;
+  } else {
+    if (siL <= 5) base = 55;
+    else if (siL <= 10) base = 78;
+    else if (siL <= 25) base = 92;
+    else base = 95;
+  }
+  if (preExisting) base -= 8;
+  if (parentAges.some(a => a >= 70)) base -= 18;
+  else if (parentAges.some(a => a >= 60)) base -= 10;
+  if (allAges.length >= 5) base -= 7;
+  if (allAges.some(a => a <= 1)) base -= 5;
+  if (!preExisting) base += 5;
+  if (allAges.every(a => a < 40)) base += 5;
+  if (city === 'tier3') base += 3;
+  return Math.max(0, Math.min(100, Math.round(base)));
+}
+
+// ─── Sub-components ─────────────────────────────────────────────────────────────
+
+function ScoreDial({ score }: { score: number }) {
+  const R = 90;
+  const circ = Math.PI * R;
+  const color = score <= 40 ? '#ef4444' : score <= 75 ? '#f59e0b' : '#22c55e';
+  const label = score <= 40 ? 'Critically Underinsured'
+    : score <= 60 ? 'Underinsured'
+    : score <= 75 ? 'Adequate for basics'
+    : score <= 88 ? 'Well covered'
+    : 'Comprehensively covered';
+  return (
+    <div className="flex flex-col items-center py-2">
+      <svg viewBox="0 0 200 110" className="w-56 h-[130px]" style={{ overflow: 'visible' }}>
+        <path d="M10 110 A 90 90 0 0 1 190 110"
+          fill="none" strokeWidth="14" strokeLinecap="round"
+          className="stroke-slate-200 dark:stroke-slate-700" />
+        <motion.path
+          d="M10 110 A 90 90 0 0 1 190 110"
+          fill="none" stroke={color} strokeWidth="14" strokeLinecap="round"
+          strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }}
+          animate={{ strokeDashoffset: circ * (1 - score / 100) }}
+          transition={{ duration: 0.9, ease: 'easeOut' }}
+        />
+        <text x="100" y="82" textAnchor="middle" fontSize="40" fontWeight="900" fill={color}>{score}</text>
+        <text x="100" y="100" textAnchor="middle" fontSize="11" fill="#94a3b8">/100</text>
+      </svg>
+      <span className="text-sm font-bold mt-1" style={{ color }}>{label}</span>
+    </div>
+  );
+}
+
+function AccordionItem({ title, body, idx, open, onToggle }: {
+  title: string; body: string; idx: number; open: boolean; onToggle: () => void;
+}) {
+  return (
+    <div className="border border-border rounded-xl overflow-hidden">
+      <button onClick={onToggle} className="w-full flex items-center justify-between px-4 py-3 bg-card text-left">
+        <span className="text-xs font-semibold text-foreground">{idx + 1}. {title}</span>
+        {open
+          ? <ChevronUp size={14} className="text-muted-foreground flex-shrink-0 ml-2" />
+          : <ChevronDown size={14} className="text-muted-foreground flex-shrink-0 ml-2" />}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <p className="px-4 py-3 text-[11px] text-muted-foreground leading-relaxed border-t border-border bg-slate-50 dark:bg-slate-800/30">{body}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Static data ────────────────────────────────────────────────────────────────
+
+const PRIORITY_GUIDANCE: Record<string, string> = {
+  csr: 'CSR = claims settled ÷ claims received × 100. Look for CSR above 95%. Verify only at irdai.gov.in → Statistics → Annual Report. Third-party sites may show stale or adjusted numbers.',
+  restoration: 'After one member exhausts cover, it should automatically restore — either once or unlimited per year. Unlimited restoration for different illnesses is the gold standard. Ask specifically whether restoration applies to the same illness too.',
+  network: 'Before buying, search your preferred hospital on the insurer\'s own website. Hospital network lists change frequently — never rely on a broker or aggregator site for this verification.',
+  opd: 'OPD benefit covers doctor consultations, diagnostics and medicines without hospitalisation. Check the annual OPD limit, sublimits per visit, and whether it requires a network doctor. Some plans offer OPD via teleconsultation.',
+  wellness: 'Wellness rewards (gym, step count, health check-ups) reduce renewal premium in some plans. Read the fine print — reward redemption often requires specific apps or partner brands. Useful bonus, not a primary criterion.',
+  claim_speed: 'Insurers with in-house claim processing settle cashless faster than TPA-based models. Ask the insurer directly: "Who processes my cashless claims?" Also check their median cashless settlement time.',
+  senior: 'For members above 60, avoid plans with age-based co-payment (you pay 10–20% of every claim). Look for zero co-pay, higher room rent limits, and dedicated senior customer service. Consider a separate senior citizen plan.',
+  child: 'For children under 5, verify the newborn clause (Day 1 or within 90 days). Check vaccination OPD benefit and whether paediatric sub-limits apply. Family floater sum insured should be adequate for a child hospitalisation.',
+};
+
+const BASE_CHECKLIST: { title: string; body: string }[] = [
+  { title: 'No Room Rent Capping', body: 'Ensure the plan has NO sub-limit on room rent. A plan capping room rent at ₹5,000/day means ALL linked charges (doctor fees, nursing, procedures) are proportionally reduced. Avoid any plan with room rent sub-limits.' },
+  { title: 'Sum Insured Restoration', body: 'After one member uses up the sum insured, it should automatically restore — either once per year or unlimited. Ask: "Does restoration apply to the same illness or a different illness?" Unlimited is better.' },
+  { title: 'No Claim Bonus (NCB)', body: 'Every claim-free year should increase your sum insured by 10–50% at no extra cost. Check: 1) What % NCB per year? 2) Is NCB protected after a small claim? 3) What is the maximum NCB cap? 50% is good, 100% is excellent.' },
+  { title: 'Pre-Existing Disease Waiting Period', body: 'IRDAI 2025 rules: maximum PED waiting period is now 36 months for new policies. Shorter is better. After the waiting period ends, your pre-existing conditions must be covered. Never hide a condition — non-disclosure is the #1 cause of claim rejection.' },
+  { title: 'Lifetime Renewability', body: 'Under IRDAI HIR 2016 Regulation 12, any policy renewed without a break cannot be denied renewal due to age. Ensure the policy explicitly states "Lifelong Renewable". Never let your health policy lapse — you lose accumulated waiting period credits.' },
+  { title: 'Claim Settlement Ratio', body: 'CSR = claims settled / claims received × 100. Look for CSR above 95%. Verify from IRDAI\'s official annual report at irdai.gov.in — not from broker or comparison websites. Also check Complaint Volume per 10,000 claims.' },
+  { title: 'In-House vs TPA Claims', body: 'Insurers with in-house claim teams process cashless faster and with fewer disputes. Ask the insurer directly: "Who processes my cashless claims at the hospital?" In-house is better for smooth experience.' },
 ];
 
-// ── Main Component ───────────────────────────────────────────
+const IRDAI_RIGHTS = [
+  { title: 'No Age Limit for New Policies', body: 'Insurers cannot deny new health insurance based on age alone. (IRDAI 2025 guideline)' },
+  { title: 'Maximum 36-Month PED Waiting', body: 'Waiting period for pre-existing diseases capped at 36 months for new policies. (IRDAI 2025)' },
+  { title: 'Lifetime Renewability', body: 'No policy can be denied renewal due to age if renewed without break. (IRDAI HIR 2016 Reg 12)' },
+  { title: '5-Year Moratorium', body: 'After 5 years continuous coverage, insurer cannot reject claims citing non-disclosure except fraud. (IRDAI Master Circular 2024)' },
+  { title: '10% Cap for 65+', body: 'Renewal premium increase capped at 10%/year for policyholders above 65. (IRDAI Circular Jan 2025)' },
+  { title: 'Free 30-Day Review', body: 'Return the policy within 30 days for a full refund if unsatisfied. (IRDAI free-look rule)' },
+  { title: 'Cashless Everywhere', body: 'Emergency cashless treatment allowed even at non-network hospitals. (IRDAI 2024)' },
+  { title: 'GST-Free Premiums', body: 'Individual health insurance premiums are GST exempt from September 22, 2025. (56th GST Council)' },
+  { title: 'Portability Right', body: 'Switch insurer without losing accrued waiting period benefits. Apply 45 days before renewal.' },
+  { title: 'Insurance Ombudsman', body: 'Free dispute resolution if claim is rejected. File at irdai.gov.in — no lawyer needed.' },
+];
+
+const HOW_TO_BUY = [
+  { step: 1, title: 'Fix your sum insured first', body: 'Rule of thumb: 1 year of gross income OR ₹10L minimum for Tier 2/3, ₹15–25L for metro. Medical inflation is 14%/year — choose a sum insured adequate for 10 years.' },
+  { step: 2, title: 'Shortlist using IRDAI data', body: 'Go to irdai.gov.in → Statistics → Annual Report. Look for CSR above 95% AND complaint ratio below 20 per 10,000 claims.' },
+  { step: 3, title: 'Read the Policy Wording, not the brochure', body: 'Search the document for: "room rent", "co-pay", "sub-limit", "waiting period", "restoration". These are your risk areas — not in the brochure.' },
+  { step: 4, title: 'Get quotes from 3 insurers directly', body: 'Visit insurer websites directly for quotes with identical sum insured and members. Never compare a ₹10L plan from one insurer with a ₹5L plan from another.' },
+  { step: 5, title: 'Check network hospitals yourself', body: 'Visit each insurer\'s own website and search your preferred hospital. Hospital lists change — never rely on broker or aggregator sites.' },
+  { step: 6, title: 'Buy directly from the insurer', body: 'Buying directly (insurer website or app) avoids broker commission loading. Use a broker for advice but buy direct.' },
+  { step: 7, title: 'Declare everything honestly', body: 'Disclose all pre-existing conditions, past surgeries, family medical history. Non-disclosure = claim rejection at the worst possible time.' },
+];
+
+const childAgeLabel = (age: number): string => {
+  if (age < 1) return 'Newborn (under 1 year)';
+  if (age <= 4) return 'Toddler';
+  if (age <= 12) return 'School age';
+  if (age <= 17) return 'Teenager';
+  return 'Young adult';
+};
+
+// ─── Main Component ─────────────────────────────────────────────────────────────
 
 export default function InsuranceCompare() {
   useEffect(() => { AnalyticsService.trackScreen('Insurance_Compare'); }, []);
   const navigate = useNavigate();
 
-  // ── Profile State ──
+  // ── Profile state ─────────────────────────────────────────────────────────────
   const [selfAge, setSelfAge] = useState(30);
   const [hasSpouse, setHasSpouse] = useState(false);
   const [spouseAge, setSpouseAge] = useState(28);
@@ -77,83 +254,105 @@ export default function InsuranceCompare() {
   const [parents, setParents] = useState<number[]>([]);
   const [hasPreExisting, setHasPreExisting] = useState(false);
   const [cityType, setCityType] = useState<'metro' | 'tier2' | 'tier3'>('metro');
-  const [sumInsured, setSumInsured] = useState(10);
+  const [sumInsured, setSumInsured] = useState(10); // in lakhs
   const [priorities, setPriorities] = useState<string[]>([]);
 
-  // ── Insurer Selection ──
-  const [selectedInsurers, setSelectedInsurers] = useState<string[]>(INSURERS.map(i => i.id));
-
-  // ── UI State ──
+  // ── UI state ──────────────────────────────────────────────────────────────────
   const [step, setStep] = useState<'profile' | 'results'>('profile');
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [noteModal, setNoteModal] = useState<{ feature: string; insurer: string; note: string } | null>(null);
-  const [expandedInsurer, setExpandedInsurer] = useState<string | null>(null);
-  const [expandedRec, setExpandedRec] = useState<string | null>(null);
+  const [openChecklist, setOpenChecklist] = useState<Set<number>>(new Set());
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
-  const categories = useMemo(() => ['All', ...getCategories()], []);
-
-  const filteredFeatures = useMemo(() =>
-    activeCategory === 'All'
-      ? COVERAGE_FEATURES
-      : COVERAGE_FEATURES.filter(f => f.category === activeCategory),
-    [activeCategory]
-  );
-
-  const profile: FamilyProfile = useMemo(() => ({
-    selfAge, spouseAge: hasSpouse ? spouseAge : null,
-    children, parents, hasPreExisting, cityType, sumInsured, priorities
-  }), [selfAge, spouseAge, hasSpouse, children, parents, hasPreExisting, cityType, sumInsured, priorities]);
-
-  const recommendations: Recommendation[] = useMemo(
-    () => step === 'results' ? getRecommendations(profile, selectedInsurers) : [],
-    [profile, selectedInsurers, step]
-  );
+  // ── Family helpers ────────────────────────────────────────────────────────────
+  const addChild = useCallback(() => { if (children.length < 4) setChildren(p => [...p, 5]); }, [children.length]);
+  const removeChild = useCallback((i: number) => setChildren(p => p.filter((_, idx) => idx !== i)), []);
+  const updateChild = useCallback((i: number, age: number) => setChildren(p => p.map((a, idx) => idx === i ? age : a)), []);
+  const addParent = useCallback(() => { if (parents.length < 4) setParents(p => [...p, 60]); }, [parents.length]);
+  const removeParent = useCallback((i: number) => setParents(p => p.filter((_, idx) => idx !== i)), []);
+  const updateParent = useCallback((i: number, age: number) => setParents(p => p.map((a, idx) => idx === i ? age : a)), []);
 
   const togglePriority = useCallback((id: string) => {
     setPriorities(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
   }, []);
 
-  const toggleInsurer = useCallback((id: string) => {
-    setSelectedInsurers(prev => {
-      if (prev.includes(id)) {
-        if (prev.length <= 2) return prev; // minimum 2
-        return prev.filter(i => i !== id);
-      }
-      return [...prev, id];
-    });
-  }, []);
+  const toggleChecklist = (i: number) => setOpenChecklist(prev => {
+    const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n;
+  });
 
-  const addChild = useCallback(() => {
-    if (children.length < 4) setChildren(prev => [...prev, 5]);
-  }, [children.length]);
-
-  const removeChild = useCallback((idx: number) => {
-    setChildren(prev => prev.filter((_, i) => i !== idx));
-  }, []);
-
-  const updateChild = useCallback((idx: number, age: number) => {
-    setChildren(prev => prev.map((a, i) => i === idx ? age : a));
-  }, []);
-
-  const addParent = useCallback(() => {
-    if (parents.length < 4) setParents(prev => [...prev, 60]);
-  }, [parents.length]);
-
-  const removeParent = useCallback((idx: number) => {
-    setParents(prev => prev.filter((_, i) => i !== idx));
-  }, []);
-
-  const updateParent = useCallback((idx: number, age: number) => {
-    setParents(prev => prev.map((a, i) => i === idx ? age : a));
-  }, []);
+  // ── Derived ───────────────────────────────────────────────────────────────────
+  const allAges = useMemo(() => {
+    const ages = [selfAge];
+    if (hasSpouse) ages.push(spouseAge);
+    ages.push(...children, ...parents);
+    return ages;
+  }, [selfAge, hasSpouse, spouseAge, children, parents]);
 
   const elderlyParents = parents.filter(a => a >= 70);
+  const seniorParents = parents.filter(a => a >= 60);
 
-  // ── CSR badge color ──
-  const csrColor = (csr: number) => csr >= 97 ? 'text-emerald-400' : csr >= 93 ? 'text-amber-400' : 'text-red-400';
+  // ── Premium calculation ───────────────────────────────────────────────────────
+  const premiumData = useMemo(() => {
+    const members: { label: string; lo: number; hi: number }[] = [];
+    const add = (label: string, age: number) => {
+      const [lo, hi] = getMemberPremium(age, sumInsured, cityType, hasPreExisting);
+      members.push({ label, lo, hi });
+    };
+    add(`Self (age ${selfAge})`, selfAge);
+    if (hasSpouse) add(`Spouse (age ${spouseAge})`, spouseAge);
+    children.forEach((age, i) => add(`Child ${i + 1} (age ${age === 0 ? '<1' : age})`, age));
+    parents.forEach((age, i) => add(`Parent ${i + 1} (age ${age})`, age));
+    const rawLo = members.reduce((s, m) => s + m.lo, 0);
+    const rawHi = members.reduce((s, m) => s + m.hi, 0);
+    const ff = getFloaterFactor(members.length);
+    return {
+      members,
+      rawLo, rawHi,
+      floaterPct: Math.round((1 - ff) * 100),
+      lo: Math.round(rawLo * ff / 100) * 100,
+      hi: Math.round(rawHi * ff / 100) * 100,
+    };
+  }, [selfAge, hasSpouse, spouseAge, children, parents, sumInsured, cityType, hasPreExisting]);
 
+  // ── Adequacy score ────────────────────────────────────────────────────────────
+  const adequacyScore = useMemo(
+    () => calcAdequacy(sumInsured, cityType, allAges, parents, hasPreExisting),
+    [sumInsured, cityType, allAges, parents, hasPreExisting],
+  );
+
+  const adequacyExplanation = useMemo(() => {
+    const cityLabel = cityType === 'metro' ? 'metro cities' : cityType === 'tier2' ? 'Tier 2 cities' : 'your city';
+    if (adequacyScore < 50)
+      return `A single ICU surgery in ${cityLabel} can cost ₹3–8 lakhs. Your current cover of ${fmtL(sumInsured)} may not be sufficient for major hospitalisation.`;
+    if (adequacyScore <= 75)
+      return 'Your cover is adequate for most routine hospitalisations. Consider increasing for critical illness or surgical emergencies.';
+    return 'Good coverage for your family profile. Ensure you have restoration benefit and no room rent capping in your plan.';
+  }, [adequacyScore, cityType, sumInsured]);
+
+  // ── Personalised checklist ────────────────────────────────────────────────────
+  const profileChecklist = useMemo(() => {
+    const items = [...BASE_CHECKLIST];
+    if (children.some(c => c <= 4))
+      items.push({ title: 'Newborn Coverage Clause', body: 'Newborns should be covered from Day 1 or within 90 days without a fresh waiting period. Check the exact newborn clause in the Policy Wording document — not the brochure.' });
+    if (children.some(c => c < 18))
+      items.push({ title: 'Vaccination Coverage for Children', body: 'Some plans cover routine vaccinations under OPD benefit. Check if this is included or available as an add-on.' });
+    if (seniorParents.length > 0)
+      items.push({ title: 'Senior Co-payment Clause', body: 'Many plans add a co-payment clause for members above 60 — meaning you pay 10–20% of every claim. Look specifically for plans with ZERO co-payment regardless of age.' });
+    if (seniorParents.length > 0)
+      items.push({ title: 'Separate Senior Citizen Plan Consideration', body: 'Including parents above 60 in a family floater raises the entire family\'s premium significantly. Often cheaper to buy a dedicated senior citizen plan for parents and keep the family floater for younger members. Get quotes both ways from IRDAI-registered insurers.' });
+    if (elderlyParents.length > 0)
+      items.push({ title: 'Elderly Member Coverage Limitations', body: 'Above age 70, very few insurers accept new proposals. If a parent has an existing policy, NEVER let it lapse — renewal cannot be denied under IRDAI rules. If no existing policy, check IRDAI\'s list of senior-friendly products at irdai.gov.in.' });
+    if (hasPreExisting)
+      items.push({ title: 'Pre-Existing Disease Declaration', body: 'Disclose ALL pre-existing conditions accurately. Under IRDAI\'s moratorium rules, after 5 years of continuous coverage your insurer CANNOT reject claims citing non-disclosure (except proven fraud).' });
+    if (sumInsured < 10 && cityType === 'metro')
+      items.push({ title: 'Sum Insured Adequacy Warning', body: `In metro cities, a single surgery with ICU stay costs ₹3–8 lakhs. ${fmtL(sumInsured)} cover is inadequate for metro hospitals. Consider ₹15–25L minimum for families in Mumbai, Delhi, Bengaluru, Chennai, Hyderabad.` });
+    if (allAges.length >= 5)
+      items.push({ title: 'Floater vs Individual Cover Strategy', body: 'With 5+ members, probability of multiple claims increases. Consider individual covers for high-risk members (seniors, pre-existing conditions) and keeping the floater only for younger, healthy members. Get quotes for both structures.' });
+    return items;
+  }, [children, parents, seniorParents.length, elderlyParents.length, hasPreExisting, sumInsured, cityType, allAges.length]);
+
+  // ─────────────────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-dvh bg-background animate-fade-in">
+
       {/* Header */}
       <div className="sticky top-0 z-20 bg-background px-4 pt-14 pb-3 border-b border-border">
         <div className="flex items-center gap-3">
@@ -164,7 +363,7 @@ export default function InsuranceCompare() {
             <Shield size={18} className="text-emerald-400" />
             <div>
               <h1 className="text-lg font-bold text-foreground">Health Insurance</h1>
-              <p className="text-muted-foreground text-xs">Compare top 8 plans</p>
+              <p className="text-muted-foreground text-xs">IRDAI-based coverage simulator</p>
             </div>
           </div>
         </div>
@@ -172,9 +371,12 @@ export default function InsuranceCompare() {
 
       <div className="px-4 pb-28 pt-4">
         <AnimatePresence mode="wait">
-          {step === 'profile' ? (
+
+          {/* ═══════════════════════ PROFILE STEP ═══════════════════════════════ */}
+          {step === 'profile' && (
             <motion.div key="profile" initial={{ opacity: 1 }} exit={{ opacity: 0, x: -50 }}>
-              {/* ══════════ SECTION A: FAMILY PROFILE ══════════ */}
+
+              {/* Section A — Family Profile */}
               <div className="mb-5">
                 <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                   <Users size={15} className="text-emerald-400" />
@@ -183,26 +385,18 @@ export default function InsuranceCompare() {
 
                 {/* Self & Spouse */}
                 <div className="p-4 rounded-2xl bg-card border border-border mb-3">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Self</span>
-                  </div>
+                  <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider block mb-3">Self</span>
                   <div className="flex items-center gap-3 mb-4">
                     <label className="text-xs text-muted-foreground w-16">Your age</label>
-                    <input
-                      type="number" min={18} max={70} value={selfAge}
+                    <input type="number" min={18} max={70} value={selfAge}
                       onChange={e => setSelfAge(Math.min(70, Math.max(18, Number(e.target.value))))}
                       className="flex-1 px-3 py-2 rounded-xl bg-muted border border-border text-foreground text-sm font-bold text-center"
                     />
                   </div>
-
                   <div className="flex items-center justify-between pt-3 border-t border-border/40">
-                    <div>
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Spouse</span>
-                    </div>
-                    <button
-                      onClick={() => setHasSpouse(!hasSpouse)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${hasSpouse ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-muted text-muted-foreground border border-border'}`}
-                    >
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Spouse</span>
+                    <button onClick={() => setHasSpouse(!hasSpouse)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${hasSpouse ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-muted text-muted-foreground border border-border'}`}>
                       {hasSpouse ? 'Added ✓' : '+ Add Spouse'}
                     </button>
                   </div>
@@ -210,8 +404,7 @@ export default function InsuranceCompare() {
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden mt-3">
                       <div className="flex items-center gap-3">
                         <label className="text-xs text-muted-foreground w-16">Age</label>
-                        <input
-                          type="number" min={18} max={70} value={spouseAge}
+                        <input type="number" min={18} max={70} value={spouseAge}
                           onChange={e => setSpouseAge(Math.min(70, Math.max(18, Number(e.target.value))))}
                           className="flex-1 px-3 py-2 rounded-xl bg-muted border border-border text-foreground text-sm font-bold text-center"
                         />
@@ -233,28 +426,40 @@ export default function InsuranceCompare() {
                       </button>
                     )}
                   </div>
-                  {children.length === 0 && (
-                    <p className="text-xs text-muted-foreground">No children added</p>
-                  )}
+                  {children.length === 0 && <p className="text-xs text-muted-foreground">No children added</p>}
                   <div className="space-y-2.5">
                     {children.map((age, idx) => (
-                      <div key={idx} className="flex items-center gap-2.5">
-                        <span className="text-xs text-muted-foreground w-14">Child {idx + 1}</span>
-                        <input
-                          type="number" min={0} max={25} value={age}
-                          onChange={e => updateChild(idx, Math.min(25, Math.max(0, Number(e.target.value))))}
-                          className="w-16 px-2 py-1.5 rounded-lg bg-muted border border-border text-foreground text-sm font-bold text-center"
-                        />
-                        <span className="text-[10px] text-muted-foreground flex-1">{childAgeLabel(age)}</span>
-                        <button onClick={() => removeChild(idx)} className="p-1 rounded-lg bg-red-500/10 text-red-400">
-                          <Minus size={12} />
-                        </button>
+                      <div key={idx}>
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-xs text-muted-foreground w-14">Child {idx + 1}</span>
+                          <input type="number" min={0} max={25} value={age}
+                            onChange={e => updateChild(idx, Math.min(25, Math.max(0, Number(e.target.value))))}
+                            className="w-16 px-2 py-1.5 rounded-lg bg-muted border border-border text-foreground text-sm font-bold text-center"
+                          />
+                          <span className="text-[10px] text-muted-foreground flex-1">{childAgeLabel(age)}</span>
+                          <button onClick={() => removeChild(idx)} className="p-1 rounded-lg bg-red-500/10 text-red-400">
+                            <Minus size={12} />
+                          </button>
+                        </div>
+                        {age === 0 && (
+                          <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                            <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
+                              <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
+                              Newborns must be added to policy within 90 days of birth. Verify this clause with your insurer.
+                            </p>
+                          </div>
+                        )}
+                        {age >= 25 && (
+                          <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                            <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
+                              <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
+                              Children above 25 need a separate individual policy — they cannot be on a family floater.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
-                  {children.some(a => a > 25) && (
-                    <p className="text-[10px] text-amber-400 mt-2">⚠ Children above 25 should be added as separate members, not in family floater.</p>
-                  )}
                 </div>
 
                 {/* Parents */}
@@ -270,51 +475,53 @@ export default function InsuranceCompare() {
                       </button>
                     )}
                   </div>
-                  {parents.length === 0 && (
-                    <p className="text-xs text-muted-foreground">No parents added</p>
-                  )}
+                  {parents.length === 0 && <p className="text-xs text-muted-foreground">No parents added</p>}
                   <div className="space-y-2.5">
                     {parents.map((age, idx) => (
-                      <div key={idx} className="flex items-center gap-2.5">
-                        <span className="text-xs text-muted-foreground w-14">Parent {idx + 1}</span>
-                        <input
-                          type="number" min={40} max={85} value={age}
-                          onChange={e => updateParent(idx, Math.min(85, Math.max(40, Number(e.target.value))))}
-                          className="w-16 px-2 py-1.5 rounded-lg bg-muted border border-border text-foreground text-sm font-bold text-center"
-                        />
-                        <span className="text-[10px] text-muted-foreground flex-1">
-                          {age >= 70 ? '⚠ Elderly' : age >= 60 ? 'Senior' : 'Adult'}
-                        </span>
-                        <button onClick={() => removeParent(idx)} className="p-1 rounded-lg bg-red-500/10 text-red-400">
-                          <Minus size={12} />
-                        </button>
+                      <div key={idx}>
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-xs text-muted-foreground w-14">Parent {idx + 1}</span>
+                          <input type="number" min={40} max={85} value={age}
+                            onChange={e => updateParent(idx, Math.min(85, Math.max(40, Number(e.target.value))))}
+                            className="w-16 px-2 py-1.5 rounded-lg bg-muted border border-border text-foreground text-sm font-bold text-center"
+                          />
+                          <span className="text-[10px] text-muted-foreground flex-1">
+                            {age >= 70 ? '⚠ Elderly' : age >= 60 ? 'Senior' : 'Adult'}
+                          </span>
+                          <button onClick={() => removeParent(idx)} className="p-1 rounded-lg bg-red-500/10 text-red-400">
+                            <Minus size={12} />
+                          </button>
+                        </div>
+                        {age >= 70 && (
+                          <div className="mt-2 p-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
+                            <p className="text-[11px] text-red-400 flex items-start gap-1.5">
+                              <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
+                              Very few plans accept new proposals above 70. If they have an existing policy, ensure renewal continuity. IRDAI mandates lifetime renewability if renewed without break.
+                            </p>
+                          </div>
+                        )}
+                        {age >= 60 && age < 70 && (
+                          <div className="mt-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                            <p className="text-[11px] text-amber-400 flex items-start gap-1.5">
+                              <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" />
+                              Consider a separate senior citizen plan for parents 60+. Combining with family floater significantly increases everyone's premium.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
-                  {elderlyParents.length > 0 && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
-                      <div className="flex items-start gap-2">
-                        <AlertTriangle size={14} className="text-amber-400 mt-0.5 flex-shrink-0" />
-                        <p className="text-[11px] text-amber-300 leading-relaxed">
-                          Age 70+ significantly limits plan options and increases premium.
-                          Consider a separate senior citizen plan for elderly parents.
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
                 </div>
 
-                {/* Pre-existing toggle */}
+                {/* Pre-existing */}
                 <div className="p-4 rounded-2xl bg-card border border-border mb-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-bold text-foreground">Pre-existing conditions in family</p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">Diabetes, BP, thyroid, heart, etc.</p>
                     </div>
-                    <button
-                      onClick={() => setHasPreExisting(!hasPreExisting)}
-                      className={`w-12 h-7 rounded-full transition-all relative ${hasPreExisting ? 'bg-emerald-500' : 'bg-muted border border-border'}`}
-                    >
+                    <button onClick={() => setHasPreExisting(!hasPreExisting)}
+                      className={`w-12 h-7 rounded-full transition-all relative ${hasPreExisting ? 'bg-emerald-500' : 'bg-muted border border-border'}`}>
                       <div className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all ${hasPreExisting ? 'left-6' : 'left-1'}`} />
                     </button>
                   </div>
@@ -328,8 +535,7 @@ export default function InsuranceCompare() {
                       <button key={c} onClick={() => setCityType(c)}
                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${cityType === c
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-muted text-muted-foreground border border-border'}`}
-                      >
+                          : 'bg-muted text-muted-foreground border border-border'}`}>
                         {c === 'metro' ? 'Metro' : c === 'tier2' ? 'Tier 2' : 'Tier 3'}
                       </button>
                     ))}
@@ -344,30 +550,29 @@ export default function InsuranceCompare() {
                       <button key={opt.value} onClick={() => setSumInsured(opt.value)}
                         className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${sumInsured === opt.value
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-muted text-muted-foreground border border-border'}`}
-                      >
+                          : 'bg-muted text-muted-foreground border border-border'}`}>
                         {opt.label}
                       </button>
                     ))}
                   </div>
+                  {sumInsured <= 5 && (
+                    <p className="text-[10px] text-amber-400 mt-2.5">⚠ Medical inflation is 14%/yr. ₹5L may be insufficient for metro hospitals by 2030. Consider ₹10L minimum.</p>
+                  )}
                 </div>
 
                 {/* Priorities */}
                 <div className="p-4 rounded-2xl bg-card border border-border mb-5">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">What matters most?</p>
-                  <p className="text-[10px] text-muted-foreground mb-3">Select up to 3 priorities</p>
+                  <p className="text-[10px] text-muted-foreground mb-3">Select up to 3 priorities — we'll explain each in your results</p>
                   <div className="flex flex-wrap gap-2">
                     {PRIORITY_OPTIONS.map(opt => {
                       const isSelected = priorities.includes(opt.id);
                       return (
                         <button key={opt.id}
-                          onClick={() => {
-                            if (isSelected || priorities.length < 3) togglePriority(opt.id);
-                          }}
+                          onClick={() => { if (isSelected || priorities.length < 3) togglePriority(opt.id); }}
                           className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${isSelected
                             ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                            : 'bg-muted text-muted-foreground border border-border'}`}
-                        >
+                            : 'bg-muted text-muted-foreground border border-border'}`}>
                           {opt.label}
                         </button>
                       );
@@ -376,387 +581,216 @@ export default function InsuranceCompare() {
                 </div>
               </div>
 
-              {/* ══════════ SECTION B: INSURER SELECTOR ══════════ */}
-              <div className="mb-5">
-                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                  <Building2 size={15} className="text-blue-400" />
-                  Select Insurers to Compare
-                </h2>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {INSURERS.map(ins => {
-                    const isSelected = selectedInsurers.includes(ins.id);
-                    return (
-                      <button key={ins.id} onClick={() => toggleInsurer(ins.id)}
-                        className={`px-3 py-2 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 ${isSelected
-                          ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30'
-                          : 'bg-muted text-muted-foreground/60 border border-border line-through'}`}
-                      >
-                        {isSelected && <Check size={10} />}
-                        {ins.shortName}
-                        <span className={`text-[9px] font-normal ${isSelected ? 'opacity-70' : 'opacity-40'}`}>
-                          {ins.csr}%
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-[10px] text-muted-foreground mb-4">
-                  {selectedInsurers.length} of {INSURERS.length} selected • Min 2 required
-                </p>
-              </div>
-
-              {/* Compare Button */}
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setStep('results')}
-                disabled={selectedInsurers.length < 2}
-                className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${selectedInsurers.length >= 2
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20'
-                  : 'bg-card border border-border text-muted-foreground'}`}
-              >
+              {/* Analyse Button */}
+              <motion.button whileTap={{ scale: 0.97 }}
+                onClick={() => { setStep('results'); setOpenChecklist(new Set()); setShowBreakdown(false); }}
+                className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20">
                 <Shield size={18} />
-                Compare {selectedInsurers.length} Plans
+                Analyse My Coverage Need
               </motion.button>
             </motion.div>
-          ) : (
-            <motion.div key="results" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}>
-              {/* ══════════ SECTION C: SMART RECOMMENDATIONS ══════════ */}
-              <div className="mb-6">
-                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                  <Award size={15} className="text-amber-400" />
-                  Best Match for Your Family
-                </h2>
+          )}
 
-                <div className="space-y-3">
-                  {recommendations.slice(0, 3).map((rec, idx) => {
-                    const insurer = INSURERS.find(i => i.id === rec.insurerId)!;
-                    const style = RANK_STYLES[idx] || RANK_STYLES[2];
-                    const isExpanded = expandedRec === rec.insurerId;
-                    return (
-                      <motion.div key={rec.insurerId}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className={`rounded-2xl bg-gradient-to-br ${style.bg} border ${style.border} overflow-hidden`}
-                      >
-                        <button className="w-full p-4 text-left" onClick={() => setExpandedRec(isExpanded ? null : rec.insurerId)}>
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-lg ${style.badge} flex items-center justify-center text-white font-bold text-sm`}>
-                              #{rec.rank}
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-foreground font-bold text-sm">{insurer.name}</p>
-                              <p className="text-muted-foreground text-[11px]">{insurer.planName}</p>
-                            </div>
-                            <div className="text-right mr-1">
-                              <p className={`text-lg font-bold ${style.text}`}>{rec.score}</p>
-                              <p className="text-[9px] text-muted-foreground">score</p>
-                            </div>
-                            {isExpanded ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
-                          </div>
-                          {/* Score bar */}
-                          <div className="mt-2.5 h-1.5 rounded-full bg-muted/50 overflow-hidden">
-                            <motion.div className={`h-full rounded-full ${style.badge}`}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${rec.score}%` }}
-                              transition={{ delay: 0.3 + idx * 0.1, duration: 0.6 }}
-                            />
-                          </div>
-                        </button>
+          {/* ═══════════════════════ RESULTS STEP ═══════════════════════════════ */}
+          {step === 'results' && (
+            <motion.div key="results" initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
 
-                        <AnimatePresence>
-                          {isExpanded && (
-                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                              <div className="px-4 pb-4 space-y-2">
-                                {rec.matchReasons.map((r, i) => (
-                                  <div key={i} className="flex items-start gap-2">
-                                    <Check size={12} className="text-emerald-400 mt-0.5 flex-shrink-0" />
-                                    <p className="text-xs text-foreground/80">{r}</p>
-                                  </div>
-                                ))}
-                                {rec.watchOuts.map((w, i) => (
-                                  <div key={i} className="flex items-start gap-2">
-                                    <AlertTriangle size={12} className="text-amber-400 mt-0.5 flex-shrink-0" />
-                                    <p className="text-xs text-foreground/60">{w}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </motion.div>
-                    );
-                  })}
-                </div>
+              {/* Profile summary pill */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {[
+                  `${allAges.length} member${allAges.length !== 1 ? 's' : ''}`,
+                  fmtL(sumInsured),
+                  cityType === 'metro' ? 'Metro' : cityType === 'tier2' ? 'Tier 2' : 'Tier 3',
+                  hasPreExisting ? 'Pre-existing' : null,
+                ].filter(Boolean).map((tag, i) => (
+                  <span key={i} className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold border border-emerald-500/20">{tag}</span>
+                ))}
+              </div>
 
-                {/* Expert tip */}
-                <div className="mt-4 p-3.5 rounded-xl bg-blue-500/5 border border-blue-500/20">
-                  <div className="flex items-start gap-2.5">
-                    <Info size={14} className="text-blue-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-[11px] text-blue-300 leading-relaxed">
-                      <span className="font-bold">Insurance Tip:</span> For families with parents over 60,
-                      consider buying a separate senior citizen plan for parents rather than including them in
-                      family floater. It avoids premium loading and keeps the family floater affordable.
-                    </p>
-                  </div>
+              {/* Card A — Coverage Adequacy */}
+              <div className="p-4 rounded-2xl bg-card border border-border">
+                <p className="text-sm font-bold text-foreground mb-0.5">Your Coverage Adequacy</p>
+                <p className="text-[10px] text-muted-foreground mb-2">Scored against city-level medical costs and family risk profile</p>
+                <ScoreDial score={adequacyScore} />
+                <p className="text-[11px] text-muted-foreground leading-relaxed mt-4 text-center px-2">{adequacyExplanation}</p>
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Cover', val: fmtL(sumInsured) },
+                    { label: 'City', val: cityType === 'metro' ? 'Metro' : cityType === 'tier2' ? 'Tier 2' : 'Tier 3' },
+                    { label: 'Members', val: String(allAges.length) },
+                  ].map(({ label, val }) => (
+                    <div key={label} className="text-center p-2 rounded-xl bg-muted/50">
+                      <p className="text-[9px] text-muted-foreground uppercase font-bold">{label}</p>
+                      <p className="text-xs font-bold text-foreground">{val}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* ══════════ SECTION E: INSURER STATS ══════════ */}
-              <div className="mb-6">
-                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                  <Activity size={15} className="text-blue-400" />
-                  Insurer Snapshot
-                </h2>
-                <div className="overflow-x-auto -mx-4 px-4 pb-2">
-                  <div className="flex gap-3" style={{ width: `${selectedInsurers.length * 180}px` }}>
-                    {selectedInsurers.map((id) => {
-                      const ins = INSURERS.find(i => i.id === id)!;
+              {/* Card B — Premium Range */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-emerald-500/20">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Estimated Annual Premium Range</p>
+                <p className="text-[9px] text-muted-foreground mb-3">Based on IRDAI actuarial rating factors</p>
+                <p className="text-2xl font-black text-foreground mb-0.5">{fmtRange(premiumData.lo, premiumData.hi)}</p>
+                <p className="text-emerald-400 text-sm font-semibold mb-4">
+                  ≈ {fmtRange(Math.round(premiumData.lo / 12 / 100) * 100, Math.round(premiumData.hi / 12 / 100) * 100)} per month
+                </p>
+
+                <button onClick={() => setShowBreakdown(v => !v)}
+                  className="w-full flex items-center justify-between py-2.5 px-3 rounded-xl bg-white/60 dark:bg-black/10 border border-emerald-500/15 mb-3">
+                  <span className="text-[11px] font-semibold text-foreground">Per-member breakdown</span>
+                  {showBreakdown ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+                </button>
+                <AnimatePresence>
+                  {showBreakdown && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }} className="overflow-hidden mb-3">
+                      <div className="space-y-1.5 p-3 rounded-xl bg-white/60 dark:bg-black/10 border border-border">
+                        {premiumData.members.map((m, i) => (
+                          <div key={i} className="flex items-center justify-between">
+                            <span className="text-[11px] text-muted-foreground">{m.label}</span>
+                            <span className="text-[11px] font-semibold text-foreground">{fmtRange(m.lo, m.hi)}</span>
+                          </div>
+                        ))}
+                        <div className="border-t border-border pt-1.5 flex items-center justify-between">
+                          <span className="text-[11px] text-muted-foreground">Family floater discount</span>
+                          <span className="text-[11px] font-bold text-emerald-400">−{premiumData.floaterPct}%</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-foreground">Total</span>
+                          <span className="text-[11px] font-black text-foreground">{fmtRange(premiumData.lo, premiumData.hi)}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {hasPreExisting && (
+                  <p className="text-[10px] text-amber-400 mb-3 flex items-center gap-1">
+                    <AlertTriangle size={11} /> Pre-existing loading of 20% applied
+                  </p>
+                )}
+                <div className="p-3 rounded-xl bg-muted/30 border border-border">
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">
+                    This range is based on IRDAI actuarial rating factors. Actual premium depends on your health declaration, insurer underwriting, and the specific plan features you choose. Always get quotes from at least 2–3 IRDAI-registered insurers before deciding.
+                  </p>
+                </div>
+              </div>
+
+              {/* Priority guidance — shown if user selected priorities */}
+              {priorities.length > 0 && (
+                <div className="p-4 rounded-2xl bg-card border border-border">
+                  <p className="text-sm font-bold text-foreground mb-1">Your Priority Guide</p>
+                  <p className="text-[10px] text-muted-foreground mb-3">What to look for based on what matters most to you</p>
+                  <div className="space-y-3">
+                    {priorities.map(pid => {
+                      const opt = PRIORITY_OPTIONS.find(o => o.id === pid);
+                      if (!opt) return null;
                       return (
-                        <div key={id} className="w-[170px] flex-shrink-0 p-3.5 rounded-2xl bg-card border border-border">
-                          <div className="flex items-center gap-2 mb-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xs font-bold">
-                              {ins.shortName.slice(0, 2)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-bold text-foreground truncate">{ins.shortName}</p>
-                              <p className="text-[9px] text-muted-foreground truncate">{ins.planName}</p>
-                            </div>
+                        <div key={pid} className="flex items-start gap-2.5">
+                          <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <Info size={11} className="text-amber-400" />
                           </div>
-                          <div className="space-y-1.5">
-                            <div className="flex justify-between">
-                              <span className="text-[10px] text-muted-foreground">CSR</span>
-                              <span className={`text-[10px] font-bold ${csrColor(ins.csr)}`}>{ins.csr}%</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[10px] text-muted-foreground">Network</span>
-                              <span className="text-[10px] font-bold text-foreground">{(ins.networkHospitals / 1000).toFixed(0)}k+</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-[10px] text-muted-foreground">Claims</span>
-                              <span className="text-[10px] font-bold text-foreground">{ins.inHouseClaims ? 'In-house' : 'TPA'}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-[10px] text-muted-foreground">Rating</span>
-                              <div className="flex items-center gap-0.5">
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                  <Star key={i} size={8} className={i < Math.round(ins.overallRating) ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground/30'} />
-                                ))}
-                              </div>
-                            </div>
+                          <div>
+                            <p className="text-[11px] font-bold text-foreground mb-0.5">{opt.label}</p>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">{PRIORITY_GUIDANCE[pid]}</p>
                           </div>
-                          <p className="text-[9px] text-emerald-400 mt-2 leading-tight">{ins.bestFor}</p>
                         </div>
                       );
                     })}
                   </div>
                 </div>
+              )}
+
+              {/* Card C — Personalised Checklist */}
+              <div className="p-4 rounded-2xl bg-card border border-border">
+                <p className="text-sm font-bold text-foreground mb-0.5">Your Personalised Checklist</p>
+                <p className="text-[10px] text-muted-foreground mb-4">Based on your family profile — tap each item for details</p>
+                <div className="space-y-2">
+                  {profileChecklist.map((item, i) => (
+                    <AccordionItem key={i} idx={i} title={item.title} body={item.body}
+                      open={openChecklist.has(i)} onToggle={() => toggleChecklist(i)} />
+                  ))}
+                </div>
               </div>
 
-              {/* ══════════ SECTION D: COMPARISON TABLE ══════════ */}
-              <div className="mb-6">
-                <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                  <Zap size={15} className="text-amber-400" />
-                  Feature-by-Feature Comparison
-                </h2>
-
-                {/* Category filters */}
-                <div className="overflow-x-auto -mx-4 px-4 mb-4">
-                  <div className="flex gap-2 pb-1">
-                    {categories.map(cat => (
-                      <button key={cat} onClick={() => setActiveCategory(cat)}
-                        className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all ${activeCategory === cat
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-muted text-muted-foreground border border-border'}`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Table */}
-                <div className="overflow-x-auto -mx-4 px-4">
-                  <div style={{ minWidth: `${selectedInsurers.length * 80 + 160}px` }}>
-                    {/* Table header */}
-                    <div className="flex items-end mb-2">
-                      <div className="w-[150px] flex-shrink-0 pr-2">
-                        <span className="text-[10px] text-muted-foreground font-bold uppercase">Feature</span>
+              {/* Card D — IRDAI Rights */}
+              <div className="p-4 rounded-2xl bg-card border border-border">
+                <p className="text-sm font-bold text-foreground mb-0.5">Your Rights Under IRDAI</p>
+                <p className="text-[10px] text-muted-foreground mb-3">These protections apply to every insurer</p>
+                <div className="space-y-3">
+                  {IRDAI_RIGHTS.map((right, i) => (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <Shield size={13} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[11px] font-bold text-foreground">{right.title}</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{right.body}</p>
                       </div>
-                      {selectedInsurers.map(id => {
-                        const ins = INSURERS.find(i => i.id === id)!;
-                        return (
-                          <button key={id} onClick={() => setExpandedInsurer(expandedInsurer === id ? null : id)}
-                            className="w-[75px] flex-shrink-0 text-center"
-                          >
-                            <p className="text-[9px] font-bold text-foreground truncate">{ins.shortName}</p>
-                            <p className="text-[8px] text-muted-foreground">{ins.csr}%</p>
-                          </button>
-                        );
-                      })}
                     </div>
-
-                    {/* Table body */}
-                    <div className="space-y-1">
-                      {filteredFeatures.map(feature => {
-                        const imp = IMPORTANCE_COLORS[feature.importance];
-                        return (
-                          <div key={feature.id} className="flex items-center py-2 border-b border-border/20">
-                            <div className="w-[150px] flex-shrink-0 pr-2">
-                              <p className="text-[11px] text-foreground font-medium leading-tight">{feature.label}</p>
-                              <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[8px] font-bold ${imp.bg} ${imp.text}`}>
-                                {imp.label}
-                              </span>
-                            </div>
-                            {selectedInsurers.map(insurerId => {
-                              const entry = getFeatureForInsurer(insurerId, feature.id);
-                              const status = entry?.covered || 'no';
-                              const info = COVERED_ICONS[status];
-                              const Icon = info.icon;
-                              return (
-                                <button key={`${insurerId}-${feature.id}`}
-                                  onClick={() => entry && setNoteModal({ feature: feature.label, insurer: INSURERS.find(i => i.id === insurerId)!.shortName, note: entry.note })}
-                                  className="w-[75px] flex-shrink-0 flex items-center justify-center"
-                                >
-                                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${status === 'yes' ? 'bg-emerald-500/10' : status === 'no' ? 'bg-red-500/10' : status === 'partial' ? 'bg-amber-500/10' : 'bg-blue-500/10'}`}>
-                                    <Icon size={12} className={info.color} />
-                                  </div>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  ))}
                 </div>
+                <p className="text-[9px] text-muted-foreground mt-4 pt-3 border-t border-border leading-relaxed">
+                  Source: IRDAI Annual Report 2023–24, IRDAI Master Circular on Health Insurance 2024, IRDAI HIR 2016, IRDAI Circular January 2025, 56th GST Council 2025
+                </p>
+              </div>
 
-                {/* Legend */}
-                <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-border/30">
-                  {Object.entries(COVERED_ICONS).map(([key, info]) => (
-                    <div key={key} className="flex items-center gap-1">
-                      <info.icon size={10} className={info.color} />
-                      <span className="text-[9px] text-muted-foreground">{info.label}</span>
+              {/* Card E — How to Buy */}
+              <div className="p-4 rounded-2xl bg-card border border-border">
+                <p className="text-sm font-bold text-foreground mb-4">How to Buy — Advisor's Step-by-Step</p>
+                <div className="space-y-4">
+                  {HOW_TO_BUY.map(s => (
+                    <div key={s.step} className="flex items-start gap-3">
+                      <div className="w-7 h-7 rounded-full bg-emerald-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-[11px] font-black text-emerald-400">{s.step}</span>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-bold text-foreground mb-0.5">{s.title}</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{s.body}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* Back button */}
-              <button
-                onClick={() => setStep('profile')}
-                className="w-full py-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm mb-4"
-              >
+              <button onClick={() => setStep('profile')}
+                className="w-full py-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
                 ← Edit Family Profile
               </button>
 
-              {/* ══════════ DATA DISCLAIMER ══════════ */}
-              <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 mb-4">
+              {/* Disclaimer */}
+              <div className="p-4 rounded-2xl border border-border bg-muted/20">
                 <div className="flex items-start gap-2.5">
-                  <Heart size={14} className="text-amber-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-[11px] text-amber-300/80 leading-relaxed">
-                    <span className="font-bold text-amber-300">Data Source:</span> IRDAI Annual Report 2023-24
-                    and verified insurer disclosures. Features and premiums change periodically.
-                    Always verify current plan details directly with the insurer before making a decision.
-                    FinCalix does not sell insurance — this is a free comparison tool for educational purposes.
+                  <Heart size={14} className="text-emerald-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-bold text-foreground mb-1">FinCalix Health Insurance Simulator</p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed mb-1">
+                      Provides educational guidance based on IRDAI regulations and actuarial principles. Premium estimates are ranges — actual premiums depend on your health declaration, insurer underwriting, and plan features.
+                    </p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">
+                      FinCalix does <span className="font-bold text-foreground">NOT</span> sell insurance, does <span className="font-bold text-foreground">NOT</span> partner with any insurer, and does <span className="font-bold text-foreground">NOT</span> receive commission. Verify all insurer data at: <span className="font-semibold text-foreground">irdai.gov.in</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* IRDAI advisory tip */}
+              <div className="p-3.5 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle size={14} className="text-blue-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-[11px] text-blue-300 leading-relaxed">
+                    <span className="font-bold">Insurance Tip:</span> For families with parents over 60, consider buying a separate senior citizen plan for parents rather than including them in a family floater. It avoids premium loading and keeps the family floater affordable for everyone else.
                   </p>
                 </div>
               </div>
+
             </motion.div>
           )}
+
         </AnimatePresence>
       </div>
 
-      {/* Disclaimer */}
       <DisclaimerComponent module="insurance" />
-
-      {/* ══════════ NOTE MODAL ══════════ */}
-      <AnimatePresence>
-        {noteModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center p-4"
-            onClick={() => setNoteModal(null)}
-          >
-            <motion.div
-              initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }}
-              className="w-full max-w-md bg-card rounded-2xl border border-border p-5 mb-4"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-foreground">{noteModal.insurer}</h3>
-                <button onClick={() => setNoteModal(null)} className="p-1 rounded-lg bg-muted">
-                  <X size={14} className="text-muted-foreground" />
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground mb-1">{noteModal.feature}</p>
-              <p className="text-sm text-foreground leading-relaxed">{noteModal.note}</p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ══════════ INSURER STATS MODAL ══════════ */}
-      <AnimatePresence>
-        {expandedInsurer && (() => {
-          const ins = INSURERS.find(i => i.id === expandedInsurer) as Insurer;
-          return (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center p-4"
-              onClick={() => setExpandedInsurer(null)}
-            >
-              <motion.div
-                initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }}
-                className="w-full max-w-md bg-card rounded-2xl border border-border p-5 mb-4"
-                onClick={e => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 font-bold text-sm">
-                      {ins.shortName.slice(0, 2)}
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-foreground">{ins.name}</h3>
-                      <p className="text-xs text-muted-foreground">{ins.planName}</p>
-                    </div>
-                  </div>
-                  <button onClick={() => setExpandedInsurer(null)} className="p-1 rounded-lg bg-muted">
-                    <X size={14} className="text-muted-foreground" />
-                  </button>
-                </div>
-                <div className="space-y-2.5">
-                  <div className="flex justify-between py-2 border-b border-border/30">
-                    <span className="text-xs text-muted-foreground">Claim Settlement</span>
-                    <span className={`text-sm font-bold ${csrColor(ins.csr)}`}>{ins.csr}%</span>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-border/30">
-                    <span className="text-xs text-muted-foreground">Network Hospitals</span>
-                    <span className="text-sm font-bold text-foreground">{ins.networkHospitals.toLocaleString()}+</span>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-border/30">
-                    <span className="text-xs text-muted-foreground">Claims Processing</span>
-                    <span className="text-sm font-bold text-foreground">{ins.inHouseClaims ? 'In-house' : 'TPA (Third Party)'}</span>
-                  </div>
-                  <div className="flex justify-between py-2 border-b border-border/30">
-                    <span className="text-xs text-muted-foreground">Insurer Type</span>
-                    <span className="text-sm font-bold text-foreground capitalize">{ins.type}</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-border/30">
-                    <span className="text-xs text-muted-foreground">Rating</span>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} size={12} className={i < Math.round(ins.overallRating) ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground/30'} />
-                      ))}
-                      <span className="text-xs text-foreground font-bold ml-1">{ins.overallRating}</span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs text-emerald-400 font-bold mt-3">{ins.bestFor}</p>
-                <p className="text-[10px] text-muted-foreground mt-1">{ins.website}</p>
-              </motion.div>
-            </motion.div>
-          );
-        })()}
-      </AnimatePresence>
     </div>
   );
 }
