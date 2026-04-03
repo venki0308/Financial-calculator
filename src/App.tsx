@@ -18,78 +18,110 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 // WebLandingPage — static import (first page web users see, must not lazy-load)
 import WebLandingPage from './pages/WebLandingPage';
 
-// App layout + main pages — lazy loaded
-const Layout                     = lazy(() => import('./components/Layout'));
-const Home                       = lazy(() => import('./pages/Home'));
-const Calculators                = lazy(() => import('./pages/Calculators'));
-const Schemes                    = lazy(() => import('./pages/Schemes'));
-const SchemeDetail               = lazy(() => import('./pages/SchemeDetail'));
-const ExpenseTracker             = lazy(() => import('./pages/ExpenseTracker'));
-const Profile                    = lazy(() => import('./pages/Profile'));
-const Settings                   = lazy(() => import('./pages/Settings'));
+// ─── Retry wrapper for lazy imports ────────────────────────────────────────
+// When a chunk fails to load (stale cache after deploy, network hiccup, etc.)
+// this retries up to 3 times with cache-busting, then forces a full reload.
+function lazyRetry<T extends { default: any }>(
+    factory: () => Promise<T>,
+    retries = 3,
+): Promise<T> {
+    return factory().catch((err: Error) => {
+        if (retries <= 0) {
+            // All retries exhausted — if it's a chunk error, reload the page once
+            const isChunkError = err.message?.includes('dynamically imported module')
+                || err.message?.includes('Failed to fetch')
+                || err.message?.includes('ChunkLoadError')
+                || err.message?.includes('Loading chunk');
+            if (isChunkError) {
+                const reloadKey = 'fncx_chunk_reload';
+                if (!sessionStorage.getItem(reloadKey)) {
+                    sessionStorage.setItem(reloadKey, '1');
+                    window.location.reload();
+                }
+            }
+            throw err;
+        }
+        // Wait briefly then retry with cache bust
+        return new Promise<T>((resolve) => setTimeout(resolve, 1000))
+            .then(() => lazyRetry(factory, retries - 1));
+    });
+}
 
-// Calculator pages — lazy loaded
-const EMICalculator              = lazy(() => import('./pages/EMICalculator'));
-const SIPCalculator              = lazy(() => import('./pages/SIPCalculator'));
-const FDCalculator               = lazy(() => import('./pages/FDCalculator'));
-const CompoundInterestCalculator = lazy(() => import('./pages/CompoundInterestCalculator'));
-const IncomeTaxCalculator        = lazy(() => import('./pages/IncomeTaxCalculator'));
-const SalaryHikeCalculator       = lazy(() => import('./pages/SalaryHikeCalculator'));
-const HRACalculator              = lazy(() => import('./pages/HRACalculator'));
-const RDCalculator               = lazy(() => import('./pages/RDCalculator'));
-const SimpleInterestCalculator   = lazy(() => import('./pages/SimpleInterestCalculator'));
-const LumpsumCalculator          = lazy(() => import('./pages/LumpsumCalculator'));
-const SWPCalculator              = lazy(() => import('./pages/SWPCalculator'));
-const CAGRCalculator             = lazy(() => import('./pages/CAGRCalculator'));
+const lr = <T extends { default: any }>(factory: () => Promise<T>) =>
+    lazy(() => lazyRetry(factory));
 
-// PPF / Retirement / Post-Office Calculators — lazy loaded
-const AdvancedPPFCalculator      = lazy(() => import('./pages/AdvancedPPFCalculator'));
-const NPSCalculator              = lazy(() => import('./pages/NPSCalculator'));
-const EPFCalculator              = lazy(() => import('./pages/EPFCalculator'));
-const GratuityCalculator         = lazy(() => import('./pages/GratuityCalculator'));
-const SSYCalculator              = lazy(() => import('./pages/SSYCalculator'));
-const NSCCalculator              = lazy(() => import('./pages/NSCCalculator'));
-const KVPCalculator              = lazy(() => import('./pages/KVPCalculator'));
-const POMISCalculator            = lazy(() => import('./pages/POMISCalculator'));
-const SCSSCalculator             = lazy(() => import('./pages/SCSSCalculator'));
-const POTDCalculator             = lazy(() => import('./pages/POTDCalculator'));
-const BreakEvenCalculator        = lazy(() => import('./pages/BreakEvenCalculator'));
-const OverdraftCalculator        = lazy(() => import('./pages/OverdraftCalculator'));
+// App layout + main pages — lazy loaded with retry
+const Layout                     = lr(() => import('./components/Layout'));
+const Home                       = lr(() => import('./pages/Home'));
+const Calculators                = lr(() => import('./pages/Calculators'));
+const Schemes                    = lr(() => import('./pages/Schemes'));
+const SchemeDetail               = lr(() => import('./pages/SchemeDetail'));
+const ExpenseTracker             = lr(() => import('./pages/ExpenseTracker'));
+const Profile                    = lr(() => import('./pages/Profile'));
+const Settings                   = lr(() => import('./pages/Settings'));
 
-// New Calculators — lazy loaded
-const PropertyCalculator         = lazy(() => import('./pages/PropertyCalculator'));
-const AdvancedMortgageCalculator = lazy(() => import('./pages/AdvancedMortgageCalculator'));
-const GSTCalculator              = lazy(() => import('./pages/GSTCalculator'));
-const ScientificCalculator       = lazy(() => import('./pages/ScientificCalculator'));
-const BudgetTracker              = lazy(() => import('./pages/BudgetTracker'));
-const GoalPlanner                = lazy(() => import('./pages/GoalPlanner'));
-const AIFinancialAssistant       = lazy(() => import('./pages/AIFinancialAssistant'));
-const CompareCalculator          = lazy(() => import('./pages/CompareCalculator'));
-const AgeCalculator              = lazy(() => import('./pages/AgeCalculator'));
-const WorldClock                 = lazy(() => import('./pages/WorldClock'));
-const InsuranceCalculator        = lazy(() => import('./pages/InsuranceCalculator'));
-const InsuranceCompare           = lazy(() => import('./pages/InsuranceCompare'));
+// Calculator pages — lazy loaded with retry
+const EMICalculator              = lr(() => import('./pages/EMICalculator'));
+const SIPCalculator              = lr(() => import('./pages/SIPCalculator'));
+const FDCalculator               = lr(() => import('./pages/FDCalculator'));
+const CompoundInterestCalculator = lr(() => import('./pages/CompoundInterestCalculator'));
+const IncomeTaxCalculator        = lr(() => import('./pages/IncomeTaxCalculator'));
+const SalaryHikeCalculator       = lr(() => import('./pages/SalaryHikeCalculator'));
+const HRACalculator              = lr(() => import('./pages/HRACalculator'));
+const RDCalculator               = lr(() => import('./pages/RDCalculator'));
+const SimpleInterestCalculator   = lr(() => import('./pages/SimpleInterestCalculator'));
+const LumpsumCalculator          = lr(() => import('./pages/LumpsumCalculator'));
+const SWPCalculator              = lr(() => import('./pages/SWPCalculator'));
+const CAGRCalculator             = lr(() => import('./pages/CAGRCalculator'));
 
-// Support Pages — lazy loaded
-const PrivacyPolicy              = lazy(() => import('./pages/PrivacyPolicy'));
-const TermsOfService             = lazy(() => import('./pages/TermsOfService'));
-const About                      = lazy(() => import('./pages/About'));
-const DataSafety                 = lazy(() => import('./pages/DataSafety'));
-const SavedCalculations          = lazy(() => import('./pages/SavedCalculations'));
-const CalculationHistory         = lazy(() => import('./pages/CalculationHistory'));
-const BookmarkedSchemes          = lazy(() => import('./pages/BookmarkedSchemes'));
-const Notifications              = lazy(() => import('./pages/Notifications'));
-const ValidatorPage              = lazy(() => import('./pages/ValidatorPage'));
+// PPF / Retirement / Post-Office Calculators — lazy loaded with retry
+const AdvancedPPFCalculator      = lr(() => import('./pages/AdvancedPPFCalculator'));
+const NPSCalculator              = lr(() => import('./pages/NPSCalculator'));
+const EPFCalculator              = lr(() => import('./pages/EPFCalculator'));
+const GratuityCalculator         = lr(() => import('./pages/GratuityCalculator'));
+const SSYCalculator              = lr(() => import('./pages/SSYCalculator'));
+const NSCCalculator              = lr(() => import('./pages/NSCCalculator'));
+const KVPCalculator              = lr(() => import('./pages/KVPCalculator'));
+const POMISCalculator            = lr(() => import('./pages/POMISCalculator'));
+const SCSSCalculator             = lr(() => import('./pages/SCSSCalculator'));
+const POTDCalculator             = lr(() => import('./pages/POTDCalculator'));
+const BreakEvenCalculator        = lr(() => import('./pages/BreakEvenCalculator'));
+const OverdraftCalculator        = lr(() => import('./pages/OverdraftCalculator'));
 
-// App-level modals — lazy loaded (native app only)
-const GlobalDisclaimerModal      = lazy(() => import('./components/GlobalDisclaimerModal'));
-const PdfActionSheet             = lazy(() => import('./components/PdfActionSheet').then(m => ({ default: m.PdfActionSheet })));
+// New Calculators — lazy loaded with retry
+const PropertyCalculator         = lr(() => import('./pages/PropertyCalculator'));
+const AdvancedMortgageCalculator = lr(() => import('./pages/AdvancedMortgageCalculator'));
+const GSTCalculator              = lr(() => import('./pages/GSTCalculator'));
+const ScientificCalculator       = lr(() => import('./pages/ScientificCalculator'));
+const BudgetTracker              = lr(() => import('./pages/BudgetTracker'));
+const GoalPlanner                = lr(() => import('./pages/GoalPlanner'));
+const AIFinancialAssistant       = lr(() => import('./pages/AIFinancialAssistant'));
+const CompareCalculator          = lr(() => import('./pages/CompareCalculator'));
+const AgeCalculator              = lr(() => import('./pages/AgeCalculator'));
+const WorldClock                 = lr(() => import('./pages/WorldClock'));
+const InsuranceCalculator        = lr(() => import('./pages/InsuranceCalculator'));
+const InsuranceCompare           = lr(() => import('./pages/InsuranceCompare'));
 
-// Web legal pages — lazy loaded
-const WebPrivacyPolicy           = lazy(() => import('./pages/legal/PrivacyPolicy'));
-const WebAbout                   = lazy(() => import('./pages/legal/About'));
-const WebDataPrivacy             = lazy(() => import('./pages/legal/DataPrivacy'));
-const WebTermsOfService          = lazy(() => import('./pages/legal/TermsOfService'));
+// Support Pages — lazy loaded with retry
+const PrivacyPolicy              = lr(() => import('./pages/PrivacyPolicy'));
+const TermsOfService             = lr(() => import('./pages/TermsOfService'));
+const About                      = lr(() => import('./pages/About'));
+const DataSafety                 = lr(() => import('./pages/DataSafety'));
+const SavedCalculations          = lr(() => import('./pages/SavedCalculations'));
+const CalculationHistory         = lr(() => import('./pages/CalculationHistory'));
+const BookmarkedSchemes          = lr(() => import('./pages/BookmarkedSchemes'));
+const Notifications              = lr(() => import('./pages/Notifications'));
+const ValidatorPage              = lr(() => import('./pages/ValidatorPage'));
+
+// App-level modals — lazy loaded with retry (native app only)
+const GlobalDisclaimerModal      = lr(() => import('./components/GlobalDisclaimerModal'));
+const PdfActionSheet             = lazy(() => lazyRetry(() => import('./components/PdfActionSheet').then(m => ({ default: m.PdfActionSheet }))));
+
+// Web legal pages — lazy loaded with retry
+const WebPrivacyPolicy           = lr(() => import('./pages/legal/PrivacyPolicy'));
+const WebAbout                   = lr(() => import('./pages/legal/About'));
+const WebDataPrivacy             = lr(() => import('./pages/legal/DataPrivacy'));
+const WebTermsOfService          = lr(() => import('./pages/legal/TermsOfService'));
 
 const LazyFallback = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: '14px', color: '#666' }}>

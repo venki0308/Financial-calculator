@@ -957,9 +957,31 @@ export default function InsuranceCalculator() {
                 {[10, 15, 20, 25, 30, 35, 40].map(y => <span key={y}>{y}</span>)}
               </div>
               <div className="h-3" />
-              <NumberInput label={t('ins.life.customCover')} value={customCover} onChange={setCustomCover}
-                min={0} max={1000000000} step={1000000} prefix="₹"
-                helperText={t('ins.life.customCoverHelper')} />
+              <p className="text-xs font-medium text-muted-foreground mb-2">{t('ins.life.customCover')}</p>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {[
+                  { label: 'None', value: 0 },
+                  { label: '₹1Cr', value: 10000000 },
+                  { label: '₹2Cr', value: 20000000 },
+                  { label: '₹3Cr', value: 30000000 },
+                  { label: '₹5Cr', value: 50000000 },
+                  { label: '₹10Cr', value: 100000000 },
+                  { label: '₹15Cr', value: 150000000 },
+                  { label: '₹20Cr', value: 200000000 },
+                  { label: '₹25Cr', value: 250000000 },
+                  { label: '₹50Cr', value: 500000000 },
+                  { label: '₹100Cr', value: 1000000000 },
+                  { label: '₹200Cr', value: 2000000000 },
+                ].map(opt => (
+                  <button key={opt.value} onClick={() => setCustomCover(opt.value)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                      customCover === opt.value
+                        ? 'bg-blue-500 text-white shadow-sm'
+                        : 'bg-card border border-border text-muted-foreground'
+                    }`}>{opt.label}</button>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground">{t('ins.life.customCoverHelper')}</p>
             </div>
 
             {/* R1 — Recommended Cover */}
