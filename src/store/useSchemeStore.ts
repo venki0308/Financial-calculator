@@ -12,7 +12,7 @@ export const useSchemeStore = create<SchemeState>()(
     persist(
         (set, get) => ({
             bookmarkedSchemes: [],
-            addBookmark: (id) => set((s) => ({ bookmarkedSchemes: [...s.bookmarkedSchemes, id] })),
+            addBookmark: (id) => set((s) => ({ bookmarkedSchemes: s.bookmarkedSchemes.includes(id) ? s.bookmarkedSchemes : [...s.bookmarkedSchemes, id] })),
             removeBookmark: (id) => set((s) => ({ bookmarkedSchemes: s.bookmarkedSchemes.filter((b) => b !== id) })),
             isBookmarked: (id) => get().bookmarkedSchemes.includes(id),
         }),

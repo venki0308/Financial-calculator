@@ -44,7 +44,7 @@ export default function Schemes() {
                 <button onClick={() => setSelectedCat('')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap ${!selectedCat ? 'bg-brand-green text-white' : 'bg-white dark:bg-card border border-slate-200 dark:border-border text-muted-foreground dark:text-muted-foreground'}`}>{t('schemes.all')}</button>
                 {schemeCategories.map((c) => {
-                    const catMap: Record<string, string> = { 'Women': 'schemes.catWomen', 'Education': 'schemes.catEducation', 'Farmers': 'schemes.catFarmers', 'MSME': 'schemes.catMSME', 'Senior Citizens': 'schemes.catSenior', 'Insurance': 'schemes.catInsurance', 'Housing': 'schemes.catHousing', 'Health': 'schemes.catHealth', 'Banking': 'schemes.catBanking', 'Pension': 'schemes.catPension', 'Employment': 'schemes.catEmployment', 'Social Welfare': 'schemes.catSocialWelfare' };
+                    const catMap: Record<string, string> = { 'Women': 'schemes.catWomen', 'Education': 'schemes.catEducation', 'Farmers': 'schemes.catFarmers', 'MSME': 'schemes.catMSME', 'Senior Citizens': 'schemes.catSenior', 'Insurance': 'schemes.catInsurance', 'Housing': 'schemes.catHousing', 'Health': 'schemes.catHealth', 'Banking': 'schemes.catBanking', 'Pension': 'schemes.catPension', 'Employment': 'schemes.catEmployment', 'Social Welfare': 'schemes.catSocialWelfare', 'Digital': 'schemes.catDigital', 'Energy': 'schemes.catEnergy', 'Youth': 'schemes.catYouth', 'Skill Development': 'schemes.catSkillDev', 'Infrastructure': 'schemes.catInfra' };
                     return (
                         <button key={c.name} onClick={() => setSelectedCat(selectedCat === c.name ? '' : c.name)}
                             className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap ${selectedCat === c.name ? 'bg-brand-green text-white' : 'bg-white dark:bg-card border border-slate-200 dark:border-border text-muted-foreground dark:text-muted-foreground'}`}>{catMap[c.name] ? t(catMap[c.name]) : c.name}</button>
@@ -64,7 +64,7 @@ export default function Schemes() {
                             className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border animate-slide-up" style={{ animationDelay: `${i * 30}ms` }}>
                             <div className="flex items-start justify-between mb-2">
                                 <div className="flex gap-1.5 flex-wrap">
-                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-brand-blue/15 text-brand-blue">Central Govt</span>
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-brand-blue/15 text-brand-blue">{t('schemes.centralGovt')}</span>
                                     {scheme.popular && <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-brand-green/15 text-brand-green">{t('schemes.popular')}</span>}
                                 </div>
                                 <button onClick={(e) => { e.stopPropagation(); isBookmarked ? removeBookmark(scheme.id) : addBookmark(scheme.id); }}>

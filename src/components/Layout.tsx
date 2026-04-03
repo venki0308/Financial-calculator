@@ -37,9 +37,11 @@ export default function Layout() {
             <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-[#1E293B] z-[9999] safe-area-bottom">
                 <div className="flex items-center justify-around h-20 px-2 pb-1">
                     {tabs.map(({ to, icon: Icon, label }) => {
+                        const homeSubPages = ['/', '/financial-advisor', '/goal-planner', '/compare', '/world-clock', '/notifications', '/insurance-compare'];
                         const isActive = location.pathname === to ||
                 (to !== '/' && location.pathname.startsWith(to)) ||
-                (to === '/calculators' && location.pathname.startsWith('/calculator/')) ||
+                (to === '/' && homeSubPages.includes(location.pathname)) ||
+                (to === '/calculators' && (location.pathname.startsWith('/calculator/') || location.pathname.startsWith('/insurance'))) ||
                 (to === '/schemes' && location.pathname.startsWith('/scheme/'));
                         return (
                             <NavLink key={to} to={to} className="flex flex-col items-center gap-1 py-1 px-3">

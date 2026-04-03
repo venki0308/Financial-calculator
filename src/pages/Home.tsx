@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe, Search, X } from 'lucide-react';
+import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe, Search, X, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
@@ -47,6 +47,12 @@ const calcCatalog: Record<string, { icon: React.ElementType; color: string; labe
     '/world-clock': { icon: Globe, color: '#3B82F6', label: 'calculators.worldClock.name' },
     '/calculator/ppf-advanced': { icon: Landmark, color: '#10B981', label: 'calculators.ppf.name' },
     '/calculator/overdraft': { icon: Wallet, color: '#3B82F6', label: 'calculators.overdraft.name' },
+    '/calculator/mortgage-calculator': { icon: Landmark, color: '#3B82F6', label: 'Advanced Mortgage' },
+    '/calculator/personal-loan': { icon: Calculator, color: '#8B5CF6', label: 'Personal Loan' },
+    '/calculator/education-loan': { icon: GraduationCap, color: '#F59E0B', label: 'Education Loan' },
+    '/calculator/scientific': { icon: Calculator, color: '#3B82F6', label: 'Scientific Calculator' },
+    '/calculator/insurance': { icon: Shield, color: '#10B981', label: 'Insurance Calculator' },
+    '/insurance-compare': { icon: GitCompare, color: '#06B6D4', label: 'Health Insurance' },
 };
 
 // Default items if history is empty
@@ -339,7 +345,7 @@ export default function Home() {
                             <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-brand-purple/10 flex items-center justify-center text-brand-purple">
                                 <Wallet size={14} />
                             </div>
-                            <ChevronRight size={14} className="text-slate-600" />
+                            <ChevronRight size={14} className="text-muted-foreground" />
                         </div>
                         <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">{t('home.currentBalance')}</p>
                         <p className="text-lg font-bold text-slate-900 dark:text-foreground mt-0.5">{formatINR(effectiveBalance)}</p>
@@ -349,7 +355,7 @@ export default function Home() {
                             <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-brand-green/10 flex items-center justify-center text-brand-green">
                                 <TrendingUp size={14} />
                             </div>
-                            <ChevronRight size={14} className="text-slate-600" />
+                            <ChevronRight size={14} className="text-muted-foreground" />
                         </div>
                         <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">{t('home.monthlyIncome')}</p>
                         <p className="text-lg font-bold text-slate-900 dark:text-foreground mt-0.5">{formatINR(monthlyIncome)}</p>

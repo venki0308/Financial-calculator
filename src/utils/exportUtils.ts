@@ -58,14 +58,19 @@ function showToast(message: string, isError = false) {
 // ─── Shared PDF Disclaimer ──────────────────────────────────────────────────
 function addPdfDisclaimer(doc: jsPDF) {
     const totalPages: number = (doc as any).internal.getNumberOfPages();
-    const disclaimer = 'Disclaimer: The calculations provided are estimates for informational purposes only and should not be considered financial advice. Actual results may vary. Consult a certified financial advisor before making decisions.';
+    const pw = doc.internal.pageSize.getWidth();
+    const ph = doc.internal.pageSize.getHeight();
+    const disc = 'For informational purposes only. Consult a certified financial advisor before making decisions. Results are estimates.';
     for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
-        doc.setFontSize(6.5);
-        doc.setTextColor(160);
-        const lines = doc.splitTextToSize(disclaimer, 182);
-        const startY = 290 - (lines.length * 3.5);
-        doc.text(lines, 14, startY);
+        doc.setDrawColor(210, 210, 210);
+        doc.line(14, ph - 19, pw - 14, ph - 19);
+        doc.setFontSize(8); doc.setTextColor(100);
+        doc.text('FinCalix — Your Financial Companion', 14, ph - 13);
+        doc.text(`Page ${i} of ${totalPages}`, pw - 14, ph - 13, { align: 'right' });
+        doc.setFontSize(6.5); doc.setTextColor(155);
+        const dLines = doc.splitTextToSize(disc, pw - 28);
+        doc.text(dLines, 14, ph - 8);
     }
 }
 
@@ -274,15 +279,7 @@ export const exportToPDF = async (
             }
         }
 
-        // Footer on each page
-        const totalPages: number = (doc as any).internal.getNumberOfPages();
-        for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setTextColor(150);
-            doc.text('FinCalix — Your Financial Companion', 14, 285);
-            doc.text(`Page ${i} / ${totalPages}`, 196, 285, { align: 'right' });
-        }
+        addPdfDisclaimer(doc);
 
         const pdfFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
 

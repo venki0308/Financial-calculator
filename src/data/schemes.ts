@@ -357,7 +357,7 @@ export const schemes: Scheme[] = [
     },
     {
         id: 'c-pmsgmby', name: 'PM Surya Ghar Muft Bijli Yojana', governmentLevel: 'central',
-        category: 'Digital', schemeCategory: 'Direct Benefit Transfer',
+        category: 'Energy', schemeCategory: 'Direct Benefit Transfer',
         tags: ['New 2024', 'Popular', 'Verified'], popular: true,
         description: 'Central subsidy for rooftop solar installation on residential households to get up to 300 units free electricity per month.',
         ministry: 'Ministry of New and Renewable Energy',
@@ -591,7 +591,7 @@ export const schemes: Scheme[] = [
         tags: ['Verified'], popular: false,
         description: 'Market-demand-driven free skill training and guaranteed placement for rural poor youth from BPL families.',
         ministry: 'Ministry of Rural Development',
-        officialWebsite: 'http://ddugky.info/',
+        officialWebsite: 'https://ddugky.info/',
         applicationType: 'Through Government Agency' as ApplicationType,
         eligibility: ['Rural youth aged 15–35 from BPL families', 'SC/ST, minorities, women prioritized'],
         benefits: ['Free residential skill training', 'Placement minimum target: 75% of trained candidates', 'Post-placement support 12 months'],
@@ -599,22 +599,6 @@ export const schemes: Scheme[] = [
         howToApply: ['Contact nearest DDU-GKY implementing agency', 'Register via district rural development office'],
         launchYear: 2014, lastVerified: '2026-03-05', verifiedSource: 'ddugky.info', isActive: true,
     },
-    {
-        id: 'c-pmegp', name: 'PM Employment Generation Programme', governmentLevel: 'central',
-        category: 'MSME', schemeCategory: 'Loan Scheme',
-        tags: ['Verified'], popular: false,
-        description: 'Provides 15–35% capital subsidy and bank loan support to set up new micro enterprises in manufacturing and services.',
-        ministry: 'Ministry of Micro, Small and Medium Enterprises',
-        officialWebsite: 'https://www.kviconline.gov.in',
-        applicationType: 'Online Application' as ApplicationType,
-        benefitAmount: 'Subsidy 15–35% of project cost',
-        eligibility: ['Individuals 18+ years', 'Min VIII pass for projects >₹10L', 'SHGs, charitable trusts, co-op societies'],
-        benefits: ['15–35% subsidy on project cost by location/category', 'Bank loan for remaining cost', 'No income ceiling'],
-        documents: ['Aadhaar Card', 'Project report', 'Bank account', 'Caste/education certificate if applicable'],
-        howToApply: ['Apply at kviconline.gov.in/pmegponline', 'KVIC/KVIB/DIC reviews and forwards to bank', 'Subsidy released after project completion'],
-        launchYear: 2008, lastVerified: '2026-03-05', verifiedSource: 'kviconline.gov.in', isActive: true,
-    },
-
     // ── WOMEN / CHILDREN ─────────────────────────────────────────────────────
     {
         id: 'c-ssy', name: 'Sukanya Samriddhi Yojana', governmentLevel: 'central',

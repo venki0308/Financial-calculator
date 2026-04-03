@@ -331,6 +331,7 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
             getTotalSpent: () => {
                 const now = new Date();
                 return get().getEntriesByMonth(now.getFullYear(), now.getMonth() + 1)
+                    .filter((e) => (e.entryType || 'expense') === 'expense')
                     .reduce((sum, e) => sum + e.amount, 0);
             },
 
@@ -354,7 +355,7 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
             getMonthlySpentByCategory: (category) => {
                 const now = new Date();
                 return get().getEntriesByMonth(now.getFullYear(), now.getMonth() + 1)
-                    .filter((e) => e.category === category)
+                    .filter((e) => (e.entryType || 'expense') === 'expense' && e.category === category)
                     .reduce((sum, e) => sum + e.amount, 0);
             },
             

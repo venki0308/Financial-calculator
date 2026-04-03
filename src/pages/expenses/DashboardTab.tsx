@@ -79,7 +79,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
     const categoryBudgetProgress = useMemo(() => {
         const budgetMap = categoryBudgets as unknown as Record<string, number>;
         const catTotals: Record<string, number> = {};
-        monthEntries.forEach(e => {
+        monthEntries.filter(e => (e.entryType || 'expense') === 'expense').forEach(e => {
             const cat = e.category || e.categoryId || 'others';
             catTotals[cat] = (catTotals[cat] || 0) + e.amount;
         });
@@ -139,7 +139,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
     // Category breakdown for pie chart
     const categoryTotals = useMemo(() => {
         const map: Record<string, number> = {};
-        monthEntries.forEach((e) => {
+        monthEntries.filter(e => (e.entryType || 'expense') === 'expense').forEach((e) => {
             const cat = e.category || e.categoryId || 'others';
             map[cat] = (map[cat] || 0) + e.amount;
         });
@@ -162,7 +162,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
         }],
     };
 
-    const recentExpenses = [...monthEntries].sort(
+    const recentExpenses = [...monthEntries].filter(e => (e.entryType || 'expense') === 'expense').sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     ).slice(0, 5);
 
@@ -660,7 +660,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
             {/* Subscriptions Summary Row */}
             {subscriptions.filter(s => s.isActive).length > 0 && (() => {
                 const activeSubs = subscriptions.filter(s => s.isActive);
-                const subMonthlyTotal = activeSubs.reduce((sum, s) => sum + Math.round(s.billingCycle === 'monthly' ? s.amount : s.amount / 12), 0);
+                const subMonthlyTotal = activeSubs.reduce((sum, s) => sum + Math.round(s.billingCycle === 'monthly' ? s.amount : s.billingCycle === 'quarterly' ? s.amount / 3 : s.amount / 12), 0);
                 const nextRenewal = [...activeSubs].sort((a, b) => new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime())[0];
                 return (
                     <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 flex items-center justify-between mt-4">

@@ -422,7 +422,9 @@
         "catSocialWelfare": "Social Welfare",
         "catDigital": "Digital",
         "catEnergy": "Energy",
-        "catYouth": "Youth"
+        "catYouth": "Youth",
+        "catSkillDev": "Skill Development",
+        "catInfra": "Infrastructure"
     },
     "profile": {
         "title": "Profile",

@@ -255,13 +255,18 @@ export default function IncomeTaxCalculator() {
     // ─── Old Regime Deductions (always computed for comparison) ────────────────
     const oldDeductions = useMemo(() => {
         const stdDed = 50000;
-        // Children's allowance exemption: max ₹3,000/month × 2 children = ₹72,000/yr (education)
-        //                                 max ₹9,000/month × 2 children = ₹216,000/yr (hostel)
-        const childEduExempt = Math.min(num('childEducationAllowance') * multiplier, 72000);
-        const childHostelExempt = Math.min(num('childHostelAllowance') * multiplier, 216000);
+        // Children's allowance exemption per Rule 2BB: ₹100/month/child (max 2) = ₹2,400/yr (education)
+        //                                             ₹300/month/child (max 2) = ₹7,200/yr (hostel)
+        const childEduExempt = Math.min(num('childEducationAllowance') * multiplier, 2400);
+        const childHostelExempt = Math.min(num('childHostelAllowance') * multiplier, 7200);
+        // Employee PF counts toward 80C; Professional Tax is deductible under Sec 16(iii)
+        const employeePF = num('employeePF') * multiplier;
+        const profTax = num('professionalTax') * multiplier;
+        const total80C = Math.min(num('section80C') + employeePF, 150000);
         return (
             stdDed +
-            Math.min(num('section80C'), 150000) +
+            profTax + // Sec 16(iii) — Professional Tax deduction
+            total80C +
             Math.min(num('section80D'), 25000) +
             Math.min(num('section80CCD'), 50000) +
             num('section80E') +
@@ -650,8 +655,8 @@ export default function IncomeTaxCalculator() {
                             <CollapsibleSection title="Additional Deductions">
                                 <InputRow label="Sec 80E / 129 (Education Loan Interest)" k="section80E" value={inputs.section80E} onChange={set} hint="No upper limit — ITA 2025 Sec 129" />
                                 <InputRow label="Sec 80G / 133 (Donations)" k="section80G" value={inputs.section80G} onChange={set} hint="Amount varies by donee — ITA 2025 Sec 133" />
-                                <InputRow label={`Children's Education Allowance (${inputMode === 'monthly' || inputMode === 'payslip' ? 'Monthly' : 'Annual'})`} k="childEducationAllowance" value={inputs.childEducationAllowance} onChange={set} hint="Exempt up to ₹3,000/month per child (max 2 children) — Sec 10(14)" />
-                                <InputRow label={`Children's Hostel Allowance (${inputMode === 'monthly' || inputMode === 'payslip' ? 'Monthly' : 'Annual'})`} k="childHostelAllowance" value={inputs.childHostelAllowance} onChange={set} hint="Exempt up to ₹9,000/month per child (max 2 children) — Sec 10(14)" />
+                                <InputRow label={`Children's Education Allowance (${inputMode === 'monthly' || inputMode === 'payslip' ? 'Monthly' : 'Annual'})`} k="childEducationAllowance" value={inputs.childEducationAllowance} onChange={set} hint="Exempt up to ₹100/month per child (max 2 children) — Sec 10(14), Rule 2BB" />
+                                <InputRow label={`Children's Hostel Allowance (${inputMode === 'monthly' || inputMode === 'payslip' ? 'Monthly' : 'Annual'})`} k="childHostelAllowance" value={inputs.childHostelAllowance} onChange={set} hint="Exempt up to ₹300/month per child (max 2 children) — Sec 10(14), Rule 2BB" />
                             </CollapsibleSection>
 
                             <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex justify-between items-center">

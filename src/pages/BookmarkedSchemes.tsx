@@ -22,7 +22,7 @@ export default function BookmarkedSchemes() {
             <div className="px-4 mt-6">
                 {savedSchemes.length === 0 ? (
                     <div className="text-center py-20">
-                        <Bookmark size={48} className="text-slate-700 mx-auto mb-4" />
+                        <Bookmark size={48} className="text-muted-foreground mx-auto mb-4" />
                         <p className="text-muted-foreground text-sm">No bookmarked schemes</p>
                     </div>
                 ) : (

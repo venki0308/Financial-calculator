@@ -211,9 +211,9 @@ export default function SchemeDetail() {
                         </div>
                         <p className="text-muted-foreground dark:text-muted-foreground text-[11px] leading-relaxed pl-6">
                             Last verified: {new Date(scheme.lastVerified).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            {scheme.verifiedSource && <> Â· Source: <a href={`https://${scheme.verifiedSource}`} target="_blank" rel="noopener noreferrer" className="text-brand-blue underline">{scheme.verifiedSource}</a></>}
+                            {scheme.verifiedSource && <> · Source: <a href={`https://${scheme.verifiedSource}`} target="_blank" rel="noopener noreferrer" className="text-brand-blue underline">{scheme.verifiedSource}</a></>}
                         </p>
-                        <p className="text-muted-foreground dark:text-slate-600 text-[10px] mt-1 pl-6 italic">{t('schemes.alwaysCheck')}</p>
+                        <p className="text-muted-foreground text-[10px] mt-1 pl-6 italic">{t('schemes.alwaysCheck')}</p>
                     </div>
                 )}
             </div>

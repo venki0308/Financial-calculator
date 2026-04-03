@@ -94,7 +94,7 @@ export default function Settings() {
                             <p className="text-foreground font-medium text-sm">{t('settings.language')}</p>
                             <p className="text-muted-foreground text-xs">{currentLang.nativeName}</p>
                         </div>
-                        <ChevronRight size={16} className="text-slate-600" />
+                        <ChevronRight size={16} className="text-muted-foreground" />
                     </button>
                 </div>
 
@@ -104,7 +104,7 @@ export default function Settings() {
                     <button onClick={() => setShowNotif(true)} className="w-full flex items-center gap-4 p-4">
                         <Bell size={20} className="text-brand-purple" />
                         <span className="text-foreground font-medium text-sm flex-1 text-left">{t('settings.notifications')}</span>
-                        <ChevronRight size={16} className="text-slate-600" />
+                        <ChevronRight size={16} className="text-muted-foreground" />
                     </button>
                 </div>
 
@@ -112,13 +112,13 @@ export default function Settings() {
                 <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.about')}</p>
                 <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
                     <MenuItem icon={Info} label={t('settings.about')} color="#10B981" onClick={() => navigate('/about')} />
-                    <div className="h-px bg-dark-border mx-4" />
+                    <div className="h-px bg-border mx-4" />
                     <MenuItem icon={FileText} label={t('settings.privacyPolicy')} color="#3B82F6" onClick={() => navigate('/privacy-policy')} />
-                    <div className="h-px bg-dark-border mx-4" />
+                    <div className="h-px bg-border mx-4" />
                     <MenuItem icon={FileText} label="Data & Privacy" color="#10B981" onClick={() => navigate('/data-safety')} />
-                    <div className="h-px bg-dark-border mx-4" />
+                    <div className="h-px bg-border mx-4" />
                     <MenuItem icon={FileText} label={t('settings.termsOfService')} color="#8B5CF6" onClick={() => navigate('/terms-of-service')} />
-                    <div className="h-px bg-dark-border mx-4" />
+                    <div className="h-px bg-border mx-4" />
                     <MenuItem icon={Star} label={t('settings.rateApp')} color="#F59E0B" onClick={() => {
                         const packageId = 'com.fincalix.app';
                         if (Capacitor.isNativePlatform()) {
@@ -128,7 +128,7 @@ export default function Settings() {
                             window.open(`https://play.google.com/store/apps/details?id=${packageId}`, '_blank');
                         }
                     }} />
-                    <div className="h-px bg-dark-border mx-4" />
+                    <div className="h-px bg-border mx-4" />
                     <MenuItem icon={Share2} label={t('settings.shareApp')} color="#EC4899" onClick={async () => {
                         const shareData = {
                             title: 'FinCalix – Financial Calculator App',
@@ -187,14 +187,14 @@ export default function Settings() {
                         </div>
                         <div className="flex-1 text-left">
                             <p className="text-red-400 font-medium text-sm">Clear All Data</p>
-                            <p className="text-slate-600 text-xs">Reset app to fresh install state</p>
+                            <p className="text-muted-foreground text-xs">Reset app to fresh install state</p>
                         </div>
-                        <ChevronRight size={16} className="text-slate-600" />
+                        <ChevronRight size={16} className="text-muted-foreground" />
                     </button>
                 </div>
 
                 <div className="text-center pb-8 mt-2 animate-fade-in delay-500">
-                    <p className="text-slate-600 text-xs text-brand-purple/80 dark:text-cyan-400 font-bold mb-1">FinCalix v{APP_VERSION}</p>
+                    <p className="text-muted-foreground text-xs text-brand-purple/80 dark:text-cyan-400 font-bold mb-1">FinCalix v{APP_VERSION}</p>
                     <p className="text-slate-400 text-[10px]">All your data is stored locally on this device</p>
                 </div>
             </div>
@@ -276,7 +276,7 @@ function MenuItem({ icon: Icon, label, color, onClick }: { icon: React.ElementTy
         <button onClick={onClick} className="w-full flex items-center gap-4 p-4 rounded-2xl bg-card border border-border">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15` }}><Icon size={20} style={{ color }} /></div>
             <span className="text-foreground font-medium text-sm flex-1 text-left">{label}</span>
-            <ChevronRight size={16} className="text-slate-600" />
+            <ChevronRight size={16} className="text-muted-foreground" />
         </button>
     );
 }

@@ -130,7 +130,7 @@ export default function Profile() {
                     <span className="text-foreground font-medium text-sm block">{t('settings.language')}</span>
                     <span className="text-muted-foreground text-xs">{currentLangName}</span>
                 </div>
-                <ChevronRight size={16} className="text-slate-600" />
+                <ChevronRight size={16} className="text-muted-foreground" />
             </button>
 
             {/* Menu */}
@@ -149,7 +149,7 @@ export default function Profile() {
                             </div>
                             <span className="text-foreground font-medium text-sm flex-1 text-left">{label}</span>
                             {badge > 0 && <span className="px-2 py-0.5 rounded-full bg-brand-green/15 text-brand-green text-xs font-medium">{badge}</span>}
-                            <ChevronRight size={16} className="text-slate-600" />
+                            <ChevronRight size={16} className="text-muted-foreground" />
                         </motion.button>
                     );
                 })}

@@ -416,7 +416,9 @@
         "catSocialWelfare": "சமூக நலன்",
         "catDigital": "Digital",
         "catEnergy": "Energy",
-        "catYouth": "Youth"
+        "catYouth": "Youth",
+        "catSkillDev": "திறன் மேம்பாடு",
+        "catInfra": "அடிப்படை கட்டமைப்பு"
     },
     "profile": {
         "title": "சுயவிவரம்",

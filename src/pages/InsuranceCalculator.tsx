@@ -203,16 +203,16 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
   );
 }
 
-function ScoreDial({ score }: { score: number }) {
+function ScoreDial({ score, label: overrideLabel }: { score: number; label?: string }) {
   const c = useAppColors();
   const R = 90;
   const circ = Math.PI * R;
   const color = score <= 40 ? '#ef4444' : score <= 75 ? '#f59e0b' : '#22c55e';
-  const label = score <= 40 ? 'Critically Underinsured'
+  const label = overrideLabel || (score <= 40 ? 'Critically Underinsured'
     : score <= 60 ? 'Underinsured'
     : score <= 75 ? 'Adequate for basics'
     : score <= 88 ? 'Well covered'
-    : 'Comprehensively covered';
+    : 'Comprehensively covered');
 
   return (
     <div className="flex flex-col items-center py-2">
@@ -784,13 +784,19 @@ export default function InsuranceCalculator() {
                   <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
                     <p className="text-sm font-bold text-foreground mb-0.5">{t('ins.health.adequacyTitle')}</p>
                     <p className="text-[10px] text-muted-foreground mb-3">{t('ins.health.adequacySubtitle')}</p>
-                    <ScoreDial score={adequacyScore} />
+                    <ScoreDial score={adequacyScore} label={
+                      adequacyScore <= 40 ? t('ins.health.scoreUnderinsured')
+                      : adequacyScore <= 60 ? t('ins.health.scoreUnder')
+                      : adequacyScore <= 75 ? t('ins.health.scoreAdequate')
+                      : adequacyScore <= 88 ? t('ins.health.scoreWell')
+                      : t('ins.health.scoreComprehensive')
+                    } />
                     <p className="text-[11px] text-muted-foreground leading-relaxed mt-4 text-center px-2">{adequacyExplanation}</p>
                     <div className="mt-4 grid grid-cols-3 gap-2">
                       {[
-                        { label: 'Cover', val: fmtCr(si) },
-                        { label: 'City', val: city.charAt(0).toUpperCase() + city.slice(1) },
-                        { label: 'Members', val: String(allAges.length) },
+                        { label: t('ins.health.cover'), val: fmtCr(si) },
+                        { label: t('ins.health.city'), val: city.charAt(0).toUpperCase() + city.slice(1) },
+                        { label: t('ins.health.members'), val: String(allAges.length) },
                       ].map(({ label, val }) => (
                         <div key={label} className="text-center p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
                           <p className="text-[9px] text-muted-foreground uppercase font-bold">{label}</p>

@@ -94,6 +94,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
     const overBudget = selectedCatBudget > 0 && remaining < 0;
 
     const handleQuickAdd = (qa: typeof QUICK_ADD[0]) => {
+        setFEntryType('expense');
         setFCategory(qa.category);
         setFAmount(qa.amount.toString());
         setFDesc(t(`expenses.quickAdd.${qa.label.toLowerCase()}`));

@@ -45,8 +45,8 @@ export default function AdvancedMortgageCalculator() {
     // ─── Computed Values ────────────────────────────────────────────────────
     const loanAmount = Math.max(0, propertyValue - downPayment);
     const ltv = calculateLTV(loanAmount, propertyValue);
-    // RBI tiered LTV: ≤₹30L → 90%, ₹30L–₹75L → 80%, >₹75L → 75%
-    const maxLtv = loanAmount <= 3000000 ? 90 : loanAmount <= 7500000 ? 80 : 75;
+    // RBI tiered LTV based on property value: ≤₹30L → 90%, ₹30L–₹75L → 80%, >₹75L → 75%
+    const maxLtv = propertyValue <= 3000000 ? 90 : propertyValue <= 7500000 ? 80 : 75;
     const months = tenureYears * 12;
 
     const result = useMemo(() => {

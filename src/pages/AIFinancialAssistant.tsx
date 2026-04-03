@@ -193,7 +193,7 @@ export default function AIFinancialAssistant() {
                     const carBudget = Math.round(salary * 15);
                     const carEMI = Math.round(carBudget * 0.8 / 60);
                     const downPay = Math.round(carBudget * 0.2);
-                    const saveMonths = Math.ceil(downPay / (monthlySavings * 0.3));
+                    const saveMonths = monthlySavings > 0 ? Math.ceil(downPay / (monthlySavings * 0.3)) : 60;
                     monthlySIP = Math.round(downPay / Math.max(saveMonths, 1));
                     targetCorpus = carBudget;
                     timeline = `${Math.ceil(saveMonths / 12)} years to save down payment`;

@@ -134,15 +134,15 @@ function calcAdequacy(
 
 // ─── Sub-components ─────────────────────────────────────────────────────────────
 
-function ScoreDial({ score }: { score: number }) {
+function ScoreDial({ score, label: overrideLabel }: { score: number; label?: string }) {
   const R = 90;
   const circ = Math.PI * R;
   const color = score <= 40 ? '#ef4444' : score <= 75 ? '#f59e0b' : '#22c55e';
-  const label = score <= 40 ? 'Critically Underinsured'
+  const label = overrideLabel || (score <= 40 ? 'Critically Underinsured'
     : score <= 60 ? 'Underinsured'
     : score <= 75 ? 'Adequate for basics'
     : score <= 88 ? 'Well covered'
-    : 'Comprehensively covered';
+    : 'Comprehensively covered');
   return (
     <div className="flex flex-col items-center py-2">
       <svg viewBox="0 0 200 110" className="w-56 h-[130px]" style={{ overflow: 'visible' }}>
@@ -411,7 +411,7 @@ export default function InsuranceCompare() {
               <div className="mb-5">
                 <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                   <Users size={15} className="text-emerald-400" />
-                  Your Family Profile
+                  {t('ins.compare.profileTitle')}
                 </h2>
 
                 {/* Self & Spouse */}
@@ -640,15 +640,21 @@ export default function InsuranceCompare() {
 
               {/* Card A — Coverage Adequacy */}
               <div className="p-4 rounded-2xl bg-card border border-border">
-                <p className="text-sm font-bold text-foreground mb-0.5">Your Coverage Adequacy</p>
-                <p className="text-[10px] text-muted-foreground mb-2">Scored against city-level medical costs and family risk profile</p>
-                <ScoreDial score={adequacyScore} />
+                <p className="text-sm font-bold text-foreground mb-0.5">{t('ins.health.adequacyTitle')}</p>
+                <p className="text-[10px] text-muted-foreground mb-2">{t('ins.health.adequacySubtitle')}</p>
+                <ScoreDial score={adequacyScore} label={
+                  adequacyScore <= 40 ? t('ins.health.scoreUnderinsured')
+                  : adequacyScore <= 60 ? t('ins.health.scoreUnder')
+                  : adequacyScore <= 75 ? t('ins.health.scoreAdequate')
+                  : adequacyScore <= 88 ? t('ins.health.scoreWell')
+                  : t('ins.health.scoreComprehensive')
+                } />
                 <p className="text-[11px] text-muted-foreground leading-relaxed mt-4 text-center px-2">{adequacyExplanation}</p>
                 <div className="mt-4 grid grid-cols-3 gap-2">
                   {[
-                    { label: 'Cover', val: fmtL(sumInsured) },
-                    { label: 'City', val: cityType === 'metro' ? 'Metro' : cityType === 'tier2' ? 'Tier 2' : 'Tier 3' },
-                    { label: 'Members', val: String(allAges.length) },
+                    { label: t('ins.health.cover'), val: fmtL(sumInsured) },
+                    { label: t('ins.health.city'), val: cityType === 'metro' ? 'Metro' : cityType === 'tier2' ? 'Tier 2' : 'Tier 3' },
+                    { label: t('ins.health.members'), val: String(allAges.length) },
                   ].map(({ label, val }) => (
                     <div key={label} className="text-center p-2 rounded-xl bg-muted/50">
                       <p className="text-[9px] text-muted-foreground uppercase font-bold">{label}</p>
@@ -660,7 +666,7 @@ export default function InsuranceCompare() {
 
               {/* Card B — Premium Range */}
               <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-emerald-500/20">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Estimated Annual Premium Range</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">{t('ins.health.premiumTitle')}</p>
                 <p className="text-[9px] text-muted-foreground mb-3">Based on IRDAI actuarial rating factors</p>
                 <p className="text-2xl font-black text-foreground mb-0.5">{fmtRange(premiumData.lo, premiumData.hi)}</p>
                 <p className="text-emerald-400 text-sm font-semibold mb-4">
@@ -669,7 +675,7 @@ export default function InsuranceCompare() {
 
                 <button onClick={() => setShowBreakdown(v => !v)}
                   className="w-full flex items-center justify-between py-2.5 px-3 rounded-xl bg-white/60 dark:bg-black/10 border border-emerald-500/15 mb-3">
-                  <span className="text-[11px] font-semibold text-foreground">Per-member breakdown</span>
+                  <span className="text-[11px] font-semibold text-foreground">{t('ins.health.memberBreakdown')}</span>
                   {showBreakdown ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
@@ -684,11 +690,11 @@ export default function InsuranceCompare() {
                           </div>
                         ))}
                         <div className="border-t border-border pt-1.5 flex items-center justify-between">
-                          <span className="text-[11px] text-muted-foreground">Family floater discount</span>
+                          <span className="text-[11px] text-muted-foreground">{t('ins.health.floaterDiscount')}</span>
                           <span className="text-[11px] font-bold text-emerald-400">−{premiumData.floaterPct}%</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-bold text-foreground">Total</span>
+                          <span className="text-[11px] font-bold text-foreground">{t('ins.health.total')}</span>
                           <span className="text-[11px] font-black text-foreground">{fmtRange(premiumData.lo, premiumData.hi)}</span>
                         </div>
                       </div>
@@ -698,7 +704,7 @@ export default function InsuranceCompare() {
 
                 {hasPreExisting && (
                   <p className="text-[10px] text-amber-400 mb-3 flex items-center gap-1">
-                    <AlertTriangle size={11} /> Pre-existing loading of 20% applied
+                    <AlertTriangle size={11} /> {t('ins.health.preExistingLoading')}
                   </p>
                 )}
                 <div className="p-3 rounded-xl bg-muted/30 border border-border">
@@ -735,8 +741,8 @@ export default function InsuranceCompare() {
 
               {/* Card C — Personalised Checklist */}
               <div className="p-4 rounded-2xl bg-card border border-border">
-                <p className="text-sm font-bold text-foreground mb-0.5">Your Personalised Checklist</p>
-                <p className="text-[10px] text-muted-foreground mb-4">Based on your family profile — tap each item for details</p>
+                <p className="text-sm font-bold text-foreground mb-0.5">{t('ins.health.checklistTitle')}</p>
+                <p className="text-[10px] text-muted-foreground mb-4">{t('ins.health.checklistSubtitle')}</p>
                 <div className="space-y-2">
                   {profileChecklist.map((item, i) => (
                     <AccordionItem key={i} idx={i} title={item.title} body={item.body}
@@ -809,8 +815,8 @@ export default function InsuranceCompare() {
               <div className="p-3.5 rounded-xl bg-blue-500/5 border border-blue-500/20">
                 <div className="flex items-start gap-2.5">
                   <CheckCircle size={14} className="text-blue-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-[11px] text-blue-300 leading-relaxed">
-                    <span className="font-bold">Insurance Tip:</span> For families with parents over 60, consider buying a separate senior citizen plan for parents rather than including them in a family floater. It avoids premium loading and keeps the family floater affordable for everyone else.
+                  <p className="text-[11px] text-blue-600 dark:text-blue-300 leading-relaxed">
+                    {t('ins.compare.separateSeniorTip')}
                   </p>
                 </div>
               </div>

@@ -75,8 +75,8 @@ function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 10, height: 0 }}
             className={`group relative rounded-2xl border transition-all ${isUnread
-                ? 'bg-white dark:bg-card border-slate-200 dark:border-indigo-500/30 shadow-sm'
-                : 'bg-muted/30 border-slate-100 dark:border-slate-700/30'
+                ? 'bg-card border-border shadow-sm'
+                : 'bg-muted/30 border-border'
             }`}
         >
             {isUnread && (

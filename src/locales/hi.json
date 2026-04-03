@@ -414,7 +414,9 @@
         "catSocialWelfare": "सामाजिक कल्याण",
         "catDigital": "डिजिटल",
         "catEnergy": "ऊर्जा",
-        "catYouth": "युवा"
+        "catYouth": "युवा",
+        "catSkillDev": "कौशल विकास",
+        "catInfra": "बुनियादी ढांचा"
     },
     "profile": {
         "title": "प्रोफ़ाइल",

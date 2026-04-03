@@ -95,7 +95,7 @@ export default function ReportsTab() {
     // Category breakdown
     const categoryData = useMemo(() => {
         const map: Record<string, number> = {};
-        activeEntries.forEach((e) => {
+        activeEntries.filter(e => (e.entryType || 'expense') === 'expense').forEach((e) => {
             const cat = e.category || e.categoryId || 'others';
             map[cat] = (map[cat] || 0) + e.amount;
         });
@@ -110,7 +110,7 @@ export default function ReportsTab() {
     // Daily Trend
     const dailyTrend = useMemo(() => {
         const map: Record<string, number> = {};
-        monthEntries.forEach((e) => {
+        monthEntries.filter(e => (e.entryType || 'expense') === 'expense').forEach((e) => {
             const day = new Date(e.date).getDate().toString().padStart(2, '0');
             map[day] = (map[day] || 0) + e.amount;
         });
@@ -125,7 +125,7 @@ export default function ReportsTab() {
     const budgetVsActual = useMemo(() => {
         return EXPENSE_CATEGORIES.map((cat) => {
             const budget = (categoryBudgets as unknown as Record<string, number>)[cat.id] || 0;
-            const actual = activeEntries.filter((e) => (e.category || e.categoryId) === cat.id).reduce((s, e) => s + e.amount, 0);
+            const actual = activeEntries.filter((e) => (e.entryType || 'expense') === 'expense' && (e.category || e.categoryId) === cat.id).reduce((s, e) => s + e.amount, 0);
             return { category: cat.icon + ' ' + getCategoryDisplayName(cat.id).split(' ')[0], budget, actual };
         }).filter((row) => row.budget > 0 || row.actual > 0);
     }, [activeEntries, categoryBudgets, t]);
@@ -142,7 +142,7 @@ export default function ReportsTab() {
                 return date.getFullYear() === y && date.getMonth() + 1 === m;
             });
             const hasMonthActive = (y === currentYear && m === currentMonth) || msEntries.length > 0;
-            const spent = msEntries.reduce((s, e) => s + e.amount, 0) + (hasMonthActive ? getTotalFixed() : 0);
+            const spent = msEntries.filter(e => (e.entryType || 'expense') === 'expense').reduce((s, e) => s + e.amount, 0) + (hasMonthActive ? getTotalFixed() : 0);
             const inc = hasMonthActive ? monthlyIncome : 0;
             const saved = inc - spent;
             trend.push({ month: MONTHS[m - 1], saved, hasData: hasMonthActive });

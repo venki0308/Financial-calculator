@@ -135,7 +135,7 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
     const resultEntries = Object.entries(calc.resultValues || {}).filter(([k, v]) => k !== 'primary' && k !== 'amortization' && k !== 'schedule' && v !== undefined && v !== null && typeof v !== 'object');
 
     return (
-        <motion.div layout className={`rounded-2xl bg-gradient-to-br ${meta.gradient} border border-white/5 overflow-hidden`}>
+        <motion.div layout className={`rounded-2xl bg-gradient-to-br ${meta.gradient} border border-border overflow-hidden`}>
             <button onClick={() => setExpanded(!expanded)} className="w-full p-4 text-left">
                 <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${meta.color}20` }}>
@@ -222,7 +222,7 @@ export default function SavedCalculations() {
             <div className="px-4 mt-6">
                 {savedCalculations.length === 0 ? (
                     <div className="text-center py-20">
-                        <Bookmark size={48} className="text-slate-700 mx-auto mb-4" />
+                        <Bookmark size={48} className="text-muted-foreground mx-auto mb-4" />
                         <p className="text-muted-foreground text-sm">No saved calculations yet</p>
                         <p className="text-slate-600 text-xs mt-2">Save from any calculator to track your plans</p>
                     </div>

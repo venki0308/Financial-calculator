@@ -416,7 +416,9 @@
         "catSocialWelfare": "సామాజిక సంక్షేమం",
         "catDigital": "Digital",
         "catEnergy": "Energy",
-        "catYouth": "Youth"
+        "catYouth": "Youth",
+        "catSkillDev": "నైపుణ్య అభివృద్ధి",
+        "catInfra": "మౌలిక సదుపాయాలు"
     },
     "profile": {
         "title": "ప్రొఫైల్",

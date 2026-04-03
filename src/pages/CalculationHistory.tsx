@@ -39,7 +39,7 @@ export default function CalculationHistory() {
             <div className="px-4 mt-6">
                 {history.length === 0 ? (
                     <div className="text-center py-20">
-                        <Clock size={48} className="text-slate-700 mx-auto mb-4" />
+                        <Clock size={48} className="text-muted-foreground mx-auto mb-4" />
                         <p className="text-muted-foreground text-sm">No recent history</p>
                     </div>
                 ) : (

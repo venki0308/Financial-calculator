@@ -416,7 +416,9 @@
         "catSocialWelfare": "സാമൂഹ്യ ക്ഷേമം",
         "catDigital": "Digital",
         "catEnergy": "Energy",
-        "catYouth": "Youth"
+        "catYouth": "Youth",
+        "catSkillDev": "നൈപുണ്യ വികസനം",
+        "catInfra": "അടിസ്ഥാന സൗകര്യം"
     },
     "profile": {
         "title": "പ്രൊഫൈൽ",
