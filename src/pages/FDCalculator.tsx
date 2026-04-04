@@ -33,13 +33,29 @@ export default function FDCalculator() {
     const [years, setYears] = useState(5);
     const [compounding, setCompounding] = useState<number>(4);
     const [inflation, setInflation] = useState(6);
+    const [isSeniorCitizen, setIsSeniorCitizen] = useState(false);
     const [saved, setSaved] = useState(false);
     const [showCompare, setShowCompare] = useState(false);
     const [showGrowth, setShowGrowth] = useState(false);
     const chartRef = useRef<any>(null);
     const c = useAppColors();
 
-    const result = useMemo(() => calculateFD(principal, rate, years, compounding), [principal, rate, years, compounding]);
+    // Senior citizens get +0.50% extra on FD (most banks)
+    const effectiveRate = isSeniorCitizen ? rate + 0.5 : rate;
+
+    const result = useMemo(() => calculateFD(principal, effectiveRate, years, compounding), [principal, effectiveRate, years, compounding]);
+
+    // TDS Calculation: 10% TDS if annual interest exceeds threshold
+    const tdsInfo = useMemo(() => {
+        const annualInterest = result.interest / years;
+        const threshold = isSeniorCitizen ? 50000 : 40000; // Rs 50K for seniors, Rs 40K for others
+        const isTdsApplicable = annualInterest > threshold;
+        const annualTds = isTdsApplicable ? Math.round(annualInterest * 0.1) : 0;
+        const totalTds = annualTds * years;
+        const netInterest = result.interest - totalTds;
+        const form15 = isSeniorCitizen ? '15H' : '15G';
+        return { annualInterest: Math.round(annualInterest), threshold, isTdsApplicable, annualTds, totalTds, netInterest, form15 };
+    }, [result, years, isSeniorCitizen]);
 
     // Removed automatic notification trigger
 
@@ -52,7 +68,7 @@ export default function FDCalculator() {
             { label: 'Daily', freq: 365 },
         ];
         return freqs.map(f => {
-            const mat = principal * Math.pow(1 + rate / (100 * f.freq), years * f.freq);
+            const mat = principal * Math.pow(1 + effectiveRate / (100 * f.freq), years * f.freq);
             return { ...f, maturity: Math.round(mat), interest: Math.round(mat - principal) };
         });
     }, [principal, rate, years]);
@@ -61,7 +77,7 @@ export default function FDCalculator() {
     const yearWise = useMemo(() => {
         const data = [];
         for (let y = 1; y <= years; y++) {
-            const mat = principal * Math.pow(1 + rate / (100 * compounding), y * compounding);
+            const mat = principal * Math.pow(1 + effectiveRate / (100 * compounding), y * compounding);
             data.push({ year: y, value: Math.round(mat), interest: Math.round(mat - principal) });
         }
         return data;
@@ -114,15 +130,20 @@ export default function FDCalculator() {
             title: 'Fixed Deposit (FD) Report',
             inputs: [
                 { label: 'Deposit Amount', value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Interest Rate', value: `${effectiveRate}% p.a.${isSeniorCitizen ? ' (Senior +0.5%)' : ''}` },
                 { label: 'Tenure', value: `${years} Years` },
                 { label: 'Compounding Frequency', value: compLabel },
+                { label: 'Senior Citizen', value: isSeniorCitizen ? 'Yes' : 'No' },
                 { label: 'Assumed Inflation', value: `${inflation}% p.a.` },
             ],
             results: [
                 { label: 'Principal Invested', value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: 'Interest Earned', value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
+                { label: 'Interest Earned (Gross)', value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
                 { label: 'Maturity Amount', value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
+                ...(tdsInfo.isTdsApplicable ? [
+                    { label: 'TDS Deducted (@10%)', value: `₹${tdsInfo.totalTds.toLocaleString('en-IN')}` },
+                    { label: 'Net Interest (After TDS)', value: `₹${tdsInfo.netInterest.toLocaleString('en-IN')}` },
+                ] : []),
                 { label: 'Inflation-Adjusted Value', value: `₹${Math.round(inflationAdj.realValue).toLocaleString('en-IN')}` },
                 { label: 'Real Return Rate', value: `${inflationAdj.realReturn}%` },
             ],
@@ -200,6 +221,19 @@ export default function FDCalculator() {
                 <div className="space-y-3">
                     <NumberInput label="Deposit Amount" value={principal} onChange={setPrincipal} min={1000} max={10000000} prefix="₹" />
                     <NumberInput label="Interest Rate (p.a.)" value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} />
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
+                        <div>
+                            <span className="text-xs font-medium text-foreground">Senior Citizen (60+)</span>
+                            <p className="text-[10px] text-muted-foreground">+0.50% extra rate at most banks</p>
+                        </div>
+                        <button onClick={() => setIsSeniorCitizen(!isSeniorCitizen)}
+                            className={`w-12 h-6 rounded-full transition-all relative ${isSeniorCitizen ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${isSeniorCitizen ? 'left-[26px]' : 'left-0.5'}`} />
+                        </button>
+                    </div>
+                    {isSeniorCitizen && (
+                        <p className="text-[10px] text-emerald-500 font-medium -mt-1">Effective rate: {effectiveRate}% (base {rate}% + 0.50% senior benefit)</p>
+                    )}
                     <NumberInput label="Tenure (years)" value={years} onChange={setYears} min={1} max={20} suffix=" years" />
                     <NumberInput label="Assumed Inflation (p.a.)" value={inflation} onChange={setInflation} min={1} max={15} suffix="%" step={0.5} helperText="Used for inflation-adjusted real return" />
                 </div>
@@ -220,6 +254,23 @@ export default function FDCalculator() {
                             <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Interest</p>
                             <p className="text-brand-green font-bold text-sm">{formatINR(result.interest)}</p>
                         </div>
+                    </div>
+
+                    {/* TDS Info */}
+                    <div className={`p-3 rounded-xl mb-4 ${tdsInfo.isTdsApplicable ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-emerald-500/10 border border-emerald-500/20'}`}>
+                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${tdsInfo.isTdsApplicable ? 'text-amber-500' : 'text-emerald-500'}`}>
+                            TDS on FD Interest
+                        </p>
+                        {tdsInfo.isTdsApplicable ? (
+                            <div className="space-y-1">
+                                <p className="text-xs text-foreground">Annual interest {formatINR(tdsInfo.annualInterest)} exceeds ₹{(tdsInfo.threshold / 1000).toFixed(0)}K threshold</p>
+                                <p className="text-xs text-amber-500 font-bold">TDS @10%: {formatINR(tdsInfo.annualTds)}/yr · Total: {formatINR(tdsInfo.totalTds)}</p>
+                                <p className="text-xs text-foreground font-medium">Net interest after TDS: {formatINR(tdsInfo.netInterest)}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">Submit Form {tdsInfo.form15} to avoid TDS if total income is below taxable limit.</p>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-emerald-500">No TDS — annual interest ₹{tdsInfo.annualInterest.toLocaleString('en-IN')} is below ₹{(tdsInfo.threshold / 1000).toFixed(0)}K threshold</p>
+                        )}
                     </div>
 
                     {/* Chart */}

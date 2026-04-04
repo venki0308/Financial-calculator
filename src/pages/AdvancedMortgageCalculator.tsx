@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Info, Plus, Trash2, ChevronDown, ChevronUp, Calculator, Home, AlertTriangle, AlertCircle, CheckCircle2, IndianRupee, Receipt, FileText, Download } from 'lucide-react';
+import { ArrowLeft, Info, Plus, Trash2, ChevronDown, ChevronUp, Calculator, Home, AlertTriangle, AlertCircle, CheckCircle2, IndianRupee, Receipt, FileText, Download, TrendingDown, Sliders } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import NumberInput from '../components/NumberInput';
@@ -30,6 +30,12 @@ export default function AdvancedMortgageCalculator() {
     const [interestRate, setInterestRate] = useState(8.5);
     const [tenureYears, setTenureYears] = useState(20);
     const [monthlyIncome, setMonthlyIncome] = useState(150000);
+    const [loanRateType, setLoanRateType] = useState<'floating' | 'fixed'>('floating');
+
+    // ─── True Cost Inputs ──────────────────────────────────────────────────
+    const [processingFee, setProcessingFee] = useState(0);
+    const [insurancePremium, setInsurancePremium] = useState(0);
+    const [preEmiInterest, setPreEmiInterest] = useState(0);
 
     // ─── Prepayment State ───────────────────────────────────────────────────
     const [enablePrepayment, setEnablePrepayment] = useState(false);
@@ -41,6 +47,17 @@ export default function AdvancedMortgageCalculator() {
 
     const [showAmortization, setShowAmortization] = useState(false);
     const [amortPage, setAmortPage] = useState(0);
+
+    // ─── Foreclosure State ─────────────────────────────────────────────────
+    const [showForeclosure, setShowForeclosure] = useState(false);
+    const [fcMonths, setFcMonths] = useState(60);
+    const [fcRateType, setFcRateType] = useState<'floating' | 'fixed'>('floating');
+    const [fcChargePercent, setFcChargePercent] = useState(0); // RBI: 0% for floating
+
+    // ─── What-If State ─────────────────────────────────────────────────────
+    const [showWhatIf, setShowWhatIf] = useState(false);
+    const [wiRate, setWiRate] = useState(interestRate);
+    const [wiTenure, setWiTenure] = useState(tenureYears);
 
     // ─── Computed Values ────────────────────────────────────────────────────
     const loanAmount = Math.max(0, propertyValue - downPayment);
@@ -57,6 +74,16 @@ export default function AdvancedMortgageCalculator() {
         };
         return calculateAdvancedMortgage(loanAmount, interestRate, months, config);
     }, [loanAmount, interestRate, months, enablePrepayment, monthlyExtraEMI, lumpSums, prepaymentMode]);
+
+    // ─── True Cost of Loan ─────────────────────────────────────────────────
+    const trueCost = useMemo(() => {
+        const totalEmiInterest = result.totalInterest;
+        const extras = processingFee + insurancePremium + preEmiInterest;
+        const totalAmountPaid = result.totalPayment + extras;
+        const costOverLoan = totalAmountPaid - loanAmount;
+        const costPercent = loanAmount > 0 ? (costOverLoan / loanAmount) * 100 : 0;
+        return { totalEmiInterest, extras, totalAmountPaid, costOverLoan, costPercent };
+    }, [result, processingFee, insurancePremium, preEmiInterest, loanAmount]);
 
     // ─── Chart Config ───────────────────────────────────────────────────────
     const chartData = {
@@ -108,6 +135,64 @@ export default function AdvancedMortgageCalculator() {
         setLumpSums(lumpSums.map(ls => ls.id === id ? { ...ls, [field]: value } : ls));
     };
 
+    // ─── Foreclosure Computation ──────────────────────────────────────────
+    const fcResult = useMemo(() => {
+        if (!showForeclosure || !result.schedule.length || fcMonths < 1 || fcMonths >= result.schedule.length) return null;
+        const chargeRate = fcRateType === 'floating' ? 0 : fcChargePercent;
+        const row = result.schedule[fcMonths - 1];
+        const outstanding = row.closingBalance;
+        const intPaid = row.cumulativeInterest;
+        const totalIntFull = result.schedule[result.schedule.length - 1].cumulativeInterest;
+        const intSaved = totalIntFull - intPaid;
+        const charge = (outstanding * chargeRate) / 100;
+        const settlement = outstanding + charge;
+        const emisPaid = result.schedule.slice(0, fcMonths).reduce((s, r) => s + r.emi, 0);
+        const totalCostClose = emisPaid + settlement;
+        const totalCostFull = result.totalPayment;
+        return { outstanding: Math.round(outstanding), intPaid: Math.round(intPaid), intSaved: Math.round(intSaved),
+            charge: Math.round(charge), settlement: Math.round(settlement), emisPaid: Math.round(emisPaid),
+            totalCostClose: Math.round(totalCostClose), totalCostFull: Math.round(totalCostFull),
+            saving: Math.round(totalCostFull - totalCostClose), netBenefit: Math.round(intSaved - charge) };
+    }, [showForeclosure, fcMonths, fcRateType, fcChargePercent, result]);
+
+    // ─── Yearly Foreclosure Timeline ─────────────────────────────────────
+    const fcTimeline = useMemo(() => {
+        if (!showForeclosure || !result.schedule.length) return [];
+        const chargeRate = fcRateType === 'floating' ? 0 : fcChargePercent;
+        const totalIntFull = result.schedule[result.schedule.length - 1].cumulativeInterest;
+        const totalYears = Math.ceil(result.schedule.length / 12);
+        const timeline = [];
+        for (let yr = 1; yr <= totalYears; yr++) {
+            const m = Math.min(yr * 12, result.schedule.length - 1);
+            const row = result.schedule[m - 1];
+            if (!row) continue;
+            const outstanding = row.closingBalance;
+            const intSaved = totalIntFull - row.cumulativeInterest;
+            const charge = (outstanding * chargeRate) / 100;
+            const emisPaid = result.schedule.slice(0, m).reduce((s, r) => s + r.emi, 0);
+            const settlement = outstanding + charge;
+            const saving = result.totalPayment - (emisPaid + settlement);
+            timeline.push({ year: yr, outstanding: Math.round(outstanding), settlement: Math.round(settlement), intSaved: Math.round(intSaved), saving: Math.round(saving) });
+        }
+        return timeline;
+    }, [showForeclosure, fcRateType, fcChargePercent, result]);
+
+    // ─── What-If Computation ────────────────────────────────────────────
+    const wiResult = useMemo(() => {
+        if (!showWhatIf) return null;
+        const wiMonths = wiTenure * 12;
+        const r = wiRate / 12 / 100;
+        const wiEmi = r === 0 ? Math.ceil(loanAmount / wiMonths) : Math.ceil((loanAmount * r * Math.pow(1 + r, wiMonths)) / (Math.pow(1 + r, wiMonths) - 1));
+        const wiTotalPayment = wiEmi * wiMonths;
+        const wiTotalInterest = wiTotalPayment - loanAmount;
+        return {
+            emi: wiEmi, totalInterest: wiTotalInterest, totalPayment: wiTotalPayment, months: wiMonths,
+            emiDiff: wiEmi - result.originalEmi,
+            interestDiff: wiTotalInterest - result.totalInterest,
+            paymentDiff: wiTotalPayment - result.totalPayment,
+        };
+    }, [showWhatIf, wiRate, wiTenure, loanAmount, result]);
+
     // ─── Export helpers ──────────────────────────────────────────────────
     const buildExportConfig = (forExcel = false): ExportConfig => {
         const tag = dateTag();
@@ -140,6 +225,10 @@ export default function AdvancedMortgageCalculator() {
             ] : []),
             { label: 'Sec 80C (Principal) — Total', value: formatINR(result.taxBenefits.total80C) },
             { label: 'Sec 24(b) (Interest) — Total', value: formatINR(result.taxBenefits.total24) },
+            ...(trueCost.extras > 0 ? [
+                { label: 'True Cost of Loan', value: formatINR(trueCost.totalAmountPaid) },
+                { label: 'Cost Over Loan Amount', value: `${formatINR(trueCost.costOverLoan)} (+${trueCost.costPercent.toFixed(1)}%)` },
+            ] : []),
         ];
 
         // Year-wise summary: aggregate monthly schedule into annual rows
@@ -203,6 +292,44 @@ export default function AdvancedMortgageCalculator() {
                     columns: ['Year', 'Principal Paid', 'Interest Paid', '80C Deduction', '24(b) Deduction', 'Total Benefit'],
                     rows: taxRows,
                 },
+                ...(fcTimeline.length > 1 ? [{
+                    title: 'Foreclosure Timeline (Year-wise)',
+                    columns: ['Year', 'Outstanding', 'Settlement', 'You Save'],
+                    rows: fcTimeline.map(t => [
+                        t.year,
+                        forExcel ? t.outstanding : formatINR(t.outstanding),
+                        forExcel ? t.settlement : formatINR(t.settlement),
+                        forExcel ? t.saving : formatINR(t.saving),
+                    ]),
+                }] : []),
+                ...(fcResult ? [{
+                    title: 'Foreclosure Simulation',
+                    columns: ['Metric', 'Amount'],
+                    rows: [
+                        ['Months Paid', String(fcMonths)],
+                        ['Rate Type', fcRateType === 'floating' ? 'Floating (RBI: NIL charge)' : `Fixed (${fcChargePercent}% charge)`],
+                        ['EMIs Paid So Far', forExcel ? fcResult.emisPaid : formatINR(fcResult.emisPaid)],
+                        ['Outstanding Principal', forExcel ? fcResult.outstanding : formatINR(fcResult.outstanding)],
+                        ['Interest Already Paid', forExcel ? fcResult.intPaid : formatINR(fcResult.intPaid)],
+                        ['Foreclosure Charge', forExcel ? fcResult.charge : formatINR(fcResult.charge)],
+                        ['Settlement Amount', forExcel ? fcResult.settlement : formatINR(fcResult.settlement)],
+                        ['Interest Saved', forExcel ? fcResult.intSaved : formatINR(fcResult.intSaved)],
+                        ['Total Cost (Close Today)', forExcel ? fcResult.totalCostClose : formatINR(fcResult.totalCostClose)],
+                        ['Total Cost (Full Term)', forExcel ? fcResult.totalCostFull : formatINR(fcResult.totalCostFull)],
+                        ['Total Savings', forExcel ? fcResult.saving : formatINR(fcResult.saving)],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+                ...(wiResult ? [{
+                    title: 'What-If Scenario',
+                    columns: ['Metric', 'Current', 'What-If', 'Difference'],
+                    rows: [
+                        ['Interest Rate', `${interestRate}%`, `${wiRate}%`, `${(wiRate - interestRate) > 0 ? '+' : ''}${(wiRate - interestRate).toFixed(1)}%`],
+                        ['Tenure', `${tenureYears} yrs`, `${wiTenure} yrs`, `${wiTenure - tenureYears} yrs`],
+                        ['Monthly EMI', forExcel ? result.originalEmi : formatINR(result.originalEmi), forExcel ? wiResult.emi : formatINR(wiResult.emi), forExcel ? wiResult.emiDiff : formatINR(wiResult.emiDiff)],
+                        ['Total Interest', forExcel ? result.totalInterest : formatINR(result.totalInterest), forExcel ? wiResult.totalInterest : formatINR(wiResult.totalInterest), forExcel ? wiResult.interestDiff : formatINR(wiResult.interestDiff)],
+                        ['Total Payment', forExcel ? result.totalPayment : formatINR(result.totalPayment), forExcel ? wiResult.totalPayment : formatINR(wiResult.totalPayment), forExcel ? wiResult.paymentDiff : formatINR(wiResult.paymentDiff)],
+                    ] as Array<Array<string | number>>,
+                }] : []),
             ],
             filename: `FinCalix_Mortgage_Report_${tag}`,
         };
@@ -307,6 +434,38 @@ export default function AdvancedMortgageCalculator() {
                         prefix="₹"
                         helperText="Used for Affordability Risk Analysis"
                     />
+
+                    {/* Loan Rate Type */}
+                    <div>
+                        <p className="text-sm font-medium mb-2" style={{ color: c.textSecondary }}>Loan Rate Type</p>
+                        <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: c.border }}>
+                            <button onClick={() => { setLoanRateType('floating'); setFcRateType('floating'); setFcChargePercent(0); }}
+                                className="flex-1 py-2.5 text-sm font-medium transition-colors"
+                                style={{ backgroundColor: loanRateType === 'floating' ? '#10B981' : 'transparent', color: loanRateType === 'floating' ? '#fff' : c.textSecondary }}>
+                                Floating Rate
+                            </button>
+                            <button onClick={() => { setLoanRateType('fixed'); setFcRateType('fixed'); setFcChargePercent(2); }}
+                                className="flex-1 py-2.5 text-sm font-medium transition-colors border-l"
+                                style={{ borderColor: c.border, backgroundColor: loanRateType === 'fixed' ? '#F59E0B' : 'transparent', color: loanRateType === 'fixed' ? '#fff' : c.textSecondary }}>
+                                Fixed Rate
+                            </button>
+                        </div>
+                        {loanRateType === 'floating' && (
+                            <p className="text-xs mt-2" style={{ color: c.textSecondary }}>
+                                Floating rate changes with lender's reference rate. Your EMI may change during tenure. RBI: NIL foreclosure charges.
+                            </p>
+                        )}
+                    </div>
+
+                    {/* True Cost Inputs */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <NumberInput label="Processing Fee" value={processingFee} onChange={setProcessingFee}
+                            min={0} max={1000000} step={1000} prefix="₹" helperText="One-time bank charge" />
+                        <NumberInput label="Loan Insurance" value={insurancePremium} onChange={setInsurancePremium}
+                            min={0} max={5000000} step={1000} prefix="₹" helperText="Added to loan by lender" />
+                        <NumberInput label="Pre-EMI Interest" value={preEmiInterest} onChange={setPreEmiInterest}
+                            min={0} max={5000000} step={1000} prefix="₹" helperText="Before EMI starts" />
+                    </div>
                 </div>
 
                 {/* 2. AFFORDABILITY & INSIGHTS */}
@@ -544,6 +703,42 @@ export default function AdvancedMortgageCalculator() {
                     </div>
                 )}
 
+                {/* TRUE COST OF LOAN */}
+                {trueCost.extras > 0 && (
+                    <div className="p-5 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                        <div className="flex items-center gap-2 mb-4">
+                            <IndianRupee className="w-5 h-5" style={{ color: '#EF4444' }} />
+                            <h2 className="font-semibold text-lg">True Cost of Loan</h2>
+                        </div>
+                        <div className="space-y-2">
+                            {[
+                                { label: 'Loan Amount', value: formatINR(loanAmount), bold: false },
+                                ...(insurancePremium > 0 ? [{ label: '+ Loan Insurance', value: formatINR(insurancePremium), bold: false }] : []),
+                                ...(processingFee > 0 ? [{ label: '+ Processing Fee', value: formatINR(processingFee), bold: false }] : []),
+                                ...(preEmiInterest > 0 ? [{ label: '+ Pre-EMI Interest', value: formatINR(preEmiInterest), bold: false }] : []),
+                                { label: '+ Total EMI Interest', value: formatINR(trueCost.totalEmiInterest), bold: false },
+                            ].map(row => (
+                                <div key={row.label} className="flex justify-between items-center py-1">
+                                    <span className="text-sm" style={{ color: c.textSecondary }}>{row.label}</span>
+                                    <span className="text-sm font-medium" style={{ color: c.text }}>{row.value}</span>
+                                </div>
+                            ))}
+                            <div className="border-t pt-3 mt-2" style={{ borderColor: c.border }}>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-bold" style={{ color: c.text }}>Total Amount You Pay</span>
+                                    <span className="text-lg font-bold text-red-500">{formatINR(trueCost.totalAmountPaid)}</span>
+                                </div>
+                                <div className="flex justify-between items-center mt-1">
+                                    <span className="text-xs" style={{ color: c.textSecondary }}>Cost over loan amount</span>
+                                    <span className="text-xs font-bold text-red-500">
+                                        {formatINR(trueCost.costOverLoan)} (+{trueCost.costPercent.toFixed(1)}%)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* 5. VISUALIZATION */}
                 <div className="p-5 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
                     <h2 className="font-semibold text-lg mb-4 text-center">Principal vs Interest Breakup</h2>
@@ -650,6 +845,234 @@ export default function AdvancedMortgageCalculator() {
                     </AnimatePresence>
                 </div>
                 
+                {/* 8. FORECLOSURE SIMULATOR */}
+                <div className="p-5 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                    <button onClick={() => setShowForeclosure(!showForeclosure)}
+                        className="w-full flex items-center justify-between font-semibold text-lg" style={{ color: c.text }}>
+                        <div className="flex items-center gap-2">
+                            <TrendingDown className="w-5 h-5" style={{ color: '#EF4444' }} />
+                            Foreclosure Simulator
+                        </div>
+                        {showForeclosure ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    </button>
+
+                    <AnimatePresence>
+                        {showForeclosure && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }} className="mt-4 space-y-4 overflow-hidden">
+
+                                <div className="p-3 rounded-xl" style={{ backgroundColor: `${c.bg}`, border: `1px solid ${c.border}` }}>
+                                    <p className="text-xs font-medium mb-1" style={{ color: '#10B981' }}>RBI Rule</p>
+                                    <p className="text-xs" style={{ color: c.textSecondary }}>
+                                        Floating rate home loans: NIL foreclosure charge (RBI Circular 2014). Fixed rate: Bank may charge up to 2-3%.
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <NumberInput label="Months Already Paid" value={fcMonths}
+                                        onChange={v => setFcMonths(Math.min(v, result.schedule.length - 1))}
+                                        min={1} max={result.schedule.length - 1} suffix=" mo" />
+                                    <div>
+                                        <p className="text-xs font-medium mb-2" style={{ color: c.textSecondary }}>Rate Type</p>
+                                        <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: c.border }}>
+                                            <button onClick={() => { setFcRateType('floating'); setFcChargePercent(0); }}
+                                                className="flex-1 py-2 text-xs font-medium transition-colors"
+                                                style={{ backgroundColor: fcRateType === 'floating' ? '#10B981' : 'transparent',
+                                                    color: fcRateType === 'floating' ? '#fff' : c.textSecondary }}>
+                                                Floating
+                                            </button>
+                                            <button onClick={() => { setFcRateType('fixed'); setFcChargePercent(2); }}
+                                                className="flex-1 py-2 text-xs font-medium transition-colors border-l"
+                                                style={{ borderColor: c.border,
+                                                    backgroundColor: fcRateType === 'fixed' ? '#F59E0B' : 'transparent',
+                                                    color: fcRateType === 'fixed' ? '#fff' : c.textSecondary }}>
+                                                Fixed
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {fcRateType === 'fixed' && (
+                                    <NumberInput label="Foreclosure Charge %" value={fcChargePercent}
+                                        onChange={setFcChargePercent} min={0} max={5} step={0.5} suffix="%" />
+                                )}
+
+                                {fcResult && (
+                                    <div className="space-y-3">
+                                        <div className="p-3 rounded-xl" style={{ backgroundColor: c.bg, border: `1px solid ${c.border}` }}>
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="text-xs" style={{ color: c.textSecondary }}>EMIs Paid ({fcMonths} mo × {formatINR(result.originalEmi)})</span>
+                                                <span className="text-xs font-bold" style={{ color: c.text }}>{formatINR(fcResult.emisPaid)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs" style={{ color: c.textSecondary }}>Interest paid so far</span>
+                                                <span className="text-xs font-bold text-amber-500">{formatINR(fcResult.intPaid)}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {[
+                                                { label: 'Outstanding Principal', value: formatINR(fcResult.outstanding), cls: '' },
+                                                { label: 'Foreclosure Charge', value: fcRateType === 'floating' ? 'NIL (RBI)' : formatINR(fcResult.charge), cls: 'text-red-500' },
+                                                { label: 'Interest You Skip', value: formatINR(fcResult.intSaved), cls: 'text-emerald-500' },
+                                                { label: 'Net Benefit', value: formatINR(fcResult.netBenefit), cls: 'text-emerald-500' },
+                                            ].map(item => (
+                                                <div key={item.label} className="p-3 rounded-xl text-center" style={{ backgroundColor: c.bg }}>
+                                                    <p className="text-[9px] uppercase font-bold mb-1" style={{ color: c.textSecondary }}>{item.label}</p>
+                                                    <p className={`text-xs font-bold ${item.cls}`} style={!item.cls ? { color: c.text } : undefined}>{item.value}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="p-4 rounded-xl text-center" style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
+                                            <p className="text-emerald-100 text-[10px] uppercase font-bold tracking-wider mb-1">Pay Bank Today to Close</p>
+                                            <p className="text-2xl font-bold text-white">{formatINR(fcResult.settlement)}</p>
+                                        </div>
+
+                                        <div className="p-3 rounded-xl" style={{ backgroundColor: c.bg, border: `1px solid ${c.border}` }}>
+                                            <p className="text-[10px] uppercase font-bold mb-2" style={{ color: c.textSecondary }}>Total Cost Comparison</p>
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="text-xs" style={{ color: c.textSecondary }}>Close today</span>
+                                                <span className="text-xs font-bold" style={{ color: c.text }}>{formatINR(fcResult.totalCostClose)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <span className="text-xs" style={{ color: c.textSecondary }}>Continue full term</span>
+                                                <span className="text-xs font-bold" style={{ color: c.text }}>{formatINR(fcResult.totalCostFull)}</span>
+                                            </div>
+                                            <div className="border-t pt-2 flex justify-between items-center" style={{ borderColor: c.border }}>
+                                                <span className="text-xs font-bold text-emerald-500">You save</span>
+                                                <span className="text-sm font-bold text-emerald-500">{formatINR(fcResult.saving)}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Yearly Foreclosure Timeline */}
+                                        {fcTimeline.length > 1 && (
+                                            <div className="rounded-xl overflow-hidden border" style={{ borderColor: c.border }}>
+                                                <p className="text-[10px] uppercase font-bold p-3 pb-1" style={{ color: c.textSecondary }}>
+                                                    Optimal Foreclosure Timeline
+                                                </p>
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-right text-[11px]">
+                                                        <thead>
+                                                            <tr style={{ borderBottom: `1px solid ${c.border}`, color: c.textSecondary }}>
+                                                                <th className="py-2 px-2 text-center font-medium text-[10px]">Year</th>
+                                                                <th className="py-2 px-2 font-medium text-[10px]">Outstanding</th>
+                                                                <th className="py-2 px-2 font-medium text-[10px]">Settlement</th>
+                                                                <th className="py-2 px-2 font-medium text-[10px]">You Save</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {fcTimeline.map(t => {
+                                                                const bestYear = fcTimeline.reduce((a, b) => b.saving > a.saving ? b : a).year;
+                                                                const isBest = t.year === bestYear;
+                                                                return (
+                                                                    <tr key={t.year} style={{
+                                                                        borderBottom: `1px solid ${c.border}`,
+                                                                        color: c.text,
+                                                                        backgroundColor: isBest ? '#10B98115' : 'transparent',
+                                                                    }}>
+                                                                        <td className="py-2 px-2 text-center font-medium">
+                                                                            {t.year}{isBest && <span className="text-emerald-500 text-[8px] ml-0.5">★</span>}
+                                                                        </td>
+                                                                        <td className="py-2 px-2">{formatINRShort(t.outstanding)}</td>
+                                                                        <td className="py-2 px-2">{formatINRShort(t.settlement)}</td>
+                                                                        <td className="py-2 px-2 font-bold text-emerald-500">{formatINRShort(t.saving)}</td>
+                                                                    </tr>
+                                                                );
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <p className="text-[9px] p-2 text-center" style={{ color: c.textSecondary }}>
+                                                    ★ = Best year to foreclose (maximum savings)
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* 9. WHAT-IF SIMULATOR */}
+                <div className="p-5 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                    <button onClick={() => { setShowWhatIf(!showWhatIf); if (!showWhatIf) { setWiRate(interestRate); setWiTenure(tenureYears); } }}
+                        className="w-full flex items-center justify-between font-semibold text-lg" style={{ color: c.text }}>
+                        <div className="flex items-center gap-2">
+                            <Sliders className="w-5 h-5" style={{ color: '#3B82F6' }} />
+                            What-If Simulator
+                        </div>
+                        {showWhatIf ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                    </button>
+
+                    <AnimatePresence>
+                        {showWhatIf && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }} className="mt-4 space-y-4 overflow-hidden">
+
+                                <p className="text-xs" style={{ color: c.textSecondary }}>
+                                    Adjust rate or tenure to see how your EMI and total cost changes. Use this to compare balance transfer offers.
+                                </p>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <NumberInput label="New Interest Rate" value={wiRate}
+                                        onChange={setWiRate} min={4} max={20} step={0.1} suffix="%" />
+                                    <NumberInput label="New Tenure (Years)" value={wiTenure}
+                                        onChange={setWiTenure} min={1} max={30} step={1} suffix="Yr" />
+                                </div>
+
+                                {wiResult && (
+                                    <div className="space-y-3">
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {[
+                                                { label: 'EMI Change', current: formatINR(result.originalEmi), newVal: formatINR(wiResult.emi), diff: wiResult.emiDiff },
+                                                { label: 'Interest Change', current: formatINR(result.totalInterest), newVal: formatINR(wiResult.totalInterest), diff: wiResult.interestDiff },
+                                                { label: 'Total Change', current: formatINR(result.totalPayment), newVal: formatINR(wiResult.totalPayment), diff: wiResult.paymentDiff },
+                                            ].map(item => (
+                                                <div key={item.label} className="p-3 rounded-xl text-center" style={{ backgroundColor: c.bg }}>
+                                                    <p className="text-[8px] uppercase font-bold mb-1" style={{ color: c.textSecondary }}>{item.label}</p>
+                                                    <p className="text-[10px]" style={{ color: c.textSecondary }}>{item.current}</p>
+                                                    <p className="text-xs font-bold" style={{ color: c.text }}>{item.newVal}</p>
+                                                    <p className={`text-[10px] font-bold mt-1 ${item.diff < 0 ? 'text-emerald-500' : item.diff > 0 ? 'text-red-500' : ''}`}
+                                                        style={item.diff === 0 ? { color: c.textSecondary } : undefined}>
+                                                        {item.diff > 0 ? '+' : ''}{formatINR(item.diff)}
+                                                    </p>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {wiResult.interestDiff !== 0 && (
+                                            <div className={`p-3 rounded-xl border text-center ${wiResult.interestDiff < 0
+                                                ? 'border-emerald-500/30'
+                                                : 'border-red-500/30'}`}
+                                                style={{ backgroundColor: wiResult.interestDiff < 0 ? '#10B98115' : '#EF444415' }}>
+                                                <p className={`text-sm font-bold ${wiResult.interestDiff < 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                                    {wiResult.interestDiff < 0
+                                                        ? `You save ${formatINR(Math.abs(wiResult.interestDiff))} in interest`
+                                                        : `You pay ${formatINR(wiResult.interestDiff)} more in interest`}
+                                                </p>
+                                                <p className="text-xs mt-1" style={{ color: c.textSecondary }}>
+                                                    EMI {wiResult.emiDiff < 0 ? 'decreases' : 'increases'} by {formatINR(Math.abs(wiResult.emiDiff))}/month
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {(wiRate < interestRate) && (
+                                            <div className="p-3 rounded-xl" style={{ backgroundColor: '#3B82F615', border: '1px solid #3B82F630' }}>
+                                                <p className="text-xs font-bold" style={{ color: '#3B82F6' }}>Balance Transfer Tip</p>
+                                                <p className="text-xs mt-1" style={{ color: c.textSecondary }}>
+                                                    If another bank offers {wiRate}%, you save {formatINR(Math.abs(wiResult.interestDiff))} over the loan life. Factor in processing fees (typically 0.5-1% of outstanding) before deciding.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
                 {/* Spacer so content is not hidden behind safe navigation */}
                 <div className="h-6"></div>
             </div>

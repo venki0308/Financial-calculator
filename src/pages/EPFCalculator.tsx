@@ -19,10 +19,12 @@ export default function EPFCalculator() {
     // Base Inputs
     const [basic, setBasic] = useState(30000);
     const [empPct, setEmpPct] = useState(12);
+    const [vpfPct, setVpfPct] = useState(0);
     const [rate, setRate] = useState(8.25);
     const [age, setAge] = useState(28);
     const [retireAge, setRetireAge] = useState(58);
     const [hike, setHike] = useState(5);
+    const totalEmpPct = empPct + vpfPct;
 
     // Advanced Inputs
     const [inflationRate, setInflationRate] = useState(6.0);
@@ -55,7 +57,7 @@ export default function EPFCalculator() {
             const monthlyRate = rate / 100 / 12;
 
             for (let m = 0; m < 12; m++) {
-                const emp = salary * empPct / 100;
+                const emp = salary * totalEmpPct / 100;
                 // Employer 12% is split: EPS (capped at 8.33% × ₹15,000 = ₹1,250/mo), rest to EPF
                 // For basic > ₹15,000: Employer EPF = 12% × basic − ₹1,250
                 // For basic ≤ ₹15,000: Employer EPF = 12% − 8.33% = 3.67% × basic
@@ -103,8 +105,14 @@ export default function EPFCalculator() {
         const targetCorpus = finalMonthlySalary * 12 * 20;
         const readinessPct = Math.min(100, (corpus / targetCorpus) * 100);
 
-        return { corpus, totalEmp, totalEmployer, totalInterest, empPctOfCorpus, employerPctOfCorpus, interestPctOfCorpus, schedule, years, purchasingPower, realReturn, finalMonthlySalary, targetCorpus, readinessPct };
-    }, [basic, empPct, rate, age, retireAge, hike, inflationRate]);
+        // Taxable interest check: Budget 2021 — interest on employee contribution > Rs 2.5L/yr is taxable
+        const annualEmpContrib = basic * totalEmpPct / 100 * 12;
+        const taxableThreshold = 250000;
+        const isInterestTaxable = annualEmpContrib > taxableThreshold;
+        const taxableExcess = Math.max(0, annualEmpContrib - taxableThreshold);
+
+        return { corpus, totalEmp, totalEmployer, totalInterest, empPctOfCorpus, employerPctOfCorpus, interestPctOfCorpus, schedule, years, purchasingPower, realReturn, finalMonthlySalary, targetCorpus, readinessPct, annualEmpContrib, isInterestTaxable, taxableExcess };
+    }, [basic, totalEmpPct, rate, age, retireAge, hike, inflationRate]);
 
     // 2. WHAT-IF SIMULATOR
     const whatIf = useMemo(() => {
@@ -118,7 +126,7 @@ export default function EPFCalculator() {
             let simYearlyInterest = 0;
 
             for (let m = 0; m < 12; m++) {
-                const emp = simSalary * empPct / 100;
+                const emp = simSalary * totalEmpPct / 100;
                 const EPS_WAGE_CEILING = 15000;
                 const epsContrib = Math.min(simSalary * 0.0833, EPS_WAGE_CEILING * 0.0833);
                 const employer = (simSalary * 0.12) - epsContrib;
@@ -134,7 +142,7 @@ export default function EPFCalculator() {
         const addedWealth = simBalance - result.corpus;
 
         return { simBalance, addedWealth };
-    }, [whatIfHike, whatIfRetire, age, basic, empPct, rate, result.corpus]);
+    }, [whatIfHike, whatIfRetire, age, basic, totalEmpPct, rate, result.corpus]);
 
     // 3. SMART INSIGHTS
     const insight = useMemo(() => {
@@ -169,7 +177,7 @@ export default function EPFCalculator() {
             title: 'EPF Calculator Report',
             inputs: [
                 { label: 'Basic Monthly Salary', value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
-                { label: 'Employee Contribution', value: `${empPct}%` },
+                { label: 'Employee Contribution', value: `${totalEmpPct}%${vpfPct > 0 ? ` (12% + ${vpfPct}% VPF)` : ''}` },
                 { label: 'EPF Interest Rate', value: `${rate}% p.a.` },
                 { label: 'Current Age', value: `${age} Years` },
                 { label: 'Retirement Age', value: `${retireAge} Years` },
@@ -213,7 +221,7 @@ export default function EPFCalculator() {
             title: 'EPF Calculator Report',
             inputs: [
                 { label: 'Basic Monthly Salary', value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
-                { label: 'Employee Contribution', value: `${empPct}%` },
+                { label: 'Employee Contribution', value: `${totalEmpPct}%${vpfPct > 0 ? ` (12% + ${vpfPct}% VPF)` : ''}` },
                 { label: 'EPF Interest Rate', value: `${rate}%` },
                 { label: 'Current Age', value: `${age}` },
                 { label: 'Retirement Age', value: `${retireAge}` },
@@ -291,6 +299,25 @@ export default function EPFCalculator() {
                             </div>
                         </div>
                     </div>
+                    {/* VPF Input */}
+                    <div>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">VPF — Voluntary PF (%)</label>
+                        <div className="relative">
+                            <input type="number" step="1" value={vpfPct} onChange={e => setVpfPct(Math.min(88, Math.max(0, Number(e.target.value) || 0)))} className={inputCls + " pr-7 bg-emerald-500/5 focus:bg-card"} />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
+                        </div>
+                        <p className="text-muted-foreground text-[9px] mt-1">Extra contribution over 12% mandatory. Same 8.25% guaranteed return. Total: {totalEmpPct}%</p>
+                    </div>
+                    {/* Taxable Interest Warning */}
+                    {result.isInterestTaxable && (
+                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                            <p className="text-amber-500 text-[10px] font-bold mb-1">Taxable Interest Warning</p>
+                            <p className="text-muted-foreground text-[10px]">
+                                Your annual employee contribution ({totalEmpPct}% of ₹{basic.toLocaleString('en-IN')} = ₹{result.annualEmpContrib.toLocaleString('en-IN')}/yr) exceeds ₹2.5L threshold.
+                                Interest on the excess ₹{result.taxableExcess.toLocaleString('en-IN')} will be taxable at your slab rate (Budget 2021 rule).
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 {/* 2. RESULTS HERO */}

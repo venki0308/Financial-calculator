@@ -31,7 +31,10 @@ export default function SSYCalculator() {
     const chartRef = useRef<any>(null);
     const c = useAppColors();
 
+    const [depositMode, setDepositMode] = useState<'yearly' | 'monthly'>('yearly');
     const [annual, setAnnual] = useState(50000);
+    const [monthly, setMonthly] = useState(5000);
+    const effectiveAnnual = depositMode === 'monthly' ? monthly * 12 : annual;
     const [rate, setRate] = useState(8.2);
     const [childAge, setChildAge] = useState(1);
     const [showTimeline, setShowTimeline] = useState(false);
@@ -49,7 +52,7 @@ export default function SSYCalculator() {
         let cumInterest = 0;
 
         for (let i = 1; i <= maturityYears; i++) {
-            const deposit = i <= investYears ? annual : 0;
+            const deposit = i <= investYears ? effectiveAnnual : 0;
             cumDeposit += deposit;
             balance += deposit;
             const interest = balance * r;
@@ -81,7 +84,7 @@ export default function SSYCalculator() {
             withdrawalAt18Year: withdrawalAt18 ? withdrawalAt18.year : null,
             withdrawalAmount,
         };
-    }, [annual, rate, childAge]);
+    }, [effectiveAnnual, rate, childAge]);
 
     // Pie chart
     const pieData = useMemo(() => ({
@@ -200,7 +203,21 @@ export default function SSYCalculator() {
             <div className="px-4 pb-28 pt-4 space-y-5">
                 {/* Inputs */}
                 <div className="space-y-3">
-                    <NumberInput label="Annual Deposit" value={annual} onChange={setAnnual} min={250} max={150000} prefix="₹" helperText="Min ₹250, Max ₹1,50,000/year" />
+                    <div className="flex rounded-lg overflow-hidden border border-border mb-2">
+                        <button onClick={() => setDepositMode('yearly')}
+                            className={`flex-1 py-2 text-xs font-medium transition-colors ${depositMode === 'yearly' ? 'bg-brand-green text-black' : 'text-muted-foreground'}`}>
+                            Yearly
+                        </button>
+                        <button onClick={() => setDepositMode('monthly')}
+                            className={`flex-1 py-2 text-xs font-medium transition-colors border-l border-border ${depositMode === 'monthly' ? 'bg-brand-green text-black' : 'text-muted-foreground'}`}>
+                            Monthly
+                        </button>
+                    </div>
+                    {depositMode === 'yearly' ? (
+                        <NumberInput label="Annual Deposit" value={annual} onChange={setAnnual} min={250} max={150000} prefix="₹" helperText="Min ₹250, Max ₹1,50,000/year" />
+                    ) : (
+                        <NumberInput label="Monthly Deposit" value={monthly} onChange={setMonthly} min={21} max={12500} prefix="₹" helperText={`₹${monthly.toLocaleString('en-IN')}/mo = ₹${(monthly * 12).toLocaleString('en-IN')}/year`} />
+                    )}
                     <NumberInput label="Interest Rate (p.a.)" value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText="Current rate: 8.2%" />
                     <NumberInput label="Girl Child Age" value={childAge} onChange={setChildAge} min={0} max={10} suffix=" years" helperText="Account can be opened until age 10" />
                 </div>
@@ -288,7 +305,7 @@ export default function SSYCalculator() {
                 </div>
 
                 {/* Smart Insight */}
-                <SmartInsight calculatorType="ppf" inputs={{ annual, rate }} results={{ maturity: result.maturity, invested: result.invested }} />
+                <SmartInsight calculatorType="ssy" inputs={{ annual, rate }} results={{ maturity: result.maturity, invested: result.invested }} />
 
                 {/* Year-wise Timeline Toggle */}
                 <button onClick={() => setShowTimeline(!showTimeline)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">

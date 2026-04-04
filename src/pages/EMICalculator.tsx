@@ -220,6 +220,49 @@ export default function EMICalculator() {
         );
     }, [savedCalculations, principal, rate, months, method, loanType, enableReminder, reminderDate]);
 
+    // ─── Shared export helpers ────────────────────────────────────────
+    const buildExtraTables = (): ExportConfig['additionalTables'] => {
+        const tables: NonNullable<ExportConfig['additionalTables']> = [];
+        if (foreclosureResult && showForeclosure) {
+            const emisPaid = foreclosureMonths * result.emi;
+            const totalCostClose = emisPaid + foreclosureResult.totalSettlement;
+            tables.push({
+                title: 'Foreclosure Simulation',
+                columns: ['Metric', 'Amount'],
+                rows: [
+                    ['Months Paid', String(foreclosureMonths)],
+                    ['EMIs Paid So Far', formatINR(emisPaid)],
+                    ['Outstanding Principal', formatINR(foreclosureResult.outstandingPrincipal)],
+                    ['Interest Already Paid', formatINR(foreclosureResult.totalInterestPaid)],
+                    ['Foreclosure Charge (' + foreclosureChargePercent + '%)', formatINR(foreclosureResult.foreclosureCharge)],
+                    ['Pay Bank Today (Settlement)', formatINR(foreclosureResult.totalSettlement)],
+                    ['Interest You Skip', formatINR(foreclosureResult.interestSaved)],
+                    ['---', '---'],
+                    ['Total Cost if Close Today', formatINR(totalCostClose)],
+                    ['Total Cost if Full Term', formatINR(result.totalPayment)],
+                    ['Total Savings', formatINR(result.totalPayment - totalCostClose)],
+                    ['Net Benefit (Saved - Charge)', formatINR(foreclosureResult.netBenefit)],
+                ],
+            });
+        }
+        if (prepayInsight && prepayInsight.interestSaved > 0) {
+            tables.push({
+                title: 'Prepayment What-If (10% Extra EMI)',
+                columns: ['Metric', 'Value'],
+                rows: [
+                    ['Current EMI', formatINR(result.emi)],
+                    ['Extra Amount/Month (10%)', formatINR(prepayInsight.extraMonthlyAmount)],
+                    ['New EMI', formatINR(result.emi + prepayInsight.extraMonthlyAmount)],
+                    ['Original Tenure', months + ' months'],
+                    ['New Tenure', prepayInsight.newTenureMonths + ' months'],
+                    ['Months Saved', String(prepayInsight.monthsSaved)],
+                    ['Interest Saved', formatINR(prepayInsight.interestSaved)],
+                ],
+            });
+        }
+        return tables.length > 0 ? tables : undefined;
+    };
+
     // ─── PDF Export ─────────────────────────────────────────────────────
     const handleDownloadPDF = async () => {
         const dt = new Date();
@@ -273,6 +316,7 @@ export default function EMICalculator() {
                 Math.round(r.interest),
                 Math.round(r.closingBalance),
             ]),
+            additionalTables: buildExtraTables(),
             filename: `FinCalix_${loanType.replace(/\s+/g,'')}_Report_${tag}`,
         };
         await exportToPDF(config);
@@ -305,6 +349,7 @@ export default function EMICalculator() {
                 Math.round(r.interest),
                 Math.round(r.closingBalance),
             ]),
+            additionalTables: buildExtraTables(),
             filename: `FinCalix_${loanType.replace(/\s+/g,'')}_Report_${tag}`,
         };
         await exportToExcel(config);
@@ -596,14 +641,27 @@ export default function EMICalculator() {
                                                 min={0} max={5} suffix="%" step={0.5} />
                                         </div>
 
-                                        {foreclosureResult && (
+                                        {foreclosureResult && (() => {
+                                            const emisPaidTotal = foreclosureMonths * result.emi;
+                                            const totalCostForeclosure = emisPaidTotal + foreclosureResult.totalSettlement;
+                                            const totalCostFullTerm = result.totalPayment;
+                                            const totalSaving = totalCostFullTerm - totalCostForeclosure;
+                                            return (
                                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-3">
+                                                {/* EMIs Paid Summary */}
+                                                <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-muted-foreground text-[10px] font-bold">EMIs Paid ({foreclosureMonths} months × {formatINR(result.emi)})</span>
+                                                        <span className="text-blue-600 dark:text-blue-400 font-bold text-xs">{formatINR(emisPaidTotal)}</span>
+                                                    </div>
+                                                </div>
+
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {[
                                                         { label: 'Outstanding Principal', value: formatINR(foreclosureResult.outstandingPrincipal), color: 'text-slate-800 dark:text-foreground' },
                                                         { label: 'Interest Already Paid', value: formatINR(foreclosureResult.totalInterestPaid), color: 'text-amber-600 dark:text-amber-400' },
-                                                        { label: 'Interest Saved', value: formatINR(foreclosureResult.interestSaved), color: 'text-emerald-600 dark:text-emerald-400' },
                                                         { label: 'Foreclosure Charge', value: formatINR(foreclosureResult.foreclosureCharge), color: 'text-red-600 dark:text-red-400' },
+                                                        { label: 'Interest You Skip', value: formatINR(foreclosureResult.interestSaved), color: 'text-emerald-600 dark:text-emerald-400' },
                                                     ].map(item => (
                                                         <div key={item.label} className="p-3 rounded-xl bg-muted/40 text-center">
                                                             <p className="text-muted-foreground text-[9px] uppercase font-bold mb-1">{item.label}</p>
@@ -613,27 +671,41 @@ export default function EMICalculator() {
                                                 </div>
 
                                                 <div className="p-4 rounded-xl bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-500/10 dark:to-indigo-500/10 border border-violet-200 dark:border-violet-500/30 text-center">
-                                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Total Amount to Pay Bank Today</p>
+                                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Pay Bank Today to Close</p>
                                                     <p className="text-xl font-bold text-slate-900 dark:text-foreground">{formatINR(foreclosureResult.totalSettlement)}</p>
-                                                    {foreclosureResult.totalSettlement >= 100000 && (
-                                                        <p className="text-muted-foreground dark:text-muted-foreground text-[9px] mt-0.5">({formatINRWords(foreclosureResult.totalSettlement)})</p>
-                                                    )}
+                                                    <p className="text-muted-foreground text-[9px] mt-1">
+                                                        {formatINR(foreclosureResult.outstandingPrincipal)} principal + {formatINR(foreclosureResult.foreclosureCharge)} charge
+                                                    </p>
                                                 </div>
 
-                                                <div className={`p-4 rounded-xl border text-center ${foreclosureResult.netBenefit >= 0
+                                                {/* Total Cost Comparison */}
+                                                <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-border space-y-2">
+                                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-2">Total Cost Comparison</p>
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-muted-foreground text-xs">If you close today</span>
+                                                        <span className="text-foreground font-bold text-xs">{formatINR(totalCostForeclosure)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-muted-foreground text-xs">If you continue full term</span>
+                                                        <span className="text-foreground font-bold text-xs">{formatINR(totalCostFullTerm)}</span>
+                                                    </div>
+                                                    <div className="border-t border-border pt-2 flex justify-between items-center">
+                                                        <span className="text-emerald-600 dark:text-emerald-400 text-xs font-bold">You save</span>
+                                                        <span className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">{formatINR(totalSaving)}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className={`p-3 rounded-xl border text-center ${foreclosureResult.netBenefit >= 0
                                                     ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30'
                                                     : 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30'
                                                     }`}>
-                                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Net Benefit of Foreclosing</p>
-                                                    <p className={`text-lg font-bold ${foreclosureResult.netBenefit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                                                        {foreclosureResult.netBenefit >= 0 ? '+' : ''}{formatINR(foreclosureResult.netBenefit)}
-                                                    </p>
-                                                    <p className="text-muted-foreground dark:text-muted-foreground text-[9px] mt-1">
-                                                        You save {formatINR(foreclosureResult.interestSaved)} in interest. Charge: {formatINR(foreclosureResult.foreclosureCharge)}.
+                                                    <p className={`text-xs font-bold ${foreclosureResult.netBenefit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                        {foreclosureResult.netBenefit >= 0 ? '✓ Foreclosing is beneficial' : '✗ Foreclosure charge exceeds interest saved'} — Net: {foreclosureResult.netBenefit >= 0 ? '+' : ''}{formatINR(foreclosureResult.netBenefit)}
                                                     </p>
                                                 </div>
                                             </motion.div>
-                                        )}
+                                            );
+                                        })()}
                                     </div>
                                 </motion.div>
                             )}

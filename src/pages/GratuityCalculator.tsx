@@ -24,6 +24,7 @@ export default function GratuityCalculator() {
 
     const [salary, setSalary] = useState(50000);
     const [years, setYears] = useState(10);
+    const [yearsInput, setYearsInput] = useState('10');
     const [employerType, setEmployerType] = useState<'Private' | 'Govt'>('Private');
     const [annualIncome, setAnnualIncome] = useState(1500000);
     const [taxRegime, setTaxRegime] = useState<'new' | 'old'>('new');
@@ -39,7 +40,7 @@ export default function GratuityCalculator() {
         const isEligible = years >= (4 + 240 / 365); // Eligible at 4 years 240 days per Payment of Gratuity Act 1972
         const roundedYears = (years >= (4 + 240 / 365) && years < 5) ? 5 : Math.round(years);
         const gratuity = isEligible ? (salary * 15 * roundedYears) / 26 : 0;
-        const exemptionLimit = employerType === 'Govt' ? Infinity : 2000000; // Govt fully exempt
+        const exemptionLimit = employerType === 'Govt' ? Infinity : 2500000; // Govt fully exempt; Private: Rs 25L (2024 amendment)
         const taxableGratuity = Math.max(0, gratuity - exemptionLimit);
         
         // Use standard tax calculation
@@ -223,9 +224,17 @@ export default function GratuityCalculator() {
                         <label className="text-muted-foreground text-xs font-medium mb-1 block">Years of Service</label>
                         <p className="text-muted-foreground text-[10px] mb-1">Act considers 4 yrs 240 days (4.5 yrs) as 5 years.</p>
                         <div className="relative">
-                            <input type="number" step="0.1" value={years} onChange={e => {
-                                setYears(Math.max(1, Number(e.target.value) || 1));
-                                setCurrentPage(0);
+                            <input type="text" inputMode="decimal" value={yearsInput} onChange={e => {
+                                const v = e.target.value;
+                                if (/^\d*\.?\d*$/.test(v)) {
+                                    setYearsInput(v);
+                                    const num = parseFloat(v);
+                                    if (!isNaN(num) && num >= 0.5) { setYears(num); setCurrentPage(0); }
+                                }
+                            }} onBlur={() => {
+                                const num = Math.max(0.5, parseFloat(yearsInput) || 1);
+                                setYears(num);
+                                setYearsInput(String(num));
                             }} className={inputCls + " pr-16"} />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">years</span>
                         </div>
@@ -253,7 +262,7 @@ export default function GratuityCalculator() {
                                 </div>
                                 <div>
                                     <p className="text-muted-foreground text-[11px]">Tax Exemption</p>
-                                    <p className="text-brand-green font-bold text-base">Up to ₹20 Lakh</p>
+                                    <p className="text-brand-green font-bold text-base">Up to ₹25 Lakh</p>
                                 </div>
                             </div>
                         </>
@@ -320,14 +329,14 @@ export default function GratuityCalculator() {
                                                 <div className="p-3 rounded-xl bg-brand-green/10 border border-brand-green/20 flex gap-3">
                                                     <Check size={16} className="text-brand-green shrink-0 mt-0.5" />
                                                     <p className="text-xs font-medium text-brand-green">
-                                                        Your entire gratuity amount is currently tax-free {employerType === 'Govt' ? '(Govt employees are fully exempt)' : '(Under ₹20 Lakhs limit)'}.
+                                                        Your entire gratuity amount is currently tax-free {employerType === 'Govt' ? '(Govt employees are fully exempt)' : '(Under ₹25 Lakhs limit)'}.
                                                     </p>
                                                 </div>
                                             )}
                                             {result.isEligible && result.taxableGratuity > 0 && (
                                                 <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-3">
                                                     <ShieldAlert size={16} className="text-red-500 shrink-0 mt-0.5" />
-                                                    <p className="text-xs font-medium text-red-500">Your gratuity exceeds the ₹20L exemption limit by {fmtINR(result.taxableGratuity)}. This surplus will be taxed as per your income slab.</p>
+                                                    <p className="text-xs font-medium text-red-500">Your gratuity exceeds the ₹25L exemption limit by {fmtINR(result.taxableGratuity)}. This surplus will be taxed as per your income slab.</p>
                                                 </div>
                                             )}
                                             <div className="p-3 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex gap-3">

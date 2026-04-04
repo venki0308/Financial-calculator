@@ -26,6 +26,7 @@ const goalPresets: GoalPreset[] = [
     { id: 'education', label: 'Child Education', icon: GraduationCap, gradient: 'from-blue-500 to-indigo-600', defaultTarget: 2000000, defaultYears: 15, description: 'Secure your child\'s future' },
     { id: 'retirement', label: 'Retirement', icon: Umbrella, gradient: 'from-purple-500 to-violet-600', defaultTarget: 10000000, defaultYears: 25, description: 'Retire comfortably' },
     { id: 'car', label: 'Car Purchase', icon: Car, gradient: 'from-amber-500 to-orange-600', defaultTarget: 1000000, defaultYears: 3, description: 'Drive your dream car' },
+    { id: 'custom', label: 'Custom Goal', icon: Target, gradient: 'from-pink-500 to-rose-600', defaultTarget: 2000000, defaultYears: 5, description: 'Any financial goal you want' },
 ];
 
 export default function GoalPlanner() {

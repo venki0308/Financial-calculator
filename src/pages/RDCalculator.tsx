@@ -20,6 +20,8 @@ export default function RDCalculator() {
     const [monthly, setMonthly] = useState(5000);
     const [rate, setRate] = useState(6.7);
     const [months, setMonths] = useState(12);
+    const [isSeniorCitizen, setIsSeniorCitizen] = useState(false);
+    const effectiveRate = isSeniorCitizen ? rate + 0.5 : rate;
 
     // Advanced Inputs
     const [inflationRate, setInflationRate] = useState(6.0);
@@ -36,7 +38,7 @@ export default function RDCalculator() {
     // Each monthly deposit earns interest for the number of complete quarters from the
     // start of its deposit quarter to the end of the tenure.
     const result = useMemo(() => {
-        const r = (rate || 0) / 400; // quarterly rate (annual / 4 / 100)
+        const r = (effectiveRate || 0) / 400; // quarterly rate (annual / 4 / 100)
         const validMonths = Math.max(1, months || 1);
         const validMonthly = Math.max(1, monthly || 0);
         const totalQuarters = Math.ceil(validMonths / 3);
@@ -87,7 +89,7 @@ export default function RDCalculator() {
         const principalPct = maturity > 0 ? (invested / maturity) * 100 : 0;
 
         return { maturity, invested, totalInterest, effectiveYield, realRate, purchasingPower, interestPct, principalPct, schedule, validMonths, validMonthly };
-    }, [monthly, rate, months, inflationRate]);
+    }, [monthly, effectiveRate, months, inflationRate]);
 
     // 2. WHAT-IF SIMULATOR
     const whatIf = useMemo(() => {
@@ -142,7 +144,7 @@ export default function RDCalculator() {
             title: 'Recurring Deposit (RD) Report',
             inputs: [
                 { label: 'Monthly Deposit', value: `₹${monthly.toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Interest Rate', value: `${effectiveRate}% p.a.${isSeniorCitizen ? ' (Senior +0.5%)' : ''}` },
                 { label: 'Tenure', value: `${months} Months` },
                 { label: 'Assumed Inflation', value: `${inflationRate}% p.a.` },
             ],
@@ -181,7 +183,7 @@ export default function RDCalculator() {
             title: 'Recurring Deposit (RD) Report',
             inputs: [
                 { label: 'Monthly Deposit', value: `₹${monthly.toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Interest Rate', value: `${effectiveRate}% p.a.${isSeniorCitizen ? ' (Senior +0.5%)' : ''}` },
                 { label: 'Tenure', value: `${months} Months` },
             ],
             results: [
@@ -240,6 +242,20 @@ export default function RDCalculator() {
                             </div>
                         </div>
                     </div>
+                    {/* Senior Citizen Toggle */}
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
+                        <div>
+                            <span className="text-xs font-medium text-foreground">Senior Citizen (60+)</span>
+                            <p className="text-[10px] text-muted-foreground">+0.50% extra rate</p>
+                        </div>
+                        <button onClick={() => setIsSeniorCitizen(!isSeniorCitizen)}
+                            className={`w-12 h-6 rounded-full transition-all relative ${isSeniorCitizen ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                            <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${isSeniorCitizen ? 'left-[26px]' : 'left-0.5'}`} />
+                        </button>
+                    </div>
+                    {isSeniorCitizen && (
+                        <p className="text-[10px] text-emerald-500 font-medium -mt-1">Effective rate: {effectiveRate}% (base {rate}% + 0.50%)</p>
+                    )}
                 </div>
 
                 {/* 2. RESULTS HERO */}
