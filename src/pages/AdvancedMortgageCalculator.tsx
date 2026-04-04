@@ -12,6 +12,7 @@ import {
     formatINRShort,
 } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
@@ -1102,6 +1103,8 @@ export default function AdvancedMortgageCalculator() {
                         )}
                     </AnimatePresence>
                 </div>
+
+                <DisclaimerComponent module="mortgage" />
 
                 {/* Spacer so content is not hidden behind safe navigation */}
                 <div className="h-6"></div>

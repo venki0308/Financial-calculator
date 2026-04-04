@@ -497,7 +497,7 @@ export default function PropertyCalculator() {
                 </div>
 
                 
-                <DisclaimerComponent module="general" />
+                <DisclaimerComponent module="property" />
 
                 {/* Mode Tabs */}
                 <div className="flex gap-1.5 mb-5 overflow-x-auto pb-1">

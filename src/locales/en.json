@@ -2367,5 +2367,139 @@
         "nextBirthdayIn": "Next birthday in",
         "days": "days",
         "youllTurn": "You'll turn {{age}}!"
+    },
+    "disclaimer": {
+        "emi": {
+            "title": "EMI Calculation Basis",
+            "text": "EMI amounts are calculated using the standard reducing balance method. Your final schedule may vary slightly depending on your bank's specific rounding rules. Please check with your lender for the exact figures before finalizing."
+        },
+        "overdraft": {
+            "title": "OD Interest",
+            "text": "Overdraft interest is charged daily only on the utilized amount, not the sanctioned limit. This uses the standard daily reducing balance formulation. Exact charges depend on your bank's billing cycle."
+        },
+        "tax": {
+            "title": "Tax Estimation",
+            "text": "These tax estimates are based on the latest Union Budget tax slabs for both regimes. The calculation assumes standard circumstances. For complex scenarios like capital gains, please consult a Chartered Accountant."
+        },
+        "sip": {
+            "title": "Projected Returns",
+            "text": "Returns shown are mathematical projections based on your expected rate. Mutual fund investments are subject to market risks. Actual returns will fluctuate."
+        },
+        "fd": {
+            "title": "FD Maturity",
+            "text": "Maturity amounts are estimated based on the rates entered. Current interest rates vary by bank, tenure, and deposit amount. Check your bank's website for today's exact rates."
+        },
+        "rd": {
+            "title": "RD Maturity",
+            "text": "Maturity amounts are estimated based on entered rates and compounding frequency. Actual returns may differ slightly based on your bank's specific compounding rules."
+        },
+        "ppf": {
+            "title": "PPF Rules",
+            "text": "PPF has a mandatory 15-year lock-in with specific conditions for partial withdrawals. The interest rate is reviewed and set quarterly by the government."
+        },
+        "hra": {
+            "title": "HRA Exemption",
+            "text": "HRA exemption is calculated based on Sec 10(13A) of the Income Tax Act. It requires valid rent receipts and PAN details of the landlord for higher amounts."
+        },
+        "gratuity": {
+            "title": "Gratuity Act",
+            "text": "Gratuity estimates are based on the Payment of Gratuity Act, 1972. Eligibility requires continuous service of five years with the same employer."
+        },
+        "gst": {
+            "title": "GST Rates",
+            "text": "GST calculations are based on standard slab rates for general goods and services. Rates for specific items can vary based on their HSN/SAC codes. Confirm the exact rate on gst.gov.in."
+        },
+        "advisor": {
+            "title": "Financial Advice",
+            "text": "Recommendations are algorithmically generated based on your inputs. Use this as a starting point for your financial roadmap. For crucial decisions, please consult a certified financial planner."
+        },
+        "goal": {
+            "title": "Goal Projections",
+            "text": "Projections illustrate the monthly savings required to hit your target amounts. They do not account for inflation or changing tax rates. Revisit your goals periodically."
+        },
+        "expense": {
+            "title": "Data Privacy",
+            "text": "All expense data is stored completely locally on your device. We do not transmit, collect, or store your financial habits. You can clear your data anytime from Settings."
+        },
+        "compare": {
+            "title": "Comparison Metrics",
+            "text": "Comparisons are strictly mathematical based on the provided assumptions. Real-world scenarios involve inflation, tax implications, and changing interest rates. Use these as a directional guide only."
+        },
+        "schemes": {
+            "title": "Government Schemes",
+            "text": "Scheme details are provided for general educational purposes. Eligibility criteria and benefits are subject to change by ministries. Always verify details on the official portals before applying."
+        },
+        "general": {
+            "title": "Disclaimer",
+            "text": "The calculations provided are estimates for informational and planning purposes only. They should not be considered formal financial advice. Please verify specific figures with your financial institution."
+        },
+        "time": {
+            "title": "Time & Utility Data",
+            "text": "Data is provided for general informational purposes only. Time zones, daylight saving changes, and calculations may vary slightly depending on system data."
+        },
+        "scientific": {
+            "title": "Scientific Calculator",
+            "text": "Results are approximate and intended for informational use only. Floating-point precision limitations may cause minor rounding differences."
+        },
+        "swp": {
+            "title": "SWP Projections",
+            "text": "Systematic Withdrawal Plan projections assume a constant rate of return. Actual mutual fund returns fluctuate with market conditions. Your corpus may deplete faster or slower than projected."
+        },
+        "cagr": {
+            "title": "CAGR Note",
+            "text": "CAGR represents a smoothed annual growth rate and does not reflect actual year-to-year volatility. Past performance is not indicative of future results."
+        },
+        "lumpsum": {
+            "title": "Lumpsum Investment",
+            "text": "Lumpsum projections are based on assumed constant returns. Actual market returns vary significantly. Mutual fund investments are subject to market risks."
+        },
+        "epf": {
+            "title": "EPF Rates",
+            "text": "EPF interest rates are set annually by the EPFO and Government of India. The rate used here is based on the latest declared rate. Actual credited interest may differ."
+        },
+        "nps": {
+            "title": "NPS Returns",
+            "text": "NPS returns are market-linked and vary by fund manager and asset class. The projections shown are indicative only. Verify your actual returns on the NPS portal."
+        },
+        "ssy": {
+            "title": "SSY Interest",
+            "text": "Sukanya Samriddhi Yojana interest rates are reviewed and set quarterly by the Government of India. Current rates may differ from those used in this calculation."
+        },
+        "nsc": {
+            "title": "NSC Rates",
+            "text": "National Savings Certificate rates are set by the Ministry of Finance and reviewed quarterly. Confirm rates at your nearest Post Office."
+        },
+        "kvp": {
+            "title": "KVP Doubling",
+            "text": "Kisan Vikas Patra doubling time is based on the current government-declared rate. Rates are reviewed quarterly. Confirm the exact maturity period before investing."
+        },
+        "pomis": {
+            "title": "POMIS Monthly Income",
+            "text": "Post Office Monthly Income Scheme interest rates are reviewed quarterly by the Government. Monthly payout amounts shown are based on the current rate."
+        },
+        "potd": {
+            "title": "Post Office TD",
+            "text": "Post Office Time Deposit rates are set quarterly by the Government. Maturity amounts are estimated based on the latest declared rates."
+        },
+        "scss": {
+            "title": "SCSS Eligibility",
+            "text": "Senior Citizens Savings Scheme interest rates are reviewed quarterly. Eligibility is restricted to individuals aged 60 and above (55 for retired defence personnel)."
+        },
+        "budget": {
+            "title": "Budget Data",
+            "text": "All budget and expense data is stored locally on your device. Insights and recommendations are generated algorithmically and should not be considered professional financial advice."
+        },
+        "insurance": {
+            "title": "Insurance Estimates",
+            "text": "Premium estimates are indicative and based on general actuarial factors. Actual premiums vary by insurer, underwriting criteria, medical history, and policy terms. This tool is for comparison purposes only."
+        },
+        "mortgage": {
+            "title": "Mortgage Calculator",
+            "text": "Home loan EMI, prepayment, and foreclosure calculations are based on standard reducing balance method. Actual EMI, charges, and tax benefits may vary by lender and RBI guidelines. Consult your bank for exact figures."
+        },
+        "property": {
+            "title": "Property Valuation",
+            "text": "Property cost estimates including registration, stamp duty, and GST are approximate and based on general rates. Actual charges vary by state, local body, and property type. Verify with your local sub-registrar office."
+        }
     }
 }
