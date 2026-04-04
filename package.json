@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
-    "postinstall": "node scripts/fix-gradle-issue.js"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@capacitor-community/date-picker": "^7.1.0",
