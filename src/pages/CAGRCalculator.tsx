@@ -75,7 +75,7 @@ export default function CAGRCalculator() {
         }
 
         // If we keep the same years, what CAGR is needed?
-        const reqCagr = (Math.pow(targetAmount / result.validInitial, 1 / result.validYears) - 1) * 100;
+        const reqCagr = result.validYears > 0 ? (Math.pow(targetAmount / result.validInitial, 1 / result.validYears) - 1) * 100 : 0;
         const gap = targetAmount - result.validFinal;
 
         return {

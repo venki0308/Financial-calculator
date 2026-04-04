@@ -97,7 +97,7 @@ export default function RDCalculator() {
     const whatIf = useMemo(() => {
         const extraM = Math.max(100, whatIfExtra || 0);
         const newMonthly = result.validMonthly + extraM;
-        const r = (rate || 0) / 400;
+        const r = (effectiveRate || 0) / 400;
         const totalQuarters = Math.ceil(result.validMonths / 3);
 
         let newMaturity = 0;
@@ -111,7 +111,7 @@ export default function RDCalculator() {
         const extraInterest = addedWealth - extraInvested;
 
         return { newMonthly, newMaturity, addedWealth, extraInvested, extraInterest };
-    }, [whatIfExtra, result, rate]);
+    }, [whatIfExtra, result, effectiveRate]);
 
     // 3. SMART INSIGHTS
     const insight = useMemo(() => {

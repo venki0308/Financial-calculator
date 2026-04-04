@@ -73,8 +73,8 @@ export default function LumpsumCalculator() {
     const goalData = useMemo(() => {
         if (targetAmount <= principal) return { requiredYears: 0, requiredRate: 0, gap: 0, achievable: true };
         
-        const reqYears = Math.log(targetAmount / principal) / Math.log(1 + (rate / 100));
-        const reqRate = (Math.pow(targetAmount / principal, 1 / years) - 1) * 100;
+        const reqYears = rate > 0 ? Math.log(targetAmount / principal) / Math.log(1 + (rate / 100)) : Infinity;
+        const reqRate = years > 0 ? (Math.pow(targetAmount / principal, 1 / years) - 1) * 100 : 0;
         const gap = targetAmount - result.fv;
 
         return {

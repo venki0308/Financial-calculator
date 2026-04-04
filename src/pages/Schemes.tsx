@@ -4,6 +4,7 @@ import { Search, ChevronRight, Bookmark, Users, GraduationCap, Tractor, Building
 import { useTranslation } from 'react-i18next';
 import { schemes, schemeCategories } from '../data/schemes';
 import { useSchemeStore } from '../store/useSchemeStore';
+import { useTranslatedSchemeList } from '../hooks/useTranslatedScheme';
 import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -17,11 +18,13 @@ export default function Schemes() {
     const [search, setSearch] = useState('');
     const [selectedCat, setSelectedCat] = useState('');
 
-    const filtered = useMemo(() => schemes.filter((s) => {
+    const translatedSchemes = useTranslatedSchemeList(schemes);
+
+    const filtered = useMemo(() => translatedSchemes.filter((s) => {
         const matchSearch = !search || s.name.toLowerCase().includes(search.toLowerCase()) || s.category.toLowerCase().includes(search.toLowerCase()) || s.description.toLowerCase().includes(search.toLowerCase());
         const matchCat = !selectedCat || s.category === selectedCat;
         return matchSearch && matchCat;
-    }), [search, selectedCat]);
+    }), [search, selectedCat, translatedSchemes]);
 
     return (
         <div className="px-4 pt-14 animate-fade-in">

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { schemes } from '../data/schemes';
 import { useSchemeStore } from '../store/useSchemeStore';
+import { useTranslatedScheme } from '../hooks/useTranslatedScheme';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
@@ -14,20 +15,21 @@ export default function SchemeDetail() {
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { bookmarkedSchemes, addBookmark, removeBookmark } = useSchemeStore();
-    const scheme = schemes.find((s) => s.id === id);
+    const rawScheme = schemes.find((s) => s.id === id);
+    const scheme = rawScheme ? useTranslatedScheme(rawScheme) : undefined;
 
     useEffect(() => {
-        if (scheme) {
-            AnalyticsService.trackSchemeViewed(scheme.name, scheme.governmentLevel);
+        if (rawScheme) {
+            AnalyticsService.trackSchemeViewed(rawScheme.name, rawScheme.governmentLevel);
         }
-    }, [scheme]);
+    }, [rawScheme]);
 
     if (!scheme) return <div className="flex items-center justify-center min-h-dvh bg-white dark:bg-background text-slate-900 dark:text-foreground"><p>{t('schemes.schemeNotFound')}</p></div>;
 
     const isBookmarked = bookmarkedSchemes.includes(scheme.id);
 
-    const noIndividualApp = scheme.applicationType === 'No Individual';
-    const isServiceAccess = scheme.applicationType === 'Service Access';
+    const noIndividualApp = rawScheme!.applicationType === 'No Individual';
+    const isServiceAccess = rawScheme!.applicationType === 'Service Access';
     const isBankApp = scheme.applicationType === 'Bank Application';
     const isOnlineApp = scheme.applicationType === 'Online Application';
     const isGovtAgency = scheme.applicationType === 'Through Government Agency';
