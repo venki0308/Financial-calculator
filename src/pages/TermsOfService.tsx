@@ -1,36 +1,38 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Gavel } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const sections = [
-    {
-        num: 1,
-        title: 'For Reference Only',
-        body: 'The results provided by our calculators are estimates based on standard financial formulas and are for informational purposes only. Actual bank or government figures may vary.',
-        accent: '#3B82F6',
-    },
-    {
-        num: 2,
-        title: 'Not Financial Advice',
-        body: 'This app does not provide professional financial, legal, or tax advice. Users are encouraged to consult with qualified professionals before making significant financial decisions.',
-        accent: '#8B5CF6',
-    },
-    {
-        num: 3,
-        title: 'Government Schemes',
-        body: 'While we provide details of government schemes, we are NOT an official government entity. Always verify details on official portals (e.g., .gov.in domains) as rules are subject to change.',
-        accent: '#22C55E',
-    },
-    {
-        num: 4,
-        title: 'Liability',
-        body: 'FinCalix shall not be liable for any financial losses or decisions made based on the data provided within this application.',
-        accent: '#F59E0B',
-    },
-];
-
 export default function TermsOfService() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
+
+    const sections = [
+        {
+            num: 1,
+            title: t('termsOfService.sec1Title'),
+            body: t('termsOfService.sec1Body'),
+            accent: '#3B82F6',
+        },
+        {
+            num: 2,
+            title: t('termsOfService.sec2Title'),
+            body: t('termsOfService.sec2Body'),
+            accent: '#8B5CF6',
+        },
+        {
+            num: 3,
+            title: t('termsOfService.sec3Title'),
+            body: t('termsOfService.sec3Body'),
+            accent: '#22C55E',
+        },
+        {
+            num: 4,
+            title: t('termsOfService.sec4Title'),
+            body: t('termsOfService.sec4Body'),
+            accent: '#F59E0B',
+        },
+    ];
 
     return (
         <div className="min-h-dvh bg-background pb-10 animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
@@ -40,7 +42,7 @@ export default function TermsOfService() {
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
-                    <h1 className="text-lg font-bold text-foreground">Terms of Service</h1>
+                    <h1 className="text-lg font-bold text-foreground">{t('termsOfService.title')}</h1>
                 </div>
             </div>
 
@@ -52,7 +54,7 @@ export default function TermsOfService() {
                     className="flex items-center gap-2.5"
                 >
                     <Gavel size={16} className="text-brand-gold" />
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Usage Agreement</span>
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{t('termsOfService.usageAgreement')}</span>
                 </motion.div>
 
                 {/* ─── Sections ─── */}
@@ -93,11 +95,11 @@ export default function TermsOfService() {
                 >
                     <div className="h-px bg-border" />
                     <p className="text-muted-foreground text-xs leading-relaxed">
-                        By using this app, you acknowledge and agree to the terms outlined above.
+                        {t('termsOfService.acceptance')}
                     </p>
                     <div className="flex justify-center">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card border border-border text-[10px] text-muted-foreground font-medium">
-                            Last updated · March 2026
+                            {t('termsOfService.lastUpdated')}
                         </span>
                     </div>
                 </motion.div>

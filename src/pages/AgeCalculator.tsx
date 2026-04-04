@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Calendar, Star, Clock, Cake, Info, Activity, Wind, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
@@ -10,12 +11,12 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 
 
 function getGeneration(year: number) {
-    if (year >= 2013) return { name: 'Gen Alpha', emoji: '👶', color: 'text-pink-500' };
-    if (year >= 1997) return { name: 'Gen Z', emoji: '📱', color: 'text-blue-500' };
-    if (year >= 1981) return { name: 'Millennial', emoji: '🌐', color: 'text-violet-500' };
-    if (year >= 1965) return { name: 'Gen X', emoji: '📻', color: 'text-amber-500' };
-    if (year >= 1946) return { name: 'Baby Boomer', emoji: '📺', color: 'text-emerald-500' };
-    return { name: 'Silent Generation', emoji: '📖', color: 'text-muted-foreground' };
+    if (year >= 2013) return { nameKey: 'age.genAlpha', emoji: '👶', color: 'text-pink-500' };
+    if (year >= 1997) return { nameKey: 'age.genZ', emoji: '📱', color: 'text-blue-500' };
+    if (year >= 1981) return { nameKey: 'age.millennial', emoji: '🌐', color: 'text-violet-500' };
+    if (year >= 1965) return { nameKey: 'age.genX', emoji: '📻', color: 'text-amber-500' };
+    if (year >= 1946) return { nameKey: 'age.babyBoomer', emoji: '📺', color: 'text-emerald-500' };
+    return { nameKey: 'age.silentGeneration', emoji: '📖', color: 'text-muted-foreground' };
 }
 
 function calculateAge(birthDate: Date, today: Date) {
@@ -51,6 +52,7 @@ function getNextBirthday(birthDate: Date, today: Date) {
 
 export default function AgeCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Age_Calculator'); }, []);
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [birthDate, setBirthDate] = useState('');
     const today = new Date();
@@ -81,8 +83,8 @@ export default function AgeCalculator() {
                         <ArrowLeft size={18} className="text-slate-600 dark:text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">Age Calculator</h1>
-                        <p className="text-muted-foreground text-xs">Know your exact age & generation</p>
+                        <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">{t('age.title')}</h1>
+                        <p className="text-muted-foreground text-xs">{t('age.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -90,7 +92,7 @@ export default function AgeCalculator() {
             <div className="px-4 pb-28">
                 {/* Date Input */}
                 <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 shadow-sm dark:shadow-none">
-                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Date of Birth</label>
+                    <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('age.dateOfBirth')}</label>
                     <DateInput
                         value={birthDate}
                         onChange={setBirthDate}
@@ -102,18 +104,18 @@ export default function AgeCalculator() {
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
                         {/* Primary Age */}
                         <div className="p-5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-center shadow-lg">
-                            <p className="text-violet-200 text-xs mb-1">Your Age</p>
-                            <p className="text-4xl font-bold">{result.age.years} <span className="text-xl font-medium text-violet-200">years</span></p>
-                            <p className="text-violet-200 text-sm mt-1">{result.age.months} months & {result.age.days} days</p>
+                            <p className="text-violet-200 text-xs mb-1">{t('age.yourAge')}</p>
+                            <p className="text-4xl font-bold">{result.age.years} <span className="text-xl font-medium text-violet-200">{t('age.years')}</span></p>
+                            <p className="text-violet-200 text-sm mt-1">{result.age.months} {t('age.monthsAndDays', { days: result.age.days })}</p>
                         </div>
 
                         {/* Detailed Breakdown */}
                         <div className="grid grid-cols-2 gap-3">
                             {[
-                                { label: 'Total Days', value: result.age.totalDays.toLocaleString(), icon: <Calendar size={16} />, color: 'text-blue-500' },
-                                { label: 'Total Weeks', value: result.age.totalWeeks.toLocaleString(), icon: <Clock size={16} />, color: 'text-emerald-500' },
-                                { label: 'Total Hours', value: result.age.totalHours.toLocaleString(), icon: <Star size={16} />, color: 'text-amber-500' },
-                                { label: 'Born On', value: result.dayOfWeek, icon: <Info size={16} />, color: 'text-violet-500' },
+                                { label: t('age.totalDays'), value: result.age.totalDays.toLocaleString(), icon: <Calendar size={16} />, color: 'text-blue-500' },
+                                { label: t('age.totalWeeks'), value: result.age.totalWeeks.toLocaleString(), icon: <Clock size={16} />, color: 'text-emerald-500' },
+                                { label: t('age.totalHours'), value: result.age.totalHours.toLocaleString(), icon: <Star size={16} />, color: 'text-amber-500' },
+                                { label: t('age.bornOn'), value: result.dayOfWeek, icon: <Info size={16} />, color: 'text-violet-500' },
                             ].map(item => (
                                 <div key={item.label} className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-sm dark:shadow-none text-center">
                                     <div className={`mb-2 ${item.color}`}>{item.icon}</div>
@@ -127,8 +129,8 @@ export default function AgeCalculator() {
                         <div className="grid grid-cols-1 gap-3">
                             <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-sm dark:shadow-none text-center">
                                 <span className="text-3xl">{result.gen.emoji}</span>
-                                <p className={`text-lg font-bold mt-1 ${result.gen.color}`}>{result.gen.name}</p>
-                                <p className="text-muted-foreground text-[10px] uppercase font-bold">Generation</p>
+                                <p className={`text-lg font-bold mt-1 ${result.gen.color}`}>{t(result.gen.nameKey)}</p>
+                                <p className="text-muted-foreground text-[10px] uppercase font-bold">{t('age.generation')}</p>
                             </div>
                         </div>
 
@@ -137,17 +139,17 @@ export default function AgeCalculator() {
                             <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-center">
                                 <div className="text-rose-500 mb-1 flex justify-center"><Activity size={20} /></div>
                                 <p className="text-lg font-bold text-slate-800 dark:text-foreground">{result.metrics.heartbeats.toLocaleString()}</p>
-                                <p className="text-rose-600 dark:text-rose-400 text-[10px] uppercase font-bold mt-1">Total Heartbeats</p>
+                                <p className="text-rose-600 dark:text-rose-400 text-[10px] uppercase font-bold mt-1">{t('age.totalHeartbeats')}</p>
                             </div>
                             <div className="p-4 rounded-2xl bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/30 text-center">
                                 <div className="text-sky-500 mb-1 flex justify-center"><Wind size={20} /></div>
                                 <p className="text-lg font-bold text-slate-800 dark:text-foreground">{result.metrics.breaths.toLocaleString()}</p>
-                                <p className="text-sky-600 dark:text-sky-400 text-[10px] uppercase font-bold mt-1">Total Breaths</p>
+                                <p className="text-sky-600 dark:text-sky-400 text-[10px] uppercase font-bold mt-1">{t('age.totalBreaths')}</p>
                             </div>
                             <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-center col-span-2">
                                 <div className="text-indigo-500 mb-1 flex justify-center"><Moon size={20} /></div>
-                                <p className="text-lg font-bold text-slate-800 dark:text-foreground">{result.metrics.sleepYears.toFixed(1)} <span className="text-sm font-medium">years</span></p>
-                                <p className="text-indigo-600 dark:text-indigo-400 text-[10px] uppercase font-bold mt-1">Time Spent Sleeping</p>
+                                <p className="text-lg font-bold text-slate-800 dark:text-foreground">{result.metrics.sleepYears.toFixed(1)} <span className="text-sm font-medium">{t('age.years')}</span></p>
+                                <p className="text-indigo-600 dark:text-indigo-400 text-[10px] uppercase font-bold mt-1">{t('age.timeSpentSleeping')}</p>
                             </div>
                         </div>
 
@@ -155,12 +157,12 @@ export default function AgeCalculator() {
                         <div className="p-4 rounded-2xl bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-500/10 dark:to-rose-500/10 border border-pink-200 dark:border-pink-500/30 text-center">
                             <Cake size={24} className="text-pink-500 mx-auto mb-2" />
                             <p className="text-pink-700 dark:text-pink-300 text-sm font-bold">
-                                Next birthday in <span className="text-pink-600 dark:text-pink-400 text-xl">{result.nextBday.daysLeft}</span> days
+                                {t('age.nextBirthdayIn')} <span className="text-pink-600 dark:text-pink-400 text-xl">{result.nextBday.daysLeft}</span> {t('age.days')}
                             </p>
                             <p className="text-pink-500 text-xs mt-1">
                                 {result.nextBday.date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                             </p>
-                            <p className="text-pink-500 text-xs mt-0.5">You'll turn {result.age.years + 1}!</p>
+                            <p className="text-pink-500 text-xs mt-0.5">{t('age.youllTurn', { age: result.age.years + 1 })}</p>
                         </div>
                     </motion.div>
                 )}

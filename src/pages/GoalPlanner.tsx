@@ -13,20 +13,20 @@ import { useNotificationStore } from '../store/useNotificationStore';
 
 interface GoalPreset {
     id: string;
-    label: string;
+    labelKey: string;
     icon: React.ElementType;
     gradient: string;
     defaultTarget: number;
     defaultYears: number;
-    description: string;
+    descriptionKey: string;
 }
 
 const goalPresets: GoalPreset[] = [
-    { id: 'house', label: 'House Purchase', icon: Home, gradient: 'from-emerald-500 to-teal-600', defaultTarget: 5000000, defaultYears: 10, description: 'Save for your dream home' },
-    { id: 'education', label: 'Child Education', icon: GraduationCap, gradient: 'from-blue-500 to-indigo-600', defaultTarget: 2000000, defaultYears: 15, description: 'Secure your child\'s future' },
-    { id: 'retirement', label: 'Retirement', icon: Umbrella, gradient: 'from-purple-500 to-violet-600', defaultTarget: 10000000, defaultYears: 25, description: 'Retire comfortably' },
-    { id: 'car', label: 'Car Purchase', icon: Car, gradient: 'from-amber-500 to-orange-600', defaultTarget: 1000000, defaultYears: 3, description: 'Drive your dream car' },
-    { id: 'custom', label: 'Custom Goal', icon: Target, gradient: 'from-pink-500 to-rose-600', defaultTarget: 2000000, defaultYears: 5, description: 'Any financial goal you want' },
+    { id: 'house', labelKey: 'goalPlanner.presetHouse', icon: Home, gradient: 'from-emerald-500 to-teal-600', defaultTarget: 5000000, defaultYears: 10, descriptionKey: 'goalPlanner.presetHouseDesc' },
+    { id: 'education', labelKey: 'goalPlanner.presetEducation', icon: GraduationCap, gradient: 'from-blue-500 to-indigo-600', defaultTarget: 2000000, defaultYears: 15, descriptionKey: 'goalPlanner.presetEducationDesc' },
+    { id: 'retirement', labelKey: 'goalPlanner.presetRetirement', icon: Umbrella, gradient: 'from-purple-500 to-violet-600', defaultTarget: 10000000, defaultYears: 25, descriptionKey: 'goalPlanner.presetRetirementDesc' },
+    { id: 'car', labelKey: 'goalPlanner.presetCar', icon: Car, gradient: 'from-amber-500 to-orange-600', defaultTarget: 1000000, defaultYears: 3, descriptionKey: 'goalPlanner.presetCarDesc' },
+    { id: 'custom', labelKey: 'goalPlanner.presetCustom', icon: Target, gradient: 'from-pink-500 to-rose-600', defaultTarget: 2000000, defaultYears: 5, descriptionKey: 'goalPlanner.presetCustomDesc' },
 ];
 
 export default function GoalPlanner() {
@@ -57,7 +57,7 @@ export default function GoalPlanner() {
                     type: 'saving_insight',
                     category: 'insight',
                     title: '🎉 Goal Reached!',
-                    body: `Congratulations! You have reached your target of ${formatINR(currentCost)} for ${selectedGoal.label}.`,
+                    body: `Congratulations! You have reached your target of ${formatINR(currentCost)} for ${t(selectedGoal.labelKey)}.`,
                     icon: '🎉',
                     actionRoute: '/goal-planner',
                     isActionable: true,
@@ -109,34 +109,34 @@ export default function GoalPlanner() {
 
     const handleDownloadPDF = async () => {
         const config: ExportConfig = {
-            title: 'Goal Planner Report',
-            subtitle: selectedGoal ? selectedGoal.label : 'Custom Goal',
+            title: t('goalPlanner.pdfTitle'),
+            subtitle: selectedGoal ? t(selectedGoal.labelKey) : t('goalPlanner.presetCustom'),
             inputs: [
-                { label: 'Goal', value: selectedGoal ? selectedGoal.label : 'Custom' },
-                { label: 'Current Cost', value: `₹${currentCost.toLocaleString('en-IN')}` },
-                { label: 'Current Savings', value: `₹${currentSavings.toLocaleString('en-IN')}` },
-                { label: 'Target Years', value: `${targetYears} Years` },
-                { label: 'Inflation Rate', value: `${inflationRate}% p.a.` },
-                { label: 'Expected Return', value: `${expectedReturn}% p.a.` },
+                { label: t('goalPlanner.pdfGoal'), value: selectedGoal ? t(selectedGoal.labelKey) : t('goalPlanner.presetCustom') },
+                { label: t('goalPlanner.pdfCurrentCost'), value: `₹${currentCost.toLocaleString('en-IN')}` },
+                { label: t('goalPlanner.pdfCurrentSavings'), value: `₹${currentSavings.toLocaleString('en-IN')}` },
+                { label: t('goalPlanner.pdfTargetYears'), value: `${targetYears} ${t('goalPlanner.pdfYears')}` },
+                { label: t('goalPlanner.pdfInflationRate'), value: `${inflationRate}% p.a.` },
+                { label: t('goalPlanner.pdfExpectedReturn'), value: `${expectedReturn}% p.a.` },
             ],
             results: [
-                { label: 'Monthly SIP Needed', value: `₹${Math.round(result.monthlySIP).toLocaleString('en-IN')}` },
-                { label: 'Total Investment', value: `₹${Math.round(result.totalInvested).toLocaleString('en-IN')}` },
-                { label: 'Returns Earned', value: `₹${Math.round(result.wealthGained).toLocaleString('en-IN')}` },
-                { label: 'Future Target Cost', value: `₹${Math.round(result.targetFV).toLocaleString('en-IN')}` },
-                { label: 'Real Rate of Return', value: `${(result.realRate * 100).toFixed(2)}%` },
+                { label: t('goalPlanner.pdfMonthlySIP'), value: `₹${Math.round(result.monthlySIP).toLocaleString('en-IN')}` },
+                { label: t('goalPlanner.pdfTotalInvestment'), value: `₹${Math.round(result.totalInvested).toLocaleString('en-IN')}` },
+                { label: t('goalPlanner.pdfReturnsEarned'), value: `₹${Math.round(result.wealthGained).toLocaleString('en-IN')}` },
+                { label: t('goalPlanner.pdfFutureTargetCost'), value: `₹${Math.round(result.targetFV).toLocaleString('en-IN')}` },
+                { label: t('goalPlanner.pdfRealRate'), value: `${(result.realRate * 100).toFixed(2)}%` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Total Investment', value: result.totalInvested, color: '#4F46E5' },
-                    { label: 'Returns Earned', value: result.wealthGained, color: '#10B981' },
+                    { label: t('goalPlanner.pdfTotalInvestment'), value: result.totalInvested, color: '#4F46E5' },
+                    { label: t('goalPlanner.pdfReturnsEarned'), value: result.wealthGained, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'Year-wise Growth Projection',
-            projectionColumns: ['Year', 'Amount Invested', 'Portfolio Value'],
+            projectionTitle: t('goalPlanner.pdfProjectionTitle'),
+            projectionColumns: [t('goalPlanner.pdfColYear'), t('goalPlanner.pdfColInvested'), t('goalPlanner.pdfColPortfolio')],
             projectionRows: projection.map(p => [
-                `Year ${p.year}`,
+                `${t('goalPlanner.pdfColYear')} ${p.year}`,
                 `₹${Math.round(p.invested).toLocaleString('en-IN')}`,
                 `₹${Math.round(p.value).toLocaleString('en-IN')}`,
             ]),
@@ -185,8 +185,8 @@ export default function GoalPlanner() {
                                             <Icon size={24} className="text-foreground" />
                                         </div>
                                         <div>
-                                            <h3 className="text-foreground font-bold text-base">{goal.label}</h3>
-                                            <p className="text-foreground/80 text-xs mt-0.5">{goal.description}</p>
+                                            <h3 className="text-foreground font-bold text-base">{t(goal.labelKey)}</h3>
+                                            <p className="text-foreground/80 text-xs mt-0.5">{t(goal.descriptionKey)}</p>
                                         </div>
                                     </div>
                                 </motion.button>
@@ -206,23 +206,23 @@ export default function GoalPlanner() {
                                 <selectedGoal.icon size={20} className="text-foreground" />
                             </div>
                             <div>
-                                <h3 className="text-foreground font-bold text-sm">{selectedGoal.label}</h3>
-                                <p className="text-foreground/80 text-xs">{selectedGoal.description}</p>
+                                <h3 className="text-foreground font-bold text-sm">{t(selectedGoal.labelKey)}</h3>
+                                <p className="text-foreground/80 text-xs">{t(selectedGoal.descriptionKey)}</p>
                             </div>
                             <button onClick={() => setSelectedGoal(null)} className="ml-auto px-3 py-1.5 rounded-lg bg-white/20 text-foreground text-xs font-bold border border-white/30">
-                                Change
+                                {t('goalPlanner.change')}
                             </button>
                         </motion.div>
 
                         {/* Inputs */}
                         <div className="space-y-3 mb-5">
-                            <NumberInput label="Current Cost" value={currentCost} onChange={setCurrentCost} min={10000} max={1000000000} prefix="₹" helperText="Today's cost of the goal" />
-                            <NumberInput label={t('goalPlanner.currentSaving')} value={currentSavings} onChange={setCurrentSavings} min={0} max={currentCost * 10} prefix="₹" helperText="Amount already saved" />
+                            <NumberInput label={t('goalPlanner.currentCost')} value={currentCost} onChange={setCurrentCost} min={10000} max={1000000000} prefix="₹" helperText={t('goalPlanner.currentCostHelper')} />
+                            <NumberInput label={t('goalPlanner.currentSaving')} value={currentSavings} onChange={setCurrentSavings} min={0} max={currentCost * 10} prefix="₹" helperText={t('goalPlanner.currentSavingHelper')} />
                             <div className="grid grid-cols-2 gap-3">
-                                <NumberInput label="Target Years" value={targetYears} onChange={setTargetYears} min={1} max={40} suffix=" yrs" />
-                                <NumberInput label="Inflation (p.a.)" value={inflationRate} onChange={setInflationRate} min={0} max={20} suffix="%" step={0.5} />
+                                <NumberInput label={t('goalPlanner.targetYears')} value={targetYears} onChange={setTargetYears} min={1} max={40} suffix=" yrs" />
+                                <NumberInput label={t('goalPlanner.inflationRate')} value={inflationRate} onChange={setInflationRate} min={0} max={20} suffix="%" step={0.5} />
                             </div>
-                            <NumberInput label="Expected Return (p.a.)" value={expectedReturn} onChange={setExpectedReturn} min={1} max={30} suffix="%" step={0.5} />
+                            <NumberInput label={t('goalPlanner.expectedReturn')} value={expectedReturn} onChange={setExpectedReturn} min={1} max={30} suffix="%" step={0.5} />
                         </div>
 
                         {/* Result */}
@@ -237,30 +237,30 @@ export default function GoalPlanner() {
                                 >
                                     {formatINR(result.monthlySIP)}
                                 </motion.p>
-                                <p className="text-muted-foreground text-xs mt-1">per month to reach your goal</p>
+                                <p className="text-muted-foreground text-xs mt-1">{t('goalPlanner.perMonth')}</p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 mb-4">
                                 <div className="p-3 rounded-xl bg-muted text-center">
-                                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Total to Invest</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">{t('goalPlanner.totalToInvest')}</p>
                                     <p className="text-foreground font-bold text-sm">{formatINR(result.totalInvested)}</p>
                                 </div>
                                 <div className="p-3 rounded-xl bg-muted text-center">
-                                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">Returns Earned</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-1">{t('goalPlanner.returnsEarned')}</p>
                                     <p className="text-brand-green font-bold text-sm">{formatINR(result.wealthGained)}</p>
                                 </div>
                             </div>
 
                             <div className="pt-4 border-t border-border/40 flex justify-between gap-4">
                                 <div className="flex-1 text-center">
-                                    <p className="text-muted-foreground text-xs mb-1">Current Cost</p>
+                                    <p className="text-muted-foreground text-xs mb-1">{t('goalPlanner.currentCost')}</p>
                                     <p className="text-lg font-bold text-foreground">{formatINR(currentCost)}</p>
-                                    <p className="text-muted-foreground text-[10px] mt-1">Real Rate {(result.realRate * 100).toFixed(1)}%</p>
+                                    <p className="text-muted-foreground text-[10px] mt-1">{t('goalPlanner.realRate')} {(result.realRate * 100).toFixed(1)}%</p>
                                 </div>
                                 <div className="flex-1 text-center border-l border-border/40 pl-4">
-                                    <p className="text-muted-foreground text-xs mb-1">Target Cost ({targetYears}Y)</p>
+                                    <p className="text-muted-foreground text-xs mb-1">{t('goalPlanner.targetCost')} ({targetYears}Y)</p>
                                     <p className="text-xl font-bold text-rose-500">{formatINR(result.targetFV)}</p>
-                                    <p className="text-muted-foreground text-[10px] mt-1">{inflationRate}% Inflation</p>
+                                    <p className="text-muted-foreground text-[10px] mt-1">{inflationRate}% {t('goalPlanner.inflation')}</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -270,14 +270,14 @@ export default function GoalPlanner() {
                             <div className="p-4 rounded-2xl bg-card border border-border mb-5">
                                 <div className="flex items-center gap-2 mb-4">
                                     <TrendingUp size={14} className="text-blue-500" />
-                                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Growth Projection</h3>
+                                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('goalPlanner.growthProjection')}</h3>
                                 </div>
                                 <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
                                     {projection.filter((_, i) => i % Math.max(1, Math.floor(targetYears / 10)) === 0 || i === projection.length - 1).map((p) => {
                                         const progress = Math.min(100, (p.value / result.targetFV) * 100);
                                         return (
                                             <div key={p.year} className="flex items-center gap-3">
-                                                <span className="text-xs text-muted-foreground w-10 text-right">Yr {p.year}</span>
+                                                <span className="text-xs text-muted-foreground w-10 text-right">{t('goalPlanner.yr')} {p.year}</span>
                                                 <div className="flex-1 h-6 rounded-lg bg-muted overflow-hidden relative">
                                                     <motion.div
                                                         className="h-full rounded-lg bg-gradient-to-r from-brand-green/80 to-brand-green"
@@ -301,7 +301,7 @@ export default function GoalPlanner() {
                             onClick={handleDownloadPDF}
                             className="w-full mt-4 flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-colors hover:bg-brand-blue/10 active:scale-95"
                         >
-                            <FileText size={20} /> Export Report
+                            <FileText size={20} /> {t('goalPlanner.exportReport')}
                         </button>
                     </div>
                 )}

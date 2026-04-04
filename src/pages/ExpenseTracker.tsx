@@ -14,12 +14,12 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 
 
 const TABS = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'budget', label: 'Budget', icon: Wallet },
-    { id: 'daily', label: 'Daily', icon: Calendar },
-    { id: 'weekly', label: 'Weekly', icon: CalendarDays },
-    { id: 'reports', label: 'Reports', icon: BarChart3 },
-    { id: 'subs', label: 'Subs', icon: Repeat },
+    { id: 'dashboard', labelKey: 'expenses.dashboard', icon: LayoutDashboard },
+    { id: 'budget', labelKey: 'expenses.budget', icon: Wallet },
+    { id: 'daily', labelKey: 'expenses.daily', icon: Calendar },
+    { id: 'weekly', labelKey: 'expenses.weekly', icon: CalendarDays },
+    { id: 'reports', labelKey: 'expenses.reports', icon: BarChart3 },
+    { id: 'subs', labelKey: 'expenses.subs', icon: Repeat },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];

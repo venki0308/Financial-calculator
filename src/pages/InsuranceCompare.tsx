@@ -234,12 +234,12 @@ const HOW_TO_BUY = [
   { step: 7, title: 'Declare everything honestly', body: 'Disclose all pre-existing conditions, past surgeries, family medical history. Non-disclosure = claim rejection at the worst possible time.' },
 ];
 
-const childAgeLabel = (age: number): string => {
-  if (age < 1) return 'Newborn (under 1 year)';
-  if (age <= 4) return 'Toddler';
-  if (age <= 12) return 'School age';
-  if (age <= 17) return 'Teenager';
-  return 'Young adult';
+const childAgeLabel = (age: number, t: (key: string) => string): string => {
+  if (age < 1) return t('ins.compare.childNewborn');
+  if (age <= 4) return t('ins.compare.childToddler');
+  if (age <= 12) return t('ins.compare.childSchoolAge');
+  if (age <= 17) return t('ins.compare.childTeenager');
+  return t('ins.compare.childYoungAdult');
 };
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
@@ -327,10 +327,10 @@ export default function InsuranceCompare() {
       const [lo, hi] = getMemberPremium(age, sumInsured, cityType, hasPreExisting);
       members.push({ label, lo, hi });
     };
-    add(`Self (age ${selfAge})`, selfAge);
-    if (hasSpouse) add(`Spouse (age ${spouseAge})`, spouseAge);
-    children.forEach((age, i) => add(`Child ${i + 1} (age ${age === 0 ? '<1' : age})`, age));
-    parents.forEach((age, i) => add(`Parent ${i + 1} (age ${age})`, age));
+    add(t('ins.compare.selfAge', { age: selfAge }), selfAge);
+    if (hasSpouse) add(t('ins.compare.spouseAge', { age: spouseAge }), spouseAge);
+    children.forEach((age, i) => add(t('ins.compare.childAge', { n: i + 1, age: age === 0 ? '<1' : age }), age));
+    parents.forEach((age, i) => add(t('ins.compare.parentAge', { n: i + 1, age }), age));
     const rawLo = members.reduce((s, m) => s + m.lo, 0);
     const rawHi = members.reduce((s, m) => s + m.hi, 0);
     const ff = getFloaterFactor(members.length);
@@ -341,7 +341,7 @@ export default function InsuranceCompare() {
       lo: Math.round(rawLo * ff / 100) * 100,
       hi: Math.round(rawHi * ff / 100) * 100,
     };
-  }, [selfAge, hasSpouse, spouseAge, children, parents, sumInsured, cityType, hasPreExisting]);
+  }, [selfAge, hasSpouse, spouseAge, children, parents, sumInsured, cityType, hasPreExisting, t]);
 
   // ── Adequacy score ────────────────────────────────────────────────────────────
   const adequacyScore = useMemo(
@@ -350,13 +350,13 @@ export default function InsuranceCompare() {
   );
 
   const adequacyExplanation = useMemo(() => {
-    const cityLabel = cityType === 'metro' ? 'metro cities' : cityType === 'tier2' ? 'Tier 2 cities' : 'your city';
+    const cityLabel = cityType === 'metro' ? t('ins.compare.metroCities') : cityType === 'tier2' ? t('ins.compare.tier2Cities') : t('ins.compare.yourCity');
     if (adequacyScore < 50)
-      return `A single ICU surgery in ${cityLabel} can cost ₹3–8 lakhs. Your current cover of ${fmtL(sumInsured)} may not be sufficient for major hospitalisation.`;
+      return t('ins.compare.adequacyLow', { cityLabel, cover: fmtL(sumInsured) });
     if (adequacyScore <= 75)
-      return 'Your cover is adequate for most routine hospitalisations. Consider increasing for critical illness or surgical emergencies.';
-    return 'Good coverage for your family profile. Ensure you have restoration benefit and no room rent capping in your plan.';
-  }, [adequacyScore, cityType, sumInsured]);
+      return t('ins.compare.adequacyMid');
+    return t('ins.compare.adequacyHigh');
+  }, [adequacyScore, cityType, sumInsured, t]);
 
   // ── Personalised checklist ───────���──────────────────────���─────────────────────
   const profileChecklist = useMemo(() => {
@@ -416,27 +416,29 @@ export default function InsuranceCompare() {
 
                 {/* Self & Spouse */}
                 <div className="p-4 rounded-2xl bg-card border border-border mb-3">
-                  <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider block mb-3">Self</span>
+                  <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider block mb-3">{t('ins.compare.self')}</span>
                   <div className="flex items-center gap-3 mb-4">
-                    <label className="text-xs text-muted-foreground w-16">Your age</label>
-                    <input type="number" min={18} max={70} value={selfAge}
-                      onChange={e => setSelfAge(Math.min(70, Math.max(18, Number(e.target.value))))}
+                    <label className="text-xs text-muted-foreground w-16">{t('ins.compare.yourAge')}</label>
+                    <input type="text" inputMode="numeric" value={selfAge}
+                      onChange={e => { const v = e.target.value.replace(/\D/g, ''); setSelfAge(v === '' ? 0 : Number(v)); }}
+                      onBlur={() => setSelfAge(a => Math.min(70, Math.max(18, a)))}
                       className="flex-1 px-3 py-2 rounded-xl bg-muted border border-border text-foreground text-sm font-bold text-center"
                     />
                   </div>
                   <div className="flex items-center justify-between pt-3 border-t border-border/40">
-                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Spouse</span>
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('ins.compare.spouse')}</span>
                     <button onClick={() => setHasSpouse(!hasSpouse)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${hasSpouse ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-muted text-muted-foreground border border-border'}`}>
-                      {hasSpouse ? 'Added ✓' : '+ Add Spouse'}
+                      {hasSpouse ? t('ins.compare.added') : t('ins.compare.addSpouse')}
                     </button>
                   </div>
                   {hasSpouse && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="overflow-hidden mt-3">
                       <div className="flex items-center gap-3">
-                        <label className="text-xs text-muted-foreground w-16">Age</label>
-                        <input type="number" min={18} max={70} value={spouseAge}
-                          onChange={e => setSpouseAge(Math.min(70, Math.max(18, Number(e.target.value))))}
+                        <label className="text-xs text-muted-foreground w-16">{t('ins.compare.age')}</label>
+                        <input type="text" inputMode="numeric" value={spouseAge}
+                          onChange={e => { const v = e.target.value.replace(/\D/g, ''); setSpouseAge(v === '' ? 0 : Number(v)); }}
+                          onBlur={() => setSpouseAge(a => Math.min(70, Math.max(18, a)))}
                           className="flex-1 px-3 py-2 rounded-xl bg-muted border border-border text-foreground text-sm font-bold text-center"
                         />
                       </div>
@@ -449,25 +451,26 @@ export default function InsuranceCompare() {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <Baby size={14} className="text-blue-400" />
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Children</span>
+                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('ins.compare.children')}</span>
                     </div>
                     {children.length < 4 && (
                       <button onClick={addChild} className="px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-bold">
-                        + Add Child
+                        {t('ins.compare.addChild')}
                       </button>
                     )}
                   </div>
-                  {children.length === 0 && <p className="text-xs text-muted-foreground">No children added</p>}
+                  {children.length === 0 && <p className="text-xs text-muted-foreground">{t('ins.compare.noChildren')}</p>}
                   <div className="space-y-2.5">
                     {children.map((age, idx) => (
                       <div key={idx}>
                         <div className="flex items-center gap-2.5">
-                          <span className="text-xs text-muted-foreground w-14">Child {idx + 1}</span>
-                          <input type="number" min={0} max={25} value={age}
-                            onChange={e => updateChild(idx, Math.min(25, Math.max(0, Number(e.target.value))))}
+                          <span className="text-xs text-muted-foreground w-14">{t('ins.compare.childN', { n: idx + 1 })}</span>
+                          <input type="text" inputMode="numeric" value={age}
+                            onChange={e => { const v = e.target.value.replace(/\D/g, ''); updateChild(idx, v === '' ? 0 : Number(v)); }}
+                            onBlur={() => updateChild(idx, Math.min(25, Math.max(0, children[idx])))}
                             className="w-16 px-2 py-1.5 rounded-lg bg-muted border border-border text-foreground text-sm font-bold text-center"
                           />
-                          <span className="text-[10px] text-muted-foreground flex-1">{childAgeLabel(age)}</span>
+                          <span className="text-[10px] text-muted-foreground flex-1">{childAgeLabel(age, t)}</span>
                           <button onClick={() => removeChild(idx)} className="p-1 rounded-lg bg-red-500/10 text-red-400">
                             <Minus size={12} />
                           </button>
@@ -498,26 +501,27 @@ export default function InsuranceCompare() {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <UserPlus size={14} className="text-purple-400" />
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Parents / In-Laws</span>
+                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('ins.compare.parents')}</span>
                     </div>
                     {parents.length < 4 && (
                       <button onClick={addParent} className="px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20 text-xs font-bold">
-                        + Add Parent
+                        {t('ins.compare.addParent')}
                       </button>
                     )}
                   </div>
-                  {parents.length === 0 && <p className="text-xs text-muted-foreground">No parents added</p>}
+                  {parents.length === 0 && <p className="text-xs text-muted-foreground">{t('ins.compare.noParents')}</p>}
                   <div className="space-y-2.5">
                     {parents.map((age, idx) => (
                       <div key={idx}>
                         <div className="flex items-center gap-2.5">
-                          <span className="text-xs text-muted-foreground w-14">Parent {idx + 1}</span>
-                          <input type="number" min={40} max={85} value={age}
-                            onChange={e => updateParent(idx, Math.min(85, Math.max(40, Number(e.target.value))))}
+                          <span className="text-xs text-muted-foreground w-14">{t('ins.compare.parentN', { n: idx + 1 })}</span>
+                          <input type="text" inputMode="numeric" value={age}
+                            onChange={e => { const v = e.target.value.replace(/\D/g, ''); updateParent(idx, v === '' ? 0 : Number(v)); }}
+                            onBlur={() => updateParent(idx, Math.min(85, Math.max(40, parents[idx])))}
                             className="w-16 px-2 py-1.5 rounded-lg bg-muted border border-border text-foreground text-sm font-bold text-center"
                           />
                           <span className="text-[10px] text-muted-foreground flex-1">
-                            {age >= 70 ? '⚠ Elderly' : age >= 60 ? 'Senior' : 'Adult'}
+                            {age >= 70 ? t('ins.compare.elderly') : age >= 60 ? t('ins.compare.senior') : t('ins.compare.adult')}
                           </span>
                           <button onClick={() => removeParent(idx)} className="p-1 rounded-lg bg-red-500/10 text-red-400">
                             <Minus size={12} />
@@ -548,8 +552,8 @@ export default function InsuranceCompare() {
                 <div className="p-4 rounded-2xl bg-card border border-border mb-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-bold text-foreground">Pre-existing conditions in family</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">Diabetes, BP, thyroid, heart, etc.</p>
+                      <p className="text-xs font-bold text-foreground">{t('ins.compare.preExisting')}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{t('ins.compare.preExistingHint')}</p>
                     </div>
                     <button onClick={() => setHasPreExisting(!hasPreExisting)}
                       className={`w-12 h-7 rounded-full transition-all relative ${hasPreExisting ? 'bg-emerald-500' : 'bg-muted border border-border'}`}>
@@ -560,14 +564,14 @@ export default function InsuranceCompare() {
 
                 {/* City Type */}
                 <div className="p-4 rounded-2xl bg-card border border-border mb-3">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">City Type</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">{t('ins.compare.cityType')}</p>
                   <div className="flex gap-2">
                     {(['metro', 'tier2', 'tier3'] as const).map(c => (
                       <button key={c} onClick={() => setCityType(c)}
                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${cityType === c
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                           : 'bg-muted text-muted-foreground border border-border'}`}>
-                        {c === 'metro' ? 'Metro' : c === 'tier2' ? 'Tier 2' : 'Tier 3'}
+                        {c === 'metro' ? t('ins.compare.metro') : c === 'tier2' ? t('ins.compare.tier2') : t('ins.compare.tier3')}
                       </button>
                     ))}
                   </div>
@@ -575,7 +579,7 @@ export default function InsuranceCompare() {
 
                 {/* Sum Insured */}
                 <div className="p-4 rounded-2xl bg-card border border-border mb-3">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">Sum Insured</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">{t('ins.compare.sumInsured')}</p>
                   <div className="flex flex-wrap gap-2">
                     {SUM_INSURED_OPTIONS.map(opt => (
                       <button key={opt.value} onClick={() => setSumInsured(opt.value)}
@@ -587,16 +591,16 @@ export default function InsuranceCompare() {
                     ))}
                   </div>
                   {sumInsured <= 5 && (
-                    <p className="text-[10px] text-amber-400 mt-2.5">⚠ Medical inflation is 14%/yr. ₹5L may be insufficient for metro hospitals by 2030. Consider ₹10L minimum.</p>
+                    <p className="text-[10px] text-amber-400 mt-2.5">{t('ins.compare.lowSiWarning')}</p>
                   )}
                 </div>
 
                 {/* Priorities */}
                 <div className="p-4 rounded-2xl bg-card border border-border mb-5">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">What matters most?</p>
-                  <p className="text-[10px] text-muted-foreground mb-3">Select up to 3 priorities — we'll explain each in your results</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">{t('ins.compare.whatMatters')}</p>
+                  <p className="text-[10px] text-muted-foreground mb-3">{t('ins.compare.selectPriorities')}</p>
                   <div className="flex flex-wrap gap-2">
-                    {PRIORITY_OPTIONS.map(opt => {
+                    {tPriorityOptions.map(opt => {
                       const isSelected = priorities.includes(opt.id);
                       return (
                         <button key={opt.id}
@@ -629,10 +633,10 @@ export default function InsuranceCompare() {
               {/* Profile summary pill */}
               <div className="flex items-center gap-2 flex-wrap">
                 {[
-                  `${allAges.length} member${allAges.length !== 1 ? 's' : ''}`,
+                  t('ins.compare.memberCount', { count: allAges.length }),
                   fmtL(sumInsured),
-                  cityType === 'metro' ? 'Metro' : cityType === 'tier2' ? 'Tier 2' : 'Tier 3',
-                  hasPreExisting ? 'Pre-existing' : null,
+                  cityType === 'metro' ? t('ins.compare.metro') : cityType === 'tier2' ? t('ins.compare.tier2') : t('ins.compare.tier3'),
+                  hasPreExisting ? t('ins.compare.preExistingTag') : null,
                 ].filter(Boolean).map((tag, i) => (
                   <span key={i} className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold border border-emerald-500/20">{tag}</span>
                 ))}
@@ -653,7 +657,7 @@ export default function InsuranceCompare() {
                 <div className="mt-4 grid grid-cols-3 gap-2">
                   {[
                     { label: t('ins.health.cover'), val: fmtL(sumInsured) },
-                    { label: t('ins.health.city'), val: cityType === 'metro' ? 'Metro' : cityType === 'tier2' ? 'Tier 2' : 'Tier 3' },
+                    { label: t('ins.health.city'), val: cityType === 'metro' ? t('ins.compare.metro') : cityType === 'tier2' ? t('ins.compare.tier2') : t('ins.compare.tier3') },
                     { label: t('ins.health.members'), val: String(allAges.length) },
                   ].map(({ label, val }) => (
                     <div key={label} className="text-center p-2 rounded-xl bg-muted/50">
@@ -667,10 +671,10 @@ export default function InsuranceCompare() {
               {/* Card B — Premium Range */}
               <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-emerald-500/20">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">{t('ins.health.premiumTitle')}</p>
-                <p className="text-[9px] text-muted-foreground mb-3">Based on IRDAI actuarial rating factors</p>
+                <p className="text-[9px] text-muted-foreground mb-3">{t('ins.compare.irdaiBasis')}</p>
                 <p className="text-2xl font-black text-foreground mb-0.5">{fmtRange(premiumData.lo, premiumData.hi)}</p>
                 <p className="text-emerald-400 text-sm font-semibold mb-4">
-                  ≈ {fmtRange(Math.round(premiumData.lo / 12 / 100) * 100, Math.round(premiumData.hi / 12 / 100) * 100)} per month
+                  {t('ins.compare.perMonth', { range: fmtRange(Math.round(premiumData.lo / 12 / 100) * 100, Math.round(premiumData.hi / 12 / 100) * 100) })}
                 </p>
 
                 <button onClick={() => setShowBreakdown(v => !v)}
@@ -709,7 +713,7 @@ export default function InsuranceCompare() {
                 )}
                 <div className="p-3 rounded-xl bg-muted/30 border border-border">
                   <p className="text-[10px] text-muted-foreground leading-relaxed">
-                    This range is based on IRDAI actuarial rating factors. Actual premium depends on your health declaration, insurer underwriting, and the specific plan features you choose. Always get quotes from at least 2–3 IRDAI-registered insurers before deciding.
+                    {t('ins.compare.premiumDisclaimer')}
                   </p>
                 </div>
               </div>
@@ -717,11 +721,11 @@ export default function InsuranceCompare() {
               {/* Priority guidance — shown if user selected priorities */}
               {priorities.length > 0 && (
                 <div className="p-4 rounded-2xl bg-card border border-border">
-                  <p className="text-sm font-bold text-foreground mb-1">Your Priority Guide</p>
-                  <p className="text-[10px] text-muted-foreground mb-3">What to look for based on what matters most to you</p>
+                  <p className="text-sm font-bold text-foreground mb-1">{t('ins.compare.priorityGuide')}</p>
+                  <p className="text-[10px] text-muted-foreground mb-3">{t('ins.compare.priorityGuideSubtitle')}</p>
                   <div className="space-y-3">
                     {priorities.map(pid => {
-                      const opt = PRIORITY_OPTIONS.find(o => o.id === pid);
+                      const opt = tPriorityOptions.find(o => o.id === pid);
                       if (!opt) return null;
                       return (
                         <div key={pid} className="flex items-start gap-2.5">
@@ -730,7 +734,7 @@ export default function InsuranceCompare() {
                           </div>
                           <div>
                             <p className="text-[11px] font-bold text-foreground mb-0.5">{opt.label}</p>
-                            <p className="text-[11px] text-muted-foreground leading-relaxed">{PRIORITY_GUIDANCE[pid]}</p>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">{t(`ins.compare.priorityGuide_${pid}`)}</p>
                           </div>
                         </div>
                       );
@@ -767,7 +771,7 @@ export default function InsuranceCompare() {
                   ))}
                 </div>
                 <p className="text-[9px] text-muted-foreground mt-4 pt-3 border-t border-border leading-relaxed">
-                  Source: IRDAI Annual Report 2023–24, IRDAI Master Circular on Health Insurance 2024, IRDAI HIR 2016, IRDAI Circular January 2025, 56th GST Council 2025
+                  {t('ins.compare.irdaiSource')}
                 </p>
               </div>
 
@@ -800,12 +804,12 @@ export default function InsuranceCompare() {
                 <div className="flex items-start gap-2.5">
                   <Heart size={14} className="text-emerald-400 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-[10px] font-bold text-foreground mb-1">FinCalix Health Insurance Simulator</p>
+                    <p className="text-[10px] font-bold text-foreground mb-1">{t('ins.compare.simulatorTitle')}</p>
                     <p className="text-[10px] text-muted-foreground leading-relaxed mb-1">
-                      Provides educational guidance based on IRDAI regulations and actuarial principles. Premium estimates are ranges — actual premiums depend on your health declaration, insurer underwriting, and plan features.
+                      {t('ins.compare.simulatorDesc')}
                     </p>
                     <p className="text-[10px] text-muted-foreground leading-relaxed">
-                      FinCalix does <span className="font-bold text-foreground">NOT</span> sell insurance, does <span className="font-bold text-foreground">NOT</span> partner with any insurer, and does <span className="font-bold text-foreground">NOT</span> receive commission. Verify all insurer data at: <span className="font-semibold text-foreground">irdai.gov.in</span>
+                      {t('ins.compare.simulatorDisclaimer')}
                     </p>
                   </div>
                 </div>

@@ -78,7 +78,7 @@ export default function SchemeDetail() {
                     {isBankApp && <Building2 size={14} />}
                     {isServiceAccess && <Phone size={14} />}
                     {(noIndividualApp || isGovtAgency || isCSCOffline) && <Building2 size={14} />}
-                    {scheme.applicationType}
+                    {(() => { const appTypeMap: Record<string, string> = { 'Online Application': 'schemes.appTypeOnline', 'Bank Application': 'schemes.appTypeBank', 'CSC / Offline Application': 'schemes.appTypeCSC', 'Through Government Agency': 'schemes.appTypeGovt', 'Service Access': 'schemes.appTypeService', 'No Individual': 'schemes.appTypeNoIndividual' }; return appTypeMap[scheme.applicationType] ? t(appTypeMap[scheme.applicationType]) : scheme.applicationType; })()}
                 </div>
 
                 {/* Key Info Cards */}
@@ -94,8 +94,8 @@ export default function SchemeDetail() {
                 <Section title={t('schemes.aboutScheme')}>
                     <p className="text-muted-foreground dark:text-muted-foreground text-sm leading-relaxed">{scheme.description}</p>
                     <div className="mt-3 space-y-1.5">
-                        <Row label="Ministry" value={scheme.ministry} />
-                        {scheme.launchYear && <Row label="Launched" value={String(scheme.launchYear)} />}
+                        <Row label={t('schemes.ministry')} value={scheme.ministry} />
+                        {scheme.launchYear && <Row label={t('schemes.launched')} value={String(scheme.launchYear)} />}
                         {scheme.taxBenefit && <Row label={t('schemes.taxBenefit')} value={scheme.taxBenefit} green />}
                     </div>
                 </Section>
@@ -210,8 +210,8 @@ export default function SchemeDetail() {
                             <span className="text-brand-green font-semibold text-[12px]">{t('schemes.verifiedSource')}</span>
                         </div>
                         <p className="text-muted-foreground dark:text-muted-foreground text-[11px] leading-relaxed pl-6">
-                            Last verified: {new Date(scheme.lastVerified).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            {scheme.verifiedSource && <> · Source: <a href={`https://${scheme.verifiedSource}`} target="_blank" rel="noopener noreferrer" className="text-brand-blue underline">{scheme.verifiedSource}</a></>}
+                            {t('schemes.lastVerified')}: {new Date(scheme.lastVerified).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {scheme.verifiedSource && <> · {t('schemes.source')}: <a href={`https://${scheme.verifiedSource}`} target="_blank" rel="noopener noreferrer" className="text-brand-blue underline">{scheme.verifiedSource}</a></>}
                         </p>
                         <p className="text-muted-foreground text-[10px] mt-1 pl-6 italic">{t('schemes.alwaysCheck')}</p>
                     </div>
@@ -237,7 +237,7 @@ export default function SchemeDetail() {
                 ) : isServiceAccess ? (
                     <motion.a whileTap={{ scale: 0.97 }} href={scheme.officialWebsite} target="_blank" rel="noopener noreferrer"
                         className="flex-[2] flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-brand-blue text-white font-semibold text-sm shadow-lg shadow-brand-blue/20">
-                        <Phone size={18} /> Access Service <ExternalLink size={14} />
+                        <Phone size={18} /> {t('schemes.accessService')} <ExternalLink size={14} />
                     </motion.a>
                 ) : (
                     <motion.a whileTap={{ scale: 0.97 }} href={scheme.officialWebsite} target="_blank" rel="noopener noreferrer"
