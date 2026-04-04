@@ -988,6 +988,20 @@ export default function AdvancedMortgageCalculator() {
                                                 </p>
                                             </div>
                                         )}
+
+                                        {/* Foreclosure Export Buttons */}
+                                        <div className="grid grid-cols-2 gap-2 pt-2">
+                                            <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadPDF}
+                                                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border font-bold text-xs"
+                                                style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
+                                                <FileText size={14} className="text-violet-500" /> Export PDF
+                                            </motion.button>
+                                            <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadExcel}
+                                                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border font-bold text-xs"
+                                                style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
+                                                <Download size={14} className="text-emerald-500" /> Export Excel
+                                            </motion.button>
+                                        </div>
                                     </div>
                                 )}
                             </motion.div>
@@ -1066,6 +1080,20 @@ export default function AdvancedMortgageCalculator() {
                                                 </p>
                                             </div>
                                         )}
+
+                                        {/* What-If Export Buttons */}
+                                        <div className="grid grid-cols-2 gap-2 pt-2">
+                                            <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadPDF}
+                                                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border font-bold text-xs"
+                                                style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
+                                                <FileText size={14} className="text-violet-500" /> Export PDF
+                                            </motion.button>
+                                            <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadExcel}
+                                                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border font-bold text-xs"
+                                                style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
+                                                <Download size={14} className="text-emerald-500" /> Export Excel
+                                            </motion.button>
+                                        </div>
                                     </div>
                                 )}
                             </motion.div>
