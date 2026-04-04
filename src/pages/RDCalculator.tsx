@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, Target, BarChart2, RotateCw, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
@@ -11,6 +12,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
 export default function RDCalculator() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
 
@@ -210,8 +212,8 @@ export default function RDCalculator() {
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-foreground leading-tight">RD Calculator</h1>
-                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Recurring Deposit</p>
+                        <h1 className="text-lg font-bold text-foreground leading-tight">{t('rd.rdCalculator')}</h1>
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">{t('rd.recurringDeposit')}</p>
                     </div>
                 </div>
             </div>
@@ -220,7 +222,7 @@ export default function RDCalculator() {
                 {/* 1. CORE INPUTS */}
                 <div className="space-y-4">
                     <div>
-                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Monthly Deposit</label>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('rd.monthlyDeposit')}</label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                             <input type="number" value={monthly} onChange={e => setMonthly(Number(e.target.value)||0)} className={inputCls + " pl-7 bg-brand-blue/5 focus:bg-card"} />
@@ -228,14 +230,14 @@ export default function RDCalculator() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Interest Rate</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('rd.interestRate')}</label>
                             <div className="relative">
                                 <input type="number" step="0.1" value={rate} onChange={e => setRate(Number(e.target.value)||0)} className={inputCls + " pr-7 bg-muted/30 focus:bg-card"} />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
                             </div>
                         </div>
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Time Period</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('rd.timePeriod')}</label>
                             <div className="relative">
                                 <input type="number" value={months} onChange={e => setMonths(Number(e.target.value)||0)} className={inputCls + " pr-10 bg-muted/30 focus:bg-card"} />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-bold">MO.</span>
@@ -245,8 +247,8 @@ export default function RDCalculator() {
                     {/* Senior Citizen Toggle */}
                     <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
                         <div>
-                            <span className="text-xs font-medium text-foreground">Senior Citizen (60+)</span>
-                            <p className="text-[10px] text-muted-foreground">+0.50% extra rate</p>
+                            <span className="text-xs font-medium text-foreground">{t('rd.seniorCitizen')}</span>
+                            <p className="text-[10px] text-muted-foreground">{t('rd.seniorCitizenExtraRate')}</p>
                         </div>
                         <button onClick={() => setIsSeniorCitizen(!isSeniorCitizen)}
                             className={`w-12 h-6 rounded-full transition-all relative ${isSeniorCitizen ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
@@ -254,16 +256,16 @@ export default function RDCalculator() {
                         </button>
                     </div>
                     {isSeniorCitizen && (
-                        <p className="text-[10px] text-emerald-500 font-medium -mt-1">Effective rate: {effectiveRate}% (base {rate}% + 0.50%)</p>
+                        <p className="text-[10px] text-emerald-500 font-medium -mt-1">{t('rd.effectiveRateLabel', { effectiveRate, baseRate: rate })}</p>
                     )}
                 </div>
 
                 {/* 2. RESULTS HERO */}
                 <motion.div layout className="p-6 rounded-3xl bg-card border border-border shadow-sm">
                     <div className="flex justify-between items-start mb-4">
-                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">Maturity Amount</p>
+                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">{t('rd.maturityAmount')}</p>
                         <div className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border bg-brand-blue/10 border-brand-blue/20 text-brand-blue">
-                            Yield: {result.effectiveYield.toFixed(2)}%
+                            {t('rd.yield')}: {result.effectiveYield.toFixed(2)}%
                         </div>
                     </div>
                     
@@ -273,11 +275,11 @@ export default function RDCalculator() {
                     
                     <div className="grid grid-cols-2 gap-3 mb-4">
                         <div className="p-3.5 rounded-2xl bg-background border border-border/50">
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-0.5">Total Invested</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-0.5">{t('rd.totalInvested')}</p>
                             <p className="text-foreground font-black text-sm">{fmtINR(result.invested)}</p>
                         </div>
                         <div className="p-3.5 rounded-2xl bg-brand-green/10 border border-brand-green/20">
-                            <p className="text-brand-green text-[10px] uppercase font-bold mb-0.5">Wealth Gained</p>
+                            <p className="text-brand-green text-[10px] uppercase font-bold mb-0.5">{t('rd.wealthGained')}</p>
                             <p className="text-brand-green font-black text-sm">+{fmtINR(result.totalInterest)}</p>
                         </div>
                     </div>
@@ -287,7 +289,7 @@ export default function RDCalculator() {
                 <div className={`p-4 rounded-2xl border flex items-start gap-3 ${insight.type === 'warn' ? 'bg-amber-500/10 border-amber-500/30' : insight.type === 'success' ? 'bg-brand-green/10 border-brand-green/30' : 'bg-brand-blue/10 border-brand-blue/30'}`}>
                     <BrainCircuit size={18} className={`shrink-0 mt-0.5 ${insight.type === 'warn' ? 'text-amber-500' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`} />
                     <div>
-                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`}>Smart Insight</p>
+                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`}>{t('rd.smartInsight')}</p>
                         <p className={`text-xs font-medium leading-relaxed ${insight.type === 'warn' ? 'text-amber-700 dark:text-amber-400' : insight.type === 'success' ? 'text-emerald-700 dark:text-emerald-400' : 'text-blue-700 dark:text-blue-300'}`}>{insight.msg}</p>
                     </div>
                 </div>
@@ -295,7 +297,7 @@ export default function RDCalculator() {
                 {/* SAVE BUTTON */}
                 <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-foreground/10">
                     {saved ? <Check size={18} /> : <Save size={18} />}
-                    {saved ? 'Calculation Saved!' : 'Save Calculation'}
+                    {saved ? t('rd.calculationSaved') : t('rd.saveCalculation')}
                 </button>
 
 
@@ -304,7 +306,7 @@ export default function RDCalculator() {
                     <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-brand-blue/10 rounded-lg text-brand-blue"><Activity size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Advanced Details</span>
+                            <span className="text-foreground font-bold text-sm">{t('rd.advancedDetails')}</span>
                         </div>
                         {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -318,38 +320,38 @@ export default function RDCalculator() {
                                     {/* Real Return & Purchasing Power */}
                                     <div className="p-4 rounded-2xl border border-border bg-gradient-to-br from-background to-muted">
                                         <div className="flex justify-between items-center mb-3">
-                                             <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Inflation Adjuster</p>
+                                             <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">{t('rd.inflationAdjuster')}</p>
                                              <div className="flex items-center gap-1.5">
-                                                 <span className="text-[10px] font-bold text-muted-foreground">Infl. %</span>
+                                                 <span className="text-[10px] font-bold text-muted-foreground">{t('rd.inflPercent')}</span>
                                                  <input type="number" step="0.1" value={inflationRate} onChange={e => setInflationRate(Number(e.target.value)||0)} className="w-14 bg-card border border-border rounded px-2 py-0.5 text-xs focus:outline-none" />
                                              </div>
                                         </div>
                                         
                                         <div className="grid grid-cols-2 gap-3 mb-3">
                                             <div className="bg-card p-3 rounded-xl border border-border/50 text-center">
-                                                 <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Real Yield</p>
+                                                 <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">{t('rd.realYield')}</p>
                                                  <p className={`font-black text-sm ${result.realRate > 0 ? 'text-brand-green' : 'text-rose-500'}`}>{result.realRate.toFixed(2)}%</p>
                                             </div>
                                             <div className="bg-card p-3 rounded-xl border border-border/50 text-center">
-                                                 <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Purchasing Power</p>
+                                                 <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">{t('rd.purchasingPower')}</p>
                                                  <p className="text-foreground font-black text-sm">{fmtINR(result.purchasingPower)}</p>
                                             </div>
                                         </div>
                                         <p className="text-[9px] text-muted-foreground leading-tight px-1 text-center">
-                                            Due to inflation, your {fmtINR(result.maturity)} will only buy what {fmtINR(result.purchasingPower)} buys today.
+                                            {t('rd.dueToInflation', { maturity: fmtINR(result.maturity), purchasingPower: fmtINR(result.purchasingPower) })}
                                         </p>
                                     </div>
 
                                     {/* Composition Bar */}
                                     <div>
-                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-2">Final Value Composition</p>
+                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-2">{t('rd.finalValueComposition')}</p>
                                         <div className="h-4 w-full rounded-full flex overflow-hidden bg-brand-green/20">
                                             <div className="h-full bg-foreground transition-all duration-1000" style={{ width: `${result.principalPct}%` }} />
                                             <div className="h-full bg-brand-green transition-all duration-1000" style={{ width: `${result.interestPct}%` }} />
                                         </div>
                                         <div className="flex justify-between mt-2">
-                                            <p className="text-[10px] font-bold text-muted-foreground"><span className="inline-block w-2 h-2 rounded-full bg-foreground mr-1" /> Principal: {result.principalPct.toFixed(1)}%</p>
-                                            <p className="text-[10px] font-bold text-muted-foreground"><span className="inline-block w-2 h-2 rounded-full bg-brand-green mr-1" /> Interest: {result.interestPct.toFixed(1)}%</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground"><span className="inline-block w-2 h-2 rounded-full bg-foreground mr-1" /> {t('rd.principal')}: {result.principalPct.toFixed(1)}%</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground"><span className="inline-block w-2 h-2 rounded-full bg-brand-green mr-1" /> {t('rd.interestLabel')}: {result.interestPct.toFixed(1)}%</p>
                                         </div>
                                     </div>
 
@@ -365,7 +367,7 @@ export default function RDCalculator() {
                     <button onClick={() => setShowWhatIf(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-amber-500/10 rounded-lg text-amber-500"><RotateCw size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">What-If Simulator</span>
+                            <span className="text-foreground font-bold text-sm">{t('rd.whatIfSimulator')}</span>
                         </div>
                         {showWhatIf ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -377,7 +379,7 @@ export default function RDCalculator() {
                                     <div className="h-px bg-border w-full -mt-2" />
                                     
                                     <div>
-                                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">What if I deposit extra per month?</label>
+                                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('rd.whatIfExtraDeposit')}</label>
                                         <div className="relative">
                                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">+₹</span>
                                             <input type="number" value={whatIfExtra} onChange={e => setWhatIfExtra(Number(e.target.value)||0)} className={inputCls + " pl-8 border-amber-500/30"} />
@@ -385,20 +387,20 @@ export default function RDCalculator() {
                                     </div>
 
                                     <div className="p-4 rounded-2xl border bg-amber-500/5 border-amber-500/20 text-center">
-                                        <p className="text-muted-foreground text-[10px] font-black uppercase tracking-wider mb-3">Revised Outcome</p>
+                                        <p className="text-muted-foreground text-[10px] font-black uppercase tracking-wider mb-3">{t('rd.revisedOutcome')}</p>
                                         <div className="grid grid-cols-2 gap-3 mb-3">
                                             <div>
-                                                 <p className="text-amber-600 dark:text-amber-400 text-[10px] font-bold mb-0.5">New Maturity</p>
+                                                 <p className="text-amber-600 dark:text-amber-400 text-[10px] font-bold mb-0.5">{t('rd.newMaturity')}</p>
                                                  <p className="text-foreground font-black text-base">{fmtINR(whatIf.newMaturity)}</p>
                                             </div>
                                             <div>
-                                                 <p className="text-amber-600 dark:text-amber-400 text-[10px] font-bold mb-0.5">Extra Wealth</p>
+                                                 <p className="text-amber-600 dark:text-amber-400 text-[10px] font-bold mb-0.5">{t('rd.extraWealth')}</p>
                                                  <p className="text-brand-green font-black text-base">+{fmtINR(whatIf.addedWealth)}</p>
                                             </div>
                                         </div>
                                         <div className="bg-card p-2 rounded-xl border border-border/50 text-[10px] text-muted-foreground flex gap-2 text-left">
                                              <Info size={14} className="text-amber-500 shrink-0"/>
-                                             <p>Just <span className="text-foreground font-bold">₹{whatIfExtra}/mo</span> extra yields <span className="text-brand-green font-bold">₹{Math.round(whatIf.extraInterest)}</span> in bonus interest alone!</p>
+                                             <p>{t('rd.justExtraYields', { extra: whatIfExtra, bonus: Math.round(whatIf.extraInterest) })}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -412,7 +414,7 @@ export default function RDCalculator() {
                     <button onClick={() => setShowTable(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-foreground rounded-lg text-background"><BarChart2 size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Monthly Schedule</span>
+                            <span className="text-foreground font-bold text-sm">{t('rd.monthlySchedule')}</span>
                         </div>
                         {showTable ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -423,16 +425,16 @@ export default function RDCalculator() {
                                 <div className="px-5 pb-5 pt-1">
                                     <div className="rounded-2xl overflow-hidden border border-border mt-2">
                                         <div className="grid grid-cols-3 bg-muted px-3 py-2.5">
-                                            {['Month', 'Total Dept.', 'Balance'].map(h => (<p key={h} className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">{h}</p>))}
+                                            {[t('rd.month'), t('rd.totalDeposit'), t('rd.balance')].map(h => (<p key={h} className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">{h}</p>))}
                                         </div>
                                         <div className="divide-y divide-border/50">
                                             {result.schedule.slice((page - 1) * 12, page * 12).map((row) => (
                                                 <div key={row.month} className="grid grid-cols-3 px-3 py-3 bg-background items-center">
-                                                    <p className="text-foreground text-xs font-bold">Mo {row.month}</p>
+                                                    <p className="text-foreground text-xs font-bold">{t('rd.mo')} {row.month}</p>
                                                     <p className="text-muted-foreground text-xs font-mono">{fmtINR(row.deposit * row.month)}</p>
                                                     <div>
                                                         <p className="text-foreground text-xs font-bold font-mono">{fmtINR(row.balance)}</p>
-                                                        <p className="text-brand-green text-[9px] font-mono mt-0.5">+{fmtINR(row.cumInterest)} Int.</p>
+                                                        <p className="text-brand-green text-[9px] font-mono mt-0.5">+{fmtINR(row.cumInterest)} {t('rd.int')}</p>
                                                     </div>
                                                 </div>
                                             ))}
@@ -444,14 +446,14 @@ export default function RDCalculator() {
                                                 <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
                                                     <ChevronLeft size={14} />
                                                 </button>
-                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Page {page} of {Math.ceil(result.schedule.length / 12)}</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('rd.page')} {page} {t('rd.of')} {Math.ceil(result.schedule.length / 12)}</p>
                                                 <button disabled={page === Math.ceil(result.schedule.length / 12)} onClick={() => setPage(p => p + 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
                                                     <ChevronRight size={14} />
                                                 </button>
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-center text-[9px] text-muted-foreground mt-3 uppercase tracking-widest font-bold">Quarterly Compounded (RBI Std.)</p>
+                                    <p className="text-center text-[9px] text-muted-foreground mt-3 uppercase tracking-widest font-bold">{t('rd.quarterlyCompoundedRbi')}</p>
                                 </div>
                             </motion.div>
                         )}
@@ -464,13 +466,13 @@ export default function RDCalculator() {
                         onClick={handleDownloadPDF}
                         className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-colors hover:bg-brand-blue/10 active:scale-95"
                     >
-                        <FileText size={20} /> Export Report
+                        <FileText size={20} /> {t('rd.exportReport')}
                     </button>
                     <button
                         onClick={handleDownloadExcel}
                         className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-green/5 border border-brand-green/20 text-brand-green font-bold text-xs transition-colors hover:bg-brand-green/10 active:scale-95"
                     >
-                        <FileText size={20} /> Excel Data
+                        <FileText size={20} /> {t('rd.excelData')}
                     </button>
                 </div>
             </div>

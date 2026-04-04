@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Download, Share2, Shield, Calendar, TrendingUp, IndianRupee, ChevronDown, ChevronUp, Save } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
@@ -25,6 +26,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 interface YearEntry { year: number; age: number; contrib: number; corpus: number; cumContrib: number; }
 
 export default function NPSCalculator() {
+    const { t } = useTranslation();
     useEffect(() => { AnalyticsService.trackScreen('NPS_Calculator_Advanced'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
@@ -65,17 +67,17 @@ export default function NPSCalculator() {
     }, [monthly, rate, age, retireAge, annuityPct, annuityRate]);
 
     const pieData = useMemo(() => ({
-        labels: ['Total Invested', 'Wealth Gained'],
+        labels: [t('nps.totalInvested'), t('nps.wealthGained')],
         datasets: [{ data: [result.invested, result.wealthGained], backgroundColor: ['#3B82F6', '#10B981'], borderColor: [c.card, c.card], borderWidth: 2 }]
-    }), [result, c.card]);
+    }), [result, c.card, t]);
 
     const corpusChart = useMemo(() => ({
-        labels: result.timeline.map(t => `Age ${t.age}`),
+        labels: result.timeline.map(row => `${t('nps.age')} ${row.age}`),
         datasets: [
-            { label: 'Corpus', data: result.timeline.map(t => t.corpus), borderColor: '#10B981', backgroundColor: '#10B98130', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
-            { label: 'Invested', data: result.timeline.map(t => t.cumContrib), borderColor: '#3B82F6', backgroundColor: '#3B82F630', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
+            { label: t('nps.corpus'), data: result.timeline.map(row => row.corpus), borderColor: '#10B981', backgroundColor: '#10B98130', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
+            { label: t('nps.invested'), data: result.timeline.map(row => row.cumContrib), borderColor: '#3B82F6', backgroundColor: '#3B82F630', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
         ]
-    }), [result.timeline]);
+    }), [result.timeline, t]);
 
     const handleSave = () => {
         addSaved({ id: `nps-${Date.now()}`, calculatorType: 'NPS Calculator', inputValues: { monthly, rate, age, retireAge, annuityPct }, resultValues: { primary: result.corpus }, timestamp: Date.now() });
@@ -86,34 +88,34 @@ export default function NPSCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'NPS (National Pension System) Report',
+            title: t('nps.reportTitle'),
             inputs: [
-                { label: 'Monthly Contribution', value: `₹${Math.round(monthly).toLocaleString('en-IN')}` },
-                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
-                { label: 'Current Age', value: `${age} Years` },
-                { label: 'Retirement Age', value: `${retireAge} Years` },
-                { label: 'Annuity Percentage', value: `${annuityPct}%` },
-                { label: 'Annuity Rate', value: `${annuityRate}% p.a.` },
+                { label: t('nps.monthlyContribution'), value: `₹${Math.round(monthly).toLocaleString('en-IN')}` },
+                { label: t('nps.expectedReturnRate'), value: `${rate}% p.a.` },
+                { label: t('nps.currentAge'), value: `${age} ${t('nps.years')}` },
+                { label: t('nps.retirementAge'), value: `${retireAge} ${t('nps.years')}` },
+                { label: t('nps.annuityPercentage'), value: `${annuityPct}%` },
+                { label: t('nps.annuityRateLabel'), value: `${annuityRate}% p.a.` },
             ],
             results: [
-                { label: 'Total Corpus at Retirement', value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
-                { label: 'Total Invested', value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
-                { label: 'Wealth Gained', value: `₹${Math.round(result.wealthGained).toLocaleString('en-IN')}` },
-                { label: 'Lump Sum (60%)', value: `₹${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
-                { label: 'Annuity Amount (40%)', value: `₹${Math.round(result.annuity).toLocaleString('en-IN')}` },
-                { label: 'Est. Monthly Pension', value: `₹${Math.round(result.monthlyPension).toLocaleString('en-IN')}` },
+                { label: t('nps.totalCorpusAtRetirement'), value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: t('nps.totalInvested'), value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
+                { label: t('nps.wealthGained'), value: `₹${Math.round(result.wealthGained).toLocaleString('en-IN')}` },
+                { label: t('nps.lumpSum60'), value: `₹${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
+                { label: t('nps.annuityAmount40'), value: `₹${Math.round(result.annuity).toLocaleString('en-IN')}` },
+                { label: t('nps.estMonthlyPension'), value: `₹${Math.round(result.monthlyPension).toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Total Invested', value: result.invested, color: '#4F46E5' },
-                    { label: 'Wealth Gained', value: result.wealthGained, color: '#10B981' },
+                    { label: t('nps.totalInvested'), value: result.invested, color: '#4F46E5' },
+                    { label: t('nps.wealthGained'), value: result.wealthGained, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'Yearly NPS Growth Schedule',
-            projectionColumns: ['Year', 'Age', 'Annual Contribution', 'Cumulative Contribution', 'Total Corpus'],
+            projectionTitle: t('nps.yearlyGrowthSchedule'),
+            projectionColumns: [t('nps.year'), t('nps.age'), t('nps.annualContribution'), t('nps.cumulativeContribution'), t('nps.totalCorpus')],
             projectionRows: result.timeline.map((r: any) => [
-                `Year ${r.year}`,
+                `${t('nps.year')} ${r.year}`,
                 r.age,
                 `₹${Math.round(r.contrib).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumContrib).toLocaleString('en-IN')}`,
@@ -128,20 +130,20 @@ export default function NPSCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'NPS (National Pension System) Report',
+            title: t('nps.reportTitle'),
             inputs: [
-                { label: 'Monthly Contribution', value: `₹${Math.round(monthly).toLocaleString('en-IN')}` },
-                { label: 'Return Rate', value: `${rate}%` },
-                { label: 'Current Age', value: String(age) },
-                { label: 'Retirement Age', value: String(retireAge) },
+                { label: t('nps.monthlyContribution'), value: `₹${Math.round(monthly).toLocaleString('en-IN')}` },
+                { label: t('nps.returnRate'), value: `${rate}%` },
+                { label: t('nps.currentAge'), value: String(age) },
+                { label: t('nps.retirementAge'), value: String(retireAge) },
             ],
             results: [
-                { label: 'Total Corpus', value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
-                { label: 'Monthly Pension', value: `₹${Math.round(result.monthlyPension).toLocaleString('en-IN')}` },
-                { label: 'Lump Sum', value: `₹${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
+                { label: t('nps.totalCorpus'), value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: t('nps.monthlyPension'), value: `₹${Math.round(result.monthlyPension).toLocaleString('en-IN')}` },
+                { label: t('nps.lumpSum'), value: `₹${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Yearly NPS Growth',
-            projectionColumns: ['Year', 'Age', 'Annual Contribution', 'Cumulative Contribution', 'Total Corpus'],
+            projectionTitle: t('nps.yearlyGrowth'),
+            projectionColumns: [t('nps.year'), t('nps.age'), t('nps.annualContribution'), t('nps.cumulativeContribution'), t('nps.totalCorpus')],
             projectionRows: result.timeline.map((r: any) => [r.year, r.age, Math.round(r.contrib), Math.round(r.cumContrib), Math.round(r.corpus)]),
             filename: `FinCalix_NPS_Report_${tag}`,
         };
@@ -149,8 +151,8 @@ export default function NPSCalculator() {
     };
 
     const handleShare = async () => {
-        const text = `🏦 My NPS Retirement Plan\n\n💰 Monthly: ${formatINR(monthly)}\n📈 Rate: ${rate}%\n🎂 Age: ${age} → ${retireAge}\n\n✅ Corpus: ${formatINR(result.corpus)}\n💵 Monthly Pension: ${formatINR(result.monthlyPension)}\n\nCalculated with FinCalix 🧮`;
-        await nativeShare('NPS Plan – FinCalix', text);
+        const text = `🏦 ${t('nps.shareTitle')}\n\n💰 ${t('nps.monthlyContribution')}: ${formatINR(monthly)}\n📈 ${t('nps.returnRate')}: ${rate}%\n🎂 ${t('nps.age')}: ${age} → ${retireAge}\n\n✅ ${t('nps.corpus')}: ${formatINR(result.corpus)}\n💵 ${t('nps.monthlyPension')}: ${formatINR(result.monthlyPension)}\n\nCalculated with FinCalix 🧮`;
+        await nativeShare(t('nps.shareNativeTitle'), text);
     };
 
     return (
@@ -158,62 +160,62 @@ export default function NPSCalculator() {
             <div className="sticky top-0 z-10 bg-background  px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border"><ArrowLeft size={18} className="text-muted-foreground" /></button>
-                    <div className="flex-1"><h1 className="text-lg font-bold text-foreground">NPS Calculator</h1><p className="text-muted-foreground text-xs">National Pension System</p></div>
+                    <div className="flex-1"><h1 className="text-lg font-bold text-foreground">{t('nps.title')}</h1><p className="text-muted-foreground text-xs">{t('nps.subtitle')}</p></div>
                 </div>
             </div>
             <div className="px-4 pb-28 pt-4 space-y-5">
                 <div className="space-y-3">
-                    <NumberInput label="Monthly Contribution" value={monthly} onChange={setMonthly} min={500} max={200000} prefix="₹" />
-                    <NumberInput label="Expected Return (p.a.)" value={rate} onChange={setRate} min={4} max={14} suffix="%" step={0.5} />
-                    <NumberInput label="Current Age" value={age} onChange={setAge} min={18} max={55} suffix=" years" />
-                    <NumberInput label="Retirement Age" value={retireAge} onChange={setRetireAge} min={55} max={70} suffix=" years" />
-                    <NumberInput label="Annuity Purchase (%)" value={annuityPct} onChange={setAnnuityPct} min={40} max={100} suffix="%" helperText="Min 40% must buy annuity" />
-                    <NumberInput label="Annuity Return Rate (p.a.)" value={annuityRate} onChange={setAnnuityRate} min={4} max={9} step={0.25} suffix="%" helperText="IRDA-approved range: 5–7.5%. Default 6%" />
+                    <NumberInput label={t('nps.monthlyContribution')} value={monthly} onChange={setMonthly} min={500} max={200000} prefix="₹" />
+                    <NumberInput label={t('nps.expectedReturn')} value={rate} onChange={setRate} min={4} max={14} suffix="%" step={0.5} />
+                    <NumberInput label={t('nps.currentAge')} value={age} onChange={setAge} min={18} max={55} suffix={` ${t('nps.years')}`} />
+                    <NumberInput label={t('nps.retirementAge')} value={retireAge} onChange={setRetireAge} min={55} max={70} suffix={` ${t('nps.years')}`} />
+                    <NumberInput label={t('nps.annuityPurchase')} value={annuityPct} onChange={setAnnuityPct} min={40} max={100} suffix="%" helperText={t('nps.annuityPurchaseHelper')} />
+                    <NumberInput label={t('nps.annuityReturnRate')} value={annuityRate} onChange={setAnnuityRate} min={4} max={9} step={0.25} suffix="%" helperText={t('nps.annuityReturnHelper')} />
                 </div>
 
                 {/* Result Card */}
                 <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/20">
-                    <p className="text-blue-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">Total Corpus at Retirement</p>
+                    <p className="text-blue-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">{t('nps.totalCorpusAtRetirement')}</p>
                     <p className="text-3xl font-black text-foreground mb-4">{formatINR(result.corpus)}</p>
                     <div className="grid grid-cols-2 gap-3">
-                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">Total Invested</p><p className="text-foreground font-bold text-sm">{formatINR(result.invested)}</p></div>
-                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">Wealth Gained</p><p className="text-brand-green font-bold text-sm">{formatINR(result.wealthGained)}</p></div>
-                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">Lumpsum at 60</p><p className="text-blue-400 font-bold text-sm">{formatINR(result.lumpsum)}</p></div>
-                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">Monthly Pension</p><p className="text-amber-400 font-bold text-sm">{formatINR(result.monthlyPension)}</p></div>
+                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('nps.totalInvested')}</p><p className="text-foreground font-bold text-sm">{formatINR(result.invested)}</p></div>
+                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('nps.wealthGained')}</p><p className="text-brand-green font-bold text-sm">{formatINR(result.wealthGained)}</p></div>
+                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('nps.lumpsumAt60')}</p><p className="text-blue-400 font-bold text-sm">{formatINR(result.lumpsum)}</p></div>
+                        <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('nps.monthlyPension')}</p><p className="text-amber-400 font-bold text-sm">{formatINR(result.monthlyPension)}</p></div>
                     </div>
                     <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
-                        <Save size={16} /> {saved ? '✅ Saved!' : 'Save Calculation'}
+                        <Save size={16} /> {saved ? t('nps.saved') : t('nps.saveCalculation')}
                     </motion.button>
                 </motion.div>
 
                 {/* Pension Visualization */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20">
-                    <h3 className="text-foreground font-bold text-sm mb-2 flex items-center gap-2"><IndianRupee size={16} className="text-amber-400" /> Retirement Income Projection</h3>
+                    <h3 className="text-foreground font-bold text-sm mb-2 flex items-center gap-2"><IndianRupee size={16} className="text-amber-400" /> {t('nps.retirementIncomeProjection')}</h3>
                     <div className="grid grid-cols-2 gap-3 mb-3">
                         <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                            <p className="text-muted-foreground text-[9px] uppercase font-bold">Monthly Pension</p>
+                            <p className="text-muted-foreground text-[9px] uppercase font-bold">{t('nps.monthlyPension')}</p>
                             <p className="text-amber-400 font-bold text-lg">{formatINR(result.monthlyPension)}</p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                            <p className="text-muted-foreground text-[9px] uppercase font-bold">Annual Pension</p>
+                            <p className="text-muted-foreground text-[9px] uppercase font-bold">{t('nps.annualPension')}</p>
                             <p className="text-amber-400 font-bold text-lg">{formatINR(result.monthlyPension * 12)}</p>
                         </div>
                     </div>
                     <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                        <p className="text-muted-foreground text-[9px] uppercase font-bold">Annuity Investment</p>
-                        <p className="text-foreground font-bold text-sm">{formatINR(result.annuity)} <span className="text-muted-foreground text-xs">({annuityPct}% of corpus → {annuityRate}% annuity rate)</span></p>
+                        <p className="text-muted-foreground text-[9px] uppercase font-bold">{t('nps.annuityInvestment')}</p>
+                        <p className="text-foreground font-bold text-sm">{formatINR(result.annuity)} <span className="text-muted-foreground text-xs">({t('nps.annuityBreakdown', { annuityPct, annuityRate })})</span></p>
                     </div>
                 </div>
 
                 {/* Pie Chart */}
                 <div className="p-4 rounded-2xl bg-card border border-border">
-                    <h3 className="text-foreground font-bold text-sm mb-3">Investment vs Returns</h3>
+                    <h3 className="text-foreground font-bold text-sm mb-3">{t('nps.investmentVsReturns')}</h3>
                     <div className="w-48 h-48 mx-auto"><Pie data={pieData} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: c.textSecondary, font: { size: 11 } } } } }} /></div>
                 </div>
 
                 {/* Corpus Growth Line Chart */}
                 <div className="p-4 rounded-2xl bg-card border border-border">
-                    <h3 className="text-foreground font-bold text-sm mb-3">Corpus Growth Timeline</h3>
+                    <h3 className="text-foreground font-bold text-sm mb-3">{t('nps.corpusGrowthTimeline')}</h3>
                     <div className="h-56">
                         <Line ref={chartRef} data={corpusChart} options={{
                             responsive: true, maintainAspectRatio: false,
@@ -229,8 +231,8 @@ export default function NPSCalculator() {
                 {/* What-If Simulator */}
                 <WhatIfSimulator
                     sliders={[
-                        { key: 'monthly', label: 'Monthly Contribution', min: 500, max: 100000, step: 500, prefix: '₹' },
-                        { key: 'rate', label: 'Expected Return', min: 6, max: 14, step: 0.5, suffix: '%' },
+                        { key: 'monthly', label: t('nps.monthlyContribution'), min: 500, max: 100000, step: 500, prefix: '₹' },
+                        { key: 'rate', label: t('nps.expectedReturn'), min: 6, max: 14, step: 0.5, suffix: '%' },
                     ]}
                     currentInputs={{ monthly, rate, years: result.years }}
                     calculateResult={(inputs) => {
@@ -238,14 +240,14 @@ export default function NPSCalculator() {
                         const n = inputs.years * 12;
                         return r === 0 ? inputs.monthly * n : Math.round(inputs.monthly * (((Math.pow(1 + r, n) - 1) / r) * (1 + r)));
                     }}
-                    resultLabel="Total Corpus"
+                    resultLabel={t('nps.totalCorpus')}
                 />
 
                 <SmartInsight calculatorType="nps" inputs={{ monthly, rate, years: result.years }} results={{ corpus: result.corpus, invested: result.invested }} />
 
                 {/* Tax Benefit Section */}
                 <button onClick={() => setShowTaxInfo(!showTaxInfo)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
-                    <span className="flex items-center gap-2"><Shield size={16} className="text-green-400" /> Tax Benefits Summary</span>
+                    <span className="flex items-center gap-2"><Shield size={16} className="text-green-400" /> {t('nps.taxBenefitsSummary')}</span>
                     {showTaxInfo ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
@@ -253,11 +255,11 @@ export default function NPSCalculator() {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
                                 {[
-                                    { title: 'Sec 80CCD(1) / Sec 124', desc: 'Employee contribution: Deduction up to 10% of salary (max ₹1.5L under 80C/123 umbrella).' },
-                                    { title: 'Sec 80CCD(1B) / Sec 124', desc: 'Additional ₹50,000 deduction exclusively for NPS, beyond the 80C/123 limit.' },
-                                    { title: 'Sec 80CCD(2) / Sec 124', desc: "Employer contribution: Up to 14% of salary for ALL employees (Central Govt & private sector) from FY 2026-27 — no upper cap under 80C/123. Available under both Old & New Regime." },
-                                    { title: 'Tax-free Lumpsum', desc: '60% of corpus at retirement is tax-free. Only annuity income is taxed as per slab.' },
-                                    { title: 'Total Potential Saving', desc: `Up to ₹${Math.min(monthly * 12, 200000).toLocaleString('en-IN')} per year in tax deductions.` },
+                                    { title: t('nps.taxSec80CCD1Title'), desc: t('nps.taxSec80CCD1Desc') },
+                                    { title: t('nps.taxSec80CCD1BTitle'), desc: t('nps.taxSec80CCD1BDesc') },
+                                    { title: t('nps.taxSec80CCD2Title'), desc: t('nps.taxSec80CCD2Desc') },
+                                    { title: t('nps.taxFreeLumpsumTitle'), desc: t('nps.taxFreeLumpsumDesc') },
+                                    { title: t('nps.totalPotentialSavingTitle'), desc: t('nps.totalPotentialSavingDesc', { amount: Math.min(monthly * 12, 200000).toLocaleString('en-IN') }) },
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-start gap-3">
                                         <Shield size={14} className="text-green-400 flex-shrink-0 mt-1" />
@@ -271,17 +273,17 @@ export default function NPSCalculator() {
 
                 {/* Year-wise Timeline */}
                 <button onClick={() => setShowTimeline(!showTimeline)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
-                    <span className="flex items-center gap-2"><Calendar size={16} className="text-muted-foreground" /> Year-wise Timeline</span>
+                    <span className="flex items-center gap-2"><Calendar size={16} className="text-muted-foreground" /> {t('nps.yearWiseTimeline')}</span>
                     {showTimeline ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
                     {showTimeline && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="rounded-2xl bg-card border border-border overflow-hidden">
-                                <div className="grid grid-cols-4 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-100 dark:bg-slate-800/50"><span>Year</span><span>Age</span><span>Contrib.</span><span>Corpus</span></div>
-                                {result.timeline.map((t, i) => (
+                                <div className="grid grid-cols-4 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-100 dark:bg-slate-800/50"><span>{t('nps.year')}</span><span>{t('nps.age')}</span><span>{t('nps.contrib')}</span><span>{t('nps.corpus')}</span></div>
+                                {result.timeline.map((row, i) => (
                                     <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${i % 2 === 0 ? 'bg-card' : 'bg-slate-50 dark:bg-slate-800/20'} text-slate-600 dark:text-slate-300`}>
-                                        <span>{t.year}</span><span>{t.age}</span><span>{formatINR(t.cumContrib)}</span><span className="font-bold text-foreground">{formatINR(t.corpus)}</span>
+                                        <span>{row.year}</span><span>{row.age}</span><span>{formatINR(row.cumContrib)}</span><span className="font-bold text-foreground">{formatINR(row.corpus)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -291,20 +293,20 @@ export default function NPSCalculator() {
 
                 {/* Export & Share */}
                 <div className="grid grid-cols-3 gap-3">
-                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> PDF</button>
-                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> Excel</button>
-                    <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-[10px] font-bold"><Share2 size={16} /> Share</button>
+                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> {t('nps.pdf')}</button>
+                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> {t('nps.excel')}</button>
+                    <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-[10px] font-bold"><Share2 size={16} /> {t('nps.share')}</button>
                 </div>
 
                 <ShareableCard
-                    title="My NPS Retirement Plan"
+                    title={t('nps.shareTitle')}
                     highlight={formatINR(result.corpus)}
-                    subtitle={`Corpus at age ${retireAge} with ${rate}% returns`}
+                    subtitle={t('nps.shareSubtitle', { age: retireAge, rate })}
                     details={[
-                        { label: 'Monthly SIP', value: formatINR(monthly) },
-                        { label: 'Monthly Pension', value: formatINR(result.monthlyPension) },
-                        { label: 'Total Invested', value: formatINR(result.invested) },
-                        { label: 'Wealth Gained', value: formatINR(result.wealthGained) },
+                        { label: t('nps.monthlySIP'), value: formatINR(monthly) },
+                        { label: t('nps.monthlyPension'), value: formatINR(result.monthlyPension) },
+                        { label: t('nps.totalInvested'), value: formatINR(result.invested) },
+                        { label: t('nps.wealthGained'), value: formatINR(result.wealthGained) },
                     ]}
                     gradient="from-blue-600 via-indigo-600 to-violet-600"
                 />

@@ -114,14 +114,14 @@ export default function SchemeDetail() {
                         <div className="flex items-start gap-3">
                             <Building2 size={20} className="text-muted-foreground flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-muted-foreground text-sm font-medium mb-1">Government Mission {'\u2014'} No Individual Application</p>
-                                <p className="text-muted-foreground dark:text-muted-foreground text-sm">This program is implemented by government agencies and does not require individual application. Citizens benefit through government-delivered services and infrastructure.</p>
+                                <p className="text-muted-foreground text-sm font-medium mb-1">{t('schemes.govMission')}</p>
+                                <p className="text-muted-foreground dark:text-muted-foreground text-sm">{t('schemes.govMissionDesc')}</p>
                             </div>
                         </div>
                     </div>
                 ) : isServiceAccess ? (
                     <>
-                        <Section title="Access Service">
+                        <Section title={t('schemes.accessService')}>
                             {scheme.howToApply.map((h, i) => (
                                 <div key={i} className="flex items-start gap-3 mb-2.5">
                                     <span className="w-6 h-6 rounded-full bg-brand-blue/15 flex items-center justify-center flex-shrink-0"><span className="text-xs text-brand-blue font-bold">{i + 1}</span></span>
@@ -153,7 +153,7 @@ export default function SchemeDetail() {
                         <Section title={t('schemes.howToApply')}>
                             <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-200 text-sm mb-3 flex items-center gap-2">
                                 <Building2 size={16} className="flex-shrink-0" />
-                                Apply through your bank or financial institution
+                                {t('schemes.applyBank')}
                             </div>
                             {scheme.howToApply.map((h, i) => (
                                 <div key={i} className="flex items-start gap-3 mb-2.5">
@@ -179,7 +179,7 @@ export default function SchemeDetail() {
                             {isGovtAgency && (
                                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border text-slate-600 dark:text-muted-foreground text-sm mb-3 flex items-center gap-2">
                                     <Building2 size={16} className="flex-shrink-0" />
-                                    Implemented through government agencies
+                                    {t('schemes.govAgencies')}
                                 </div>
                             )}
                             {scheme.howToApply.map((h, i) => (
@@ -207,7 +207,7 @@ export default function SchemeDetail() {
                     <div className="p-3 rounded-xl bg-green-50 dark:bg-brand-green/5 border border-green-200 dark:border-brand-green/15 mb-8">
                         <div className="flex items-center gap-2 mb-1">
                             <BadgeCheck size={16} className="text-brand-green flex-shrink-0" />
-                            <span className="text-brand-green font-semibold text-[12px]">Verified from official Government of India sources</span>
+                            <span className="text-brand-green font-semibold text-[12px]">{t('schemes.verifiedSource')}</span>
                         </div>
                         <p className="text-muted-foreground dark:text-muted-foreground text-[11px] leading-relaxed pl-6">
                             Last verified: {new Date(scheme.lastVerified).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -232,7 +232,7 @@ export default function SchemeDetail() {
 
                 {noIndividualApp ? (
                     <div className="flex-[2] flex items-center justify-center py-3.5 rounded-2xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-muted-foreground text-sm font-medium">
-                        No Application Required
+                        {t('schemes.noAppReq')}
                     </div>
                 ) : isServiceAccess ? (
                     <motion.a whileTap={{ scale: 0.97 }} href={scheme.officialWebsite} target="_blank" rel="noopener noreferrer"
@@ -242,7 +242,7 @@ export default function SchemeDetail() {
                 ) : (
                     <motion.a whileTap={{ scale: 0.97 }} href={scheme.officialWebsite} target="_blank" rel="noopener noreferrer"
                         className="flex-[2] flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-brand-green text-white font-semibold text-sm shadow-lg shadow-brand-green/20">
-                        {isBankApp ? 'Apply at Bank' : 'Apply Now'} <ExternalLink size={18} />
+                        {isBankApp ? t('schemes.applyAtBank') : t('schemes.applyNow')} <ExternalLink size={18} />
                     </motion.a>
                 )}
             </div>

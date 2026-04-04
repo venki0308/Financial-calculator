@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
@@ -11,6 +12,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
 export default function SWPCalculator() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
 
@@ -230,8 +232,8 @@ export default function SWPCalculator() {
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-foreground leading-tight">SWP Calculator</h1>
-                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Smart Withdrawal Analysis</p>
+                        <h1 className="text-lg font-bold text-foreground leading-tight">{t('swp.title')}</h1>
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">{t('swp.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -240,14 +242,14 @@ export default function SWPCalculator() {
                 {/* 1. CORE INPUTS */}
                 <div className="space-y-4">
                     <div>
-                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Total Investment</label>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('swp.totalInvestment')}</label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                             <input type="number" value={principal} onChange={e => setPrincipal(Number(e.target.value)||0)} className={inputCls + " pl-7"} />
                         </div>
                     </div>
                     <div>
-                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Monthly Withdrawal</label>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('swp.monthlyWithdrawal')}</label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                             <input type="number" value={withdrawal} onChange={e => setWithdrawal(Number(e.target.value)||0)} className={inputCls + " pl-7"} />
@@ -255,11 +257,11 @@ export default function SWPCalculator() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Return Rate (%)</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('swp.returnRate')}</label>
                             <input type="number" step="0.1" value={rate} onChange={e => setRate(Number(e.target.value)||0)} className={inputCls} />
                         </div>
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Time (Years)</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('swp.timeYears')}</label>
                             <input type="number" value={years} onChange={e => setYears(Number(e.target.value)||0)} className={inputCls} />
                         </div>
                     </div>
@@ -268,14 +270,14 @@ export default function SWPCalculator() {
                 {/* 2. RESULTS HERO */}
                 <motion.div layout className="p-6 rounded-3xl bg-card border border-border shadow-sm">
                     <div className="flex justify-between items-start mb-4">
-                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">Final Balance</p>
+                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">{t('swp.finalBalance')}</p>
                         {result.depletionMonth ? (
                              <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border bg-red-500/10 border-red-500/20 text-red-500`}>
-                                Depleted Early
+                                {t('swp.depletedEarly')}
                             </div>
                         ) : (
                             <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border bg-brand-green/10 border-brand-green/20 text-brand-green`}>
-                                Sustainable
+                                {t('swp.sustainable')}
                             </div>
                         )}
                     </div>
@@ -286,11 +288,11 @@ export default function SWPCalculator() {
                     
                     <div className="grid grid-cols-2 gap-3">
                         <div className="p-3.5 rounded-2xl bg-brand-green/10 border border-brand-green/20">
-                            <p className="text-brand-green/80 text-[10px] uppercase font-bold mb-0.5">Total Withdrawn</p>
+                            <p className="text-brand-green/80 text-[10px] uppercase font-bold mb-0.5">{t('swp.totalWithdrawn')}</p>
                             <p className="text-brand-green font-black text-sm">{fmtINR(result.totalWithdrawn)}</p>
                         </div>
                         <div className="p-3.5 rounded-2xl bg-background border border-border/50">
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-0.5">Total Invested</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-0.5">{t('swp.totalInvested')}</p>
                             <p className="text-foreground font-black text-sm">{fmtINR(principal)}</p>
                         </div>
                     </div>
@@ -300,7 +302,7 @@ export default function SWPCalculator() {
                 <div className={`p-4 rounded-2xl border flex items-start gap-3 ${insight.type === 'warn' ? 'bg-amber-500/10 border-amber-500/30' : insight.type === 'success' ? 'bg-brand-green/10 border-brand-green/30' : 'bg-brand-blue/10 border-brand-blue/30'}`}>
                     <BrainCircuit size={18} className={`shrink-0 mt-0.5 ${insight.type === 'warn' ? 'text-amber-500' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`} />
                     <div>
-                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`}>Smart Insight</p>
+                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`}>{t('swp.smartInsight')}</p>
                         <p className={`text-xs font-medium leading-relaxed ${insight.type === 'warn' ? 'text-amber-700 dark:text-amber-400' : insight.type === 'success' ? 'text-emerald-700 dark:text-emerald-400' : 'text-blue-700 dark:text-blue-300'}`}>{insight.msg}</p>
                     </div>
                 </div>
@@ -308,7 +310,7 @@ export default function SWPCalculator() {
                 {/* SAVE BUTTON */}
                 <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-blue text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
                     {saved ? <Check size={18} /> : <Save size={18} />}
-                    {saved ? 'Calculation Saved!' : 'Save Calculation'}
+                    {saved ? t('swp.calculationSaved') : t('swp.saveCalculation')}
                 </button>
 
 
@@ -317,7 +319,7 @@ export default function SWPCalculator() {
                     <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-brand-blue/10 rounded-lg text-brand-blue"><Activity size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Sustainability Check</span>
+                            <span className="text-foreground font-bold text-sm">{t('swp.sustainabilityCheck')}</span>
                         </div>
                         {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -331,17 +333,17 @@ export default function SWPCalculator() {
                                     {/* SWR badge and Depletion */}
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className={`p-4 rounded-2xl border text-center ${result.swrBg}`}>
-                                            <p className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${result.swrColor}`}>Safe W.D. Rate</p>
+                                            <p className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${result.swrColor}`}>{t('swp.safeWDRate')}</p>
                                             <p className={`font-black text-xl mb-1 ${result.swrColor}`}>{result.swr.toFixed(1)}%</p>
-                                            <p className={`text-[9px] leading-tight px-1 font-bold ${result.swrColor}`}>{result.swrRisk} Risk</p>
+                                            <p className={`text-[9px] leading-tight px-1 font-bold ${result.swrColor}`}>{result.swrRisk} {t('swp.risk')}</p>
                                         </div>
                                         <div className={`p-4 rounded-2xl border text-center ${result.depletionMonth ? 'bg-red-500/10 border-red-500/20' : 'bg-brand-green/10 border-brand-green/20'}`}>
-                                            <p className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>Corpus Lifespan</p>
+                                            <p className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>{t('swp.corpusLifespan')}</p>
                                             <p className={`font-black text-xl mb-1 ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>
                                                 {result.depletionMonth ? `${(result.depletionMonth/12).toFixed(1)}y` : `${years}y+`}
                                             </p>
                                             <p className={`text-[9px] leading-tight px-1 font-bold ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>
-                                                {result.depletionMonth ? 'Depletes Early' : 'Sustainable'}
+                                                {result.depletionMonth ? t('swp.depletesEarly') : t('swp.sustainable')}
                                             </p>
                                         </div>
                                     </div>
@@ -349,17 +351,17 @@ export default function SWPCalculator() {
                                     {/* Inflation Adjusted Return */}
                                     <div className="bg-gradient-to-br from-background to-muted p-4 rounded-2xl border border-border space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <p className="text-foreground text-xs font-bold flex items-center gap-1.5"><ShieldAlert size={14} className="text-amber-500"/> Inflation Impact</p>
+                                            <p className="text-foreground text-xs font-bold flex items-center gap-1.5"><ShieldAlert size={14} className="text-amber-500"/> {t('swp.inflationImpact')}</p>
                                             <div className="flex items-center gap-1.5 bg-card border border-border px-2 py-1 rounded-lg">
-                                                <span className="text-[10px] text-muted-foreground font-bold uppercase">Rate</span>
+                                                <span className="text-[10px] text-muted-foreground font-bold uppercase">{t('swp.rate')}</span>
                                                 <input type="number" className="w-8 bg-transparent text-xs font-bold text-amber-500 outline-none p-0 text-center" value={inflation} onChange={e => setInflation(Number(e.target.value)||0)} />
                                                 <span className="text-[10px] text-muted-foreground font-bold">%</span>
                                             </div>
                                         </div>
                                         
                                         <div className="p-3 rounded-xl bg-card border border-border/50">
-                                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Purchasing Power Decline</p>
-                                            <p className="text-xs text-foreground font-medium leading-relaxed">Due to {inflation}% inflation, your <span className="font-bold text-rose-500">{fmtINR(withdrawal)}</span> monthly withdrawal will only have the purchasing power of <span className="font-bold text-emerald-500">{fmtINR(result.realWithdrawalValueAtEnd)}</span> in year {years}.</p>
+                                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">{t('swp.purchasingPowerDecline')}</p>
+                                            <p className="text-xs text-foreground font-medium leading-relaxed">{t('swp.inflationDesc', { inflation, withdrawal: fmtINR(withdrawal), realValue: fmtINR(result.realWithdrawalValueAtEnd), years })}</p>
                                         </div>
                                     </div>
 
@@ -374,7 +376,7 @@ export default function SWPCalculator() {
                     <button onClick={() => setShowWhatIf(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-rose-500/10 rounded-lg text-rose-500"><TrendingUp size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">What-If Simulator</span>
+                            <span className="text-foreground font-bold text-sm">{t('swp.whatIfSimulator')}</span>
                         </div>
                         {showWhatIf ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -387,7 +389,7 @@ export default function SWPCalculator() {
                                     
                                     <div>
                                         <div className="flex justify-between items-center mb-3">
-                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Withdrawal</span>
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('swp.withdrawal')}</span>
                                             <span className="text-sm font-black text-rose-500">{fmtINR(simWithdrawal)}/mo</span>
                                         </div>
                                         <input type="range" min={1000} max={principal * 0.05} step={1000} value={simWithdrawal} onChange={e => setSimWithdrawal(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-rose-500" />
@@ -395,7 +397,7 @@ export default function SWPCalculator() {
 
                                     <div>
                                         <div className="flex justify-between items-center mb-3">
-                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Expected Return</span>
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('swp.expectedReturn')}</span>
                                             <span className="text-sm font-black text-emerald-500">{simRate}%</span>
                                         </div>
                                         <input type="range" min={1} max={30} step={0.5} value={simRate} onChange={e => setSimRate(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-emerald-500" />
@@ -403,19 +405,19 @@ export default function SWPCalculator() {
 
                                     <div>
                                         <div className="flex justify-between items-center mb-3">
-                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Duration</span>
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('swp.duration')}</span>
                                             <span className="text-sm font-black text-blue-500">{simYears} yrs</span>
                                         </div>
                                         <input type="range" min={1} max={40} step={1} value={simYears} onChange={e => setSimYears(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-500" />
                                     </div>
 
                                     <div className={`p-4 rounded-2xl border text-center ${simResult.depMonth ? 'bg-red-50 dark:bg-red-500/15 border-red-200 dark:border-red-500/40' : 'bg-emerald-50 dark:bg-brand-green/15 border-emerald-200 dark:border-brand-green/30'}`}>
-                                        <p className="text-slate-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider mb-1">Simulated Final Balance</p>
+                                        <p className="text-slate-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider mb-1">{t('swp.simulatedFinalBalance')}</p>
                                         <p className={`font-black text-2xl mb-1 ${simResult.depMonth ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-brand-green'}`}>{fmtINR(simResult.finalBal)}</p>
                                         {simResult.depMonth ? (
-                                             <p className="text-red-600 dark:text-red-400 text-xs font-bold"><AlertTriangle size={11} className="inline mr-1"/>Depletes in yr {Math.ceil(simResult.depMonth/12)}</p>
+                                             <p className="text-red-600 dark:text-red-400 text-xs font-bold"><AlertTriangle size={11} className="inline mr-1"/>{t('swp.depletesInYr', { year: Math.ceil(simResult.depMonth/12) })}</p>
                                         ) : (
-                                             <p className="text-emerald-600 dark:text-brand-green text-xs font-bold"><ShieldCheck size={11} className="inline mr-1"/> Fully Sustainable</p>
+                                             <p className="text-emerald-600 dark:text-brand-green text-xs font-bold"><ShieldCheck size={11} className="inline mr-1"/> {t('swp.fullySustainable')}</p>
                                         )}
                                        
                                     </div>
@@ -431,7 +433,7 @@ export default function SWPCalculator() {
                     <button onClick={() => setShowTable(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-500"><FileText size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Portfolio Depletion Table</span>
+                            <span className="text-foreground font-bold text-sm">{t('swp.portfolioDepletionTable')}</span>
                         </div>
                         {showTable ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -442,12 +444,12 @@ export default function SWPCalculator() {
                                 <div className="px-5 pb-5 pt-1">
                                     <div className="rounded-2xl overflow-hidden border border-border mt-2">
                                         <div className="grid grid-cols-5 bg-muted px-2 py-2.5">
-                                            {['Year', 'Start', 'W/D', 'Interest', 'End'].map(h => (<p key={h} className="text-muted-foreground text-[9px] font-black uppercase tracking-wider text-center">{h}</p>))}
+                                            {[t('swp.colYear'), t('swp.colStart'), t('swp.colWD'), t('swp.colInterest'), t('swp.colEnd')].map(h => (<p key={h} className="text-muted-foreground text-[9px] font-black uppercase tracking-wider text-center">{h}</p>))}
                                         </div>
                                         <div className="divide-y divide-border/50">
                                             {result.yearlySchedule.slice((page - 1) * 10, page * 10).map((row) => (
                                                 <div key={row.year} className={`grid grid-cols-5 px-2 py-3 items-center text-center ${row.close <= 0 ? 'bg-red-500/5' : 'bg-background'}`}>
-                                                    <p className={`text-xs font-bold ${row.close <= 0 ? 'text-red-500' : 'text-foreground'}`}>Yr {row.year}</p>
+                                                    <p className={`text-xs font-bold ${row.close <= 0 ? 'text-red-500' : 'text-foreground'}`}>{t('swp.yr')} {row.year}</p>
                                                     <p className="text-foreground text-[10px] font-bold font-mono">{fmtINR(row.open)}</p>
                                                     <p className="text-rose-400 text-[10px] font-bold font-mono">-{fmtINR(row.withdrawn)}</p>
                                                     <p className="text-brand-green text-[10px] font-bold font-mono">+{fmtINR(row.interest)}</p>
@@ -462,7 +464,7 @@ export default function SWPCalculator() {
                                                 <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
                                                     <ChevronLeft size={14} />
                                                 </button>
-                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Page {page} of {Math.ceil(result.yearlySchedule.length / 10)}</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('swp.pageOf', { current: page, total: Math.ceil(result.yearlySchedule.length / 10) })}</p>
                                                 <button disabled={page === Math.ceil(result.yearlySchedule.length / 10)} onClick={() => setPage(p => p + 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
                                                     <ChevronRight size={14} />
                                                 </button>
@@ -470,7 +472,7 @@ export default function SWPCalculator() {
                                         )}
                                     </div>
                                     <p className="text-[10px] text-muted-foreground text-center mt-3 font-medium px-2">
-                                        * Net equals (Interest Earned - Total Withdrawn). Negative means portfolio is eroding.
+                                        {t('swp.tableFootnote')}
                                     </p>
                                 </div>
                             </motion.div>
@@ -484,13 +486,13 @@ export default function SWPCalculator() {
                         onClick={handleDownloadPDF}
                         className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-colors hover:bg-brand-blue/10 active:scale-95"
                     >
-                        <FileText size={20} /> Export Report
+                        <FileText size={20} /> {t('swp.exportReport')}
                     </button>
                     <button
                         onClick={handleDownloadExcel}
                         className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-green/5 border border-brand-green/20 text-brand-green font-bold text-xs transition-colors hover:bg-brand-green/10 active:scale-95"
                     >
-                        <FileText size={20} /> Excel Data
+                        <FileText size={20} /> {t('swp.excelData')}
                     </button>
                 </div>
             </div>

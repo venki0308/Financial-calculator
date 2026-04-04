@@ -13,18 +13,18 @@ import BottomSheet from '../../components/BottomSheet';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const ASSET_FIELDS = [
-    { key: 'bankBalance', label: 'Bank Balance' },
-    { key: 'fd', label: 'Fixed Deposits' },
-    { key: 'mutualFunds', label: 'Mutual Funds' },
-    { key: 'gold', label: 'Gold' },
-    { key: 'property', label: 'Property' },
-    { key: 'otherAssets', label: 'Other Assets' },
+    { key: 'bankBalance', label: 'Bank Balance', labelKey: 'expenses.bankBalance' },
+    { key: 'fd', label: 'Fixed Deposits', labelKey: 'expenses.fixedDeposits' },
+    { key: 'mutualFunds', label: 'Mutual Funds', labelKey: 'expenses.mutualFunds' },
+    { key: 'gold', label: 'Gold', labelKey: 'expenses.gold' },
+    { key: 'property', label: 'Property', labelKey: 'expenses.property' },
+    { key: 'otherAssets', label: 'Other Assets', labelKey: 'expenses.otherAssets' },
 ];
 const LIABILITY_FIELDS = [
-    { key: 'homeLoan', label: 'Home Loan' },
-    { key: 'carLoan', label: 'Car Loan' },
-    { key: 'personalLoan', label: 'Personal Loan' },
-    { key: 'creditCard', label: 'Credit Card Outstanding' },
+    { key: 'homeLoan', label: 'Home Loan', labelKey: 'expenses.homeLoan' },
+    { key: 'carLoan', label: 'Car Loan', labelKey: 'expenses.carLoan' },
+    { key: 'personalLoan', label: 'Personal Loan', labelKey: 'expenses.personalLoan' },
+    { key: 'creditCard', label: 'Credit Card Outstanding', labelKey: 'expenses.creditCardOutstanding' },
 ];
 
 
@@ -263,7 +263,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                             </div>
                             <div className="flex-1 min-w-0">
                                 <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-1">
-                                    {healthScore.total === -1 ? 'Data Missing' : healthScore.total === -2 ? 'Continuity Required' : 'Score Unavailable'}
+                                    {healthScore.total === -1 ? t('expenses.dataMissing') : healthScore.total === -2 ? t('expenses.continuityReq') : t('expenses.scoreUnavailable')}
                                 </h3>
                                 <p className="text-xs text-slate-700 dark:text-slate-400">
                                     {healthScore.tips[0]}
@@ -289,7 +289,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-0.5">
-                                    <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Financial Health</h3>
+                                    <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">{t('expenses.financialHealth')}</h3>
                                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                                         healthScore.total >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400'
                                         : healthScore.total >= 60 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400'
@@ -303,9 +303,9 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 {/* Sub-score mini bars */}
                                 <div className="grid grid-cols-3 gap-1 mt-2">
                                     {[
-                                        { label: 'Savings', val: healthScore.savingsScore, max: 40 },
-                                        { label: 'Budget', val: healthScore.adherenceScore, max: 30 },
-                                        { label: 'Consistent', val: healthScore.consistencyScore, max: 20 },
+                                        { label: t('expenses.savings'), val: healthScore.savingsScore, max: 40 },
+                                        { label: t('expenses.budget'), val: healthScore.adherenceScore, max: 30 },
+                                        { label: t('expenses.consistent'), val: healthScore.consistencyScore, max: 20 },
                                     ].map(s => (
                                         <div key={s.label}>
                                             <div className="flex justify-between text-[8px] text-slate-500 dark:text-muted-foreground mb-0.5">
@@ -354,7 +354,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                             </div>
                             {healthScore?.futureProjection?.monthsToGoal && (
                                 <span className="ml-auto text-[10px] font-bold text-brand-purple bg-brand-purple/10 px-2 py-1 rounded-full">
-                                    ~{healthScore.futureProjection.monthsToGoal}m to goal
+                                    {t('expenses.monthsToGoal', { months: healthScore.futureProjection.monthsToGoal })}
                                 </span>
                             )}
                         </div>
@@ -364,7 +364,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                             <div className="flex items-center gap-2 mb-1">
                                 {isManualMode ? <PiggyBank size={12} className="text-blue-400" /> : <TrendingUp size={12} className="text-green-400" />}
                                 <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                                    {isManualMode ? 'Current Balance (Manual)' : 'Tracked Savings'}
+                                    {isManualMode ? t('expenses.currentBalManual') : t('expenses.trackedSavings')}
                                     <button 
                                         onClick={() => {
                                             setManualSavingsInput(currentMonthBalance.toString());
@@ -400,7 +400,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                             <p className="text-[10px] text-slate-700 dark:text-slate-400 leading-snug">
                                 {isManualMode 
                                     ? `Tracked savings based on your data: ₹${autoCalculatedSavings.toLocaleString('en-IN')}`
-                                    : "Based on your tracked income & expenses"}
+                                    : t('expenses.balanceHint')}
                             </p>
                         </div>
                     </div>
@@ -526,15 +526,15 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
             {/* Category Budget Progress Bars (Part 2 & 3) */}
             {categoryBudgetProgress.length > 0 && (
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">Budget Progress</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">{t('expenses.budgetProgress')}</h3>
                     <div className="space-y-3">
                         {categoryBudgetProgress.map(cat => {
                             const barColor = cat.pct >= 100 ? 'bg-red-500' : cat.pct >= 80 ? 'bg-amber-500' : 'bg-green-500';
                             const textColor = cat.pct >= 100 ? 'text-red-500' : cat.pct >= 80 ? 'text-amber-500' : 'text-green-500';
-                            const statusLabel = cat.pct >= 120 ? `Over by ₹${(cat.spent - cat.budget).toLocaleString('en-IN')}` 
-                                : cat.pct >= 100 ? 'Budget reached'
-                                : cat.budget > 0 ? `₹${(cat.budget - cat.spent).toLocaleString('en-IN')} left`
-                                : 'No budget set';
+                            const statusLabel = cat.pct >= 120 ? `${t('expenses.overBy')} ₹${(cat.spent - cat.budget).toLocaleString('en-IN')}`
+                                : cat.pct >= 100 ? t('expenses.budgetReached')
+                                : cat.budget > 0 ? `₹${(cat.budget - cat.spent).toLocaleString('en-IN')} ${t('expenses.left')}`
+                                : t('expenses.noBudget');
                             return (
                                 <div key={cat.id}>
                                     <div className="flex items-center justify-between mb-1">
@@ -577,8 +577,8 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 <TrendingUp size={16} />
                             </div>
                             <div className="text-left">
-                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Net Worth</h3>
-                                <p className="text-[10px] text-muted-foreground">Assets vs Liabilities</p>
+                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">{t('expenses.netWorth')}</h3>
+                                <p className="text-[10px] text-muted-foreground">{t('expenses.assetsVsLiab')}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -669,7 +669,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                                 <Repeat size={16} />
                             </div>
                             <div className="text-left">
-                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Subscriptions</h3>
+                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">{t('expenses.subscriptions')}</h3>
                                 <p className="text-[10px] text-muted-foreground">{activeSubs.length} Active • Next: {new Date(nextRenewal.nextDueDate).toLocaleDateString('en-IN')}</p>
                             </div>
                         </div>
@@ -679,7 +679,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                             </span>
                             {onViewSubs && (
                                 <button onClick={onViewSubs} className="text-[10px] font-bold text-brand-purple hover:underline mt-0.5">
-                                    Manage
+                                    {t('expenses.manage')}
                                 </button>
                             )}
                         </div>
@@ -764,7 +764,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                         className="w-full py-4 rounded-xl bg-brand-purple text-white font-bold text-base"
                         style={{ minHeight: 52 }}
                     >
-                        Apply
+                        {t('common.apply')}
                     </motion.button>
                 }
             >
@@ -783,7 +783,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                     <div className="space-y-2">
                         {ASSET_FIELDS.map(f => (
                             <div key={f.key} className="flex items-center gap-3">
-                                <span className="text-muted-foreground text-xs w-28 flex-shrink-0">{f.label}</span>
+                                <span className="text-muted-foreground text-xs w-28 flex-shrink-0">{t(f.labelKey)}</span>
                                 <div className="flex-1 relative">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₹</span>
                                     <input type="number" value={nwAssets[f.key] || ''} onChange={e => setNwAssets(prev => ({ ...prev, [f.key]: e.target.value }))}
@@ -800,7 +800,7 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                     <div className="space-y-2">
                         {LIABILITY_FIELDS.map(f => (
                             <div key={f.key} className="flex items-center gap-3">
-                                <span className="text-muted-foreground text-xs w-28 flex-shrink-0">{f.label}</span>
+                                <span className="text-muted-foreground text-xs w-28 flex-shrink-0">{t(f.labelKey)}</span>
                                 <div className="flex-1 relative">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">₹</span>
                                     <input type="number" value={nwLiabilities[f.key] || ''} onChange={e => setNwLiabilities(prev => ({ ...prev, [f.key]: e.target.value }))}
@@ -830,12 +830,12 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
                         className="w-full py-4 rounded-xl bg-brand-purple text-white font-bold text-base"
                         style={{ minHeight: 52 }}
                     >
-                        Save Balance
+                        {t('expenses.saveBalance')}
                     </motion.button>
                 }
             >
                 <div className="pb-3 flex items-center justify-between flex-shrink-0">
-                    <h3 className="text-foreground font-semibold text-base">Edit Savings Balance</h3>
+                    <h3 className="text-foreground font-semibold text-base">{t('expenses.editSavingsBalance')}</h3>
                     <button onClick={() => setIsEditSavingsOpen(false)} className="p-1.5 rounded-xl bg-muted text-muted-foreground">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>

@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Save, Check, Download, Share2, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
@@ -24,6 +25,7 @@ import { useAppColors } from '../theme/useAppColors';
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
 export default function FDCalculator() {
+    const { t } = useTranslation();
     useEffect(() => { AnalyticsService.trackScreen('FD_Calculator'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
@@ -92,15 +94,15 @@ export default function FDCalculator() {
     }, [result, principal, years, inflation]);
 
     const chartData = {
-        labels: ['Invested', 'Interest Earned'],
+        labels: [t('fd.invested'), t('fd.interestEarned')],
         datasets: [{ data: [principal, result.interest], backgroundColor: ['#4F46E5', '#10B981'], borderColor: [c.card, c.card], borderWidth: 2 }]
     };
 
     const growthBarData = useMemo(() => ({
-        labels: yearWise.map(y => `Yr ${y.year}`),
+        labels: yearWise.map(y => `${t('fd.yr')} ${y.year}`),
         datasets: [
-            { label: 'Principal', data: yearWise.map(() => principal), backgroundColor: '#3B82F6' },
-            { label: 'Interest', data: yearWise.map(y => y.interest), backgroundColor: '#10B981' },
+            { label: t('fd.principal'), data: yearWise.map(() => principal), backgroundColor: '#3B82F6' },
+            { label: t('fd.interest'), data: yearWise.map(y => y.interest), backgroundColor: '#10B981' },
         ]
     }), [yearWise, principal]);
 
@@ -200,7 +202,7 @@ export default function FDCalculator() {
             <div className="sticky top-0 z-10 bg-background  px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border"><ArrowLeft size={18} className="text-muted-foreground" /></button>
-                    <div><h1 className="text-lg font-bold text-foreground">FD Calculator</h1><p className="text-muted-foreground text-xs">Fixed Deposit returns</p></div>
+                    <div><h1 className="text-lg font-bold text-foreground">{t('fd.fdCalculator')}</h1><p className="text-muted-foreground text-xs">{t('fd.fixedDepositReturns')}</p></div>
                 </div>
             </div>
 
@@ -210,7 +212,7 @@ export default function FDCalculator() {
             <div className="px-4 pb-28 pt-4 space-y-5">
                 {/* Compounding Tabs */}
                 <div className="flex rounded-2xl bg-card border border-border p-1">
-                    {([{ label: 'Quarterly', val: 4 }, { label: 'Monthly', val: 12 }, { label: 'Yearly', val: 1 }] as const).map((opt) => (
+                    {([{ label: t('fd.quarterly'), val: 4 }, { label: t('fd.monthly'), val: 12 }, { label: t('fd.yearly'), val: 1 }] as any[]).map((opt: any) => (
                         <button key={opt.val} onClick={() => setCompounding(opt.val)}
                             className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${compounding === opt.val ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20' : 'text-muted-foreground'}`}>
                             {opt.label}
@@ -219,12 +221,12 @@ export default function FDCalculator() {
                 </div>
 
                 <div className="space-y-3">
-                    <NumberInput label="Deposit Amount" value={principal} onChange={setPrincipal} min={1000} max={10000000} prefix="₹" />
-                    <NumberInput label="Interest Rate (p.a.)" value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} />
+                    <NumberInput label={t('fd.depositAmount')} value={principal} onChange={setPrincipal} min={1000} max={10000000} prefix="₹" />
+                    <NumberInput label={t('fd.interestRate')} value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} />
                     <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
                         <div>
-                            <span className="text-xs font-medium text-foreground">Senior Citizen (60+)</span>
-                            <p className="text-[10px] text-muted-foreground">+0.50% extra rate at most banks</p>
+                            <span className="text-xs font-medium text-foreground">{t('fd.seniorCitizen')}</span>
+                            <p className="text-[10px] text-muted-foreground">{t('fd.seniorCitizenExtraRate')}</p>
                         </div>
                         <button onClick={() => setIsSeniorCitizen(!isSeniorCitizen)}
                             className={`w-12 h-6 rounded-full transition-all relative ${isSeniorCitizen ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
@@ -232,26 +234,26 @@ export default function FDCalculator() {
                         </button>
                     </div>
                     {isSeniorCitizen && (
-                        <p className="text-[10px] text-emerald-500 font-medium -mt-1">Effective rate: {effectiveRate}% (base {rate}% + 0.50% senior benefit)</p>
+                        <p className="text-[10px] text-emerald-500 font-medium -mt-1">{t('fd.effectiveRateLabel', { effectiveRate, baseRate: rate })}</p>
                     )}
-                    <NumberInput label="Tenure (years)" value={years} onChange={setYears} min={1} max={20} suffix=" years" />
-                    <NumberInput label="Assumed Inflation (p.a.)" value={inflation} onChange={setInflation} min={1} max={15} suffix="%" step={0.5} helperText="Used for inflation-adjusted real return" />
+                    <NumberInput label={t('fd.tenure')} value={years} onChange={setYears} min={1} max={20} suffix=" years" />
+                    <NumberInput label={t('fd.assumedInflation')} value={inflation} onChange={setInflation} min={1} max={15} suffix="%" step={0.5} helperText={t('fd.usedForInflationAdjusted')} />
                 </div>
 
                 {/* Result Card */}
                 <motion.div layout className="p-5 rounded-2xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-purple-500/20">
-                    <p className="text-purple-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">Maturity Amount</p>
+                    <p className="text-purple-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">{t('fd.maturityAmount')}</p>
                     <motion.p key={result.amount} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-3xl font-black text-foreground mb-4">
                         {formatINR(result.amount)}
                     </motion.p>
 
                     <div className="grid grid-cols-2 gap-3 mb-4">
                         <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-center">
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Invested</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">{t('fd.invested')}</p>
                             <p className="text-foreground font-bold text-sm">{formatINR(principal)}</p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/50 text-center">
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Interest</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">{t('fd.interest')}</p>
                             <p className="text-brand-green font-bold text-sm">{formatINR(result.interest)}</p>
                         </div>
                     </div>
@@ -259,17 +261,17 @@ export default function FDCalculator() {
                     {/* TDS Info */}
                     <div className={`p-3 rounded-xl mb-4 ${tdsInfo.isTdsApplicable ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-emerald-500/10 border border-emerald-500/20'}`}>
                         <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${tdsInfo.isTdsApplicable ? 'text-amber-500' : 'text-emerald-500'}`}>
-                            TDS on FD Interest
+                            {t('fd.tdsOnFdInterest')}
                         </p>
                         {tdsInfo.isTdsApplicable ? (
                             <div className="space-y-1">
-                                <p className="text-xs text-foreground">Annual interest {formatINR(tdsInfo.annualInterest)} exceeds ₹{(tdsInfo.threshold / 1000).toFixed(0)}K threshold</p>
-                                <p className="text-xs text-amber-500 font-bold">TDS @10%: {formatINR(tdsInfo.annualTds)}/yr · Total: {formatINR(tdsInfo.totalTds)}</p>
-                                <p className="text-xs text-foreground font-medium">Net interest after TDS: {formatINR(tdsInfo.netInterest)}</p>
-                                <p className="text-[10px] text-muted-foreground mt-1">Submit Form {tdsInfo.form15} to avoid TDS if total income is below taxable limit.</p>
+                                <p className="text-xs text-foreground">{t('fd.annualInterestExceeds', { amount: formatINR(tdsInfo.annualInterest), threshold: `₹${(tdsInfo.threshold / 1000).toFixed(0)}K` })}</p>
+                                <p className="text-xs text-amber-500 font-bold">{t('fd.tdsAtTenPercent')}: {formatINR(tdsInfo.annualTds)}/{t('fd.yr')} · {t('fd.total')}: {formatINR(tdsInfo.totalTds)}</p>
+                                <p className="text-xs text-foreground font-medium">{t('fd.netInterestAfterTds')}: {formatINR(tdsInfo.netInterest)}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">{t('fd.submitFormToAvoidTds', { form: tdsInfo.form15 })}</p>
                             </div>
                         ) : (
-                            <p className="text-xs text-emerald-500">No TDS — annual interest ₹{tdsInfo.annualInterest.toLocaleString('en-IN')} is below ₹{(tdsInfo.threshold / 1000).toFixed(0)}K threshold</p>
+                            <p className="text-xs text-emerald-500">{t('fd.noTds', { annualInterest: `₹${tdsInfo.annualInterest.toLocaleString('en-IN')}`, threshold: `₹${(tdsInfo.threshold / 1000).toFixed(0)}K` })}</p>
                         )}
                     </div>
 
@@ -280,7 +282,7 @@ export default function FDCalculator() {
 
                     <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} disabled={saved || isAlreadySaved}
                         className={`w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${saved || isAlreadySaved ? 'bg-brand-green/10 text-brand-green border border-brand-green/20' : 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20'}`}>
-                        {saved || isAlreadySaved ? <><Check size={18} /> Saved</> : <><Save size={18} /> Save Calculation</>}
+                        {saved || isAlreadySaved ? <><Check size={18} /> {t('fd.saved')}</> : <><Save size={18} /> {t('fd.saveCalculation')}</>}
                     </motion.button>
                 </motion.div>
 
@@ -289,12 +291,12 @@ export default function FDCalculator() {
                     <div className="flex items-start gap-3">
                         <TrendingUp size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
                         <div>
-                            <h3 className="text-foreground font-bold text-xs">Inflation-Adjusted Return</h3>
-                            <p className="text-muted-foreground text-[11px] mt-1">After accounting for {inflation}% assumed inflation:</p>
+                            <h3 className="text-foreground font-bold text-xs">{t('fd.inflationAdjustedReturn')}</h3>
+                            <p className="text-muted-foreground text-[11px] mt-1">{t('fd.afterAccountingForInflation', { inflation })}</p>
                             <div className="grid grid-cols-2 gap-2 mt-2">
-                                <div><p className="text-muted-foreground text-[9px] uppercase font-bold">Nominal Return</p><p className="text-foreground font-bold text-xs">{inflationAdj.nominalReturn}%</p></div>
-                                <div><p className="text-muted-foreground text-[9px] uppercase font-bold">Real Return</p><p className={`font-bold text-xs ${Number(inflationAdj.realReturn) > 0 ? 'text-brand-green' : 'text-red-400'}`}>{inflationAdj.realReturn}%</p></div>
-                                <div className="col-span-2"><p className="text-muted-foreground text-[9px] uppercase font-bold">Real Value (Today's ₹)</p><p className="text-amber-400 font-bold text-sm">{formatINR(inflationAdj.realValue)}</p></div>
+                                <div><p className="text-muted-foreground text-[9px] uppercase font-bold">{t('fd.nominalReturn')}</p><p className="text-foreground font-bold text-xs">{inflationAdj.nominalReturn}%</p></div>
+                                <div><p className="text-muted-foreground text-[9px] uppercase font-bold">{t('fd.realReturn')}</p><p className={`font-bold text-xs ${Number(inflationAdj.realReturn) > 0 ? 'text-brand-green' : 'text-red-400'}`}>{inflationAdj.realReturn}%</p></div>
+                                <div className="col-span-2"><p className="text-muted-foreground text-[9px] uppercase font-bold">{t('fd.realValueToday')}</p><p className="text-amber-400 font-bold text-sm">{formatINR(inflationAdj.realValue)}</p></div>
                             </div>
                         </div>
                     </div>
@@ -302,14 +304,14 @@ export default function FDCalculator() {
 
                 {/* Compounding Comparison */}
                 <button onClick={() => setShowCompare(!showCompare)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
-                    <span className="flex items-center gap-2"><Info size={16} className="text-muted-foreground" /> Compounding Comparison</span>
+                    <span className="flex items-center gap-2"><Info size={16} className="text-muted-foreground" /> {t('fd.compoundingComparison')}</span>
                     {showCompare ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
                     {showCompare && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="rounded-2xl bg-card border border-border overflow-hidden">
-                                <div className="grid grid-cols-3 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-100 dark:bg-slate-800/50"><span>Frequency</span><span>Interest</span><span>Maturity</span></div>
+                                <div className="grid grid-cols-3 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-100 dark:bg-slate-800/50"><span>{t('fd.frequency')}</span><span>{t('fd.interest')}</span><span>{t('fd.maturity')}</span></div>
                                 {compoundingComparison.map((c, i) => (
                                     <div key={i} className={`grid grid-cols-3 text-[11px] p-2.5 ${c.freq === compounding ? 'bg-brand-purple/10 border-l-2 border-brand-purple' : i % 2 === 0 ? 'bg-card' : 'bg-slate-50 dark:bg-slate-800/20'}`}>
                                         <span className={`${c.freq === compounding ? 'text-brand-purple font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{c.label}</span>
@@ -324,7 +326,7 @@ export default function FDCalculator() {
 
                 {/* Growth Chart */}
                 <button onClick={() => setShowGrowth(!showGrowth)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
-                    <span className="flex items-center gap-2"><TrendingUp size={16} className="text-muted-foreground" /> Maturity Growth Chart</span>
+                    <span className="flex items-center gap-2"><TrendingUp size={16} className="text-muted-foreground" /> {t('fd.maturityGrowthChart')}</span>
                     {showGrowth ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
@@ -349,34 +351,34 @@ export default function FDCalculator() {
                 {/* What-If Simulator */}
                 <WhatIfSimulator
                     sliders={[
-                        { key: 'principal', label: 'Deposit Amount', min: 10000, max: 5000000, step: 10000, prefix: '₹' },
-                        { key: 'rate', label: 'Interest Rate', min: 3, max: 12, step: 0.25, suffix: '%' },
-                        { key: 'years', label: 'Tenure', min: 1, max: 20, step: 1, suffix: ' yrs' },
+                        { key: 'principal', label: t('fd.depositAmount'), min: 10000, max: 5000000, step: 10000, prefix: '₹' },
+                        { key: 'rate', label: t('fd.interestRateShort'), min: 3, max: 12, step: 0.25, suffix: '%' },
+                        { key: 'years', label: t('fd.tenureShort'), min: 1, max: 20, step: 1, suffix: ' yrs' },
                     ]}
                     currentInputs={{ principal, rate, years }}
                     calculateResult={(inputs) => Math.round(inputs.principal * Math.pow(1 + inputs.rate / (100 * compounding), inputs.years * compounding))}
-                    resultLabel="Maturity Amount"
+                    resultLabel={t('fd.maturityAmount')}
                 />
 
                 <SmartInsight calculatorType="fd" inputs={{ principal, rate, years }} results={{ amount: result.amount, interest: result.interest }} />
 
                 {/* Export & Share */}
                 <div className="grid grid-cols-3 gap-3">
-                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> PDF</button>
-                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> Excel</button>
-                    <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-[10px] font-bold"><Share2 size={16} /> Share</button>
+                    <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> {t('fd.pdf')}</button>
+                    <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium"><Download size={16} /> {t('fd.excel')}</button>
+                    <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-[10px] font-bold"><Share2 size={16} /> {t('fd.share')}</button>
                 </div>
 
                 {/* Shareable Card */}
                 <ShareableCard
-                    title="My FD Investment"
+                    title={t('fd.myFdInvestment')}
                     highlight={formatINR(result.amount)}
-                    subtitle={`${years} years at ${rate}% ${compounding === 4 ? 'quarterly' : compounding === 12 ? 'monthly' : 'yearly'} compounding`}
+                    subtitle={`${years} ${t('fd.yearsAt')} ${rate}% ${compounding === 4 ? t('fd.quarterly') : compounding === 12 ? t('fd.monthly') : t('fd.yearly')} ${t('fd.compounding')}`}
                     details={[
-                        { label: 'Deposit', value: formatINR(principal) },
-                        { label: 'Interest', value: formatINR(result.interest) },
-                        { label: 'Real Value', value: formatINR(inflationAdj.realValue) },
-                        { label: 'Real Return', value: `${inflationAdj.realReturn}%` },
+                        { label: t('fd.deposit'), value: formatINR(principal) },
+                        { label: t('fd.interest'), value: formatINR(result.interest) },
+                        { label: t('fd.realValue'), value: formatINR(inflationAdj.realValue) },
+                        { label: t('fd.realReturn'), value: `${inflationAdj.realReturn}%` },
                     ]}
                     gradient="from-indigo-600 via-purple-500 to-pink-500"
                 />

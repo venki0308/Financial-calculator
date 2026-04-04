@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, TrendingUp, Download, ExternalLink, ChevronDown, ChevronUp, Lightbulb, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -162,6 +163,7 @@ function getWarning(k: string, rawValue: string): string | undefined {
 // MAIN COMPONENT
 // ══════════════════════════════════════════════════════════════════════════════
 export default function IncomeTaxCalculator() {
+    const { t } = useTranslation();
     useEffect(() => { AnalyticsService.trackScreen('Income_Tax'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
@@ -441,8 +443,8 @@ export default function IncomeTaxCalculator() {
                     <ArrowLeft size={18} className="text-slate-700 dark:text-foreground" />
                 </button>
                 <div className="flex-1">
-                    <h1 className="text-slate-900 dark:text-foreground font-bold text-base">Income Tax Calculator</h1>
-                    <p className="text-muted-foreground text-[11px]">FY {fy} (AY {fy === '2026-27' ? '2027-28' : '2026-27'}) {fy === '2026-27' ? '• Union Budget 2026' : ''}</p>
+                    <h1 className="text-slate-900 dark:text-foreground font-bold text-base">{t('tax.title')}</h1>
+                    <p className="text-muted-foreground text-[11px]">{t('tax.fyLabel', { fy, ay: fy === '2026-27' ? '2027-28' : '2026-27' })} {fy === '2026-27' ? `• ${t('tax.unionBudget2026')}` : ''}</p>
                 </div>
             </div>
 
@@ -455,7 +457,7 @@ export default function IncomeTaxCalculator() {
                             onClick={() => setFy(y)}
                             className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all ${fy === y ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30' : 'text-muted-foreground dark:text-muted-foreground'}`}
                         >
-                            FY {y} {y === '2026-27' ? '(Current)' : ''}
+                            {t('tax.fy')} {y} {y === '2026-27' ? `(${t('tax.current')})` : ''}
                         </motion.button>
                     ))}
                 </div>
@@ -466,9 +468,9 @@ export default function IncomeTaxCalculator() {
                         <div className="flex items-start gap-2">
                             <TrendingUp size={16} className="text-emerald-400 flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-emerald-300 text-xs font-bold">Budget 2026-27 Update</p>
+                                <p className="text-emerald-300 text-xs font-bold">{t('tax.budgetUpdate')}</p>
                                 <p className="text-emerald-400/80 text-[10px] mt-0.5 leading-relaxed">
-                                    Zero tax on income up to ₹12 Lakh under New Regime (after ₹75,000 standard deduction for salaried — effective ₹12.75L for salaried)
+                                    {t('tax.budgetUpdateDesc')}
                                 </p>
                             </div>
                         </div>
@@ -483,22 +485,22 @@ export default function IncomeTaxCalculator() {
                             onClick={() => setRegime(r)}
                             className={`flex-1 py-3 text-xs font-bold rounded-lg transition-all ${regime === r ? 'bg-brand-purple text-white shadow-lg shadow-brand-purple/30' : 'text-muted-foreground dark:text-muted-foreground'}`}
                         >
-                            {r === 'new' ? 'New Regime' : 'Old Regime'}
+                            {r === 'new' ? t('tax.newRegime') : t('tax.oldRegime')}
                             <br />
-                            <span className="font-normal text-[9px] opacity-80">{r === 'new' ? `FY ${fy}` : 'With deductions'}</span>
+                            <span className="font-normal text-[9px] opacity-80">{r === 'new' ? `${t('tax.fy')} ${fy}` : t('tax.withDeductions')}</span>
                         </motion.button>
                     ))}
                 </div>
 
                 {/* Salary Input Mode Toggle */}
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                    <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold mb-2">Input Mode</p>
+                    <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold mb-2">{t('tax.inputMode')}</p>
                     <div className="grid grid-cols-2 gap-2">
                         {([
-                            { key: 'monthly' as const, label: 'Monthly Salary' },
-                            { key: 'annual' as const, label: 'Annual Salary' },
-                            { key: 'ctc' as const, label: 'CTC Mode' },
-                            { key: 'payslip' as const, label: 'Payslip Mode' },
+                            { key: 'monthly' as const, label: t('tax.monthlySalary') },
+                            { key: 'annual' as const, label: t('tax.annualSalary') },
+                            { key: 'ctc' as const, label: t('tax.ctcMode') },
+                            { key: 'payslip' as const, label: t('tax.payslipMode') },
                         ]).map((m) => (
                             <button
                                 key={m.key}
@@ -511,23 +513,23 @@ export default function IncomeTaxCalculator() {
                         ))}
                     </div>
                     <p className="text-muted-foreground text-[10px] mt-2">
-                        {inputMode === 'monthly' ? 'Enter monthly values. Annual = Monthly × 12' : inputMode === 'annual' ? 'Enter annual (yearly) values directly.' : inputMode === 'ctc' ? 'Enter total CTC. Auto-computes employer PF, gratuity, and in-hand salary.' : 'Enter exact payslip values (monthly earnings & deductions).'}
+                        {inputMode === 'monthly' ? t('tax.inputModeMonthlyDesc') : inputMode === 'annual' ? t('tax.inputModeAnnualDesc') : inputMode === 'ctc' ? t('tax.inputModeCtcDesc') : t('tax.inputModePayslipDesc')}
                     </p>
                 </div>
 
                 {/* Income Inputs */}
                 {inputMode === 'ctc' ? (
                     <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
-                        <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">CTC Details</h3>
-                        <InputRow label="Annual CTC" k="ctcAmount" value={inputs.ctcAmount} onChange={set} />
+                        <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">{t('tax.ctcDetails')}</h3>
+                        <InputRow label={t('tax.annualCTC')} k="ctcAmount" value={inputs.ctcAmount} onChange={set} />
                         {num('ctcAmount') > 0 && (
                             <div className="bg-muted rounded-xl p-3 space-y-2">
-                                <p className="text-muted-foreground text-xs font-semibold">Auto-computed Breakdown</p>
+                                <p className="text-muted-foreground text-xs font-semibold">{t('tax.autoComputedBreakdown')}</p>
                                 {[
-                                    { label: 'Basic (40%)', val: num('ctcAmount') * 0.4 },
-                                    { label: 'Employer PF (12%)', val: Math.min(num('ctcAmount') * 0.4 * 0.12, 21600) },
-                                    { label: 'Gratuity (4.81%)', val: num('ctcAmount') * 0.4 * 0.0481 },
-                                    { label: 'Gross Salary (In-hand)', val: ctcGross },
+                                    { label: t('tax.basic40'), val: num('ctcAmount') * 0.4 },
+                                    { label: t('tax.employerPF12'), val: Math.min(num('ctcAmount') * 0.4 * 0.12, 21600) },
+                                    { label: t('tax.gratuity481'), val: num('ctcAmount') * 0.4 * 0.0481 },
+                                    { label: t('tax.grossSalaryInHand'), val: ctcGross },
                                 ].map(r => (
                                     <div key={r.label} className={`flex justify-between ${r.label.includes('Gross') ? 'border-t border-slate-200 dark:border-white/10 pt-2 font-bold' : ''}`}>
                                         <span className="text-muted-foreground dark:text-muted-foreground text-xs">{r.label}</span>
@@ -536,40 +538,40 @@ export default function IncomeTaxCalculator() {
                                 ))}
                             </div>
                         )}
-                        <InputRow label="Variable Pay / Performance Bonus" k="variablePay" value={inputs.variablePay} onChange={set} hint="Annual variable component — fully taxable" />
-                        <InputRow label="Annual Bonus / Ex-Gratia" k="annualBonus" value={inputs.annualBonus} onChange={set} hint="Statutory or performance bonus — fully taxable" />
-                        <InputRow label="Other Income (FD interest, rental, etc.)" k="otherIncome" value={inputs.otherIncome} onChange={set} />
+                        <InputRow label={t('tax.variablePay')} k="variablePay" value={inputs.variablePay} onChange={set} hint={t('tax.variablePayHint')} />
+                        <InputRow label={t('tax.annualBonus')} k="annualBonus" value={inputs.annualBonus} onChange={set} hint={t('tax.annualBonusHint')} />
+                        <InputRow label={t('tax.otherIncome')} k="otherIncome" value={inputs.otherIncome} onChange={set} />
                     </div>
                 ) : (
                     <>
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
                             <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">
-                                {inputMode === 'monthly' ? 'Monthly' : inputMode === 'payslip' ? 'Payslip' : 'Annual'} Income Details
+                                {inputMode === 'monthly' ? t('tax.monthly') : inputMode === 'payslip' ? t('tax.payslip') : t('tax.annual')} {t('tax.incomeDetails')}
                             </h3>
-                            <InputRow label="Basic Salary" k="basicSalary" value={inputs.basicSalary} onChange={set} />
-                            <InputRow label="Dearness Allowance (DA)" k="da" value={inputs.da} onChange={set} hint="Govt/PSU employees only — leave 0 for private sector" />
-                            <InputRow label="HRA (House Rent Allowance)" k="hra" value={inputs.hra} onChange={set} />
-                            <InputRow label="Special Allowance" k="special" value={inputs.special} onChange={set} />
-                            <InputRow label="Transport Allowance" k="transportAllowance" value={inputs.transportAllowance} onChange={set} />
-                            <InputRow label="Medical Allowance" k="medicalAllowance" value={inputs.medicalAllowance} onChange={set} />
-                            <InputRow label="Food Allowance" k="foodAllowance" value={inputs.foodAllowance} onChange={set} />
-                            <InputRow label="LTA (Leave Travel Allowance)" k="lta" value={inputs.lta} onChange={set} />
-                            <InputRow label="Bonus & Other Allowances" k="bonus" value={inputs.bonus} onChange={set} />
-                            <InputRow label="Variable Pay / Performance Bonus" k="variablePay" value={inputs.variablePay} onChange={set} hint="Annual variable component — fully taxable" />
-                            <InputRow label="Annual Bonus / Ex-Gratia" k="annualBonus" value={inputs.annualBonus} onChange={set} hint="Statutory or performance bonus — fully taxable" />
-                            <InputRow label="Other Income (FD interest, rental, etc.)" k="otherIncome" value={inputs.otherIncome} onChange={set} />
+                            <InputRow label={t('tax.basicSalary')} k="basicSalary" value={inputs.basicSalary} onChange={set} />
+                            <InputRow label={t('tax.dearnessAllowance')} k="da" value={inputs.da} onChange={set} hint={t('tax.daHint')} />
+                            <InputRow label={t('tax.hra')} k="hra" value={inputs.hra} onChange={set} />
+                            <InputRow label={t('tax.specialAllowance')} k="special" value={inputs.special} onChange={set} />
+                            <InputRow label={t('tax.transportAllowance')} k="transportAllowance" value={inputs.transportAllowance} onChange={set} />
+                            <InputRow label={t('tax.medicalAllowance')} k="medicalAllowance" value={inputs.medicalAllowance} onChange={set} />
+                            <InputRow label={t('tax.foodAllowance')} k="foodAllowance" value={inputs.foodAllowance} onChange={set} />
+                            <InputRow label={t('tax.lta')} k="lta" value={inputs.lta} onChange={set} />
+                            <InputRow label={t('tax.bonusOtherAllowances')} k="bonus" value={inputs.bonus} onChange={set} />
+                            <InputRow label={t('tax.variablePay')} k="variablePay" value={inputs.variablePay} onChange={set} hint={t('tax.variablePayHint')} />
+                            <InputRow label={t('tax.annualBonus')} k="annualBonus" value={inputs.annualBonus} onChange={set} hint={t('tax.annualBonusHint')} />
+                            <InputRow label={t('tax.otherIncome')} k="otherIncome" value={inputs.otherIncome} onChange={set} />
                         </div>
 
                         {/* Payroll Deductions */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-1">
-                            <CollapsibleSection title="Payroll Deductions" defaultOpen={inputMode === 'payslip'}>
-                                <InputRow label="Employee PF (Provident Fund)" k="employeePF" value={inputs.employeePF} onChange={set} hint={inputMode === 'payslip' ? 'From payslip' : '12% of Basic typically'} />
-                                <InputRow label="Professional Tax" k="professionalTax" value={inputs.professionalTax} onChange={set} hint="Usually ₹200/month (₹2,400/year)" />
-                                <InputRow label="ESI (Employee State Insurance)" k="esi" value={inputs.esi} onChange={set} hint="1.75% of gross if salary < ₹21,000/month" />
-                                <InputRow label="NPS (Employee Contribution)" k="npsEmployee" value={inputs.npsEmployee} onChange={set} hint="Voluntary NPS contribution" />
+                            <CollapsibleSection title={t('tax.payrollDeductions')} defaultOpen={inputMode === 'payslip'}>
+                                <InputRow label={t('tax.employeePF')} k="employeePF" value={inputs.employeePF} onChange={set} hint={inputMode === 'payslip' ? t('tax.fromPayslip') : t('tax.pfHint')} />
+                                <InputRow label={t('tax.professionalTax')} k="professionalTax" value={inputs.professionalTax} onChange={set} hint={t('tax.professionalTaxHint')} />
+                                <InputRow label={t('tax.esi')} k="esi" value={inputs.esi} onChange={set} hint={t('tax.esiHint')} />
+                                <InputRow label={t('tax.npsEmployee')} k="npsEmployee" value={inputs.npsEmployee} onChange={set} hint={t('tax.npsHint')} />
                                 {payrollDeductions.total > 0 && (
                                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-xl p-3 flex justify-between">
-                                        <span className="text-blue-600 dark:text-blue-400 text-xs font-semibold">Total Payroll Deductions</span>
+                                        <span className="text-blue-600 dark:text-blue-400 text-xs font-semibold">{t('tax.totalPayrollDeductions')}</span>
                                         <span className="text-blue-600 dark:text-blue-400 font-bold text-sm">-{fmt(payrollDeductions.total)}</span>
                                     </div>
                                 )}
@@ -580,24 +582,24 @@ export default function IncomeTaxCalculator() {
 
                 {/* Salary Summary Card */}
                 <div className="bg-gradient-to-br from-brand-purple/5 to-blue-500/5 border border-brand-purple/20 rounded-2xl p-4">
-                    <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">Salary Summary</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">{t('tax.salarySummary')}</h3>
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground dark:text-muted-foreground text-xs">Gross Annual Income</span>
+                            <span className="text-muted-foreground dark:text-muted-foreground text-xs">{t('tax.grossAnnualIncome')}</span>
                             <span className="font-extrabold text-slate-900 dark:text-foreground text-base">{fmt(grossSalary)}</span>
                         </div>
                         {(num('variablePay') > 0 || num('annualBonus') > 0) && (
                             <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground dark:text-muted-foreground text-xs">Variable Pay / Bonus</span>
+                                <span className="text-muted-foreground dark:text-muted-foreground text-xs">{t('tax.variablePayBonus')}</span>
                                 <span className="font-semibold text-amber-500 text-sm">{fmt((num('variablePay') + num('annualBonus')) * (inputMode === 'ctc' ? 1 : multiplier))}</span>
                             </div>
                         )}
                         <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground dark:text-muted-foreground text-xs">Standard Deduction</span>
+                            <span className="text-muted-foreground dark:text-muted-foreground text-xs">{t('tax.standardDeduction')}</span>
                             <span className="font-bold text-blue-500 text-sm">-{fmt(regime === 'new' ? newStdDed : 50000)}</span>
                         </div>
                         <div className="border-t border-slate-100 dark:border-white/10 pt-2 flex justify-between items-center">
-                            <span className="text-slate-700 dark:text-foreground text-xs font-bold">Taxable Income</span>
+                            <span className="text-slate-700 dark:text-foreground text-xs font-bold">{t('tax.taxableIncome')}</span>
                             <span className="font-extrabold text-brand-purple text-base">{fmt(activeTaxableIncome)}</span>
                         </div>
                     </div>
@@ -606,10 +608,10 @@ export default function IncomeTaxCalculator() {
                     {regime === 'new' && newNoTax && grossSalary > 0 && (
                         <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700/30 rounded-xl">
                             <p className="text-emerald-700 dark:text-emerald-400 text-xs font-semibold text-center">
-                                No income tax payable under the new regime.
+                                {t('tax.noTaxPayable')}
                             </p>
                             <p className="text-emerald-600 dark:text-emerald-500 text-[10px] text-center mt-0.5">
-                                Taxable income is within Rs 12,00,000 exemption limit (Sec 87A / 156 — Budget {fy === '2026-27' ? '2026' : '2025'})
+                                {t('tax.withinExemptionLimit', { budget: fy === '2026-27' ? '2026' : '2025' })}
                             </p>
                         </div>
                     )}
@@ -620,47 +622,47 @@ export default function IncomeTaxCalculator() {
                     <>
                         {/* HRA Exemption */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
-                            <CollapsibleSection title="Housing Benefits">
-                                <InputRow label={`HRA Received (${inputMode === 'monthly' ? 'Monthly' : 'Annual'})`} k="hraReceived" value={inputs.hraReceived} onChange={set} />
-                                <InputRow label={`Rent Paid (${inputMode === 'monthly' ? 'Monthly' : 'Annual'})`} k="rentPaid" value={inputs.rentPaid} onChange={set} />
+                            <CollapsibleSection title={t('tax.housingBenefits')}>
+                                <InputRow label={`${t('tax.hraReceived')} (${inputMode === 'monthly' ? t('tax.monthly') : t('tax.annual')})`} k="hraReceived" value={inputs.hraReceived} onChange={set} />
+                                <InputRow label={`${t('tax.rentPaid')} (${inputMode === 'monthly' ? t('tax.monthly') : t('tax.annual')})`} k="rentPaid" value={inputs.rentPaid} onChange={set} />
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" checked={inputs.isMetro === 'true'} onChange={(e) => set('isMetro', e.target.checked ? 'true' : 'false')} className="w-4 h-4 accent-brand-purple" />
-                                    <span className="text-slate-600 dark:text-muted-foreground text-xs">Metro city (Mumbai, Delhi, Kolkata, Chennai, Bengaluru, Pune, Hyderabad, Ahmedabad)</span>
+                                    <span className="text-slate-600 dark:text-muted-foreground text-xs">{t('tax.metroCity')}</span>
                                 </label>
                                 <div className="bg-brand-green/10 border border-brand-green/20 rounded-xl p-3 flex justify-between">
-                                    <span className="text-brand-green text-xs font-semibold">HRA Exemption</span>
+                                    <span className="text-brand-green text-xs font-semibold">{t('tax.hraExemption')}</span>
                                     <span className="text-brand-green font-bold text-sm">{fmt(hraExemption)}</span>
                                 </div>
-                                <InputRow label="Home Loan Interest (Sec 24B / 22)" k="homeLoan" value={inputs.homeLoan} onChange={set} hint="Max Rs 2,00,000 per year — ITA 2025 Sec 22" warning={getWarning('homeLoan', inputs.homeLoan)} />
+                                <InputRow label={t('tax.homeLoanInterest')} k="homeLoan" value={inputs.homeLoan} onChange={set} hint={t('tax.homeLoanHint')} warning={getWarning('homeLoan', inputs.homeLoan)} />
                             </CollapsibleSection>
                         </div>
 
                         {/* Section Deductions */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-1">
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-2">Deductions (Old Regime)</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-2">{t('tax.deductionsOldRegime')}</h3>
                             <div className="bg-muted rounded-xl p-3 flex justify-between items-center">
-                                <span className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold">Standard Deduction</span>
+                                <span className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold">{t('tax.standardDeduction')}</span>
                                 <span className="font-bold text-brand-purple text-sm">{fmt(50000)}</span>
                             </div>
 
-                            <CollapsibleSection title="Investment Deductions">
-                                <InputRow label="Sec 80C / 123 (PPF, ELSS, LIC)" k="section80C" value={inputs.section80C} onChange={set} hint="Max Rs 1,50,000 — ITA 2025 Sec 123" warning={getWarning('section80C', inputs.section80C)} />
-                                <InputRow label="Sec 80CCD(1B) / 124 — NPS" k="section80CCD" value={inputs.section80CCD} onChange={set} hint="Max Rs 50,000 — ITA 2025 Sec 124" warning={getWarning('section80CCD', inputs.section80CCD)} />
+                            <CollapsibleSection title={t('tax.investmentDeductions')}>
+                                <InputRow label={t('tax.sec80C')} k="section80C" value={inputs.section80C} onChange={set} hint={t('tax.sec80CHint')} warning={getWarning('section80C', inputs.section80C)} />
+                                <InputRow label={t('tax.sec80CCD')} k="section80CCD" value={inputs.section80CCD} onChange={set} hint={t('tax.sec80CCDHint')} warning={getWarning('section80CCD', inputs.section80CCD)} />
                             </CollapsibleSection>
 
-                            <CollapsibleSection title="Insurance & Medical">
-                                <InputRow label="Sec 80D / 126 (Health Insurance)" k="section80D" value={inputs.section80D} onChange={set} hint="Max Rs 25,000 (self & family) — ITA 2025 Sec 126" warning={getWarning('section80D', inputs.section80D)} />
+                            <CollapsibleSection title={t('tax.insuranceMedical')}>
+                                <InputRow label={t('tax.sec80D')} k="section80D" value={inputs.section80D} onChange={set} hint={t('tax.sec80DHint')} warning={getWarning('section80D', inputs.section80D)} />
                             </CollapsibleSection>
 
-                            <CollapsibleSection title="Additional Deductions">
-                                <InputRow label="Sec 80E / 129 (Education Loan Interest)" k="section80E" value={inputs.section80E} onChange={set} hint="No upper limit — ITA 2025 Sec 129" />
-                                <InputRow label="Sec 80G / 133 (Donations)" k="section80G" value={inputs.section80G} onChange={set} hint="Amount varies by donee — ITA 2025 Sec 133" />
-                                <InputRow label={`Children's Education Allowance (${inputMode === 'monthly' || inputMode === 'payslip' ? 'Monthly' : 'Annual'})`} k="childEducationAllowance" value={inputs.childEducationAllowance} onChange={set} hint="Exempt up to ₹100/month per child (max 2 children) — Sec 10(14), Rule 2BB" />
-                                <InputRow label={`Children's Hostel Allowance (${inputMode === 'monthly' || inputMode === 'payslip' ? 'Monthly' : 'Annual'})`} k="childHostelAllowance" value={inputs.childHostelAllowance} onChange={set} hint="Exempt up to ₹300/month per child (max 2 children) — Sec 10(14), Rule 2BB" />
+                            <CollapsibleSection title={t('tax.additionalDeductions')}>
+                                <InputRow label={t('tax.sec80E')} k="section80E" value={inputs.section80E} onChange={set} hint={t('tax.sec80EHint')} />
+                                <InputRow label={t('tax.sec80G')} k="section80G" value={inputs.section80G} onChange={set} hint={t('tax.sec80GHint')} />
+                                <InputRow label={`${t('tax.childEducationAllowance')} (${inputMode === 'monthly' || inputMode === 'payslip' ? t('tax.monthly') : t('tax.annual')})`} k="childEducationAllowance" value={inputs.childEducationAllowance} onChange={set} hint={t('tax.childEducationHint')} />
+                                <InputRow label={`${t('tax.childHostelAllowance')} (${inputMode === 'monthly' || inputMode === 'payslip' ? t('tax.monthly') : t('tax.annual')})`} k="childHostelAllowance" value={inputs.childHostelAllowance} onChange={set} hint={t('tax.childHostelHint')} />
                             </CollapsibleSection>
 
                             <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex justify-between items-center">
-                                <span className="text-slate-600 dark:text-muted-foreground text-sm font-medium">Total Deductions</span>
+                                <span className="text-slate-600 dark:text-muted-foreground text-sm font-medium">{t('tax.totalDeductions')}</span>
                                 <span className="font-extrabold text-brand-green text-base">-{fmt(oldDeductions)}</span>
                             </div>
                         </div>
@@ -673,12 +675,12 @@ export default function IncomeTaxCalculator() {
                         <div className="flex gap-3">
                             <Info size={18} className="text-brand-purple flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-brand-purple font-semibold text-sm">New Regime — FY {fy}</p>
+                                <p className="text-brand-purple font-semibold text-sm">{t('tax.newRegimeFY', { fy })}</p>
                                 <p className="text-muted-foreground dark:text-muted-foreground text-xs mt-1">
-                                    Standard deduction of Rs 75,000 applied automatically. No manual deductions (HRA, 80C/123, 80D/126, etc.) available in the new regime.
+                                    {t('tax.newRegimeDesc')}
                                 </p>
                                 <p className="text-brand-purple text-[10px] mt-1 font-semibold">
-                                    No tax if taxable income ≤ Rs 12,00,000 (Sec 87A / Sec 156 full rebate — Income Tax Act, 2025)
+                                    {t('tax.newRegimeRebateNote')}
                                 </p>
                             </div>
                         </div>
@@ -695,17 +697,17 @@ export default function IncomeTaxCalculator() {
                             className={`rounded-3xl p-6 text-white shadow-xl ${activeTotalTax === 0 ? 'bg-gradient-to-br from-emerald-500 to-teal-600' : 'bg-gradient-to-br from-red-500 to-orange-600'}`}
                         >
                             <p className="text-foreground/70 text-xs font-semibold uppercase tracking-wider mb-1">
-                                {regime === 'old' ? 'Old Regime' : 'New Regime'} — Total Tax
+                                {regime === 'old' ? t('tax.oldRegime') : t('tax.newRegime')} — {t('tax.totalTax')}
                             </p>
-                            <h2 className="text-4xl font-extrabold">{activeTotalTax === 0 ? 'NIL' : fmt(activeTotalTax)}</h2>
+                            <h2 className="text-4xl font-extrabold">{activeTotalTax === 0 ? t('tax.nil') : fmt(activeTotalTax)}</h2>
                             <p className="text-foreground/60 text-sm mt-1">
-                                {activeTotalTax === 0 ? 'No tax payable — within exemption limit' : 'Annual Tax Liability'}
+                                {activeTotalTax === 0 ? t('tax.noTaxWithinLimit') : t('tax.annualTaxLiability')}
                             </p>
                             <div className="grid grid-cols-3 gap-3 mt-4">
                                 {[
-                                    { label: 'Monthly TDS', value: fmt(monthlyTax) },
-                                    { label: 'Eff. Rate', value: `${effectiveRate.toFixed(1)}%` },
-                                    { label: 'Taxable', value: fmt(activeTaxableIncome) },
+                                    { label: t('tax.monthlyTDS'), value: fmt(monthlyTax) },
+                                    { label: t('tax.effRate'), value: `${effectiveRate.toFixed(1)}%` },
+                                    { label: t('tax.taxable'), value: fmt(activeTaxableIncome) },
                                 ].map((s) => (
                                     <div key={s.label} className="bg-white/10 rounded-xl p-2.5 text-center">
                                         <p className="text-foreground/60 text-[9px] uppercase font-bold tracking-wider mb-0.5">{s.label}</p>
@@ -717,17 +719,17 @@ export default function IncomeTaxCalculator() {
 
                         {/* Step-by-Step Breakdown */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-2">
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">Step-by-Step Tax Breakdown</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">{t('tax.stepByStepBreakdown')}</h3>
                             {[
-                                { label: 'Gross Annual Income', val: grossSalary, color: 'text-brand-green' },
-                                { label: `Less: ${regime === 'new' ? 'Standard Deduction' : 'Total Deductions'}`, val: -activeDeductions, color: 'text-blue-400' },
-                                { label: 'Taxable Income', val: activeTaxableIncome, color: 'text-brand-purple', bold: true },
-                                { label: 'Income Tax (slab-wise)', val: activeRawTax, color: 'text-muted-foreground' },
-                                ...(activeRawTax !== activeAfterRebate ? [{ label: 'Less: Rebate u/s 87A / Sec 156', val: -(activeRawTax - activeAfterRebate), color: 'text-emerald-500' }] : []),
-                                { label: 'Income Tax (after rebate)', val: activeAfterRebate, color: 'text-red-400' },
-                                ...(activeSurcharge > 0 ? [{ label: 'Surcharge', val: activeSurcharge, color: 'text-amber-500' }] : []),
-                                { label: 'Health & Education Cess (4%)', val: activeCess, color: 'text-orange-400' },
-                                { label: 'Final Tax Liability', val: activeTotalTax, color: 'text-red-500', bold: true },
+                                { label: t('tax.grossAnnualIncome'), val: grossSalary, color: 'text-brand-green' },
+                                { label: `${t('tax.less')}: ${regime === 'new' ? t('tax.standardDeduction') : t('tax.totalDeductions')}`, val: -activeDeductions, color: 'text-blue-400' },
+                                { label: t('tax.taxableIncome'), val: activeTaxableIncome, color: 'text-brand-purple', bold: true },
+                                { label: t('tax.incomeTaxSlabWise'), val: activeRawTax, color: 'text-muted-foreground' },
+                                ...(activeRawTax !== activeAfterRebate ? [{ label: t('tax.lessRebate87A'), val: -(activeRawTax - activeAfterRebate), color: 'text-emerald-500' }] : []),
+                                { label: t('tax.incomeTaxAfterRebate'), val: activeAfterRebate, color: 'text-red-400' },
+                                ...(activeSurcharge > 0 ? [{ label: t('tax.surcharge'), val: activeSurcharge, color: 'text-amber-500' }] : []),
+                                { label: t('tax.healthEducationCess'), val: activeCess, color: 'text-orange-400' },
+                                { label: t('tax.finalTaxLiability'), val: activeTotalTax, color: 'text-red-500', bold: true },
                             ].map((row) => (
                                 <div key={row.label} className={`flex justify-between items-center py-2 ${row.bold ? 'border-t border-slate-100 dark:border-white/10 mt-1' : ''}`}>
                                     <span className={`text-muted-foreground dark:text-muted-foreground text-xs ${row.bold ? 'font-bold text-slate-700 dark:text-foreground' : ''}`}>{row.label}</span>
@@ -739,7 +741,7 @@ export default function IncomeTaxCalculator() {
                         {/* Slab Breakdown */}
                         {activeTaxableIncome > 0 && (
                             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">Tax Slab Computation</h3>
+                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">{t('tax.taxSlabComputation')}</h3>
                                 <div className="space-y-2">
                                     {activeSlabs.map((slab, i) => {
                                         if (activeTaxableIncome <= slab.min) return null;
@@ -750,13 +752,13 @@ export default function IncomeTaxCalculator() {
                                             <div key={i} className={`p-3 rounded-xl ${slab.rate === 0 ? 'bg-green-50 dark:bg-green-900/10' : slab.rate >= 25 ? 'bg-red-50 dark:bg-red-900/10' : 'bg-muted'}`}>
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-xs text-slate-600 dark:text-muted-foreground font-medium">
-                                                        {slab.max === Infinity ? `Above ${fmt(slab.min)}` : `${fmt(slab.min)} – ${fmt(slab.max)}`}
+                                                        {slab.max === Infinity ? `${t('tax.above')} ${fmt(slab.min)}` : `${fmt(slab.min)} – ${fmt(slab.max)}`}
                                                     </span>
                                                     <span className="text-xs font-bold text-slate-800 dark:text-foreground">{slab.rate}%</span>
                                                 </div>
                                                 <div className="flex justify-between items-center mt-1">
-                                                    <span className="text-[10px] text-muted-foreground">On {fmt(slabAmount)}</span>
-                                                    <span className="text-xs font-bold text-brand-purple">{slab.rate === 0 ? 'Nil' : `Tax: ${fmt(slabTax)}`}</span>
+                                                    <span className="text-[10px] text-muted-foreground">{t('tax.on')} {fmt(slabAmount)}</span>
+                                                    <span className="text-xs font-bold text-brand-purple">{slab.rate === 0 ? t('tax.nil') : `${t('tax.taxLabel')}: ${fmt(slabTax)}`}</span>
                                                 </div>
                                             </div>
                                         );
@@ -769,20 +771,20 @@ export default function IncomeTaxCalculator() {
                         <div className="bg-brand-green/10 border border-brand-green/20 rounded-2xl p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-brand-green text-xs font-semibold uppercase tracking-wider">Monthly Take-Home</p>
+                                    <p className="text-brand-green text-xs font-semibold uppercase tracking-wider">{t('tax.monthlyTakeHome')}</p>
                                     <p className="text-3xl font-extrabold text-brand-green mt-1">{fmt(monthlyTakeHome)}</p>
                                 </div>
                                 <TrendingUp className="w-12 h-12 text-brand-green opacity-30" />
                             </div>
                             <p className="text-brand-green/50 text-[10px] mt-1">
-                                Net Annual Income ({fmt(netAnnual)}) ÷ 12
+                                {t('tax.netAnnualIncome')} ({fmt(netAnnual)}) ÷ 12
                             </p>
                             <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-brand-green/20">
                                 {[
-                                    { label: 'Monthly Salary', value: fmt(grossSalary / 12), color: 'text-brand-green' },
-                                    { label: 'Monthly Tax', value: fmt(monthlyTax), color: 'text-red-400' },
-                                    { label: 'Net Annual Income', value: fmt(netAnnual), color: 'text-brand-green' },
-                                    { label: 'Effective Tax Rate', value: `${effectiveRate.toFixed(1)}%`, color: 'text-brand-purple' },
+                                    { label: t('tax.monthlySalaryLabel'), value: fmt(grossSalary / 12), color: 'text-brand-green' },
+                                    { label: t('tax.monthlyTax'), value: fmt(monthlyTax), color: 'text-red-400' },
+                                    { label: t('tax.netAnnualIncome'), value: fmt(netAnnual), color: 'text-brand-green' },
+                                    { label: t('tax.effectiveTaxRate'), value: `${effectiveRate.toFixed(1)}%`, color: 'text-brand-purple' },
                                 ].map((item) => (
                                     <div key={item.label} className="text-center bg-white/50 dark:bg-white/5 rounded-xl p-2.5">
                                         <p className="text-brand-green/60 text-[9px] uppercase font-bold">{item.label}</p>
@@ -794,11 +796,11 @@ export default function IncomeTaxCalculator() {
 
                         {/* Regime Comparison */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">Old vs New Regime</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">{t('tax.oldVsNewRegime')}</h3>
                             <div className="space-y-2 mb-4">
                                 {[
-                                    { label: 'Old Regime', tax: oldTotalTax, better: betterRegime === 'Old' && !bothZero },
-                                    { label: 'New Regime', tax: newTotalTax, better: betterRegime === 'New' && !bothZero },
+                                    { label: t('tax.oldRegime'), tax: oldTotalTax, better: betterRegime === 'Old' && !bothZero },
+                                    { label: t('tax.newRegime'), tax: newTotalTax, better: betterRegime === 'New' && !bothZero },
                                 ].map((r) => (
                                     <div key={r.label} className={`flex items-center justify-between p-3 rounded-xl border-2 ${r.better ? 'border-brand-green bg-brand-green/5' : 'border-slate-100 dark:border-slate-700 bg-muted'}`}>
                                         <div className="flex items-center gap-2">
@@ -806,7 +808,7 @@ export default function IncomeTaxCalculator() {
                                             <span className="text-muted-foreground text-sm font-medium">{r.label}</span>
                                         </div>
                                         <span className={`font-extrabold text-sm ${r.better ? 'text-brand-green' : 'text-slate-700 dark:text-foreground'}`}>
-                                            {r.tax === 0 ? 'NIL' : fmt(r.tax)}
+                                            {r.tax === 0 ? t('tax.nil') : fmt(r.tax)}
                                         </span>
                                     </div>
                                 ))}
@@ -833,16 +835,16 @@ export default function IncomeTaxCalculator() {
 
                             {/* Recommendation */}
                             <div className={`p-4 rounded-xl text-center ${bothZero ? 'bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-700/30' : 'bg-brand-green/10 border border-brand-green/20'}`}>
-                                <p className="text-xs text-muted-foreground dark:text-muted-foreground mb-1">Recommended Regime</p>
+                                <p className="text-xs text-muted-foreground dark:text-muted-foreground mb-1">{t('tax.recommendedRegime')}</p>
                                 {bothZero ? (
                                     <>
-                                        <p className="font-extrabold text-lg text-emerald-600 dark:text-emerald-400">NO TAX DUE</p>
-                                        <p className="text-emerald-600/80 text-xs mt-1">Income within exemption limit under both regimes</p>
+                                        <p className="font-extrabold text-lg text-emerald-600 dark:text-emerald-400">{t('tax.noTaxDue')}</p>
+                                        <p className="text-emerald-600/80 text-xs mt-1">{t('tax.incomeWithinExemption')}</p>
                                     </>
                                 ) : (
                                     <>
-                                        <p className="font-extrabold text-lg text-brand-green">{betterRegime.toUpperCase()} REGIME</p>
-                                        <p className="text-brand-green text-xs mt-1">Estimated Tax Saving: {fmt(saving)}</p>
+                                        <p className="font-extrabold text-lg text-brand-green">{betterRegime.toUpperCase()} {t('tax.regime')}</p>
+                                        <p className="text-brand-green text-xs mt-1">{t('tax.estimatedTaxSaving')}: {fmt(saving)}</p>
                                         {regimeExplanation && (
                                             <p className="text-muted-foreground dark:text-muted-foreground text-[10px] mt-2 leading-relaxed text-left">{regimeExplanation}</p>
                                         )}
@@ -856,7 +858,7 @@ export default function IncomeTaxCalculator() {
                             <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-700/40 rounded-2xl p-4">
                                 <div className="flex items-center gap-2 mb-3">
                                     <Lightbulb size={16} className="text-amber-600" />
-                                    <h3 className="font-bold text-amber-800 dark:text-amber-400 text-sm">Tax-Saving Suggestions</h3>
+                                    <h3 className="font-bold text-amber-800 dark:text-amber-400 text-sm">{t('tax.taxSavingSuggestions')}</h3>
                                 </div>
                                 <div className="space-y-2">
                                     {tips.map((tip, i) => (
@@ -870,7 +872,7 @@ export default function IncomeTaxCalculator() {
 
                         {/* Download PDF */}
                         <motion.button whileTap={{ scale: 0.97 }} onClick={handleDownloadPDF} className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple text-white font-bold shadow-lg shadow-brand-purple/30">
-                            <Download size={18} /> Download Tax Report (PDF)
+                            <Download size={18} /> {t('tax.downloadTaxReport')}
                         </motion.button>
                     </>
                 )}

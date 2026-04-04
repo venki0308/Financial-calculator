@@ -133,8 +133,8 @@ export default function SubscriptionsTab() {
 
     const validate = (): boolean => {
         const errs: typeof formErrors = {};
-        if (!formData.name?.trim()) errs.name = 'Name is required';
-        if (!formData.amount || formData.amount <= 0) errs.amount = 'Enter a valid amount';
+        if (!formData.name?.trim()) errs.name = t('expenses.nameRequired');
+        if (!formData.amount || formData.amount <= 0) errs.amount = t('expenses.validAmount');
         setFormErrors(errs);
         return Object.keys(errs).length === 0;
     };
@@ -217,7 +217,7 @@ export default function SubscriptionsTab() {
             <div className="bg-gradient-to-br from-brand-purple via-purple-600 to-indigo-600 rounded-3xl p-5 text-white shadow-xl shadow-brand-purple/25">
                 <div className="flex items-center gap-2 mb-1 text-purple-200">
                     <CreditCard size={16} />
-                    <span className="font-semibold text-xs uppercase tracking-wider">Monthly Commitment</span>
+                    <span className="font-semibold text-xs uppercase tracking-wider">{t('expenses.monthlyCommitment')}</span>
                     {renewalsSoon.length > 0 && (
                         <span className="ml-auto text-[10px] font-bold bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full">
                             ⚠️ {renewalsSoon.length} due soon
@@ -232,19 +232,19 @@ export default function SubscriptionsTab() {
                 {/* 3-col Impact Breakdown */}
                 <div className="grid grid-cols-3 gap-2 mt-4">
                     <div className="bg-white/10 rounded-2xl p-3 text-center">
-                        <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider">Yearly</p>
+                        <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider">{t('expenses.yearly')}</p>
                         <p className="text-foreground font-bold text-sm mt-0.5">
                             ₹{Math.round(totalYearly).toLocaleString('en-IN')}
                         </p>
                     </div>
                     <div className="bg-white/10 rounded-2xl p-3 text-center">
-                        <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider">Active</p>
+                        <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider">{t('expenses.active')}</p>
                         <p className="text-foreground font-bold text-sm mt-0.5">
                             {subscriptions.filter(s => s.isActive).length}
                         </p>
                     </div>
                     <div className="bg-white/10 rounded-2xl p-3 text-center">
-                        <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider">% Income</p>
+                        <p className="text-purple-200 text-[10px] font-bold uppercase tracking-wider">{t('expenses.pctIncome')}</p>
                         <p className={`font-bold text-sm mt-0.5 ${riskPct > 0.10 ? 'text-red-300' : 'text-green-300'}`}>
                             {monthlyIncome > 0 ? `${(riskPct * 100).toFixed(1)}%` : '—'}
                         </p>
@@ -301,10 +301,10 @@ export default function SubscriptionsTab() {
                             📱
                         </div>
                         <h3 className="font-bold text-slate-900 dark:text-foreground text-lg mb-1">
-                            No subscriptions yet
+                            {t('expenses.noSubscriptions')}
                         </h3>
                         <p className="text-muted-foreground text-sm mb-5">
-                            Start tracking to avoid unnecessary charges
+                            {t('expenses.trackCharges')}
                         </p>
                         <motion.button
                             whileTap={{ scale: 0.97 }}
@@ -312,14 +312,14 @@ export default function SubscriptionsTab() {
                             className="inline-flex items-center gap-2 bg-brand-purple text-white font-bold px-6 py-3 rounded-2xl shadow-lg shadow-brand-purple/25"
                         >
                             <Plus size={18} />
-                            Add Subscription
+                            {t('expenses.addSubscription')}
                         </motion.button>
                     </div>
 
                     {/* Quick Add Chips */}
                     <div>
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                            Quick Add Popular
+                            {t('expenses.quickAddPopular')}
                         </p>
                         <div className="flex overflow-x-auto gap-2.5 pb-2 scrollbar-hide">
                             {QUICK_ADD_SUGGESTIONS.map(s => (
@@ -459,7 +459,7 @@ export default function SubscriptionsTab() {
             <BottomSheet
                 isOpen={isFormOpen}
                 onClose={closeForm}
-                title={editingId ? 'Edit Subscription' : 'New Subscription'}
+                title={editingId ? t('expenses.editSubscription') : t('expenses.newSubscription')}
                 footer={
                     <div className="space-y-2">
                         <motion.button
@@ -467,7 +467,7 @@ export default function SubscriptionsTab() {
                             onClick={handleSave}
                             className="w-full py-4 rounded-xl bg-brand-purple text-white font-bold text-base shadow-lg shadow-brand-purple/20"
                         >
-                            {editingId ? 'Save Changes' : 'Add Subscription'}
+                            {editingId ? t('expenses.saveChanges') : t('expenses.addSubscription')}
                         </motion.button>
                         {editingId && (
                             <motion.button
@@ -476,7 +476,7 @@ export default function SubscriptionsTab() {
                                 className="w-full py-3 rounded-xl border border-red-200 dark:border-red-500/30 text-red-500 font-semibold text-sm flex items-center justify-center gap-2"
                             >
                                 <Trash2 size={15} />
-                                Delete Subscription
+                                {t('expenses.deleteSubscription')}
                             </motion.button>
                         )}
                     </div>
@@ -486,12 +486,12 @@ export default function SubscriptionsTab() {
 
                     {/* Name */}
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground">Name *</label>
+                        <label className="text-xs font-bold text-muted-foreground">{t('expenses.nameReq')}</label>
                         <input
                             type="text"
                             value={formData.name || ''}
                             onChange={e => updateField({ name: e.target.value })}
-                            placeholder="e.g. Netflix, Gym, Spotify"
+                            placeholder={t('expenses.subNameHint')}
                             autoFocus
                             className={`w-full bg-slate-50 dark:bg-card rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple border ${formErrors.name ? 'border-red-400 focus:ring-red-400' : 'border-transparent'}`}
                         />
@@ -503,7 +503,7 @@ export default function SubscriptionsTab() {
                     {/* Amount + Billing Cycle */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-muted-foreground">Amount (₹) *</label>
+                            <label className="text-xs font-bold text-muted-foreground">{t('expenses.amountReq')}</label>
                             <div className="relative">
                                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-bold text-sm">₹</span>
                                 <input
@@ -520,7 +520,7 @@ export default function SubscriptionsTab() {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-muted-foreground">Billing Cycle</label>
+                            <label className="text-xs font-bold text-muted-foreground">{t('expenses.billingCycle')}</label>
                             <select
                                 value={formData.billingCycle || 'monthly'}
                                 onChange={e => updateField({ billingCycle: e.target.value as BillingCycle })}
@@ -542,7 +542,7 @@ export default function SubscriptionsTab() {
 
                     {/* Next Due Date */}
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground">Next Due Date</label>
+                        <label className="text-xs font-bold text-muted-foreground">{t('expenses.nextDueDate')}</label>
                         <div className="relative">
                             <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                             <DateInput
@@ -555,7 +555,7 @@ export default function SubscriptionsTab() {
 
                     {/* Category */}
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground">Category</label>
+                        <label className="text-xs font-bold text-muted-foreground">{t('expenses.category')}</label>
                         <select
                             value={formData.category || 'entertainment'}
                             onChange={e => updateField({ category: e.target.value })}
@@ -592,7 +592,7 @@ export default function SubscriptionsTab() {
                                     className="w-5 h-5 bg-white rounded-full shadow"
                                 />
                             </div>
-                            <span className="text-xs font-bold text-muted-foreground">Active</span>
+                            <span className="text-xs font-bold text-muted-foreground">{t('expenses.active')}</span>
                         </label>
                     </div>
 

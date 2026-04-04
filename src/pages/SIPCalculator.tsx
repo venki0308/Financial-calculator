@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useTrackCalculator } from '../hooks/useTrackCalculator'
 import { ArrowLeft, Info, Save, Check, Download, TrendingUp, Target, ArrowUpRight, Share2 } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -45,13 +46,14 @@ ChartJS.register(
 
 type SIPTab = 'basic' | 'stepup' | 'goal';
 
-const tabConfig: { key: SIPTab; label: string; icon: React.ElementType }[] = [
-    { key: 'basic', label: 'Basic SIP', icon: TrendingUp },
-    { key: 'stepup', label: 'Step-Up SIP', icon: ArrowUpRight },
-    { key: 'goal', label: 'Goal SIP', icon: Target },
+const tabConfig: { key: SIPTab; labelKey: string; icon: React.ElementType }[] = [
+    { key: 'basic', labelKey: 'sip.basicSip', icon: TrendingUp },
+    { key: 'stepup', labelKey: 'sip.stepUpSip', icon: ArrowUpRight },
+    { key: 'goal', labelKey: 'sip.goalSip', icon: Target },
 ];
 
 export default function SIPCalculator() {
+    const { t } = useTranslation();
     useEffect(() => { AnalyticsService.trackScreen('SIP_Calculator'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
@@ -118,14 +120,14 @@ export default function SIPCalculator() {
 
     // Active result for display
     const displayValues = useMemo(() => {
-        if (activeTab === 'basic') return { primary: basicResult.futureValue, invested: basicResult.invested, returns: basicResult.wealthGained, label: 'Expected Future Value' };
-        if (activeTab === 'stepup') return { primary: stepUpResult.futureValue, invested: stepUpResult.invested, returns: stepUpResult.wealthGained, label: 'Expected Future Value' };
-        return { primary: goalResult.monthlyNeeded, invested: goalResult.totalInvested, returns: goalResult.returns, label: 'Monthly SIP Required' };
-    }, [activeTab, basicResult, stepUpResult, goalResult]);
+        if (activeTab === 'basic') return { primary: basicResult.futureValue, invested: basicResult.invested, returns: basicResult.wealthGained, label: t('sip.expectedFutureValue') };
+        if (activeTab === 'stepup') return { primary: stepUpResult.futureValue, invested: stepUpResult.invested, returns: stepUpResult.wealthGained, label: t('sip.expectedFutureValue') };
+        return { primary: goalResult.monthlyNeeded, invested: goalResult.totalInvested, returns: goalResult.returns, label: t('sip.monthlySipRequired') };
+    }, [activeTab, basicResult, stepUpResult, goalResult, t]);
 
     // Chart data
     const chartData = {
-        labels: activeTab === 'goal' ? ['Total Investment', 'Est. Returns'] : ['Invested Amount', 'Est. Returns'],
+        labels: activeTab === 'goal' ? [t('sip.totalInvestment'), t('sip.estReturns')] : [t('sip.investedAmount'), t('sip.estReturns')],
         datasets: [{
             data: [displayValues.invested, displayValues.returns],
             backgroundColor: ['#4F46E5', '#10B981'],
@@ -155,10 +157,10 @@ export default function SIPCalculator() {
     }, [activeTab, monthly, rate, years, stepUpResult]);
 
     const barChartData = growthData ? {
-        labels: growthData.map(d => `Yr ${d.year}`),
+        labels: growthData.map(d => `${t('sip.yr')} ${d.year}`),
         datasets: [
-            { label: 'Invested', data: growthData.map(d => d.invested), backgroundColor: '#3B82F6' },
-            { label: 'Returns', data: growthData.map(d => d.returns), backgroundColor: '#10B981' },
+            { label: t('sip.invested'), data: growthData.map(d => d.invested), backgroundColor: '#3B82F6' },
+            { label: t('sip.returns'), data: growthData.map(d => d.returns), backgroundColor: '#10B981' },
         ]
     } : null;
 
@@ -292,8 +294,8 @@ export default function SIPCalculator() {
                             <ArrowLeft size={18} className="text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-foreground">SIP Calculator</h1>
-                            <p className="text-muted-foreground text-xs">Mutual Fund wealth planner</p>
+                            <h1 className="text-lg font-bold text-foreground">{t('sip.sipCalculator')}</h1>
+                            <p className="text-muted-foreground text-xs">{t('sip.mutualFundWealthPlanner')}</p>
                         </div>
                     </div>
                     <button onClick={() => setShowInfo(true)} className="p-2 rounded-xl bg-card border border-border">
@@ -316,7 +318,7 @@ export default function SIPCalculator() {
                                 }`}
                         >
                             <tab.icon size={13} />
-                            {tab.label}
+                            {t(tab.labelKey)}
                         </button>
                     ))}
                 </div>
@@ -325,24 +327,24 @@ export default function SIPCalculator() {
                 <div className="space-y-4 mb-6">
                     {activeTab === 'basic' && (
                         <>
-                            <NumberInput label="Monthly Investment" value={monthly} onChange={setMonthly} min={500} max={1000000} prefix="₹" />
-                            <NumberInput label="Expected Return (p.a.)" value={rate} onChange={setRate} min={1} max={30} suffix="%" step={0.5} />
-                            <NumberInput label="Time Period (years)" value={years} onChange={setYears} min={1} max={40} suffix=" years" />
+                            <NumberInput label={t('sip.monthlyInvestment')} value={monthly} onChange={setMonthly} min={500} max={1000000} prefix="₹" />
+                            <NumberInput label={t('sip.expectedReturn')} value={rate} onChange={setRate} min={1} max={30} suffix="%" step={0.5} />
+                            <NumberInput label={t('sip.timePeriod')} value={years} onChange={setYears} min={1} max={40} suffix=" years" />
                         </>
                     )}
                     {activeTab === 'stepup' && (
                         <>
-                            <NumberInput label="Initial Monthly SIP" value={suInitial} onChange={setSuInitial} min={500} max={1000000} prefix="₹" />
-                            <NumberInput label="Annual Step-up (%)" value={suStepUp} onChange={setSuStepUp} min={1} max={100} suffix="%" step={1} />
-                            <NumberInput label="Expected Return (p.a.)" value={suRate} onChange={setSuRate} min={1} max={30} suffix="%" step={0.5} />
-                            <NumberInput label="Time Period (years)" value={suYears} onChange={setSuYears} min={1} max={40} suffix=" years" />
+                            <NumberInput label={t('sip.initialMonthlySip')} value={suInitial} onChange={setSuInitial} min={500} max={1000000} prefix="₹" />
+                            <NumberInput label={t('sip.annualStepUp')} value={suStepUp} onChange={setSuStepUp} min={1} max={100} suffix="%" step={1} />
+                            <NumberInput label={t('sip.expectedReturn')} value={suRate} onChange={setSuRate} min={1} max={30} suffix="%" step={0.5} />
+                            <NumberInput label={t('sip.timePeriod')} value={suYears} onChange={setSuYears} min={1} max={40} suffix=" years" />
                         </>
                     )}
                     {activeTab === 'goal' && (
                         <>
-                            <NumberInput label="Target Amount" value={goalTarget} onChange={setGoalTarget} min={10000} max={1000000000} prefix="₹" />
-                            <NumberInput label="In how many years?" value={goalYears} onChange={setGoalYears} min={1} max={40} suffix=" years" />
-                            <NumberInput label="Expected Return (p.a.)" value={goalRate} onChange={setGoalRate} min={1} max={30} suffix="%" step={0.5} />
+                            <NumberInput label={t('sip.targetAmount')} value={goalTarget} onChange={setGoalTarget} min={10000} max={1000000000} prefix="₹" />
+                            <NumberInput label={t('sip.inHowManyYears')} value={goalYears} onChange={setGoalYears} min={1} max={40} suffix=" years" />
+                            <NumberInput label={t('sip.expectedReturn')} value={goalRate} onChange={setGoalRate} min={1} max={30} suffix="%" step={0.5} />
                         </>
                     )}
                 </div>
@@ -371,11 +373,11 @@ export default function SIPCalculator() {
 
                     <div className="grid grid-cols-2 gap-3 mb-6">
                         <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 text-center">
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Invested</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">{t('sip.invested')}</p>
                             <p className="text-foreground font-bold text-sm">{formatINR(displayValues.invested)}</p>
                         </div>
                         <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 text-center">
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Returns</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">{t('sip.returns')}</p>
                             <p className="text-brand-green font-bold text-sm">{formatINR(displayValues.returns)}</p>
                         </div>
                     </div>
@@ -383,7 +385,7 @@ export default function SIPCalculator() {
                     {/* Goal SIP: extra row */}
                     {activeTab === 'goal' && (
                         <div className="p-3 rounded-xl bg-brand-green/5 border border-brand-green/20 text-center mb-4">
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">Target Amount</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">{t('sip.targetAmount')}</p>
                             <p className="text-brand-green font-bold text-sm">{formatINR(goalTarget)}</p>
                         </div>
                     )}
@@ -397,14 +399,14 @@ export default function SIPCalculator() {
                             : 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20'
                             }`}
                     >
-                        {isSaved || isAlreadySaved ? <><Check size={18} /> Saved</> : <><Save size={18} /> Save Investment</>}
+                        {isSaved || isAlreadySaved ? <><Check size={18} /> {t('sip.saved')}</> : <><Save size={18} /> {t('sip.saveInvestment')}</>}
                     </motion.button>
                 </motion.div>
 
                 {/* Growth Chart (Basic & Step-Up only) */}
                 {barChartData && (
                     <div className="bg-card border border-border rounded-2xl p-4 mb-6">
-                        <h3 className="text-foreground font-bold text-sm mb-4">Year-wise Growth</h3>
+                        <h3 className="text-foreground font-bold text-sm mb-4">{t('sip.yearWiseGrowth')}</h3>
                         <div className="h-56">
                             <Bar
                                 data={barChartData}
@@ -420,8 +422,8 @@ export default function SIPCalculator() {
                             />
                         </div>
                         <div className="flex gap-4 mt-3 justify-center">
-                            <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><span className="w-2.5 h-2.5 bg-[#3B82F6] rounded-full" /> Invested</span>
-                            <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><span className="w-2.5 h-2.5 bg-brand-green rounded-full" /> Returns</span>
+                            <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><span className="w-2.5 h-2.5 bg-[#3B82F6] rounded-full" /> {t('sip.invested')}</span>
+                            <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><span className="w-2.5 h-2.5 bg-brand-green rounded-full" /> {t('sip.returns')}</span>
                         </div>
                     </div>
                 )}
@@ -437,8 +439,8 @@ export default function SIPCalculator() {
                 {activeTab === 'basic' && (
                     <WhatIfSimulator
                         sliders={[
-                            { key: 'monthly', label: 'Monthly SIP', min: 500, max: 100000, step: 500, prefix: '₹' },
-                            { key: 'rate', label: 'Expected Return', min: 4, max: 20, step: 0.5, suffix: '%' },
+                            { key: 'monthly', label: t('sip.monthlySip'), min: 500, max: 100000, step: 500, prefix: '₹' },
+                            { key: 'rate', label: t('sip.expectedReturn'), min: 4, max: 20, step: 0.5, suffix: '%' },
                         ]}
                         currentInputs={{ monthly, rate, years }}
                         calculateResult={(inputs) => {
@@ -446,22 +448,22 @@ export default function SIPCalculator() {
                             const n = inputs.years * 12;
                             return r === 0 ? inputs.monthly * n : Math.round(inputs.monthly * (((Math.pow(1 + r, n) - 1) / r) * (1 + r)));
                         }}
-                        resultLabel="Future Value"
+                        resultLabel={t('sip.futureValue')}
                     />
                 )}
 
                 <div className="grid grid-cols-3 gap-3 mb-5 mt-4">
                     <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium">
-                        <Download size={16} /> PDF
+                        <Download size={16} /> {t('sip.pdf')}
                     </button>
                     <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium">
-                        <Download size={16} /> Excel
+                        <Download size={16} /> {t('sip.excel')}
                     </button>
                     <button onClick={async () => {
                         const text = `📈 My SIP Investment Plan\n\n💰 Monthly: ${formatINR(displayValues.invested / (activeTab === 'basic' ? years * 12 : activeTab === 'stepup' ? suYears * 12 : goalYears * 12))}\n📅 Duration: ${activeTab === 'basic' ? years : activeTab === 'stepup' ? suYears : goalYears} years\n\n✅ Future Value: ${formatINR(displayValues.primary)}\n💵 Invested: ${formatINR(displayValues.invested)}\n📊 Returns: ${formatINR(displayValues.returns)}\n\nCalculated with FinCalix 🧮`;
                         await nativeShare('SIP Plan – FinCalix', text);
                     }} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-[10px] font-bold">
-                        <Share2 size={16} /> Share
+                        <Share2 size={16} /> {t('sip.share')}
                     </button>
                 </div>
 
@@ -471,9 +473,9 @@ export default function SIPCalculator() {
                         <div className="flex items-start gap-3">
                             <TrendingUp size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
                             <div>
-                                <h3 className="text-foreground font-bold text-xs">Inflation-Adjusted Value</h3>
-                                <p className="text-muted-foreground text-[11px] mt-1">Assuming ~6% inflation, your {formatINR(displayValues.primary)} will be worth approximately:</p>
-                                <p className="text-amber-400 font-bold text-sm mt-1">{formatINR(Math.round(displayValues.primary / Math.pow(1.06, activeTab === 'basic' ? years : suYears)))} in today's money</p>
+                                <h3 className="text-foreground font-bold text-xs">{t('sip.inflationAdjustedValue')}</h3>
+                                <p className="text-muted-foreground text-[11px] mt-1">{t('sip.assumingInflation', { amount: formatINR(displayValues.primary) })}</p>
+                                <p className="text-amber-400 font-bold text-sm mt-1">{formatINR(Math.round(displayValues.primary / Math.pow(1.06, activeTab === 'basic' ? years : suYears)))} {t('sip.inTodaysMoney')}</p>
                             </div>
                         </div>
                     </div>
@@ -481,14 +483,14 @@ export default function SIPCalculator() {
 
                 {/* Shareable Card */}
                 <ShareableCard
-                    title={activeTab === 'goal' ? 'My SIP Goal Plan' : 'My SIP Investment'}
+                    title={activeTab === 'goal' ? t('sip.mySipGoalPlan') : t('sip.mySipInvestment')}
                     highlight={formatINR(displayValues.primary)}
-                    subtitle={`${activeTab === 'basic' ? years : activeTab === 'stepup' ? suYears : goalYears} year SIP plan`}
+                    subtitle={`${activeTab === 'basic' ? years : activeTab === 'stepup' ? suYears : goalYears} ${t('sip.yearSipPlan')}`}
                     details={[
-                        { label: 'Total Invested', value: formatINR(displayValues.invested) },
-                        { label: 'Returns', value: formatINR(displayValues.returns) },
-                        { label: 'Type', value: activeTab === 'basic' ? 'Basic SIP' : activeTab === 'stepup' ? 'Step-Up SIP' : 'Goal SIP' },
-                        { label: 'Multiplier', value: `${(displayValues.primary / displayValues.invested).toFixed(2)}x` },
+                        { label: t('sip.totalInvested'), value: formatINR(displayValues.invested) },
+                        { label: t('sip.returns'), value: formatINR(displayValues.returns) },
+                        { label: t('sip.type'), value: activeTab === 'basic' ? t('sip.basicSip') : activeTab === 'stepup' ? t('sip.stepUpSip') : t('sip.goalSip') },
+                        { label: t('sip.multiplier'), value: `${(displayValues.primary / displayValues.invested).toFixed(2)}x` },
                     ]}
                     gradient="from-blue-600 via-indigo-500 to-purple-600"
                 />
@@ -496,7 +498,7 @@ export default function SIPCalculator() {
                 <CalculatorInfoModal
                     isOpen={showInfo}
                     onClose={() => setShowInfo(false)}
-                    calculatorTitle="SIP Calculator"
+                    calculatorTitle={t('sip.sipCalculator')}
                 />
             </div>
             

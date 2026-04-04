@@ -9,12 +9,12 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const FIXED_FIELDS: { key: 'rent' | 'utilities' | 'mobile' | 'insurance' | 'emi'; label: string; icon: string }[] = [
-    { key: 'rent', label: 'Rent / EMI', icon: '🏠' },
-    { key: 'utilities', label: 'Electricity & Gas', icon: '💡' },
-    { key: 'mobile', label: 'Mobile & Internet', icon: '📱' },
-    { key: 'insurance', label: 'Insurance', icon: '🛡️' },
-    { key: 'emi', label: 'Loan EMI', icon: '🏦' },
+const FIXED_FIELDS: { key: 'rent' | 'utilities' | 'mobile' | 'insurance' | 'emi'; labelKey: string; icon: string }[] = [
+    { key: 'rent', labelKey: 'expenses.rentEmi', icon: '🏠' },
+    { key: 'utilities', labelKey: 'expenses.electricityGas', icon: '💡' },
+    { key: 'mobile', labelKey: 'expenses.mobileInternet', icon: '📱' },
+    { key: 'insurance', labelKey: 'expenses.insurance', icon: '🛡️' },
+    { key: 'emi', labelKey: 'expenses.loanEmi', icon: '🏦' },
 ];
 
 export default function BudgetTab() {
@@ -132,14 +132,14 @@ export default function BudgetTab() {
                                             type="text"
                                             value={newFixedLabel}
                                             onChange={(e) => setNewFixedLabel(e.target.value)}
-                                            placeholder="Label (e.g. Gym)"
+                                            placeholder={t('expenses.customLabel')}
                                             className="w-full px-3 py-2 bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none text-slate-900 dark:text-foreground"
                                         />
                                         <input
                                             type="number"
                                             value={newFixedAmount}
                                             onChange={(e) => setNewFixedAmount(e.target.value)}
-                                            placeholder="Amount (₹)"
+                                            placeholder={t('expenses.amount')}
                                             className="w-full px-3 py-2 bg-slate-50 dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-lg text-sm outline-none text-slate-900 dark:text-foreground"
                                         />
                                         <div className="flex gap-2">
@@ -171,8 +171,8 @@ export default function BudgetTab() {
                     className="w-full flex items-center justify-between p-4"
                 >
                     <div>
-                        <p className="font-bold text-slate-900 dark:text-foreground text-sm text-left">📈 Monthly Investment Targets</p>
-                        <p className="text-muted-foreground text-xs mt-0.5 text-left">How much you plan to invest each month</p>
+                        <p className="font-bold text-slate-900 dark:text-foreground text-sm text-left">📈 {t('expenses.monthlyInvestTargets')}</p>
+                        <p className="text-muted-foreground text-xs mt-0.5 text-left">{t('expenses.investTargetsDesc')}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-blue-500 font-bold text-sm">₹{totalInvestments.toLocaleString('en-IN')}</span>
@@ -300,7 +300,7 @@ export default function BudgetTab() {
                     <div className="w-24 h-24 flex-shrink-0 relative">
                         <Doughnut 
                             data={{
-                                labels: [t('expenses.fixedExpenses'), 'Investments', t('expenses.categoryBudgetLimits'), t('expenses.estSavings')],
+                                labels: [t('expenses.fixedExpenses'), t('expenses.investments'), t('expenses.categoryBudgetLimits'), t('expenses.estSavings')],
                                 datasets: [{
                                     data: [totalFixed, totalInvestments, totalCategoryBudgets, Math.max(availableForSavings, 0)],
                                     backgroundColor: ['#f87171', '#3b82f6', '#fb923c', '#4ade80'],
@@ -314,14 +314,14 @@ export default function BudgetTab() {
                             }}
                         />
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                            <span className="text-[10px] text-muted-foreground uppercase font-bold">Total</span>
+                            <span className="text-[10px] text-muted-foreground uppercase font-bold">{t('expenses.total')}</span>
                             <span className="text-xs font-bold text-slate-800 dark:text-foreground">₹{monthlyIncome.toLocaleString('en-IN')}</span>
                         </div>
                     </div>
                     <div className="flex flex-col gap-2 flex-1 pt-1 border-brand-purple/20">
                         {[
                             { label: t('expenses.fixedExpenses'), value: totalFixed, color: 'text-red-400', bg: 'bg-red-400', sign: '-' },
-                            { label: 'Investments', value: totalInvestments, color: 'text-blue-400', bg: 'bg-blue-400', sign: '-' },
+                            { label: t('expenses.investments'), value: totalInvestments, color: 'text-blue-400', bg: 'bg-blue-400', sign: '-' },
                             { label: t('expenses.categoryBudgetLimits'), value: totalCategoryBudgets, color: 'text-orange-400', bg: 'bg-orange-400', sign: '-' },
                             { label: t('expenses.estSavings'), value: availableForSavings, color: availableForSavings < 0 ? 'text-red-400' : 'text-green-500', bg: availableForSavings < 0 ? 'bg-red-400' : 'bg-green-500', sign: availableForSavings < 0 ? '' : '+' },
                         ].map((row) => (

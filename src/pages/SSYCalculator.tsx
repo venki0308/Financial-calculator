@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Heart, Info, Download, Share2, ChevronDown, ChevronUp, BookOpen, AlertCircle, GraduationCap, Shield, Calendar, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,6 +25,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 interface YearWise { year: number; age: number; deposit: number; interest: number; balance: number; cumDeposit: number; cumInterest: number; }
 
 export default function SSYCalculator() {
+    const { t } = useTranslation();
     useEffect(() => { AnalyticsService.trackScreen('SSY_Calculator_Advanced'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
@@ -72,7 +74,7 @@ export default function SSYCalculator() {
         const invested = annual * investYears;
         const totalInterest = Math.round(balance - invested);
         const maturityAge = childAge + maturityYears;
-        const withdrawalAt18 = childAge < 18 ? timeline.find(t => t.age >= 18) : null;
+        const withdrawalAt18 = childAge < 18 ? timeline.find(row => row.age >= 18) : null;
         const withdrawalAmount = withdrawalAt18 ? Math.round(withdrawalAt18.balance * 0.5) : 0;
 
         return {
@@ -88,30 +90,30 @@ export default function SSYCalculator() {
 
     // Pie chart
     const pieData = useMemo(() => ({
-        labels: ['Total Invested', 'Interest Earned'],
+        labels: [t('ssy.totalInvested'), t('ssy.interestEarned')],
         datasets: [{
             data: [result.invested, result.totalInterest],
             backgroundColor: ['#3B82F6', '#10B981'],
             borderColor: [c.card, c.card],
             borderWidth: 2,
         }]
-    }), [result, c.card]);
+    }), [result, c.card, t]);
 
     // Year-wise bar chart
     const barData = useMemo(() => ({
-        labels: result.timeline.map(t => `Yr ${t.year}`),
+        labels: result.timeline.map(row => `${t('ssy.yr')} ${row.year}`),
         datasets: [
-            { label: 'Deposit', data: result.timeline.map(t => t.cumDeposit), backgroundColor: '#3B82F6' },
-            { label: 'Interest', data: result.timeline.map(t => t.cumInterest), backgroundColor: '#10B981' },
+            { label: t('ssy.deposit'), data: result.timeline.map(row => row.cumDeposit), backgroundColor: '#3B82F6' },
+            { label: t('ssy.interest'), data: result.timeline.map(row => row.cumInterest), backgroundColor: '#10B981' },
         ]
-    }), [result.timeline]);
+    }), [result.timeline, t]);
 
     const handleSave = () => {
         addSaved({
             id: `ssy-${Date.now()}`,
             calculatorType: 'ssy',
             inputValues: { annual, rate, childAge },
-            resultValues: { primary: result.maturity, label: 'Maturity Amount', invested: result.invested, returns: result.totalInterest },
+            resultValues: { primary: result.maturity, label: t('ssy.maturityAmount'), invested: result.invested, returns: result.totalInterest },
             timestamp: Date.now(),
         });
         setSaved(true);
@@ -122,36 +124,36 @@ export default function SSYCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: 'Sukanya Samriddhi Yojana (SSY) Report',
+            title: t('ssy.reportTitle'),
             inputs: [
-                { label: 'Annual Deposit', value: `₹${Math.round(annual).toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
-                { label: 'Child Age', value: `${childAge} Years` },
-                { label: 'Deposit Period', value: `${investYears} Years (mandatory)` },
-                { label: 'Maturity Age', value: `${result.maturityAge} Years` },
+                { label: t('ssy.annualDeposit'), value: `₹${Math.round(annual).toLocaleString('en-IN')}` },
+                { label: t('ssy.interestRateLabel'), value: `${rate}% p.a.` },
+                { label: t('ssy.childAge'), value: `${childAge} ${t('ssy.years')}` },
+                { label: t('ssy.depositPeriod'), value: `${investYears} ${t('ssy.yearsMandatory')}` },
+                { label: t('ssy.maturityAge'), value: `${result.maturityAge} ${t('ssy.years')}` },
             ],
             results: [
-                { label: 'Total Amount Invested', value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
-                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: t('ssy.totalAmountInvested'), value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
+                { label: t('ssy.totalInterestEarned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('ssy.maturityAmount'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Total Invested', value: result.invested, color: '#4F46E5' },
-                    { label: 'Interest Earned', value: result.totalInterest, color: '#10B981' },
+                    { label: t('ssy.totalInvested'), value: result.invested, color: '#4F46E5' },
+                    { label: t('ssy.interestEarned'), value: result.totalInterest, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'SSY Yearly Growth (21 Years)',
-            projectionColumns: ['Year', 'Age', 'Annual Deposit', 'Interest', 'Balance', 'Cum. Deposit', 'Deposit Eligible'],
-            projectionRows: result.timeline.map((t: any) => [
-                `Year ${t.year}`,
-                t.age,
-                t.deposit > 0 ? `₹${Math.round(t.deposit).toLocaleString('en-IN')}` : '-',
-                `₹${Math.round(t.interest).toLocaleString('en-IN')}`,
-                `₹${Math.round(t.balance).toLocaleString('en-IN')}`,
-                `₹${Math.round(t.cumDeposit).toLocaleString('en-IN')}`,
-                t.deposit > 0 ? 'Yes' : 'No',
+            projectionTitle: t('ssy.yearlyGrowthTitle'),
+            projectionColumns: [t('ssy.year'), t('ssy.age'), t('ssy.annualDeposit'), t('ssy.interest'), t('ssy.balance'), t('ssy.cumDeposit'), t('ssy.depositEligible')],
+            projectionRows: result.timeline.map((row: any) => [
+                `${row.year}`,
+                row.age,
+                row.deposit > 0 ? `₹${Math.round(row.deposit).toLocaleString('en-IN')}` : '-',
+                `₹${Math.round(row.interest).toLocaleString('en-IN')}`,
+                `₹${Math.round(row.balance).toLocaleString('en-IN')}`,
+                `₹${Math.round(row.cumDeposit).toLocaleString('en-IN')}`,
+                row.deposit > 0 ? t('ssy.yes') : t('ssy.no'),
             ]),
             filename: `FinCalix_SSY_Report_${tag}`,
         });
@@ -161,27 +163,27 @@ export default function SSYCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: 'Sukanya Samriddhi Yojana (SSY) Report',
+            title: t('ssy.reportTitle'),
             inputs: [
-                { label: 'Annual Deposit', value: `₹${Math.round(annual).toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}%` },
-                { label: 'Child Age', value: String(childAge) },
+                { label: t('ssy.annualDeposit'), value: `₹${Math.round(annual).toLocaleString('en-IN')}` },
+                { label: t('ssy.interestRateLabel'), value: `${rate}%` },
+                { label: t('ssy.childAge'), value: String(childAge) },
             ],
             results: [
-                { label: 'Total Invested', value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
-                { label: 'Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: t('ssy.totalInvested'), value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
+                { label: t('ssy.interestEarned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('ssy.maturityAmount'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'SSY Yearly Growth',
-            projectionColumns: ['Year', 'Age', 'Deposit', 'Interest', 'Balance', 'Cumulative Deposit', 'Cumulative Interest'],
-            projectionRows: result.timeline.map((t: any) => [t.year, t.age, Math.round(t.deposit), Math.round(t.interest), Math.round(t.balance), Math.round(t.cumDeposit), Math.round(t.cumInterest)]),
+            projectionTitle: t('ssy.yearlyGrowth'),
+            projectionColumns: [t('ssy.year'), t('ssy.age'), t('ssy.deposit'), t('ssy.interest'), t('ssy.balance'), t('ssy.cumulativeDeposit'), t('ssy.cumulativeInterest')],
+            projectionRows: result.timeline.map((row: any) => [row.year, row.age, Math.round(row.deposit), Math.round(row.interest), Math.round(row.balance), Math.round(row.cumDeposit), Math.round(row.cumInterest)]),
             filename: `FinCalix_SSY_Report_${tag}`,
         });
     };
 
     const handleShare = async () => {
-        const text = `🌸 My Sukanya Samriddhi Investment\n\n💰 Annual Deposit: ${formatINR(annual)}\n📈 Interest Rate: ${rate}%\n🎂 Child Age: ${childAge} years\n\n✅ Maturity Amount: ${formatINR(result.maturity)}\n📅 Maturity Age: ${result.maturityAge} years\n💰 Total Invested: ${formatINR(result.invested)}\n📊 Interest Earned: ${formatINR(result.totalInterest)}\n\nCalculated with FinCalix 🧮`;
-        await nativeShare('SSY Calculation – FinCalix', text);
+        const text = `🌸 ${t('ssy.shareTitle')}\n\n💰 ${t('ssy.annualDeposit')}: ${formatINR(annual)}\n📈 ${t('ssy.interestRateLabel')}: ${rate}%\n🎂 ${t('ssy.childAge')}: ${childAge} ${t('ssy.years')}\n\n✅ ${t('ssy.maturityAmount')}: ${formatINR(result.maturity)}\n📅 ${t('ssy.maturityAge')}: ${result.maturityAge} ${t('ssy.years')}\n💰 ${t('ssy.totalInvested')}: ${formatINR(result.invested)}\n📊 ${t('ssy.interestEarned')}: ${formatINR(result.totalInterest)}\n\nCalculated with FinCalix 🧮`;
+        await nativeShare(t('ssy.shareNativeTitle'), text);
     };
 
     return (
@@ -193,8 +195,8 @@ export default function SSYCalculator() {
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div className="flex-1">
-                        <h1 className="text-lg font-bold text-foreground">Sukanya Samriddhi Yojana</h1>
-                        <p className="text-muted-foreground text-xs">Girl Child Savings Scheme</p>
+                        <h1 className="text-lg font-bold text-foreground">{t('ssy.title')}</h1>
+                        <p className="text-muted-foreground text-xs">{t('ssy.subtitle')}</p>
                     </div>
                     <Heart size={20} className="text-pink-400" />
                 </div>
@@ -206,48 +208,48 @@ export default function SSYCalculator() {
                     <div className="flex rounded-lg overflow-hidden border border-border mb-2">
                         <button onClick={() => setDepositMode('yearly')}
                             className={`flex-1 py-2 text-xs font-medium transition-colors ${depositMode === 'yearly' ? 'bg-brand-green text-black' : 'text-muted-foreground'}`}>
-                            Yearly
+                            {t('ssy.yearly')}
                         </button>
                         <button onClick={() => setDepositMode('monthly')}
                             className={`flex-1 py-2 text-xs font-medium transition-colors border-l border-border ${depositMode === 'monthly' ? 'bg-brand-green text-black' : 'text-muted-foreground'}`}>
-                            Monthly
+                            {t('ssy.monthlyToggle')}
                         </button>
                     </div>
                     {depositMode === 'yearly' ? (
-                        <NumberInput label="Annual Deposit" value={annual} onChange={setAnnual} min={250} max={150000} prefix="₹" helperText="Min ₹250, Max ₹1,50,000/year" />
+                        <NumberInput label={t('ssy.annualDeposit')} value={annual} onChange={setAnnual} min={250} max={150000} prefix="₹" helperText={t('ssy.annualDepositHelper')} />
                     ) : (
-                        <NumberInput label="Monthly Deposit" value={monthly} onChange={setMonthly} min={21} max={12500} prefix="₹" helperText={`₹${monthly.toLocaleString('en-IN')}/mo = ₹${(monthly * 12).toLocaleString('en-IN')}/year`} />
+                        <NumberInput label={t('ssy.monthlyDeposit')} value={monthly} onChange={setMonthly} min={21} max={12500} prefix="₹" helperText={`₹${monthly.toLocaleString('en-IN')}/${t('ssy.mo')} = ₹${(monthly * 12).toLocaleString('en-IN')}/${t('ssy.year')}`} />
                     )}
-                    <NumberInput label="Interest Rate (p.a.)" value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText="Current rate: 8.2%" />
-                    <NumberInput label="Girl Child Age" value={childAge} onChange={setChildAge} min={0} max={10} suffix=" years" helperText="Account can be opened until age 10" />
+                    <NumberInput label={t('ssy.interestRate')} value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText={t('ssy.currentRate')} />
+                    <NumberInput label={t('ssy.girlChildAge')} value={childAge} onChange={setChildAge} min={0} max={10} suffix={` ${t('ssy.years')}`} helperText={t('ssy.ageHelper')} />
                 </div>
 
                 {/* Result Card */}
                 <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-pink-600/20 to-rose-600/20 border border-pink-500/20">
-                    <p className="text-pink-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">Maturity Amount</p>
+                    <p className="text-pink-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">{t('ssy.maturityAmount')}</p>
                     <p className="text-3xl font-black text-foreground mb-4">{formatINR(result.maturity)}</p>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Total Invested</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.totalInvested')}</p>
                             <p className="text-foreground font-bold text-sm">{formatINR(result.invested)}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Interest Earned</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.interestEarned')}</p>
                             <p className="text-brand-green font-bold text-sm">{formatINR(result.totalInterest)}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Maturity Age</p>
-                            <p className="text-blue-400 font-bold text-sm">{result.maturityAge} years</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.maturityAge')}</p>
+                            <p className="text-blue-400 font-bold text-sm">{result.maturityAge} {t('ssy.years')}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">Returns Multiplier</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.returnsMultiplier')}</p>
                             <p className="text-amber-400 font-bold text-sm">{(result.maturity / result.invested).toFixed(2)}x</p>
                         </div>
                     </div>
 
                     <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
-                        <Save size={16} /> {saved ? '✅ Saved!' : 'Save Calculation'}
+                        <Save size={16} /> {saved ? t('ssy.saved') : t('ssy.saveCalculation')}
                     </motion.button>
                 </motion.div>
 
@@ -257,9 +259,9 @@ export default function SSYCalculator() {
                         <div className="flex items-start gap-3">
                             <GraduationCap size={20} className="text-blue-400 flex-shrink-0 mt-0.5" />
                             <div>
-                                <h3 className="text-foreground font-bold text-sm">Education Withdrawal at 18</h3>
-                                <p className="text-muted-foreground text-xs mt-1">After your child turns 18, you can withdraw up to <span className="text-blue-400 font-bold">50%</span> of the balance for higher education.</p>
-                                <p className="text-blue-400 text-xs font-bold mt-1">Eligible amount: {formatINR(result.withdrawalAmount)}</p>
+                                <h3 className="text-foreground font-bold text-sm">{t('ssy.educationWithdrawalTitle')}</h3>
+                                <p className="text-muted-foreground text-xs mt-1">{t('ssy.educationWithdrawalDesc')} <span className="text-blue-400 font-bold">50%</span> {t('ssy.educationWithdrawalDesc2')}</p>
+                                <p className="text-blue-400 text-xs font-bold mt-1">{t('ssy.eligibleAmount')}: {formatINR(result.withdrawalAmount)}</p>
                             </div>
                         </div>
                     </motion.div>
@@ -270,15 +272,15 @@ export default function SSYCalculator() {
                     <div className="flex items-start gap-3">
                         <AlertCircle size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
                         <div>
-                            <h3 className="text-foreground font-bold text-xs">Maximum Annual Deposit: ₹1,50,000</h3>
-                            <p className="text-muted-foreground text-[11px] mt-1">Minimum ₹250/year required to keep account active. Tax deduction under Sec 80C / Sec 123 (ITA 2025) available.</p>
+                            <h3 className="text-foreground font-bold text-xs">{t('ssy.maxAnnualDeposit')}</h3>
+                            <p className="text-muted-foreground text-[11px] mt-1">{t('ssy.minDepositNote')}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Pie Chart */}
                 <div className="p-4 rounded-2xl bg-card border border-border">
-                    <h3 className="text-foreground font-bold text-sm mb-3">Investment vs Interest</h3>
+                    <h3 className="text-foreground font-bold text-sm mb-3">{t('ssy.investmentVsInterest')}</h3>
                     <div className="w-48 h-48 mx-auto">
                         <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: c.textSecondary, font: { size: 11 } } } } }} />
                     </div>
@@ -286,7 +288,7 @@ export default function SSYCalculator() {
 
                 {/* Year-wise Growth Chart */}
                 <div className="p-4 rounded-2xl bg-card border border-border">
-                    <h3 className="text-foreground font-bold text-sm mb-3">Year-wise Growth</h3>
+                    <h3 className="text-foreground font-bold text-sm mb-3">{t('ssy.yearWiseGrowth')}</h3>
                     <div className="h-56">
                         <Bar
                             ref={chartRef}
@@ -309,7 +311,7 @@ export default function SSYCalculator() {
 
                 {/* Year-wise Timeline Toggle */}
                 <button onClick={() => setShowTimeline(!showTimeline)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
-                    <span className="flex items-center gap-2"><Calendar size={16} className="text-muted-foreground" /> Year-wise Timeline</span>
+                    <span className="flex items-center gap-2"><Calendar size={16} className="text-muted-foreground" /> {t('ssy.yearWiseTimeline')}</span>
                     {showTimeline ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
 
@@ -318,15 +320,15 @@ export default function SSYCalculator() {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="rounded-2xl bg-card border border-border overflow-hidden">
                                 <div className="grid grid-cols-5 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-100 dark:bg-slate-800/50">
-                                    <span>Year</span><span>Age</span><span>Deposit</span><span>Interest</span><span>Balance</span>
+                                    <span>{t('ssy.year')}</span><span>{t('ssy.age')}</span><span>{t('ssy.deposit')}</span><span>{t('ssy.interest')}</span><span>{t('ssy.balance')}</span>
                                 </div>
-                                {result.timeline.map((t, i) => (
-                                    <div key={i} className={`grid grid-cols-5 text-[10px] p-2 ${i % 2 === 0 ? 'bg-card' : 'bg-slate-50 dark:bg-slate-800/20'} ${t.deposit === 0 ? 'text-muted-foreground' : 'text-slate-600 dark:text-slate-300'}`}>
-                                        <span>{t.year}</span>
-                                        <span>{t.age}</span>
-                                        <span>{t.deposit > 0 ? formatINR(t.deposit) : '—'}</span>
-                                        <span className="text-brand-green">{formatINR(t.interest)}</span>
-                                        <span className="font-bold text-foreground">{formatINR(t.balance)}</span>
+                                {result.timeline.map((row, i) => (
+                                    <div key={i} className={`grid grid-cols-5 text-[10px] p-2 ${i % 2 === 0 ? 'bg-card' : 'bg-slate-50 dark:bg-slate-800/20'} ${row.deposit === 0 ? 'text-muted-foreground' : 'text-slate-600 dark:text-slate-300'}`}>
+                                        <span>{row.year}</span>
+                                        <span>{row.age}</span>
+                                        <span>{row.deposit > 0 ? formatINR(row.deposit) : '—'}</span>
+                                        <span className="text-brand-green">{formatINR(row.interest)}</span>
+                                        <span className="font-bold text-foreground">{formatINR(row.balance)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -336,7 +338,7 @@ export default function SSYCalculator() {
 
                 {/* Scheme Rules Toggle */}
                 <button onClick={() => setShowRules(!showRules)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
-                    <span className="flex items-center gap-2"><BookOpen size={16} className="text-muted-foreground" /> SSY Scheme Rules</span>
+                    <span className="flex items-center gap-2"><BookOpen size={16} className="text-muted-foreground" /> {t('ssy.schemeRules')}</span>
                     {showRules ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
 
@@ -345,12 +347,12 @@ export default function SSYCalculator() {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
                                 {[
-                                    { icon: Shield, title: 'Eligibility', desc: 'Girl child below 10 years. Max 2 accounts per family.' },
-                                    { icon: Calendar, title: 'Tenure', desc: 'Deposit for 15 years. Account matures 21 years from opening.' },
-                                    { icon: AlertCircle, title: 'Deposit Limits', desc: 'Minimum ₹250/year, Maximum ₹1,50,000/year.' },
-                                    { icon: GraduationCap, title: 'Partial Withdrawal', desc: '50% withdrawal after child turns 18, for higher education only.' },
-                                    { icon: Heart, title: 'Tax Benefits', desc: 'Deposits qualify for Sec 80C / Sec 123 (ITA 2025) deduction. Interest and maturity are tax-free (EEE status).' },
-                                    { icon: Info, title: 'Premature Closure', desc: 'Allowed after 5 years in case of medical emergency or death of account holder.' },
+                                    { icon: Shield, title: t('ssy.ruleEligibilityTitle'), desc: t('ssy.ruleEligibilityDesc') },
+                                    { icon: Calendar, title: t('ssy.ruleTenureTitle'), desc: t('ssy.ruleTenureDesc') },
+                                    { icon: AlertCircle, title: t('ssy.ruleDepositLimitsTitle'), desc: t('ssy.ruleDepositLimitsDesc') },
+                                    { icon: GraduationCap, title: t('ssy.rulePartialWithdrawalTitle'), desc: t('ssy.rulePartialWithdrawalDesc') },
+                                    { icon: Heart, title: t('ssy.ruleTaxBenefitsTitle'), desc: t('ssy.ruleTaxBenefitsDesc') },
+                                    { icon: Info, title: t('ssy.rulePrematureClosureTitle'), desc: t('ssy.rulePrematureClosureDesc') },
                                 ].map((rule, i) => (
                                     <div key={i} className="flex items-start gap-3">
                                         <rule.icon size={16} className="text-pink-400 flex-shrink-0 mt-0.5" />
@@ -368,26 +370,26 @@ export default function SSYCalculator() {
                 {/* Export & Share Buttons */}
                 <div className="grid grid-cols-3 gap-3">
                     <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium">
-                        <Download size={16} /> PDF
+                        <Download size={16} /> {t('ssy.pdf')}
                     </button>
                     <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-muted-foreground text-[10px] font-medium">
-                        <Download size={16} /> Excel
+                        <Download size={16} /> {t('ssy.excel')}
                     </button>
                     <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white text-[10px] font-bold">
-                        <Share2 size={16} /> Share
+                        <Share2 size={16} /> {t('ssy.share')}
                     </button>
                 </div>
 
                 {/* Shareable Result Card */}
                 <ShareableCard
-                    title="My Sukanya Samriddhi Investment"
+                    title={t('ssy.shareTitle')}
                     highlight={formatINR(result.maturity)}
-                    subtitle={`will grow in ${maturityYears} years at ${rate}% p.a.`}
+                    subtitle={t('ssy.shareSubtitle', { years: maturityYears, rate })}
                     details={[
-                        { label: 'Annual Deposit', value: formatINR(annual) },
-                        { label: 'Total Invested', value: formatINR(result.invested) },
-                        { label: 'Interest Earned', value: formatINR(result.totalInterest) },
-                        { label: 'Maturity Age', value: `${result.maturityAge} years` },
+                        { label: t('ssy.annualDeposit'), value: formatINR(annual) },
+                        { label: t('ssy.totalInvested'), value: formatINR(result.invested) },
+                        { label: t('ssy.interestEarned'), value: formatINR(result.totalInterest) },
+                        { label: t('ssy.maturityAge'), value: `${result.maturityAge} ${t('ssy.years')}` },
                     ]}
                     gradient="from-pink-600 via-rose-500 to-red-500"
                 />

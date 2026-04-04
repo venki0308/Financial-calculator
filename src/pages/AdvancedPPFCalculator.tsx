@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Info, Share2, Save, Check, Download, FileText, Landmark, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { nativeShare } from '../utils/nativeShare';
@@ -15,11 +16,11 @@ import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 
 type Frequency = 'monthly' | 'quarterly' | 'half-yearly' | 'yearly';
-const FREQ_OPTIONS: { key: Frequency; label: string; factor: number }[] = [
-    { key: 'monthly', label: 'Monthly', factor: 12 },
-    { key: 'quarterly', label: 'Quarterly', factor: 4 },
-    { key: 'half-yearly', label: 'Half-Yearly', factor: 2 },
-    { key: 'yearly', label: 'Yearly', factor: 1 },
+const FREQ_OPTIONS: { key: Frequency; labelKey: string; factor: number }[] = [
+    { key: 'monthly', labelKey: 'ppf.monthly', factor: 12 },
+    { key: 'quarterly', labelKey: 'ppf.quarterly', factor: 4 },
+    { key: 'half-yearly', labelKey: 'ppf.halfYearly', factor: 2 },
+    { key: 'yearly', labelKey: 'ppf.yearly', factor: 1 },
 ];
 
 const PPF_RATE = 7.1;
@@ -46,6 +47,7 @@ function computePPF(annualContribution: number, rate: number, years: number): PP
 }
 
 export default function AdvancedPPFCalculator() {
+    const { t } = useTranslation();
     useEffect(() => { AnalyticsService.trackScreen('PPF_Advanced_Calculator'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
@@ -106,32 +108,32 @@ export default function AdvancedPPFCalculator() {
     const handlePDF = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
-        const freqLabel = frequency === 'monthly' ? 'Monthly' : frequency === 'quarterly' ? 'Quarterly' : frequency === 'half-yearly' ? 'Half-Yearly' : 'Yearly';
+        const freqLabel = frequency === 'monthly' ? t('ppf.monthly') : frequency === 'quarterly' ? t('ppf.quarterly') : frequency === 'half-yearly' ? t('ppf.halfYearly') : t('ppf.yearly');
         await exportToPDF({
-            title: 'PPF (Public Provident Fund) Report',
+            title: t('ppf.reportTitle'),
             inputs: [
-                { label: 'Contribution Frequency', value: freqLabel },
-                { label: 'Amount per Period', value: `₹${Math.round(amountPerPeriod).toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
-                { label: 'Investment Period', value: `${years} Years` },
+                { label: t('ppf.contributionFrequency'), value: freqLabel },
+                { label: t('ppf.amountPerPeriod'), value: `₹${Math.round(amountPerPeriod).toLocaleString('en-IN')}` },
+                { label: t('ppf.interestRateLabel'), value: `${rate}% p.a.` },
+                { label: t('ppf.investmentPeriod'), value: `${years} ${t('ppf.years')}` },
             ],
             results: [
-                { label: 'Total Amount Invested', value: `₹${Math.round(totalInvested).toLocaleString('en-IN')}` },
-                { label: 'Total Interest Earned', value: `₹${Math.round(totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Maturity Value', value: `₹${Math.round(maturityValue).toLocaleString('en-IN')}` },
-                { label: 'Wealth Multiplier', value: `${(maturityValue / totalInvested).toFixed(2)}x` },
+                { label: t('ppf.totalAmountInvested'), value: `₹${Math.round(totalInvested).toLocaleString('en-IN')}` },
+                { label: t('ppf.totalInterestEarned'), value: `₹${Math.round(totalInterest).toLocaleString('en-IN')}` },
+                { label: t('ppf.maturityValue'), value: `₹${Math.round(maturityValue).toLocaleString('en-IN')}` },
+                { label: t('ppf.wealthMultiplier'), value: `${(maturityValue / totalInvested).toFixed(2)}x` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Total Invested', value: totalInvested, color: '#4F46E5' },
-                    { label: 'Interest Earned', value: totalInterest, color: '#10B981' },
+                    { label: t('ppf.totalInvested'), value: totalInvested, color: '#4F46E5' },
+                    { label: t('ppf.interestEarned'), value: totalInterest, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'Yearly PPF Growth',
-            projectionColumns: ['Year', 'Opening Balance', 'Annual Deposit', 'Interest Earned', 'Closing Balance'],
+            projectionTitle: t('ppf.yearlyGrowth'),
+            projectionColumns: [t('ppf.year'), t('ppf.openingBalance'), t('ppf.annualDeposit'), t('ppf.interestEarned'), t('ppf.closingBalance')],
             projectionRows: schedule.map((r: any) => [
-                `Year ${r.year}`,
+                `${t('ppf.year')} ${r.year}`,
                 `₹${Math.round(r.opening || 0).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.contribution).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
@@ -145,18 +147,18 @@ export default function AdvancedPPFCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: 'PPF (Public Provident Fund) Report',
+            title: t('ppf.reportTitle'),
             inputs: [
-                { label: 'Interest Rate', value: `${rate}%` },
-                { label: 'Investment Period', value: `${years} Years` },
+                { label: t('ppf.interestRateLabel'), value: `${rate}%` },
+                { label: t('ppf.investmentPeriod'), value: `${years} ${t('ppf.years')}` },
             ],
             results: [
-                { label: 'Total Invested', value: `₹${Math.round(totalInvested).toLocaleString('en-IN')}` },
-                { label: 'Interest Earned', value: `₹${Math.round(totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Maturity Value', value: `₹${Math.round(maturityValue).toLocaleString('en-IN')}` },
+                { label: t('ppf.totalInvested'), value: `₹${Math.round(totalInvested).toLocaleString('en-IN')}` },
+                { label: t('ppf.interestEarned'), value: `₹${Math.round(totalInterest).toLocaleString('en-IN')}` },
+                { label: t('ppf.maturityValue'), value: `₹${Math.round(maturityValue).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Yearly PPF Growth',
-            projectionColumns: ['Year', 'Opening Balance', 'Annual Deposit', 'Interest Earned', 'Closing Balance'],
+            projectionTitle: t('ppf.yearlyGrowth'),
+            projectionColumns: [t('ppf.year'), t('ppf.openingBalance'), t('ppf.annualDeposit'), t('ppf.interestEarned'), t('ppf.closingBalance')],
             projectionRows: schedule.map((r: any) => [r.year, Math.round(r.opening || 0), Math.round(r.contribution), Math.round(r.interest), Math.round(r.closing)]),
             filename: `FinCalix_PPF_Report_${tag}`,
         });
@@ -171,8 +173,8 @@ export default function AdvancedPPFCalculator() {
                             <ArrowLeft size={18} className="text-slate-600 dark:text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">PPF Calculator</h1>
-                            <p className="text-muted-foreground text-xs">Public Provident Fund</p>
+                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">{t('ppf.title')}</h1>
+                            <p className="text-muted-foreground text-xs">{t('ppf.subtitle')}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -180,7 +182,7 @@ export default function AdvancedPPFCalculator() {
                             <Info size={16} className="text-slate-600 dark:text-muted-foreground" />
                         </button>
                         <button className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border"
-                            onClick={() => nativeShare('PPF Calculator', 'Calculate PPF maturity with FinCalix!', window.location.href)}>
+                            onClick={() => nativeShare(t('ppf.title'), t('ppf.shareText'), window.location.href)}>
                             <Share2 size={16} className="text-slate-600 dark:text-muted-foreground" />
                         </button>
                     </div>
@@ -202,31 +204,31 @@ export default function AdvancedPPFCalculator() {
                                 ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20'
                                 : 'bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-slate-600 dark:text-muted-foreground'
                             }`}>
-                            {f.label}
+                            {t(f.labelKey)}
                         </button>
                     ))}
                 </div>
 
                 {/* Inputs */}
                 <div className="space-y-3 mb-5">
-                    <NumberInput label={`Investment per ${frequency === 'yearly' ? 'Year' : frequency === 'half-yearly' ? 'Half-Year' : frequency === 'quarterly' ? 'Quarter' : 'Month'}`}
+                    <NumberInput label={t('ppf.investmentPer', { period: frequency === 'yearly' ? t('ppf.year') : frequency === 'half-yearly' ? t('ppf.halfYear') : frequency === 'quarterly' ? t('ppf.quarter') : t('ppf.month') })}
                         value={amountPerPeriod} onChange={setAmountPerPeriod}
                         min={PPF_MIN_INVEST} max={maxPerPeriod} prefix="₹"
-                        helperText={`₹${PPF_MIN_INVEST.toLocaleString()} - ₹${maxPerPeriod.toLocaleString()} (Annual max: ₹1,50,000)`} />
-                    <NumberInput label="Interest Rate (p.a.)" value={rate} onChange={setRate}
-                        min={1} max={15} suffix="%" step={0.1} helperText="Current govt rate: 7.1%" />
-                    <NumberInput label="Investment Period" value={years} onChange={setYears}
-                        min={PPF_LOCK_IN_YEARS} max={50} suffix=" years"
-                        helperText={`Min ${PPF_LOCK_IN_YEARS} years (+ ${PPF_EXTENSION_YEARS}-year blocks)`} />
+                        helperText={`₹${PPF_MIN_INVEST.toLocaleString()} - ₹${maxPerPeriod.toLocaleString()} (${t('ppf.annualMax')})`} />
+                    <NumberInput label={t('ppf.interestRate')} value={rate} onChange={setRate}
+                        min={1} max={15} suffix="%" step={0.1} helperText={t('ppf.currentGovtRate')} />
+                    <NumberInput label={t('ppf.investmentPeriod')} value={years} onChange={setYears}
+                        min={PPF_LOCK_IN_YEARS} max={50} suffix={` ${t('ppf.years')}`}
+                        helperText={t('ppf.minYearsHelper', { min: PPF_LOCK_IN_YEARS, ext: PPF_EXTENSION_YEARS })} />
                 </div>
 
                 {/* Annual Contribution Banner */}
                 <div className="mb-4 p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30">
                     <p className="text-xs text-blue-700 dark:text-blue-300">
-                        <span className="font-bold">Annual Contribution:</span> {formatINR(annualContribution)}/year
+                        <span className="font-bold">{t('ppf.annualContribution')}:</span> {formatINR(annualContribution)}/{t('ppf.year')}
                         {frequency !== 'yearly' && ` (${formatINR(amountPerPeriod)} × ${freqFactor} = ${formatINR(amountPerPeriod * freqFactor)})`}
                         {amountPerPeriod * freqFactor > PPF_MAX_INVEST && (
-                            <span className="text-amber-600 dark:text-amber-400"> — Capped at ₹1,50,000/year</span>
+                            <span className="text-amber-600 dark:text-amber-400"> — {t('ppf.cappedAtMax')}</span>
                         )}
                     </p>
                 </div>
@@ -234,7 +236,7 @@ export default function AdvancedPPFCalculator() {
                 {/* Result Card */}
                 <motion.div layout className="p-5 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-lg dark:shadow-none mb-4">
                     <div className="text-center mb-4">
-                        <p className="text-muted-foreground text-sm mb-1">Maturity Value</p>
+                        <p className="text-muted-foreground text-sm mb-1">{t('ppf.maturityValue')}</p>
                         <motion.p key={maturityValue} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                             className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">
                             {formatINR(maturityValue)}
@@ -244,11 +246,11 @@ export default function AdvancedPPFCalculator() {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="text-center p-3 rounded-xl bg-muted/30">
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Total Invested</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">{t('ppf.totalInvested')}</p>
                             <p className="text-slate-900 dark:text-foreground font-bold text-sm">{formatINR(totalInvested)}</p>
                         </div>
                         <div className="text-center p-3 rounded-xl bg-muted/30">
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">Interest Earned</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1">{t('ppf.interestEarned')}</p>
                             <p className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">{formatINR(totalInterest)}</p>
                         </div>
                     </div>
@@ -258,14 +260,14 @@ export default function AdvancedPPFCalculator() {
                 <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-1.5 px-1 mb-1">
                         <Landmark size={13} className="text-emerald-500" />
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">PPF Rules & Benefits</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('ppf.rulesAndBenefits')}</span>
                     </div>
                     {[
-                        { icon: '🔒', text: `Lock-in period: ${PPF_LOCK_IN_YEARS} years (extendable in ${PPF_EXTENSION_YEARS}-year blocks)`, type: 'info' },
-                        { icon: '💰', text: `Partial withdrawal allowed from Year ${PPF_WITHDRAWAL_YEAR} onwards (max 50% of balance at end of 4th year)`, type: 'tip' },
-                        { icon: '🏦', text: `Loan against PPF available from Year ${PPF_LOAN_START_YEAR} to Year ${PPF_LOAN_END_YEAR} (max 25% of balance)`, type: 'tip' },
-                        { icon: '📋', text: `Tax benefit under Sec 80C / Sec 123 (ITA 2025): Up to ₹1,50,000/year. Interest & maturity fully tax-free (EEE status)`, type: 'positive' },
-                        { icon: '⚡', text: `Sovereign guarantee — one of India's safest instruments`, type: 'positive' },
+                        { icon: '🔒', text: t('ppf.ruleLockIn', { years: PPF_LOCK_IN_YEARS, ext: PPF_EXTENSION_YEARS }), type: 'info' },
+                        { icon: '💰', text: t('ppf.ruleWithdrawal', { year: PPF_WITHDRAWAL_YEAR }), type: 'tip' },
+                        { icon: '🏦', text: t('ppf.ruleLoan', { start: PPF_LOAN_START_YEAR, end: PPF_LOAN_END_YEAR }), type: 'tip' },
+                        { icon: '📋', text: t('ppf.ruleTaxBenefit'), type: 'positive' },
+                        { icon: '⚡', text: t('ppf.ruleSovereign'), type: 'positive' },
                     ].map((item, i) => (
                         <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border ${
                             item.type === 'positive' ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30' :
@@ -285,7 +287,7 @@ export default function AdvancedPPFCalculator() {
                 {/* Year-by-Year Table */}
                 <button onClick={() => setShowTable(!showTable)}
                     className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
-                    {showTable ? 'Hide' : 'View'} Year-by-Year Breakdown
+                    {showTable ? t('ppf.hide') : t('ppf.view')} {t('ppf.yearByYearBreakdown')}
                     {showTable ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
 
@@ -297,11 +299,11 @@ export default function AdvancedPPFCalculator() {
                                 <table className="w-full text-[10px] min-w-[450px]">
                                     <thead>
                                         <tr className="text-muted-foreground border-b border-slate-200 dark:border-border">
-                                            <th className="py-2 text-left font-semibold">Year</th>
-                                            <th className="py-2 text-right font-semibold">Deposit</th>
-                                            <th className="py-2 text-right font-semibold">Opening</th>
-                                            <th className="py-2 text-right font-semibold">Interest</th>
-                                            <th className="py-2 text-right font-semibold">Closing</th>
+                                            <th className="py-2 text-left font-semibold">{t('ppf.year')}</th>
+                                            <th className="py-2 text-right font-semibold">{t('ppf.deposit')}</th>
+                                            <th className="py-2 text-right font-semibold">{t('ppf.opening')}</th>
+                                            <th className="py-2 text-right font-semibold">{t('ppf.interest')}</th>
+                                            <th className="py-2 text-right font-semibold">{t('ppf.closing')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -311,7 +313,7 @@ export default function AdvancedPPFCalculator() {
                                             }`}>
                                                 <td className="py-1.5 text-muted-foreground font-medium">
                                                     {row.year}
-                                                    {row.year === PPF_LOCK_IN_YEARS && <span className="text-[8px] text-emerald-500 ml-1">Maturity</span>}
+                                                    {row.year === PPF_LOCK_IN_YEARS && <span className="text-[8px] text-emerald-500 ml-1">{t('ppf.maturity')}</span>}
                                                 </td>
                                                 <td className="py-1.5 text-right text-slate-600 dark:text-muted-foreground">{formatINR(row.contribution)}</td>
                                                 <td className="py-1.5 text-right text-muted-foreground dark:text-muted-foreground">{formatINR(row.opening)}</td>
@@ -331,11 +333,11 @@ export default function AdvancedPPFCalculator() {
                     <div className="flex gap-3">
                         <motion.button whileTap={{ scale: 0.97 }} onClick={handlePDF}
                             className="flex-1 py-4 rounded-2xl bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/30 text-violet-600 dark:text-violet-400 font-bold text-sm flex items-center justify-center gap-2">
-                            <FileText size={16} /> PDF
+                            <FileText size={16} /> {t('ppf.pdf')}
                         </motion.button>
                         <motion.button whileTap={{ scale: 0.97 }} onClick={handleExcel}
                             className="flex-1 py-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center justify-center gap-2">
-                            <Download size={16} /> Excel
+                            <Download size={16} /> {t('ppf.excel')}
                         </motion.button>
                     </div>
                     <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} disabled={isSaved}
@@ -343,24 +345,24 @@ export default function AdvancedPPFCalculator() {
                             ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
                             : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20'
                         }`}>
-                        {isSaved ? <><Check size={18} /> Saved</> : <><Save size={18} /> Save Calculation</>}
+                        {isSaved ? <><Check size={18} /> {t('ppf.saved')}</> : <><Save size={18} /> {t('ppf.saveCalculation')}</>}
                     </motion.button>
                 </div>
 
                 <ShareableCard
-                    title="My PPF Maturity"
+                    title={t('ppf.myPPFMaturity')}
                     highlight={formatINR(maturityValue)}
-                    subtitle={`PPF @ ${rate}% for ${years} years`}
+                    subtitle={t('ppf.shareSubtitle', { rate, years })}
                     details={[
-                        { label: 'Total Invested', value: formatINR(totalInvested) },
-                        { label: 'Interest Earned', value: formatINR(totalInterest) },
-                        { label: 'Tax Benefit (Sec 80C/123)', value: `Up to ₹1,50,000/yr` },
+                        { label: t('ppf.totalInvested'), value: formatINR(totalInvested) },
+                        { label: t('ppf.interestEarned'), value: formatINR(totalInterest) },
+                        { label: t('ppf.taxBenefitLabel'), value: t('ppf.taxBenefitValue') },
                     ]}
                     gradient="from-emerald-600 via-teal-500 to-cyan-600"
                 />
 
                 <DisclaimerComponent module="ppf" />
-                <CalculatorInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} calculatorTitle="PPF Calculator" />
+                <CalculatorInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} calculatorTitle={t('ppf.title')} />
             </div>
         </div>
     );

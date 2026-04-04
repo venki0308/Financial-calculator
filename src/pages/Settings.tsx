@@ -115,7 +115,7 @@ export default function Settings() {
                     <div className="h-px bg-border mx-4" />
                     <MenuItem icon={FileText} label={t('settings.privacyPolicy')} color="#3B82F6" onClick={() => navigate('/privacy-policy')} />
                     <div className="h-px bg-border mx-4" />
-                    <MenuItem icon={FileText} label="Data & Privacy" color="#10B981" onClick={() => navigate('/data-safety')} />
+                    <MenuItem icon={FileText} label={t('settings.dataPrivacy')} color="#10B981" onClick={() => navigate('/data-safety')} />
                     <div className="h-px bg-border mx-4" />
                     <MenuItem icon={FileText} label={t('settings.termsOfService')} color="#8B5CF6" onClick={() => navigate('/terms-of-service')} />
                     <div className="h-px bg-border mx-4" />
@@ -132,7 +132,7 @@ export default function Settings() {
                     <MenuItem icon={Share2} label={t('settings.shareApp')} color="#EC4899" onClick={async () => {
                         const shareData = {
                             title: 'FinCalix – Financial Calculator App',
-                            text: "India's #1 Financial Planning App! Calculate FD, SIP, EMI, GST, Taxes & more. Download free on Play Store!",
+                            text: t('settings.shareMessage'),
                             url: 'https://play.google.com/store/apps/details?id=com.fincalix.app',
                         };
 
@@ -148,7 +148,7 @@ export default function Settings() {
                                         await Share.share({
                                             title: shareData.title,
                                             text: shareData.text + '\n' + shareData.url,
-                                            dialogTitle: 'Share FinCalix'
+                                            dialogTitle: t('settings.shareApp')
                                         });
                                         shared = true;
                                     }
@@ -170,7 +170,7 @@ export default function Settings() {
                             // 3. Fallback to Clipboard
                             if (!shared) {
                                 await navigator.clipboard.writeText(shareData.url);
-                                alert('App link copied to clipboard!');
+                                alert(t('settings.linkCopied'));
                             }
                         } catch (err) {
                             console.error('Share operation failed:', err);
@@ -186,8 +186,8 @@ export default function Settings() {
                             <Trash2 size={20} className="text-red-400" />
                         </div>
                         <div className="flex-1 text-left">
-                            <p className="text-red-400 font-medium text-sm">Clear All Data</p>
-                            <p className="text-muted-foreground text-xs">Reset app to fresh install state</p>
+                            <p className="text-red-400 font-medium text-sm">{t('settings.clearData')}</p>
+                            <p className="text-muted-foreground text-xs">{t('settings.clearDataDesc')}</p>
                         </div>
                         <ChevronRight size={16} className="text-muted-foreground" />
                     </button>
@@ -195,7 +195,7 @@ export default function Settings() {
 
                 <div className="text-center pb-8 mt-2 animate-fade-in delay-500">
                     <p className="text-muted-foreground text-xs text-brand-purple/80 dark:text-cyan-400 font-bold mb-1">FinCalix v{APP_VERSION}</p>
-                    <p className="text-slate-400 text-[10px]">All your data is stored locally on this device</p>
+                    <p className="text-slate-400 text-[10px]">{t('settings.localDataNote')}</p>
                 </div>
             </div>
 
@@ -225,7 +225,7 @@ export default function Settings() {
             {/* Notification Sheet */}
             <BottomSheet isOpen={showNotif} onClose={() => setShowNotif(false)} title={t('settings.notifications')}>
                 <div className="space-y-3">
-                    {([['dailyQuotes', 'Daily Financial Quotes'], ['newSchemes', t('settings.newSchemes')], ['calcReminders', t('settings.calcReminders')], ['appUpdates', t('settings.appUpdates')]] as const).map(([key, label]) => (
+                    {([['dailyQuotes', t('settings.dailyQuotes')], ['newSchemes', t('settings.newSchemes')], ['calcReminders', t('settings.calcReminders')], ['appUpdates', t('settings.appUpdates')]] as const).map(([key, label]) => (
                         <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-muted">
                             <span className="text-foreground text-sm">{label}</span>
                             <button onClick={async () => {

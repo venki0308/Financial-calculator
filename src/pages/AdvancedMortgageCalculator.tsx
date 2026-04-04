@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Info, Plus, Trash2, ChevronDown, ChevronUp, Calculator, Home, AlertTriangle, AlertCircle, CheckCircle2, IndianRupee, Receipt, FileText, Download, TrendingDown, Sliders } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
@@ -20,6 +21,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 const ROWS_PER_PAGE = 24; // Show 2 years per page for better view
 
 export default function AdvancedMortgageCalculator() {
+    const { t } = useTranslation();
     useEffect(() => { AnalyticsService.trackScreen('Advanced_Mortgage_Calculator'); }, []);
     const navigate = useNavigate();
     const c = useAppColors();
@@ -354,8 +356,8 @@ export default function AdvancedMortgageCalculator() {
                     <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div className="flex-1">
-                    <h1 className="text-lg font-bold" style={{ color: c.text }}>Advanced Mortgage</h1>
-                    <p className="text-xs" style={{ color: c.textSecondary }}>Home Loan Simulator</p>
+                    <h1 className="text-lg font-bold" style={{ color: c.text }}>{t('mortgage.title')}</h1>
+                    <p className="text-xs" style={{ color: c.textSecondary }}>{t('mortgage.subtitle')}</p>
                 </div>
             </div>
 
@@ -365,12 +367,12 @@ export default function AdvancedMortgageCalculator() {
                 <div className="p-5 rounded-2xl border shadow-sm space-y-6" style={{ backgroundColor: c.card, borderColor: c.border }}>
                     <div className="flex items-center gap-2 pb-2 border-b" style={{ borderColor: c.border }}>
                         <Home className="w-5 h-5" style={{ color: '#10B981' }} />
-                        <h2 className="font-semibold text-lg">Property & Loan Details</h2>
+                        <h2 className="font-semibold text-lg">{t('mortgage.propertyLoanDetails')}</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <NumberInput
-                            label="Property Value"
+                            label={t('mortgage.propertyValue')}
                             value={propertyValue}
                             onChange={setPropertyValue}
                             min={100000}
@@ -379,7 +381,7 @@ export default function AdvancedMortgageCalculator() {
                             prefix="₹"
                         />
                         <NumberInput
-                            label="Down Payment"
+                            label={t('mortgage.downPayment')}
                             value={downPayment}
                             onChange={setDownPayment}
                             min={0}
@@ -391,21 +393,21 @@ export default function AdvancedMortgageCalculator() {
                     
                     <div className="p-4 rounded-xl flex flex-wrap justify-between items-center gap-4" style={{ backgroundColor: c.bg }}>
                         <div>
-                            <p className="text-sm font-medium" style={{ color: c.textSecondary }}>Loan Amount</p>
+                            <p className="text-sm font-medium" style={{ color: c.textSecondary }}>{t('mortgage.loanAmount')}</p>
                             <p className="text-2xl font-bold" style={{ color: c.text }}>{formatINR(loanAmount)}</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-sm font-medium" style={{ color: c.textSecondary }}>LTV (Loan to Value)</p>
+                            <p className="text-sm font-medium" style={{ color: c.textSecondary }}>{t('mortgage.ltvLoanToValue')}</p>
                             <p className={`text-xl font-bold ${ltv > maxLtv ? 'text-red-500' : 'text-emerald-500'}`}>
                                 {ltv.toFixed(1)}%
                             </p>
-                            {ltv > maxLtv && <p className="text-xs mt-1 text-red-500">RBI max: {maxLtv}% for this loan size</p>}
+                            {ltv > maxLtv && <p className="text-xs mt-1 text-red-500">{t('mortgage.rbiMax', { maxLtv })}</p>}
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <NumberInput
-                            label="Interest Rate (p.a.)"
+                            label={t('mortgage.interestRate')}
                             value={interestRate}
                             onChange={setInterestRate}
                             min={4}
@@ -414,7 +416,7 @@ export default function AdvancedMortgageCalculator() {
                             suffix="%"
                         />
                         <NumberInput
-                            label="Tenure (Years)"
+                            label={t('mortgage.tenureYears')}
                             value={tenureYears}
                             onChange={setTenureYears}
                             min={1}
@@ -425,46 +427,46 @@ export default function AdvancedMortgageCalculator() {
                     </div>
                     
                     <NumberInput
-                        label="Net Monthly Income (Take-home)"
+                        label={t('mortgage.netMonthlyIncome')}
                         value={monthlyIncome}
                         onChange={setMonthlyIncome}
                         min={0}
                         max={10000000}
                         step={10000}
                         prefix="₹"
-                        helperText="Used for Affordability Risk Analysis"
+                        helperText={t('mortgage.affordabilityHelper')}
                     />
 
                     {/* Loan Rate Type */}
                     <div>
-                        <p className="text-sm font-medium mb-2" style={{ color: c.textSecondary }}>Loan Rate Type</p>
+                        <p className="text-sm font-medium mb-2" style={{ color: c.textSecondary }}>{t('mortgage.loanRateType')}</p>
                         <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: c.border }}>
                             <button onClick={() => { setLoanRateType('floating'); setFcRateType('floating'); setFcChargePercent(0); }}
                                 className="flex-1 py-2.5 text-sm font-medium transition-colors"
                                 style={{ backgroundColor: loanRateType === 'floating' ? '#10B981' : 'transparent', color: loanRateType === 'floating' ? '#fff' : c.textSecondary }}>
-                                Floating Rate
+                                {t('mortgage.floatingRate')}
                             </button>
                             <button onClick={() => { setLoanRateType('fixed'); setFcRateType('fixed'); setFcChargePercent(2); }}
                                 className="flex-1 py-2.5 text-sm font-medium transition-colors border-l"
                                 style={{ borderColor: c.border, backgroundColor: loanRateType === 'fixed' ? '#F59E0B' : 'transparent', color: loanRateType === 'fixed' ? '#fff' : c.textSecondary }}>
-                                Fixed Rate
+                                {t('mortgage.fixedRate')}
                             </button>
                         </div>
                         {loanRateType === 'floating' && (
                             <p className="text-xs mt-2" style={{ color: c.textSecondary }}>
-                                Floating rate changes with lender's reference rate. Your EMI may change during tenure. RBI: NIL foreclosure charges.
+                                {t('mortgage.floatingRateDesc')}
                             </p>
                         )}
                     </div>
 
                     {/* True Cost Inputs */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <NumberInput label="Processing Fee" value={processingFee} onChange={setProcessingFee}
-                            min={0} max={1000000} step={1000} prefix="₹" helperText="One-time bank charge" />
-                        <NumberInput label="Loan Insurance" value={insurancePremium} onChange={setInsurancePremium}
-                            min={0} max={5000000} step={1000} prefix="₹" helperText="Added to loan by lender" />
-                        <NumberInput label="Pre-EMI Interest" value={preEmiInterest} onChange={setPreEmiInterest}
-                            min={0} max={5000000} step={1000} prefix="₹" helperText="Before EMI starts" />
+                        <NumberInput label={t('mortgage.processingFee')} value={processingFee} onChange={setProcessingFee}
+                            min={0} max={1000000} step={1000} prefix="₹" helperText={t('mortgage.processingFeeHelper')} />
+                        <NumberInput label={t('mortgage.loanInsurance')} value={insurancePremium} onChange={setInsurancePremium}
+                            min={0} max={5000000} step={1000} prefix="₹" helperText={t('mortgage.loanInsuranceHelper')} />
+                        <NumberInput label={t('mortgage.preEmiInterest')} value={preEmiInterest} onChange={setPreEmiInterest}
+                            min={0} max={5000000} step={1000} prefix="₹" helperText={t('mortgage.preEmiInterestHelper')} />
                     </div>
                 </div>
 
@@ -472,33 +474,33 @@ export default function AdvancedMortgageCalculator() {
                 <div className="p-5 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
                     <div className="flex items-center gap-2 mb-4">
                         <AlertCircle className="w-5 h-5" style={{ color: '#10B981' }} />
-                        <h2 className="font-semibold text-lg">Affordability Analysis</h2>
+                        <h2 className="font-semibold text-lg">{t('mortgage.affordabilityAnalysis')}</h2>
                     </div>
                     
                     {(() => {
                         const emiRatio = monthlyIncome > 0 ? (result.originalEmi / monthlyIncome) * 100 : 0;
                         let statusColor = '#10B981'; // Emerald
                         let icon = <CheckCircle2 className="w-5 h-5 text-emerald-500" />;
-                        let message = "Excellent! Your EMI is well within safe limits.";
-                        
+                        let message = t('mortgage.emiSafe');
+
                         if (emiRatio > 50) {
                             statusColor = '#EF4444'; // Red
                             icon = <AlertTriangle className="w-5 h-5 text-red-500" />;
-                            message = "Danger! Your EMI exceeds 50% of your income. High risk of default.";
+                            message = t('mortgage.emiDanger');
                         } else if (emiRatio > 40) {
                             statusColor = '#F59E0B'; // Amber
                             icon = <AlertTriangle className="w-5 h-5 text-amber-500" />;
-                            message = "Caution! Your EMI is over 40% of your income. Banks might reject the loan.";
+                            message = t('mortgage.emiCaution');
                         }
 
                         return monthlyIncome === 0 ? (
-                            <p className="text-sm italic" style={{ color: c.textSecondary }}>Enter monthly income to see affordability insights.</p>
+                            <p className="text-sm italic" style={{ color: c.textSecondary }}>{t('mortgage.enterIncomeForInsights')}</p>
                         ) : (
                             <div className="space-y-4">
                                 <div className="flex items-start gap-3 p-4 rounded-xl" style={{ backgroundColor: `${statusColor}1A` }}>
                                     {icon}
                                     <div>
-                                        <p className="font-semibold" style={{ color: statusColor }}>EMI to Income Ratio: {emiRatio.toFixed(1)}%</p>
+                                        <p className="font-semibold" style={{ color: statusColor }}>{t('mortgage.emiToIncomeRatio')}: {emiRatio.toFixed(1)}%</p>
                                         <p className="text-sm mt-1" style={{ color: c.textSecondary }}>{message}</p>
                                     </div>
                                 </div>
@@ -515,7 +517,7 @@ export default function AdvancedMortgageCalculator() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Calculator className="w-5 h-5" style={{ color: '#10B981' }} />
-                            <h2 className="font-semibold text-lg">Smart Prepayment Engine</h2>
+                            <h2 className="font-semibold text-lg">{t('mortgage.smartPrepaymentEngine')}</h2>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" className="sr-only peer" checked={enablePrepayment} onChange={(e) => setEnablePrepayment(e.target.checked)} />
@@ -534,7 +536,7 @@ export default function AdvancedMortgageCalculator() {
                             >
                                 {/* Strategy Selector */}
                                 <div>
-                                    <p className="text-sm font-medium mb-3">Prepayment Strategy</p>
+                                    <p className="text-sm font-medium mb-3">{t('mortgage.prepaymentStrategy')}</p>
                                     <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: c.border }}>
                                         <button
                                             onClick={() => setPrepaymentMode('reduce_tenure')}
@@ -544,7 +546,7 @@ export default function AdvancedMortgageCalculator() {
                                                 color: prepaymentMode === 'reduce_tenure' ? '#fff' : c.textSecondary
                                             }}
                                         >
-                                            Reduce Tenure
+                                            {t('mortgage.reduceTenure')}
                                         </button>
                                         <button
                                             onClick={() => setPrepaymentMode('reduce_emi')}
@@ -555,47 +557,47 @@ export default function AdvancedMortgageCalculator() {
                                                 color: prepaymentMode === 'reduce_emi' ? '#fff' : c.textSecondary
                                             }}
                                         >
-                                            Reduce EMI
+                                            {t('mortgage.reduceEMI')}
                                         </button>
                                     </div>
                                     <p className="text-xs mt-2" style={{ color: c.textSecondary }}>
-                                        {prepaymentMode === 'reduce_tenure' 
-                                            ? "Your EMI remains fixed, but extra payments reduce the total duration of the loan, saving huge interest."
-                                            : "Your loan tenure remains full, but each lump-sum payment reduces your upcoming monthly EMI burden."}
+                                        {prepaymentMode === 'reduce_tenure'
+                                            ? t('mortgage.reduceTenureDesc')
+                                            : t('mortgage.reduceEMIDesc')}
                                     </p>
                                 </div>
 
                                 {/* Monthly Extra EMI */}
                                 <div>
                                     <NumberInput
-                                        label="Monthly Extra EMI"
+                                        label={t('mortgage.monthlyExtraEMI')}
                                         value={monthlyExtraEMI}
                                         onChange={setMonthlyExtraEMI}
                                         min={0}
                                         max={loanAmount}
                                         step={1000}
                                         prefix="₹"
-                                        helperText="Add a fixed amount to your EMI every month"
+                                        helperText={t('mortgage.monthlyExtraEMIHelper')}
                                     />
                                 </div>
 
                                 {/* Lump Sums */}
                                 <div>
                                     <div className="flex justify-between items-center mb-3">
-                                        <p className="text-sm font-medium">Lump Sum Prepayments</p>
+                                        <p className="text-sm font-medium">{t('mortgage.lumpSumPrepayments')}</p>
                                         <button onClick={addLumpSum} className="text-xs flex items-center gap-1 text-emerald-500 font-medium px-2 py-1 rounded hover:bg-emerald-500/10 transition-colors">
-                                            <Plus className="w-3 h-3" /> Add
+                                            <Plus className="w-3 h-3" /> {t('mortgage.add')}
                                         </button>
                                     </div>
                                     
                                     {lumpSums.length === 0 ? (
-                                        <p className="text-xs italic" style={{ color: c.textSecondary }}>No lump sum payments scheduled.</p>
+                                        <p className="text-xs italic" style={{ color: c.textSecondary }}>{t('mortgage.noLumpSumScheduled')}</p>
                                     ) : (
                                         <div className="space-y-3">
                                             {lumpSums.map((ls, idx) => (
                                                 <div key={ls.id} className="flex items-center gap-3 p-3 rounded-lg border" style={{ borderColor: c.border, backgroundColor: c.bg }}>
                                                     <div className="w-20">
-                                                        <label className="text-[10px] uppercase font-bold tracking-wider" style={{ color: c.textSecondary }}>Month</label>
+                                                        <label className="text-[10px] uppercase font-bold tracking-wider" style={{ color: c.textSecondary }}>{t('mortgage.month')}</label>
                                                         <input
                                                             type="number"
                                                             value={ls.month}
@@ -607,7 +609,7 @@ export default function AdvancedMortgageCalculator() {
                                                         />
                                                     </div>
                                                     <div className="flex-1">
-                                                        <label className="text-[10px] uppercase font-bold tracking-wider" style={{ color: c.textSecondary }}>Amount (₹)</label>
+                                                        <label className="text-[10px] uppercase font-bold tracking-wider" style={{ color: c.textSecondary }}>{t('mortgage.amount')}</label>
                                                         <input
                                                             type="number"
                                                             value={ls.amount}
@@ -639,24 +641,24 @@ export default function AdvancedMortgageCalculator() {
                     
                     <div className="relative z-10 grid grid-cols-2 gap-y-6">
                         <div className="col-span-2">
-                            <p className="text-emerald-100 text-sm font-medium">Base Monthly EMI</p>
+                            <p className="text-emerald-100 text-sm font-medium">{t('mortgage.baseMonthlyEMI')}</p>
                             <p className="text-4xl font-bold mt-1 tracking-tight">
                                 {formatINR(result.originalEmi)}
                             </p>
                             {enablePrepayment && result.emi !== result.originalEmi && (
                                 <p className="text-sm mt-1 text-emerald-200">
-                                    Current Effective EMI: {formatINR(result.emi)}
+                                    {t('mortgage.currentEffectiveEMI')}: {formatINR(result.emi)}
                                 </p>
                             )}
                         </div>
 
                         <div>
-                            <p className="text-emerald-100 text-xs font-medium uppercase tracking-wider">Total Interest</p>
+                            <p className="text-emerald-100 text-xs font-medium uppercase tracking-wider">{t('mortgage.totalInterest')}</p>
                             <p className="text-xl font-bold mt-1">{formatINR(result.totalInterest)}</p>
                         </div>
                         
                         <div>
-                            <p className="text-emerald-100 text-xs font-medium uppercase tracking-wider">Total Payment</p>
+                            <p className="text-emerald-100 text-xs font-medium uppercase tracking-wider">{t('mortgage.totalPayment')}</p>
                             <p className="text-xl font-bold mt-1">{formatINR(result.totalPayment)}</p>
                         </div>
                     </div>
@@ -667,12 +669,12 @@ export default function AdvancedMortgageCalculator() {
                     <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadPDF}
                         className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border font-bold text-sm"
                         style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
-                        <FileText size={18} className="text-violet-500" /> Export PDF
+                        <FileText size={18} className="text-violet-500" /> {t('mortgage.exportPDF')}
                     </motion.button>
                     <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadExcel}
                         className="flex items-center justify-center gap-2 py-3.5 rounded-2xl border font-bold text-sm"
                         style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
-                        <Download size={18} className="text-emerald-500" /> Export Excel
+                        <Download size={18} className="text-emerald-500" /> {t('mortgage.exportExcel')}
                     </motion.button>
                 </div>
 
@@ -681,19 +683,19 @@ export default function AdvancedMortgageCalculator() {
                     <div className="p-4 rounded-xl border flex flex-col md:flex-row gap-4 items-start md:items-center justify-between" 
                          style={{ backgroundColor: c.card, borderColor: '#10B981', borderLeftWidth: '4px' }}>
                         <div>
-                            <h3 className="font-bold text-lg" style={{ color: c.text }}>Prepayment Impact</h3>
-                            <p className="text-sm mt-1" style={{ color: c.textSecondary }}>By using your smart prepayment strategy, you save huge!</p>
+                            <h3 className="font-bold text-lg" style={{ color: c.text }}>{t('mortgage.prepaymentImpact')}</h3>
+                            <p className="text-sm mt-1" style={{ color: c.textSecondary }}>{t('mortgage.prepaymentImpactDesc')}</p>
                         </div>
                         <div className="flex gap-4 text-right">
                             {result.interestSaved > 0 && (
                                 <div>
-                                    <p className="text-xs uppercase font-bold" style={{ color: c.textSecondary }}>Interest Saved</p>
+                                    <p className="text-xs uppercase font-bold" style={{ color: c.textSecondary }}>{t('mortgage.interestSaved')}</p>
                                     <p className="text-emerald-500 font-bold text-xl">{formatINR(result.interestSaved)}</p>
                                 </div>
                             )}
                             {result.timeSavedMonths > 0 && (
                                 <div>
-                                    <p className="text-xs uppercase font-bold" style={{ color: c.textSecondary }}>Time Saved</p>
+                                    <p className="text-xs uppercase font-bold" style={{ color: c.textSecondary }}>{t('mortgage.timeSaved')}</p>
                                     <p className="text-emerald-500 font-bold text-xl">
                                         {Math.floor(result.timeSavedMonths / 12)}y {result.timeSavedMonths % 12}m
                                     </p>
@@ -708,15 +710,15 @@ export default function AdvancedMortgageCalculator() {
                     <div className="p-5 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
                         <div className="flex items-center gap-2 mb-4">
                             <IndianRupee className="w-5 h-5" style={{ color: '#EF4444' }} />
-                            <h2 className="font-semibold text-lg">True Cost of Loan</h2>
+                            <h2 className="font-semibold text-lg">{t('mortgage.trueCostOfLoan')}</h2>
                         </div>
                         <div className="space-y-2">
                             {[
-                                { label: 'Loan Amount', value: formatINR(loanAmount), bold: false },
-                                ...(insurancePremium > 0 ? [{ label: '+ Loan Insurance', value: formatINR(insurancePremium), bold: false }] : []),
-                                ...(processingFee > 0 ? [{ label: '+ Processing Fee', value: formatINR(processingFee), bold: false }] : []),
-                                ...(preEmiInterest > 0 ? [{ label: '+ Pre-EMI Interest', value: formatINR(preEmiInterest), bold: false }] : []),
-                                { label: '+ Total EMI Interest', value: formatINR(trueCost.totalEmiInterest), bold: false },
+                                { label: t('mortgage.loanAmount'), value: formatINR(loanAmount), bold: false },
+                                ...(insurancePremium > 0 ? [{ label: `+ ${t('mortgage.loanInsurance')}`, value: formatINR(insurancePremium), bold: false }] : []),
+                                ...(processingFee > 0 ? [{ label: `+ ${t('mortgage.processingFee')}`, value: formatINR(processingFee), bold: false }] : []),
+                                ...(preEmiInterest > 0 ? [{ label: `+ ${t('mortgage.preEmiInterest')}`, value: formatINR(preEmiInterest), bold: false }] : []),
+                                { label: `+ ${t('mortgage.totalEMIInterest')}`, value: formatINR(trueCost.totalEmiInterest), bold: false },
                             ].map(row => (
                                 <div key={row.label} className="flex justify-between items-center py-1">
                                     <span className="text-sm" style={{ color: c.textSecondary }}>{row.label}</span>
@@ -725,11 +727,11 @@ export default function AdvancedMortgageCalculator() {
                             ))}
                             <div className="border-t pt-3 mt-2" style={{ borderColor: c.border }}>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-sm font-bold" style={{ color: c.text }}>Total Amount You Pay</span>
+                                    <span className="text-sm font-bold" style={{ color: c.text }}>{t('mortgage.totalAmountYouPay')}</span>
                                     <span className="text-lg font-bold text-red-500">{formatINR(trueCost.totalAmountPaid)}</span>
                                 </div>
                                 <div className="flex justify-between items-center mt-1">
-                                    <span className="text-xs" style={{ color: c.textSecondary }}>Cost over loan amount</span>
+                                    <span className="text-xs" style={{ color: c.textSecondary }}>{t('mortgage.costOverLoanAmount')}</span>
                                     <span className="text-xs font-bold text-red-500">
                                         {formatINR(trueCost.costOverLoan)} (+{trueCost.costPercent.toFixed(1)}%)
                                     </span>
@@ -741,7 +743,7 @@ export default function AdvancedMortgageCalculator() {
 
                 {/* 5. VISUALIZATION */}
                 <div className="p-5 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                    <h2 className="font-semibold text-lg mb-4 text-center">Principal vs Interest Breakup</h2>
+                    <h2 className="font-semibold text-lg mb-4 text-center">{t('mortgage.principalVsInterest')}</h2>
                     <div className="h-64 relative">
                         <Pie data={chartData} options={chartOptions} />
                     </div>
@@ -751,22 +753,22 @@ export default function AdvancedMortgageCalculator() {
                 <div className="p-5 rounded-2xl border shadow-sm space-y-4" style={{ backgroundColor: c.card, borderColor: c.border }}>
                     <div className="flex items-center gap-2">
                         <Receipt className="w-5 h-5" style={{ color: '#10B981' }} />
-                        <h2 className="font-semibold text-lg">Income Tax Benefits</h2>
+                        <h2 className="font-semibold text-lg">{t('mortgage.incomeTaxBenefits')}</h2>
                     </div>
                     <p className="text-sm" style={{ color: c.textSecondary }}>
-                        Based on Indian tax laws (Old Regime): Section 80C covers Principal up to ₹1.5L/yr (only after possession), and Section 24(b) covers Interest up to ₹2L/yr for self-occupied property.
+                        {t('mortgage.taxBenefitsDesc')}
                     </p>
                     
                     <div className="grid grid-cols-2 gap-4 mt-4">
                         <div className="p-4 rounded-xl border" style={{ backgroundColor: c.bg, borderColor: c.border }}>
-                            <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: c.textSecondary }}>Sec 80C (Principal)</p>
+                            <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: c.textSecondary }}>{t('mortgage.sec80CPrincipal')}</p>
                             <p className="text-2xl font-bold text-emerald-500">{formatINRShort(result.taxBenefits.total80C)}</p>
-                            <p className="text-xs mt-1" style={{ color: c.textSecondary }}>Total potential claim over tenure</p>
+                            <p className="text-xs mt-1" style={{ color: c.textSecondary }}>{t('mortgage.totalPotentialClaim')}</p>
                         </div>
                         <div className="p-4 rounded-xl border" style={{ backgroundColor: c.bg, borderColor: c.border }}>
-                            <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: c.textSecondary }}>Sec 24 (Interest)</p>
+                            <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: c.textSecondary }}>{t('mortgage.sec24Interest')}</p>
                             <p className="text-2xl font-bold text-amber-500">{formatINRShort(result.taxBenefits.total24)}</p>
-                            <p className="text-xs mt-1" style={{ color: c.textSecondary }}>Total potential claim over tenure</p>
+                            <p className="text-xs mt-1" style={{ color: c.textSecondary }}>{t('mortgage.totalPotentialClaim')}</p>
                         </div>
                     </div>
                 </div>
@@ -778,7 +780,7 @@ export default function AdvancedMortgageCalculator() {
                         className="w-full flex items-center justify-between font-semibold text-lg"
                         style={{ color: c.text }}
                     >
-                        Amortization Schedule
+                        {t('mortgage.amortizationSchedule')}
                         {showAmortization ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                     </button>
 
@@ -794,12 +796,12 @@ export default function AdvancedMortgageCalculator() {
                                     <table className="w-full text-right text-sm">
                                         <thead>
                                             <tr className="border-b" style={{ borderColor: c.border, color: c.textSecondary }}>
-                                                <th className="py-3 px-2 text-center font-medium">Month</th>
-                                                <th className="py-3 px-2 font-medium hidden sm:table-cell">Opening</th>
-                                                <th className="py-3 px-2 font-medium">Payment</th>
-                                                <th className="py-3 px-2 font-medium">Interest</th>
-                                                <th className="py-3 px-2 font-medium">Principal</th>
-                                                <th className="py-3 px-2 font-medium">Balance</th>
+                                                <th className="py-3 px-2 text-center font-medium">{t('mortgage.month')}</th>
+                                                <th className="py-3 px-2 font-medium hidden sm:table-cell">{t('mortgage.opening')}</th>
+                                                <th className="py-3 px-2 font-medium">{t('mortgage.payment')}</th>
+                                                <th className="py-3 px-2 font-medium">{t('mortgage.interest')}</th>
+                                                <th className="py-3 px-2 font-medium">{t('mortgage.principal')}</th>
+                                                <th className="py-3 px-2 font-medium">{t('mortgage.balance')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -825,10 +827,10 @@ export default function AdvancedMortgageCalculator() {
                                             className="px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
                                             style={{ backgroundColor: c.bg, color: c.text, border: `1px solid ${c.border}` }}
                                         >
-                                            ← Prev
+                                            ← {t('mortgage.prev')}
                                         </button>
                                         <span className="text-sm font-medium" style={{ color: c.textSecondary }}>
-                                            Yr {amortPage * 2 + 1}–{Math.min((amortPage + 1) * 2, Math.ceil(result.schedule.length / 12))} of {Math.ceil(result.schedule.length / 12)}
+                                            {t('mortgage.yr')} {amortPage * 2 + 1}–{Math.min((amortPage + 1) * 2, Math.ceil(result.schedule.length / 12))} {t('mortgage.of')} {Math.ceil(result.schedule.length / 12)}
                                         </span>
                                         <button
                                             onClick={() => setAmortPage(p => Math.min(totalPages - 1, p + 1))}
@@ -836,7 +838,7 @@ export default function AdvancedMortgageCalculator() {
                                             className="px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
                                             style={{ backgroundColor: c.bg, color: c.text, border: `1px solid ${c.border}` }}
                                         >
-                                            Next →
+                                            {t('mortgage.next')} →
                                         </button>
                                     </div>
                                 )}
@@ -851,7 +853,7 @@ export default function AdvancedMortgageCalculator() {
                         className="w-full flex items-center justify-between font-semibold text-lg" style={{ color: c.text }}>
                         <div className="flex items-center gap-2">
                             <TrendingDown className="w-5 h-5" style={{ color: '#EF4444' }} />
-                            Foreclosure Simulator
+                            {t('mortgage.foreclosureSimulator')}
                         </div>
                         {showForeclosure ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                     </button>
@@ -862,38 +864,38 @@ export default function AdvancedMortgageCalculator() {
                                 exit={{ opacity: 0, height: 0 }} className="mt-4 space-y-4 overflow-hidden">
 
                                 <div className="p-3 rounded-xl" style={{ backgroundColor: `${c.bg}`, border: `1px solid ${c.border}` }}>
-                                    <p className="text-xs font-medium mb-1" style={{ color: '#10B981' }}>RBI Rule</p>
+                                    <p className="text-xs font-medium mb-1" style={{ color: '#10B981' }}>{t('mortgage.rbiRule')}</p>
                                     <p className="text-xs" style={{ color: c.textSecondary }}>
-                                        Floating rate home loans: NIL foreclosure charge (RBI Circular 2014). Fixed rate: Bank may charge up to 2-3%.
+                                        {t('mortgage.rbiRuleDesc')}
                                     </p>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
-                                    <NumberInput label="Months Already Paid" value={fcMonths}
+                                    <NumberInput label={t('mortgage.monthsAlreadyPaid')} value={fcMonths}
                                         onChange={v => setFcMonths(Math.min(v, result.schedule.length - 1))}
                                         min={1} max={result.schedule.length - 1} suffix=" mo" />
                                     <div>
-                                        <p className="text-xs font-medium mb-2" style={{ color: c.textSecondary }}>Rate Type</p>
+                                        <p className="text-xs font-medium mb-2" style={{ color: c.textSecondary }}>{t('mortgage.rateType')}</p>
                                         <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: c.border }}>
                                             <button onClick={() => { setFcRateType('floating'); setFcChargePercent(0); }}
                                                 className="flex-1 py-2 text-xs font-medium transition-colors"
                                                 style={{ backgroundColor: fcRateType === 'floating' ? '#10B981' : 'transparent',
                                                     color: fcRateType === 'floating' ? '#fff' : c.textSecondary }}>
-                                                Floating
+                                                {t('mortgage.floating')}
                                             </button>
                                             <button onClick={() => { setFcRateType('fixed'); setFcChargePercent(2); }}
                                                 className="flex-1 py-2 text-xs font-medium transition-colors border-l"
                                                 style={{ borderColor: c.border,
                                                     backgroundColor: fcRateType === 'fixed' ? '#F59E0B' : 'transparent',
                                                     color: fcRateType === 'fixed' ? '#fff' : c.textSecondary }}>
-                                                Fixed
+                                                {t('mortgage.fixed')}
                                             </button>
                                         </div>
                                     </div>
                                 </div>
 
                                 {fcRateType === 'fixed' && (
-                                    <NumberInput label="Foreclosure Charge %" value={fcChargePercent}
+                                    <NumberInput label={t('mortgage.foreclosureCharge')} value={fcChargePercent}
                                         onChange={setFcChargePercent} min={0} max={5} step={0.5} suffix="%" />
                                 )}
 
@@ -901,21 +903,21 @@ export default function AdvancedMortgageCalculator() {
                                     <div className="space-y-3">
                                         <div className="p-3 rounded-xl" style={{ backgroundColor: c.bg, border: `1px solid ${c.border}` }}>
                                             <div className="flex justify-between items-center mb-1">
-                                                <span className="text-xs" style={{ color: c.textSecondary }}>EMIs Paid ({fcMonths} mo × {formatINR(result.originalEmi)})</span>
+                                                <span className="text-xs" style={{ color: c.textSecondary }}>{t('mortgage.emisPaid')} ({fcMonths} {t('mortgage.mo')} × {formatINR(result.originalEmi)})</span>
                                                 <span className="text-xs font-bold" style={{ color: c.text }}>{formatINR(fcResult.emisPaid)}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-xs" style={{ color: c.textSecondary }}>Interest paid so far</span>
+                                                <span className="text-xs" style={{ color: c.textSecondary }}>{t('mortgage.interestPaidSoFar')}</span>
                                                 <span className="text-xs font-bold text-amber-500">{formatINR(fcResult.intPaid)}</span>
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-2">
                                             {[
-                                                { label: 'Outstanding Principal', value: formatINR(fcResult.outstanding), cls: '' },
-                                                { label: 'Foreclosure Charge', value: fcRateType === 'floating' ? 'NIL (RBI)' : formatINR(fcResult.charge), cls: 'text-red-500' },
-                                                { label: 'Interest You Skip', value: formatINR(fcResult.intSaved), cls: 'text-emerald-500' },
-                                                { label: 'Net Benefit', value: formatINR(fcResult.netBenefit), cls: 'text-emerald-500' },
+                                                { label: t('mortgage.outstandingPrincipal'), value: formatINR(fcResult.outstanding), cls: '' },
+                                                { label: t('mortgage.foreclosureChargeLabel'), value: fcRateType === 'floating' ? t('mortgage.nilRBI') : formatINR(fcResult.charge), cls: 'text-red-500' },
+                                                { label: t('mortgage.interestYouSkip'), value: formatINR(fcResult.intSaved), cls: 'text-emerald-500' },
+                                                { label: t('mortgage.netBenefit'), value: formatINR(fcResult.netBenefit), cls: 'text-emerald-500' },
                                             ].map(item => (
                                                 <div key={item.label} className="p-3 rounded-xl text-center" style={{ backgroundColor: c.bg }}>
                                                     <p className="text-[9px] uppercase font-bold mb-1" style={{ color: c.textSecondary }}>{item.label}</p>
@@ -925,22 +927,22 @@ export default function AdvancedMortgageCalculator() {
                                         </div>
 
                                         <div className="p-4 rounded-xl text-center" style={{ background: 'linear-gradient(135deg, #10B981, #059669)' }}>
-                                            <p className="text-emerald-100 text-[10px] uppercase font-bold tracking-wider mb-1">Pay Bank Today to Close</p>
+                                            <p className="text-emerald-100 text-[10px] uppercase font-bold tracking-wider mb-1">{t('mortgage.payBankTodayToClose')}</p>
                                             <p className="text-2xl font-bold text-white">{formatINR(fcResult.settlement)}</p>
                                         </div>
 
                                         <div className="p-3 rounded-xl" style={{ backgroundColor: c.bg, border: `1px solid ${c.border}` }}>
-                                            <p className="text-[10px] uppercase font-bold mb-2" style={{ color: c.textSecondary }}>Total Cost Comparison</p>
+                                            <p className="text-[10px] uppercase font-bold mb-2" style={{ color: c.textSecondary }}>{t('mortgage.totalCostComparison')}</p>
                                             <div className="flex justify-between items-center mb-1">
-                                                <span className="text-xs" style={{ color: c.textSecondary }}>Close today</span>
+                                                <span className="text-xs" style={{ color: c.textSecondary }}>{t('mortgage.closeToday')}</span>
                                                 <span className="text-xs font-bold" style={{ color: c.text }}>{formatINR(fcResult.totalCostClose)}</span>
                                             </div>
                                             <div className="flex justify-between items-center mb-2">
-                                                <span className="text-xs" style={{ color: c.textSecondary }}>Continue full term</span>
+                                                <span className="text-xs" style={{ color: c.textSecondary }}>{t('mortgage.continueFullTerm')}</span>
                                                 <span className="text-xs font-bold" style={{ color: c.text }}>{formatINR(fcResult.totalCostFull)}</span>
                                             </div>
                                             <div className="border-t pt-2 flex justify-between items-center" style={{ borderColor: c.border }}>
-                                                <span className="text-xs font-bold text-emerald-500">You save</span>
+                                                <span className="text-xs font-bold text-emerald-500">{t('mortgage.youSave')}</span>
                                                 <span className="text-sm font-bold text-emerald-500">{formatINR(fcResult.saving)}</span>
                                             </div>
                                         </div>
@@ -949,16 +951,16 @@ export default function AdvancedMortgageCalculator() {
                                         {fcTimeline.length > 1 && (
                                             <div className="rounded-xl overflow-hidden border" style={{ borderColor: c.border }}>
                                                 <p className="text-[10px] uppercase font-bold p-3 pb-1" style={{ color: c.textSecondary }}>
-                                                    Optimal Foreclosure Timeline
+                                                    {t('mortgage.optimalForeclosureTimeline')}
                                                 </p>
                                                 <div className="overflow-x-auto">
                                                     <table className="w-full text-right text-[11px]">
                                                         <thead>
                                                             <tr style={{ borderBottom: `1px solid ${c.border}`, color: c.textSecondary }}>
-                                                                <th className="py-2 px-2 text-center font-medium text-[10px]">Year</th>
-                                                                <th className="py-2 px-2 font-medium text-[10px]">Outstanding</th>
-                                                                <th className="py-2 px-2 font-medium text-[10px]">Settlement</th>
-                                                                <th className="py-2 px-2 font-medium text-[10px]">You Save</th>
+                                                                <th className="py-2 px-2 text-center font-medium text-[10px]">{t('mortgage.year')}</th>
+                                                                <th className="py-2 px-2 font-medium text-[10px]">{t('mortgage.outstanding')}</th>
+                                                                <th className="py-2 px-2 font-medium text-[10px]">{t('mortgage.settlement')}</th>
+                                                                <th className="py-2 px-2 font-medium text-[10px]">{t('mortgage.youSave')}</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -984,7 +986,7 @@ export default function AdvancedMortgageCalculator() {
                                                     </table>
                                                 </div>
                                                 <p className="text-[9px] p-2 text-center" style={{ color: c.textSecondary }}>
-                                                    ★ = Best year to foreclose (maximum savings)
+                                                    {t('mortgage.bestYearNote')}
                                                 </p>
                                             </div>
                                         )}
@@ -994,12 +996,12 @@ export default function AdvancedMortgageCalculator() {
                                             <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadPDF}
                                                 className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border font-bold text-xs"
                                                 style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
-                                                <FileText size={14} className="text-violet-500" /> Export PDF
+                                                <FileText size={14} className="text-violet-500" /> {t('mortgage.exportPDF')}
                                             </motion.button>
                                             <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadExcel}
                                                 className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border font-bold text-xs"
                                                 style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
-                                                <Download size={14} className="text-emerald-500" /> Export Excel
+                                                <Download size={14} className="text-emerald-500" /> {t('mortgage.exportExcel')}
                                             </motion.button>
                                         </div>
                                     </div>
@@ -1015,7 +1017,7 @@ export default function AdvancedMortgageCalculator() {
                         className="w-full flex items-center justify-between font-semibold text-lg" style={{ color: c.text }}>
                         <div className="flex items-center gap-2">
                             <Sliders className="w-5 h-5" style={{ color: '#3B82F6' }} />
-                            What-If Simulator
+                            {t('mortgage.whatIfSimulator')}
                         </div>
                         {showWhatIf ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                     </button>
@@ -1026,13 +1028,13 @@ export default function AdvancedMortgageCalculator() {
                                 exit={{ opacity: 0, height: 0 }} className="mt-4 space-y-4 overflow-hidden">
 
                                 <p className="text-xs" style={{ color: c.textSecondary }}>
-                                    Adjust rate or tenure to see how your EMI and total cost changes. Use this to compare balance transfer offers.
+                                    {t('mortgage.whatIfDesc')}
                                 </p>
 
                                 <div className="grid grid-cols-2 gap-3">
-                                    <NumberInput label="New Interest Rate" value={wiRate}
+                                    <NumberInput label={t('mortgage.newInterestRate')} value={wiRate}
                                         onChange={setWiRate} min={4} max={20} step={0.1} suffix="%" />
-                                    <NumberInput label="New Tenure (Years)" value={wiTenure}
+                                    <NumberInput label={t('mortgage.newTenureYears')} value={wiTenure}
                                         onChange={setWiTenure} min={1} max={30} step={1} suffix="Yr" />
                                 </div>
 
@@ -1040,9 +1042,9 @@ export default function AdvancedMortgageCalculator() {
                                     <div className="space-y-3">
                                         <div className="grid grid-cols-3 gap-2">
                                             {[
-                                                { label: 'EMI Change', current: formatINR(result.originalEmi), newVal: formatINR(wiResult.emi), diff: wiResult.emiDiff },
-                                                { label: 'Interest Change', current: formatINR(result.totalInterest), newVal: formatINR(wiResult.totalInterest), diff: wiResult.interestDiff },
-                                                { label: 'Total Change', current: formatINR(result.totalPayment), newVal: formatINR(wiResult.totalPayment), diff: wiResult.paymentDiff },
+                                                { label: t('mortgage.emiChange'), current: formatINR(result.originalEmi), newVal: formatINR(wiResult.emi), diff: wiResult.emiDiff },
+                                                { label: t('mortgage.interestChange'), current: formatINR(result.totalInterest), newVal: formatINR(wiResult.totalInterest), diff: wiResult.interestDiff },
+                                                { label: t('mortgage.totalChange'), current: formatINR(result.totalPayment), newVal: formatINR(wiResult.totalPayment), diff: wiResult.paymentDiff },
                                             ].map(item => (
                                                 <div key={item.label} className="p-3 rounded-xl text-center" style={{ backgroundColor: c.bg }}>
                                                     <p className="text-[8px] uppercase font-bold mb-1" style={{ color: c.textSecondary }}>{item.label}</p>
@@ -1063,20 +1065,20 @@ export default function AdvancedMortgageCalculator() {
                                                 style={{ backgroundColor: wiResult.interestDiff < 0 ? '#10B98115' : '#EF444415' }}>
                                                 <p className={`text-sm font-bold ${wiResult.interestDiff < 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                                                     {wiResult.interestDiff < 0
-                                                        ? `You save ${formatINR(Math.abs(wiResult.interestDiff))} in interest`
-                                                        : `You pay ${formatINR(wiResult.interestDiff)} more in interest`}
+                                                        ? t('mortgage.youSaveInInterest', { amount: formatINR(Math.abs(wiResult.interestDiff)) })
+                                                        : t('mortgage.youPayMoreInInterest', { amount: formatINR(wiResult.interestDiff) })}
                                                 </p>
                                                 <p className="text-xs mt-1" style={{ color: c.textSecondary }}>
-                                                    EMI {wiResult.emiDiff < 0 ? 'decreases' : 'increases'} by {formatINR(Math.abs(wiResult.emiDiff))}/month
+                                                    {t('mortgage.emiLabel')} {wiResult.emiDiff < 0 ? t('mortgage.decreases') : t('mortgage.increases')} {t('mortgage.by')} {formatINR(Math.abs(wiResult.emiDiff))}/{t('mortgage.month')}
                                                 </p>
                                             </div>
                                         )}
 
                                         {(wiRate < interestRate) && (
                                             <div className="p-3 rounded-xl" style={{ backgroundColor: '#3B82F615', border: '1px solid #3B82F630' }}>
-                                                <p className="text-xs font-bold" style={{ color: '#3B82F6' }}>Balance Transfer Tip</p>
+                                                <p className="text-xs font-bold" style={{ color: '#3B82F6' }}>{t('mortgage.balanceTransferTip')}</p>
                                                 <p className="text-xs mt-1" style={{ color: c.textSecondary }}>
-                                                    If another bank offers {wiRate}%, you save {formatINR(Math.abs(wiResult.interestDiff))} over the loan life. Factor in processing fees (typically 0.5-1% of outstanding) before deciding.
+                                                    {t('mortgage.balanceTransferDesc', { rate: wiRate, savings: formatINR(Math.abs(wiResult.interestDiff)) })}
                                                 </p>
                                             </div>
                                         )}
@@ -1086,12 +1088,12 @@ export default function AdvancedMortgageCalculator() {
                                             <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadPDF}
                                                 className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border font-bold text-xs"
                                                 style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
-                                                <FileText size={14} className="text-violet-500" /> Export PDF
+                                                <FileText size={14} className="text-violet-500" /> {t('mortgage.exportPDF')}
                                             </motion.button>
                                             <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadExcel}
                                                 className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border font-bold text-xs"
                                                 style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
-                                                <Download size={14} className="text-emerald-500" /> Export Excel
+                                                <Download size={14} className="text-emerald-500" /> {t('mortgage.exportExcel')}
                                             </motion.button>
                                         </div>
                                     </div>

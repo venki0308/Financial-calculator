@@ -107,7 +107,7 @@ export default function Calculators() {
                 <section className="mb-6">
                     <div className="flex items-center gap-2 mb-3 px-1">
                         <Sparkles size={14} className="text-amber-400" />
-                        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Most Used</h2>
+                        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('calculators.mostUsed')}</h2>
                     </div>
                     <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1 -mx-1 px-1">
                         {mostUsed.map((mu, i) => {
@@ -141,7 +141,7 @@ export default function Calculators() {
                 <section className="mb-6">
                     <div className="flex items-center gap-2 mb-3 px-1">
                         <History size={14} className="text-blue-400" />
-                        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Recently Used</h2>
+                        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('home.recentlyUsed')}</h2>
                     </div>
                     <div className="grid grid-cols-2 gap-2.5">
                         {recentCalcs.slice(0, 4).map((item, i) => (
@@ -178,8 +178,8 @@ export default function Calculators() {
                             <GitCompare size={20} className="text-foreground" />
                         </div>
                         <div className="text-left flex-1">
-                            <h3 className="text-foreground font-bold text-sm">Compare Scenarios</h3>
-                            <p className="text-foreground/60 text-[10px] mt-0.5">Loan A vs B, SIP rates, FD tenures</p>
+                            <h3 className="text-foreground font-bold text-sm">{t('home.compareScenarios')}</h3>
+                            <p className="text-foreground/60 text-[10px] mt-0.5">{t('home.compareScenariosDesc')}</p>
                         </div>
                         <ChevronRight size={18} className="text-foreground/40" />
                     </motion.button>
@@ -217,7 +217,7 @@ export default function Calculators() {
             </div>
 
             {/* Count */}
-            <p className="text-muted-foreground text-xs mb-3 px-1">{filtered.length} calculators</p>
+            <p className="text-muted-foreground text-xs mb-3 px-1">{filtered.length} {t('calculators.countLabel')}</p>
 
             {/* Calculator Cards */}
             <div className="space-y-7 mb-6">
@@ -267,7 +267,7 @@ export default function Calculators() {
             {filtered.length === 0 && (
                 <div className="text-center py-16">
                     <Calculator size={48} className="text-slate-600 mx-auto mb-3" />
-                    <p className="text-muted-foreground text-sm">{t('calculators.search')} — no results</p>
+                    <p className="text-muted-foreground text-sm">{t('calculators.search')} {t('calculators.noResults')}</p>
                 </div>
             )}
             

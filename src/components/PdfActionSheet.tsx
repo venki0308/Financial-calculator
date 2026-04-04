@@ -37,7 +37,7 @@ export function PdfActionSheet() {
             });
         } catch (e: any) {
             console.error('File open error', e);
-            showToast('Could not open PDF viewer', true);
+            showToast(t('common.couldNotOpenPdf'), true);
         }
         hideActionSheet();
     };
@@ -50,10 +50,10 @@ export function PdfActionSheet() {
                 await Share.share({
                     title: `FinCalix – ${fileName}`,
                     url: fileUri,
-                    dialogTitle: 'Share PDF',
+                    dialogTitle: t('common.sharePdf'),
                 });
             } else {
-                showToast('Sharing not supported on this device', true);
+                showToast(t('common.sharingNotSupported'), true);
             }
         } catch (e) {
             console.error('Share dismissed or failed', e);
@@ -91,7 +91,7 @@ export function PdfActionSheet() {
                         <div className="p-6" style={{ minHeight: 200 }}>
                             <div className="flex items-center justify-between mb-6">
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-foreground">File Ready</h3>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-foreground">{t('common.fileReady')}</h3>
                                     <p className="text-xs text-muted-foreground mt-0.5 max-w-[200px] truncate">{fileName}</p>
                                 </div>
                                 <button onClick={hideActionSheet} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-muted-foreground flex items-center justify-center">
@@ -105,8 +105,8 @@ export function PdfActionSheet() {
                                         <FileText size={20} />
                                     </div>
                                     <div className="text-left">
-                                        <p className="font-semibold text-slate-900 dark:text-foreground">Open Document</p>
-                                        <p className="text-xs text-muted-foreground">View PDF on this device</p>
+                                        <p className="font-semibold text-slate-900 dark:text-foreground">{t('common.openDoc')}</p>
+                                        <p className="text-xs text-muted-foreground">{t('common.viewPdf')}</p>
                                     </div>
                                 </button>
                                 
@@ -115,8 +115,8 @@ export function PdfActionSheet() {
                                         <Share2 size={20} />
                                     </div>
                                     <div className="text-left">
-                                        <p className="font-semibold text-slate-900 dark:text-foreground">Share File</p>
-                                        <p className="text-xs text-muted-foreground">Send via WhatsApp, Mail, etc.</p>
+                                        <p className="font-semibold text-slate-900 dark:text-foreground">{t('common.shareFile')}</p>
+                                        <p className="text-xs text-muted-foreground">{t('common.shareVia')}</p>
                                     </div>
                                 </button>
                             </div>

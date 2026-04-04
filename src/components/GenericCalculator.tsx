@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Save, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -71,6 +72,7 @@ interface FieldConfig {
 }
 
 export default function GenericCalculator({ config }: { config: CalcConfig }) {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
     const [vals, setVals] = useState<Record<string, number>>(
@@ -269,7 +271,7 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
                                 : 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20'
                                 }`}
                         >
-                            {saved || isAlreadySaved ? <><Check size={18} /> Saved</> : <><Save size={18} /> Save Calculation</>}
+                            {saved || isAlreadySaved ? <><Check size={18} /> {t('common.saved')}</> : <><Save size={18} /> {t('common.saveCalc')}</>}
                         </motion.button>
                     </motion.div>
                 )}
@@ -279,13 +281,13 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
                         onClick={handleDownloadPDF}
                         className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm"
                     >
-                        📄 Download PDF
+                        📄 {t('common.downloadPdf')}
                     </button>
                     <button
                         onClick={handleDownloadExcel}
                         className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-green/10 border-2 border-brand-green/40 text-brand-green font-bold text-sm"
                     >
-                        📊 Download Excel
+                        📊 {t('common.downloadExcel')}
                     </button>
                 </div>
 

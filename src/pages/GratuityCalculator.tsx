@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, Lightbulb } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
@@ -17,6 +18,7 @@ const fmtINR = (v: number) => formatINR(Math.round(v));
 const ITEMS_PER_PAGE = 10;
 
 export default function GratuityCalculator() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
 
@@ -175,8 +177,8 @@ export default function GratuityCalculator() {
                             <ArrowLeft size={18} className="text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-foreground">Gratuity Calculator</h1>
-                            <p className="text-muted-foreground text-xs">Service gratuity estimate</p>
+                            <h1 className="text-lg font-bold text-foreground">{t('gratuity.title')}</h1>
+                            <p className="text-muted-foreground text-xs">{t('gratuity.subtitle')}</p>
                             <div className="mt-1">
                                 <RiskCategoryTags risk={result.riskConfig.risk} categories={result.riskConfig.categories} />
                             </div>
@@ -192,7 +194,7 @@ export default function GratuityCalculator() {
                 {/* Inputs */}
                 <div className="space-y-3">
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-2 block">Employer Type</label>
+                        <label className="text-muted-foreground text-xs font-medium mb-2 block">{t('gratuity.employerType')}</label>
                         <div className="flex bg-muted/30 p-1 rounded-xl border border-border">
                             {(['Private', 'Govt'] as const).map(type => (
                                 <button
@@ -204,25 +206,25 @@ export default function GratuityCalculator() {
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
-                                    {type} Sector
+                                    {t(`gratuity.${type.toLowerCase()}Sector`)}
                                 </button>
                             ))}
                         </div>
                         {employerType === 'Govt' && (
-                            <p className="text-brand-green text-[10px] mt-1.5 font-semibold">✓ Govt employee gratuity is fully exempt from Income Tax</p>
+                            <p className="text-brand-green text-[10px] mt-1.5 font-semibold">{t('gratuity.govtExemptNote')}</p>
                         )}
                     </div>
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Last Drawn Salary (Basic + DA)</label>
-                        <p className="text-muted-foreground text-[10px] mb-1">Monthly Basic + DA</p>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('gratuity.lastDrawnSalary')}</label>
+                        <p className="text-muted-foreground text-[10px] mb-1">{t('gratuity.monthlyBasicDA')}</p>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                             <input type="number" value={salary} onChange={e => setSalary(Number(e.target.value) || 0)} className={inputCls + " pl-8"} />
                         </div>
                     </div>
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Years of Service</label>
-                        <p className="text-muted-foreground text-[10px] mb-1">Act considers 4 yrs 240 days (4.5 yrs) as 5 years.</p>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('gratuity.yearsOfService')}</label>
+                        <p className="text-muted-foreground text-[10px] mb-1">{t('gratuity.yearsNote')}</p>
                         <div className="relative">
                             <input type="text" inputMode="decimal" value={yearsInput} onChange={e => {
                                 const v = e.target.value;
@@ -236,7 +238,7 @@ export default function GratuityCalculator() {
                                 setYears(num);
                                 setYearsInput(String(num));
                             }} className={inputCls + " pr-16"} />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">years</span>
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{t('gratuity.years')}</span>
                         </div>
                     </div>
                 </div>
@@ -247,22 +249,22 @@ export default function GratuityCalculator() {
                         <div className="flex items-start gap-3 mb-2">
                             <ShieldAlert size={20} className="text-red-500 mt-1 shrink-0" />
                             <div>
-                                <p className="text-red-500 font-bold">Not Eligible for Gratuity</p>
-                                <p className="text-red-400/80 text-xs">Minimum 5 years of continuous service is required as per the Payment of Gratuity Act.</p>
+                                <p className="text-red-500 font-bold">{t('gratuity.notEligible')}</p>
+                                <p className="text-red-400/80 text-xs">{t('gratuity.notEligibleDesc')}</p>
                             </div>
                         </div>
                     ) : (
                         <>
-                            <p className="text-muted-foreground text-xs font-medium mb-1">Estimated Gratuity</p>
+                            <p className="text-muted-foreground text-xs font-medium mb-1">{t('gratuity.estimatedGratuity')}</p>
                             <p className="text-foreground font-bold text-3xl">{fmtINR(result.gratuity)}</p>
                             <div className="mt-3 grid grid-cols-2 gap-3">
                                 <div>
-                                    <p className="text-muted-foreground text-[11px]">Service Period</p>
-                                    <p className="text-foreground font-bold text-base">{years} years</p>
+                                    <p className="text-muted-foreground text-[11px]">{t('gratuity.servicePeriod')}</p>
+                                    <p className="text-foreground font-bold text-base">{years} {t('gratuity.years')}</p>
                                 </div>
                                 <div>
-                                    <p className="text-muted-foreground text-[11px]">Tax Exemption</p>
-                                    <p className="text-brand-green font-bold text-base">Up to ₹25 Lakh</p>
+                                    <p className="text-muted-foreground text-[11px]">{t('gratuity.taxExemption')}</p>
+                                    <p className="text-brand-green font-bold text-base">{t('gratuity.upTo25Lakh')}</p>
                                 </div>
                             </div>
                         </>
@@ -274,7 +276,7 @@ export default function GratuityCalculator() {
                     <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-4 bg-muted/30">
                         <div className="flex items-center gap-2">
                             <BrainCircuit size={18} className="text-brand-blue" />
-                            <span className="text-foreground font-semibold text-sm">Decision Analytics & Details</span>
+                            <span className="text-foreground font-semibold text-sm">{t('gratuity.decisionAnalytics')}</span>
                         </div>
                         {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -287,17 +289,17 @@ export default function GratuityCalculator() {
                                     {/* Action Buttons */}
                                     <div className="flex items-center justify-end gap-2 border-b border-border pb-4">
                                         <button onClick={handlePDFExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-blue/10 text-brand-blue text-xs font-medium hover:bg-brand-blue/20 transition-colors">
-                                            <FileText size={14} /> Export PDF
+                                            <FileText size={14} /> {t('gratuity.exportPDF')}
                                         </button>
                                         <button onClick={handleExcelExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-blue/10 text-brand-blue text-xs font-medium hover:bg-brand-blue/20 transition-colors">
-                                            <FileText size={14} /> Export Excel
+                                            <FileText size={14} /> {t('gratuity.exportExcel')}
                                         </button>
                                     </div>
 
                                     {/* Smart Insights */}
                                     <div className="space-y-3">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <Lightbulb size={14} className="text-brand-blue" /> Final Recommendation
+                                            <Lightbulb size={14} className="text-brand-blue" /> {t('gratuity.finalRecommendation')}
                                         </h3>
                                         <div className={`p-4 rounded-xl border ${
                                             result.recommendation.status === 'success' ? 'bg-brand-green/10 border-brand-green/20' :
@@ -316,32 +318,32 @@ export default function GratuityCalculator() {
                                             </p>
                                         </div>
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2 mt-4">
-                                            <Activity size={14} /> Smart Insights
+                                            <Activity size={14} /> {t('gratuity.smartInsights')}
                                         </h3>
                                         <div className="grid gap-2">
                                             {!result.isEligible && (
                                                 <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex gap-3">
                                                     <Info size={16} className="text-orange-500 shrink-0" />
-                                                    <p className="text-xs font-medium text-orange-600 dark:text-orange-400">Complete {Math.max(0, 4.5 - years).toFixed(1)} more year(s) to become eligible for Gratuity payouts.</p>
+                                                    <p className="text-xs font-medium text-orange-600 dark:text-orange-400">{t('gratuity.completeMoreYears', { years: Math.max(0, 4.5 - years).toFixed(1) })}</p>
                                                 </div>
                                             )}
                                             {result.isEligible && result.taxableGratuity === 0 && (
                                                 <div className="p-3 rounded-xl bg-brand-green/10 border border-brand-green/20 flex gap-3">
                                                     <Check size={16} className="text-brand-green shrink-0 mt-0.5" />
                                                     <p className="text-xs font-medium text-brand-green">
-                                                        Your entire gratuity amount is currently tax-free {employerType === 'Govt' ? '(Govt employees are fully exempt)' : '(Under ₹25 Lakhs limit)'}.
+                                                        {t('gratuity.entireGratuityTaxFree')} {employerType === 'Govt' ? t('gratuity.govtFullyExempt') : t('gratuity.under25LakhLimit')}.
                                                     </p>
                                                 </div>
                                             )}
                                             {result.isEligible && result.taxableGratuity > 0 && (
                                                 <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-3">
                                                     <ShieldAlert size={16} className="text-red-500 shrink-0 mt-0.5" />
-                                                    <p className="text-xs font-medium text-red-500">Your gratuity exceeds the ₹25L exemption limit by {fmtINR(result.taxableGratuity)}. This surplus will be taxed as per your income slab.</p>
+                                                    <p className="text-xs font-medium text-red-500">{t('gratuity.exceedsExemption', { amount: fmtINR(result.taxableGratuity) })}</p>
                                                 </div>
                                             )}
                                             <div className="p-3 rounded-xl bg-brand-blue/10 border border-brand-blue/20 flex gap-3">
                                                 <Target size={16} className="text-brand-blue shrink-0 mt-0.5" />
-                                                <p className="text-xs font-medium text-brand-blue">Salary used is only Basic + Dearness Allowance (DA). Other allowances are excluded from the calculation.</p>
+                                                <p className="text-xs font-medium text-brand-blue">{t('gratuity.salaryOnlyBasicDA')}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -349,12 +351,12 @@ export default function GratuityCalculator() {
                                     {/* Formula detailed breakdown */}
                                     {result.isEligible && (
                                         <div className="p-4 rounded-xl bg-muted/50 border border-border">
-                                            <p className="text-muted-foreground text-xs font-semibold mb-3">Formula Breakdown</p>
+                                            <p className="text-muted-foreground text-xs font-semibold mb-3">{t('gratuity.formulaBreakdown')}</p>
                                             <p className="text-foreground text-xs font-mono mb-2">
-                                                = (Salary × 15 × Years) / 26
+                                                = ({t('gratuity.salary')} × 15 × {t('gratuity.yearsLabel')}) / 26
                                             </p>
                                             <p className="text-muted-foreground text-[11px]">
-                                                = ({fmtINR(salary)} × 15 days × {years} years) / 26 working days
+                                                = ({fmtINR(salary)} × 15 {t('gratuity.days')} × {years} {t('gratuity.years')}) / 26 {t('gratuity.workingDays')}
                                             </p>
                                             <div className="mt-3 pt-3 border-t border-border/50">
                                                 <p className="text-foreground font-semibold text-sm">= {fmtINR(result.gratuity)}</p>
@@ -366,7 +368,7 @@ export default function GratuityCalculator() {
                                     {result.isEligible && (
                                         <div className="space-y-3 pt-2">
                                             <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                                <BarChart2 size={14} /> Tax Calculation
+                                                <BarChart2 size={14} /> {t('gratuity.taxCalculation')}
                                             </h3>
                                             <div className="space-y-4">
                                                 <TaxInputGroup
@@ -378,11 +380,11 @@ export default function GratuityCalculator() {
 
                                                 <div className="space-y-2 bg-background p-3 rounded-xl border border-border">
                                                     {[
-                                                        { label: 'Calculated Gratuity', val: result.gratuity },
-                                                        { label: 'Exemption Limit', val: result.exemptionLimit, green: true },
-                                                        { label: 'Taxable Portion', val: result.taxableGratuity, red: result.taxableGratuity > 0 },
-                                                        { label: `Estimated Tax Liability`, val: result.estimatedTax, red: result.estimatedTax > 0 },
-                                                        { label: 'Final Net Gratuity', val: result.netGratuity, bold: true, green: true },
+                                                        { label: t('gratuity.calculatedGratuity'), val: result.gratuity },
+                                                        { label: t('gratuity.exemptionLimit'), val: result.exemptionLimit, green: true },
+                                                        { label: t('gratuity.taxablePortion'), val: result.taxableGratuity, red: result.taxableGratuity > 0 },
+                                                        { label: t('gratuity.estimatedTaxLiability'), val: result.estimatedTax, red: result.estimatedTax > 0 },
+                                                        { label: t('gratuity.finalNetGratuity'), val: result.netGratuity, bold: true, green: true },
                                                     ].map(({ label, val, green, red, bold }, idx) => (
                                                         <div key={idx} className="flex justify-between items-center py-1">
                                                             <span className={`text-[11px] ${bold ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>{label}</span>
@@ -397,36 +399,36 @@ export default function GratuityCalculator() {
                                     {/* Future Projection Simulator */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <Activity size={14} /> Future Gratuity Simulator
+                                            <Activity size={14} /> {t('gratuity.futureSimulator')}
                                         </h3>
                                         <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-4">
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div>
-                                                    <label className="text-muted-foreground text-[10px] font-medium block mb-1">Expected Salary Hike</label>
+                                                    <label className="text-muted-foreground text-[10px] font-medium block mb-1">{t('gratuity.expectedSalaryHike')}</label>
                                                     <div className="relative">
                                                         <input type="number" value={salaryHike} onChange={e => setSalaryHike(Number(e.target.value) || 0)} className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-foreground text-xs font-semibold focus:outline-none focus:border-brand-blue pr-6" />
                                                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px]">%</span>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <label className="text-muted-foreground text-[10px] font-medium block mb-1">Future Projection In</label>
+                                                    <label className="text-muted-foreground text-[10px] font-medium block mb-1">{t('gratuity.futureProjectionIn')}</label>
                                                     <div className="relative">
                                                         <input type="number" value={projectionYears} onChange={e => setProjectionYears(Number(e.target.value) || 0)} className="w-full bg-background border border-border rounded-lg px-2 py-1.5 text-foreground text-xs font-semibold focus:outline-none focus:border-brand-blue pr-8" />
-                                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px]">years</span>
+                                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px]">{t('gratuity.years')}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="bg-background rounded-lg p-3 border border-border">
                                                 <div className="flex justify-between items-center mb-1">
-                                                    <span className="text-muted-foreground text-[11px]">Future Salary</span>
+                                                    <span className="text-muted-foreground text-[11px]">{t('gratuity.futureSalary')}</span>
                                                     <span className="text-foreground text-xs font-bold">{fmtINR(result.projectedSalary)}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <span className="text-muted-foreground text-[11px]">Total Service Then</span>
-                                                    <span className="text-foreground text-xs font-bold">{result.projectedTotalYears} years</span>
+                                                    <span className="text-muted-foreground text-[11px]">{t('gratuity.totalServiceThen')}</span>
+                                                    <span className="text-foreground text-xs font-bold">{result.projectedTotalYears} {t('gratuity.years')}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center pt-2 border-t border-border">
-                                                    <span className="text-foreground text-xs font-semibold">Future Gratuity</span>
+                                                    <span className="text-foreground text-xs font-semibold">{t('gratuity.futureGratuity')}</span>
                                                     <span className="text-brand-blue text-sm font-black">{fmtINR(result.projectedGratuity)}</span>
                                                 </div>
                                             </div>
@@ -435,17 +437,17 @@ export default function GratuityCalculator() {
 
                                     {/* Year-Wise Service Track */}
                                     <div className="space-y-3 pt-2">
-                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Year-by-Year Service Impact</h3>
+                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('gratuity.yearByYearImpact')}</h3>
                                         <div className="rounded-xl overflow-hidden border border-border">
                                             <div className="grid grid-cols-3 bg-muted px-3 py-2">
-                                                <p className="text-muted-foreground text-[10px] font-bold">YEAR</p>
-                                                <p className="text-muted-foreground text-[10px] font-bold">ELIGIBLE?</p>
-                                                <p className="text-muted-foreground text-[10px] font-bold text-right">GRATUITY</p>
+                                                <p className="text-muted-foreground text-[10px] font-bold">{t('gratuity.yearHeader')}</p>
+                                                <p className="text-muted-foreground text-[10px] font-bold">{t('gratuity.eligibleHeader')}</p>
+                                                <p className="text-muted-foreground text-[10px] font-bold text-right">{t('gratuity.gratuityHeader')}</p>
                                             </div>
                                             {paginatedYears.map((row, i) => (
                                                 <div key={row.year} className={`grid grid-cols-3 px-3 py-2 text-[11px] ${i % 2 === 0 ? 'bg-background' : 'bg-muted/30'}`}>
-                                                    <p className="text-foreground font-medium">Year {row.year}</p>
-                                                    <p className={row.eligible ? "text-brand-green font-medium" : "text-red-400"}>{row.eligible ? "Yes" : "No"}</p>
+                                                    <p className="text-foreground font-medium">{t('gratuity.yearN', { n: row.year })}</p>
+                                                    <p className={row.eligible ? "text-brand-green font-medium" : "text-red-400"}>{row.eligible ? t('gratuity.yes') : t('gratuity.no')}</p>
                                                     <p className="text-foreground font-mono font-medium text-right">{fmtINR(row.gratuity)}</p>
                                                 </div>
                                             ))}
@@ -461,7 +463,7 @@ export default function GratuityCalculator() {
                                                     <ChevronLeft size={16} />
                                                 </button>
                                                 <span className="text-[10px] text-muted-foreground font-medium">
-                                                    Page {currentPage + 1} of {totalPages}
+                                                    {t('gratuity.pageOf', { current: currentPage + 1, total: totalPages })}
                                                 </span>
                                                 <button
                                                     onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}

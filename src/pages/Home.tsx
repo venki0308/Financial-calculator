@@ -230,15 +230,15 @@ export default function Home() {
                                     <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-card border-border flex items-center justify-center mx-auto mb-3">
                                         <Search size={20} className="text-muted-foreground" />
                                     </div>
-                                    <p className="text-sm font-semibold text-muted-foreground">What are you looking for?</p>
-                                    <p className="text-xs text-muted-foreground mt-1">Try "home loan", "tax", "sip" or "ppf"</p>
+                                    <p className="text-sm font-semibold text-muted-foreground">{t('home.searchHint')}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{t('home.searchExample')}</p>
                                 </div>
                             ) : searchResults && searchResults.all && searchResults.all.length > 0 ? (
                                 <div className="py-2">
                                     {/* Calculators Group */}
                                     {searchResults.calcOnly.length > 0 && (
                                         <div>
-                                            <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-indigo-500">Calculators</p>
+                                            <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-indigo-500">{t('nav.calculate')}</p>
                                             {searchResults.calcOnly.map((result: any, i: number) => (
                                                 <button
                                                     key={i}
@@ -259,7 +259,7 @@ export default function Home() {
                                     {/* Govt Schemes Group */}
                                     {searchResults.schemeResults.length > 0 && (
                                         <div>
-                                            <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-violet-500">Government Schemes</p>
+                                            <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-violet-500">{t('home.govSchemes')}</p>
                                             {searchResults.schemeResults.map((result: any, i: number) => (
                                                 <button
                                                     key={i}
@@ -272,7 +272,7 @@ export default function Home() {
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2">
                                                             <h3 className="text-sm font-semibold text-slate-900 dark:text-foreground truncate">{result.title}</h3>
-                                                            <span className="text-[9px] bg-violet-100 dark:bg-violet-500/10 text-violet-600 px-1.5 py-0.5 rounded font-bold uppercase flex-shrink-0">Scheme</span>
+                                                            <span className="text-[9px] bg-violet-100 dark:bg-violet-500/10 text-violet-600 px-1.5 py-0.5 rounded font-bold uppercase flex-shrink-0">{t('home.scheme')}</span>
                                                         </div>
                                                         <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
                                                     </div>
@@ -283,7 +283,7 @@ export default function Home() {
                                     {/* Utilities Group */}
                                     {searchResults.utilityResults.length > 0 && (
                                         <div>
-                                            <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-500">Tools & Utilities</p>
+                                            <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-500">{t('home.toolsUtilities')}</p>
                                             {searchResults.utilityResults.map((result: any, i: number) => (
                                                 <button
                                                     key={i}
@@ -296,7 +296,7 @@ export default function Home() {
                                                     <div>
                                                         <div className="flex items-center gap-2">
                                                             <h3 className="text-sm font-semibold text-slate-900 dark:text-foreground">{result.title}</h3>
-                                                            <span className="text-[9px] bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded font-bold uppercase">Tool</span>
+                                                            <span className="text-[9px] bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded font-bold uppercase">{t('home.tool')}</span>
                                                         </div>
                                                         <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
                                                     </div>
@@ -311,8 +311,8 @@ export default function Home() {
                                         <div className="absolute inset-0 bg-brand-purple/20 blur-xl rounded-full" />
                                         <span className="text-5xl relative">🔍</span>
                                     </div>
-                                    <p className="text-sm font-semibold text-muted-foreground">No results found</p>
-                                    <p className="text-xs text-muted-foreground mt-1">Try "home loan", "tax", "sip" or "ppf"</p>
+                                    <p className="text-sm font-semibold text-muted-foreground">{t('home.noResults')}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{t('home.searchExample')}</p>
                                 </div>
                             )}
                         </motion.div>

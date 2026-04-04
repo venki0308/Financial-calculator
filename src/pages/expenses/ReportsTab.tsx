@@ -290,7 +290,7 @@ export default function ReportsTab() {
                     {/* 12-Month Year Grid */}
                     {period === 'year' && (
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.yearlyActivity', 'Yearly Activity')}</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.yearlyActivity')}</h3>
                             <div className="grid grid-cols-4 gap-2">
                                 {MONTHS.map((monthName, i) => {
                                     const m = i + 1;
@@ -403,7 +403,7 @@ export default function ReportsTab() {
                     {/* Savings Trend 6-month */}
                     {savingsTrend.filter(t => t.hasData).length > 0 && (
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">Savings Trend (6 Months)</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.savingsTrend')}</h3>
                             <Bar
                                 data={{
                                     labels: savingsTrend.filter(t => t.hasData).map(t => t.month),

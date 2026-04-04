@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Plus, X, Search, ChevronLeft, Sun, Sunrise, MapPin, DollarSign, Globe, ArrowRightLeft, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
@@ -67,20 +68,21 @@ function getZoneLabel(iana: string) {
     return tz ? `${tz.city} (${tz.country})` : iana;
 }
 
-const TZPickerSheet = memo(({ 
-    isOpen, onClose, label, value, onChange, search, setSearch 
+const TZPickerSheet = memo(({
+    isOpen, onClose, label, value, onChange, search, setSearch
 }: {
     isOpen: boolean; onClose: () => void; label: string; value: string; onChange: (v: string) => void;
     search: string; setSearch: (s: string) => void;
 }) => {
+    const { t } = useTranslation();
     return (
-        <BottomSheet isOpen={isOpen} onClose={() => { onClose(); setSearch(''); }} title={`Select ${label}`}>
+        <BottomSheet isOpen={isOpen} onClose={() => { onClose(); setSearch(''); }} title={t('worldClock.select', { label })}>
             <div className="px-4 mb-3 flex-shrink-0">
                 <div className="relative">
                     <Search size={14} className="absolute inset-y-0 my-auto left-3 text-muted-foreground" />
                     <input
                         type="text"
-                        placeholder="Search city or country…"
+                        placeholder={t('worldClock.searchCityOrCountry')}
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         className="w-full bg-input border border-border rounded-xl py-2.5 pl-9 pr-8 text-sm text-foreground outline-none focus:border-primary"
@@ -182,6 +184,7 @@ interface TargetResult {
 }
 
 function CompareView() {
+    const { t } = useTranslation();
     // ── Persisted state ──────────────────────────────────────────────────────
     const loadSaved = (): { src: string; targets: string[] } => {
         try {
@@ -261,9 +264,9 @@ function CompareView() {
                 const dayDiff = Math.round(
                     (new Date(tgtDateStr).getTime() - new Date(srcDateStr).getTime()) / 86400000
                 );
-                let dayCross = 'Same Day';
-                if (dayDiff > 0) dayCross = `+${dayDiff} Day`;
-                else if (dayDiff < 0) dayCross = `${dayDiff} Day`;
+                let dayCross = t('worldClock.sameDay');
+                if (dayDiff > 0) dayCross = `+${dayDiff} ${t('worldClock.day')}`;
+                else if (dayDiff < 0) dayCross = `${dayDiff} ${t('worldClock.day')}`;
 
                 return {
                     iana,
@@ -313,7 +316,7 @@ function CompareView() {
 
             {/* ── Source Zone Picker ─────────────────────────────────────── */}
             <div className="rounded-[22px] bg-card border border-border p-4">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Source Timezone</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('worldClock.sourceTimezone')}</p>
                 <button
                     onClick={() => setShowSrcPicker(true)}
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-indigo-500/8 border border-indigo-500/20 text-left active:scale-[0.98] transition-transform"
@@ -326,11 +329,11 @@ function CompareView() {
                         {srcResult && (
                             <p className="text-[11px] text-muted-foreground font-medium">
                                 {srcResult.dst.offset}
-                                {srcResult.dst.currentlyDST && <span className="ml-1.5 text-amber-500 font-bold">· DST Active</span>}
+                                {srcResult.dst.currentlyDST && <span className="ml-1.5 text-amber-500 font-bold">· {t('worldClock.dstActive')}</span>}
                             </p>
                         )}
                     </div>
-                    <span className="text-[10px] text-muted-foreground font-semibold uppercase">Change</span>
+                    <span className="text-[10px] text-muted-foreground font-semibold uppercase">{t('worldClock.change')}</span>
                 </button>
             </div>
 
@@ -338,20 +341,20 @@ function CompareView() {
             <div className="rounded-[22px] bg-card border border-border p-4">
                 <div className="flex items-center justify-between mb-4">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                        <Clock size={11} /> Input Time
+                        <Clock size={11} /> {t('worldClock.inputTime')}
                     </p>
                     <div className="flex bg-muted p-1 rounded-xl">
                         <button
                             onClick={() => setUseLive(false)}
                             className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${!useLive ? 'bg-background shadow text-foreground' : 'text-muted-foreground'}`}
                         >
-                            Manual
+                            {t('worldClock.manual')}
                         </button>
                         <button
                             onClick={() => setUseLive(true)}
                             className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${useLive ? 'bg-primary shadow text-primary-foreground' : 'text-muted-foreground'}`}
                         >
-                            🔴 Live
+                            🔴 {t('worldClock.live')}
                         </button>
                     </div>
                 </div>
@@ -366,14 +369,14 @@ function CompareView() {
                                     <p className="text-xs text-muted-foreground mt-1">{srcResult.weekday}, {srcResult.date}</p>
                                 </div>
                             )}
-                            <p className="text-[10px] text-primary font-semibold mt-2 animate-pulse">⬤ Syncing with system clock</p>
+                            <p className="text-[10px] text-primary font-semibold mt-2 animate-pulse">⬤ {t('worldClock.syncingWithSystemClock')}</p>
                         </motion.div>
                     ) : (
                         <motion.div key="manual" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                             {/* Large time display */}
                             <div className="flex items-center justify-center gap-2 mb-3">
                                 <div className="flex-1 flex flex-col items-center bg-muted/40 rounded-2xl p-3 border border-border">
-                                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Hour</span>
+                                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-1">{t('worldClock.hour')}</span>
                                     <div className="flex items-center gap-1">
                                         <button onClick={() => setInputHour(h => (h - 1 + 24) % 24)}
                                             className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-bold text-lg hover:bg-muted/70 transition-colors">−</button>
@@ -389,7 +392,7 @@ function CompareView() {
                                 </div>
                                 <span className="text-3xl font-black text-muted-foreground">:</span>
                                 <div className="flex-1 flex flex-col items-center bg-muted/40 rounded-2xl p-3 border border-border">
-                                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-1">Minute</span>
+                                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mb-1">{t('worldClock.minute')}</span>
                                     <div className="flex items-center gap-1">
                                         <button onClick={() => setInputMin(m => (m - 1 + 60) % 60)}
                                             className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground font-bold text-lg hover:bg-muted/70 transition-colors">−</button>
@@ -406,9 +409,9 @@ function CompareView() {
                             </div>
                             {/* AM/PM chip */}
                             <div className="flex justify-center gap-3 text-[11px] font-bold text-muted-foreground">
-                                <span>12-hr: <span className="text-foreground">{inputHour === 0 ? '12' : inputHour > 12 ? inputHour - 12 : inputHour}:{String(inputMin).padStart(2, '0')} {inputHour < 12 ? 'AM' : 'PM'}</span></span>
+                                <span>{t('worldClock.twelveHr')}: <span className="text-foreground">{inputHour === 0 ? '12' : inputHour > 12 ? inputHour - 12 : inputHour}:{String(inputMin).padStart(2, '0')} {inputHour < 12 ? 'AM' : 'PM'}</span></span>
                                 <span className="opacity-40">|</span>
-                                <span>24-hr: <span className="text-foreground">{String(inputHour).padStart(2, '0')}:{String(inputMin).padStart(2, '0')}</span></span>
+                                <span>{t('worldClock.twentyFourHr')}: <span className="text-foreground">{String(inputHour).padStart(2, '0')}:{String(inputMin).padStart(2, '0')}</span></span>
                             </div>
                         </motion.div>
                     )}
@@ -421,9 +424,9 @@ function CompareView() {
                     <div className="rounded-[24px] bg-gradient-to-br from-[#4F46E5] to-[#4338CA] p-5 shadow-lg shadow-indigo-500/20 border border-white/10">
                         <div className="flex items-start justify-between mb-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-[10px] font-black uppercase tracking-widest bg-white/15 text-white px-2.5 py-1 rounded-full">Source</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest bg-white/15 text-white px-2.5 py-1 rounded-full">{t('worldClock.source')}</span>
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${srcResult.dst.currentlyDST ? 'bg-amber-400/30 text-amber-200' : 'bg-white/10 text-indigo-200'}`}>
-                                    {srcResult.dst.currentlyDST ? '☀️ DST Active' : '📍 Standard Time'}
+                                    {srcResult.dst.currentlyDST ? '☀️ ' + t('worldClock.dstActive') : '📍 ' + t('worldClock.standardTime')}
                                 </span>
                             </div>
                             <span className="text-indigo-200 text-[11px] font-bold flex-shrink-0">{srcResult.dst.offset}</span>
@@ -434,7 +437,7 @@ function CompareView() {
                         {srcResult.dst.nextDST && (
                             <div className="mt-3 pt-3 border-t border-white/10">
                                 <p className="text-[10px] text-amber-300 font-bold">
-                                    🕐 Next DST: Clocks go {srcResult.dst.nextDST.type} on {new Intl.DateTimeFormat('en-US', { timeZone: srcTZ, month: 'short', day: 'numeric', hour: 'numeric', hour12: true }).format(srcResult.dst.nextDST.date)}
+                                    🕐 {t('worldClock.nextDst')}: {t('worldClock.clocksGo', { direction: srcResult.dst.nextDST.type })} {t('worldClock.on')} {new Intl.DateTimeFormat('en-US', { timeZone: srcTZ, month: 'short', day: 'numeric', hour: 'numeric', hour12: true }).format(srcResult.dst.nextDST.date)}
                                 </p>
                             </div>
                         )}
@@ -447,14 +450,14 @@ function CompareView() {
                 {targetTZs.length === 1 && (
                     <button onClick={swap}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-muted border border-border text-muted-foreground text-[11px] font-semibold hover:border-primary/40 transition-colors">
-                        <ArrowRightLeft size={12} /> Swap
+                        <ArrowRightLeft size={12} /> {t('worldClock.swap')}
                     </button>
                 )}
                 <div className="flex-1" />
                 {targetTZs.length < 6 && (
                     <button onClick={() => { setEditingTargetIdx(null); setShowTgtPicker(true); }}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/25 text-primary text-[11px] font-bold transition-colors active:scale-95">
-                        <Plus size={13} /> Add Target
+                        <Plus size={13} /> {t('worldClock.addTarget')}
                     </button>
                 )}
             </div>
@@ -475,12 +478,12 @@ function CompareView() {
                                 <div className="flex items-start justify-between mb-1">
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <span className="text-[10px] font-black uppercase tracking-widest bg-white/15 text-white px-2.5 py-1 rounded-full">
-                                            Target {targetTZs.length > 1 ? idx + 1 : ''}
+                                            {t('worldClock.target')} {targetTZs.length > 1 ? idx + 1 : ''}
                                         </span>
                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${res.dst.currentlyDST ? 'bg-amber-400/30 text-amber-200' : 'bg-white/10 text-emerald-200'}`}>
-                                            {res.dst.currentlyDST ? '☀️ DST Active' : '📍 Standard Time'}
+                                            {res.dst.currentlyDST ? '☀️ ' + t('worldClock.dstActive') : '📍 ' + t('worldClock.standardTime')}
                                         </span>
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${res.dayCross === 'Same Day' ? 'bg-white/10 text-emerald-200' : 'bg-amber-400/25 text-amber-200'}`}>
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${res.dayCross === t('worldClock.sameDay') ? 'bg-white/10 text-emerald-200' : 'bg-amber-400/25 text-amber-200'}`}>
                                             {res.dayCross}
                                         </span>
                                     </div>
@@ -507,7 +510,7 @@ function CompareView() {
                             {res.dst.nextDST && (
                                 <div className="bg-amber-500/20 border-t border-amber-500/20 px-5 py-2">
                                     <p className="text-[10px] text-amber-300 font-bold">
-                                        🕐 Next DST change: Clocks go {res.dst.nextDST.type} on {new Intl.DateTimeFormat('en-US', { timeZone: res.iana, month: 'short', day: 'numeric', hour: 'numeric', hour12: true }).format(res.dst.nextDST.date)}
+                                        🕐 {t('worldClock.nextDstChange')}: {t('worldClock.clocksGo', { direction: res.dst.nextDST.type })} {t('worldClock.on')} {new Intl.DateTimeFormat('en-US', { timeZone: res.iana, month: 'short', day: 'numeric', hour: 'numeric', hour12: true }).format(res.dst.nextDST.date)}
                                     </p>
                                 </div>
                             )}
@@ -524,11 +527,11 @@ function CompareView() {
                 <div className="flex items-center gap-2">
                     <span className="text-base">📅</span>
                     <div className="text-left">
-                        <p className="text-sm font-bold">What-If Scheduler</p>
-                        <p className="text-[10px] font-medium opacity-70">See how this time lands globally</p>
+                        <p className="text-sm font-bold">{t('worldClock.whatIfScheduler')}</p>
+                        <p className="text-[10px] font-medium opacity-70">{t('worldClock.seeHowTimeLands')}</p>
                     </div>
                 </div>
-                <span className="text-[11px] font-bold uppercase">{showScenario ? 'Hide ▲' : 'Show ▼'}</span>
+                <span className="text-[11px] font-bold uppercase">{showScenario ? t('worldClock.hide') + ' ▲' : t('worldClock.show') + ' ▼'}</span>
             </button>
 
             <AnimatePresence>
@@ -543,7 +546,7 @@ function CompareView() {
                             {/* Header */}
                             <div className="bg-violet-500/10 border-b border-violet-500/15 px-4 py-3">
                                 <p className="text-[11px] font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider">
-                                    📅 If you schedule at {srcResult.time} in {getZoneLabel(srcTZ)}…
+                                    📅 {t('worldClock.ifYouScheduleAt', { time: srcResult.time, zone: getZoneLabel(srcTZ) })}
                                 </p>
                             </div>
                             {/* Rows */}
@@ -555,13 +558,13 @@ function CompareView() {
                                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                                 <span className="text-[10px] text-muted-foreground font-medium">{res.weekday}, {res.date}</span>
                                                 {res.dst.currentlyDST && (
-                                                    <span className="text-[9px] bg-amber-500/15 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold">DST</span>
+                                                    <span className="text-[9px] bg-amber-500/15 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold">{t('worldClock.dst')}</span>
                                                 )}
                                             </div>
                                         </div>
                                         <div className="text-right flex-shrink-0 ml-3">
                                             <p className="font-mono font-black text-foreground text-base">{res.time}</p>
-                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${res.dayCross === 'Same Day'
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${res.dayCross === t('worldClock.sameDay')
                                                 ? 'text-muted-foreground'
                                                 : 'text-amber-600 dark:text-amber-400 bg-amber-500/10'}`}>
                                                 {res.dayCross}
@@ -572,7 +575,7 @@ function CompareView() {
                             </div>
                         </div>
                         <p className="text-[10px] text-muted-foreground text-center mt-2 px-4">
-                            ✅ Powered by IANA Timezone Database · DST-aware · Accurate to the minute
+                            ✅ {t('worldClock.poweredByIana')}
                         </p>
                     </motion.div>
                 )}
@@ -581,15 +584,15 @@ function CompareView() {
             {/* ── Engine note ───────────────────────────────────────────── */}
             <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
                 <p className="text-muted-foreground text-[10px] leading-relaxed">
-                    🌐 Uses <strong>IANA Timezone Database</strong> via <code>Intl.DateTimeFormat</code>. DST transitions are detected and applied automatically. No manual offsets used.
+                    🌐 {t('worldClock.engineNote')}
                 </p>
             </div>
 
             {/* Pickers */}
-            <TZPickerSheet isOpen={showSrcPicker} onClose={() => setShowSrcPicker(false)} label="Source Timezone"
+            <TZPickerSheet isOpen={showSrcPicker} onClose={() => setShowSrcPicker(false)} label={t('worldClock.sourceTimezone')}
                 value={srcTZ} onChange={v => { setSrcTZ(v); setShowSrcPicker(false); setSearchSrc(''); }}
                 search={searchSrc} setSearch={setSearchSrc} />
-            <TZPickerSheet isOpen={showTgtPicker} onClose={() => { setShowTgtPicker(false); setEditingTargetIdx(null); }} label="Target Timezone"
+            <TZPickerSheet isOpen={showTgtPicker} onClose={() => { setShowTgtPicker(false); setEditingTargetIdx(null); }} label={t('worldClock.targetTimezone')}
                 value={editingTargetIdx !== null ? targetTZs[editingTargetIdx] : ''}
                 onChange={addTarget}
                 search={searchTgt} setSearch={setSearchTgt} />
@@ -756,19 +759,12 @@ function getTimeData(iana: string, now: Date) {
         // Diff to IST
         const istOff = getOff(now, 'Asia/Kolkata');
         const diffMins = currentOff - istOff;
-        let diffStr = 'Same as IST';
-        if (diffMins !== 0) {
-            const h = Math.floor(Math.abs(diffMins) / 60);
-            const m = Math.abs(diffMins) % 60;
-            const dir = diffMins < 0 ? "behind" : "ahead of";
-            diffStr = `${h}h${m > 0 ? ` ${m}m` : ''} ${dir} IST`;
-        }
-        
+
         const nextDST = getNextDST(iana, now);
 
-        return { hour, minute, second, displayHour, displayMin, ampm, offsetStr, isDST, currentlyDST, weekday, day, month, diffStr, nextDST };
+        return { hour, minute, second, displayHour, displayMin, ampm, offsetStr, isDST, currentlyDST, weekday, day, month, diffMins, nextDST };
     } catch {
-        return { hour: 0, minute: 0, second: 0, displayHour: '12', displayMin: '00', ampm: 'AM', offsetStr: 'UTC', isDST: false, currentlyDST: false, weekday: '', day: '', month: '', diffStr: 'Same as IST', nextDST: null };
+        return { hour: 0, minute: 0, second: 0, displayHour: '12', displayMin: '00', ampm: 'AM', offsetStr: 'UTC', isDST: false, currentlyDST: false, weekday: '', day: '', month: '', diffMins: 0, nextDST: null };
     }
 }
 
@@ -806,6 +802,7 @@ function AnalogClock({ hour, minute, second }: { hour: number; minute: number; s
 }
 
 function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => void }) {
+    const { t } = useTranslation();
     const now = useSharedTime();
     const td = getTimeData(clock.timezone, now);
     const meta = getCountryMeta(clock.timezone);
@@ -822,14 +819,14 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
                     <button onClick={onBack} className="p-2 rounded-xl bg-card border border-border text-muted-foreground">
                         <ChevronLeft size={18} />
                     </button>
-                    <h2 className="text-base font-bold text-foreground">DETAILS</h2>
+                    <h2 className="text-base font-bold text-foreground">{t('worldClock.details')}</h2>
                 </div>
             </div>
 
             <div className="px-4 pt-4 space-y-4">
                 {/* TIME */}
                 <div>
-                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Time</p>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">{t('worldClock.time')}</p>
                     <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 p-4 relative overflow-hidden shadow-xl">
                         <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/5" />
                         <div className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full bg-black/10" />
@@ -845,7 +842,7 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
                                     <p className="text-indigo-200 text-xs">{td.weekday}, {td.day} {td.month}</p>
                                     <div className="mt-2 flex flex-wrap items-center gap-2">
                                         <span className="text-[10px] bg-white/20 text-foreground px-2 py-0.5 rounded-full font-medium">{td.offsetStr}</span>
-                                        <span className="text-[10px] bg-white/20 text-foreground px-2 py-0.5 rounded-full font-medium">{td.diffStr}</span>
+                                        <span className="text-[10px] bg-white/20 text-foreground px-2 py-0.5 rounded-full font-medium">{td.diffMins === 0 ? t('worldClock.sameAsIst') : `${Math.floor(Math.abs(td.diffMins) / 60)}h${Math.abs(td.diffMins) % 60 > 0 ? ` ${Math.abs(td.diffMins) % 60}m` : ''} ${td.diffMins < 0 ? t('worldClock.behindIst') : t('worldClock.aheadOfIst')}`}</span>
                                         {td.currentlyDST && <span className="text-[10px] bg-amber-400/30 text-amber-200 px-2 py-0.5 rounded-full font-bold">☀️ DST</span>}
                                     </div>
                                 </div>
@@ -859,14 +856,14 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
                     <div className="rounded-2xl bg-amber-500/10 border border-amber-500/20 p-4">
                         <div className="flex items-center gap-2 mb-1">
                             <Sunrise size={14} className="text-amber-500" />
-                            <p className="text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase">Sunrise</p>
+                            <p className="text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase">{t('worldClock.sunrise')}</p>
                         </div>
                         <p className="text-foreground font-bold text-lg">{sun.sunrise}</p>
                     </div>
                     <div className="rounded-2xl bg-orange-500/10 border border-orange-500/20 p-4">
                         <div className="flex items-center gap-2 mb-1">
                             <Sun size={14} className="text-orange-500" />
-                            <p className="text-orange-600 dark:text-orange-400 text-[10px] font-bold uppercase">Sunset</p>
+                            <p className="text-orange-600 dark:text-orange-400 text-[10px] font-bold uppercase">{t('worldClock.sunset')}</p>
                         </div>
                         <p className="text-foreground font-bold text-lg">{sun.sunset}</p>
                     </div>
@@ -874,18 +871,18 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
 
                 {/* Economic Info */}
                 <div>
-                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Economic Info</p>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">{t('worldClock.economicInfo')}</p>
                     <div className="rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 p-4 flex items-center gap-4 shadow-lg">
                         <div className="flex-shrink-0">
                             <div className="w-12 h-12 rounded-xl bg-white/20 flex flex-col items-center justify-center">
-                                <span className="text-[9px] text-indigo-200 font-semibold uppercase">Currency</span>
+                                <span className="text-[9px] text-indigo-200 font-semibold uppercase">{t('worldClock.currency')}</span>
                                 <span className="text-yellow-300 font-bold text-xl leading-none">{meta.currencySymbol}</span>
                             </div>
                         </div>
                         <div>
                             <div className="flex items-center gap-2 mb-0.5">
                                 <DollarSign size={12} className="text-indigo-200" />
-                                <span className="text-[10px] text-indigo-200 uppercase font-bold">Currency</span>
+                                <span className="text-[10px] text-indigo-200 uppercase font-bold">{t('worldClock.currency')}</span>
                             </div>
                             <p className="text-foreground font-bold text-base">{meta.currencyName}</p>
                         </div>
@@ -894,7 +891,7 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
 
                 {/* Geography */}
                 <div>
-                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">Geography</p>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">{t('worldClock.geography')}</p>
                     <div className="rounded-2xl bg-card p-4 flex items-center gap-4 shadow-lg border border-border">
                         <div className="flex-shrink-0">
                             <div className="w-16 h-16 rounded-xl bg-muted flex flex-col items-center justify-center gap-2">
@@ -909,19 +906,19 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
                         </div>
                         <div className="flex-1 space-y-1.5">
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground text-xs">Country :</span>
+                                <span className="text-muted-foreground text-xs">{t('worldClock.country')} :</span>
                                 <span className="text-foreground font-bold">{clock.countryName}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground text-xs">Country Code :</span>
+                                <span className="text-muted-foreground text-xs">{t('worldClock.countryCode')} :</span>
                                 <span className="text-foreground font-bold">{meta.countryCode}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground text-xs">Region :</span>
+                                <span className="text-muted-foreground text-xs">{t('worldClock.region')} :</span>
                                 <span className="text-foreground font-bold">{meta.region}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground text-xs">Phone Code :</span>
+                                <span className="text-muted-foreground text-xs">{t('worldClock.phoneCode')} :</span>
                                 <span className="text-foreground font-bold">{meta.phoneCode}</span>
                             </div>
                         </div>
@@ -930,20 +927,20 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
 
                 {/* Timezone Info */}
                 <div className="rounded-2xl bg-card border border-border p-4">
-                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-2">Timezone Info</p>
+                    <p className="text-[10px] font-bold uppercase text-muted-foreground mb-2">{t('worldClock.timezoneInfo')}</p>
                     <div className="space-y-1.5">
                         <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">IANA Name</span>
+                            <span className="text-muted-foreground">{t('worldClock.ianaName')}</span>
                             <span className="text-foreground font-mono text-xs">{clock.timezone}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">UTC Offset</span>
+                            <span className="text-muted-foreground">{t('worldClock.utcOffset')}</span>
                             <span className="text-foreground font-medium">{td.offsetStr}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">DST</span>
+                            <span className="text-muted-foreground">{t('worldClock.dst')}</span>
                             <span className={`font-medium ${td.isDST ? 'text-amber-500' : 'text-muted-foreground'}`}>
-                                {td.isDST ? (td.currentlyDST ? 'Active' : 'Observing') : 'Not observed'}
+                                {td.isDST ? (td.currentlyDST ? t('worldClock.active') : t('worldClock.observing')) : t('worldClock.notObserved')}
                             </span>
                         </div>
                     </div>
@@ -954,10 +951,10 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
                     <div className="rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 p-4 shadow-sm">
                         <div className="flex items-center gap-2 mb-2">
                             <Clock size={14} className="text-amber-600" />
-                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Upcoming Clock Change</p>
+                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">{t('worldClock.upcomingClockChange')}</p>
                         </div>
                         <p className="text-foreground text-sm font-semibold mb-1">
-                            Clocks go <span className="text-amber-600 font-bold">{td.nextDST.type}</span> 1 hour
+                            {t('worldClock.clocksGo', { direction: td.nextDST.type })} {t('worldClock.oneHour')}
                         </p>
                         <p className="text-muted-foreground text-sm">
                             {new Intl.DateTimeFormat('en-IN', { 
@@ -979,6 +976,7 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
 }
 
 const LiveClockCard = memo(function LiveClockCard({ clock, index, onDetail, onRemove }: { clock: SavedClock; index: number; onDetail: () => void; onRemove: () => void }) {
+    const { t } = useTranslation();
     const now = useSharedTime();
     const td = getTimeData(clock.timezone, now);
     const meta = getCountryMeta(clock.timezone);
@@ -1018,11 +1016,11 @@ const LiveClockCard = memo(function LiveClockCard({ clock, index, onDetail, onRe
                         <div className="flex items-center gap-2">
                             <h3 className="text-foreground font-bold text-base">{clock.cityName}</h3>
                             {td.currentlyDST && (
-                                <span className="text-[9px] bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded-full font-bold">DST</span>
+                                <span className="text-[9px] bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded-full font-bold">{t('worldClock.dst')}</span>
                             )}
                         </div>
                         <p className="text-muted-foreground text-[11px]">{clock.countryName} · {td.offsetStr}</p>
-                        <p className="text-muted-foreground text-[10px]">{td.weekday}, {td.day} {td.month} · {td.diffStr}</p>
+                        <p className="text-muted-foreground text-[10px]">{td.weekday}, {td.day} {td.month} · {td.diffMins === 0 ? t('worldClock.sameAsIst') : `${Math.floor(Math.abs(td.diffMins) / 60)}h${Math.abs(td.diffMins) % 60 > 0 ? ` ${Math.abs(td.diffMins) % 60}m` : ''} ${td.diffMins < 0 ? t('worldClock.behindIst') : t('worldClock.aheadOfIst')}`}</p>
                     </div>
                 </div>
 
@@ -1046,10 +1044,10 @@ const LiveClockCard = memo(function LiveClockCard({ clock, index, onDetail, onRe
                 <div className="bg-amber-500/10 border-t border-amber-500/20 px-4 py-1.5 flex flex-row items-center justify-between">
                      <span className="text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase flex items-center gap-1.5">
                          <Clock size={10} /> 
-                         DST Change in {Math.max(0, Math.ceil((td.nextDST.date.getTime() - now.getTime()) / 86400000))} Days
+                         {t('worldClock.dstChangeIn', { days: Math.max(0, Math.ceil((td.nextDST.date.getTime() - now.getTime()) / 86400000)) })}
                      </span>
                      <span className="text-amber-700 dark:text-amber-300 text-[10px] font-bold uppercase bg-amber-500/20 px-1.5 py-0.5 rounded-sm">
-                         {td.nextDST.type === 'forward' ? '+1 Hr' : '-1 Hr'}
+                         {td.nextDST.type === 'forward' ? t('worldClock.plusOneHr') : t('worldClock.minusOneHr')}
                      </span>
                 </div>
             )}
@@ -1122,6 +1120,7 @@ const LiveAddZoneItem = memo(function LiveAddZoneItem({ tz, onAdd }: { tz: Timez
 });
 
 export default function WorldClock() {
+    const { t } = useTranslation();
     useEffect(() => { AnalyticsService.trackScreen('World_Clock'); }, []);
     const navigate = useNavigate();
     const [view, setView] = useState<'clocks' | 'compare'>('clocks');
@@ -1227,7 +1226,7 @@ export default function WorldClock() {
         setClocks(nextClocks);
         setShowAddPanel(false);
         setSearchQuery('');
-        showToast(`${newClock.cityName} added to World Clock`);
+        showToast(t('worldClock.cityAdded', { city: newClock.cityName }));
     };
 
     const removeZone = (clockId: string) => {
@@ -1246,9 +1245,9 @@ export default function WorldClock() {
                             <ArrowLeft size={18} />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-foreground">World Clock</h1>
+                            <h1 className="text-lg font-bold text-foreground">{t('worldClock.title')}</h1>
                             <p className="text-muted-foreground text-xs">
-                                {view === 'compare' ? 'Time zone converter' : `${activeClocks.length} cities · Tap for details`}
+                                {view === 'compare' ? t('worldClock.timezoneConverter') : t('worldClock.citiesCount', { count: activeClocks.length })}
                             </p>
                         </div>
                     </div>
@@ -1257,7 +1256,7 @@ export default function WorldClock() {
                             <button onClick={() => setShowAddPanel(true)}
                                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 border border-primary/20 text-primary">
                                 <Plus size={16} />
-                                <span className="text-xs font-medium">Add</span>
+                                <span className="text-xs font-medium">{t('worldClock.add')}</span>
                             </button>
                         )}
                         <button
@@ -1269,7 +1268,7 @@ export default function WorldClock() {
                             }`}
                         >
                             <ArrowRightLeft size={14} />
-                            Compare
+                            {t('worldClock.compare')}
                         </button>
                     </div>
                 </div>
@@ -1294,7 +1293,7 @@ export default function WorldClock() {
                 {activeClocks.length === 0 && (
                     <div className="text-center py-16">
                         <Globe size={40} className="text-muted-foreground mx-auto mb-3 opacity-50" />
-                        <p className="text-muted-foreground">No cities added. Tap Add to begin.</p>
+                        <p className="text-muted-foreground">{t('worldClock.noCitiesAdded')}</p>
                     </div>
                 )}
             </div>
@@ -1327,8 +1326,8 @@ export default function WorldClock() {
                         >
                             <div className="flex items-center justify-between p-6 pb-3 flex-shrink-0">
                                 <div>
-                                    <h3 className="text-lg font-bold text-foreground">Add Time Zone</h3>
-                                    <p className="text-muted-foreground text-xs">{WORLD_TIMEZONES.length} countries available</p>
+                                    <h3 className="text-lg font-bold text-foreground">{t('worldClock.addTimezone')}</h3>
+                                    <p className="text-muted-foreground text-xs">{t('worldClock.countriesAvailable', { count: WORLD_TIMEZONES.length })}</p>
                                 </div>
                                 <button onClick={() => { setShowAddPanel(false); setSearchQuery(''); }}
                                     className="p-2 rounded-xl bg-muted text-muted-foreground">
@@ -1341,7 +1340,7 @@ export default function WorldClock() {
                                     <Search size={16} className="absolute inset-y-0 my-auto left-4 text-muted-foreground" />
                                     <input
                                         type="text"
-                                        placeholder="Search India, New York, UTC+5..."
+                                        placeholder={t('worldClock.searchPlaceholder')}
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         autoFocus
@@ -1357,7 +1356,7 @@ export default function WorldClock() {
 
                             {!searchQuery && (
                                 <p className="px-6 text-[10px] text-primary font-bold uppercase mb-2 flex-shrink-0">
-                                    🌟 Popular Cities
+                                    🌟 {t('worldClock.popularCities')}
                                 </p>
                             )}
 
@@ -1369,8 +1368,8 @@ export default function WorldClock() {
                                 {availableZones.length === 0 && (
                                     <div className="text-center py-8">
                                         <Globe size={32} className="text-muted-foreground mx-auto mb-2 opacity-50" />
-                                        <p className="text-muted-foreground text-sm font-medium">No matching cities found</p>
-                                        <p className="text-muted-foreground/70 text-xs mt-1">Try "India", "Japan" or "+5:30"</p>
+                                        <p className="text-muted-foreground text-sm font-medium">{t('worldClock.noMatchingCities')}</p>
+                                        <p className="text-muted-foreground/70 text-xs mt-1">{t('worldClock.searchHint')}</p>
                                     </div>
                                 )}
                             </div>

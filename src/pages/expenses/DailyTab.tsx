@@ -207,7 +207,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
 
             {/* Sub-tab Switcher */}
             <div className="flex gap-1 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-1">
-                {([{ id: 'expense' as EntryType, label: '💸 Expenses', bg: 'bg-red-500' }, { id: 'income' as EntryType, label: '💰 Income', bg: 'bg-emerald-500' }, { id: 'investment' as EntryType, label: '📈 Investments', bg: 'bg-blue-500' }]).map(tab => (
+                {([{ id: 'expense' as EntryType, label: `💸 ${t('expenses.expenses')}`, bg: 'bg-red-500' }, { id: 'income' as EntryType, label: `💰 ${t('expenses.income')}`, bg: 'bg-emerald-500' }, { id: 'investment' as EntryType, label: `📈 ${t('expenses.investments')}`, bg: 'bg-blue-500' }]).map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveSubTab(tab.id)}
@@ -224,7 +224,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
             <div>
                 <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-2 flex justify-between">
                     {t('expenses.quickAddLabel')}
-                    <span className="text-[9px] lowercase font-normal opacity-60">(long press to edit)</span>
+                    <span className="text-[9px] lowercase font-normal opacity-60">{t('expenses.longPressEdit')}</span>
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                     {quickAdds.map((qa, idx) => (
@@ -265,24 +265,24 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                             className="w-full max-w-sm bg-background border border-slate-700 rounded-3xl p-6"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <h3 className="text-foreground font-bold text-lg mb-4">Edit Quick Add</h3>
+                            <h3 className="text-foreground font-bold text-lg mb-4">{t('expenses.editQuickAdd')}</h3>
                             <div className="space-y-3 mb-6">
                                 <div>
-                                    <label className="text-muted-foreground text-xs mb-1 block">Label</label>
+                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.label')}</label>
                                     <input type="text" value={qaLabel} onChange={(e) => setQaLabel(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple" />
                                 </div>
                                 <div>
-                                    <label className="text-muted-foreground text-xs mb-1 block">Amount (₹)</label>
+                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.amount')}</label>
                                     <input type="number" value={qaAmount} onChange={(e) => setQaAmount(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple" />
                                 </div>
                                 <div>
-                                    <label className="text-muted-foreground text-xs mb-1 block">Emoji</label>
+                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.emoji')}</label>
                                     <input type="text" maxLength={2} value={qaEmoji} onChange={(e) => setQaEmoji(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple" />
                                 </div>
                             </div>
                             <div className="flex gap-3">
                                 <button onClick={() => setEditingQA(null)} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium text-sm">{t('common.cancel')}</button>
-                                <button onClick={saveQuickAdd} className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm">Save</button>
+                                <button onClick={saveQuickAdd} className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm">{t('common.save')}</button>
                             </div>
                         </motion.div>
                     </motion.div>
@@ -322,9 +322,9 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                     <div className="text-4xl">💸</div>
                 </div>
                 <div className="flex gap-2 text-[10px] font-semibold">
-                    <span className="flex-1 text-center py-1.5 rounded-lg bg-red-500/10 text-red-400">Spent: ₹{todayTotal.toLocaleString('en-IN')}</span>
-                    <span className={`flex-1 text-center py-1.5 rounded-lg ${todayIncome > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-100 dark:bg-white/5 text-muted-foreground'}`}>Earned: ₹{todayIncome.toLocaleString('en-IN')}</span>
-                    <span className={`flex-1 text-center py-1.5 rounded-lg ${todayInvestment > 0 ? 'bg-blue-500/10 text-blue-400' : 'bg-slate-100 dark:bg-white/5 text-muted-foreground'}`}>Invested: ₹{todayInvestment.toLocaleString('en-IN')}</span>
+                    <span className="flex-1 text-center py-1.5 rounded-lg bg-red-500/10 text-red-400">{t('expenses.spent')} ₹{todayTotal.toLocaleString('en-IN')}</span>
+                    <span className={`flex-1 text-center py-1.5 rounded-lg ${todayIncome > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-100 dark:bg-white/5 text-muted-foreground'}`}>{t('expenses.earned')} ₹{todayIncome.toLocaleString('en-IN')}</span>
+                    <span className={`flex-1 text-center py-1.5 rounded-lg ${todayInvestment > 0 ? 'bg-blue-500/10 text-blue-400' : 'bg-slate-100 dark:bg-white/5 text-muted-foreground'}`}>{t('expenses.invested')} ₹{todayInvestment.toLocaleString('en-IN')}</span>
                 </div>
                 {(() => {
                     const dailyBudget = Object.values(categoryBudgets as unknown as Record<string, number>).reduce((a, b) => a + b, 0) / 30;
@@ -340,15 +340,15 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
             {/* Entries List */}
             <div>
                 <h3 className="text-slate-900 dark:text-foreground font-bold text-sm mb-3">
-                    {activeSubTab === 'expense' ? t('expenses.expenses') : activeSubTab === 'income' ? 'Income' : 'Investments'}
+                    {activeSubTab === 'expense' ? t('expenses.expenses') : activeSubTab === 'income' ? t('expenses.income') : t('expenses.investments')}
                 </h3>
                 {filteredEntries.length === 0 && (
                     <div className="text-center py-10 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
                         <p className="text-4xl mb-2">{activeSubTab === 'expense' ? '🌿' : activeSubTab === 'income' ? '💰' : '📈'}</p>
                         <p className="text-muted-foreground text-sm">
-                            {activeSubTab === 'expense' ? t('expenses.noExpensesDay') : activeSubTab === 'income' ? 'No income recorded today' : 'No investments recorded today'}
+                            {activeSubTab === 'expense' ? t('expenses.noExpensesDay') : activeSubTab === 'income' ? t('expenses.noIncome') : t('expenses.noInvestments')}
                         </p>
-                        <button onClick={openAddForm} className="mt-3 text-brand-purple text-xs font-semibold">+ {activeSubTab === 'expense' ? t('expenses.addExpense') : activeSubTab === 'income' ? 'Add Income' : 'Add Investment'}</button>
+                        <button onClick={openAddForm} className="mt-3 text-brand-purple text-xs font-semibold">+ {activeSubTab === 'expense' ? t('expenses.addExpense') : activeSubTab === 'income' ? t('expenses.addIncome') : t('expenses.addInvestment')}</button>
                     </div>
                 )}
                 <div className="space-y-2">
@@ -424,7 +424,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                             <div className="flex-shrink-0 px-6 pt-5 pb-2">
                                 <div className="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5" />
                                 <h3 className="text-foreground font-bold text-lg mb-2">
-                                    {editingId ? t('expenses.editExpenseTitle', 'Edit Entry') : fEntryType === 'expense' ? t('expenses.addExpenseTitle') : fEntryType === 'income' ? 'Add Income' : 'Add Investment'}
+                                    {editingId ? t('expenses.editEntry') : fEntryType === 'expense' ? t('expenses.addExpenseTitle') : fEntryType === 'income' ? t('expenses.addIncome') : t('expenses.addInvestment')}
                                 </h3>
                             </div>
 
@@ -434,9 +434,9 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                                 {/* Entry Type Selector */}
                                 {!editingId && (
                                     <div>
-                                        <label className="text-muted-foreground text-xs mb-1 block">Entry Type</label>
+                                        <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.entryType')}</label>
                                         <div className="grid grid-cols-3 gap-2">
-                                            {([{ id: 'expense' as EntryType, emoji: '💸', label: 'Expense', bg: 'bg-red-500' }, { id: 'income' as EntryType, emoji: '💰', label: 'Income', bg: 'bg-emerald-500' }, { id: 'investment' as EntryType, emoji: '📈', label: 'Investment', bg: 'bg-blue-500' }]).map(et => (
+                                            {([{ id: 'expense' as EntryType, emoji: '💸', label: t('expenses.expense'), bg: 'bg-red-500' }, { id: 'income' as EntryType, emoji: '💰', label: t('expenses.income'), bg: 'bg-emerald-500' }, { id: 'investment' as EntryType, emoji: '📈', label: t('expenses.investment'), bg: 'bg-blue-500' }]).map(et => (
                                                 <button
                                                     key={et.id}
                                                     onClick={() => { setFEntryType(et.id); if (et.id === 'income') setFCategory('salary'); else if (et.id === 'expense') setFCategory('food'); }}
@@ -452,7 +452,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                                 {/* Category / Investment Type */}
                                 {fEntryType === 'investment' ? (
                                     <div>
-                                        <label className="text-muted-foreground text-xs mb-1 block">Investment Type</label>
+                                        <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.investmentType')}</label>
                                         <div className="grid grid-cols-3 gap-2">
                                             {INVESTMENT_TYPES.map(inv => (
                                                 <button
@@ -468,7 +468,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                                     </div>
                                 ) : fEntryType === 'income' ? (
                                     <div>
-                                        <label className="text-muted-foreground text-xs mb-1 block">Income Source</label>
+                                        <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.incomeSource')}</label>
                                         <div className="grid grid-cols-3 gap-2">
                                             {INCOME_CATEGORIES.map(cat => (
                                                 <button
@@ -509,7 +509,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                                 {/* Amount */}
                                 <div>
                                     <label className="text-muted-foreground text-xs mb-1 block">
-                                        {fEntryType === 'expense' ? t('expenses.amountLabel') : fEntryType === 'income' ? 'Amount Received' : 'Amount Invested'} *
+                                        {fEntryType === 'expense' ? t('expenses.amountLabel') : fEntryType === 'income' ? t('expenses.amountReceived') : t('expenses.amountInvested')} *
                                     </label>
                                     <input
                                         type="number"
@@ -528,7 +528,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                                         type="text"
                                         value={fDesc}
                                         onChange={(e) => setFDesc(e.target.value)}
-                                        placeholder={fEntryType === 'expense' ? t('expenses.descriptionPlaceholder') : fEntryType === 'income' ? 'Source of income' : 'e.g. SIP in Axis Bluechip, 10g gold'}
+                                        placeholder={fEntryType === 'expense' ? t('expenses.descriptionPlaceholder') : fEntryType === 'income' ? t('expenses.incomeSourceHint') : t('expenses.investmentHint')}
                                         className="w-full px-4 py-3 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple"
                                     />
                                 </div>
@@ -567,7 +567,7 @@ export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}
                                         disabled={!isDirty || !isValid}
                                         className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
                                     >
-                                        {editingId ? 'Apply' : 'Save'}
+                                        {editingId ? t('common.apply') : t('common.save')}
                                     </motion.button>
                                 </div>
                             </div>

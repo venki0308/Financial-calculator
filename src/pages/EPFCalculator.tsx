@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, Target, BarChart2, RotateCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
@@ -11,6 +12,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
 export default function EPFCalculator() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
 
@@ -147,23 +149,23 @@ export default function EPFCalculator() {
     // 3. SMART INSIGHTS
     const insight = useMemo(() => {
         if (result.interestPctOfCorpus > 60) {
-            return { msg: `The power of compounding! ${result.interestPctOfCorpus.toFixed(1)}% of your retirement wealth is purely from interest, heavily outweighing your actual contributions.`, type: 'success' };
+            return { msg: t('epf.insightCompounding', { pct: result.interestPctOfCorpus.toFixed(1) }), type: 'success' };
         }
         if (result.readinessPct < 30) {
-            return { msg: `Your projected EPF corpus covers only ${result.readinessPct.toFixed(1)}% of an ideal retirement nest egg (20x final salary). Consider increasing your VPF contribution or investing in equity.`, type: 'warn' };
+            return { msg: t('epf.insightLowReadiness', { pct: result.readinessPct.toFixed(1) }), type: 'warn' };
         }
         if (result.realReturn < 1) {
-            return { msg: `With inflation at ${inflationRate}%, your real EPF growth is only ${result.realReturn.toFixed(1)}%. It preserves capital but may not aggressively grow your wealth.`, type: 'info' };
+            return { msg: t('epf.insightLowRealReturn', { inflation: inflationRate, realReturn: result.realReturn.toFixed(1) }), type: 'info' };
         }
-        return { msg: `Your employer's matching contributions effectively give you a ${result.employerPctOfCorpus.toFixed(1)}% "free" boost to your retirement corpus.`, type: 'success' };
-    }, [result, inflationRate]);
+        return { msg: t('epf.insightEmployerBoost', { pct: result.employerPctOfCorpus.toFixed(1) }), type: 'success' };
+    }, [result, inflationRate, t]);
 
     const handleSave = () => {
         addSaved({
             id: `epf-${Date.now()}`,
             calculatorType: 'epf',
             inputValues: { basic, empPct, rate, age, retireAge, hike },
-            resultValues: { primary: result.corpus, label: 'Retirement Corpus', invested: result.totalEmp + result.totalEmployer, returns: result.totalInterest },
+            resultValues: { primary: result.corpus, label: t('epf.retirementCorpus'), invested: result.totalEmp + result.totalEmployer, returns: result.totalInterest },
             timestamp: Date.now(),
         });
         setSaved(true);
@@ -174,35 +176,35 @@ export default function EPFCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'EPF Calculator Report',
+            title: t('epf.reportTitle'),
             inputs: [
-                { label: 'Basic Monthly Salary', value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
-                { label: 'Employee Contribution', value: `${totalEmpPct}%${vpfPct > 0 ? ` (12% + ${vpfPct}% VPF)` : ''}` },
-                { label: 'EPF Interest Rate', value: `${rate}% p.a.` },
-                { label: 'Current Age', value: `${age} Years` },
-                { label: 'Retirement Age', value: `${retireAge} Years` },
-                { label: 'Annual Salary Hike', value: `${hike}%` },
-                { label: 'Assumed Inflation', value: `${inflationRate}%` },
+                { label: t('epf.basicMonthlySalary'), value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
+                { label: t('epf.employeeContribution'), value: `${totalEmpPct}%${vpfPct > 0 ? ` (12% + ${vpfPct}% VPF)` : ''}` },
+                { label: t('epf.epfInterestRate'), value: `${rate}% p.a.` },
+                { label: t('epf.currentAge'), value: `${age} ${t('epf.years')}` },
+                { label: t('epf.retirementAge'), value: `${retireAge} ${t('epf.years')}` },
+                { label: t('epf.annualSalaryHike'), value: `${hike}%` },
+                { label: t('epf.assumedInflation'), value: `${inflationRate}%` },
             ],
             results: [
-                { label: 'Expected EPF Corpus', value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
-                { label: 'Total Employee Contribution', value: `₹${Math.round(result.totalEmp).toLocaleString('en-IN')}` },
-                { label: 'Total Employer EPF Share', value: `₹${Math.round(result.totalEmployer).toLocaleString('en-IN')}` },
-                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Years to Retirement', value: `${result.years} Years` },
+                { label: t('epf.expectedCorpus'), value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: t('epf.totalEmployeeContrib'), value: `₹${Math.round(result.totalEmp).toLocaleString('en-IN')}` },
+                { label: t('epf.totalEmployerShare'), value: `₹${Math.round(result.totalEmployer).toLocaleString('en-IN')}` },
+                { label: t('epf.totalInterestEarned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('epf.yearsToRetirement'), value: `${result.years} ${t('epf.years')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Employee Contributions', value: result.totalEmp, color: '#4F46E5' },
-                    { label: 'Employer Contributions', value: result.totalEmployer, color: '#F59E0B' },
-                    { label: 'Interest Earned', value: result.totalInterest, color: '#10B981' },
+                    { label: t('epf.employeeContributions'), value: result.totalEmp, color: '#4F46E5' },
+                    { label: t('epf.employerContributions'), value: result.totalEmployer, color: '#F59E0B' },
+                    { label: t('epf.interestEarned'), value: result.totalInterest, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'Yearly EPF Growth Schedule',
-            projectionColumns: ['Year', 'Age', 'Employee Contrib', 'Employer Contrib', 'Interest', 'Closing Balance'],
+            projectionTitle: t('epf.yearlyGrowthSchedule'),
+            projectionColumns: [t('epf.yearCol'), t('epf.age'), t('epf.employeeContrib'), t('epf.employerContrib'), t('epf.interestLabel'), t('epf.closingBalance')],
             projectionRows: result.schedule.map((r: any) => [
-                `Year ${r.year}`,
+                `${t('epf.yearCol')} ${r.year}`,
                 r.age,
                 `₹${Math.round(r.empContrib).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.emplerContrib).toLocaleString('en-IN')}`,
@@ -218,22 +220,22 @@ export default function EPFCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'EPF Calculator Report',
+            title: t('epf.reportTitle'),
             inputs: [
-                { label: 'Basic Monthly Salary', value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
-                { label: 'Employee Contribution', value: `${totalEmpPct}%${vpfPct > 0 ? ` (12% + ${vpfPct}% VPF)` : ''}` },
-                { label: 'EPF Interest Rate', value: `${rate}%` },
-                { label: 'Current Age', value: `${age}` },
-                { label: 'Retirement Age', value: `${retireAge}` },
+                { label: t('epf.basicMonthlySalary'), value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
+                { label: t('epf.employeeContribution'), value: `${totalEmpPct}%${vpfPct > 0 ? ` (12% + ${vpfPct}% VPF)` : ''}` },
+                { label: t('epf.epfInterestRate'), value: `${rate}%` },
+                { label: t('epf.currentAge'), value: `${age}` },
+                { label: t('epf.retirementAge'), value: `${retireAge}` },
             ],
             results: [
-                { label: 'Expected EPF Corpus', value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
-                { label: 'Total Employee Contribution', value: `₹${Math.round(result.totalEmp).toLocaleString('en-IN')}` },
-                { label: 'Total Employer Share', value: `₹${Math.round(result.totalEmployer).toLocaleString('en-IN')}` },
-                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('epf.expectedCorpus'), value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: t('epf.totalEmployeeContrib'), value: `₹${Math.round(result.totalEmp).toLocaleString('en-IN')}` },
+                { label: t('epf.totalEmployerShare'), value: `₹${Math.round(result.totalEmployer).toLocaleString('en-IN')}` },
+                { label: t('epf.totalInterestEarned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Yearly EPF Growth',
-            projectionColumns: ['Year', 'Age', 'Employee Contrib', 'Employer Contrib', 'Interest', 'Closing Balance'],
+            projectionTitle: t('epf.yearlyGrowth'),
+            projectionColumns: [t('epf.yearCol'), t('epf.age'), t('epf.employeeContrib'), t('epf.employerContrib'), t('epf.interestLabel'), t('epf.closingBalance')],
             projectionRows: result.schedule.map((r: any) => [r.year, r.age, Math.round(r.empContrib), Math.round(r.emplerContrib), Math.round(r.interest), Math.round(r.closingBal)]),
             filename: `FinCalix_EPF_Report_${tag}`,
         };
@@ -251,8 +253,8 @@ export default function EPFCalculator() {
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-foreground leading-tight">EPF Calculator</h1>
-                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Employee Provident Fund</p>
+                        <h1 className="text-lg font-bold text-foreground leading-tight">{t('epf.title')}</h1>
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">{t('epf.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -261,7 +263,7 @@ export default function EPFCalculator() {
                 {/* 1. CORE INPUTS */}
                 <div className="space-y-4">
                     <div>
-                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Basic + DA (Monthly)</label>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('epf.basicDA')}</label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                             <input type="number" value={basic} onChange={e => setBasic(Number(e.target.value)||0)} className={inputCls + " pl-7 bg-brand-gold/5 focus:bg-card"} />
@@ -269,30 +271,30 @@ export default function EPFCalculator() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Current Age</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('epf.currentAge')}</label>
                             <div className="relative">
                                 <input type="number" value={age} onChange={e => setAge(Number(e.target.value)||0)} className={inputCls + " pr-8 bg-muted/30 focus:bg-card"} />
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-bold">YRS</span>
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-bold">{t('epf.yrs')}</span>
                             </div>
                         </div>
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Retirement Age</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('epf.retirementAge')}</label>
                             <div className="relative">
                                 <input type="number" value={retireAge} onChange={e => setRetireAge(Number(e.target.value)||0)} className={inputCls + " pr-8 bg-muted/30 focus:bg-card"} />
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-bold">YRS</span>
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-bold">{t('epf.yrs')}</span>
                             </div>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Annual Hike</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('epf.annualHike')}</label>
                             <div className="relative">
                                 <input type="number" step="0.1" value={hike} onChange={e => setHike(Number(e.target.value)||0)} className={inputCls + " pr-7 bg-muted/30 focus:bg-card"} />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
                             </div>
                         </div>
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">EPF Interest Rate</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('epf.epfInterestRate')}</label>
                             <div className="relative">
                                 <input type="number" step="0.01" value={rate} onChange={e => setRate(Number(e.target.value)||0)} className={inputCls + " pr-7 bg-muted/30 focus:bg-card"} />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
@@ -301,20 +303,19 @@ export default function EPFCalculator() {
                     </div>
                     {/* VPF Input */}
                     <div>
-                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">VPF — Voluntary PF (%)</label>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('epf.vpfLabel')}</label>
                         <div className="relative">
                             <input type="number" step="1" value={vpfPct} onChange={e => setVpfPct(Math.min(88, Math.max(0, Number(e.target.value) || 0)))} className={inputCls + " pr-7 bg-emerald-500/5 focus:bg-card"} />
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
                         </div>
-                        <p className="text-muted-foreground text-[9px] mt-1">Extra contribution over 12% mandatory. Same 8.25% guaranteed return. Total: {totalEmpPct}%</p>
+                        <p className="text-muted-foreground text-[9px] mt-1">{t('epf.vpfHelper', { total: totalEmpPct })}</p>
                     </div>
                     {/* Taxable Interest Warning */}
                     {result.isInterestTaxable && (
                         <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                            <p className="text-amber-500 text-[10px] font-bold mb-1">Taxable Interest Warning</p>
+                            <p className="text-amber-500 text-[10px] font-bold mb-1">{t('epf.taxableWarningTitle')}</p>
                             <p className="text-muted-foreground text-[10px]">
-                                Your annual employee contribution ({totalEmpPct}% of ₹{basic.toLocaleString('en-IN')} = ₹{result.annualEmpContrib.toLocaleString('en-IN')}/yr) exceeds ₹2.5L threshold.
-                                Interest on the excess ₹{result.taxableExcess.toLocaleString('en-IN')} will be taxable at your slab rate (Budget 2021 rule).
+                                {t('epf.taxableWarningDesc', { pct: totalEmpPct, basic: basic.toLocaleString('en-IN'), annual: result.annualEmpContrib.toLocaleString('en-IN'), excess: result.taxableExcess.toLocaleString('en-IN') })}
                             </p>
                         </div>
                     )}
@@ -323,9 +324,9 @@ export default function EPFCalculator() {
                 {/* 2. RESULTS HERO */}
                 <motion.div layout className="p-6 rounded-3xl bg-card border border-border shadow-sm">
                     <div className="flex justify-between items-start mb-4">
-                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">Projected Retirement Corpus</p>
+                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">{t('epf.projectedCorpus')}</p>
                         <div className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border bg-brand-gold/10 border-brand-gold/20 text-brand-gold">
-                            {result.years} Yrs Left
+                            {result.years} {t('epf.yrsLeft')}
                         </div>
                     </div>
                     
@@ -335,15 +336,15 @@ export default function EPFCalculator() {
                     
                     <div className="grid grid-cols-3 gap-2 mb-4">
                         <div className="p-2.5 rounded-xl bg-background border border-border/50">
-                            <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Your Share</p>
+                            <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">{t('epf.yourShare')}</p>
                             <p className="text-foreground font-black text-xs">{fmtINR(result.totalEmp)}</p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-brand-gold/5 border border-brand-gold/20">
-                            <p className="text-brand-gold/80 text-[9px] uppercase font-bold mb-0.5">Employer EPF</p>
+                            <p className="text-brand-gold/80 text-[9px] uppercase font-bold mb-0.5">{t('epf.employerEPF')}</p>
                             <p className="text-brand-gold font-black text-xs">{fmtINR(result.totalEmployer)}</p>
                         </div>
                         <div className="p-2.5 rounded-xl bg-brand-green/10 border border-brand-green/20">
-                            <p className="text-brand-green text-[9px] uppercase font-bold mb-0.5">Interest Gained</p>
+                            <p className="text-brand-green text-[9px] uppercase font-bold mb-0.5">{t('epf.interestGained')}</p>
                             <p className="text-brand-green font-black text-xs">+{fmtINR(result.totalInterest)}</p>
                         </div>
                     </div>
@@ -353,7 +354,7 @@ export default function EPFCalculator() {
                 <div className={`p-4 rounded-2xl border flex items-start gap-3 ${insight.type === 'warn' ? 'bg-amber-500/10 border-amber-500/30' : insight.type === 'success' ? 'bg-brand-green/10 border-brand-green/30' : 'bg-brand-gold/10 border-brand-gold/30'}`}>
                     <BrainCircuit size={18} className={`shrink-0 mt-0.5 ${insight.type === 'warn' ? 'text-amber-500' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-gold'}`} />
                     <div>
-                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-gold'}`}>Smart Insight</p>
+                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-gold'}`}>{t('epf.smartInsight')}</p>
                         <p className={`text-xs font-medium leading-relaxed ${insight.type === 'warn' ? 'text-amber-700 dark:text-amber-400' : insight.type === 'success' ? 'text-emerald-700 dark:text-emerald-400' : 'text-yellow-700 dark:text-yellow-400'}`}>{insight.msg}</p>
                     </div>
                 </div>
@@ -361,7 +362,7 @@ export default function EPFCalculator() {
                 {/* SAVE BUTTON */}
                 <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-foreground/10">
                     {saved ? <Check size={18} /> : <Save size={18} />}
-                    {saved ? 'Calculation Saved!' : 'Save Calculation'}
+                    {saved ? t('epf.calculationSaved') : t('epf.saveCalculation')}
                 </button>
 
 
@@ -370,7 +371,7 @@ export default function EPFCalculator() {
                     <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-brand-gold/10 rounded-lg text-brand-gold"><Activity size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Advanced Details</span>
+                            <span className="text-foreground font-bold text-sm">{t('epf.advancedDetails')}</span>
                         </div>
                         {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -383,35 +384,35 @@ export default function EPFCalculator() {
 
                                     {/* Composition Bar */}
                                     <div>
-                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-2">Portfolio Composition</p>
+                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-2">{t('epf.portfolioComposition')}</p>
                                         <div className="h-4 w-full rounded-full flex overflow-hidden bg-brand-green/20">
                                             <div className="h-full bg-foreground transition-all duration-1000" style={{ width: `${result.empPctOfCorpus}%` }} />
                                             <div className="h-full bg-brand-gold transition-all duration-1000" style={{ width: `${result.employerPctOfCorpus}%` }} />
                                             <div className="h-full bg-brand-green transition-all duration-1000" style={{ width: `${result.interestPctOfCorpus}%` }} />
                                         </div>
                                         <div className="flex justify-between mt-2 flex-wrap gap-2">
-                                            <p className="text-[10px] font-bold text-muted-foreground"><span className="inline-block w-2 h-2 rounded-full bg-foreground mr-1" /> You: {result.empPctOfCorpus.toFixed(1)}%</p>
-                                            <p className="text-[10px] font-bold text-muted-foreground"><span className="inline-block w-2 h-2 rounded-full bg-brand-gold mr-1" /> Employer: {result.employerPctOfCorpus.toFixed(1)}%</p>
-                                            <p className="text-[10px] font-bold text-muted-foreground"><span className="inline-block w-2 h-2 rounded-full bg-brand-green mr-1" /> Interest: {result.interestPctOfCorpus.toFixed(1)}%</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground"><span className="inline-block w-2 h-2 rounded-full bg-foreground mr-1" /> {t('epf.you')}: {result.empPctOfCorpus.toFixed(1)}%</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground"><span className="inline-block w-2 h-2 rounded-full bg-brand-gold mr-1" /> {t('epf.employer')}: {result.employerPctOfCorpus.toFixed(1)}%</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground"><span className="inline-block w-2 h-2 rounded-full bg-brand-green mr-1" /> {t('epf.interestLabel')}: {result.interestPctOfCorpus.toFixed(1)}%</p>
                                         </div>
                                     </div>
 
                                     {/* Real Return & Purchasing Power */}
                                     <div className="p-4 rounded-2xl border border-border bg-gradient-to-br from-background to-muted">
                                         <div className="flex justify-between items-center mb-3">
-                                             <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Inflation Adjuster</p>
+                                             <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">{t('epf.inflationAdjuster')}</p>
                                              <div className="flex items-center gap-1.5">
-                                                 <span className="text-[10px] font-bold text-muted-foreground">Infl. %</span>
+                                                 <span className="text-[10px] font-bold text-muted-foreground">{t('epf.inflPct')}</span>
                                                  <input type="number" step="0.1" value={inflationRate} onChange={e => setInflationRate(Number(e.target.value)||0)} className="w-14 bg-card border border-border rounded px-2 py-0.5 text-xs focus:outline-none" />
                                              </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3 mb-3">
                                             <div className="bg-card p-3 rounded-xl border border-border/50 text-center">
-                                                 <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Real Return</p>
+                                                 <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">{t('epf.realReturn')}</p>
                                                  <p className={`font-black text-sm ${result.realReturn > 0 ? 'text-brand-green' : 'text-rose-500'}`}>{result.realReturn.toFixed(2)}%</p>
                                             </div>
                                             <div className="bg-card p-3 rounded-xl border border-border/50 text-center">
-                                                 <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Purchasing Power</p>
+                                                 <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">{t('epf.purchasingPower')}</p>
                                                  <p className="text-foreground font-black text-sm">{fmtINR(result.purchasingPower)}</p>
                                             </div>
                                         </div>
@@ -419,15 +420,15 @@ export default function EPFCalculator() {
                                     
                                     {/* Retirement Readiness */}
                                     <div className="p-4 rounded-2xl bg-brand-purple/5 border border-brand-purple/10">
-                                         <p className="text-brand-purple/80 text-[10px] uppercase font-bold tracking-wider mb-2">Retirement Readiness</p>
-                                         <p className="text-xs text-brand-purple/90 font-medium mb-3">Rule of thumb: Aim for a corpus equivalent to <b>20 times</b> your final annual salary to sustain your lifestyle.</p>
+                                         <p className="text-brand-purple/80 text-[10px] uppercase font-bold tracking-wider mb-2">{t('epf.retirementReadiness')}</p>
+                                         <p className="text-xs text-brand-purple/90 font-medium mb-3">{t('epf.retirementReadinessDesc')}</p>
                                          <div className="flex justify-between items-center bg-background rounded-xl p-3 border border-border/50">
                                              <div>
-                                                 <p className="text-[10px] text-muted-foreground uppercase font-bold">Target needed</p>
+                                                 <p className="text-[10px] text-muted-foreground uppercase font-bold">{t('epf.targetNeeded')}</p>
                                                  <p className="text-sm font-black text-foreground">{fmtINR(result.targetCorpus)}</p>
                                              </div>
                                              <div className="text-right">
-                                                 <p className="text-[10px] text-muted-foreground uppercase font-bold">Achieved</p>
+                                                 <p className="text-[10px] text-muted-foreground uppercase font-bold">{t('epf.achieved')}</p>
                                                  <p className={`text-sm font-black ${result.readinessPct >= 100 ? 'text-brand-green' : 'text-amber-500'}`}>{result.readinessPct.toFixed(1)}%</p>
                                              </div>
                                          </div>
@@ -445,7 +446,7 @@ export default function EPFCalculator() {
                     <button onClick={() => setShowWhatIf(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-blue-500/10 rounded-lg text-blue-500"><RotateCw size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">What-If Salary / Tenure</span>
+                            <span className="text-foreground font-bold text-sm">{t('epf.whatIfTitle')}</span>
                         </div>
                         {showWhatIf ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -458,14 +459,14 @@ export default function EPFCalculator() {
                                     
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">What if Hike was?</label>
+                                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('epf.whatIfHike')}</label>
                                             <div className="relative">
                                                 <input type="number" step="0.1" value={whatIfHike} onChange={e => setWhatIfHike(Number(e.target.value)||0)} className={inputCls + " pr-7 border-blue-500/30"} />
                                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Retire Age was?</label>
+                                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('epf.whatIfRetireAge')}</label>
                                             <div className="relative">
                                                 <input type="number" value={whatIfRetire} onChange={e => setWhatIfRetire(Number(e.target.value)||0)} className={inputCls} />
                                             </div>
@@ -473,14 +474,14 @@ export default function EPFCalculator() {
                                     </div>
 
                                     <div className="p-4 rounded-2xl border bg-blue-500/5 border-blue-500/20 text-center">
-                                        <p className="text-muted-foreground text-[10px] font-black uppercase tracking-wider mb-3">Revised Outcome</p>
+                                        <p className="text-muted-foreground text-[10px] font-black uppercase tracking-wider mb-3">{t('epf.revisedOutcome')}</p>
                                         <div className="grid grid-cols-2 gap-3 mb-3">
                                             <div>
-                                                 <p className="text-blue-600 dark:text-blue-400 text-[10px] font-bold mb-0.5">New Corpus</p>
+                                                 <p className="text-blue-600 dark:text-blue-400 text-[10px] font-bold mb-0.5">{t('epf.newCorpus')}</p>
                                                  <p className="text-foreground font-black text-base">{fmtINR(whatIf.simBalance)}</p>
                                             </div>
                                             <div>
-                                                 <p className="text-blue-600 dark:text-blue-400 text-[10px] font-bold mb-0.5">Extra Wealth</p>
+                                                 <p className="text-blue-600 dark:text-blue-400 text-[10px] font-bold mb-0.5">{t('epf.extraWealth')}</p>
                                                  <p className="text-brand-green font-black text-base">{whatIf.addedWealth >= 0 ? '+' : ''}{fmtINR(whatIf.addedWealth)}</p>
                                             </div>
                                         </div>
@@ -496,7 +497,7 @@ export default function EPFCalculator() {
                     <button onClick={() => setShowTable(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-foreground rounded-lg text-background"><BarChart2 size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Yearly Schedule</span>
+                            <span className="text-foreground font-bold text-sm">{t('epf.yearlySchedule')}</span>
                         </div>
                         {showTable ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -507,15 +508,15 @@ export default function EPFCalculator() {
                                 <div className="px-5 pb-5 pt-1">
                                     <div className="rounded-2xl overflow-hidden border border-border mt-2">
                                         <div className="grid grid-cols-3 bg-muted px-3 py-2.5">
-                                            {['Age', 'Contribs', 'End Balance'].map(h => (<p key={h} className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">{h}</p>))}
+                                            {[t('epf.age'), t('epf.contribs'), t('epf.endBalance')].map(h => (<p key={h} className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">{h}</p>))}
                                         </div>
                                         <div className="divide-y divide-border/50">
                                             {result.schedule.slice((page - 1) * 10, page * 10).map((row) => (
                                                 <div key={row.year} className="grid grid-cols-3 px-3 py-3 bg-background items-center">
-                                                    <p className="text-foreground text-xs font-bold">{row.age} yrs</p>
+                                                    <p className="text-foreground text-xs font-bold">{row.age} {t('epf.yrs')}</p>
                                                     <div>
                                                         <p className="text-muted-foreground text-[10px] font-mono leading-tight">+{fmtINR(row.empContrib + row.emplerContrib)}</p>
-                                                        <p className="text-brand-green text-[9px] font-mono leading-tight">+{fmtINR(row.interest)} Int</p>
+                                                        <p className="text-brand-green text-[9px] font-mono leading-tight">+{fmtINR(row.interest)} {t('epf.int')}</p>
                                                     </div>
                                                     <p className="text-foreground text-xs font-bold font-mono">{fmtINR(row.closingBal)}</p>
                                                 </div>
@@ -528,14 +529,14 @@ export default function EPFCalculator() {
                                                 <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
                                                     <ChevronLeft size={14} />
                                                 </button>
-                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Page {page} of {Math.ceil(result.schedule.length / 10)}</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('epf.page')} {page} {t('epf.of')} {Math.ceil(result.schedule.length / 10)}</p>
                                                 <button disabled={page === Math.ceil(result.schedule.length / 10)} onClick={() => setPage(p => p + 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
                                                     <ChevronRight size={14} />
                                                 </button>
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-center text-[9px] text-muted-foreground mt-3 uppercase tracking-widest font-bold">Standard 12% Emp / 3.67% Employer Split</p>
+                                    <p className="text-center text-[9px] text-muted-foreground mt-3 uppercase tracking-widest font-bold">{t('epf.standardSplit')}</p>
                                 </div>
                             </motion.div>
                         )}
@@ -548,13 +549,13 @@ export default function EPFCalculator() {
                         onClick={handleDownloadPDF}
                         className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-colors hover:bg-brand-blue/10 active:scale-95"
                     >
-                        <FileText size={20} /> Export Report
+                        <FileText size={20} /> {t('epf.exportReport')}
                     </button>
                     <button
                         onClick={handleDownloadExcel}
                         className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-green/5 border border-brand-green/20 text-brand-green font-bold text-xs transition-colors hover:bg-brand-green/10 active:scale-95"
                     >
-                        <FileText size={20} /> Excel Data
+                        <FileText size={20} /> {t('epf.excelData')}
                     </button>
                 </div>
             </div>

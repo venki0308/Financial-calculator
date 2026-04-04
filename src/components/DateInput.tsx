@@ -8,6 +8,7 @@
  */
 
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Capacitor } from '@capacitor/core';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useAppColors } from '../theme/useAppColors';

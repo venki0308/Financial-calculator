@@ -102,7 +102,7 @@ export default function Profile() {
                     </AnimatePresence>
                     <p className="text-muted-foreground text-xs mt-0.5 flex items-center gap-1">
                         <User size={11} />
-                        <span>All data stored on this device</span>
+                        <span>{t('profile.localData')}</span>
                     </p>
                 </div>
             </div>
@@ -159,7 +159,7 @@ export default function Profile() {
                 <p className="text-slate-500 dark:text-slate-400 font-medium">FinCalix</p>
                 <p className="text-slate-600 text-xs text-brand-blue/80 dark:text-cyan-400 font-bold mt-1">Version {APP_VERSION}</p>
                 <div className="flex items-center justify-center gap-1 mt-2 text-xs text-slate-400">
-                    Made with <Heart size={10} className="text-red-500 fill-red-500" /> in India
+                    {t('profile.madeWith')} <Heart size={10} className="text-red-500 fill-red-500" /> {t('profile.inIndia')}
                 </div>
             </div>
         </div>

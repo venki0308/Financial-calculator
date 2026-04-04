@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, GitCompare, TrendingUp, Calculator, PiggyBank, Download, Share2, FileText, Lightbulb } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -19,10 +20,10 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 
 type CompareType = 'emi' | 'sip' | 'fd';
 
-const types: { key: CompareType; label: string; icon: React.ElementType; gradient: string }[] = [
-    { key: 'emi', label: 'EMI / Loan', icon: Calculator, gradient: 'from-emerald-500 to-teal-600' },
-    { key: 'sip', label: 'SIP', icon: TrendingUp, gradient: 'from-blue-500 to-indigo-600' },
-    { key: 'fd', label: 'Fixed Deposit', icon: PiggyBank, gradient: 'from-amber-500 to-orange-600' },
+const typeKeys: { key: CompareType; icon: React.ElementType; gradient: string }[] = [
+    { key: 'emi', icon: Calculator, gradient: 'from-emerald-500 to-teal-600' },
+    { key: 'sip', icon: TrendingUp, gradient: 'from-blue-500 to-indigo-600' },
+    { key: 'fd', icon: PiggyBank, gradient: 'from-amber-500 to-orange-600' },
 ];
 
 export interface AmortEntry { month: number; emi: number; principal: number; interest: number; balance: number; }
@@ -53,6 +54,7 @@ function calcFD(principal: number, rate: number, tenure: number) {
 }
 
 export default function CompareCalculator() {
+    const { t } = useTranslation();
     useEffect(() => { AnalyticsService.trackScreen('Compare_Calculator'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
@@ -117,28 +119,28 @@ export default function CompareCalculator() {
 
     // Stacked bar chart data for EMI comparison
     const emiChartData = useMemo(() => ({
-        labels: ['Scenario A', 'Scenario B'],
+        labels: [t('compare.scenarioA'), t('compare.scenarioB')],
         datasets: [
-            { label: 'Principal', data: [emiA.principal, emiB.principal], backgroundColor: '#3B82F6' },
-            { label: 'Total Interest', data: [emiResultA.totalInterest, emiResultB.totalInterest], backgroundColor: '#EF4444' },
+            { label: t('compare.principal'), data: [emiA.principal, emiB.principal], backgroundColor: '#3B82F6' },
+            { label: t('compare.totalInterest'), data: [emiResultA.totalInterest, emiResultB.totalInterest], backgroundColor: '#EF4444' },
         ]
-    }), [emiA.principal, emiB.principal, emiResultA.totalInterest, emiResultB.totalInterest]);
+    }), [emiA.principal, emiB.principal, emiResultA.totalInterest, emiResultB.totalInterest, t]);
 
     const sipChartData = useMemo(() => ({
-        labels: ['Scenario A', 'Scenario B'],
+        labels: [t('compare.scenarioA'), t('compare.scenarioB')],
         datasets: [
-            { label: 'Invested', data: [sipResultA.invested, sipResultB.invested], backgroundColor: '#3B82F6' },
-            { label: 'Returns', data: [sipResultA.wealthGained, sipResultB.wealthGained], backgroundColor: '#10B981' },
+            { label: t('compare.invested'), data: [sipResultA.invested, sipResultB.invested], backgroundColor: '#3B82F6' },
+            { label: t('compare.returns'), data: [sipResultA.wealthGained, sipResultB.wealthGained], backgroundColor: '#10B981' },
         ]
-    }), [sipResultA, sipResultB]);
+    }), [sipResultA, sipResultB, t]);
 
     const fdChartData = useMemo(() => ({
-        labels: ['Scenario A', 'Scenario B'],
+        labels: [t('compare.scenarioA'), t('compare.scenarioB')],
         datasets: [
-            { label: 'Principal', data: [fdA.principal, fdB.principal], backgroundColor: '#3B82F6' },
-            { label: 'Interest', data: [fdResultA.interest, fdResultB.interest], backgroundColor: '#10B981' },
+            { label: t('compare.principal'), data: [fdA.principal, fdB.principal], backgroundColor: '#3B82F6' },
+            { label: t('compare.interest'), data: [fdResultA.interest, fdResultB.interest], backgroundColor: '#10B981' },
         ]
-    }), [fdA.principal, fdB.principal, fdResultA.interest, fdResultB.interest]);
+    }), [fdA.principal, fdB.principal, fdResultA.interest, fdResultB.interest, t]);
 
     const activeChartData = selectedType === 'emi' ? emiChartData : selectedType === 'sip' ? sipChartData : fdChartData;
 
@@ -176,8 +178,8 @@ export default function CompareCalculator() {
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-foreground">Compare Scenarios</h1>
-                        <p className="text-muted-foreground text-xs">Side-by-side financial comparison</p>
+                        <h1 className="text-lg font-bold text-foreground">{t('compare.title')}</h1>
+                        <p className="text-muted-foreground text-xs">{t('compare.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -188,21 +190,24 @@ export default function CompareCalculator() {
             <div className="px-4 pb-28 pt-4">
                 {/* Type Selector */}
                 <div className="flex gap-2 mb-5">
-                    {types.map(tp => (
-                        <motion.button
-                            key={tp.key}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setSelectedType(tp.key)}
-                            className={`flex-1 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                                selectedType === tp.key
-                                    ? `bg-gradient-to-br ${tp.gradient} text-white shadow-lg`
-                                    : 'bg-card border border-border text-muted-foreground'
-                            }`}
-                        >
-                            <tp.icon size={14} />
-                            {tp.label}
-                        </motion.button>
-                    ))}
+                    {typeKeys.map(tp => {
+                        const label = tp.key === 'emi' ? t('compare.emiLoan') : tp.key === 'sip' ? t('compare.sip') : t('compare.fixedDeposit');
+                        return (
+                            <motion.button
+                                key={tp.key}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setSelectedType(tp.key)}
+                                className={`flex-1 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                                    selectedType === tp.key
+                                        ? `bg-gradient-to-br ${tp.gradient} text-white shadow-lg`
+                                        : 'bg-card border border-border text-muted-foreground'
+                                }`}
+                            >
+                                <tp.icon size={14} />
+                                {label}
+                            </motion.button>
+                        );
+                    })}
                 </div>
 
                 {/* Scenario Inputs */}
@@ -210,27 +215,27 @@ export default function CompareCalculator() {
                     {/* Scenario A */}
                     <div className="space-y-3">
                         <div className="text-center py-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                            <span className="text-blue-400 text-xs font-bold">📘 Scenario A</span>
+                            <span className="text-blue-400 text-xs font-bold">📘 {t('compare.scenarioA')}</span>
                         </div>
                         {selectedType === 'emi' && (
                             <>
-                                <NumberInput label="Loan Amount" value={emiA.principal} onChange={v => setEmiA({ ...emiA, principal: v })} min={10000} max={100000000} prefix="₹" />
-                                <NumberInput label="Interest Rate" value={emiA.rate} onChange={v => setEmiA({ ...emiA, rate: v })} min={1} max={30} suffix="%" step={0.1} />
-                                <NumberInput label="Tenure (Years)" value={emiA.years} onChange={v => setEmiA({ ...emiA, years: v })} min={1} max={30} suffix=" yr" />
+                                <NumberInput label={t('compare.loanAmount')} value={emiA.principal} onChange={v => setEmiA({ ...emiA, principal: v })} min={10000} max={100000000} prefix="₹" />
+                                <NumberInput label={t('compare.interestRate')} value={emiA.rate} onChange={v => setEmiA({ ...emiA, rate: v })} min={1} max={30} suffix="%" step={0.1} />
+                                <NumberInput label={t('compare.tenureYears')} value={emiA.years} onChange={v => setEmiA({ ...emiA, years: v })} min={1} max={30} suffix=" yr" />
                             </>
                         )}
                         {selectedType === 'sip' && (
                             <>
-                                <NumberInput label="Monthly SIP" value={sipA.monthly} onChange={v => setSipA({ ...sipA, monthly: v })} min={500} max={1000000} prefix="₹" />
-                                <NumberInput label="Return Rate" value={sipA.rate} onChange={v => setSipA({ ...sipA, rate: v })} min={1} max={30} suffix="%" step={0.5} />
-                                <NumberInput label="Years" value={sipA.years} onChange={v => setSipA({ ...sipA, years: v })} min={1} max={40} suffix=" yr" />
+                                <NumberInput label={t('compare.monthlySip')} value={sipA.monthly} onChange={v => setSipA({ ...sipA, monthly: v })} min={500} max={1000000} prefix="₹" />
+                                <NumberInput label={t('compare.returnRate')} value={sipA.rate} onChange={v => setSipA({ ...sipA, rate: v })} min={1} max={30} suffix="%" step={0.5} />
+                                <NumberInput label={t('compare.years')} value={sipA.years} onChange={v => setSipA({ ...sipA, years: v })} min={1} max={40} suffix=" yr" />
                             </>
                         )}
                         {selectedType === 'fd' && (
                             <>
-                                <NumberInput label="Principal" value={fdA.principal} onChange={v => setFdA({ ...fdA, principal: v })} min={1000} max={100000000} prefix="₹" />
-                                <NumberInput label="Interest Rate" value={fdA.rate} onChange={v => setFdA({ ...fdA, rate: v })} min={1} max={15} suffix="%" step={0.1} />
-                                <NumberInput label="Tenure (Years)" value={fdA.years} onChange={v => setFdA({ ...fdA, years: v })} min={1} max={10} suffix=" yr" />
+                                <NumberInput label={t('compare.principal')} value={fdA.principal} onChange={v => setFdA({ ...fdA, principal: v })} min={1000} max={100000000} prefix="₹" />
+                                <NumberInput label={t('compare.interestRate')} value={fdA.rate} onChange={v => setFdA({ ...fdA, rate: v })} min={1} max={15} suffix="%" step={0.1} />
+                                <NumberInput label={t('compare.tenureYears')} value={fdA.years} onChange={v => setFdA({ ...fdA, years: v })} min={1} max={10} suffix=" yr" />
                             </>
                         )}
                     </div>
@@ -238,27 +243,27 @@ export default function CompareCalculator() {
                     {/* Scenario B */}
                     <div className="space-y-3">
                         <div className="text-center py-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                            <span className="text-amber-400 text-xs font-bold">📙 Scenario B</span>
+                            <span className="text-amber-400 text-xs font-bold">📙 {t('compare.scenarioB')}</span>
                         </div>
                         {selectedType === 'emi' && (
                             <>
-                                <NumberInput label="Loan Amount" value={emiB.principal} onChange={v => setEmiB({ ...emiB, principal: v })} min={10000} max={100000000} prefix="₹" />
-                                <NumberInput label="Interest Rate" value={emiB.rate} onChange={v => setEmiB({ ...emiB, rate: v })} min={1} max={30} suffix="%" step={0.1} />
-                                <NumberInput label="Tenure (Years)" value={emiB.years} onChange={v => setEmiB({ ...emiB, years: v })} min={1} max={30} suffix=" yr" />
+                                <NumberInput label={t('compare.loanAmount')} value={emiB.principal} onChange={v => setEmiB({ ...emiB, principal: v })} min={10000} max={100000000} prefix="₹" />
+                                <NumberInput label={t('compare.interestRate')} value={emiB.rate} onChange={v => setEmiB({ ...emiB, rate: v })} min={1} max={30} suffix="%" step={0.1} />
+                                <NumberInput label={t('compare.tenureYears')} value={emiB.years} onChange={v => setEmiB({ ...emiB, years: v })} min={1} max={30} suffix=" yr" />
                             </>
                         )}
                         {selectedType === 'sip' && (
                             <>
-                                <NumberInput label="Monthly SIP" value={sipB.monthly} onChange={v => setSipB({ ...sipB, monthly: v })} min={500} max={1000000} prefix="₹" />
-                                <NumberInput label="Return Rate" value={sipB.rate} onChange={v => setSipB({ ...sipB, rate: v })} min={1} max={30} suffix="%" step={0.5} />
-                                <NumberInput label="Years" value={sipB.years} onChange={v => setSipB({ ...sipB, years: v })} min={1} max={40} suffix=" yr" />
+                                <NumberInput label={t('compare.monthlySip')} value={sipB.monthly} onChange={v => setSipB({ ...sipB, monthly: v })} min={500} max={1000000} prefix="₹" />
+                                <NumberInput label={t('compare.returnRate')} value={sipB.rate} onChange={v => setSipB({ ...sipB, rate: v })} min={1} max={30} suffix="%" step={0.5} />
+                                <NumberInput label={t('compare.years')} value={sipB.years} onChange={v => setSipB({ ...sipB, years: v })} min={1} max={40} suffix=" yr" />
                             </>
                         )}
                         {selectedType === 'fd' && (
                             <>
-                                <NumberInput label="Principal" value={fdB.principal} onChange={v => setFdB({ ...fdB, principal: v })} min={1000} max={100000000} prefix="₹" />
-                                <NumberInput label="Interest Rate" value={fdB.rate} onChange={v => setFdB({ ...fdB, rate: v })} min={1} max={15} suffix="%" step={0.1} />
-                                <NumberInput label="Tenure (Years)" value={fdB.years} onChange={v => setFdB({ ...fdB, years: v })} min={1} max={10} suffix=" yr" />
+                                <NumberInput label={t('compare.principal')} value={fdB.principal} onChange={v => setFdB({ ...fdB, principal: v })} min={1000} max={100000000} prefix="₹" />
+                                <NumberInput label={t('compare.interestRate')} value={fdB.rate} onChange={v => setFdB({ ...fdB, rate: v })} min={1} max={15} suffix="%" step={0.1} />
+                                <NumberInput label={t('compare.tenureYears')} value={fdB.years} onChange={v => setFdB({ ...fdB, years: v })} min={1} max={10} suffix=" yr" />
                             </>
                         )}
                     </div>
@@ -290,71 +295,71 @@ export default function CompareCalculator() {
                 {/* Result Comparison Cards */}
                 <div className="grid grid-cols-2 gap-3 mb-5">
                     <motion.div className={`p-4 rounded-2xl border ${winner === 'A' ? 'bg-brand-green/5 border-brand-green/30' : 'bg-card border-border'}`} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-                        <p className="text-blue-400 text-[10px] font-bold uppercase mb-3">Scenario A</p>
+                        <p className="text-blue-400 text-[10px] font-bold uppercase mb-3">{t('compare.scenarioA')}</p>
                         {selectedType === 'emi' && (
                             <div className="space-y-2">
-                                <ResultRow label="Monthly EMI" value={formatINR(emiResultA.emi)} highlight />
-                                <ResultRow label="Total Interest" value={formatINR(emiResultA.totalInterest)} />
-                                <ResultRow label="Total Payment" value={formatINR(emiResultA.totalPayment)} />
+                                <ResultRow label={t('compare.monthlyEmi')} value={formatINR(emiResultA.emi)} highlight />
+                                <ResultRow label={t('compare.totalInterest')} value={formatINR(emiResultA.totalInterest)} />
+                                <ResultRow label={t('compare.totalPayment')} value={formatINR(emiResultA.totalPayment)} />
                             </div>
                         )}
                         {selectedType === 'sip' && (
                             <div className="space-y-2">
-                                <ResultRow label="Future Value" value={formatINR(sipResultA.futureValue)} highlight />
-                                <ResultRow label="Invested" value={formatINR(sipResultA.invested)} />
-                                <ResultRow label="Returns" value={formatINR(sipResultA.wealthGained)} green />
+                                <ResultRow label={t('compare.futureValue')} value={formatINR(sipResultA.futureValue)} highlight />
+                                <ResultRow label={t('compare.invested')} value={formatINR(sipResultA.invested)} />
+                                <ResultRow label={t('compare.returns')} value={formatINR(sipResultA.wealthGained)} green />
                             </div>
                         )}
                         {selectedType === 'fd' && (
                             <div className="space-y-2">
-                                <ResultRow label="Maturity" value={formatINR(fdResultA.maturity)} highlight />
-                                <ResultRow label="Interest" value={formatINR(fdResultA.interest)} green />
+                                <ResultRow label={t('compare.maturity')} value={formatINR(fdResultA.maturity)} highlight />
+                                <ResultRow label={t('compare.interest')} value={formatINR(fdResultA.interest)} green />
                             </div>
                         )}
-                        {winner === 'A' && <p className="text-brand-green text-[10px] font-bold mt-2">★ Better</p>}
+                        {winner === 'A' && <p className="text-brand-green text-[10px] font-bold mt-2">{t('compare.better')}</p>}
                     </motion.div>
 
                     <motion.div className={`p-4 rounded-2xl border ${winner === 'B' ? 'bg-brand-green/5 border-brand-green/30' : 'bg-card border-border'}`} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
-                        <p className="text-amber-400 text-[10px] font-bold uppercase mb-3">Scenario B</p>
+                        <p className="text-amber-400 text-[10px] font-bold uppercase mb-3">{t('compare.scenarioB')}</p>
                         {selectedType === 'emi' && (
                             <div className="space-y-2">
-                                <ResultRow label="Monthly EMI" value={formatINR(emiResultB.emi)} highlight />
-                                <ResultRow label="Total Interest" value={formatINR(emiResultB.totalInterest)} />
-                                <ResultRow label="Total Payment" value={formatINR(emiResultB.totalPayment)} />
+                                <ResultRow label={t('compare.monthlyEmi')} value={formatINR(emiResultB.emi)} highlight />
+                                <ResultRow label={t('compare.totalInterest')} value={formatINR(emiResultB.totalInterest)} />
+                                <ResultRow label={t('compare.totalPayment')} value={formatINR(emiResultB.totalPayment)} />
                             </div>
                         )}
                         {selectedType === 'sip' && (
                             <div className="space-y-2">
-                                <ResultRow label="Future Value" value={formatINR(sipResultB.futureValue)} highlight />
-                                <ResultRow label="Invested" value={formatINR(sipResultB.invested)} />
-                                <ResultRow label="Returns" value={formatINR(sipResultB.wealthGained)} green />
+                                <ResultRow label={t('compare.futureValue')} value={formatINR(sipResultB.futureValue)} highlight />
+                                <ResultRow label={t('compare.invested')} value={formatINR(sipResultB.invested)} />
+                                <ResultRow label={t('compare.returns')} value={formatINR(sipResultB.wealthGained)} green />
                             </div>
                         )}
                         {selectedType === 'fd' && (
                             <div className="space-y-2">
-                                <ResultRow label="Maturity" value={formatINR(fdResultB.maturity)} highlight />
-                                <ResultRow label="Interest" value={formatINR(fdResultB.interest)} green />
+                                <ResultRow label={t('compare.maturity')} value={formatINR(fdResultB.maturity)} highlight />
+                                <ResultRow label={t('compare.interest')} value={formatINR(fdResultB.interest)} green />
                             </div>
                         )}
-                        {winner === 'B' && <p className="text-brand-green text-[10px] font-bold mt-2">★ Better</p>}
+                        {winner === 'B' && <p className="text-brand-green text-[10px] font-bold mt-2">{t('compare.better')}</p>}
                     </motion.div>
                 </div>
 
                 {/* EMI Difference Summary (only for EMI mode) */}
                 {selectedType === 'emi' && (
                     <div className="p-4 rounded-2xl bg-card border border-border mb-5">
-                        <h3 className="text-foreground font-bold text-sm mb-3">📊 Detailed Comparison</h3>
+                        <h3 className="text-foreground font-bold text-sm mb-3">📊 {t('compare.detailedComparison')}</h3>
                         <div className="space-y-2.5">
-                            <CompareRow label="Monthly EMI Difference" value={formatINR(Math.abs(emiResultA.emi - emiResultB.emi))} />
-                            <CompareRow label="Total Interest Savings" value={formatINR(Math.abs(emiResultA.totalInterest - emiResultB.totalInterest))} highlight />
-                            <CompareRow label="Total Payment Difference" value={formatINR(Math.abs(emiResultA.totalPayment - emiResultB.totalPayment))} />
+                            <CompareRow label={t('compare.monthlyEmiDiff')} value={formatINR(Math.abs(emiResultA.emi - emiResultB.emi))} />
+                            <CompareRow label={t('compare.totalInterestSavings')} value={formatINR(Math.abs(emiResultA.totalInterest - emiResultB.totalInterest))} highlight />
+                            <CompareRow label={t('compare.totalPaymentDiff')} value={formatINR(Math.abs(emiResultA.totalPayment - emiResultB.totalPayment))} />
                         </div>
                     </div>
                 )}
 
                 {/* Visual Bar Chart */}
                 <div className="p-4 rounded-2xl bg-card border border-border mb-5">
-                    <h3 className="text-foreground font-bold text-sm mb-4">Visual Comparison</h3>
+                    <h3 className="text-foreground font-bold text-sm mb-4">{t('compare.visualComparison')}</h3>
                     <div className="h-52">
                         <Bar
                             ref={chartRef}
@@ -374,7 +379,7 @@ export default function CompareCalculator() {
 
                 {/* Animated Bar Comparison */}
                 <div className="p-4 rounded-2xl bg-card border border-border mb-5">
-                    <h3 className="text-foreground font-bold text-sm mb-4">Head-to-Head</h3>
+                    <h3 className="text-foreground font-bold text-sm mb-4">{t('compare.headToHead')}</h3>
                     {selectedType === 'emi' && (
                         <div className="space-y-4">
                             <CompareBar labelA="A EMI" labelB="B EMI" valA={emiResultA.emi} valB={emiResultB.emi} />
@@ -392,7 +397,7 @@ export default function CompareCalculator() {
                     className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-sm shadow-lg shadow-violet-500/20 mb-4"
                 >
                     <FileText size={18} />
-                    Download {selectedType === 'emi' ? 'Loan' : selectedType === 'sip' ? 'SIP' : 'FD'} Comparison PDF
+                    {t('compare.download')} {selectedType === 'emi' ? t('compare.loan') : selectedType === 'sip' ? t('compare.sip') : t('compare.fd')} {t('compare.comparisonPdf')}
                 </button>
             </div>
         </div>
