@@ -14,6 +14,7 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { nativeShare } from '../utils/nativeShare';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { VEHICLE_TYPES, VEHICLE_SEGMENTS, CIBIL_TIERS, EV_SUBSIDY, STATE_EV_BENEFITS, RUNNING_COSTS, ONROAD_DEFAULTS, type VehicleType } from '../data/twoWheelerData';
+import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 
 export default function TwoWheelerLoanCalculator() {
     const { t } = useTranslation();
@@ -313,13 +314,13 @@ export default function TwoWheelerLoanCalculator() {
                 </div>
 
                 {/* Ex-showroom */}
-                <NumberInput label="{t('tw.exShowroom')}" value={exShowroom} onChange={setExShowroom} min={20000} max={500000} prefix="₹" />
+                <NumberInput label={t('tw.exShowroom')} value={exShowroom} onChange={setExShowroom} min={20000} max={500000} prefix="₹" />
 
                 {/* EV Subsidy */}
                 {isEV && (
                     <div className="p-4 rounded-2xl border shadow-sm space-y-3" style={{ backgroundColor: '#10B98110', borderColor: '#10B98130' }}>
                         <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-emerald-500" /><h3 className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{t('tw.evSubsidies')}</h3></div>
-                        <NumberInput label="{t('tw.batteryKwh')}" value={batteryKwh} onChange={setBatteryKwh} min={1} max={10} step={0.5} suffix=" kWh" />
+                        <NumberInput label={t('tw.batteryKwh')} value={batteryKwh} onChange={setBatteryKwh} min={1} max={10} step={0.5} suffix=" kWh" />
                         <div className="flex justify-between text-xs"><span style={{ color: c.textSecondary }}>PM E-DRIVE subsidy</span><span className="font-bold text-emerald-500">-{formatINR(centralSubsidy)}</span></div>
                         <p className="text-[9px]" style={{ color: c.textSecondary }}>₹{EV_SUBSIDY.ratePerKwh}/kWh, max ₹{EV_SUBSIDY.maxPerVehicle} · Valid till {EV_SUBSIDY.validUntil}</p>
                         <div>
@@ -343,10 +344,10 @@ export default function TwoWheelerLoanCalculator() {
                 {/* {t('tw.onRoadPrice')} */}
                 <div className="p-4 rounded-2xl border shadow-sm space-y-3" style={{ backgroundColor: c.card, borderColor: c.border }}>
                     <div className="flex items-center gap-2"><Info className="w-4 h-4 text-blue-500" /><h3 className="text-sm font-bold" style={{ color: c.text }}>{t('tw.onRoadPrice')}</h3></div>
-                    <NumberInput label="{t('tw.rtoReg')}" value={effectiveRto} onChange={setRtoCharges} min={0} max={50000} prefix="₹" helperText={isEV ? 'Waived in many states for EVs' : `~${(ONROAD_DEFAULTS.rtoPercentPetrol * 100).toFixed(0)}% of ex-showroom`} />
-                    <NumberInput label="{t('tw.insurance1yr')}" value={effectiveInsurance} onChange={setInsuranceAmt} min={0} max={30000} prefix="₹" />
-                    <NumberInput label="{t('tw.handling')}" value={handlingCharges} onChange={setHandlingCharges} min={0} max={10000} prefix="₹" />
-                    <NumberInput label="{t('tw.accessories')}" value={accessories} onChange={setAccessories} min={0} max={50000} prefix="₹" />
+                    <NumberInput label={t('tw.rtoReg')} value={effectiveRto} onChange={setRtoCharges} min={0} max={50000} prefix="₹" helperText={isEV ? 'Waived in many states for EVs' : `~${(ONROAD_DEFAULTS.rtoPercentPetrol * 100).toFixed(0)}% of ex-showroom`} />
+                    <NumberInput label={t('tw.insurance1yr')} value={effectiveInsurance} onChange={setInsuranceAmt} min={0} max={30000} prefix="₹" />
+                    <NumberInput label={t('tw.handling')} value={handlingCharges} onChange={setHandlingCharges} min={0} max={10000} prefix="₹" />
+                    <NumberInput label={t('tw.accessories')} value={accessories} onChange={setAccessories} min={0} max={50000} prefix="₹" />
                     <div className="border-t pt-3 space-y-1.5" style={{ borderColor: c.border }}>
                         {[['Ex-showroom', exShowroom], ['+ RTO', effectiveRto], ['+ Insurance', effectiveInsurance], ['+ Handling', handlingCharges], ...(accessories > 0 ? [['+ Accessories', accessories]] : [])].map(([label, val]) => (
                             <div key={String(label)} className="flex justify-between text-xs"><span style={{ color: c.textSecondary }}>{label}</span><span className="font-medium" style={{ color: c.text }}>{formatINR(Number(val))}</span></div>
@@ -389,7 +390,7 @@ export default function TwoWheelerLoanCalculator() {
                     </div>
                     <div>
                         <p className="text-[9px] mb-1 font-medium" style={{ color: c.textSecondary }}>Suggested rate: {suggestedRange[0]}% — {suggestedRange[1]}% {isFemale ? '(women discount applied)' : ''}</p>
-                        <NumberInput label="{t('tw.rate')}" value={rate} onChange={setRate} min={1} max={36} suffix="%" step={0.25} />
+                        <NumberInput label={t('tw.rate')} value={rate} onChange={setRate} min={1} max={36} suffix="%" step={0.25} />
                     </div>
                     <div>
                         <label className="text-xs font-bold mb-1.5 block" style={{ color: c.textSecondary }}>Tenure</label>
@@ -402,7 +403,7 @@ export default function TwoWheelerLoanCalculator() {
                             ))}
                         </div>
                     </div>
-                    <NumberInput label="{t('tw.processingFee')}" value={processingFee} onChange={setProcessingFee} min={0} max={10000} prefix="₹" />
+                    <NumberInput label={t('tw.processingFee')} value={processingFee} onChange={setProcessingFee} min={0} max={10000} prefix="₹" />
                 </div>
 
                 {/* Calculate Button */}
@@ -429,7 +430,7 @@ export default function TwoWheelerLoanCalculator() {
                         {/* {t('tw.trueCost')} */}
                         <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
                             <h3 className="text-sm font-bold mb-3" style={{ color: c.text }}>{t('tw.trueCost')} ({tenureYears.toFixed(0)}yr)</h3>
-                            <NumberInput label="{t('tw.yearlyKm')}" value={yearlyKm} onChange={setYearlyKm} min={1000} max={30000} suffix=" km" />
+                            <NumberInput label={t('tw.yearlyKm')} value={yearlyKm} onChange={setYearlyKm} min={1000} max={30000} suffix=" km" />
                             <div className="space-y-1.5 mt-3 text-xs">
                                 {[['Loan EMI total', totalPayment], ['Processing fee', processingFee], [`${isEV ? 'Charging' : 'Fuel'} cost (${tenureYears.toFixed(0)}yr)`, ownershipCost.fuelCost], [`Service (${tenureYears.toFixed(0)}yr)`, ownershipCost.serviceCost], [`Insurance (${tenureYears.toFixed(0)}yr)`, ownershipCost.insuranceCost]].map(([l, v]) => (
                                     <div key={String(l)} className="flex justify-between"><span style={{ color: c.textSecondary }}>{l}</span><span className="font-medium" style={{ color: c.text }}>{formatINR(Number(v))}</span></div>
@@ -461,7 +462,7 @@ export default function TwoWheelerLoanCalculator() {
                         {/* Affordability */}
                         <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
                             <h3 className="text-sm font-bold mb-3" style={{ color: c.text }}>{t('tw.canAfford')}</h3>
-                            <NumberInput label="{t('tw.monthlyIncome')}" value={monthlyIncome} onChange={setMonthlyIncome} min={0} max={500000} prefix="₹" />
+                            <NumberInput label={t('tw.monthlyIncome')} value={monthlyIncome} onChange={setMonthlyIncome} min={0} max={500000} prefix="₹" />
                             {affordability && (
                                 <div className="mt-3 p-3 rounded-xl" style={{ backgroundColor: affordability.status === 'red' ? '#EF444415' : affordability.status === 'yellow' ? '#F59E0B15' : '#10B98115' }}>
                                     <p className={`text-xs font-bold ${affordability.status === 'red' ? 'text-red-500' : affordability.status === 'yellow' ? 'text-amber-500' : 'text-emerald-500'}`}>
@@ -474,7 +475,7 @@ export default function TwoWheelerLoanCalculator() {
                         {/* Prepayment */}
                         <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
                             <h3 className="text-sm font-bold mb-3" style={{ color: c.text }}>{t('tw.extraEmiTitle')}</h3>
-                            <NumberInput label="{t('tw.extraEmi')}" value={extraEmi} onChange={setExtraEmi} min={0} max={emi * 2} prefix="₹" />
+                            <NumberInput label={t('tw.extraEmi')} value={extraEmi} onChange={setExtraEmi} min={0} max={emi * 2} prefix="₹" />
                             {prepayResult && prepayResult.monthsSaved > 0 && (
                                 <div className="grid grid-cols-2 gap-2 mt-3">
                                     <div className="p-2 rounded-lg text-center" style={{ backgroundColor: '#10B98115' }}><p className="text-[8px] uppercase font-bold text-emerald-500">{t('tw.intSaved')}</p><p className="text-sm font-black text-emerald-500">{formatINR(prepayResult.interestSaved)}</p></div>
@@ -547,6 +548,9 @@ export default function TwoWheelerLoanCalculator() {
                                 )}
                             </AnimatePresence>
                         </div>
+
+                        {/* CIBIL Advisory */}
+                        <CibilAdvisoryCard score={(() => { const ranges = isEV ? CIBIL_TIERS[cibilIdx].evRange : CIBIL_TIERS[cibilIdx].petrolRange; return cibilIdx === 0 ? 770 : cibilIdx === 1 ? 720 : cibilIdx === 2 ? 670 : 550; })()} loanType="two_wheeler_loan" loanAmount={loanAmount} tenureMonths={tenureMonths} />
 
                         {/* Advisor Tips */}
                         <div className="p-4 rounded-2xl" style={{ backgroundColor: '#10B98110', border: '1px solid #10B98125' }}>

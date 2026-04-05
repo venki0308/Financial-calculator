@@ -29,6 +29,7 @@ import {
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
+import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import { AnalyticsService } from '../lib/analytics';
 import ShareableCard from '../components/ShareableCard';
 import { triggerCalcNotification } from '../services/calcNotifications';
@@ -63,6 +64,7 @@ export default function EMICalculator() {
     const [savedId, setSavedId] = useState<string | null>(null);
     const [showInfo, setShowInfo] = useState(false);
     const [monthlyIncome, setMonthlyIncome] = useState(0);
+    const [cibilScore] = useState(750);
 
     // Live Loan Tracker state
     const [loanStartDate, setLoanStartDate] = useState('');
@@ -869,6 +871,11 @@ export default function EMICalculator() {
                     </div>
 
                     {loanProfile && <LiveLoanStatus profile={loanProfile} />}
+                </div>
+
+                {/* CIBIL Score Advisory */}
+                <div className="mt-4">
+                    <CibilAdvisoryCard score={cibilScore} loanType={loanType === 'Home Loan' ? 'home_loan' : loanType === 'Car Loan' ? 'car_loan' : loanType === 'Education Loan' ? 'education_loan' : 'personal_loan'} loanAmount={principal} tenureMonths={months} />
                 </div>
 
                 <CalculatorInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} calculatorTitle={t('emi.loanAnalyticsCalculator')} />
