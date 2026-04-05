@@ -88,7 +88,8 @@ export default function LoanDetail() {
     }
 
     const d = profile.profileData;
-    const isLoan = profile.calculatorType === 'Loan EMI' || profile.calculatorType === 'Mortgage';
+    const typeLC = profile.calculatorType.toLowerCase().replace(/\s+calculator$/i, '').trim();
+    const isLoan = typeLC === 'loan emi' || typeLC === 'mortgage';
 
     const handleDelete = () => {
         removeProfile(profile.id);
@@ -202,9 +203,14 @@ export default function LoanDetail() {
                     { label: 'Daily Interest', value: formatINR(status.dailyInterest) },
                     { label: 'Progress', value: `${status.percentComplete.toFixed(1)}%` },
                 ],
-                projectionTitle: 'Year-wise Summary',
-                projectionColumns: ['Year', 'Total Paid', 'Principal', 'Interest', 'Closing Balance'],
-                projectionRows: yearlySummary.map(r => [r.year, formatINR(r.totalPaid), formatINR(r.principal), formatINR(r.interest), formatINR(r.closingBal)]),
+                projectionTitle: 'Month-wise Amortization Schedule',
+                projectionColumns: ['Month', 'Date', 'EMI', 'Interest', 'Principal', 'Balance'],
+                projectionRows: fullSchedule.map(r => [r.month, fmtDate(r.date), formatINR(r.emi), formatINR(r.interest), formatINR(r.principal), formatINR(r.balance)]),
+                additionalTables: [{
+                    title: 'Year-wise Summary',
+                    columns: ['Year', 'Total Paid', 'Principal', 'Interest', 'Closing Balance'],
+                    rows: yearlySummary.map(r => [r.year, formatINR(r.totalPaid), formatINR(r.principal), formatINR(r.interest), formatINR(r.closingBal)]),
+                }],
                 filename: `FinCalix_LoanTracker_${tag}`,
             };
             await exportToPDF(config);
@@ -386,52 +392,54 @@ export default function LoanDetail() {
     // ════════════════════════════════════════════════════���══════════
     // INVESTMENT DETAIL (SIP, FD, RD, PPF, SSY, NSC, KVP, POMIS, SCSS, Goal)
     // ══════════════════════════��════════════════════════════════════
+    // Normalize type matching (calculators save "SIP", "SSY", "PPF" etc.)
+    const mt = (...names: string[]) => names.some(n => typeLC === n.toLowerCase());
+
     const investmentMetrics = useMemo(() => {
-        const type = profile.calculatorType;
         try {
-            if (type === 'SIP Calculator') {
-                const s = calculateSipStatus({ monthlySip: d.monthlyAmount || d.monthlySip || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate });
+            if (mt('sip', 'sip calculator')) {
+                const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate });
                 return { rows: [['Months Invested', String(s.monthsInvested)], ['Total Invested', formatINR(s.totalInvested)], ['Current Value', formatINR(s.currentValue)], ['Wealth Gained', formatINR(s.wealthGained)], ['Return %', `${s.returnPercent.toFixed(2)}%`], ['Running Since', `${s.sipRunningYears}Y ${s.sipRunningMonths}M`]], progress: Math.min(100, s.monthsInvested), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
             }
-            if (type === 'FD Calculator' || type === 'Post Office TD') {
+            if (mt('fd', 'fd calculator', 'potd', 'post office td')) {
                 const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4 });
                 return { rows: [['Days Invested', String(s.daysInvested)], ['Principal', formatINR(d.principal)], ['Value Today', formatINR(s.valueToday)], ['Interest Earned', formatINR(s.interestEarnedToday)], ['Daily Earning', formatINR(s.dailyEarning)], ['Maturity Date', fmtDate(s.maturityDate)], ['Maturity Value', formatINR(s.maturityValue)], ['Days Remaining', String(s.daysRemaining)]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}%`, headline: formatINR(s.valueToday), headlineLabel: 'Value Today' };
             }
-            if (type === 'RD') {
+            if (mt('rd')) {
                 const s = calculateRdStatus({ monthlyDeposit: d.monthlyDeposit || 0, annualRate: d.annualRate || 5.8, tenureMonths: d.tenureMonths || 60, startDate: d.startDate });
                 return { rows: [['Total Deposited', formatINR(s.totalDeposited)], ['Current Value', formatINR(s.currentValue)], ['Interest Earned', formatINR(s.interestEarned)], ['Completion', `${s.percentComplete.toFixed(1)}%`]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}%`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
             }
-            if (type === 'PPF Calculator') {
-                const s = calculatePpfStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.annualRate || 7.1, openingDate: d.startDate });
+            if (mt('ppf', 'ppf calculator')) {
+                const s = calculatePpfStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 7.1, openingDate: d.openingDate || d.startDate });
                 return { rows: [['Year', `${s.currentYear} of 15`], ['Total Deposited', formatINR(s.totalDeposited)], ['Current Balance', formatINR(s.balanceToday)], ['Interest Earned', formatINR(s.interestEarned)], ['Maturity Date', fmtDate(s.maturityDate)]], progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: `Year ${s.currentYear}/15`, headline: formatINR(s.balanceToday), headlineLabel: 'Balance' };
             }
-            if (type === 'SSY Calculator') {
-                const s = calculateSsyStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.annualRate || 8.2, openingDate: d.startDate, girlDob: d.girlDob || d.startDate });
+            if (mt('ssy', 'ssy calculator')) {
+                const s = calculateSsyStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 8.2, openingDate: d.openingDate || d.startDate, girlDob: d.girlDob || d.openingDate || d.startDate });
                 return { rows: [['Account Age', `${s.accountAge} years`], ['Total Deposited', formatINR(s.totalDeposited)], ['Current Balance', formatINR(s.balanceToday)], ['Interest Earned', formatINR(s.interestEarned)]], progress: Math.min(100, (s.accountAge / 21) * 100), statusText: `Year ${s.accountAge}/21`, headline: formatINR(s.balanceToday), headlineLabel: 'Balance' };
             }
-            if (type === 'NSC Calculator') {
-                const s = calculateNscStatus({ principal: d.principal || 0, rate: d.annualRate || 7.7, purchaseDate: d.startDate });
+            if (mt('nsc', 'nsc calculator')) {
+                const s = calculateNscStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.7, purchaseDate: d.purchaseDate || d.startDate });
                 return { rows: [['Invested', formatINR(d.principal)], ['Value Today', formatINR(s.valueToday)], ['Interest Earned', formatINR(s.interestEarned)], ['Years Completed', `${s.yearsCompleted.toFixed(1)} of 5`]], progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: `${(Math.min(1, s.yearsCompleted / 5) * 100).toFixed(0)}%`, headline: formatINR(s.valueToday), headlineLabel: 'Value Today' };
             }
-            if (type === 'KVP Calculator') {
-                const s = calculateKvpStatus({ principal: d.principal || 0, rate: d.annualRate || 7.5, purchaseDate: d.startDate });
+            if (mt('kvp', 'kvp calculator')) {
+                const s = calculateKvpStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.5, purchaseDate: d.purchaseDate || d.startDate });
                 return { rows: [['Invested', formatINR(d.principal)], ['Value Today', formatINR(s.valueToday)], ['Gain', formatINR(s.gainSoFar)], ['Progress to 2x', `${s.progressToDoubling.toFixed(1)}%`], ['Doubling Date', fmtDate(s.doublingDate)]], progress: s.progressToDoubling, statusText: `${s.progressToDoubling.toFixed(0)}% to 2x`, headline: formatINR(s.valueToday), headlineLabel: 'Value Today' };
             }
-            if (type === 'Post Office MIS') {
-                const s = calculatePomisStatus({ principal: d.principal || 0, rate: d.annualRate || 7.4, startDate: d.startDate });
+            if (mt('pomis', 'post office mis')) {
+                const s = calculatePomisStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.4, startDate: d.startDate });
                 return { rows: [['Invested', formatINR(d.principal)], ['Monthly Income', formatINR(s.monthlyIncome)], ['Total Received', formatINR(s.totalIncomeReceived)], ['Months Completed', `${s.monthsCompleted}/60`]], progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: `${s.monthsCompleted}/60`, headline: formatINR(s.monthlyIncome), headlineLabel: 'Monthly Income' };
             }
-            if (type === 'SCSS Calculator') {
-                const s = calculateScssStatus({ principal: d.principal || 0, rate: d.annualRate || 8.2, startDate: d.startDate, tenure: 5 });
+            if (mt('scss', 'scss calculator')) {
+                const s = calculateScssStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 8.2, startDate: d.startDate, tenure: d.tenure || 5 });
                 return { rows: [['Invested', formatINR(d.principal)], ['Quarterly Income', formatINR(s.quarterlyIncome)], ['Total Received', formatINR(s.totalIncomeReceived)], ['Quarters Done', `${s.quartersCompleted}/20`]], progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: `${s.quartersCompleted}/20 qtrs`, headline: formatINR(s.quarterlyIncome), headlineLabel: 'Quarterly Income' };
             }
-            if (type === 'Goal Planner') {
-                const s = calculateSipStatus({ monthlySip: d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate, targetAmount: d.targetAmount });
+            if (mt('goal planner', 'goal')) {
+                const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate, targetAmount: d.targetAmount });
                 return { rows: [['Invested', formatINR(s.totalInvested)], ['Current Value', formatINR(s.currentValue)], ['Goal Progress', `${s.progressToGoal.toFixed(1)}%`], ['Wealth Gained', formatINR(s.wealthGained)]], progress: s.progressToGoal, statusText: `${s.progressToGoal.toFixed(0)}% to goal`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
             }
         } catch { /* skip */ }
         return { rows: [], progress: 0, statusText: '—', headline: '—', headlineLabel: '' };
-    }, [profile, d]);
+    }, [profile, d, typeLC]);
 
     // PDF for investment
     const handleInvestmentPDF = async () => {
