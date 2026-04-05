@@ -9,6 +9,7 @@ import { useSchemeStore } from '../store/useSchemeStore';
 import { useTranslation } from 'react-i18next';
 import { AnalyticsService } from '../lib/analytics';
 import { getAllLoans } from '../utils/loanStorage';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
 
 const languages: Record<string, string> = {
     en: 'English', hi: 'हिंदी', te: 'తెలుగు', ta: 'தமிழ்', kn: 'ಕನ್ನಡ', ml: 'മലയാളം'
@@ -33,7 +34,12 @@ export default function Profile() {
         setEditingName(false);
     };
 
-    const myLoansCount = useMemo(() => getAllLoans().filter(l => l.isActive).length, []);
+    const liveProfiles = useLiveStatusStore((s) => s.savedProfiles);
+    const myLoansCount = useMemo(() => {
+        const liveIds = new Set(liveProfiles.map(p => p.id));
+        const extraFromStorage = getAllLoans().filter(l => l.isActive && !liveIds.has(l.id)).length;
+        return liveProfiles.length + extraFromStorage;
+    }, [liveProfiles]);
 
     const menuItems = [
         { icon: Landmark, label: t('myLoans.title'), color: '#8B5CF6', key: 'myloans', path: '/my-loans' },

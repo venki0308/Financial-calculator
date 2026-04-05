@@ -4919,6 +4919,9 @@
         "taxBenefits": "कर लाभ",
         "maxLimit": "अधिकतम सीमा",
         "moShort": "महीने",
-        "yrShort": "वर्ष"
+        "yrShort": "वर्ष",
+        "trackersActive": "ट्रैकर सहेजे गए",
+        "goToCalc": "कैलकुलेटर पर जाएं",
+        "deleteTracker": "ट्रैकर हटाएं"
     }
 }

@@ -3773,6 +3773,9 @@
         "taxBenefits": "Tax Benefits",
         "maxLimit": "Max limit",
         "moShort": "months",
-        "yrShort": "years"
+        "yrShort": "years",
+        "trackersActive": "trackers saved",
+        "goToCalc": "Go to Calculators",
+        "deleteTracker": "Delete Tracker"
     }
 }
