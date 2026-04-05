@@ -114,12 +114,12 @@ function computeLiveData(profile: SavedLiveProfile): { label1: string; value1: s
 
         // SIP
         if (type === 'SIP Calculator') {
-            const s = calculateSipStatus({ monthlyAmount: d.monthlyAmount, annualReturn: d.annualReturn, tenureMonths: d.tenureMonths, startDate: d.startDate });
+            const s = calculateSipStatus({ monthlySip: d.monthlyAmount || 0, annualReturn: d.annualReturn || 0, startDate: d.startDate });
             return {
                 label1: 'Invested', value1: formatINR(s.totalInvested),
                 label2: 'Current Value', value2: formatINR(s.currentValue),
-                label3: 'Gain', value3: formatINR(s.gainToday),
-                progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% tenure`
+                label3: 'Gain', value3: formatINR(s.wealthGained),
+                progress: s.progressToGoal, statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M`
             };
         }
 
@@ -136,10 +136,10 @@ function computeLiveData(profile: SavedLiveProfile): { label1: string; value1: s
 
         // RD
         if (type === 'RD') {
-            const s = calculateRdStatus({ monthlyDeposit: d.monthlyDeposit, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate });
+            const s = calculateRdStatus({ monthlyDeposit: d.monthlyDeposit || 0, annualRate: d.annualRate || 5.8, tenureMonths: d.tenureMonths || 60, startDate: d.startDate });
             return {
                 label1: 'Deposited', value1: formatINR(s.totalDeposited),
-                label2: 'Value Today', value2: formatINR(s.valueToday),
+                label2: 'Value Today', value2: formatINR(s.currentValue),
                 label3: 'Interest', value3: formatINR(s.interestEarned),
                 progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% tenure`
             };
@@ -147,67 +147,67 @@ function computeLiveData(profile: SavedLiveProfile): { label1: string; value1: s
 
         // PPF
         if (type === 'PPF Calculator') {
-            const s = calculatePpfStatus({ yearlyDeposit: d.yearlyDeposit, startDate: d.startDate });
+            const s = calculatePpfStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.annualRate || 7.1, openingDate: d.startDate });
             return {
                 label1: 'Deposited', value1: formatINR(s.totalDeposited),
-                label2: 'Balance', value2: formatINR(s.currentBalance),
-                label3: 'Interest', value3: formatINR(s.totalInterest),
-                progress: s.percentComplete, statusText: `Year ${s.yearsCompleted}/15`
+                label2: 'Balance', value2: formatINR(s.balanceToday),
+                label3: 'Interest', value3: formatINR(s.interestEarned),
+                progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: `Year ${s.currentYear}/15`
             };
         }
 
         // SSY
         if (type === 'SSY Calculator') {
-            const s = calculateSsyStatus({ yearlyDeposit: d.yearlyDeposit, startDate: d.startDate });
+            const s = calculateSsyStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.annualRate || 8.2, openingDate: d.startDate, girlDob: d.girlDob || d.startDate });
             return {
                 label1: 'Deposited', value1: formatINR(s.totalDeposited),
-                label2: 'Balance', value2: formatINR(s.currentBalance),
-                label3: 'Interest', value3: formatINR(s.totalInterest),
-                progress: s.percentComplete, statusText: `Year ${s.yearsCompleted}/21`
+                label2: 'Balance', value2: formatINR(s.balanceToday),
+                label3: 'Interest', value3: formatINR(s.interestEarned),
+                progress: Math.min(100, (s.accountAge / 21) * 100), statusText: `Year ${s.accountAge}/21`
             };
         }
 
         // NSC
         if (type === 'NSC Calculator') {
-            const s = calculateNscStatus({ principal: d.principal, startDate: d.startDate });
+            const s = calculateNscStatus({ principal: d.principal || 0, rate: d.annualRate || 7.7, purchaseDate: d.startDate });
             return {
                 label1: 'Invested', value1: formatINR(d.principal),
                 label2: 'Value Today', value2: formatINR(s.valueToday),
                 label3: 'Interest', value3: formatINR(s.interestEarned),
-                progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% of 5yr`
+                progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: `${(Math.min(1, s.yearsCompleted/5)*100).toFixed(1)}% of 5yr`
             };
         }
 
         // KVP
         if (type === 'KVP Calculator') {
-            const s = calculateKvpStatus({ principal: d.principal, startDate: d.startDate });
+            const s = calculateKvpStatus({ principal: d.principal || 0, rate: d.annualRate || 7.5, purchaseDate: d.startDate });
             return {
                 label1: 'Invested', value1: formatINR(d.principal),
                 label2: 'Value Today', value2: formatINR(s.valueToday),
-                label3: 'Doubles On', value3: fmtDate(s.maturityDate),
-                progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% done`
+                label3: 'Doubles On', value3: fmtDate(s.doublingDate),
+                progress: s.progressToDoubling, statusText: `${s.progressToDoubling.toFixed(1)}% done`
             };
         }
 
         // POMIS
         if (type === 'Post Office MIS') {
-            const s = calculatePomisStatus({ principal: d.principal, startDate: d.startDate });
+            const s = calculatePomisStatus({ principal: d.principal || 0, rate: d.annualRate || 7.4, startDate: d.startDate });
             return {
                 label1: 'Invested', value1: formatINR(d.principal),
-                label2: 'Monthly Income', value2: formatINR(s.monthlyPayout),
-                label3: 'Total Earned', value3: formatINR(s.totalPayoutsReceived),
-                progress: s.percentComplete, statusText: `${s.payoutsReceived}/60 payouts`
+                label2: 'Monthly Income', value2: formatINR(s.monthlyIncome),
+                label3: 'Total Earned', value3: formatINR(s.totalIncomeReceived),
+                progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: `${s.monthsCompleted}/60 payouts`
             };
         }
 
         // SCSS
         if (type === 'SCSS Calculator') {
-            const s = calculateScssStatus({ principal: d.principal, startDate: d.startDate });
+            const s = calculateScssStatus({ principal: d.principal || 0, rate: d.annualRate || 8.2, startDate: d.startDate, tenure: 5 });
             return {
                 label1: 'Invested', value1: formatINR(d.principal),
-                label2: 'Quarterly', value2: formatINR(s.quarterlyPayout),
-                label3: 'Total Earned', value3: formatINR(s.totalPayoutsReceived),
-                progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% of 5yr`
+                label2: 'Quarterly', value2: formatINR(s.quarterlyIncome),
+                label3: 'Total Earned', value3: formatINR(s.totalIncomeReceived),
+                progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: `${(Math.min(1, s.quartersCompleted/20)*100).toFixed(1)}% of 5yr`
             };
         }
 
