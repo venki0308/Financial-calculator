@@ -248,9 +248,9 @@ export default function PropertyCalculator() {
         if (!totalBuiltUp) return;
         const rate = Number(constRate) || 0;
         const floors = [
-            { name: 'Ground Floor', area: gf, cost: gf * rate },
-            ...(ff > 0 ? [{ name: 'First Floor', area: ff, cost: ff * rate }] : []),
-            ...(sf > 0 ? [{ name: 'Second Floor', area: sf, cost: sf * rate }] : []),
+            { name: t('property.groundFloor'), area: gf, cost: gf * rate },
+            ...(ff > 0 ? [{ name: t('property.firstFloor'), area: ff, cost: ff * rate }] : []),
+            ...(sf > 0 ? [{ name: t('property.secondFloor'), area: sf, cost: sf * rate }] : []),
         ];
         const constructionCost = totalBuiltUp * rate;
         const wallCost = (Number(wallPerimeter) || 0) * (Number(wallRate) || 0);
@@ -283,47 +283,47 @@ export default function PropertyCalculator() {
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         if (mode === 'land' && landResult) {
             await exportToPDF({
-                title: 'Land Value Report',
+                title: t('property.pdfLandValueReport'),
                 inputs: [
-                    { label: 'Area', value: `${landArea} ${UNIT_LABELS[landUnit]}` },
-                    { label: 'Price per Unit', value: fmt(Number(landPrice)) },
+                    { label: t('property.area'), value: `${landArea} ${UNIT_LABELS[landUnit]}` },
+                    { label: t('property.pricePerUnit'), value: fmt(Number(landPrice)) },
                 ],
                 results: [
-                    { label: 'Base Land Value', value: fmt(landResult.baseValue) },
-                    { label: 'Premium Value', value: fmt(landResult.premiumValue) },
-                    { label: 'Estimated Land Value', value: fmt(landResult.totalValue) },
+                    { label: t('property.baseLandValue'), value: fmt(landResult.baseValue) },
+                    { label: t('property.premiumValue'), value: fmt(landResult.premiumValue) },
+                    { label: t('property.estimatedLandValue'), value: fmt(landResult.totalValue) },
                 ],
-                projectionTitle: 'Area Conversions',
-                projectionColumns: ['Unit', 'Equivalent Area'],
+                projectionTitle: t('property.areaConversions'),
+                projectionColumns: [t('property.unit'), t('property.equivalentArea')],
                 projectionRows: landResult.conversions.map(c => [c.key, c.value]),
                 filename: `FinCalix_Land_Value_Report_${tag}`,
             });
         } else if (mode === 'flat' && flatResult) {
             await exportToPDF({
-                title: 'Flat / Apartment Cost Report',
+                title: t('property.pdfFlatCostReport'),
                 inputs: [
-                    { label: 'Built-up Area', value: `${builtUp} sq.ft` },
-                    { label: 'Price per sq.ft', value: fmt(Number(ppsf)) },
-                    { label: `GST Rate`, value: `${gstPct}%` },
+                    { label: t('property.builtUpArea'), value: `${builtUp} sq.ft` },
+                    { label: t('property.pricePerSqft'), value: fmt(Number(ppsf)) },
+                    { label: t('property.gstRate'), value: `${gstPct}%` },
                 ],
                 results: [
-                    { label: 'Base Price', value: fmt(flatResult.basePrice) },
-                    { label: 'Parking Charges', value: fmt(flatResult.parkingAmt) },
-                    { label: 'Amenities Charges', value: fmt(flatResult.amenitiesAmt) },
-                    { label: 'Maintenance Deposit', value: fmt(flatResult.maintAmt) },
-                    { label: 'Subtotal', value: fmt(flatResult.subtotal) },
-                    { label: `GST (${gstPct}%)`, value: fmt(flatResult.gstAmt) },
-                    { label: 'Total Property Cost', value: fmt(flatResult.totalCost) },
+                    { label: t('property.basePrice'), value: fmt(flatResult.basePrice) },
+                    { label: t('property.parkingCharges'), value: fmt(flatResult.parkingAmt) },
+                    { label: t('property.amenitiesCharges'), value: fmt(flatResult.amenitiesAmt) },
+                    { label: t('property.maintenanceDeposit'), value: fmt(flatResult.maintAmt) },
+                    { label: t('property.subtotal'), value: fmt(flatResult.subtotal) },
+                    { label: `${t('property.gst')} (${gstPct}%)`, value: fmt(flatResult.gstAmt) },
+                    { label: t('property.totalPropertyCost'), value: fmt(flatResult.totalCost) },
                 ],
-                projectionTitle: 'Cost Breakdown',
-                projectionColumns: ['Component', 'Amount'],
+                projectionTitle: t('property.costBreakdown'),
+                projectionColumns: [t('property.component'), t('property.amount')],
                 projectionRows: [
-                    ['Base Price', fmt(flatResult.basePrice)],
-                    ['Parking', fmt(flatResult.parkingAmt)],
-                    ['Amenities', fmt(flatResult.amenitiesAmt)],
-                    ['Maintenance Deposit', fmt(flatResult.maintAmt)],
-                    [`GST (${gstPct}%)`, fmt(flatResult.gstAmt)],
-                    ['Total', fmt(flatResult.totalCost)],
+                    [t('property.basePrice'), fmt(flatResult.basePrice)],
+                    [t('property.parking'), fmt(flatResult.parkingAmt)],
+                    [t('property.amenities'), fmt(flatResult.amenitiesAmt)],
+                    [t('property.maintenanceDeposit'), fmt(flatResult.maintAmt)],
+                    [`${t('property.gst')} (${gstPct}%)`, fmt(flatResult.gstAmt)],
+                    [t('property.total'), fmt(flatResult.totalCost)],
                 ],
                 filename: `FinCalix_Flat_Cost_Report_${tag}`,
             });
@@ -336,25 +336,25 @@ export default function PropertyCalculator() {
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const stateName = STATE_RATES[sdState]?.name || sdState;
         await exportToPDF({
-            title: 'Stamp Duty & Registration Report',
+            title: t('property.pdfStampDutyReport'),
             inputs: [
-                { label: 'State', value: stateName },
-                { label: 'Property Value', value: fmt(Number(sdValue)) },
+                { label: t('property.state'), value: stateName },
+                { label: t('property.propertyValue'), value: fmt(Number(sdValue)) },
             ],
             results: [
-                { label: `Stamp Duty (${sdStampPct}%)`, value: fmt(sdResult.stamp) },
-                { label: `Registration Charges (${sdRegPct}%)`, value: fmt(sdResult.reg) },
-                ...(sdResult.transfer > 0 ? [{ label: `Transfer Duty (${sdTransferPct}%)`, value: fmt(sdResult.transfer) }] : []),
-                { label: 'Total Registration Cost', value: fmt(sdResult.total) },
-                { label: 'Grand Total (Property + Reg.)', value: fmt(Number(sdValue) + sdResult.total) },
+                { label: `${t('property.stampDuty')} (${sdStampPct}%)`, value: fmt(sdResult.stamp) },
+                { label: `${t('property.registrationCharges')} (${sdRegPct}%)`, value: fmt(sdResult.reg) },
+                ...(sdResult.transfer > 0 ? [{ label: `${t('property.transferDuty')} (${sdTransferPct}%)`, value: fmt(sdResult.transfer) }] : []),
+                { label: t('property.totalRegistrationCost'), value: fmt(sdResult.total) },
+                { label: t('property.grandTotal'), value: fmt(Number(sdValue) + sdResult.total) },
             ],
-            projectionTitle: 'Cost Breakdown',
-            projectionColumns: ['Component', 'Rate', 'Amount'],
+            projectionTitle: t('property.costBreakdown'),
+            projectionColumns: [t('property.component'), t('property.rate'), t('property.amount')],
             projectionRows: [
-                ['Stamp Duty', `${sdStampPct}%`, fmt(sdResult.stamp)],
-                ['Registration', `${sdRegPct}%`, fmt(sdResult.reg)],
-                ...(sdResult.transfer > 0 ? [['Transfer Duty', `${sdTransferPct}%`, fmt(sdResult.transfer)]] : []),
-                ['Total', '-', fmt(sdResult.total)],
+                [t('property.stampDuty'), `${sdStampPct}%`, fmt(sdResult.stamp)],
+                [t('property.registration'), `${sdRegPct}%`, fmt(sdResult.reg)],
+                ...(sdResult.transfer > 0 ? [[t('property.transferDuty'), `${sdTransferPct}%`, fmt(sdResult.transfer)]] : []),
+                [t('property.total'), '-', fmt(sdResult.total)],
             ],
             filename: `FinCalix_Stamp_Duty_Report_${tag}`,
         });
@@ -365,26 +365,26 @@ export default function PropertyCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: 'Rental Yield Analysis Report',
+            title: t('property.pdfRentalYieldReport'),
             inputs: [
-                { label: 'Property Value', value: fmt(Number(ryPropertyValue)) },
-                { label: 'Monthly Rent', value: fmt(Number(ryMonthlyRent)) },
-                { label: 'Monthly Maintenance', value: fmt(Number(ryMaintenance || '0')) },
-                { label: 'Vacant Months/Year', value: `${ryVacancy} months` },
+                { label: t('property.propertyValue'), value: fmt(Number(ryPropertyValue)) },
+                { label: t('property.monthlyRent'), value: fmt(Number(ryMonthlyRent)) },
+                { label: t('property.monthlyMaintenance'), value: fmt(Number(ryMaintenance || '0')) },
+                { label: t('property.vacantMonthsYear'), value: `${ryVacancy} ${t('property.months')}` },
             ],
             results: [
-                { label: 'Annual Rent Income', value: fmt(ryResult.annualRent) },
-                { label: 'Gross Yield', value: `${ryResult.grossYield.toFixed(2)}%` },
-                { label: 'Net Yield', value: `${ryResult.netYield.toFixed(2)}%` },
-                { label: 'Payback Period', value: `${ryResult.paybackYears.toFixed(1)} years` },
+                { label: t('property.annualRentIncome'), value: fmt(ryResult.annualRent) },
+                { label: t('property.grossYield'), value: `${ryResult.grossYield.toFixed(2)}%` },
+                { label: t('property.netYield'), value: `${ryResult.netYield.toFixed(2)}%` },
+                { label: t('property.paybackPeriod'), value: `${ryResult.paybackYears.toFixed(1)} ${t('property.years')}` },
             ],
-            projectionTitle: 'Rental Yield Summary',
-            projectionColumns: ['Metric', 'Value'],
+            projectionTitle: t('property.rentalYieldSummary'),
+            projectionColumns: [t('property.metric'), t('property.value')],
             projectionRows: [
-                ['Annual Rent Income', fmt(ryResult.annualRent)],
-                ['Gross Yield', `${ryResult.grossYield.toFixed(2)}%`],
-                ['Net Yield', `${ryResult.netYield.toFixed(2)}%`],
-                ['Payback Period', `${ryResult.paybackYears.toFixed(1)} years`],
+                [t('property.annualRentIncome'), fmt(ryResult.annualRent)],
+                [t('property.grossYield'), `${ryResult.grossYield.toFixed(2)}%`],
+                [t('property.netYield'), `${ryResult.netYield.toFixed(2)}%`],
+                [t('property.paybackPeriod'), `${ryResult.paybackYears.toFixed(1)} ${t('property.years')}`],
             ],
             filename: `FinCalix_Rental_Yield_Report_${tag}`,
         });
@@ -395,19 +395,19 @@ export default function PropertyCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: 'Property Appreciation Forecast',
+            title: t('property.pdfAppreciationForecast'),
             inputs: [
-                { label: 'Current Property Value', value: fmt(Number(apCurrentValue)) },
-                { label: 'Annual Appreciation Rate', value: `${apRate}%` },
+                { label: t('property.currentPropertyValue'), value: fmt(Number(apCurrentValue)) },
+                { label: t('property.annualAppreciationRate'), value: `${apRate}%` },
             ],
             results: apResult.projections.map(p => ({
-                label: `After ${p.years} Years`,
-                value: `${fmt(p.value)} (Gain: ${fmt(p.gain)})`,
+                label: `${t('property.after')} ${p.years} ${t('property.years')}`,
+                value: `${fmt(p.value)} (${t('property.gain')}: ${fmt(p.gain)})`,
             })),
-            projectionTitle: 'Appreciation Projections',
-            projectionColumns: ['Period', 'Projected Value', 'Total Gain'],
+            projectionTitle: t('property.appreciationProjections'),
+            projectionColumns: [t('property.period'), t('property.projectedValue'), t('property.totalGain')],
             projectionRows: apResult.projections.map(p => [
-                `${p.years} Years`,
+                `${p.years} ${t('property.years')}`,
                 fmt(p.value),
                 fmt(p.gain),
             ]),
@@ -420,24 +420,24 @@ export default function PropertyCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: 'Home Loan EMI Report',
+            title: t('property.pdfHomeLoanReport'),
             inputs: [
-                { label: 'Loan Amount', value: fmt(Number(loanAmt)) },
-                { label: 'Interest Rate', value: `${loanRate}% p.a.` },
-                { label: 'Tenure', value: `${loanTenure} years` },
+                { label: t('property.loanAmount'), value: fmt(Number(loanAmt)) },
+                { label: t('property.interestRate'), value: `${loanRate}% p.a.` },
+                { label: t('property.tenure'), value: `${loanTenure} ${t('property.years')}` },
             ],
             results: [
-                { label: 'Monthly EMI', value: fmt(emiResult.emi) },
-                { label: 'Total Interest', value: fmt(emiResult.totalInterest) },
-                { label: 'Total Payment', value: fmt(emiResult.totalPayment) },
+                { label: t('property.monthlyEMI'), value: fmt(emiResult.emi) },
+                { label: t('property.totalInterest'), value: fmt(emiResult.totalInterest) },
+                { label: t('property.totalPayment'), value: fmt(emiResult.totalPayment) },
             ],
-            projectionTitle: 'Loan Summary',
-            projectionColumns: ['Component', 'Amount'],
+            projectionTitle: t('property.loanSummary'),
+            projectionColumns: [t('property.component'), t('property.amount')],
             projectionRows: [
-                ['Loan Amount', fmt(Number(loanAmt))],
-                ['Total Interest', fmt(emiResult.totalInterest)],
-                ['Total Payment', fmt(emiResult.totalPayment)],
-                ['Monthly EMI', fmt(emiResult.emi)],
+                [t('property.loanAmount'), fmt(Number(loanAmt))],
+                [t('property.totalInterest'), fmt(emiResult.totalInterest)],
+                [t('property.totalPayment'), fmt(emiResult.totalPayment)],
+                [t('property.monthlyEMI'), fmt(emiResult.emi)],
             ],
             filename: `FinCalix_Home_Loan_EMI_Report_${tag}`,
         });
@@ -450,33 +450,33 @@ export default function PropertyCalculator() {
         const totalBUA = villaResult.floors.reduce((sum, f) => sum + f.area, 0);
         const gradeName = CONSTRUCTION_GRADES.find(g => g.key === constGrade)?.label || constGrade;
         await exportToPDF({
-            title: 'Villa / Independent House Construction Report',
+            title: t('property.pdfVillaReport'),
             inputs: [
-                { label: 'Total Built-up Area', value: `${totalBUA.toLocaleString('en-IN')} sq.ft` },
-                { label: 'Construction Grade', value: gradeName },
-                { label: 'Rate per sq.ft', value: fmt(Number(constRate)) },
-                ...(Number(wallPerimeter) > 0 ? [{ label: 'Compound Wall', value: `${wallPerimeter} ft @ ₹${wallRate}/ft` }] : []),
+                { label: t('property.totalBuiltUpArea'), value: `${totalBUA.toLocaleString('en-IN')} sq.ft` },
+                { label: t('property.constructionGrade'), value: gradeName },
+                { label: t('property.ratePerSqft'), value: fmt(Number(constRate)) },
+                ...(Number(wallPerimeter) > 0 ? [{ label: t('property.compoundWall'), value: `${wallPerimeter} ft @ ₹${wallRate}/ft` }] : []),
             ],
             results: [
-                { label: 'Construction Cost', value: fmt(villaResult.constructionCost) },
-                ...(villaResult.wallCost > 0 ? [{ label: 'Compound Wall Cost', value: fmt(villaResult.wallCost) }] : []),
-                { label: `Electrical (${ohElectrical}%)`, value: fmt(villaResult.electrical) },
-                { label: `Plumbing (${ohPlumbing}%)`, value: fmt(villaResult.plumbing) },
-                { label: `Interior Works (${ohInterior}%)`, value: fmt(villaResult.interior) },
-                { label: `Miscellaneous (${ohMisc}%)`, value: fmt(villaResult.misc) },
-                { label: 'Total Construction Cost', value: fmt(villaResult.totalCost) },
-                { label: 'Cost per sq.ft', value: `₹${villaResult.costPerSqft.toLocaleString('en-IN')}` },
+                { label: t('property.constructionCost'), value: fmt(villaResult.constructionCost) },
+                ...(villaResult.wallCost > 0 ? [{ label: t('property.compoundWallCost'), value: fmt(villaResult.wallCost) }] : []),
+                { label: `${t('property.electrical')} (${ohElectrical}%)`, value: fmt(villaResult.electrical) },
+                { label: `${t('property.plumbing')} (${ohPlumbing}%)`, value: fmt(villaResult.plumbing) },
+                { label: `${t('property.interiorWorks')} (${ohInterior}%)`, value: fmt(villaResult.interior) },
+                { label: `${t('property.miscellaneous')} (${ohMisc}%)`, value: fmt(villaResult.misc) },
+                { label: t('property.totalConstructionCost'), value: fmt(villaResult.totalCost) },
+                { label: t('property.costPerSqft'), value: `₹${villaResult.costPerSqft.toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Floor-wise Cost Breakdown',
-            projectionColumns: ['Floor', 'Area (sq.ft)', 'Cost'],
+            projectionTitle: t('property.floorWiseCostBreakdown'),
+            projectionColumns: [t('property.floor'), t('property.areaSqft'), t('property.cost')],
             projectionRows: [
                 ...villaResult.floors.map(f => [f.name, f.area.toLocaleString('en-IN'), fmt(f.cost)]),
-                ['Compound Wall', '-', fmt(villaResult.wallCost)],
-                [`Electrical (${ohElectrical}%)`, '-', fmt(villaResult.electrical)],
-                [`Plumbing (${ohPlumbing}%)`, '-', fmt(villaResult.plumbing)],
-                [`Interior (${ohInterior}%)`, '-', fmt(villaResult.interior)],
-                [`Misc (${ohMisc}%)`, '-', fmt(villaResult.misc)],
-                ['Total', totalBUA.toLocaleString('en-IN'), fmt(villaResult.totalCost)],
+                [t('property.compoundWall'), '-', fmt(villaResult.wallCost)],
+                [`${t('property.electrical')} (${ohElectrical}%)`, '-', fmt(villaResult.electrical)],
+                [`${t('property.plumbing')} (${ohPlumbing}%)`, '-', fmt(villaResult.plumbing)],
+                [`${t('property.interior')} (${ohInterior}%)`, '-', fmt(villaResult.interior)],
+                [`${t('property.miscellaneous')} (${ohMisc}%)`, '-', fmt(villaResult.misc)],
+                [t('property.total'), totalBUA.toLocaleString('en-IN'), fmt(villaResult.totalCost)],
             ],
             filename: `FinCalix_Villa_Construction_Report_${tag}`,
         });
@@ -491,8 +491,8 @@ export default function PropertyCalculator() {
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-foreground">Property Calculator</h1>
-                        <p className="text-muted-foreground text-xs">Real Estate Financial Toolkit</p>
+                        <h1 className="text-lg font-bold text-foreground">{t('property.title')}</h1>
+                        <p className="text-muted-foreground text-xs">{t('property.subtitle')}</p>
                     </div>
                 </div>
 
@@ -502,10 +502,10 @@ export default function PropertyCalculator() {
                 {/* Mode Tabs */}
                 <div className="flex gap-1.5 mb-5 overflow-x-auto pb-1">
                     {([
-                        { key: 'land', icon: MapPin, label: 'Land' },
-                        { key: 'flat', icon: Building2, label: 'Flat' },
-                        { key: 'villa', icon: Landmark, label: 'Villa' },
-                        { key: 'convert', icon: ArrowRightLeft, label: 'Convert' },
+                        { key: 'land', icon: MapPin, label: t('property.land') },
+                        { key: 'flat', icon: Building2, label: t('property.flat') },
+                        { key: 'villa', icon: Landmark, label: t('property.villa') },
+                        { key: 'convert', icon: ArrowRightLeft, label: t('property.convert') },
                     ] as const).map(({ key, icon: Icon, label }) => (
                         <button
                             key={key}
@@ -534,13 +534,13 @@ export default function PropertyCalculator() {
                             <div className="space-y-4">
                                 <div className="bg-card border border-border rounded-2xl p-4 space-y-4">
                                     <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
-                                        <MapPin size={15} className="text-brand-green" /> Land Value Calculator
+                                        <MapPin size={15} className="text-brand-green" /> {t('property.landValueCalculator')}
                                     </h3>
 
                                     {/* Area + Unit selector */}
-                                    <Field label="Area" value={landArea} onChange={setLandArea} type="number" placeholder="e.g. 2000" />
+                                    <Field label={t('property.area')} value={landArea} onChange={setLandArea} type="number" placeholder="e.g. 2000" />
                                     <div>
-                                        <label className="text-xs text-muted-foreground mb-2 block">Unit</label>
+                                        <label className="text-xs text-muted-foreground mb-2 block">{t('property.unit')}</label>
                                         <div className="grid grid-cols-4 gap-1.5">
                                             {UNIT_KEYS.map((u: string) => (
                                                 <button
@@ -557,14 +557,14 @@ export default function PropertyCalculator() {
                                         </div>
                                     </div>
 
-                                    <Field label="Price per Unit (₹)" value={landPrice} onChange={setLandPrice} type="number" prefix="₹" placeholder="e.g. 3000" />
+                                    <Field label={t('property.pricePerUnit')} value={landPrice} onChange={setLandPrice} type="number" prefix="₹" placeholder="e.g. 3000" />
                                     
                                     <div className="pt-2 border-t border-border/50">
                                         <button 
                                             onClick={() => setShowPlotPremium(!showPlotPremium)}
                                             className="flex items-center justify-between w-full py-2 group"
                                         >
-                                            <span className="text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors">PLOT PREMIUM OPTIONS (OPTIONAL)</span>
+                                            <span className="text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors">{t('property.plotPremiumOptions')}</span>
                                             {showPlotPremium ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                                         </button>
                                         
@@ -577,10 +577,10 @@ export default function PropertyCalculator() {
                                                     className="overflow-hidden space-y-3 pt-2"
                                                 >
                                                     <div className="grid grid-cols-2 gap-3">
-                                                        <Field label="Corner Premium %" value={cornerPremium} onChange={setCornerPremium} type="number" suffix="%" placeholder="e.g. 5" />
-                                                        <Field label="Road Premium %" value={roadPremium} onChange={setRoadPremium} type="number" suffix="%" placeholder="e.g. 3" />
+                                                        <Field label={t('property.cornerPremium')} value={cornerPremium} onChange={setCornerPremium} type="number" suffix="%" placeholder="e.g. 5" />
+                                                        <Field label={t('property.roadPremium')} value={roadPremium} onChange={setRoadPremium} type="number" suffix="%" placeholder="e.g. 3" />
                                                     </div>
-                                                    <p className="text-[10px] text-muted-foreground">Tip: 30-40ft road ≈ 3%, 60ft+ road ≈ 5–8% premium</p>
+                                                    <p className="text-[10px] text-muted-foreground">{t('property.premiumTip')}</p>
                                                     <div className="flex items-center gap-3 py-1">
                                                         <input 
                                                             type="checkbox" 
@@ -589,7 +589,7 @@ export default function PropertyCalculator() {
                                                             onChange={e => setIsDTCP(e.target.checked)}
                                                             className="w-5 h-5 rounded border-border bg-dark-bg accent-brand-green"
                                                         />
-                                                        <label htmlFor="dtcp_rera" className="text-xs text-slate-600 dark:text-slate-300 font-medium select-none">DTCP / RERA Approved</label>
+                                                        <label htmlFor="dtcp_rera" className="text-xs text-slate-600 dark:text-slate-300 font-medium select-none">{t('property.dtcpReraApproved')}</label>
                                                     </div>
                                                 </motion.div>
                                             )}
@@ -602,7 +602,7 @@ export default function PropertyCalculator() {
                                     onClick={calculateLand}
                                     className="w-full py-4 bg-gradient-to-r from-brand-green to-emerald-500 text-black font-bold rounded-xl"
                                 >
-                                    Calculate Land Value
+                                    {t('property.calculateLandValue')}
                                 </motion.button>
 
                                 {landResult && (
@@ -614,17 +614,17 @@ export default function PropertyCalculator() {
                                     >
                                         {/* Main result */}
                                         <div className="bg-card z-[60] relative border border-brand-green/30 rounded-2xl p-5 text-center overflow-hidden shadow-2xl">
-                                            <p className="text-muted-foreground text-xs mb-1">Estimated Land Value</p>
+                                            <p className="text-muted-foreground text-xs mb-1">{t('property.estimatedLandValue')}</p>
                                             <p className="text-3xl font-extrabold text-brand-green">
                                                 {fmt(landResult.totalValue)}
                                             </p>
                                             <p className="text-muted-foreground text-xs mt-2">
-                                                {landArea} {UNIT_LABELS[landUnit]} × {fmt(Number(landPrice))} per unit
+                                                {landArea} {UNIT_LABELS[landUnit]} × {fmt(Number(landPrice))} {t('property.perUnit')}
                                             </p>
                                             {landResult.premiumValue > 0 && (
                                                 <div className="mt-2 text-[10px] text-emerald-400 flex flex-col items-center">
-                                                    <span>Base: {fmt(landResult.baseValue)}</span>
-                                                    <span>Plot Premium: {fmt(landResult.premiumValue)}</span>
+                                                    <span>{t('property.base')}: {fmt(landResult.baseValue)}</span>
+                                                    <span>{t('property.plotPremium')}: {fmt(landResult.premiumValue)}</span>
                                                 </div>
                                             )}
                                             <button 
@@ -637,7 +637,7 @@ export default function PropertyCalculator() {
 
                                         {/* Converted areas */}
                                         <div className="bg-card border border-border rounded-2xl p-4">
-                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3">Area Conversions</p>
+                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3">{t('property.areaConversions')}</p>
                                             <div className="space-y-2">
                                                 {landResult.conversions.map(c => (
                                                     <div key={c.key} className="flex justify-between items-center">
@@ -654,7 +654,7 @@ export default function PropertyCalculator() {
                                                 onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Land Value', inputValues: { landArea, landUnit, landPrice }, resultValues: { primary: landResult.totalValue }, timestamp: Date.now() })}
                                                 className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold"
                                             >
-                                                Save
+                                                {t('property.save')}
                                             </button>
                                             <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
                                                 📄 PDF
@@ -692,18 +692,18 @@ export default function PropertyCalculator() {
                             <div className="space-y-4">
                                 <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
                                     <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
-                                        <Building2 size={15} className="text-brand-green" /> Flat / Apartment Price
+                                        <Building2 size={15} className="text-brand-green" /> {t('property.flatApartmentPrice')}
                                     </h3>
-                                    <Field label="Built-up Area (sq.ft)" value={builtUp} onChange={setBuiltUp} type="number" placeholder="e.g. 1200" />
-                                    <Field label="Carpet Area (sq.ft) — optional" value={carpet} onChange={setCarpet} type="number" placeholder="e.g. 900" />
-                                    <Field label="Price per sq.ft (₹)" value={ppsf} onChange={setPpsf} type="number" prefix="₹" placeholder="e.g. 7000" />
+                                    <Field label={t('property.builtUpArea')} value={builtUp} onChange={setBuiltUp} type="number" placeholder="e.g. 1200" />
+                                    <Field label={t('property.carpetAreaOptional')} value={carpet} onChange={setCarpet} type="number" placeholder="e.g. 900" />
+                                    <Field label={t('property.pricePerSqft')} value={ppsf} onChange={setPpsf} type="number" prefix="₹" placeholder="e.g. 7000" />
                                     <div className="grid grid-cols-3 gap-2">
-                                        <Field label="Parking (₹)" value={parking} onChange={setParking} type="number" prefix="₹" placeholder="0" />
-                                        <Field label="Amenities (₹)" value={amenities} onChange={setAmenities} type="number" prefix="₹" placeholder="0" />
-                                        <Field label="Maintenance (₹)" value={maint} onChange={setMaint} type="number" prefix="₹" placeholder="0" />
+                                        <Field label={t('property.parking')} value={parking} onChange={setParking} type="number" prefix="₹" placeholder="0" />
+                                        <Field label={t('property.amenities')} value={amenities} onChange={setAmenities} type="number" prefix="₹" placeholder="0" />
+                                        <Field label={t('property.maintenance')} value={maint} onChange={setMaint} type="number" prefix="₹" placeholder="0" />
                                     </div>
                                     <div>
-                                        <label className="text-xs text-muted-foreground mb-2 block">GST Rate</label>
+                                        <label className="text-xs text-muted-foreground mb-2 block">{t('property.gstRate')}</label>
                                         <div className="flex gap-2">
                                             {['5', '12', '18', '28'].map(g => (
                                                 <button key={g} onClick={() => setGstPct(g)}
@@ -717,25 +717,25 @@ export default function PropertyCalculator() {
 
                                 <motion.button whileTap={{ scale: 0.97 }} onClick={calculateFlat}
                                     className="w-full py-4 bg-gradient-to-r from-brand-green to-emerald-500 text-black font-bold rounded-xl">
-                                    Calculate Property Cost
+                                    {t('property.calculatePropertyCost')}
                                 </motion.button>
 
                                 {flatResult && (
                                     <motion.div ref={resultRef} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
                                         {/* Breakdown card */}
                                         <div className="bg-card z-[60] relative border border-border rounded-2xl p-4 space-y-2.5 overflow-hidden shadow-2xl">
-                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-1">Cost Breakdown</p>
-                                            <CostRow label={`Base Price (${builtUp} × ${fmt(Number(ppsf))})`} value={flatResult.basePrice} />
-                                            {flatResult.parkingAmt > 0 && <CostRow label="Parking Charges" value={flatResult.parkingAmt} />}
-                                            {flatResult.amenitiesAmt > 0 && <CostRow label="Club / Amenities" value={flatResult.amenitiesAmt} />}
-                                            {flatResult.maintAmt > 0 && <CostRow label="Maintenance Deposit" value={flatResult.maintAmt} />}
+                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-1">{t('property.costBreakdown')}</p>
+                                            <CostRow label={`${t('property.basePrice')} (${builtUp} × ${fmt(Number(ppsf))})`} value={flatResult.basePrice} />
+                                            {flatResult.parkingAmt > 0 && <CostRow label={t('property.parkingCharges')} value={flatResult.parkingAmt} />}
+                                            {flatResult.amenitiesAmt > 0 && <CostRow label={t('property.clubAmenities')} value={flatResult.amenitiesAmt} />}
+                                            {flatResult.maintAmt > 0 && <CostRow label={t('property.maintenanceDeposit')} value={flatResult.maintAmt} />}
                                             <div className="border-t border-slate-700 pt-2">
-                                                <CostRow label="Subtotal" value={flatResult.subtotal} />
+                                                <CostRow label={t('property.subtotal')} value={flatResult.subtotal} />
                                             </div>
                                             <CostRow label={`GST (${gstPct}%)`} value={flatResult.gstAmt} accent="text-yellow-400" />
                                             <div className="border-t border-brand-green/30 pt-2">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-foreground text-sm font-bold">Total Property Cost</span>
+                                                    <span className="text-foreground text-sm font-bold">{t('property.totalPropertyCost')}</span>
                                                     <span className="text-brand-green text-xl font-extrabold">{fmt(flatResult.totalCost)}</span>
                                                 </div>
                                             </div>
@@ -750,7 +750,7 @@ export default function PropertyCalculator() {
                                         {/* Carpet vs Builtup efficiency */}
                                         {carpet && Number(carpet) > 0 && (
                                             <div className="bg-card border border-border rounded-2xl p-4">
-                                                <p className="text-muted-foreground text-xs mb-2">Carpet Efficiency</p>
+                                                <p className="text-muted-foreground text-xs mb-2">{t('property.carpetEfficiency')}</p>
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
                                                         <motion.div
@@ -764,11 +764,11 @@ export default function PropertyCalculator() {
                                                         {((Number(carpet) / Number(builtUp)) * 100).toFixed(0)}%
                                                     </span>
                                                 </div>
-                                                <p className="text-muted-foreground text-xs mt-1">{carpet} sq.ft carpet of {builtUp} sq.ft built-up</p>
+                                                <p className="text-muted-foreground text-xs mt-1">{t('property.carpetOfBuiltUp', { carpet, builtUp })}</p>
                                                 {flatResult && (
                                                     <div className="mt-2 pt-2 border-t border-border/50 flex justify-between items-center">
-                                                        <span className="text-muted-foreground text-xs">Effective rate per carpet sq.ft</span>
-                                                        <span className="text-brand-green font-bold text-sm">{fmt(flatResult.totalCost / Number(carpet))}/sq.ft</span>
+                                                        <span className="text-muted-foreground text-xs">{t('property.effectiveRatePerCarpetSqft')}</span>
+                                                        <span className="text-brand-green font-bold text-sm">{fmt(flatResult.totalCost / Number(carpet))}/{t('property.sqft')}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -776,7 +776,7 @@ export default function PropertyCalculator() {
 
                                         <div className="grid grid-cols-2 gap-2">
                                             <button onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Flat Price', inputValues: { builtUp, carpet, ppsf, parking, amenities, maint, gstPct }, resultValues: { primary: flatResult.totalCost }, timestamp: Date.now() })}
-                                                className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">Save</button>
+                                                className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
                                             <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 PDF</button>
                                         </div>
                                     </motion.div>
@@ -793,12 +793,12 @@ export default function PropertyCalculator() {
                             <div className="space-y-4">
                                 <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
                                     <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
-                                        <Landmark size={15} className="text-brand-green" /> Villa / Independent House
+                                        <Landmark size={15} className="text-brand-green" /> {t('property.villaIndependentHouse')}
                                     </h3>
                                     <div className="grid grid-cols-2 gap-3">
-                                        <Field label="Plot Area" value={villaPlotArea} onChange={setVillaPlotArea} type="number" placeholder="e.g. 2400" />
+                                        <Field label={t('property.plotArea')} value={villaPlotArea} onChange={setVillaPlotArea} type="number" placeholder="e.g. 2400" />
                                         <div>
-                                            <label className="text-xs text-muted-foreground mb-1 block">Plot Unit</label>
+                                            <label className="text-xs text-muted-foreground mb-1 block">{t('property.plotUnit')}</label>
                                             <select value={villaPlotUnit} onChange={e => setVillaPlotUnit(e.target.value)}
                                                 className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
                                                 {['sqft', 'sqyard', 'sqm'].map((u: string) => <option key={u} value={u}>{UNIT_SHORT_LABELS[u]}</option>)}
@@ -806,14 +806,14 @@ export default function PropertyCalculator() {
                                         </div>
                                     </div>
 
-                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">Built-up Area (sq.ft)</p>
+                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">{t('property.builtUpAreaSqft')}</p>
                                     <div className="grid grid-cols-3 gap-2">
-                                        <Field label="Ground Floor" value={groundFloor} onChange={setGroundFloor} type="number" placeholder="1200" />
-                                        <Field label="First Floor" value={firstFloor} onChange={setFirstFloor} type="number" placeholder="800" />
-                                        <Field label="Second Floor" value={secondFloor} onChange={setSecondFloor} type="number" placeholder="0" />
+                                        <Field label={t('property.groundFloor')} value={groundFloor} onChange={setGroundFloor} type="number" placeholder="1200" />
+                                        <Field label={t('property.firstFloor')} value={firstFloor} onChange={setFirstFloor} type="number" placeholder="800" />
+                                        <Field label={t('property.secondFloor')} value={secondFloor} onChange={setSecondFloor} type="number" placeholder="0" />
                                     </div>
 
-                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">Construction Grade</p>
+                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">{t('property.constructionGrade')}</p>
                                     <div className="grid grid-cols-4 gap-1.5">
                                         {CONSTRUCTION_GRADES.map((g: any) => (
                                             <button key={g.key} onClick={() => { setConstGrade(g.key); setConstRate(g.rate.toString()); }}
@@ -822,20 +822,20 @@ export default function PropertyCalculator() {
                                             </button>
                                         ))}
                                     </div>
-                                    <Field label="Rate per sq.ft (₹) — editable" value={constRate} onChange={setConstRate} type="number" prefix="₹" />
+                                    <Field label={t('property.ratePerSqftEditable')} value={constRate} onChange={setConstRate} type="number" prefix="₹" />
 
-                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">Compound Wall</p>
+                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">{t('property.compoundWall')}</p>
                                     <div className="grid grid-cols-2 gap-2">
-                                        <Field label="Perimeter (feet)" value={wallPerimeter} onChange={setWallPerimeter} type="number" placeholder="200" />
-                                        <Field label="Rate (₹/ft)" value={wallRate} onChange={setWallRate} type="number" prefix="₹" />
+                                        <Field label={t('property.perimeterFeet')} value={wallPerimeter} onChange={setWallPerimeter} type="number" placeholder="200" />
+                                        <Field label={t('property.ratPerFt')} value={wallRate} onChange={setWallRate} type="number" prefix="₹" />
                                     </div>
 
-                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">Overhead %</p>
+                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mt-2">{t('property.overheadPercent')}</p>
                                     {[
-                                        { label: 'Electrical', val: ohElectrical, set: setOhElectrical },
-                                        { label: 'Plumbing', val: ohPlumbing, set: setOhPlumbing },
-                                        { label: 'Interior', val: ohInterior, set: setOhInterior },
-                                        { label: 'Miscellaneous', val: ohMisc, set: setOhMisc },
+                                        { label: t('property.electrical'), val: ohElectrical, set: setOhElectrical },
+                                        { label: t('property.plumbing'), val: ohPlumbing, set: setOhPlumbing },
+                                        { label: t('property.interior'), val: ohInterior, set: setOhInterior },
+                                        { label: t('property.miscellaneous'), val: ohMisc, set: setOhMisc },
                                     ].map(oh => (
                                         <div key={oh.label} className="flex items-center gap-3">
                                             <span className="text-muted-foreground text-xs w-24">{oh.label}</span>
@@ -848,20 +848,20 @@ export default function PropertyCalculator() {
 
                                 <motion.button whileTap={{ scale: 0.97 }} onClick={calculateVilla}
                                     className="w-full py-4 bg-gradient-to-r from-brand-green to-emerald-500 text-black font-bold rounded-xl">
-                                    Calculate Construction Cost
+                                    {t('property.calculateConstructionCost')}
                                 </motion.button>
 
                                 {villaResult && (
                                     <motion.div ref={resultRef} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
                                         {/* Floor-wise breakdown */}
                                         <div className="bg-card border border-border rounded-2xl p-4">
-                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3">Floor-wise Cost</p>
+                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3">{t('property.floorWiseCost')}</p>
                                             <table className="w-full text-xs">
                                                 <thead>
                                                     <tr className="text-muted-foreground border-b border-border">
-                                                        <th className="py-2 text-left font-medium">Floor</th>
-                                                        <th className="py-2 text-right font-medium">Area (sq.ft)</th>
-                                                        <th className="py-2 text-right font-medium">Cost</th>
+                                                        <th className="py-2 text-left font-medium">{t('property.floor')}</th>
+                                                        <th className="py-2 text-right font-medium">{t('property.areaSqft')}</th>
+                                                        <th className="py-2 text-right font-medium">{t('property.cost')}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -878,19 +878,19 @@ export default function PropertyCalculator() {
 
                                         {/* Overhead breakdown */}
                                         <div className="bg-card z-[60] relative border border-border rounded-2xl p-4 space-y-2 overflow-hidden shadow-2xl">
-                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-1">Cost Breakdown</p>
-                                            <CostRow label="Construction" value={villaResult.constructionCost} />
-                                            {villaResult.wallCost > 0 && <CostRow label="Compound Wall" value={villaResult.wallCost} />}
-                                            <CostRow label={`Electrical (${ohElectrical}%)`} value={villaResult.electrical} accent="text-yellow-400" />
-                                            <CostRow label={`Plumbing (${ohPlumbing}%)`} value={villaResult.plumbing} accent="text-blue-400" />
-                                            <CostRow label={`Interior (${ohInterior}%)`} value={villaResult.interior} accent="text-brand-purple" />
-                                            <CostRow label={`Miscellaneous (${ohMisc}%)`} value={villaResult.misc} accent="text-slate-600 dark:text-slate-300" />
+                                            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-1">{t('property.costBreakdown')}</p>
+                                            <CostRow label={t('property.construction')} value={villaResult.constructionCost} />
+                                            {villaResult.wallCost > 0 && <CostRow label={t('property.compoundWall')} value={villaResult.wallCost} />}
+                                            <CostRow label={`${t('property.electrical')} (${ohElectrical}%)`} value={villaResult.electrical} accent="text-yellow-400" />
+                                            <CostRow label={`${t('property.plumbing')} (${ohPlumbing}%)`} value={villaResult.plumbing} accent="text-blue-400" />
+                                            <CostRow label={`${t('property.interior')} (${ohInterior}%)`} value={villaResult.interior} accent="text-brand-purple" />
+                                            <CostRow label={`${t('property.miscellaneous')} (${ohMisc}%)`} value={villaResult.misc} accent="text-slate-600 dark:text-slate-300" />
                                             <div className="border-t border-brand-green/30 pt-2 mt-2">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-foreground text-sm font-bold">Total Construction Cost</span>
+                                                    <span className="text-foreground text-sm font-bold">{t('property.totalConstructionCost')}</span>
                                                     <span className="text-brand-green text-xl font-extrabold">{fmt(villaResult.totalCost)}</span>
                                                 </div>
-                                                <p className="text-muted-foreground text-xs mt-1 text-right">₹{villaResult.costPerSqft.toLocaleString('en-IN')} / sq.ft</p>
+                                                <p className="text-muted-foreground text-xs mt-1 text-right">₹{villaResult.costPerSqft.toLocaleString('en-IN')} / {t('property.sqft')}</p>
                                             </div>
                                             <button 
                                                 onClick={() => copyResult(villaResult.totalCost, 'Villa Cost')}
@@ -902,7 +902,7 @@ export default function PropertyCalculator() {
 
                                         <div className="grid grid-cols-2 gap-2">
                                             <button onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Villa Construction', inputValues: { groundFloor, firstFloor, secondFloor, constRate }, resultValues: { primary: villaResult.totalCost }, timestamp: Date.now() })}
-                                                className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">Save</button>
+                                                className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
                                             <button onClick={handleVillaPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 PDF</button>
                                         </div>
                                     </motion.div>
@@ -920,19 +920,19 @@ export default function PropertyCalculator() {
                                 {/* Converter */}
                                 <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
                                     <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
-                                        <ArrowRightLeft size={15} className="text-brand-green" /> Unit Converter
+                                        <ArrowRightLeft size={15} className="text-brand-green" /> {t('property.unitConverter')}
                                     </h3>
-                                    <Field label="Value" value={convVal} onChange={setConvVal} type="number" placeholder="e.g. 1" />
+                                    <Field label={t('property.value')} value={convVal} onChange={setConvVal} type="number" placeholder="e.g. 1" />
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="text-xs text-muted-foreground mb-1 block">From</label>
+                                            <label className="text-xs text-muted-foreground mb-1 block">{t('property.from')}</label>
                                             <select value={fromUnit} onChange={e => setFromUnit(e.target.value)}
                                                 className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
                                                 {UNIT_KEYS.map(u => <option key={u} value={u}>{UNIT_LABELS[u]}</option>)}
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="text-xs text-muted-foreground mb-1 block">To</label>
+                                            <label className="text-xs text-muted-foreground mb-1 block">{t('property.to')}</label>
                                             <select value={toUnit} onChange={e => setToUnit(e.target.value)}
                                                 className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
                                                 {UNIT_KEYS.map(u => <option key={u} value={u}>{UNIT_LABELS[u]}</option>)}
@@ -950,7 +950,7 @@ export default function PropertyCalculator() {
                                                 className="mt-3 flex items-center gap-1 text-xs text-muted-foreground mx-auto"
                                             >
                                                 {copied === 'conv' ? <Check size={12} className="text-brand-green" /> : <Copy size={12} />}
-                                                {copied === 'conv' ? 'Copied!' : 'Copy'}
+                                                {copied === 'conv' ? t('property.copied') : t('property.copy')}
                                             </button>
                                         </motion.div>
                                     )}
@@ -958,8 +958,8 @@ export default function PropertyCalculator() {
 
                                 {/* Quick Reference Table */}
                                 <div className="bg-card border border-border rounded-2xl p-4">
-                                    <h3 className="text-foreground font-semibold text-sm mb-1">Quick Reference</h3>
-                                    <p className="text-muted-foreground text-xs mb-3">Tap any row to copy</p>
+                                    <h3 className="text-foreground font-semibold text-sm mb-1">{t('property.quickReference')}</h3>
+                                    <p className="text-muted-foreground text-xs mb-3">{t('property.tapToCopy')}</p>
                                     <div className="space-y-0">
                                         {REF_UNITS.map((u: string) => {
                                             const sqftVal = UNIT_CONV[u].toLocaleString('en-IN');
@@ -968,12 +968,12 @@ export default function PropertyCalculator() {
                                                 <motion.button
                                                     key={u}
                                                     whileTap={{ scale: 0.98 }}
-                                                    onClick={() => copyText(`1 ${UNIT_LABELS[u]} = ${sqftVal} sq.ft`, copyKey)}
+                                                    onClick={() => copyText(`1 ${UNIT_LABELS[u]} = ${sqftVal} ${t('property.sqft')}`, copyKey)}
                                                     className="w-full flex justify-between items-center py-3 border-b border-border last:border-0 text-left"
                                                 >
                                                     <span className="text-muted-foreground text-sm">1 {UNIT_LABELS[u]}</span>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-foreground text-sm font-semibold">{sqftVal} sq.ft</span>
+                                                        <span className="text-foreground text-sm font-semibold">{sqftVal} {t('property.sqft')}</span>
                                                         {copied === copyKey
                                                             ? <Check size={13} className="text-brand-green" />
                                                             : <Copy size={12} className="text-slate-600" />
@@ -987,8 +987,8 @@ export default function PropertyCalculator() {
 
                                 {/* All conversions from sq.ft */}
                                 <div className="bg-card border border-border rounded-2xl p-4">
-                                    <h3 className="text-foreground font-semibold text-sm mb-3">Complete Conversion Chart</h3>
-                                    <p className="text-muted-foreground text-[10px] mb-2">From → Square Feet</p>
+                                    <h3 className="text-foreground font-semibold text-sm mb-3">{t('property.completeConversionChart')}</h3>
+                                    <p className="text-muted-foreground text-[10px] mb-2">{t('property.fromToSqft')}</p>
                                     <div className="space-y-1">
                                         {UNIT_KEYS.map(u => {
                                             const sqftVal = UNIT_CONV[u];
@@ -998,7 +998,7 @@ export default function PropertyCalculator() {
                                             return (
                                                 <div key={u} className="flex justify-between py-1.5 border-b border-border/60 last:border-0">
                                                     <span className="text-muted-foreground text-xs">1 {UNIT_LABELS[u]}</span>
-                                                    <span className="text-foreground text-xs font-medium">{display} sq.ft</span>
+                                                    <span className="text-foreground text-xs font-medium">{display} {t('property.sqft')}</span>
                                                 </div>
                                             );
                                         })}
@@ -1013,25 +1013,25 @@ export default function PropertyCalculator() {
                 {mode !== 'convert' && (
                     <>
                         <div className="mt-6 bg-card border border-border rounded-2xl p-4 space-y-3">
-                            <h3 className="font-bold text-foreground text-sm flex items-center gap-2">📊 Rental Yield Estimation</h3>
+                            <h3 className="font-bold text-foreground text-sm flex items-center gap-2">📊 {t('property.rentalYieldEstimation')}</h3>
                             <div className="grid grid-cols-2 gap-3">
-                                <Field label="Property Value" value={ryPropertyValue} onChange={setRyPropertyValue} prefix="₹" type="number" />
-                                <Field label="Monthly Rent" value={ryMonthlyRent} onChange={setRyMonthlyRent} prefix="₹" type="number" />
-                                <Field label="Monthly Maintenance" value={ryMaintenance} onChange={setRyMaintenance} prefix="₹" type="number" />
-                                <Field label="Vacant Months/Year" value={ryVacancy} onChange={setRyVacancy} type="number" />
+                                <Field label={t('property.propertyValue')} value={ryPropertyValue} onChange={setRyPropertyValue} prefix="₹" type="number" />
+                                <Field label={t('property.monthlyRent')} value={ryMonthlyRent} onChange={setRyMonthlyRent} prefix="₹" type="number" />
+                                <Field label={t('property.monthlyMaintenance')} value={ryMaintenance} onChange={setRyMaintenance} prefix="₹" type="number" />
+                                <Field label={t('property.vacantMonthsYear')} value={ryVacancy} onChange={setRyVacancy} type="number" />
                             </div>
                             <motion.button whileTap={{ scale: 0.97 }} onClick={calculateRentalYield}
                                 className="w-full py-3 bg-brand-green text-white font-bold rounded-xl text-sm shadow-lg shadow-brand-green/20">
-                                Calculate Yield
+                                {t('property.calculateYield')}
                             </motion.button>
                             {ryResult && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 mt-2">
                                     <div className="grid grid-cols-2 gap-3">
                                         {[
-                                            { label: 'Annual Rent Income', value: fmt(ryResult.annualRent), color: 'text-brand-green' },
-                                            { label: 'Gross Yield', value: `${ryResult.grossYield.toFixed(2)}%`, color: 'text-blue-400' },
-                                            { label: 'Net Yield', value: `${ryResult.netYield.toFixed(2)}%`, color: 'text-brand-gold' },
-                                            { label: 'Payback Period', value: `${ryResult.paybackYears.toFixed(1)} yrs`, color: 'text-brand-purple' },
+                                            { label: t('property.annualRentIncome'), value: fmt(ryResult.annualRent), color: 'text-brand-green' },
+                                            { label: t('property.grossYield'), value: `${ryResult.grossYield.toFixed(2)}%`, color: 'text-blue-400' },
+                                            { label: t('property.netYield'), value: `${ryResult.netYield.toFixed(2)}%`, color: 'text-brand-gold' },
+                                            { label: t('property.paybackPeriod'), value: `${ryResult.paybackYears.toFixed(1)} ${t('property.yrs')}`, color: 'text-brand-purple' },
                                         ].map(s => (
                                             <div key={s.label} className="text-center p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30">
                                                 <p className="text-muted-foreground text-[9px] uppercase font-bold">{s.label}</p>
@@ -1041,36 +1041,36 @@ export default function PropertyCalculator() {
                                     </div>
                                     <button onClick={handleRentalYieldPDF}
                                         className="w-full py-3 rounded-xl bg-brand-green/10 border border-brand-green/30 text-brand-green text-xs font-bold flex items-center justify-center gap-2">
-                                        <Download size={14} /> Download Rental Yield Report
+                                        <Download size={14} /> {t('property.downloadRentalYieldReport')}
                                     </button>
                                 </motion.div>
                             )}
                         </div>
 
                         <div className="mt-4 bg-card border border-border rounded-2xl p-4 space-y-3 mb-10">
-                            <h3 className="font-bold text-foreground text-sm flex items-center gap-2">📈 Appreciation Forecast</h3>
+                            <h3 className="font-bold text-foreground text-sm flex items-center gap-2">📈 {t('property.appreciationForecast')}</h3>
                             <div className="grid grid-cols-2 gap-3">
-                                <Field label="Current Property Value" value={apCurrentValue} onChange={setApCurrentValue} prefix="₹" type="number" />
-                                <Field label="Annual Appreciation %" value={apRate} onChange={setApRate} suffix="%" type="number" />
+                                <Field label={t('property.currentPropertyValue')} value={apCurrentValue} onChange={setApCurrentValue} prefix="₹" type="number" />
+                                <Field label={t('property.annualAppreciationPercent')} value={apRate} onChange={setApRate} suffix="%" type="number" />
                             </div>
                             <motion.button whileTap={{ scale: 0.97 }} onClick={calculateAppreciation}
                                 className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm shadow-lg shadow-indigo-600/20">
-                                Forecast Value
+                                {t('property.forecastValue')}
                             </motion.button>
                             {apResult && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 mt-2">
                                     {apResult.projections.map((p: { years: number; value: number; gain: number }) => (
                                         <div key={p.years} className="flex justify-between items-center p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30">
                                             <div>
-                                                <p className="text-foreground font-bold text-sm">{p.years} Years</p>
-                                                <p className="text-muted-foreground text-[10px]">Gain: {fmt(p.gain)}</p>
+                                                <p className="text-foreground font-bold text-sm">{p.years} {t('property.years')}</p>
+                                                <p className="text-muted-foreground text-[10px]">{t('property.gain')}: {fmt(p.gain)}</p>
                                             </div>
                                             <p className="text-brand-green font-extrabold text-sm">{fmt(p.value)}</p>
                                         </div>
                                     ))}
                                     <button onClick={handleAppreciationPDF}
                                         className="w-full py-3 rounded-xl bg-indigo-600/10 border border-indigo-600/30 text-indigo-400 text-xs font-bold flex items-center justify-center gap-2 mt-2">
-                                        <Download size={14} /> Download Appreciation Report
+                                        <Download size={14} /> {t('property.downloadAppreciationReport')}
                                     </button>
                                 </motion.div>
                             )}
@@ -1103,6 +1103,7 @@ function StampDutySection({
     calculateSD: () => void;
     onDownloadPDF: () => void;
 }) {
+    const { t } = useTranslation();
     // When state changes, pre-fill the editable rate fields
     const handleStateChange = (key: string) => {
         setSdState(key);
@@ -1116,23 +1117,23 @@ function StampDutySection({
         <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between">
                 <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
-                    <FileText size={15} className="text-yellow-400" /> Stamp Duty Calculator
+                    <FileText size={15} className="text-yellow-400" /> {t('property.stampDutyCalculator')}
                 </h3>
-                <span className="text-[10px] text-yellow-400/70 bg-yellow-400/10 rounded px-1.5 py-0.5">Rates Editable</span>
+                <span className="text-[10px] text-yellow-400/70 bg-yellow-400/10 rounded px-1.5 py-0.5">{t('property.ratesEditable')}</span>
             </div>
 
             {/* Disclaimer note */}
             <div className="p-2.5 bg-amber-100/40 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-400/20 rounded-lg">
                 <p className="text-amber-900 dark:text-amber-300/80 text-[10px] leading-relaxed font-medium">
-                    Disclaimer: Rates vary by state and category. Verify with local sub-registrar office.
+                    {t('property.stampDutyDisclaimer')}
                 </p>
             </div>
 
-            <Field label="Property Value (₹)" value={sdValue} onChange={setSdValue} type="number" prefix="₹" placeholder="e.g. 5000000" />
+            <Field label={t('property.propertyValueRupees')} value={sdValue} onChange={setSdValue} type="number" prefix="₹" placeholder="e.g. 5000000" />
 
             {/* State selector */}
             <div>
-                <label className="text-xs text-muted-foreground mb-1 block">State (pre-fills standard rates)</label>
+                <label className="text-xs text-muted-foreground mb-1 block">{t('property.statePreFills')}</label>
                 <select value={sdState} onChange={e => handleStateChange(e.target.value)}
                     className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
                     {Object.entries(STATE_RATES).map(([k, v]) => (
@@ -1144,7 +1145,7 @@ function StampDutySection({
             {/* Editable rate fields */}
             <div className="grid grid-cols-3 gap-2">
                 <div>
-                    <label className="text-[10px] text-muted-foreground mb-1 block">Stamp Duty %</label>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">{t('property.stampDutyPercent')}</label>
                     <div className="relative">
                         <input type="number" value={sdStampPct} onChange={e => setSdStampPct(e.target.value)}
                             className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-foreground text-sm focus:outline-none focus:border-yellow-400" />
@@ -1152,7 +1153,7 @@ function StampDutySection({
                     </div>
                 </div>
                 <div>
-                    <label className="text-[10px] text-muted-foreground mb-1 block">Reg. Charges %</label>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">{t('property.regChargesPercent')}</label>
                     <div className="relative">
                         <input type="number" value={sdRegPct} onChange={e => setSdRegPct(e.target.value)}
                             className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-foreground text-sm focus:outline-none focus:border-yellow-400" />
@@ -1160,7 +1161,7 @@ function StampDutySection({
                     </div>
                 </div>
                 <div>
-                    <label className="text-[10px] text-muted-foreground mb-1 block">Transfer Duty %</label>
+                    <label className="text-[10px] text-muted-foreground mb-1 block">{t('property.transferDutyPercent')}</label>
                     <div className="relative">
                         <input type="number" value={sdTransferPct} onChange={e => setSdTransferPct(e.target.value)}
                             className="w-full bg-dark-bg border border-yellow-400/30 rounded-xl py-3 pr-6 pl-3 text-foreground text-sm focus:outline-none focus:border-yellow-400" />
@@ -1171,21 +1172,21 @@ function StampDutySection({
 
             <motion.button whileTap={{ scale: 0.97 }} onClick={calculateSD}
                 className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-black font-bold rounded-xl text-sm">
-                Calculate Registration Cost
+                {t('property.calculateRegistrationCost')}
             </motion.button>
 
             {sdResult && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 pt-1">
-                    <CostRow label={`Stamp Duty (${sdStampPct}%)`} value={sdResult.stamp} />
-                    <CostRow label={`Registration Charges (${sdRegPct}%)`} value={sdResult.reg} />
-                    {sdResult.transfer > 0 && <CostRow label={`Transfer Duty (${sdTransferPct}%)`} value={sdResult.transfer} />}
+                    <CostRow label={`${t('property.stampDuty')} (${sdStampPct}%)`} value={sdResult.stamp} />
+                    <CostRow label={`${t('property.registrationCharges')} (${sdRegPct}%)`} value={sdResult.reg} />
+                    {sdResult.transfer > 0 && <CostRow label={`${t('property.transferDuty')} (${sdTransferPct}%)`} value={sdResult.transfer} />}
                     <div className="border-t border-yellow-400/30 pt-2 flex justify-between items-center">
-                        <span className="text-foreground text-sm font-bold">Total Registration Cost</span>
+                        <span className="text-foreground text-sm font-bold">{t('property.totalRegistrationCost')}</span>
                         <span className="text-yellow-400 text-lg font-extrabold">₹{Math.round(sdResult.total).toLocaleString('en-IN')}</span>
                     </div>
                     <button onClick={onDownloadPDF}
                         className="w-full py-3 rounded-xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs font-bold flex items-center justify-center gap-2 mt-3">
-                        📄 Download Stamp Duty Report
+                        {t('property.downloadStampDutyReport')}
                     </button>
                 </motion.div>
             )}
@@ -1208,49 +1209,50 @@ function HomeLoanSection({
     setShowAmortization?: (v: boolean) => void;
     getAmortization?: () => { year: number; principalPaid: number; interestPaid: number; balance: number }[];
 }) {
+    const { t } = useTranslation();
     const schedule = (showAmortization && getAmortization) ? getAmortization() : [];
 
     return (
         <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
             <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
-                <Home size={15} className="text-brand-purple" /> Home Loan EMI
+                <Home size={15} className="text-brand-purple" /> {t('property.homeLoanEMI')}
             </h3>
-            <Field label="Loan Amount (₹)" value={loanAmt} onChange={setLoanAmt} type="number" prefix="₹" placeholder="e.g. 6000000" />
+            <Field label={t('property.loanAmount')} value={loanAmt} onChange={setLoanAmt} type="number" prefix="₹" placeholder="e.g. 6000000" />
             <div className="grid grid-cols-2 gap-2">
-                <Field label="Interest Rate (% p.a.)" value={loanRate} onChange={setLoanRate} type="number" suffix="%" placeholder="8.5" />
-                <Field label="Tenure (years)" value={loanTenure} onChange={setLoanTenure} type="number" suffix=" yrs" placeholder="20" />
+                <Field label={t('property.interestRate')} value={loanRate} onChange={setLoanRate} type="number" suffix="%" placeholder="8.5" />
+                <Field label={t('property.tenure')} value={loanTenure} onChange={setLoanTenure} type="number" suffix=" yrs" placeholder="20" />
             </div>
             <motion.button whileTap={{ scale: 0.97 }} onClick={calculateEMI}
                 className="w-full py-3 bg-brand-purple text-white font-bold rounded-xl text-sm shadow-lg shadow-brand-purple/20">
-                Calculate EMI
+                {t('property.calculateEMI')}
             </motion.button>
             {emiResult && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <div className="p-4 bg-brand-purple/10 border border-brand-purple/20 rounded-xl text-center mb-3">
-                        <p className="text-muted-foreground text-xs mb-1">Monthly EMI</p>
+                        <p className="text-muted-foreground text-xs mb-1">{t('property.monthlyEMI')}</p>
                         <p className="text-2xl font-extrabold text-brand-purple">₹{Math.round(emiResult.emi).toLocaleString('en-IN')}</p>
                     </div>
                     <div className="space-y-2">
-                        <CostRow label="Principal" value={Number(loanAmt)} />
-                        <CostRow label="Total Interest" value={emiResult.totalInterest} accent="text-red-400" />
+                        <CostRow label={t('property.principal')} value={Number(loanAmt)} />
+                        <CostRow label={t('property.totalInterest')} value={emiResult.totalInterest} accent="text-red-400" />
                         <div className="border-t border-slate-700 pt-2">
-                            <CostRow label="Total Payment" value={emiResult.totalPayment} />
+                            <CostRow label={t('property.totalPayment')} value={emiResult.totalPayment} />
                         </div>
                     </div>
 
                     {setShowAmortization && (
                         <div className="mt-4 pt-4 border-t border-border">
-                            <button 
+                            <button
                                 onClick={() => setShowAmortization(!showAmortization)}
                                 className="flex items-center justify-between w-full py-2 group"
                             >
-                                <span className="text-xs font-bold text-muted-foreground group-hover:text-brand-purple transition-colors">VIEW AMORTIZATION SCHEDULE</span>
+                                <span className="text-xs font-bold text-muted-foreground group-hover:text-brand-purple transition-colors">{t('property.viewAmortizationSchedule')}</span>
                                 {showAmortization ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                             </button>
 
                             <AnimatePresence>
                                 {showAmortization && schedule.length > 0 && (
-                                    <motion.div 
+                                    <motion.div
                                         initial={{ height: 0, opacity: 0 }}
                                         animate={{ height: 'auto', opacity: 1 }}
                                         exit={{ height: 0, opacity: 0 }}
@@ -1259,10 +1261,10 @@ function HomeLoanSection({
                                         <table className="w-full text-[10px] text-left">
                                             <thead>
                                                 <tr className="text-muted-foreground border-b border-border">
-                                                    <th className="py-2">Year</th>
-                                                    <th className="py-2">Principal</th>
-                                                    <th className="py-2">Interest</th>
-                                                    <th className="py-2 text-right">Balance</th>
+                                                    <th className="py-2">{t('property.year')}</th>
+                                                    <th className="py-2">{t('property.principal')}</th>
+                                                    <th className="py-2">{t('property.interest')}</th>
+                                                    <th className="py-2 text-right">{t('property.balance')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1284,7 +1286,7 @@ function HomeLoanSection({
 
                     <button onClick={onDownloadPDF}
                         className="w-full py-3 rounded-xl bg-brand-purple/10 border border-brand-purple/30 text-brand-purple text-xs font-bold flex items-center justify-center gap-2 mt-3">
-                        📄 Download EMI Report
+                        {t('property.downloadEMIReport')}
                     </button>
                 </motion.div>
             )}

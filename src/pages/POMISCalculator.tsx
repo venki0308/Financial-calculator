@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
@@ -17,6 +18,7 @@ const LOCK_IN_YEARS = 5;
 const ITEMS_PER_PAGE = 12;
 
 export default function POMISCalculator() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
 
@@ -211,8 +213,8 @@ export default function POMISCalculator() {
                             <ArrowLeft size={18} className="text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-foreground">Post Office MIS</h1>
-                            <p className="text-muted-foreground text-xs">Monthly Income Scheme</p>
+                            <h1 className="text-lg font-bold text-foreground">{t('pomis.title')}</h1>
+                            <p className="text-muted-foreground text-xs">{t('pomis.subtitle')}</p>
                         </div>
                     </div>
                     <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-blue">
@@ -226,8 +228,8 @@ export default function POMISCalculator() {
                 <div className="space-y-3">
                     <div>
                         <div className="flex justify-between items-center mb-1">
-                            <label className="text-muted-foreground text-xs font-medium">Total Investment</label>
-                            <p className="text-brand-blue/80 text-[10px] font-medium">Max: {isJoint ? '₹15L' : '₹9L'}</p>
+                            <label className="text-muted-foreground text-xs font-medium">{t('pomis.totalInvestment')}</label>
+                            <p className="text-brand-blue/80 text-[10px] font-medium">{t('pomis.max')}: {isJoint ? '₹15L' : '₹9L'}</p>
                         </div>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
@@ -235,8 +237,8 @@ export default function POMISCalculator() {
                         </div>
                     </div>
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Interest Rate (p.a.)</label>
-                        <p className="text-muted-foreground text-[10px] mb-1">Current: 7.4% (FY 2025-26)</p>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('pomis.interestRate')}</label>
+                        <p className="text-muted-foreground text-[10px] mb-1">{t('pomis.currentRate')}</p>
                         <div className="relative">
                             <input type="number" value={rate} step={0.1} onChange={e => setRate(Number(e.target.value) || 0)} className={inputCls + " pr-8"} />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
@@ -246,8 +248,8 @@ export default function POMISCalculator() {
                     {/* Account type toggle */}
                     <div className="flex items-center justify-between p-4 bg-card border border-border rounded-xl">
                         <div>
-                            <p className="text-foreground font-medium text-sm">Joint Account</p>
-                            <p className="text-muted-foreground text-xs">Increases max limit to ₹15L</p>
+                            <p className="text-foreground font-medium text-sm">{t('pomis.jointAccount')}</p>
+                            <p className="text-muted-foreground text-xs">{t('pomis.jointAccountDesc')}</p>
                         </div>
                         <button onClick={() => setIsJoint(p => !p)}
                             className={`w-12 h-7 rounded-full p-0.5 transition-colors ${isJoint ? 'bg-brand-blue' : 'bg-muted-foreground/30'}`}>
@@ -257,15 +259,15 @@ export default function POMISCalculator() {
                 </div>
 
                 <div className="rounded-2xl bg-gradient-to-br from-brand-blue/20 to-blue-500/10 border border-brand-blue/30 p-5">
-                    <p className="text-muted-foreground text-xs font-medium mb-1">Gross Monthly Income</p>
+                    <p className="text-muted-foreground text-xs font-medium mb-1">{t('pomis.grossMonthlyIncome')}</p>
                     <p className="text-foreground font-bold text-3xl">{fmtINR(result.monthlyIncome)}</p>
                     <div className="mt-3 grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-muted-foreground text-[11px]">Invested Amount</p>
+                            <p className="text-muted-foreground text-[11px]">{t('pomis.investedAmount')}</p>
                             <p className="text-foreground font-bold text-base">{fmtINR(result.clampedInvestment)}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[11px]">Total Earnings (5y)</p>
+                            <p className="text-muted-foreground text-[11px]">{t('pomis.totalEarnings5y')}</p>
                             <p className="text-brand-green font-bold text-base">{fmtINR(result.totalInterest)}</p>
                         </div>
                     </div>
@@ -275,11 +277,11 @@ export default function POMISCalculator() {
                     <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-4 bg-muted/30">
                         <div className="flex items-center gap-2">
                             <BrainCircuit size={18} className="text-brand-blue" />
-                            <span className="text-foreground font-semibold text-sm">Decision Analytics</span>
+                            <span className="text-foreground font-semibold text-sm">{t('pomis.decisionAnalytics')}</span>
                         </div>
                         {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
-                    
+
                     <AnimatePresence initial={false}>
                         {showAdvanced && (
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
@@ -287,10 +289,10 @@ export default function POMISCalculator() {
 
                                     <div className="flex items-center justify-end gap-2 border-b border-border pb-4">
                                         <button onClick={handlePDFExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-blue/10 text-brand-blue text-xs font-medium hover:bg-brand-blue/20 transition-colors">
-                                            <FileText size={14} /> Export PDF
+                                            <FileText size={14} /> {t('pomis.exportPDF')}
                                         </button>
                                         <button onClick={handleExcelExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-green/10 text-brand-green text-xs font-medium hover:bg-brand-green/20 transition-colors">
-                                            <Download size={14} /> Export Excel
+                                            <Download size={14} /> {t('pomis.exportExcel')}
                                         </button>
                                     </div>
 
@@ -299,7 +301,7 @@ export default function POMISCalculator() {
                                         <div className="flex items-center gap-2 mb-1.5">
                                             <ShieldCheck size={16} className={recommendation.status === 'success' ? 'text-brand-green' : recommendation.status === 'warning' ? 'text-orange-500' : 'text-brand-blue'} />
                                             <h3 className={`text-sm font-bold ${recommendation.status === 'success' ? 'text-brand-green' : recommendation.status === 'warning' ? 'text-orange-600 dark:text-orange-400' : 'text-brand-blue'}`}>
-                                                FINAL RECOMMENDATION
+                                                {t('pomis.finalRecommendation')}
                                             </h3>
                                         </div>
                                         <p className="text-foreground font-semibold text-sm mb-1">{recommendation.title}</p>
@@ -309,24 +311,24 @@ export default function POMISCalculator() {
                                     {/* 2. Smart Insights */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <Activity size={14} /> Smart Insights
+                                            <Activity size={14} /> {t('pomis.smartInsights')}
                                         </h3>
                                         <div className="grid gap-2">
                                             {investment > maxLimit && (
                                                 <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex gap-3">
                                                     <Info size={16} className="text-orange-500 shrink-0 mt-0.5" />
-                                                    <p className="text-[11px] font-medium text-foreground">Entered amount exceeds limit. Calculations capped at ₹{maxLimit / 100000}L.</p>
+                                                    <p className="text-[11px] font-medium text-foreground">{t('pomis.amountExceedsLimit', { limit: maxLimit / 100000 })}</p>
                                                 </div>
                                             )}
                                             {result.postTaxYield < inflation ? (
                                                 <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-3">
                                                     <ShieldAlert size={16} className="text-red-500 shrink-0 mt-0.5" />
-                                                    <p className="text-[11px] font-medium text-red-500">Post-tax yield ({result.postTaxYield.toFixed(2)}%) is below expected inflation ({inflation}%).</p>
+                                                    <p className="text-[11px] font-medium text-red-500">{t('pomis.postTaxBelowInflation', { yield: result.postTaxYield.toFixed(2), inflation })}</p>
                                                 </div>
                                             ) : (
                                                 <div className="p-3 rounded-xl bg-brand-green/10 border border-brand-green/20 flex gap-3">
                                                     <TrendingUp size={16} className="text-brand-green shrink-0 mt-0.5" />
-                                                    <p className="text-[11px] font-medium text-brand-green">Monthly cashflow helps beat inflation on an absolute basis.</p>
+                                                    <p className="text-[11px] font-medium text-brand-green">{t('pomis.cashflowBeatsInflation')}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -335,7 +337,7 @@ export default function POMISCalculator() {
                                     {/* 3. Tax Analysis */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <BarChart2 size={14} /> Taxation & Net Income
+                                            <BarChart2 size={14} /> {t('pomis.taxationNetIncome')}
                                         </h3>
                                         
                                         <TaxInputGroup 
@@ -345,19 +347,19 @@ export default function POMISCalculator() {
 
                                         <div className="space-y-2 bg-background p-3 rounded-xl border border-border mt-3">
                                             <div className="flex justify-between items-center py-1">
-                                                <span className="text-muted-foreground text-[11px]">Gross Annual Income</span>
+                                                <span className="text-muted-foreground text-[11px]">{t('pomis.grossAnnualIncome')}</span>
                                                 <span className="text-foreground font-medium text-[11px]">{fmtINR(result.yearlyInterest)}</span>
                                             </div>
                                             <div className="flex justify-between items-center py-1">
-                                                <span className="text-muted-foreground text-[11px]">Est. Annual Tax (IFOS)</span>
+                                                <span className="text-muted-foreground text-[11px]">{t('pomis.estAnnualTax')}</span>
                                                 <span className="text-red-500 font-bold text-[11px] font-mono">-{fmtINR(result.annualTaxOnInterest)}</span>
                                             </div>
                                             <div className="flex justify-between items-center py-1 pt-2 border-t border-border">
-                                                <span className="text-foreground font-semibold text-[11px]">Net Monthly Payout</span>
+                                                <span className="text-foreground font-semibold text-[11px]">{t('pomis.netMonthlyPayout')}</span>
                                                 <span className="text-brand-green font-bold text-[12px]">{fmtINR(result.netMonthlyAfterTax)}/mo</span>
                                             </div>
                                             <div className="flex justify-between items-center py-1 bg-muted/50 px-2 rounded-lg mt-1">
-                                                <span className="text-foreground font-semibold text-[11px]">Post-Tax Effective Yield</span>
+                                                <span className="text-foreground font-semibold text-[11px]">{t('pomis.postTaxEffectiveYield')}</span>
                                                 <span className="text-brand-blue font-bold text-[12px]">{result.postTaxYield.toFixed(2)}%</span>
                                             </div>
                                         </div>
@@ -366,11 +368,11 @@ export default function POMISCalculator() {
                                     {/* 4. Alternative: Reinvestment Scenario */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <RotateCw size={14} /> Reinvest Payouts in RD
+                                            <RotateCw size={14} /> {t('pomis.reinvestPayoutsRD')}
                                         </h3>
                                         <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
                                             <div className="flex items-center justify-between mb-3">
-                                                <span className="text-muted-foreground text-[10px] font-medium">Postal RD Rate (%)</span>
+                                                <span className="text-muted-foreground text-[10px] font-medium">{t('pomis.postalRDRate')}</span>
                                                 <div className="relative">
                                                     <input type="number" value={reinvestRate} step={0.1} onChange={e => setReinvestRate(Number(e.target.value) || 0)} className="w-16 bg-background border border-border rounded-md px-2 py-1 text-foreground text-xs font-semibold focus:outline-none focus:border-amber-500 pr-5" />
                                                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px]">%</span>
@@ -378,11 +380,11 @@ export default function POMISCalculator() {
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div>
-                                                    <p className="text-muted-foreground text-[10px] mb-1">Maturity if Reinvested</p>
+                                                    <p className="text-muted-foreground text-[10px] mb-1">{t('pomis.maturityIfReinvested')}</p>
                                                     <p className="text-amber-500 font-bold text-sm">{fmtINR(result.reinvestMaturity)}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-muted-foreground text-[10px] mb-1">Extra Wealth Gained</p>
+                                                    <p className="text-muted-foreground text-[10px] mb-1">{t('pomis.extraWealthGained')}</p>
                                                     <p className="text-amber-600 dark:text-amber-400 font-bold text-sm">+{fmtINR(result.reinvestGain)}</p>
                                                 </div>
                                             </div>
@@ -392,11 +394,11 @@ export default function POMISCalculator() {
                                     {/* 5. Alternative: Bank FD */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <RotateCw size={14} /> Bank FD Comparison
+                                            <RotateCw size={14} /> {t('pomis.bankFDComparison')}
                                         </h3>
                                         <div className="bg-muted border border-border rounded-xl p-3">
                                             <div className="flex items-center justify-between mb-3">
-                                                <span className="text-muted-foreground text-[10px] font-medium">FD Rate (%)</span>
+                                                <span className="text-muted-foreground text-[10px] font-medium">{t('pomis.fdRate')}</span>
                                                 <div className="relative">
                                                     <input type="number" value={fdRate} step={0.1} onChange={e => setFdRate(Number(e.target.value) || 0)} className="w-16 bg-background border border-border rounded-md px-2 py-1 text-foreground text-xs font-semibold focus:outline-none focus:border-brand-blue pr-5" />
                                                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px]">%</span>
@@ -404,11 +406,11 @@ export default function POMISCalculator() {
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div>
-                                                    <p className="text-muted-foreground text-[10px] mb-1">MIS Post-Tax Interest</p>
+                                                    <p className="text-muted-foreground text-[10px] mb-1">{t('pomis.misPostTaxInterest')}</p>
                                                     <p className="text-foreground font-bold text-sm">{fmtINR(result.netTotalInterest)}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-muted-foreground text-[10px] mb-1">FD Post-Tax Interest</p>
+                                                    <p className="text-muted-foreground text-[10px] mb-1">{t('pomis.fdPostTaxInterest')}</p>
                                                     <p className={`font-bold text-sm ${result.fdPostTaxInterest > result.netTotalInterest ? 'text-brand-green' : 'text-foreground'}`}>{fmtINR(result.fdPostTaxInterest)}</p>
                                                 </div>
                                             </div>
@@ -418,15 +420,15 @@ export default function POMISCalculator() {
                                     {/* 6. Inflation impact */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <TrendingUp size={14} /> Inflation Impact
+                                            <TrendingUp size={14} /> {t('pomis.inflationImpact')}
                                         </h3>
                                         <div className="bg-muted border border-border rounded-xl p-3 flex justify-between items-center">
                                             <div>
-                                                <label className="text-muted-foreground text-[10px] font-medium block mb-1">Inflation Rate (%)</label>
+                                                <label className="text-muted-foreground text-[10px] font-medium block mb-1">{t('pomis.inflationRate')}</label>
                                                 <input type="number" value={inflation} onChange={e => setInflation(Number(e.target.value) || 0)} className="w-20 bg-background border border-border rounded-md px-2 py-1 text-foreground text-xs font-semibold focus:outline-none focus:border-brand-blue" />
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-muted-foreground text-[10px] mb-1">Purchasing Power (Principal)</p>
+                                                <p className="text-muted-foreground text-[10px] mb-1">{t('pomis.purchasingPowerPrincipal')}</p>
                                                 <p className="text-foreground font-bold text-sm">{fmtINR(result.realPrincipalValue)}</p>
                                             </div>
                                         </div>
@@ -435,17 +437,17 @@ export default function POMISCalculator() {
                                     {/* 7. Growth Breakdown (Months) */}
                                     <div className="space-y-3 pt-2">
                                         <div className="flex items-center justify-between">
-                                            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Monthly Payout Schedule</h3>
+                                            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('pomis.monthlyPayoutSchedule')}</h3>
                                         </div>
                                         <div className="rounded-xl overflow-hidden border border-border">
                                             <div className="grid grid-cols-3 bg-muted px-3 py-2">
-                                                {['Month', 'Payout', 'Cumulative'].map(h => (
+                                                {[t('pomis.month'), t('pomis.payout'), t('pomis.cumulative')].map(h => (
                                                     <p key={h} className="text-muted-foreground text-[9px] font-bold uppercase">{h}</p>
                                                 ))}
                                             </div>
                                             {paginatedMonths.map((row, i) => (
                                                 <div key={row.month} className={`grid grid-cols-3 px-3 py-1.5 text-[10px] ${i % 2 === 0 ? 'bg-background' : 'bg-muted/30'}`}>
-                                                    <p className="text-foreground font-medium">Month {row.month}</p>
+                                                    <p className="text-foreground font-medium">{t('pomis.monthNumber', { number: row.month })}</p>
                                                     <p className="text-brand-green font-semibold">{fmtINR(row.payout)}</p>
                                                     <p className="text-foreground">{fmtINR(row.cumulative)}</p>
                                                 </div>
@@ -458,7 +460,7 @@ export default function POMISCalculator() {
                                                     <ChevronLeft size={16} />
                                                 </button>
                                                 <span className="text-[10px] text-muted-foreground font-medium">
-                                                    Page {currentPage + 1} of {totalPages}
+                                                    {t('pomis.pageOf', { current: currentPage + 1, total: totalPages })}
                                                 </span>
                                                 <button onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))} disabled={currentPage === totalPages - 1} className="p-1 rounded-lg hover:bg-muted disabled:opacity-50">
                                                     <ChevronRight size={16} />

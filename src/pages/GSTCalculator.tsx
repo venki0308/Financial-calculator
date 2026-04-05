@@ -409,8 +409,8 @@ export default function GSTCalculator() {
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-foreground">GST Calculator</h1>
-                        <p className="text-muted-foreground text-xs">Advanced tax calculations</p>
+                        <h1 className="text-lg font-bold text-foreground">{t('gst.title')}</h1>
+                        <p className="text-muted-foreground text-xs">{t('gst.subtitle')}</p>
                     </div>
                     <button onClick={() => setShowInfo(true)} className="ml-auto p-2 rounded-xl bg-card border border-border">
                         <Info size={16} className="text-muted-foreground" />
@@ -432,7 +432,7 @@ export default function GSTCalculator() {
                                     }`}
                             >
                                 <Icon size={14} />
-                                {m.label}
+                                {t(`gst.mode_${m.key}`)}
                             </button>
                         );
                     })}
@@ -442,14 +442,14 @@ export default function GSTCalculator() {
                 {mode === 'standard' && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                         <div className="flex gap-1 bg-card border border-border rounded-xl p-1 mb-5">
-                            <button onClick={() => setStdDirection('add')} className={`flex-1 py-3 rounded-lg text-xs font-bold transition-all ${stdDirection === 'add' ? 'bg-brand-purple text-white shadow-lg' : 'text-muted-foreground'}`}>Add GST</button>
-                            <button onClick={() => setStdDirection('remove')} className={`flex-1 py-3 rounded-lg text-xs font-bold transition-all ${stdDirection === 'remove' ? 'bg-brand-gold text-black' : 'text-muted-foreground'}`}>Remove GST</button>
+                            <button onClick={() => setStdDirection('add')} className={`flex-1 py-3 rounded-lg text-xs font-bold transition-all ${stdDirection === 'add' ? 'bg-brand-purple text-white shadow-lg' : 'text-muted-foreground'}`}>{t('gst.addGST')}</button>
+                            <button onClick={() => setStdDirection('remove')} className={`flex-1 py-3 rounded-lg text-xs font-bold transition-all ${stdDirection === 'remove' ? 'bg-brand-gold text-black' : 'text-muted-foreground'}`}>{t('gst.removeGST')}</button>
                         </div>
 
                         <div className="bg-card border border-border rounded-2xl p-4 space-y-4 mb-5">
-                            <NumberInput label={stdDirection === 'add' ? 'Base Amount (excl. GST)' : 'Total Amount (incl. GST)'} value={stdAmount} onChange={setStdAmount} prefix="₹" min={0} max={999999999} />
+                            <NumberInput label={stdDirection === 'add' ? t('gst.baseAmountExcl') : t('gst.totalAmountIncl')} value={stdAmount} onChange={setStdAmount} prefix="₹" min={0} max={999999999} />
                             <div>
-                                <label className="text-xs text-muted-foreground mb-2 block">GST Rate</label>
+                                <label className="text-xs text-muted-foreground mb-2 block">{t('gst.gstRate')}</label>
                                 <div className="grid grid-cols-5 gap-2">
                                     {gstRates.map(r => (
                                         <button key={r} onClick={() => setStdRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${stdRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
@@ -467,9 +467,9 @@ export default function GSTCalculator() {
                 {mode === 'reverse' && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                         <div className="bg-card border border-border rounded-2xl p-4 space-y-4 mb-5">
-                            <NumberInput label="Total Amount (incl. GST)" value={stdAmount} onChange={setStdAmount} prefix="₹" min={0} max={999999999} />
+                            <NumberInput label={t('gst.totalAmountIncl')} value={stdAmount} onChange={setStdAmount} prefix="₹" min={0} max={999999999} />
                             <div>
-                                <label className="text-xs text-muted-foreground mb-2 block">GST Rate</label>
+                                <label className="text-xs text-muted-foreground mb-2 block">{t('gst.gstRate')}</label>
                                 <div className="grid grid-cols-5 gap-2">
                                     {gstRates.map(r => (
                                         <button key={r} onClick={() => setStdRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${stdRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
@@ -482,12 +482,12 @@ export default function GSTCalculator() {
                         {reverseResult && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
                                 <div className="text-center mb-4">
-                                    <p className="text-muted-foreground text-xs mb-1">Original Base Price</p>
+                                    <p className="text-muted-foreground text-xs mb-1">{t('gst.originalBasePrice')}</p>
                                     <p className="text-3xl font-bold text-brand-green">{formatINR(reverseResult.base)}</p>
                                 </div>
                                 <div className="space-y-2">
-                                    <Row label="Total (incl. GST)" value={stdAmount} color="text-foreground" />
-                                    <Row label="Base Price" value={reverseResult.base} color="text-brand-green" dot="bg-brand-green" />
+                                    <Row label={t('gst.totalInclGST')} value={stdAmount} color="text-foreground" />
+                                    <Row label={t('gst.basePrice')} value={reverseResult.base} color="text-brand-green" dot="bg-brand-green" />
                                     {isIGST ? (
                                         <Row label={`IGST (${stdRate}%)`} value={reverseResult.igst} color="text-brand-purple" dot="bg-brand-purple" />
                                     ) : (
@@ -497,7 +497,7 @@ export default function GSTCalculator() {
                                         </>
                                     )}
                                     <div className="pt-2 border-t border-border/40">
-                                        <Row label="Total GST" value={reverseResult.gst} color="text-amber-400" dot="bg-amber-400" isBold />
+                                        <Row label={t('gst.totalGST')} value={reverseResult.gst} color="text-amber-400" dot="bg-amber-400" isBold />
                                     </div>
                                 </div>
                             </motion.div>
@@ -509,10 +509,10 @@ export default function GSTCalculator() {
                 {mode === 'profit' && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                         <div className="bg-card border border-border rounded-2xl p-4 space-y-4 mb-5">
-                            <NumberInput label="Cost Price (Purchase)" value={costPrice} onChange={setCostPrice} prefix="₹" min={0} max={999999999} />
-                            <NumberInput label="Selling Price" value={sellingPrice} onChange={setSellingPrice} prefix="₹" min={0} max={999999999} />
+                            <NumberInput label={t('gst.costPrice')} value={costPrice} onChange={setCostPrice} prefix="₹" min={0} max={999999999} />
+                            <NumberInput label={t('gst.sellingPrice')} value={sellingPrice} onChange={setSellingPrice} prefix="₹" min={0} max={999999999} />
                             <div>
-                                <label className="text-xs text-muted-foreground mb-2 block">GST Rate on Sale</label>
+                                <label className="text-xs text-muted-foreground mb-2 block">{t('gst.gstRateOnSale')}</label>
                                 <div className="grid grid-cols-5 gap-2">
                                     {gstRates.map(r => (
                                         <button key={r} onClick={() => setProfitGstRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${profitGstRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
@@ -524,28 +524,28 @@ export default function GSTCalculator() {
                         {profitResult && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
                                 <div className="text-center mb-5">
-                                    <p className="text-muted-foreground text-xs mb-1">Total Amount (incl. GST)</p>
+                                    <p className="text-muted-foreground text-xs mb-1">{t('gst.totalAmountInclGST')}</p>
                                     <p className="text-3xl font-bold text-foreground">{formatINR(profitResult.totalWithGst)}</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3 mb-4">
                                     <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 text-center">
-                                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Profit</p>
+                                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">{t('gst.profit')}</p>
                                         <p className="text-brand-green font-bold text-sm">{formatINR(profitResult.profit)}</p>
                                         <p className="text-[10px] text-muted-foreground">{profitResult.profitPct.toFixed(1)}%</p>
                                     </div>
                                     <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30 text-center">
-                                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Net GST</p>
+                                        <p className="text-[10px] text-muted-foreground uppercase font-bold mb-1">{t('gst.netGST')}</p>
                                         <p className="text-amber-400 font-bold text-sm">{formatINR(profitResult.netGst)}</p>
-                                        <p className="text-[10px] text-muted-foreground">payable to govt</p>
+                                        <p className="text-[10px] text-muted-foreground">{t('gst.payableToGovt')}</p>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Row label="Cost Price" value={costPrice} color="text-muted-foreground" />
-                                    <Row label="Selling Price" value={sellingPrice} color="text-foreground" />
-                                    <Row label="GST on Sale" value={profitResult.gstOnSale} color="text-red-400" dot="bg-red-400" />
-                                    <Row label="GST on Purchase (ITC)" value={profitResult.gstOnCost} color="text-brand-green" dot="bg-brand-green" />
+                                    <Row label={t('gst.costPriceLabel')} value={costPrice} color="text-muted-foreground" />
+                                    <Row label={t('gst.sellingPriceLabel')} value={sellingPrice} color="text-foreground" />
+                                    <Row label={t('gst.gstOnSale')} value={profitResult.gstOnSale} color="text-red-400" dot="bg-red-400" />
+                                    <Row label={t('gst.gstOnPurchaseITC')} value={profitResult.gstOnCost} color="text-brand-green" dot="bg-brand-green" />
                                     <div className="pt-2 border-t border-border/40">
-                                        <Row label="Net GST Payable" value={profitResult.netGst} color="text-amber-400" isBold />
+                                        <Row label={t('gst.netGSTPayable')} value={profitResult.netGst} color="text-amber-400" isBold />
                                     </div>
                                 </div>
                             </motion.div>
@@ -557,14 +557,14 @@ export default function GSTCalculator() {
                 {mode === 'itc' && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                         <div className="bg-card border border-border rounded-2xl p-4 space-y-4 mb-5">
-                            <NumberInput label="GST Paid on Purchases (Input Tax)" value={purchaseGst} onChange={setPurchaseGst} prefix="₹" min={0} max={999999999} helperText="Total GST paid on your purchases" />
-                            <NumberInput label="GST Collected on Sales (Output Tax)" value={salesGst} onChange={setSalesGst} prefix="₹" min={0} max={999999999} helperText="Total GST collected from customers" />
+                            <NumberInput label={t('gst.gstPaidOnPurchases')} value={purchaseGst} onChange={setPurchaseGst} prefix="₹" min={0} max={999999999} helperText={t('gst.totalGSTPaidHelper')} />
+                            <NumberInput label={t('gst.gstCollectedOnSales')} value={salesGst} onChange={setSalesGst} prefix="₹" min={0} max={999999999} helperText={t('gst.totalGSTCollectedHelper')} />
                         </div>
 
                         {itcResult && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
                                 <div className="text-center mb-5">
-                                    <p className="text-muted-foreground text-xs mb-1">{itcResult.refund > 0 ? 'ITC Refund Available' : 'Net GST Payable'}</p>
+                                    <p className="text-muted-foreground text-xs mb-1">{itcResult.refund > 0 ? t('gst.itcRefundAvailable') : t('gst.netGSTPayable')}</p>
                                     <p className={`text-3xl font-bold ${itcResult.refund > 0 ? 'text-brand-green' : 'text-amber-400'}`}>
                                         {formatINR(itcResult.refund > 0 ? itcResult.refund : itcResult.netPayable)}
                                     </p>
@@ -577,13 +577,13 @@ export default function GSTCalculator() {
                                 )}
 
                                 <div className="space-y-2">
-                                    <Row label="Input Tax (Purchases)" value={itcResult.itc} color="text-blue-400" dot="bg-blue-400" />
-                                    <Row label="Output Tax (Sales)" value={itcResult.liability} color="text-red-400" dot="bg-red-400" />
+                                    <Row label={t('gst.inputTaxPurchases')} value={itcResult.itc} color="text-blue-400" dot="bg-blue-400" />
+                                    <Row label={t('gst.outputTaxSales')} value={itcResult.liability} color="text-red-400" dot="bg-red-400" />
                                     <div className="pt-2 border-t border-border/40">
                                         {itcResult.refund > 0 ? (
-                                            <Row label="Refund Claimable" value={itcResult.refund} color="text-brand-green" dot="bg-brand-green" isBold />
+                                            <Row label={t('gst.refundClaimable')} value={itcResult.refund} color="text-brand-green" dot="bg-brand-green" isBold />
                                         ) : (
-                                            <Row label="Net GST Payable" value={itcResult.netPayable} color="text-amber-400" dot="bg-amber-400" isBold />
+                                            <Row label={t('gst.netGSTPayable')} value={itcResult.netPayable} color="text-amber-400" dot="bg-amber-400" isBold />
                                         )}
                                     </div>
                                 </div>
@@ -601,9 +601,9 @@ export default function GSTCalculator() {
                             {invoiceItems.map((item, idx) => (
                                 <div key={item.id} className="bg-card border border-border rounded-2xl p-4">
                                     <div className="flex items-center justify-between mb-3">
-                                        <span className="text-xs font-bold text-muted-foreground">Item #{idx + 1}</span>
+                                        <span className="text-xs font-bold text-muted-foreground">{t('gst.itemNumber', { number: idx + 1 })}</span>
                                         {invoiceItems.length > 1 && (
-                                            <button onClick={() => removeInvoiceItem(item.id)} className="text-red-400 text-xs font-bold">Remove</button>
+                                            <button onClick={() => removeInvoiceItem(item.id)} className="text-red-400 text-xs font-bold">{t('gst.remove')}</button>
                                         )}
                                     </div>
                                     <div className="space-y-3">
@@ -611,13 +611,13 @@ export default function GSTCalculator() {
                                             value={item.name}
                                             onChange={e => updateInvoiceItem(item.id, 'name', e.target.value)}
                                             className="w-full px-3.5 py-3 rounded-xl bg-dark-bg border border-border text-foreground text-sm"
-                                            placeholder="Item name"
+                                            placeholder={t('gst.itemName')}
                                         />
                                         <div className="grid grid-cols-3 gap-2">
-                                            <NumberInput label="Qty" value={item.qty} onChange={v => updateInvoiceItem(item.id, 'qty', v)} min={1} max={99999} />
-                                            <NumberInput label="Price" value={item.price} onChange={v => updateInvoiceItem(item.id, 'price', v)} prefix="₹" min={0} max={999999999} />
+                                            <NumberInput label={t('gst.qty')} value={item.qty} onChange={v => updateInvoiceItem(item.id, 'qty', v)} min={1} max={99999} />
+                                            <NumberInput label={t('gst.price')} value={item.price} onChange={v => updateInvoiceItem(item.id, 'price', v)} prefix="₹" min={0} max={999999999} />
                                             <div>
-                                                <label className="text-[10px] text-muted-foreground mb-1 block">GST %</label>
+                                                <label className="text-[10px] text-muted-foreground mb-1 block">{t('gst.gstPercent')}</label>
                                                 <select
                                                     value={item.rate}
                                                     onChange={e => updateInvoiceItem(item.id, 'rate', Number(e.target.value))}
@@ -628,8 +628,8 @@ export default function GSTCalculator() {
                                             </div>
                                         </div>
                                         <div className="flex justify-between text-xs pt-1">
-                                            <span className="text-muted-foreground">Amount: <span className="text-foreground font-bold">{formatINR(item.qty * item.price)}</span></span>
-                                            <span className="text-muted-foreground">GST: <span className="text-brand-green font-bold">{formatINR(item.qty * item.price * item.rate / 100)}</span></span>
+                                            <span className="text-muted-foreground">{t('gst.amount')}: <span className="text-foreground font-bold">{formatINR(item.qty * item.price)}</span></span>
+                                            <span className="text-muted-foreground">{t('gst.gstLabel')}: <span className="text-brand-green font-bold">{formatINR(item.qty * item.price * item.rate / 100)}</span></span>
                                         </div>
                                     </div>
                                 </div>
@@ -637,22 +637,22 @@ export default function GSTCalculator() {
                         </div>
 
                         <button onClick={addInvoiceItem} className="w-full py-3 mb-5 rounded-xl border-2 border-dashed border-border text-muted-foreground text-xs font-bold hover:border-brand-purple hover:text-brand-purple transition-all">
-                            + Add Item
+                            + {t('gst.addItem')}
                         </button>
 
                         {/* Invoice Totals */}
                         <motion.div layout className="bg-card border border-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
-                            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Invoice Summary</h3>
+                            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">{t('gst.invoiceSummary')}</h3>
 
                             {/* Items table */}
                             <div className="overflow-x-auto mb-4">
                                 <table className="w-full text-xs">
                                     <thead>
                                         <tr className="text-muted-foreground border-b border-border/40">
-                                            <th className="text-left py-2 font-medium">Item</th>
-                                            <th className="text-right py-2 font-medium">Amt</th>
-                                            <th className="text-right py-2 font-medium">GST</th>
-                                            <th className="text-right py-2 font-medium">Total</th>
+                                            <th className="text-left py-2 font-medium">{t('gst.item')}</th>
+                                            <th className="text-right py-2 font-medium">{t('gst.amt')}</th>
+                                            <th className="text-right py-2 font-medium">{t('gst.gstLabel')}</th>
+                                            <th className="text-right py-2 font-medium">{t('gst.total')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -669,17 +669,17 @@ export default function GSTCalculator() {
                             </div>
 
                             <div className="space-y-2 pt-3 border-t border-border/40">
-                                <Row label="Taxable Amount" value={invoiceTotals.amount} color="text-foreground" />
+                                <Row label={t('gst.taxableAmount')} value={invoiceTotals.amount} color="text-foreground" />
                                 {invoiceIsIGST ? (
-                                    <Row label="IGST" value={invoiceTotals.igst} color="text-brand-purple" dot="bg-brand-purple" />
+                                    <Row label={t('gst.igst')} value={invoiceTotals.igst} color="text-brand-purple" dot="bg-brand-purple" />
                                 ) : (
                                     <>
-                                        <Row label="CGST" value={invoiceTotals.cgst} color="text-brand-blue" dot="bg-brand-blue" />
-                                        <Row label="SGST" value={invoiceTotals.sgst} color="text-brand-gold" dot="bg-brand-gold" />
+                                        <Row label={t('gst.cgst')} value={invoiceTotals.cgst} color="text-brand-blue" dot="bg-brand-blue" />
+                                        <Row label={t('gst.sgst')} value={invoiceTotals.sgst} color="text-brand-gold" dot="bg-brand-gold" />
                                     </>
                                 )}
                                 <div className="pt-2 border-t border-border/40">
-                                    <Row label="Grand Total" value={invoiceTotals.total} color="text-brand-green" isBold />
+                                    <Row label={t('gst.grandTotal')} value={invoiceTotals.total} color="text-brand-green" isBold />
                                 </div>
                             </div>
                         </motion.div>
@@ -701,23 +701,23 @@ export default function GSTCalculator() {
                             ? 'bg-brand-green/10 text-brand-green border border-brand-green/20'
                             : 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20'
                             }`}>
-                        {saved ? <><Check size={18} /> Saved</> : <><Save size={18} /> Save</>}
+                        {saved ? <><Check size={18} /> {t('gst.saved')}</> : <><Save size={18} /> {t('gst.save')}</>}
                     </motion.button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-8">
                     <button onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm">
-                        📄 PDF
+                        📄 {t('gst.pdf')}
                     </button>
                     <button onClick={handleDownloadExcel} className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-green/10 border-2 border-brand-green/40 text-brand-green font-bold text-sm">
-                        📊 Excel
+                        📊 {t('gst.excel')}
                     </button>
                 </div>
 
                 
                 <DisclaimerComponent module="gst" />
 
-                <CalculatorInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} calculatorTitle="GST Calculator" />
+                <CalculatorInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} calculatorTitle={t('gst.title')} />
             </div>
         </div>
     );
@@ -726,11 +726,12 @@ export default function GSTCalculator() {
 // ── Reusable Components ──
 
 function ToggleIGST({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+    const { t } = useTranslation();
     return (
         <div className="flex items-center justify-between p-3.5 rounded-xl bg-card border border-border">
             <div className="flex items-center gap-2">
                 <Info size={14} className="text-muted-foreground" />
-                <span className="text-foreground text-xs font-medium">Interstate (IGST)</span>
+                <span className="text-foreground text-xs font-medium">{t('gst.interstate')}</span>
             </div>
             <button onClick={() => onChange(!value)} className={`w-11 h-6 rounded-full p-1 transition-colors ${value ? 'bg-brand-purple' : 'bg-slate-300 dark:bg-slate-700'}`}>
                 <motion.div animate={{ x: value ? 20 : 0 }} className="w-4 h-4 rounded-full bg-white shadow-sm" />
@@ -744,10 +745,11 @@ function ResultCard({ result, rate, isIGST, chartData, chartRef, showBreakdown, 
     rate: number; isIGST: boolean; chartData: any; chartRef: any;
     showBreakdown: boolean; setShowBreakdown: (v: boolean) => void;
 }) {
+    const { t } = useTranslation();
     return (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-2xl p-5 mb-5 shadow-xl shadow-black/20">
             <div className="text-center mb-5">
-                <p className="text-muted-foreground text-xs mb-1">Final Amount</p>
+                <p className="text-muted-foreground text-xs mb-1">{t('gst.finalAmount')}</p>
                 <p className="text-3xl font-bold text-foreground">{formatINR(result.total)}</p>
             </div>
 
@@ -758,23 +760,23 @@ function ResultCard({ result, rate, isIGST, chartData, chartRef, showBreakdown, 
             )}
 
             <div className="space-y-2 mb-4">
-                <Row label="Base Amount" value={result.base} color="text-muted-foreground" />
+                <Row label={t('gst.baseAmount')} value={result.base} color="text-muted-foreground" />
                 {isIGST ? (
-                    <Row label={`IGST (${rate}%)`} value={result.igst} color="text-brand-purple" dot="bg-brand-purple" />
+                    <Row label={`${t('gst.igst')} (${rate}%)`} value={result.igst} color="text-brand-purple" dot="bg-brand-purple" />
                 ) : (
                     <>
-                        <Row label={`CGST (${rate / 2}%)`} value={result.cgst} color="text-brand-blue" dot="bg-brand-blue" />
-                        <Row label={`SGST (${rate / 2}%)`} value={result.sgst} color="text-brand-gold" dot="bg-brand-gold" />
+                        <Row label={`${t('gst.cgst')} (${rate / 2}%)`} value={result.cgst} color="text-brand-blue" dot="bg-brand-blue" />
+                        <Row label={`${t('gst.sgst')} (${rate / 2}%)`} value={result.sgst} color="text-brand-gold" dot="bg-brand-gold" />
                     </>
                 )}
                 <div className="pt-2 border-t border-border/40">
-                    <Row label="Total GST" value={result.gst} color="text-brand-green" dot="bg-brand-green" isBold />
+                    <Row label={t('gst.totalGST')} value={result.gst} color="text-brand-green" dot="bg-brand-green" isBold />
                 </div>
             </div>
 
             <button onClick={() => setShowBreakdown(!showBreakdown)} className="flex items-center gap-1 text-xs text-brand-purple font-bold">
                 {showBreakdown ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                {showBreakdown ? 'Hide' : 'Show'} Rate Comparison
+                {showBreakdown ? t('gst.hideRateComparison') : t('gst.showRateComparison')}
             </button>
             <AnimatePresence>
                 {showBreakdown && (
@@ -784,10 +786,10 @@ function ResultCard({ result, rate, isIGST, chartData, chartRef, showBreakdown, 
                                 const g = result.base * (r / 100);
                                 return (
                                     <div key={r} className={`flex justify-between items-center py-2 px-3 rounded-lg ${r === rate ? 'bg-brand-purple/10 border border-brand-purple/30' : 'bg-slate-100 dark:bg-slate-800/20'}`}>
-                                        <span className="text-xs text-muted-foreground">{r}% GST</span>
+                                        <span className="text-xs text-muted-foreground">{r}% {t('gst.gstLabel')}</span>
                                         <div className="text-right">
                                             <span className="text-xs text-foreground font-bold">{formatINR(result.base + g)}</span>
-                                            <span className="text-[10px] text-muted-foreground ml-2">(GST: {formatINR(g)})</span>
+                                            <span className="text-[10px] text-muted-foreground ml-2">({t('gst.gstLabel')}: {formatINR(g)})</span>
                                         </div>
                                     </div>
                                 );

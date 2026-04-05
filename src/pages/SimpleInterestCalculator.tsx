@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, Share2 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
@@ -68,6 +69,7 @@ const FREQ_LABEL: Record<FrequencyMonths, string> = {
 };
 
 export default function SimpleInterestCalculator() {
+    const { t } = useTranslation();
     useEffect(() => { AnalyticsService.trackScreen('Simple_Interest'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
@@ -266,16 +268,16 @@ export default function SimpleInterestCalculator() {
     };
 
     const modes: { key: Mode; label: string; color: string }[] = [
-        { key: 'flat', label: 'Flat ₹ Interest', color: 'bg-amber-500' },
-        { key: 'simple', label: 'Simple Interest', color: 'bg-brand-blue' },
-        { key: 'compound', label: 'Compound Interest', color: 'bg-brand-purple' },
+        { key: 'flat', label: t('si.flatInterest'), color: 'bg-amber-500' },
+        { key: 'simple', label: t('si.simpleInterest'), color: 'bg-brand-blue' },
+        { key: 'compound', label: t('si.compoundInterest'), color: 'bg-brand-purple' },
     ];
 
     const compFreqOptions = [
-        { label: 'Monthly', val: 12 },
-        { label: 'Quarterly', val: 4 },
-        { label: 'Half-Yr', val: 2 },
-        { label: 'Yearly', val: 1 },
+        { label: t('si.freqMonthly'), val: 12 },
+        { label: t('si.freqQuarterly'), val: 4 },
+        { label: t('si.freqHalfYr'), val: 2 },
+        { label: t('si.freqYearly'), val: 1 },
     ];
 
     return (
@@ -288,8 +290,8 @@ export default function SimpleInterestCalculator() {
                             <ArrowLeft size={18} className="text-muted-foreground dark:text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">Interest Calculator</h1>
-                            <p className="text-muted-foreground text-xs">Flat ₹ · Simple · Compound</p>
+                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">{t('si.title')}</h1>
+                            <p className="text-muted-foreground text-xs">{t('si.subtitle')}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -329,52 +331,52 @@ export default function SimpleInterestCalculator() {
                 {/* Input Fields */}
                 <div className="space-y-3 mb-5">
                     <NumberInput
-                        label="Loan / Principal Amount"
+                        label={t('si.loanPrincipalAmount')}
                         value={principal}
                         onChange={setPrincipal}
                         min={100}
                         max={1000000000}
                         prefix="₹"
-                        helperText="₹100 - ₹100 Cr"
+                        helperText={t('si.principalRange')}
                     />
 
                     {mode === 'flat' ? (
                         <NumberInput
-                            label="Interest Rate (₹ per ₹100/month)"
+                            label={t('si.flatRateLabel')}
                             value={flatRate}
                             onChange={setFlatRate}
                             min={0.1}
                             max={50}
                             prefix="₹"
                             step={0.1}
-                            helperText="₹0.1 - ₹50 per ₹100/month"
+                            helperText={t('si.flatRateRange')}
                         />
                     ) : (
                         <NumberInput
-                            label="Annual Interest Rate"
+                            label={t('si.annualInterestRate')}
                             value={annualRate}
                             onChange={setAnnualRate}
                             min={0.1}
                             max={100}
                             suffix="%"
                             step={0.1}
-                            helperText="0.1% - 100%"
+                            helperText={t('si.annualRateRange')}
                         />
                     )}
 
                     <NumberInput
-                        label="Tenure (Months)"
+                        label={t('si.tenureMonths')}
                         value={tenure}
                         onChange={setTenure}
                         min={1}
                         max={600}
-                        suffix=" months"
-                        helperText="1 - 600 months (50 years)"
+                        suffix={` ${t('si.months')}`}
+                        helperText={t('si.tenureRange')}
                     />
 
                     {mode === 'compound' && (
                         <div>
-                            <label className="text-xs text-muted-foreground dark:text-muted-foreground mb-2 block font-medium">Compounding Frequency</label>
+                            <label className="text-xs text-muted-foreground dark:text-muted-foreground mb-2 block font-medium">{t('si.compoundingFrequency')}</label>
                             <div className="grid grid-cols-4 gap-2">
                                 {compFreqOptions.map(opt => (
                                     <button
@@ -395,7 +397,7 @@ export default function SimpleInterestCalculator() {
                     {/* Payment Frequency Selector — flat & simple modes only */}
                     {mode !== 'compound' && (
                         <div>
-                            <label className="text-xs text-muted-foreground dark:text-muted-foreground mb-2 block font-medium">Payment Frequency</label>
+                            <label className="text-xs text-muted-foreground dark:text-muted-foreground mb-2 block font-medium">{t('si.paymentFrequency')}</label>
                             <div className="grid grid-cols-4 gap-2">
                                 {FREQ_OPTIONS.map(opt => (
                                     <button
@@ -406,7 +408,7 @@ export default function SimpleInterestCalculator() {
                                             : 'bg-white dark:bg-card border-slate-200 dark:border-border text-muted-foreground'
                                             }`}
                                     >
-                                        {opt.label}
+                                        {t(`si.freq${opt.label.replace('-', '')}`)}
                                     </button>
                                 ))}
                             </div>
@@ -421,50 +423,50 @@ export default function SimpleInterestCalculator() {
                         return (
                             <>
                                 <div className="text-center mb-4">
-                                    <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Monthly Interest Payable</p>
+                                    <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">{t('si.monthlyInterestPayable')}</p>
                                     <motion.p key={r.monthlyInterest} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                                         className="text-3xl font-bold text-amber-500">
                                         {formatINR(r.monthlyInterest)}
                                     </motion.p>
                                     <p className="text-brand-blue text-sm font-medium mt-1">
-                                        ₹{flatRate} per ₹100 per month
+                                        ₹{flatRate} {t('si.perHundredPerMonth')}
                                     </p>
                                 </div>
 
                                 <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-border">
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Loan Amount</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.loanAmount')}</span>
                                         <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(principal)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Rate</span>
-                                        <span className="font-semibold text-sm text-amber-500">₹{flatRate} per ₹100/month</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.rate')}</span>
+                                        <span className="font-semibold text-sm text-amber-500">₹{flatRate} {t('si.perHundredPerMonthShort')}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Monthly Interest</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.monthlyInterest')}</span>
                                         <span className="font-semibold text-sm text-brand-green">{formatINR(r.monthlyInterest)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Equiv. Monthly Rate</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.equivMonthlyRate')}</span>
                                         <span className="font-semibold text-sm text-brand-blue">{r.equivalentMonthlyPct.toFixed(2)}%</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Equiv. Annual Rate</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.equivAnnualRate')}</span>
                                         <span className="font-semibold text-sm text-brand-purple">{r.equivalentAnnualPct.toFixed(2)}%</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Total Interest ({tenure} months)</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.totalInterestWithTenure', { tenure })}</span>
                                         <span className="font-semibold text-sm text-red-500">{formatINR(r.totalInterest)}</span>
                                     </div>
                                     <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-border">
-                                        <span className="text-slate-900 dark:text-foreground text-xs font-bold">Total Payable</span>
+                                        <span className="text-slate-900 dark:text-foreground text-xs font-bold">{t('si.totalPayable')}</span>
                                         <span className="font-bold text-sm text-brand-green">{formatINR(r.totalPayable)}</span>
                                     </div>
                                 </div>
 
                                 {/* Quick Reference Table */}
                                 <div className="mt-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/15">
-                                    <p className="text-amber-700 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider mb-2">Quick Reference — Village Rate</p>
+                                    <p className="text-amber-700 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider mb-2">{t('si.quickReferenceVillageRate')}</p>
                                     <div className="space-y-1">
                                         {[1, 1.5, 2, 3, 5].map(r => (
                                             <div key={r} className="flex justify-between">
@@ -483,7 +485,7 @@ export default function SimpleInterestCalculator() {
                         return (
                             <>
                                 <div className="text-center mb-4">
-                                    <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Total Amount</p>
+                                    <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">{t('si.totalAmount')}</p>
                                     <motion.p key={r.totalAmount} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                                         className="text-3xl font-bold text-brand-blue">
                                         {formatINR(r.totalAmount)}
@@ -491,31 +493,31 @@ export default function SimpleInterestCalculator() {
                                 </div>
                                 <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-border">
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Principal</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.principal')}</span>
                                         <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(principal)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Annual Rate</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.annualRate')}</span>
                                         <span className="font-semibold text-sm text-brand-blue">{annualRate}%</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Tenure</span>
-                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{tenure} months ({r.tenureInYears.toFixed(1)} yrs)</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.tenure')}</span>
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{tenure} {t('si.months')} ({r.tenureInYears.toFixed(1)} {t('si.yrs')})</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Total Interest (SI)</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.totalInterestSI')}</span>
                                         <span className="font-semibold text-sm text-brand-green">{formatINR(r.totalInterest)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Monthly Interest Only</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.monthlyInterestOnly')}</span>
                                         <span className="font-semibold text-sm text-amber-500">{formatINR(r.monthlyInterestOnly)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Village Rate (per ₹100/month)</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.villageRate')}</span>
                                         <span className="font-semibold text-sm text-amber-400">₹{(annualRate / 12).toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-border">
-                                        <span className="text-slate-900 dark:text-foreground text-xs font-bold">Monthly EMI (P+I)</span>
+                                        <span className="text-slate-900 dark:text-foreground text-xs font-bold">{t('si.monthlyEMI')}</span>
                                         <span className="font-bold text-sm text-brand-green">{formatINR(r.monthlyEMI)}</span>
                                     </div>
                                 </div>
@@ -529,7 +531,7 @@ export default function SimpleInterestCalculator() {
                         return (
                             <>
                                 <div className="text-center mb-4">
-                                    <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">Total Payable</p>
+                                    <p className="text-muted-foreground dark:text-muted-foreground text-sm mb-1">{t('si.totalPayable')}</p>
                                     <motion.p key={r.totalPayable} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                                         className="text-3xl font-bold text-brand-purple">
                                         {formatINR(r.totalPayable)}
@@ -537,34 +539,34 @@ export default function SimpleInterestCalculator() {
                                 </div>
                                 <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-border">
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Principal</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.principal')}</span>
                                         <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(principal)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Annual Rate</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.annualRate')}</span>
                                         <span className="font-semibold text-sm text-brand-purple">{annualRate}%</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Compounding</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.compounding')}</span>
                                         <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{freqLabel}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Tenure</span>
-                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{tenure} months ({r.tenureInYears.toFixed(1)} yrs)</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.tenure')}</span>
+                                        <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{tenure} {t('si.months')} ({r.tenureInYears.toFixed(1)} {t('si.yrs')})</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Compound Interest</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.compoundInterestLabel')}</span>
                                         <span className="font-semibold text-sm text-brand-green">{formatINR(r.compoundInterest)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-xs">Village Rate (per ₹100/month)</span>
+                                        <span className="text-muted-foreground text-xs">{t('si.villageRate')}</span>
                                         <span className="font-semibold text-sm text-amber-400">₹{(annualRate / 12).toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-border">
-                                        <span className="text-slate-900 dark:text-foreground text-xs font-bold">Avg Monthly Payment</span>
+                                        <span className="text-slate-900 dark:text-foreground text-xs font-bold">{t('si.avgMonthlyPayment')}</span>
                                         <span className="font-bold text-sm text-brand-green">{formatINR(r.monthlyEMI)}</span>
                                     </div>
-                                    <p className="text-muted-foreground text-[10px] leading-tight">Total ÷ tenure. For true reducing-balance EMI use the Loan EMI calculator.</p>
+                                    <p className="text-muted-foreground text-[10px] leading-tight">{t('si.avgPaymentNote')}</p>
                                 </div>
                             </>
                         );
@@ -580,21 +582,21 @@ export default function SimpleInterestCalculator() {
                     >
                         <div className="px-4 py-3 border-b border-slate-200 dark:border-border flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-bold text-foreground">{FREQ_LABEL[payFreq]} Interest Schedule</p>
-                                <p className="text-[10px] text-muted-foreground">{periodRows.length} periods · {tenure} months total</p>
+                                <p className="text-xs font-bold text-foreground">{t(`si.freq${FREQ_LABEL[payFreq].replace('-', '')}`)} {t('si.interestSchedule')}</p>
+                                <p className="text-[10px] text-muted-foreground">{periodRows.length} {t('si.periods')} · {tenure} {t('si.monthsTotal')}</p>
                             </div>
                             <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${mode === 'flat' ? 'bg-amber-500/10 text-amber-600' : 'bg-brand-blue/10 text-brand-blue'}`}>
-                                {mode === 'flat' ? 'FLAT' : 'SI'}
+                                {mode === 'flat' ? t('si.flat') : t('si.si')}
                             </span>
                         </div>
                         <div className="overflow-x-auto max-h-64 overflow-y-auto relative border-t border-slate-200 dark:border-slate-700 shadow-inner dark:shadow-none">
                             <table className="w-full text-xs">
                                 <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10 shadow-sm">
                                     <tr className="border-b border-slate-200 dark:border-slate-700">
-                                        <th className="py-2 px-3 text-left font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">Period</th>
-                                        <th className="py-2 px-3 text-left font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">Due Date</th>
-                                        <th className="py-2 px-3 text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">Interest</th>
-                                        <th className="py-2 px-3 text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">Cumulative</th>
+                                        <th className="py-2 px-3 text-left font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">{t('si.period')}</th>
+                                        <th className="py-2 px-3 text-left font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">{t('si.dueDate')}</th>
+                                        <th className="py-2 px-3 text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">{t('si.interest')}</th>
+                                        <th className="py-2 px-3 text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase">{t('si.cumulative')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -618,13 +620,13 @@ export default function SimpleInterestCalculator() {
                         onClick={handleDownloadPDF}
                         className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm"
                     >
-                        📄 Download PDF
+                        📄 {t('si.downloadPDF')}
                     </button>
                     <button
                         onClick={handleDownloadExcel}
                         className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-green/10 border-2 border-brand-green/40 text-brand-green font-bold text-sm"
                     >
-                        📊 Download Excel
+                        📊 {t('si.downloadExcel')}
                     </button>
                 </div>
 
@@ -632,7 +634,7 @@ export default function SimpleInterestCalculator() {
                 <CalculatorInfoModal
                     isOpen={showInfo}
                     onClose={() => setShowInfo(false)}
-                    calculatorTitle="Simple Interest"
+                    calculatorTitle={t('si.simpleInterest')}
                 />
             </div>
         </div>

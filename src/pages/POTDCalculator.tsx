@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
@@ -23,6 +24,7 @@ const TD_RATES: Record<string, number> = {
 };
 
 export default function POTDCalculator() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
 
@@ -214,8 +216,8 @@ export default function POTDCalculator() {
                             <ArrowLeft size={18} className="text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-foreground">Post Office TD</h1>
-                            <p className="text-muted-foreground text-xs">Time Deposit (Fixed Deposit)</p>
+                            <h1 className="text-lg font-bold text-foreground">{t('potd.title')}</h1>
+                            <p className="text-muted-foreground text-xs">{t('potd.subtitle')}</p>
                         </div>
                     </div>
                     <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-blue">
@@ -228,7 +230,7 @@ export default function POTDCalculator() {
             <div className="px-4 pt-5 pb-28 space-y-4">
                 <div className="space-y-3">
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-2 block">Tenure</label>
+                        <label className="text-muted-foreground text-xs font-medium mb-2 block">{t('potd.tenure')}</label>
                         <div className="grid grid-cols-4 gap-2">
                             {(['1', '2', '3', '5'] as const).map(y => (
                                 <button
@@ -236,18 +238,18 @@ export default function POTDCalculator() {
                                     onClick={() => setYears(y)}
                                     className={`py-2 rounded-xl font-semibold text-sm transition-colors border flex flex-col items-center gap-0.5 ${years === y ? 'bg-brand-blue text-white border-brand-blue' : 'bg-card text-foreground border-border hover:border-brand-blue/50'}`}
                                 >
-                                    <span>{y} Year</span>
+                                    <span>{y} {t('potd.year')}</span>
                                     <span className={`text-[10px] font-medium ${years === y ? 'text-blue-100' : 'text-muted-foreground'}`}>{TD_RATES[y]}%</span>
                                 </button>
                             ))}
                         </div>
                         {years === '5' && (
-                            <p className="text-brand-green text-[10px] mt-1.5 font-semibold">✓ 5-Year TD is eligible for Sec 80C / Sec 123 (ITA 2025) deduction</p>
+                            <p className="text-brand-green text-[10px] mt-1.5 font-semibold">{t('potd.sec80CEligible')}</p>
                         )}
                     </div>
 
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Total Investment</label>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('potd.totalInvestment')}</label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                             <input type="number" value={investment} onChange={e => setInvestment(Number(e.target.value) || 0)} className={inputCls + " pl-8"} />
@@ -256,34 +258,34 @@ export default function POTDCalculator() {
                 </div>
 
                 <div className="rounded-2xl bg-gradient-to-br from-brand-blue/20 to-blue-500/10 border border-brand-blue/30 p-5">
-                    <p className="text-muted-foreground text-xs font-medium mb-1">Maturity Amount</p>
+                    <p className="text-muted-foreground text-xs font-medium mb-1">{t('potd.maturityAmount')}</p>
                     <p className="text-foreground font-bold text-3xl">{fmtINR(result.maturity)}</p>
                     <div className="mt-3 grid grid-cols-3 gap-3">
                         <div>
-                            <p className="text-muted-foreground text-[10px]">Invested</p>
+                            <p className="text-muted-foreground text-[10px]">{t('potd.invested')}</p>
                             <p className="text-foreground font-bold text-sm">{fmtINR(investment)}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px]">Total Interest</p>
+                            <p className="text-muted-foreground text-[10px]">{t('potd.totalInterest')}</p>
                             <p className="text-brand-green font-bold text-sm">+{fmtINR(result.totalInterest)}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px]">Effective Yield</p>
+                            <p className="text-muted-foreground text-[10px]">{t('potd.effectiveYield')}</p>
                             <p className="text-brand-blue font-bold text-sm">{result.effectiveYield.toFixed(2)}%</p>
                         </div>
                     </div>
-                    <p className="text-brand-blue/70 text-[10px] font-medium mt-3">Compounded Quarterly as per Post Office TD rules</p>
+                    <p className="text-brand-blue/70 text-[10px] font-medium mt-3">{t('potd.compoundedQuarterly')}</p>
                 </div>
 
                 <div className="rounded-2xl border border-border bg-card overflow-hidden">
                     <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-4 bg-muted/30">
                         <div className="flex items-center gap-2">
                             <BrainCircuit size={18} className="text-brand-blue" />
-                            <span className="text-foreground font-semibold text-sm">Decision Analytics</span>
+                            <span className="text-foreground font-semibold text-sm">{t('potd.decisionAnalytics')}</span>
                         </div>
                         {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
-                    
+
                     <AnimatePresence initial={false}>
                         {showAdvanced && (
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
@@ -291,10 +293,10 @@ export default function POTDCalculator() {
 
                                     <div className="flex items-center justify-end gap-2 border-b border-border pb-4">
                                         <button onClick={handlePDFExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-blue/10 text-brand-blue text-xs font-medium hover:bg-brand-blue/20 transition-colors">
-                                            <FileText size={14} /> Export PDF
+                                            <FileText size={14} /> {t('potd.exportPDF')}
                                         </button>
                                         <button onClick={handleExcelExport} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-green/10 text-brand-green text-xs font-medium hover:bg-brand-green/20 transition-colors">
-                                            <Download size={14} /> Export Excel
+                                            <Download size={14} /> {t('potd.exportExcel')}
                                         </button>
                                     </div>
 
@@ -303,7 +305,7 @@ export default function POTDCalculator() {
                                         <div className="flex items-center gap-2 mb-1.5">
                                             <ShieldCheck size={16} className={recommendation.status === 'success' ? 'text-brand-green' : recommendation.status === 'warning' ? 'text-orange-500' : 'text-brand-blue'} />
                                             <h3 className={`text-sm font-bold ${recommendation.status === 'success' ? 'text-brand-green' : recommendation.status === 'warning' ? 'text-orange-600 dark:text-orange-400' : 'text-brand-blue'}`}>
-                                                FINAL RECOMMENDATION
+                                                {t('potd.finalRecommendation')}
                                             </h3>
                                         </div>
                                         <p className="text-foreground font-semibold text-sm mb-1">{recommendation.title}</p>
@@ -313,18 +315,18 @@ export default function POTDCalculator() {
                                     {/* 2. Smart Insights */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <Activity size={14} /> Smart Insights
+                                            <Activity size={14} /> {t('potd.smartInsights')}
                                         </h3>
                                         <div className="grid gap-2">
                                             {result.is5Year ? (
                                                 <div className="p-3 rounded-xl bg-brand-green/10 border border-brand-green/20 flex gap-3">
                                                     <Info size={16} className="text-brand-green shrink-0 mt-0.5" />
-                                                    <p className="text-[11px] font-medium text-brand-green">Selected 5-Year tenure locks you in but grants Sec 80C / 123 deductions.</p>
+                                                    <p className="text-[11px] font-medium text-brand-green">{t('potd.fiveYearTenureBenefit')}</p>
                                                 </div>
                                             ) : (
                                                 <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex gap-3">
                                                     <Info size={16} className="text-orange-500 shrink-0 mt-0.5" />
-                                                    <p className="text-[11px] font-medium text-foreground">Current {years}Y tenure has no Sec 80C / 123 tax benefit. Upgrade to 5Y if you need to save tax.</p>
+                                                    <p className="text-[11px] font-medium text-foreground">{t('potd.noTaxBenefitTenure', { years })}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -333,7 +335,7 @@ export default function POTDCalculator() {
                                     {/* 3. Tax Analysis */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <BarChart2 size={14} /> Taxation & Net Returns
+                                            <BarChart2 size={14} /> {t('potd.taxationNetReturns')}
                                         </h3>
                                         
                                         <TaxInputGroup 
@@ -343,25 +345,25 @@ export default function POTDCalculator() {
 
                                         <div className="space-y-2 bg-background p-3 rounded-xl border border-border mt-3">
                                             <div className="flex justify-between items-center py-1">
-                                                <span className="text-muted-foreground text-[11px]">Gross Maturity</span>
+                                                <span className="text-muted-foreground text-[11px]">{t('potd.grossMaturity')}</span>
                                                 <span className="text-foreground font-medium text-[11px]">{fmtINR(result.maturity)}</span>
                                             </div>
                                             <div className="flex justify-between items-center py-1">
-                                                <span className="text-muted-foreground text-[11px]">Est. Tax on Interest (Total)</span>
+                                                <span className="text-muted-foreground text-[11px]">{t('potd.estTaxOnInterest')}</span>
                                                 <span className="text-red-500 font-bold text-[11px] font-mono">-{fmtINR(result.taxOnInterest)}</span>
                                             </div>
                                             {result.taxBenefit80C > 0 && (
                                                 <div className="flex justify-between items-center py-1">
-                                                    <span className="text-muted-foreground text-[11px]">Upfront Sec 80C/123 Tax Saving</span>
+                                                    <span className="text-muted-foreground text-[11px]">{t('potd.upfrontSec80CTaxSaving')}</span>
                                                     <span className="text-brand-green font-bold text-[11px] font-mono">+{fmtINR(result.taxBenefit80C)}</span>
                                                 </div>
                                             )}
                                             <div className="flex justify-between items-center py-1 pt-2 border-t border-border">
-                                                <span className="text-foreground font-semibold text-[11px]">Net Post-Tax Maturity</span>
+                                                <span className="text-foreground font-semibold text-[11px]">{t('potd.netPostTaxMaturity')}</span>
                                                 <span className="text-brand-green font-bold text-[12px]">{fmtINR(result.postTaxMaturity)}</span>
                                             </div>
                                             <div className="flex justify-between items-center py-1 bg-muted/50 px-2 rounded-lg mt-1">
-                                                <span className="text-foreground font-semibold text-[11px]">Post-Tax CAGR</span>
+                                                <span className="text-foreground font-semibold text-[11px]">{t('potd.postTaxCAGR')}</span>
                                                 <span className="text-brand-blue font-bold text-[12px]">{result.postTaxCAGR.toFixed(2)}%</span>
                                             </div>
                                         </div>
@@ -370,11 +372,11 @@ export default function POTDCalculator() {
                                     {/* 4. Alternative: Bank FD */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <RotateCw size={14} /> Bank FD Comparison
+                                            <RotateCw size={14} /> {t('potd.bankFDComparison')}
                                         </h3>
                                         <div className="bg-muted border border-border rounded-xl p-3">
                                             <div className="flex items-center justify-between mb-3">
-                                                <span className="text-muted-foreground text-[10px] font-medium">Bank FD Rate ({years}Y)</span>
+                                                <span className="text-muted-foreground text-[10px] font-medium">{t('potd.bankFDRate', { years })}</span>
                                                 <div className="relative">
                                                     <input type="number" value={fdRate} step={0.1} onChange={e => setFdRate(Number(e.target.value) || 0)} className="w-16 bg-background border border-border rounded-md px-2 py-1 text-foreground text-xs font-semibold focus:outline-none focus:border-brand-blue pr-5" />
                                                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px]">%</span>
@@ -382,11 +384,11 @@ export default function POTDCalculator() {
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div>
-                                                    <p className="text-muted-foreground text-[10px] mb-1">POTD Post-Tax</p>
+                                                    <p className="text-muted-foreground text-[10px] mb-1">{t('potd.potdPostTax')}</p>
                                                     <p className="text-foreground font-bold text-sm">{fmtINR(result.postTaxMaturity)}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-muted-foreground text-[10px] mb-1">Bank FD Post-Tax</p>
+                                                    <p className="text-muted-foreground text-[10px] mb-1">{t('potd.bankFDPostTax')}</p>
                                                     <p className={`font-bold text-sm ${result.fdPostTaxMaturity > result.postTaxMaturity ? 'text-brand-green' : 'text-foreground'}`}>{fmtINR(result.fdPostTaxMaturity)}</p>
                                                 </div>
                                             </div>
@@ -396,11 +398,11 @@ export default function POTDCalculator() {
                                     {/* 5. Tenures Comparison */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <Target size={14} /> Tenures at a Glance
+                                            <Target size={14} /> {t('potd.tenuresAtGlance')}
                                         </h3>
                                         <div className="rounded-xl overflow-hidden border border-border">
                                             <div className="grid grid-cols-4 bg-muted px-2 py-2">
-                                                {['Tenure', 'Rate', 'Interest', 'Maturity'].map(h => (
+                                                {[t('potd.tenureCol'), t('potd.rateCol'), t('potd.interestCol'), t('potd.maturityCol')].map(h => (
                                                     <p key={h} className="text-muted-foreground text-[9px] font-bold uppercase text-center">{h}</p>
                                                 ))}
                                             </div>
@@ -421,15 +423,15 @@ export default function POTDCalculator() {
                                     {/* 6. Inflation impact */}
                                     <div className="space-y-3 pt-2">
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                                            <TrendingUp size={14} /> Inflation Impact
+                                            <TrendingUp size={14} /> {t('potd.inflationImpact')}
                                         </h3>
                                         <div className="bg-muted border border-border rounded-xl p-3 flex justify-between items-center">
                                             <div>
-                                                <label className="text-muted-foreground text-[10px] font-medium block mb-1">Inflation Rate (%)</label>
+                                                <label className="text-muted-foreground text-[10px] font-medium block mb-1">{t('potd.inflationRate')}</label>
                                                 <input type="number" value={inflation} onChange={e => setInflation(Number(e.target.value) || 0)} className="w-20 bg-background border border-border rounded-md px-2 py-1 text-foreground text-xs font-semibold focus:outline-none focus:border-brand-blue" />
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-muted-foreground text-[10px] mb-1">Purchasing Power</p>
+                                                <p className="text-muted-foreground text-[10px] mb-1">{t('potd.purchasingPower')}</p>
                                                 <p className="text-foreground font-bold text-sm">{fmtINR(result.realMaturity)}</p>
                                             </div>
                                         </div>

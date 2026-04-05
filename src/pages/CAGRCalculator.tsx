@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, Target, BarChart2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
@@ -11,6 +12,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
 export default function CAGRCalculator() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
 
@@ -188,8 +190,8 @@ export default function CAGRCalculator() {
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-foreground leading-tight">CAGR Calculator</h1>
-                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Compound Annual Growth</p>
+                        <h1 className="text-lg font-bold text-foreground leading-tight">{t('cagr.title')}</h1>
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">{t('cagr.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -199,14 +201,14 @@ export default function CAGRCalculator() {
                 <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Initial Value</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('cagr.initialValue')}</label>
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                                 <input type="number" value={initial} onChange={e => setInitial(Number(e.target.value)||0)} className={inputCls + " pl-7 bg-muted/30 focus:bg-card"} />
                             </div>
                         </div>
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Final Value</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('cagr.finalValue')}</label>
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                                 <input type="number" value={final} onChange={e => setFinal(Number(e.target.value)||0)} className={inputCls + " pl-7 bg-brand-purple/5 focus:bg-card"} />
@@ -214,7 +216,7 @@ export default function CAGRCalculator() {
                         </div>
                     </div>
                     <div>
-                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Time Period (Years)</label>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('cagr.timePeriodYears')}</label>
                         <input type="number" step="0.5" value={years} onChange={e => setYears(Number(e.target.value)||0)} className={inputCls} />
                     </div>
                 </div>
@@ -222,7 +224,7 @@ export default function CAGRCalculator() {
                 {/* 2. RESULTS HERO */}
                 <motion.div layout className="p-6 rounded-3xl bg-card border border-border shadow-sm">
                     <div className="flex justify-between items-start mb-4">
-                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">Effective CAGR</p>
+                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">{t('cagr.effectiveCAGR')}</p>
                         <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${result.qualityBg} ${result.qualityColor}`}>
                             {result.qualityTag}
                         </div>
@@ -234,11 +236,11 @@ export default function CAGRCalculator() {
                     
                     <div className="grid grid-cols-2 gap-3 text-center">
                         <div className="p-3.5 rounded-2xl bg-background border border-border/50">
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-0.5">Absolute Gain</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-0.5">{t('cagr.absoluteGain')}</p>
                             <p className="text-foreground font-black text-sm">+{fmtINR(result.validFinal - result.validInitial)}</p>
                         </div>
                         <div className="p-3.5 rounded-2xl bg-brand-purple/10 border border-brand-purple/20">
-                            <p className="text-brand-purple/80 text-[10px] uppercase font-bold mb-0.5">Absolute Return</p>
+                            <p className="text-brand-purple/80 text-[10px] uppercase font-bold mb-0.5">{t('cagr.absoluteReturn')}</p>
                             <p className="text-brand-purple font-black text-sm">{result.absReturn.toFixed(1)}%</p>
                         </div>
                     </div>
@@ -248,7 +250,7 @@ export default function CAGRCalculator() {
                 <div className={`p-4 rounded-2xl border flex items-start gap-3 ${insight.type === 'warn' ? 'bg-amber-500/10 border-amber-500/30' : insight.type === 'success' ? 'bg-brand-green/10 border-brand-green/30' : 'bg-brand-purple/10 border-brand-purple/30'}`}>
                     <BrainCircuit size={18} className={`shrink-0 mt-0.5 ${insight.type === 'warn' ? 'text-amber-500' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-purple'}`} />
                     <div>
-                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-purple'}`}>Smart Insight</p>
+                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-purple'}`}>{t('cagr.smartInsight')}</p>
                         <p className={`text-xs font-medium leading-relaxed ${insight.type === 'warn' ? 'text-amber-700 dark:text-amber-400' : insight.type === 'success' ? 'text-emerald-700 dark:text-emerald-400' : 'text-purple-700 dark:text-purple-300'}`}>{insight.msg}</p>
                     </div>
                 </div>
@@ -256,7 +258,7 @@ export default function CAGRCalculator() {
                 {/* SAVE BUTTON */}
                 <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-purple text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-purple/20">
                     {saved ? <Check size={18} /> : <Save size={18} />}
-                    {saved ? 'Calculation Saved!' : 'Save Calculation'}
+                    {saved ? t('cagr.calculationSaved') : t('cagr.saveCalculation')}
                 </button>
 
 
@@ -265,7 +267,7 @@ export default function CAGRCalculator() {
                     <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-brand-purple/10 rounded-lg text-brand-purple"><Activity size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Advanced Details</span>
+                            <span className="text-foreground font-bold text-sm">{t('cagr.advancedDetails')}</span>
                         </div>
                         {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -278,21 +280,21 @@ export default function CAGRCalculator() {
 
                                     {/* Absolute vs CAGR */}
                                     <div className="p-4 rounded-2xl border border-border bg-gradient-to-br from-background to-muted text-center">
-                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-2">Absolute Return vs CAGR</p>
+                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-2">{t('cagr.absoluteReturnVsCAGR')}</p>
                                         <div className="grid grid-cols-2 gap-2 mb-3">
                                             <div>
                                                  <p className="font-black text-xl text-foreground">{result.absReturn.toFixed(1)}%</p>
-                                                 <p className="text-[9px] text-muted-foreground leading-tight px-2 mt-1">Total growth over the entire period</p>
+                                                 <p className="text-[9px] text-muted-foreground leading-tight px-2 mt-1">{t('cagr.totalGrowthOverPeriod')}</p>
                                             </div>
                                             <div>
                                                  <p className="font-black text-xl text-brand-purple">{result.cagr.toFixed(1)}%</p>
-                                                 <p className="text-[9px] text-muted-foreground leading-tight px-2 mt-1">Smoothed equivalent annual growth</p>
+                                                 <p className="text-[9px] text-muted-foreground leading-tight px-2 mt-1">{t('cagr.smoothedAnnualGrowth')}</p>
                                             </div>
                                         </div>
                                         <div className="bg-card p-2 rounded-xl border border-border/50 text-left flex gap-2">
                                             <ShieldAlert size={14} className="text-amber-500 shrink-0 mt-0.5"/>
                                             <p className="text-[10px] text-muted-foreground leading-relaxed">
-                                                <span className="font-bold text-foreground">Why CAGR?</span> Absolute returns look deceptively large over long periods. CAGR gives the true year-over-year performance insight comparable to FD or RD rates.
+                                                <span className="font-bold text-foreground">{t('cagr.whyCAGR')}</span> {t('cagr.whyCAGRDescription')}
                                             </p>
                                         </div>
                                     </div>
@@ -300,8 +302,8 @@ export default function CAGRCalculator() {
                                     {/* Doubling Time */}
                                     <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center flex items-center justify-between">
                                         <div className="text-left">
-                                            <p className="text-amber-600 dark:text-amber-400 text-[10px] uppercase font-bold mb-0.5">Rule of 72</p>
-                                            <p className="text-amber-700 dark:text-amber-300 text-xs font-medium">Estimated Doubling Time</p>
+                                            <p className="text-amber-600 dark:text-amber-400 text-[10px] uppercase font-bold mb-0.5">{t('cagr.ruleOf72')}</p>
+                                            <p className="text-amber-700 dark:text-amber-300 text-xs font-medium">{t('cagr.estimatedDoublingTime')}</p>
                                         </div>
                                         <p className="font-black text-xl text-amber-500">
                                             {result.doubleTime > 0 ? `${result.doubleTime.toFixed(1)}y` : 'N/A'}
@@ -320,7 +322,7 @@ export default function CAGRCalculator() {
                     <button onClick={() => setShowGoal(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-emerald-500/10 rounded-lg text-emerald-500"><Target size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Target Goal Matcher</span>
+                            <span className="text-foreground font-bold text-sm">{t('cagr.targetGoalMatcher')}</span>
                         </div>
                         {showGoal ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -330,9 +332,9 @@ export default function CAGRCalculator() {
                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                                 <div className="px-5 pb-5 space-y-4">
                                     <div className="h-px bg-border w-full -mt-2" />
-                                    
+
                                     <div>
-                                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">What is your Target Amount?</label>
+                                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('cagr.whatIsYourTargetAmount')}</label>
                                         <div className="relative">
                                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                                             <input type="number" value={targetAmount} onChange={e => setTargetAmount(Number(e.target.value)||0)} className={inputCls + " pl-7 border-emerald-500/30"} />
@@ -342,22 +344,22 @@ export default function CAGRCalculator() {
                                     <div className={`p-4 rounded-2xl border ${goalData.achievable ? 'bg-brand-green/10 border-brand-green/30' : 'bg-background border-border'}`}>
                                         {goalData.achievable ? (
                                             <div className="text-center py-2">
-                                                <p className="text-brand-green tracking-tight font-black text-lg mb-1">Goal Achieved! 🎉</p>
-                                                <p className="text-brand-green/80 text-[11px] font-bold">Your final value ({fmtINR(result.validFinal)}) exceeds target.</p>
+                                                <p className="text-brand-green tracking-tight font-black text-lg mb-1">{t('cagr.goalAchieved')}</p>
+                                                <p className="text-brand-green/80 text-[11px] font-bold">{t('cagr.finalValueExceedsTarget', { value: fmtINR(result.validFinal) })}</p>
                                             </div>
                                         ) : (
                                             <div className="space-y-3">
-                                                <p className="text-amber-500 text-[10px] font-black uppercase tracking-wider text-center">Shortfall: {fmtINR(goalData.gap)}</p>
+                                                <p className="text-amber-500 text-[10px] font-black uppercase tracking-wider text-center">{t('cagr.shortfall')}: {fmtINR(goalData.gap)}</p>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     <div className="bg-card border border-border/50 p-2.5 rounded-xl text-center">
-                                                        <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Required Rate</p>
-                                                        <p className="text-foreground font-black text-sm">{goalData.requiredRate.toFixed(1)} <span className="text-[10px] font-bold">% p.a.</span></p>
-                                                        <p className="text-muted-foreground text-[8px] leading-tight mt-0.5">To reach in {result.validYears}y</p>
+                                                        <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">{t('cagr.requiredRate')}</p>
+                                                        <p className="text-foreground font-black text-sm">{goalData.requiredRate.toFixed(1)} <span className="text-[10px] font-bold">{t('cagr.percentPA')}</span></p>
+                                                        <p className="text-muted-foreground text-[8px] leading-tight mt-0.5">{t('cagr.toReachIn', { years: result.validYears })}</p>
                                                     </div>
                                                     <div className="bg-card border border-border/50 p-2.5 rounded-xl text-center">
-                                                        <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Required Time</p>
-                                                        <p className="text-foreground font-black text-sm">{goalData.requiredYears.toFixed(1)} <span className="text-[10px] font-bold">yrs</span></p>
-                                                        <p className="text-muted-foreground text-[8px] leading-tight mt-0.5">To reach at {result.cagr.toFixed(1)}%</p>
+                                                        <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">{t('cagr.requiredTime')}</p>
+                                                        <p className="text-foreground font-black text-sm">{goalData.requiredYears.toFixed(1)} <span className="text-[10px] font-bold">{t('cagr.yrs')}</span></p>
+                                                        <p className="text-muted-foreground text-[8px] leading-tight mt-0.5">{t('cagr.toReachAt', { rate: result.cagr.toFixed(1) })}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -374,7 +376,7 @@ export default function CAGRCalculator() {
                     <button onClick={() => setShowTable(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-blue-500/10 rounded-lg text-blue-500"><BarChart2 size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Theoretical Growth Path</span>
+                            <span className="text-foreground font-bold text-sm">{t('cagr.theoreticalGrowthPath')}</span>
                         </div>
                         {showTable ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -385,12 +387,12 @@ export default function CAGRCalculator() {
                                 <div className="px-5 pb-5 pt-1">
                                     <div className="rounded-2xl overflow-hidden border border-border mt-2">
                                         <div className="grid grid-cols-3 bg-muted px-3 py-2.5">
-                                            {['Year', 'Est. Value', 'Growth %'].map(h => (<p key={h} className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">{h}</p>))}
+                                            {[t('cagr.year'), t('cagr.estValue'), t('cagr.growthPercent')].map(h => (<p key={h} className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">{h}</p>))}
                                         </div>
                                         <div className="divide-y divide-border/50">
                                             {result.schedule.slice((page - 1) * 10, page * 10).map((row) => (
                                                 <div key={row.year} className="grid grid-cols-3 px-3 py-3 bg-background items-center">
-                                                    <p className="text-foreground text-xs font-bold">Yr {row.year}</p>
+                                                    <p className="text-foreground text-xs font-bold">{t('cagr.yr')} {row.year}</p>
                                                     <p className="text-foreground text-xs font-bold font-mono">{fmtINR(row.value)}</p>
                                                     <p className="text-brand-purple text-xs font-bold font-mono">{row.growthPct.toFixed(2)}%</p>
                                                 </div>
@@ -403,7 +405,7 @@ export default function CAGRCalculator() {
                                                 <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
                                                     <ChevronLeft size={14} />
                                                 </button>
-                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Page {page} of {Math.ceil(result.schedule.length / 10)}</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('cagr.page')} {page} {t('cagr.of')} {Math.ceil(result.schedule.length / 10)}</p>
                                                 <button disabled={page === Math.ceil(result.schedule.length / 10)} onClick={() => setPage(p => p + 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
                                                     <ChevronRight size={14} />
                                                 </button>
@@ -422,13 +424,13 @@ export default function CAGRCalculator() {
                         onClick={handleDownloadPDF}
                         className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-colors hover:bg-brand-blue/10 active:scale-95"
                     >
-                        <FileText size={20} /> Export Report
+                        <FileText size={20} /> {t('cagr.exportReport')}
                     </button>
                     <button
                         onClick={handleDownloadExcel}
                         className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-green/5 border border-brand-green/20 text-brand-green font-bold text-xs transition-colors hover:bg-brand-green/10 active:scale-95"
                     >
-                        <FileText size={20} /> Excel Data
+                        <FileText size={20} /> {t('cagr.excelData')}
                     </button>
                 </div>
             </div>

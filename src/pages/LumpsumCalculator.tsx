@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Info, Save, Check, Target, TrendingUp, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
@@ -11,6 +12,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
 export default function LumpsumCalculator() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved } = useCalculatorStore();
 
@@ -189,8 +191,8 @@ export default function LumpsumCalculator() {
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div>
-                        <h1 className="text-lg font-bold text-foreground leading-tight">Lumpsum Calculator</h1>
-                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">Smart Wealth Analysis</p>
+                        <h1 className="text-lg font-bold text-foreground leading-tight">{t('lumpsum.title')}</h1>
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider">{t('lumpsum.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -199,7 +201,7 @@ export default function LumpsumCalculator() {
                 {/* 1. CORE INPUTS */}
                 <div className="space-y-4">
                     <div>
-                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Total Investment</label>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('lumpsum.totalInvestment')}</label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                             <input type="number" value={principal} onChange={e => setPrincipal(Number(e.target.value)||0)} className={inputCls + " pl-7"} />
@@ -207,11 +209,11 @@ export default function LumpsumCalculator() {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Return Rate (%)</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('lumpsum.returnRate')}</label>
                             <input type="number" step="0.1" value={rate} onChange={e => setRate(Number(e.target.value)||0)} className={inputCls} />
                         </div>
                         <div>
-                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">Time (Years)</label>
+                            <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('lumpsum.timeYears')}</label>
                             <input type="number" value={years} onChange={e => setYears(Number(e.target.value)||0)} className={inputCls} />
                         </div>
                     </div>
@@ -220,9 +222,9 @@ export default function LumpsumCalculator() {
                 {/* 2. RESULTS HERO */}
                 <motion.div layout className="p-6 rounded-3xl bg-card border border-border shadow-sm">
                     <div className="flex justify-between items-start mb-4">
-                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">Maturity Value</p>
+                        <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">{t('lumpsum.maturityValue')}</p>
                         <div className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${result.riskBg} ${result.riskColor}`}>
-                            {result.riskLevel} Risk
+                            {result.riskLevel} {t('lumpsum.risk')}
                         </div>
                     </div>
                     
@@ -232,11 +234,11 @@ export default function LumpsumCalculator() {
                     
                     <div className="grid grid-cols-2 gap-3">
                         <div className="p-3.5 rounded-2xl bg-background border border-border/50">
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-0.5">Invested</p>
+                            <p className="text-muted-foreground text-[10px] uppercase font-bold mb-0.5">{t('lumpsum.invested')}</p>
                             <p className="text-foreground font-black text-sm">{fmtINR(principal)}</p>
                         </div>
                         <div className="p-3.5 rounded-2xl bg-brand-green/10 border border-brand-green/20">
-                            <p className="text-brand-green/80 text-[10px] uppercase font-bold mb-0.5">Wealth Gained</p>
+                            <p className="text-brand-green/80 text-[10px] uppercase font-bold mb-0.5">{t('lumpsum.wealthGained')}</p>
                             <p className="text-brand-green font-black text-sm">{fmtINR(result.fv - principal)}</p>
                         </div>
                     </div>
@@ -246,7 +248,7 @@ export default function LumpsumCalculator() {
                 <div className={`p-4 rounded-2xl border flex items-start gap-3 ${insight.type === 'warn' ? 'bg-amber-500/10 border-amber-500/30' : insight.type === 'success' ? 'bg-brand-green/10 border-brand-green/30' : 'bg-brand-blue/10 border-brand-blue/30'}`}>
                     <BrainCircuit size={18} className={`shrink-0 mt-0.5 ${insight.type === 'warn' ? 'text-amber-500' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`} />
                     <div>
-                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`}>Smart Insight</p>
+                        <p className={`text-[10px] font-black uppercase tracking-wider mb-1 ${insight.type === 'warn' ? 'text-amber-600' : insight.type === 'success' ? 'text-brand-green' : 'text-brand-blue'}`}>{t('lumpsum.smartInsight')}</p>
                         <p className={`text-xs font-medium leading-relaxed ${insight.type === 'warn' ? 'text-amber-700 dark:text-amber-400' : insight.type === 'success' ? 'text-emerald-700 dark:text-emerald-400' : 'text-blue-700 dark:text-blue-300'}`}>{insight.msg}</p>
                     </div>
                 </div>
@@ -254,7 +256,7 @@ export default function LumpsumCalculator() {
                 {/* SAVE BUTTON */}
                 <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-blue text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
                     {saved ? <Check size={18} /> : <Save size={18} />}
-                    {saved ? 'Calculation Saved!' : 'Save Calculation'}
+                    {saved ? t('lumpsum.calculationSaved') : t('lumpsum.saveCalculation')}
                 </button>
 
 
@@ -263,7 +265,7 @@ export default function LumpsumCalculator() {
                     <button onClick={() => setShowAdvanced(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-brand-blue/10 rounded-lg text-brand-blue"><Activity size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Advanced Details</span>
+                            <span className="text-foreground font-bold text-sm">{t('lumpsum.advancedDetails')}</span>
                         </div>
                         {showAdvanced ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -277,23 +279,23 @@ export default function LumpsumCalculator() {
                                     {/* CAGR & Multiplier */}
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="p-4 rounded-2xl bg-background border border-border text-center">
-                                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-0.5">CAGR</p>
+                                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-0.5">{t('lumpsum.cagr')}</p>
                                             <p className="text-brand-blue font-black text-xl mb-1">{result.cagr.toFixed(2)}%</p>
-                                            <p className="text-muted-foreground text-[9px] leading-tight px-1">Effective annual growth rate</p>
+                                            <p className="text-muted-foreground text-[9px] leading-tight px-1">{t('lumpsum.effectiveAnnualGrowthRate')}</p>
                                         </div>
                                         <div className="p-4 rounded-2xl bg-background border border-border text-center">
-                                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-0.5">Wealth Multiplier</p>
+                                            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-0.5">{t('lumpsum.wealthMultiplier')}</p>
                                             <p className="text-brand-green font-black text-xl mb-1">{result.wealthRatio.toFixed(1)}x</p>
-                                            <p className="text-muted-foreground text-[9px] leading-tight px-1">Your money grew {result.wealthRatio.toFixed(1)} times</p>
+                                            <p className="text-muted-foreground text-[9px] leading-tight px-1">{t('lumpsum.moneyGrewTimes', { times: result.wealthRatio.toFixed(1) })}</p>
                                         </div>
                                     </div>
 
                                     {/* Inflation Adjusted Return */}
                                     <div className="bg-gradient-to-br from-background to-muted p-4 rounded-2xl border border-border space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <p className="text-foreground text-xs font-bold flex items-center gap-1.5"><ShieldAlert size={14} className="text-amber-500"/> Inflation Impact</p>
+                                            <p className="text-foreground text-xs font-bold flex items-center gap-1.5"><ShieldAlert size={14} className="text-amber-500"/> {t('lumpsum.inflationImpact')}</p>
                                             <div className="flex items-center gap-1.5 bg-card border border-border px-2 py-1 rounded-lg">
-                                                <span className="text-[10px] text-muted-foreground font-bold uppercase">Rate</span>
+                                                <span className="text-[10px] text-muted-foreground font-bold uppercase">{t('lumpsum.rate')}</span>
                                                 <input type="number" className="w-8 bg-transparent text-xs font-bold text-amber-500 outline-none p-0 text-center" value={inflation} onChange={e => setInflation(Number(e.target.value)||0)} />
                                                 <span className="text-[10px] text-muted-foreground font-bold">%</span>
                                             </div>
@@ -301,18 +303,18 @@ export default function LumpsumCalculator() {
                                         
                                         <div className="p-3 rounded-xl bg-card border border-border/50 grid grid-cols-2 gap-2 mt-2">
                                             <div>
-                                                <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Real Return Rate</p>
+                                                <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">{t('lumpsum.realReturnRate')}</p>
                                                 <p className={`font-black text-sm ${result.realRate > 0 ? 'text-brand-green' : 'text-red-500'}`}>{result.realRate.toFixed(2)}%</p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Real Purchasing Power</p>
+                                                <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">{t('lumpsum.realPurchasingPower')}</p>
                                                 <p className="font-bold text-sm text-foreground">{fmtINR(result.realValue)}</p>
                                             </div>
                                         </div>
                                         
                                         {result.wealthErosion > 0 && (
                                             <p className="text-muted-foreground text-[10px] text-center italic mt-1 pb-1">
-                                                Wealth erosion due to inflation: <span className="text-amber-500 font-bold">-{fmtINR(result.wealthErosion)}</span>
+                                                {t('lumpsum.wealthErosionDueToInflation')}: <span className="text-amber-500 font-bold">-{fmtINR(result.wealthErosion)}</span>
                                             </p>
                                         )}
                                     </div>
@@ -329,7 +331,7 @@ export default function LumpsumCalculator() {
                     <button onClick={() => setShowGoal(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-emerald-500/10 rounded-lg text-emerald-500"><Target size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Target Goal Matcher</span>
+                            <span className="text-foreground font-bold text-sm">{t('lumpsum.targetGoalMatcher')}</span>
                         </div>
                         {showGoal ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -341,7 +343,7 @@ export default function LumpsumCalculator() {
                                     <div className="h-px bg-border w-full -mt-2" />
                                     
                                     <div>
-                                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">What is your Target Amount?</label>
+                                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('lumpsum.whatIsYourTargetAmount')}</label>
                                         <div className="relative">
                                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                                             <input type="number" value={targetAmount} onChange={e => setTargetAmount(Number(e.target.value)||0)} className={inputCls + " pl-7 border-emerald-500/30 focus:border-emerald-500 focus:ring-emerald-500/20"} />
@@ -351,20 +353,20 @@ export default function LumpsumCalculator() {
                                     <div className={`p-4 rounded-2xl border ${goalData.achievable ? 'bg-brand-green/10 border-brand-green/30' : 'bg-background border-border'}`}>
                                         {goalData.achievable ? (
                                             <div className="text-center py-2">
-                                                <p className="text-brand-green tracking-tight font-black text-lg mb-1">Goal Reached! 🎉</p>
-                                                <p className="text-brand-green/80 text-[11px] font-bold">Your maturity ({fmtINR(result.fv)}) exceeds your target.</p>
+                                                <p className="text-brand-green tracking-tight font-black text-lg mb-1">{t('lumpsum.goalReached')}</p>
+                                                <p className="text-brand-green/80 text-[11px] font-bold">{t('lumpsum.maturityExceedsTarget', { maturity: fmtINR(result.fv) })}</p>
                                             </div>
                                         ) : (
                                             <div className="space-y-3">
-                                                <p className="text-amber-500 text-[10px] font-black uppercase tracking-wider text-center">Shortfall: {fmtINR(goalData.gap)}</p>
+                                                <p className="text-amber-500 text-[10px] font-black uppercase tracking-wider text-center">{t('lumpsum.shortfall')}: {fmtINR(goalData.gap)}</p>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     <div className="bg-card border border-border/50 p-2.5 rounded-xl text-center">
-                                                        <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Required Time</p>
-                                                        <p className="text-foreground font-black text-sm">{goalData.requiredYears.toFixed(1)} <span className="text-[10px] font-bold">yrs</span></p>
+                                                        <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">{t('lumpsum.requiredTime')}</p>
+                                                        <p className="text-foreground font-black text-sm">{goalData.requiredYears.toFixed(1)} <span className="text-[10px] font-bold">{t('lumpsum.yrs')}</span></p>
                                                     </div>
                                                     <div className="bg-card border border-border/50 p-2.5 rounded-xl text-center">
-                                                        <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">Required Rate</p>
-                                                        <p className="text-foreground font-black text-sm">{goalData.requiredRate.toFixed(1)} <span className="text-[10px] font-bold">% p.a.</span></p>
+                                                        <p className="text-muted-foreground text-[9px] uppercase font-bold mb-0.5">{t('lumpsum.requiredRate')}</p>
+                                                        <p className="text-foreground font-black text-sm">{goalData.requiredRate.toFixed(1)} <span className="text-[10px] font-bold">{t('lumpsum.percentPA')}</span></p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -382,7 +384,7 @@ export default function LumpsumCalculator() {
                     <button onClick={() => setShowWhatIf(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-rose-500/10 rounded-lg text-rose-500"><TrendingUp size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">What-If Simulator</span>
+                            <span className="text-foreground font-bold text-sm">{t('lumpsum.whatIfSimulator')}</span>
                         </div>
                         {showWhatIf ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -395,7 +397,7 @@ export default function LumpsumCalculator() {
                                     
                                     <div>
                                         <div className="flex justify-between items-center mb-3">
-                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Invested Amount</span>
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('lumpsum.investedAmount')}</span>
                                             <span className="text-sm font-black text-blue-500">{fmtINR(simPrincipal)}</span>
                                         </div>
                                         <input type="range" min={1000} max={principal * 3} step={5000} value={simPrincipal} onChange={e => setSimPrincipal(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-500" />
@@ -403,7 +405,7 @@ export default function LumpsumCalculator() {
 
                                     <div>
                                         <div className="flex justify-between items-center mb-3">
-                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Expected Return</span>
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('lumpsum.expectedReturn')}</span>
                                             <span className="text-sm font-black text-emerald-500">{simRate}%</span>
                                         </div>
                                         <input type="range" min={1} max={30} step={0.5} value={simRate} onChange={e => setSimRate(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-emerald-500" />
@@ -411,16 +413,16 @@ export default function LumpsumCalculator() {
 
                                     <div>
                                         <div className="flex justify-between items-center mb-3">
-                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Time Period</span>
-                                            <span className="text-sm font-black text-rose-500">{simYears} yrs</span>
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('lumpsum.timePeriod')}</span>
+                                            <span className="text-sm font-black text-rose-500">{simYears} {t('lumpsum.yrs')}</span>
                                         </div>
                                         <input type="range" min={1} max={40} step={1} value={simYears} onChange={e => setSimYears(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-rose-500" />
                                     </div>
 
                                     <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-600 text-center">
-                                        <p className="text-slate-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider mb-1">Simulated Value</p>
+                                        <p className="text-slate-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider mb-1">{t('lumpsum.simulatedValue')}</p>
                                         <p className="font-black text-2xl text-foreground mb-1">{fmtINR(simResult)}</p>
-                                        <p className="text-emerald-600 dark:text-brand-green text-xs font-bold">+ {fmtINR(simResult - simPrincipal)} total gain</p>
+                                        <p className="text-emerald-600 dark:text-brand-green text-xs font-bold">+ {fmtINR(simResult - simPrincipal)} {t('lumpsum.totalGain')}</p>
                                     </div>
                                 </div>
                             </motion.div>
@@ -434,7 +436,7 @@ export default function LumpsumCalculator() {
                     <button onClick={() => setShowTable(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-500"><FileText size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">Year-Wise Timeline</span>
+                            <span className="text-foreground font-bold text-sm">{t('lumpsum.yearWiseTimeline')}</span>
                         </div>
                         {showTable ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>
@@ -445,12 +447,12 @@ export default function LumpsumCalculator() {
                                 <div className="px-5 pb-5 pt-1">
                                     <div className="rounded-2xl overflow-hidden border border-border mt-2">
                                         <div className="grid grid-cols-3 bg-muted px-3 py-2.5">
-                                            {['Year', 'Total Value', 'Gain'].map(h => (<p key={h} className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">{h}</p>))}
+                                            {[t('lumpsum.year'), t('lumpsum.totalValue'), t('lumpsum.gain')].map(h => (<p key={h} className="text-muted-foreground text-[10px] font-black uppercase tracking-wider">{h}</p>))}
                                         </div>
                                         <div className="divide-y divide-border/50">
                                             {result.table.slice((page - 1) * 10, page * 10).map((row) => (
                                                 <div key={row.year} className="grid grid-cols-3 px-3 py-3 bg-background items-center">
-                                                    <p className="text-foreground text-xs font-bold">Yr {row.year}</p>
+                                                    <p className="text-foreground text-xs font-bold">{t('lumpsum.yr')} {row.year}</p>
                                                     <p className="text-foreground text-xs font-bold font-mono">{fmtINR(row.value)}</p>
                                                     <div className="flex flex-col">
                                                         <p className="text-brand-green text-xs font-bold font-mono">+{fmtINR(row.gain)}</p>
@@ -465,7 +467,7 @@ export default function LumpsumCalculator() {
                                                 <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
                                                     <ChevronLeft size={14} />
                                                 </button>
-                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Page {page} of {Math.ceil(result.table.length / 10)}</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('lumpsum.page')} {page} {t('lumpsum.of')} {Math.ceil(result.table.length / 10)}</p>
                                                 <button disabled={page === Math.ceil(result.table.length / 10)} onClick={() => setPage(p => p + 1)} className="p-1.5 rounded bg-background border border-border disabled:opacity-50 text-foreground transition-opacity">
                                                     <ChevronRight size={14} />
                                                 </button>
@@ -484,13 +486,13 @@ export default function LumpsumCalculator() {
                         onClick={handleDownloadPDF}
                         className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-colors hover:bg-brand-blue/10 active:scale-95"
                     >
-                        <FileText size={20} /> Export Report
+                        <FileText size={20} /> {t('lumpsum.exportReport')}
                     </button>
                     <button
                         onClick={handleDownloadExcel}
                         className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-green/5 border border-brand-green/20 text-brand-green font-bold text-xs transition-colors hover:bg-brand-green/10 active:scale-95"
                     >
-                        <FileText size={20} /> Excel Data
+                        <FileText size={20} /> {t('lumpsum.excelData')}
                     </button>
                 </div>
             </div>

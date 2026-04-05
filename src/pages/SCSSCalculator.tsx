@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Save, Shield, Calendar, IndianRupee, ChevronDown, ChevronUp, Download, Share2 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
@@ -20,6 +21,7 @@ import { useAppColors } from '../theme/useAppColors';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function SCSSCalculator() {
+    const { t } = useTranslation();
     useEffect(() => { AnalyticsService.trackScreen('SCSS_Calculator_Advanced'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
@@ -174,8 +176,8 @@ export default function SCSSCalculator() {
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div className="flex-1">
-                        <h1 className="text-lg font-bold text-foreground">SCSS Calculator</h1>
-                        <p className="text-muted-foreground text-xs">Senior Citizen Savings Scheme</p>
+                        <h1 className="text-lg font-bold text-foreground">{t('scss.title')}</h1>
+                        <p className="text-muted-foreground text-xs">{t('scss.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -183,53 +185,53 @@ export default function SCSSCalculator() {
             <div className="px-4 pb-28 pt-4 space-y-5">
                 {/* Inputs */}
                 <div className="space-y-3">
-                    <NumberInput label="Investment Amount" value={investment} onChange={setInvestment} min={1000} max={3000000} prefix="₹" helperText="Max: ₹30 Lakhs" />
-                    <NumberInput label="Interest Rate (p.a.)" value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText="Current rate: 8.2% (Q1 FY2026-27)" />
+                    <NumberInput label={t('scss.investmentAmount')} value={investment} onChange={setInvestment} min={1000} max={3000000} prefix="₹" helperText={t('scss.maxInvestment')} />
+                    <NumberInput label={t('scss.interestRate')} value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText={t('scss.currentRate')} />
 
                     {/* Tenure Toggle */}
                     <div className="space-y-1.5">
-                        <p className="text-foreground text-sm font-medium">Tenure</p>
+                        <p className="text-foreground text-sm font-medium">{t('scss.tenure')}</p>
                         <div className="flex gap-2">
-                            {([5, 8] as const).map(t => (
+                            {([5, 8] as const).map(yr => (
                                 <button
-                                    key={t}
-                                    onClick={() => setTenure(t)}
-                                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-colors ${tenure === t ? 'bg-brand-purple/15 border-brand-purple text-brand-purple' : 'bg-card border-border text-muted-foreground'}`}
+                                    key={yr}
+                                    onClick={() => setTenure(yr)}
+                                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold border-2 transition-colors ${tenure === yr ? 'bg-brand-purple/15 border-brand-purple text-brand-purple' : 'bg-card border-border text-muted-foreground'}`}
                                 >
-                                    {t === 5 ? '5 Years' : '8 Years (5+3)'}
+                                    {yr === 5 ? t('scss.fiveYears') : t('scss.eightYears')}
                                 </button>
                             ))}
                         </div>
                         {tenure === 8 && (
-                            <p className="text-[10px] text-muted-foreground px-1">Extension of 3 years must be applied within 1 year of maturity</p>
+                            <p className="text-[10px] text-muted-foreground px-1">{t('scss.extensionNote')}</p>
                         )}
                     </div>
                 </div>
 
                 {/* Result Card */}
                 <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-purple-500/30">
-                    <p className="text-purple-600 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wider mb-1">Quarterly Income</p>
+                    <p className="text-purple-600 dark:text-purple-300 text-[10px] font-bold uppercase tracking-wider mb-1">{t('scss.quarterlyIncome')}</p>
                     <p className="text-3xl font-black text-foreground mb-4">{formatINR(result.quarterlyIncome)}</p>
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">Annual Income</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">{t('scss.annualIncome')}</p>
                             <p className="text-green-600 dark:text-brand-green font-bold text-sm">{formatINR(result.annualInterest)}</p>
                         </div>
                         <div>
-                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">Total Interest ({tenure} yrs)</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">{t('scss.totalInterestYrs', { years: tenure })}</p>
                             <p className="text-slate-800 dark:text-slate-100 font-bold text-sm">{formatINR(result.totalInterest)}</p>
                         </div>
                         <div>
-                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">Principal</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">{t('scss.principal')}</p>
                             <p className="text-blue-600 dark:text-blue-400 font-bold text-sm">{formatINR(investment)}</p>
                         </div>
                         <div>
-                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">Maturity Amount</p>
+                            <p className="text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold">{t('scss.maturityAmount')}</p>
                             <p className="text-amber-600 dark:text-amber-400 font-bold text-sm">{formatINR(result.maturityAmount)}</p>
                         </div>
                     </div>
                     <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/20 dark:bg-white/10 border border-white/20 text-slate-800 dark:text-slate-100 font-bold text-sm">
-                        <Save size={16} /> {saved ? '✅ Saved!' : 'Save Calculation'}
+                        <Save size={16} /> {saved ? t('scss.saved') : t('scss.saveCalculation')}
                     </motion.button>
                 </motion.div>
 
@@ -238,16 +240,16 @@ export default function SCSSCalculator() {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
                         <IndianRupee size={16} className="text-amber-400 shrink-0 mt-0.5" />
                         <div>
-                            <p className="text-amber-600 dark:text-amber-400 font-bold text-xs mb-1">TDS Applicable on Your Interest</p>
-                            <p className="text-slate-600 dark:text-slate-300 text-xs">Annual interest {formatINR(result.annualInterest)} exceeds ₹50,000. TDS @ 10% = {formatINR(result.annualTDS)} p.a. Submit Form 15H to avoid TDS deduction.</p>
-                            <p className="text-green-600 dark:text-brand-green font-bold text-xs mt-1">Net quarterly income after TDS: {formatINR(result.netQuarterlyIncome)}</p>
+                            <p className="text-amber-600 dark:text-amber-400 font-bold text-xs mb-1">{t('scss.tdsApplicableTitle')}</p>
+                            <p className="text-slate-600 dark:text-slate-300 text-xs">{t('scss.tdsApplicableDesc', { annualInterest: formatINR(result.annualInterest), annualTDS: formatINR(result.annualTDS) })}</p>
+                            <p className="text-green-600 dark:text-brand-green font-bold text-xs mt-1">{t('scss.netQuarterlyAfterTDS', { amount: formatINR(result.netQuarterlyIncome) })}</p>
                         </div>
                     </motion.div>
                 )}
 
                 {/* Pie Chart */}
                 <div className="p-4 rounded-2xl bg-card border border-border">
-                    <h3 className="text-foreground font-bold text-sm mb-3">Principal vs Interest</h3>
+                    <h3 className="text-foreground font-bold text-sm mb-3">{t('scss.principalVsInterest')}</h3>
                     <div className="w-44 h-44 mx-auto">
                         <Pie data={pieData} options={{ responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: c.textSecondary, font: { size: 11 } } } } }} />
                     </div>
@@ -256,12 +258,12 @@ export default function SCSSCalculator() {
                 {/* What-If Simulator */}
                 <WhatIfSimulator
                     sliders={[
-                        { key: 'investment', label: 'Investment Amount', min: 100000, max: 3000000, step: 50000, prefix: '₹' },
-                        { key: 'rate', label: 'Interest Rate', min: 6, max: 10, step: 0.1, suffix: '%' },
+                        { key: 'investment', label: t('scss.investmentAmount'), min: 100000, max: 3000000, step: 50000, prefix: '₹' },
+                        { key: 'rate', label: t('scss.interestRateLabel'), min: 6, max: 10, step: 0.1, suffix: '%' },
                     ]}
                     currentInputs={{ investment, rate, tenure }}
                     calculateResult={(inputs) => Math.round((inputs.investment * inputs.rate / 100) / 4)}
-                    resultLabel="Quarterly Income"
+                    resultLabel={t('scss.quarterlyIncome')}
                 />
 
                 <SmartInsight
@@ -272,7 +274,7 @@ export default function SCSSCalculator() {
 
                 {/* Tax & TDS Info */}
                 <button onClick={() => setShowTaxInfo(!showTaxInfo)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
-                    <span className="flex items-center gap-2"><Shield size={16} className="text-green-400" /> Tax & TDS Information</span>
+                    <span className="flex items-center gap-2"><Shield size={16} className="text-green-400" /> {t('scss.taxTDSInfo')}</span>
                     {showTaxInfo ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
@@ -280,11 +282,11 @@ export default function SCSSCalculator() {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
                                 {[
-                                    { title: 'Interest Taxability', desc: 'SCSS interest is fully taxable as per your income slab. It does not enjoy Section 80TTB exemption.' },
-                                    { title: 'TDS Threshold', desc: 'TDS @ 10% is deducted if annual interest exceeds ₹50,000 for senior citizens (60+). PAN must be linked.' },
-                                    { title: 'Form 15H', desc: 'Senior citizens with income below taxable limit can submit Form 15H annually to prevent TDS deduction.' },
-                                    { title: 'Sec 80C / Sec 123 Benefit', desc: 'SCSS investment qualifies for deduction under Sec 80C (Sec 123 under ITA 2025) up to ₹1.5 lakh per financial year.' },
-                                    { title: 'Joint Account', desc: 'Can be held jointly with spouse. Only the first holder is considered for the investment limit and eligibility.' },
+                                    { title: t('scss.interestTaxability'), desc: t('scss.interestTaxabilityDesc') },
+                                    { title: t('scss.tdsThreshold'), desc: t('scss.tdsThresholdDesc') },
+                                    { title: t('scss.form15H'), desc: t('scss.form15HDesc') },
+                                    { title: t('scss.sec80CBenefit'), desc: t('scss.sec80CBenefitDesc') },
+                                    { title: t('scss.jointAccount'), desc: t('scss.jointAccountDesc') },
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-start gap-3">
                                         <Shield size={14} className="text-green-400 shrink-0 mt-1" />
@@ -301,7 +303,7 @@ export default function SCSSCalculator() {
 
                 {/* Year-wise Breakdown */}
                 <button onClick={() => setShowBreakdown(!showBreakdown)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
-                    <span className="flex items-center gap-2"><Calendar size={16} className="text-muted-foreground" /> Year-wise Interest Breakdown</span>
+                    <span className="flex items-center gap-2"><Calendar size={16} className="text-muted-foreground" /> {t('scss.yearWiseBreakdown')}</span>
                     {showBreakdown ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
@@ -309,7 +311,7 @@ export default function SCSSCalculator() {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="rounded-2xl bg-card border border-border overflow-hidden">
                                 <div className="grid grid-cols-4 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-200 dark:bg-slate-800/50">
-                                    <span>Year</span><span>Interest</span><span>TDS</span><span>Cumulative</span>
+                                    <span>{t('scss.yearCol')}</span><span>{t('scss.interestCol')}</span><span>{t('scss.tdsCol')}</span><span>{t('scss.cumulativeCol')}</span>
                                 </div>
                                 {result.yearlyBreakdown.map((row, i) => (
                                     <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${i % 2 === 0 ? 'bg-card' : 'bg-slate-100 dark:bg-slate-800/40'}`}>
@@ -326,7 +328,7 @@ export default function SCSSCalculator() {
 
                 {/* Premature Withdrawal */}
                 <button onClick={() => setShowPenalty(!showPenalty)} className="w-full flex items-center justify-between py-3.5 px-4 rounded-2xl bg-card border border-border text-foreground font-bold text-sm">
-                    <span className="flex items-center gap-2"><IndianRupee size={16} className="text-red-400" /> Premature Withdrawal Penalty</span>
+                    <span className="flex items-center gap-2"><IndianRupee size={16} className="text-red-400" /> {t('scss.prematureWithdrawalPenalty')}</span>
                     {showPenalty ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                 </button>
                 <AnimatePresence>
@@ -334,42 +336,42 @@ export default function SCSSCalculator() {
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                             <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
                                 <div className="flex items-start gap-2 p-3 rounded-xl bg-slate-500/10 border border-slate-500/20">
-                                    <p className="text-slate-600 dark:text-slate-400 font-bold text-xs">Before 1 year</p>
-                                    <p className="text-slate-500 dark:text-slate-400 text-xs ml-auto">❌ Closure NOT permitted</p>
+                                    <p className="text-slate-600 dark:text-slate-400 font-bold text-xs">{t('scss.before1Year')}</p>
+                                    <p className="text-slate-500 dark:text-slate-400 text-xs ml-auto">{t('scss.closureNotPermitted')}</p>
                                 </div>
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-center p-3 rounded-xl bg-red-500/10 border border-red-500/20">
                                         <div>
-                                            <p className="text-red-500 dark:text-red-400 font-bold text-xs">After 1 yr, before 2 yrs</p>
-                                            <p className="text-slate-500 dark:text-slate-400 text-xs">1.5% penalty on principal</p>
+                                            <p className="text-red-500 dark:text-red-400 font-bold text-xs">{t('scss.after1YrBefore2Yrs')}</p>
+                                            <p className="text-slate-500 dark:text-slate-400 text-xs">{t('scss.penalty1_5Percent')}</p>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-red-500 dark:text-red-400 font-bold text-xs">−{formatINR(result.penaltyAfter1Yr)}</p>
-                                            <p className="text-slate-700 dark:text-slate-200 text-xs font-semibold">You get {formatINR(result.amtAfter1Yr)}</p>
+                                            <p className="text-slate-700 dark:text-slate-200 text-xs font-semibold">{t('scss.youGet', { amount: formatINR(result.amtAfter1Yr) })}</p>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
                                         <div>
-                                            <p className="text-amber-600 dark:text-amber-400 font-bold text-xs">After 2 years, before maturity</p>
-                                            <p className="text-slate-500 dark:text-slate-400 text-xs">1% penalty on principal</p>
+                                            <p className="text-amber-600 dark:text-amber-400 font-bold text-xs">{t('scss.after2YrsBeforeMaturity')}</p>
+                                            <p className="text-slate-500 dark:text-slate-400 text-xs">{t('scss.penalty1Percent')}</p>
                                         </div>
                                         <div className="text-right">
                                             <p className="text-amber-600 dark:text-amber-400 font-bold text-xs">−{formatINR(result.penaltyAfter2Yrs)}</p>
-                                            <p className="text-slate-700 dark:text-slate-200 text-xs font-semibold">You get {formatINR(result.amtAfter2Yrs)}</p>
+                                            <p className="text-slate-700 dark:text-slate-200 text-xs font-semibold">{t('scss.youGet', { amount: formatINR(result.amtAfter2Yrs) })}</p>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center p-3 rounded-xl bg-green-500/10 border border-green-500/20">
                                         <div>
-                                            <p className="text-green-600 dark:text-green-400 font-bold text-xs">At maturity ({tenure} years)</p>
-                                            <p className="text-slate-500 dark:text-slate-400 text-xs">No penalty — full amount paid</p>
+                                            <p className="text-green-600 dark:text-green-400 font-bold text-xs">{t('scss.atMaturity', { years: tenure })}</p>
+                                            <p className="text-slate-500 dark:text-slate-400 text-xs">{t('scss.noPenaltyFullAmount')}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-green-600 dark:text-green-400 font-bold text-xs">No deduction</p>
-                                            <p className="text-slate-700 dark:text-slate-200 text-xs font-semibold">You get {formatINR(result.maturityAmount)}</p>
+                                            <p className="text-green-600 dark:text-green-400 font-bold text-xs">{t('scss.noDeduction')}</p>
+                                            <p className="text-slate-700 dark:text-slate-200 text-xs font-semibold">{t('scss.youGet', { amount: formatINR(result.maturityAmount) })}</p>
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-slate-500 dark:text-slate-400 text-xs">* Interest accrued up to closure date is also paid. Penalty is deducted from the principal.</p>
+                                <p className="text-slate-500 dark:text-slate-400 text-xs">{t('scss.penaltyNote')}</p>
                             </div>
                         </motion.div>
                     )}
@@ -378,25 +380,25 @@ export default function SCSSCalculator() {
                 {/* Export & Share */}
                 <div className="grid grid-cols-3 gap-3">
                     <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-slate-600 dark:text-slate-300 text-[10px] font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                        <Download size={16} /> PDF
+                        <Download size={16} /> {t('scss.pdf')}
                     </button>
                     <button onClick={handleDownloadExcel} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border text-slate-600 dark:text-slate-300 text-[10px] font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                        <Download size={16} /> Excel
+                        <Download size={16} /> {t('scss.excel')}
                     </button>
                     <button onClick={handleShare} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white text-[10px] font-bold">
-                        <Share2 size={16} /> Share
+                        <Share2 size={16} /> {t('scss.share')}
                     </button>
                 </div>
 
                 <ShareableCard
-                    title="My SCSS Investment"
+                    title={t('scss.mySCSSInvestment')}
                     highlight={formatINR(result.quarterlyIncome)}
-                    subtitle={`Quarterly income on ₹${(investment / 100000).toFixed(1)}L at ${rate}% p.a.`}
+                    subtitle={t('scss.shareSubtitle', { investment: (investment / 100000).toFixed(1), rate })}
                     details={[
-                        { label: 'Annual Income', value: formatINR(result.annualInterest) },
-                        { label: 'Total Interest', value: formatINR(result.totalInterest) },
-                        { label: 'Tenure', value: `${tenure} Years` },
-                        { label: 'Maturity Amount', value: formatINR(result.maturityAmount) },
+                        { label: t('scss.annualIncome'), value: formatINR(result.annualInterest) },
+                        { label: t('scss.totalInterest'), value: formatINR(result.totalInterest) },
+                        { label: t('scss.tenure'), value: `${tenure} ${t('scss.years')}` },
+                        { label: t('scss.maturityAmount'), value: formatINR(result.maturityAmount) },
                     ]}
                     gradient="from-purple-600 via-indigo-600 to-violet-600"
                 />
