@@ -102,6 +102,10 @@ const WorldClock                 = lr(() => import('./pages/WorldClock'));
 const InsuranceCalculator        = lr(() => import('./pages/InsuranceCalculator'));
 const InsuranceCompare           = lr(() => import('./pages/InsuranceCompare'));
 
+// My Loans — lazy loaded with retry
+const MyLoans                    = lr(() => import('./pages/MyLoans'));
+const LoanDetail                 = lr(() => import('./pages/LoanDetail'));
+
 // Support Pages — lazy loaded with retry
 const PrivacyPolicy              = lr(() => import('./pages/PrivacyPolicy'));
 const TermsOfService             = lr(() => import('./pages/TermsOfService'));
@@ -344,6 +348,8 @@ function AppContent() {
                         <Route path="/world-clock" element={<WorldClock />} />
                         <Route path="/calculator/insurance" element={<InsuranceCalculator />} />
                         <Route path="/insurance-compare" element={<InsuranceCompare />} />
+                        <Route path="/my-loans" element={<MyLoans />} />
+                        <Route path="/my-loans/:loanId" element={<LoanDetail />} />
                         <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
                         <Route path="/dev/validator" element={<ValidatorPage />} />
                     </Route>

@@ -438,6 +438,25 @@ export default function Home() {
                 </motion.button>
             </section>
 
+            {/* My Loans Tracker */}
+            <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/my-loans')}
+                className="w-full mb-4 p-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 border border-violet-400/30 shadow-lg text-left flex items-center gap-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+            >
+                <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <Landmark size={22} className="text-foreground" />
+                </div>
+                <div>
+                    <h3 className="text-foreground font-bold text-sm">{t('myLoans.title')}</h3>
+                    <p className="text-foreground/60 text-[10px] mt-0.5">{t('myLoans.homeDesc')}</p>
+                </div>
+                <ChevronRight size={18} className="text-foreground/40 ml-auto flex-shrink-0" />
+            </motion.button>
+
             {/* Utility Tools */}
             <section className="mb-8 grid grid-cols-2 gap-3">
                 <motion.button

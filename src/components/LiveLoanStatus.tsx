@@ -6,6 +6,7 @@ import { useAppColors } from '../theme/useAppColors';
 import { formatINR } from '../utils/calculations';
 import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
+import { saveLoan as saveLoanToStorage, deleteLoan as deleteLoanFromStorage, getAllLoans, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 
 function fmtDate(dateStr: string, locale: string = 'en-IN'): string {
     if (!dateStr) return '—';
@@ -30,6 +31,7 @@ export default function LiveLoanStatus({ profile }: Props) {
     const [expandForeclosure, setExpandForeclosure] = useState(false);
     const [expandTimeline, setExpandTimeline] = useState(false);
     const [profileName, setProfileName] = useState('');
+    const [lenderName, setLenderName] = useState('');
     const [showSaveForm, setShowSaveForm] = useState(false);
     const [profileSaved, setProfileSaved] = useState(false);
     const [savedProfileId, setSavedProfileId] = useState<string | null>(null);
@@ -38,13 +40,20 @@ export default function LiveLoanStatus({ profile }: Props) {
 
     const status = useMemo(() => calculateLiveLoanStatus(profile), [profile]);
 
-    // Check if this loan is already saved
+    // Check if this loan is already saved (in either store)
     const existingSaved = useMemo(() => {
-        return savedProfiles.find(p =>
+        const fromLiveStore = savedProfiles.find(p =>
             p.profileData?.disbursementDate === profile.disbursementDate &&
             p.profileData?.loanAmount === profile.loanAmount &&
             p.calculatorType === 'Loan EMI'
         );
+        if (fromLiveStore) return fromLiveStore;
+        const fromLoanStorage = getAllLoans().find(l =>
+            l.disbursementDate === profile.disbursementDate &&
+            l.loanAmount === profile.loanAmount &&
+            l.isActive
+        );
+        return fromLoanStorage ? { id: fromLoanStorage.id } : undefined;
     }, [savedProfiles, profile]);
 
     const isAlreadySaved = profileSaved || !!existingSaved;
@@ -435,6 +444,7 @@ export default function LiveLoanStatus({ profile }: Props) {
                             onClick={() => {
                                 if (currentSavedId) {
                                     removeProfile(currentSavedId);
+                                    deleteLoanFromStorage(currentSavedId);
                                     setProfileSaved(false);
                                     setSavedProfileId(null);
                                 }
@@ -451,26 +461,18 @@ export default function LiveLoanStatus({ profile }: Props) {
                             autoFocus
                             value={profileName}
                             onChange={(e) => setProfileName(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && profileName.trim()) {
-                                    const id = Date.now().toString();
-                                    addProfile({
-                                        id,
-                                        name: profileName.trim(),
-                                        calculatorType: 'Loan EMI',
-                                        profileData: { ...profile },
-                                        createdAt: Date.now(),
-                                        updatedAt: Date.now(),
-                                    });
-                                    setProfileSaved(true);
-                                    setSavedProfileId(id);
-                                    setShowSaveForm(false);
-                                }
-                            }}
                             placeholder={t('liveStatus.namePlaceholder')}
                             className="w-full bg-transparent border rounded-xl px-3 py-2.5 text-sm outline-none"
                             style={{ borderColor: c.border, color: c.text }}
                             maxLength={40}
+                        />
+                        <input
+                            value={lenderName}
+                            onChange={(e) => setLenderName(e.target.value)}
+                            placeholder={t('myLoans.lenderPlaceholder')}
+                            className="w-full bg-transparent border rounded-xl px-3 py-2.5 text-sm outline-none"
+                            style={{ borderColor: c.border, color: c.text }}
+                            maxLength={50}
                         />
                         <div className="flex gap-2">
                             <button
@@ -483,7 +485,8 @@ export default function LiveLoanStatus({ profile }: Props) {
                             <button
                                 onClick={() => {
                                     if (!profileName.trim()) return;
-                                    const id = Date.now().toString();
+                                    const id = generateLoanId();
+                                    // Save to live status store
                                     addProfile({
                                         id,
                                         name: profileName.trim(),
@@ -492,6 +495,24 @@ export default function LiveLoanStatus({ profile }: Props) {
                                         createdAt: Date.now(),
                                         updatedAt: Date.now(),
                                     });
+                                    // Also save to loanStorage for My Loans page
+                                    const loanData: SavedLoan = {
+                                        id,
+                                        nickName: profileName.trim(),
+                                        loanType: 'home_loan',
+                                        lenderName: lenderName.trim(),
+                                        loanAmount: profile.loanAmount,
+                                        interestRate: profile.annualRate,
+                                        tenureMonths: profile.tenureMonths,
+                                        emiAmount: profile.emiAmount,
+                                        rateType: profile.loanType === 'floating' ? 'floating' : 'fixed',
+                                        disbursementDate: profile.disbursementDate,
+                                        emiDueDay: profile.emiDueDay,
+                                        createdAt: new Date().toISOString(),
+                                        updatedAt: new Date().toISOString(),
+                                        isActive: true,
+                                    };
+                                    saveLoanToStorage(loanData);
                                     setProfileSaved(true);
                                     setSavedProfileId(id);
                                     setShowSaveForm(false);
