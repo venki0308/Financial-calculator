@@ -189,6 +189,21 @@ export default function FDCalculator() {
                 `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.value).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(fdStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['FD Running For (days)', String(fdStatus.daysInvested)],
+                        ['Interest Earned So Far', formatINR(fdStatus.interestEarnedToday)],
+                        ['Current Value', formatINR(fdStatus.valueToday)],
+                        ['Days to Maturity', String(fdStatus.daysRemaining)],
+                        ['Maturity Value', formatINR(fdStatus.maturityValue)],
+                        ['Daily Earning', formatINR(fdStatus.dailyEarning)],
+                        ['Premature Value (if broken today)', formatINR(fdStatus.prematureValue)],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_FD_Report_${tag}`,
         };
         await exportToPDF(config);
@@ -212,6 +227,21 @@ export default function FDCalculator() {
             projectionTitle: 'Year-Wise FD Growth',
             projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
             projectionRows: yearWise.map((r: any) => [r.year, Math.round(r.value - r.interest), Math.round(r.interest), Math.round(r.value)]),
+            additionalTables: [
+                ...(fdStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['FD Running For (days)', String(fdStatus.daysInvested)],
+                        ['Interest Earned So Far', formatINR(fdStatus.interestEarnedToday)],
+                        ['Current Value', formatINR(fdStatus.valueToday)],
+                        ['Days to Maturity', String(fdStatus.daysRemaining)],
+                        ['Maturity Value', formatINR(fdStatus.maturityValue)],
+                        ['Daily Earning', formatINR(fdStatus.dailyEarning)],
+                        ['Premature Value (if broken today)', formatINR(fdStatus.prematureValue)],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_FD_Report_${tag}`,
         };
         await exportToExcel(config);
@@ -234,6 +264,8 @@ export default function FDCalculator() {
             {fdStatus && (
                 <div className="px-4 mb-5">
                     <LiveStatusCard
+                        calculatorType="FD"
+                        profileData={{ principal, annualRate: effectiveRate, tenureMonths: years * 12, startDate: fdStartDate, compoundingFreq: compounding }}
                         title="Live FD Status"
                         subtitle={`${years} Year FD @ ${effectiveRate}%`}
                         startDate={fdStartDate}

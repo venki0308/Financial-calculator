@@ -161,6 +161,19 @@ export default function SCSSCalculator() {
                 `₹${Math.round(r.netInterest).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumInterest).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(scssStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Quarters Completed', String(scssStatus.quartersCompleted)],
+                        ['Quarterly Income', formatINR(scssStatus.quarterlyIncome)],
+                        ['Total Income Received', formatINR(scssStatus.totalIncomeReceived)],
+                        ['Quarters Remaining', String(scssStatus.quartersRemaining)],
+                        ['Maturity Date', scssStatus.maturityDate],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_SCSS_Report_${tag}`,
         });
     };
@@ -182,6 +195,19 @@ export default function SCSSCalculator() {
             projectionTitle: 'Annual Payout Schedule',
             projectionColumns: ['Year', 'Annual Interest', 'TDS Deducted', 'Net Interest', 'Cumulative Interest'],
             projectionRows: result.yearlyBreakdown.map((r: any) => [r.year, Math.round(r.interest), Math.round(r.tds), Math.round(r.netInterest), Math.round(r.cumInterest)]),
+            additionalTables: [
+                ...(scssStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Quarters Completed', String(scssStatus.quartersCompleted)],
+                        ['Quarterly Income', formatINR(scssStatus.quarterlyIncome)],
+                        ['Total Income Received', formatINR(scssStatus.totalIncomeReceived)],
+                        ['Quarters Remaining', String(scssStatus.quartersRemaining)],
+                        ['Maturity Date', scssStatus.maturityDate],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_SCSS_Report_${tag}`,
         });
     };
@@ -452,6 +478,8 @@ export default function SCSSCalculator() {
             {scssStatus && (
                 <div className="px-4 mb-5">
                     <LiveStatusCard
+                        calculatorType="SCSS"
+                        profileData={{ principal: investment, rate, startDate: scssStartDate, tenure }}
                         title="Live SCSS Status"
                         subtitle={`${tenure} Year SCSS @ ${rate}%`}
                         startDate={scssStartDate}

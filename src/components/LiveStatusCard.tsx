@@ -1,6 +1,8 @@
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppColors } from '../theme/useAppColors';
-import { Clock, AlertTriangle, Lightbulb } from 'lucide-react';
+import { Clock, AlertTriangle, Lightbulb, Save, Check, Trash2 } from 'lucide-react';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
 
 interface MetricCardProps {
     label: string;
@@ -19,6 +21,8 @@ interface LiveStatusCardProps {
     insightText?: string;
     warningText?: string;
     children?: React.ReactNode;
+    calculatorType?: string;
+    profileData?: Record<string, any>;
 }
 
 const COLOR_MAP = {
@@ -34,9 +38,55 @@ function fmtDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-export default function LiveStatusCard({ title, subtitle, startDate, metrics, progressPercent, progressLabel, insightText, warningText, children }: LiveStatusCardProps) {
+export default function LiveStatusCard({ title, subtitle, startDate, metrics, progressPercent, progressLabel, insightText, warningText, children, calculatorType, profileData }: LiveStatusCardProps) {
     const { t } = useTranslation();
     const c = useAppColors();
+
+    const [profileName, setProfileName] = useState('');
+    const [showSaveForm, setShowSaveForm] = useState(false);
+    const [profileSaved, setProfileSaved] = useState(false);
+    const [savedProfileId, setSavedProfileId] = useState<string | null>(null);
+
+    const { addProfile, removeProfile, savedProfiles } = useLiveStatusStore();
+
+    const canSave = !!calculatorType && !!profileData;
+
+    // Check if already saved by matching calculatorType + startDate + a key data field
+    const existingSaved = useMemo(() => {
+        if (!canSave) return undefined;
+        return savedProfiles.find(p =>
+            p.calculatorType === calculatorType &&
+            p.profileData?.startDate === profileData?.startDate &&
+            JSON.stringify(p.profileData) === JSON.stringify({ ...profileData, startDate })
+        );
+    }, [savedProfiles, calculatorType, profileData, canSave]);
+
+    const isAlreadySaved = profileSaved || !!existingSaved;
+    const currentSavedId = savedProfileId || existingSaved?.id || null;
+
+    const handleSave = () => {
+        if (!profileName.trim() || !canSave) return;
+        const id = Date.now().toString();
+        addProfile({
+            id,
+            name: profileName.trim(),
+            calculatorType: calculatorType!,
+            profileData: { ...profileData!, startDate },
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
+        setProfileSaved(true);
+        setSavedProfileId(id);
+        setShowSaveForm(false);
+    };
+
+    const handleRemove = () => {
+        if (currentSavedId) {
+            removeProfile(currentSavedId);
+            setProfileSaved(false);
+            setSavedProfileId(null);
+        }
+    };
 
     return (
         <div className="space-y-3">
@@ -108,6 +158,63 @@ export default function LiveStatusCard({ title, subtitle, startDate, metrics, pr
                 <div className="p-3 rounded-xl flex items-start gap-2" style={{ backgroundColor: '#F59E0B15', border: '1px solid #F59E0B30' }}>
                     <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-amber-600 dark:text-amber-400 leading-relaxed">{warningText}</p>
+                </div>
+            )}
+
+            {/* Save Tracker */}
+            {canSave && (
+                <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                    {isAlreadySaved ? (
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Check className="w-4 h-4 text-emerald-500" />
+                                <span className="text-sm font-bold text-emerald-500">Saved to Profile</span>
+                            </div>
+                            <button
+                                onClick={handleRemove}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-xs font-bold border border-red-500/20"
+                            >
+                                <Trash2 size={12} /> Remove
+                            </button>
+                        </div>
+                    ) : showSaveForm ? (
+                        <div className="space-y-3">
+                            <p className="text-sm font-bold" style={{ color: c.text }}>Name this tracker</p>
+                            <input
+                                autoFocus
+                                value={profileName}
+                                onChange={(e) => setProfileName(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                                placeholder={`e.g., My ${calculatorType}`}
+                                className="w-full bg-transparent border rounded-xl px-3 py-2.5 text-sm outline-none"
+                                style={{ borderColor: c.border, color: c.text }}
+                                maxLength={40}
+                            />
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowSaveForm(false)}
+                                    className="flex-1 py-2.5 rounded-xl text-xs font-bold border"
+                                    style={{ borderColor: c.border, color: c.textSecondary }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    disabled={!profileName.trim()}
+                                    className="flex-1 py-2.5 rounded-xl bg-emerald-500 text-white text-xs font-bold disabled:opacity-40"
+                                >
+                                    Save Tracker
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => setShowSaveForm(true)}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 font-bold text-sm border border-emerald-500/20"
+                        >
+                            <Save size={16} /> Save this tracker
+                        </button>
+                    )}
                 </div>
             )}
         </div>

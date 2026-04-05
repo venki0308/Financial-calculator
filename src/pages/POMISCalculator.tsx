@@ -182,6 +182,19 @@ export default function POMISCalculator() {
                 `₹${Math.round(r.payout).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(pomisStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Months Completed', String(pomisStatus.monthsCompleted)],
+                        ['Monthly Income', formatINR(pomisStatus.monthlyIncome)],
+                        ['Total Income Received', formatINR(pomisStatus.totalIncomeReceived)],
+                        ['Months Remaining', String(pomisStatus.monthsRemaining)],
+                        ['Maturity Date', pomisStatus.maturityDate],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_POMIS_Report_${tag}`,
         });
     };
@@ -211,6 +224,19 @@ export default function POMISCalculator() {
                 `₹${Math.round(r.payout).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(pomisStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Months Completed', String(pomisStatus.monthsCompleted)],
+                        ['Monthly Income', formatINR(pomisStatus.monthlyIncome)],
+                        ['Total Income Received', formatINR(pomisStatus.totalIncomeReceived)],
+                        ['Months Remaining', String(pomisStatus.monthsRemaining)],
+                        ['Maturity Date', pomisStatus.maturityDate],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_POMIS_Report_${tag}`,
         });
     };
@@ -518,6 +544,8 @@ export default function POMISCalculator() {
 
             {pomisStatus && (
                 <LiveStatusCard
+                    calculatorType="POMIS"
+                    profileData={{ principal: investment, rate, startDate: pomisStartDate }}
                     title="MIS Status Today"
                     subtitle={`${pomisStatus.monthsCompleted} of 60 months complete`}
                     startDate={pomisStartDate}

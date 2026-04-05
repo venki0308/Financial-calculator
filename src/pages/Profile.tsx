@@ -1,16 +1,47 @@
 import { useState, useEffect} from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bookmark, Clock, Bell, Settings, ChevronRight, User, Globe, Pencil, Check, Heart } from 'lucide-react';
+import { Bookmark, Clock, Bell, Settings, ChevronRight, User, Globe, Pencil, Check, Heart, Activity, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/useAuthStore';
 import { APP_VERSION } from '../config/app';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useSchemeStore } from '../store/useSchemeStore';
+import { useLiveStatusStore, type SavedLiveProfile } from '../store/useLiveStatusStore';
 import { useTranslation } from 'react-i18next';
 import { AnalyticsService } from '../lib/analytics';
 
 const languages: Record<string, string> = {
     en: 'English', hi: 'हिंदी', te: 'తెలుగు', ta: 'தமிழ்', kn: 'ಕನ್ನಡ', ml: 'മലയാളം'
+};
+
+const calcTypeToPath: Record<string, string> = {
+    'Loan EMI': '/calculator/loan-emi',
+    'SIP Calculator': '/calculator/sip',
+    'FD Calculator': '/calculator/fixed-deposit',
+    'PPF Calculator': '/calculator/ppf',
+    'RD': '/calculator/recurring-deposit',
+    'NSC Calculator': '/calculator/nsc',
+    'KVP Calculator': '/calculator/kvp',
+    'Post Office MIS': '/calculator/post-office-mis',
+    'SCSS Calculator': '/calculator/senior-citizen-savings',
+    'Post Office TD': '/calculator/post-office-td',
+    'SSY Calculator': '/calculator/sukanya-samriddhi',
+    'Goal Planner': '/calculator/sip',
+};
+
+const calcTypeColors: Record<string, string> = {
+    'Loan EMI': '#8B5CF6',
+    'SIP Calculator': '#3B82F6',
+    'FD Calculator': '#F59E0B',
+    'PPF Calculator': '#06B6D4',
+    'RD': '#F59E0B',
+    'NSC Calculator': '#14B8A6',
+    'KVP Calculator': '#22C55E',
+    'Post Office MIS': '#8B5CF6',
+    'SCSS Calculator': '#EC4899',
+    'Post Office TD': '#F97316',
+    'SSY Calculator': '#EC4899',
+    'Goal Planner': '#3B82F6',
 };
 
 export default function Profile() {
@@ -21,6 +52,7 @@ export default function Profile() {
     const savedCount = useCalculatorStore((s) => s.savedCalculations.length);
     const historyCount = useCalculatorStore((s) => s.history.length);
     const bookmarkCount = useSchemeStore((s) => s.bookmarkedSchemes.length);
+    const { savedProfiles, removeProfile } = useLiveStatusStore();
 
     const [editingName, setEditingName] = useState(false);
     const [nameInput, setNameInput] = useState(user.name);
@@ -154,6 +186,54 @@ export default function Profile() {
                     );
                 })}
             </div>
+
+            {/* Tracked Investments & Loans */}
+            {savedProfiles.length > 0 && (
+                <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-3">
+                        <Activity size={18} className="text-emerald-500" />
+                        <h2 className="text-foreground font-bold text-sm">My Tracked Investments & Loans</h2>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 text-xs font-bold">{savedProfiles.length}</span>
+                    </div>
+                    <div className="space-y-2.5">
+                        {savedProfiles.map((profile) => {
+                            const color = calcTypeColors[profile.calculatorType] || '#64748B';
+                            const path = calcTypeToPath[profile.calculatorType] || '/calculators';
+                            return (
+                                <div key={profile.id} className="p-4 rounded-2xl bg-card border border-border">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${color}20` }}>
+                                            <Activity size={18} style={{ color }} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-foreground font-bold text-sm truncate">{profile.name}</h3>
+                                            <p className="text-muted-foreground text-xs mt-0.5">{profile.calculatorType}</p>
+                                            <p className="text-muted-foreground text-[10px] mt-0.5">
+                                                Saved {new Date(profile.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                            <button
+                                                onClick={() => navigate(path)}
+                                                className="px-3 py-1.5 rounded-lg text-xs font-bold border"
+                                                style={{ borderColor: `${color}40`, color }}
+                                            >
+                                                View
+                                            </button>
+                                            <button
+                                                onClick={() => removeProfile(profile.id)}
+                                                className="p-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             <div className="text-center mt-12 mb-8 animate-fade-in delay-400">
                 <p className="text-slate-500 dark:text-slate-400 font-medium">FinCalix</p>

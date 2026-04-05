@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronUp, Lightbulb, Calendar, Clock, IndianRupee, CheckCircle2, AlertTriangle, TrendingDown, Shield, Banknote, Target, BarChart3 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Lightbulb, Calendar, Clock, IndianRupee, CheckCircle2, AlertTriangle, TrendingDown, Shield, Banknote, Target, BarChart3, Save, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import { formatINR } from '../utils/calculations';
 import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
 
 function fmtDate(dateStr: string): string {
     if (!dateStr) return '—';
@@ -28,8 +29,26 @@ export default function LiveLoanStatus({ profile }: Props) {
     const c = useAppColors();
     const [expandForeclosure, setExpandForeclosure] = useState(false);
     const [expandTimeline, setExpandTimeline] = useState(false);
+    const [profileName, setProfileName] = useState('');
+    const [showSaveForm, setShowSaveForm] = useState(false);
+    const [profileSaved, setProfileSaved] = useState(false);
+    const [savedProfileId, setSavedProfileId] = useState<string | null>(null);
+
+    const { addProfile, removeProfile, savedProfiles } = useLiveStatusStore();
 
     const status = useMemo(() => calculateLiveLoanStatus(profile), [profile]);
+
+    // Check if this loan is already saved
+    const existingSaved = useMemo(() => {
+        return savedProfiles.find(p =>
+            p.profileData?.disbursementDate === profile.disbursementDate &&
+            p.profileData?.loanAmount === profile.loanAmount &&
+            p.calculatorType === 'Loan EMI'
+        );
+    }, [savedProfiles, profile]);
+
+    const isAlreadySaved = profileSaved || !!existingSaved;
+    const currentSavedId = savedProfileId || existingSaved?.id || null;
 
     // Loan not started
     if (status.loanNotStarted) {
@@ -398,6 +417,96 @@ export default function LiveLoanStatus({ profile }: Props) {
                         </p>
                     </div>
                 </div>
+            </div>
+
+            {/* ═══ 9. SAVE THIS TRACKER ═══ */}
+            <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                {isAlreadySaved ? (
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Check className="w-4 h-4 text-emerald-500" />
+                            <span className="text-sm font-bold text-emerald-500">Saved to Profile</span>
+                        </div>
+                        <button
+                            onClick={() => {
+                                if (currentSavedId) {
+                                    removeProfile(currentSavedId);
+                                    setProfileSaved(false);
+                                    setSavedProfileId(null);
+                                }
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-xs font-bold border border-red-500/20"
+                        >
+                            <Trash2 size={12} /> Remove
+                        </button>
+                    </div>
+                ) : showSaveForm ? (
+                    <div className="space-y-3">
+                        <p className="text-sm font-bold" style={{ color: c.text }}>Name this loan tracker</p>
+                        <input
+                            autoFocus
+                            value={profileName}
+                            onChange={(e) => setProfileName(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && profileName.trim()) {
+                                    const id = Date.now().toString();
+                                    addProfile({
+                                        id,
+                                        name: profileName.trim(),
+                                        calculatorType: 'Loan EMI',
+                                        profileData: { ...profile },
+                                        createdAt: Date.now(),
+                                        updatedAt: Date.now(),
+                                    });
+                                    setProfileSaved(true);
+                                    setSavedProfileId(id);
+                                    setShowSaveForm(false);
+                                }
+                            }}
+                            placeholder="e.g., PNB Home Loan, Car Loan"
+                            className="w-full bg-transparent border rounded-xl px-3 py-2.5 text-sm outline-none"
+                            style={{ borderColor: c.border, color: c.text }}
+                            maxLength={40}
+                        />
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setShowSaveForm(false)}
+                                className="flex-1 py-2.5 rounded-xl text-xs font-bold border"
+                                style={{ borderColor: c.border, color: c.textSecondary }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (!profileName.trim()) return;
+                                    const id = Date.now().toString();
+                                    addProfile({
+                                        id,
+                                        name: profileName.trim(),
+                                        calculatorType: 'Loan EMI',
+                                        profileData: { ...profile },
+                                        createdAt: Date.now(),
+                                        updatedAt: Date.now(),
+                                    });
+                                    setProfileSaved(true);
+                                    setSavedProfileId(id);
+                                    setShowSaveForm(false);
+                                }}
+                                disabled={!profileName.trim()}
+                                className="flex-1 py-2.5 rounded-xl bg-emerald-500 text-white text-xs font-bold disabled:opacity-40"
+                            >
+                                Save Tracker
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <button
+                        onClick={() => setShowSaveForm(true)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 font-bold text-sm border border-emerald-500/20"
+                    >
+                        <Save size={16} /> Save this loan tracker
+                    </button>
+                )}
             </div>
         </div>
     );

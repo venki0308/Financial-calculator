@@ -196,6 +196,20 @@ export default function POTDCalculator() {
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(potdStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Days Invested', String(potdStatus.daysInvested)],
+                        ['Interest Earned', fmtINR(potdStatus.interestEarnedToday)],
+                        ['Current Value', fmtINR(potdStatus.valueToday)],
+                        ['Days Remaining', String(potdStatus.daysRemaining)],
+                        ['Maturity Date', potdStatus.maturityDate],
+                        ['Daily Earning', fmtINR(potdStatus.dailyEarning)],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_POTD_Report_${tag}`,
         });
     };
@@ -226,6 +240,20 @@ export default function POTDCalculator() {
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(potdStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Days Invested', String(potdStatus.daysInvested)],
+                        ['Interest Earned', fmtINR(potdStatus.interestEarnedToday)],
+                        ['Current Value', fmtINR(potdStatus.valueToday)],
+                        ['Days Remaining', String(potdStatus.daysRemaining)],
+                        ['Maturity Date', potdStatus.maturityDate],
+                        ['Daily Earning', fmtINR(potdStatus.dailyEarning)],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_POTD_Report_${tag}`,
         });
     };
@@ -492,6 +520,8 @@ export default function POTDCalculator() {
             {potdStatus && (
                 <div className="px-4 mb-5">
                     <LiveStatusCard
+                        calculatorType="POTD"
+                        profileData={{ principal: investment, annualRate: rate, tenureMonths: Number(years) * 12, startDate: potdStartDate, compoundingFreq: 4 }}
                         title="Live POTD Status"
                         subtitle={`${years} Year Post Office TD @ ${rate}%`}
                         startDate={potdStartDate}

@@ -174,6 +174,20 @@ export default function KVPCalculator() {
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(kvpStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Months Elapsed', String(kvpStatus.monthsElapsed)],
+                        ['Current Value', fmtINR(kvpStatus.valueToday)],
+                        ['Gain So Far', fmtINR(kvpStatus.gainSoFar)],
+                        ['Progress to Doubling', `${kvpStatus.progressToDoubling.toFixed(1)}%`],
+                        ['Doubling Date', kvpStatus.doublingDate],
+                        ['Premature Encashment Eligible', kvpStatus.prematureEligible ? 'Yes' : 'No'],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_KVP_Report_${tag}`,
         });
     };
@@ -204,6 +218,20 @@ export default function KVPCalculator() {
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(kvpStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Months Elapsed', String(kvpStatus.monthsElapsed)],
+                        ['Current Value', fmtINR(kvpStatus.valueToday)],
+                        ['Gain So Far', fmtINR(kvpStatus.gainSoFar)],
+                        ['Progress to Doubling', `${kvpStatus.progressToDoubling.toFixed(1)}%`],
+                        ['Doubling Date', kvpStatus.doublingDate],
+                        ['Premature Encashment Eligible', kvpStatus.prematureEligible ? 'Yes' : 'No'],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_KVP_Report_${tag}`,
         });
     };
@@ -472,6 +500,8 @@ export default function KVPCalculator() {
             {kvpStatus && (
                 <div className="px-4 mb-5">
                     <LiveStatusCard
+                        calculatorType="KVP"
+                        profileData={{ principal: investment, rate, purchaseDate: kvpPurchaseDate }}
                         title="KVP Live Status"
                         subtitle={`${Math.floor(kvpStatus.monthsElapsed / 12)}y ${kvpStatus.monthsElapsed % 12}m elapsed of ${Math.floor(kvpStatus.doublingMonths / 12)}y ${kvpStatus.doublingMonths % 12}m`}
                         startDate={kvpPurchaseDate}

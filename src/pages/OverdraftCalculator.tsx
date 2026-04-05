@@ -1,14 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
-import { FileText, Download, Wallet, ChevronDown, ChevronUp, Building2, User, Landmark, Lightbulb, Scale, ArrowLeft } from 'lucide-react';
+import { FileText, Download, Wallet, ChevronDown, ChevronUp, Building2, User, Landmark, Lightbulb, Scale, ArrowLeft, Save, Check, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF as exportReportPDF, exportToExcel as exportReportExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import DateInput from '../components/DateInput';
 import { useAppColors } from '../theme/useAppColors';
+import { useCalculatorStore } from '../store/useCalculatorStore';
 
 // Helper to extract number
 const parseFormattedNumber = (value: string): number => {
@@ -28,6 +30,9 @@ export default function OverdraftCalculator() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const c = useAppColors();
+  const { addSaved, removeSaved } = useCalculatorStore();
+  const [saved, setSaved] = useState(false);
+  const [lastSavedId, setLastSavedId] = useState<string | null>(null);
 
   const [odType, setOdType] = useState('business');
   const [odLimit, setOdLimit] = useState('10,00,000');
@@ -222,6 +227,27 @@ export default function OverdraftCalculator() {
     AnalyticsService.trackFileDownload('excel', 'overdraft_calculator');
   };
 
+  const handleSave = () => {
+    const newId = `OD-Save-${Date.now()}`;
+    addSaved({
+      id: newId,
+      calculatorType: 'Overdraft Calculator',
+      inputValues: { odType, limitNum, utilizedNum, rateNum, daysNum },
+      resultValues: { totalInterest, totalPayableAmount, effectiveCost },
+      timestamp: Date.now(),
+    });
+    setLastSavedId(newId);
+    setSaved(true);
+  };
+
+  const handleRemove = () => {
+    if (lastSavedId) {
+      removeSaved(lastSavedId);
+      setLastSavedId(null);
+      setSaved(false);
+    }
+  };
+
   const odTypes = [
     { id: 'business', icon: Building2, labelKey: 'od.typeBusiness' },
     { id: 'personal', icon: User, labelKey: 'od.typePersonal' },
@@ -259,6 +285,25 @@ export default function OverdraftCalculator() {
             style={{ backgroundColor: c.card, borderColor: c.border, color: c.text }}>
             <Download size={16} /> Excel
           </button>
+      </div>
+
+      {/* Save / Remove Button */}
+      <div className="mb-6">
+        {saved ? (
+            <div className="flex gap-2">
+                <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: '#10B98115', color: '#10B981', border: '1px solid #10B98130' }}>
+                    <Check size={16} /> Saved
+                </div>
+                <button onClick={handleRemove} className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: '#EF444415', color: '#EF4444', border: '1px solid #EF444430' }}>
+                    <Trash2 size={16} />
+                </button>
+            </div>
+        ) : (
+            <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg">
+                <Save size={16} /> Save Calculation
+            </motion.button>
+        )}
       </div>
 
       {/* SECTION 2: OD Type Selector */}

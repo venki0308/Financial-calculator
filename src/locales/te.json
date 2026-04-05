@@ -4690,6 +4690,17 @@
         "interestAccruingDaily": "ప్రతిరోజూ వడ్డీ జమ అవుతోంది",
         "perDay": "రోజుకు",
         "perHour": "గంటకు",
-        "untilNextEmi": "{{date}} నాటి తదుపరి EMI వరకు సుమారుగా {{amount}} మరింత వడ్డీ జమ అవుతుంది."
+        "untilNextEmi": "{{date}} నాటి తదుపరి EMI వరకు సుమారుగా {{amount}} మరింత వడ్డీ జమ అవుతుంది.",
+        "saveTracker": "ఈ ట్రాకర్ సేవ్ చేయండి",
+        "savedToProfile": "ప్రొఫైల్లో సేవ్ చేయబడింది",
+        "nameTracker": "ఈ ట్రాకర్కు పేరు పెట్టండి",
+        "namePlaceholder": "ఉదా: PNB హోమ్ లోన్, నా SIP",
+        "saveBtn": "ట్రాకర్ సేవ్ చేయండి",
+        "removeBtn": "తొలగించండి",
+        "cancelBtn": "రద్దు",
+        "myTrackedTitle": "నా ట్రాక్ చేసిన పెట్టుబడులు & రుణాలు",
+        "view": "చూడండి",
+        "savedOn": "సేవ్ చేసిన తేదీ",
+        "noTrackers": "ఇంకా ట్రాకర్లు సేవ్ చేయలేదు"
     }
 }

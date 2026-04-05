@@ -175,6 +175,22 @@ export default function SSYCalculator() {
                 `₹${Math.round(row.cumDeposit).toLocaleString('en-IN')}`,
                 row.deposit > 0 ? t('ssy.yes') : t('ssy.no'),
             ]),
+            additionalTables: [
+                ...(ssyStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ["Girl's Age", `${ssyStatus.girlAge} years`],
+                        ['Account Age', `${ssyStatus.accountAge} years`],
+                        ['Deposit Phase', ssyStatus.depositPhaseActive ? 'Active' : 'Complete'],
+                        ['Balance Today', formatINR(ssyStatus.balanceToday)],
+                        ['Total Deposited', formatINR(ssyStatus.totalDeposited)],
+                        ['Interest Earned', formatINR(ssyStatus.interestEarned)],
+                        ['Maturity Date', ssyStatus.maturityDate],
+                        ['Withdrawal Eligible', ssyStatus.withdrawalEligible ? 'Yes' : 'No'],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_SSY_Report_${tag}`,
         });
     };
@@ -197,6 +213,22 @@ export default function SSYCalculator() {
             projectionTitle: t('ssy.yearlyGrowth'),
             projectionColumns: [t('ssy.year'), t('ssy.age'), t('ssy.deposit'), t('ssy.interest'), t('ssy.balance'), t('ssy.cumulativeDeposit'), t('ssy.cumulativeInterest')],
             projectionRows: result.timeline.map((row: any) => [row.year, row.age, Math.round(row.deposit), Math.round(row.interest), Math.round(row.balance), Math.round(row.cumDeposit), Math.round(row.cumInterest)]),
+            additionalTables: [
+                ...(ssyStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ["Girl's Age", `${ssyStatus.girlAge} years`],
+                        ['Account Age', `${ssyStatus.accountAge} years`],
+                        ['Deposit Phase', ssyStatus.depositPhaseActive ? 'Active' : 'Complete'],
+                        ['Balance Today', formatINR(ssyStatus.balanceToday)],
+                        ['Total Deposited', formatINR(ssyStatus.totalDeposited)],
+                        ['Interest Earned', formatINR(ssyStatus.interestEarned)],
+                        ['Maturity Date', ssyStatus.maturityDate],
+                        ['Withdrawal Eligible', ssyStatus.withdrawalEligible ? 'Yes' : 'No'],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_SSY_Report_${tag}`,
         });
     };
@@ -447,6 +479,8 @@ export default function SSYCalculator() {
                 {ssyStatus && (
                     <div className="mb-5">
                         <LiveStatusCard
+                            calculatorType="SSY"
+                            profileData={{ yearlyDeposit: effectiveAnnual, rate, openingDate: ssyOpenDate, girlDob }}
                             title="SSY Live Status"
                             subtitle={`Girl's age: ${ssyStatus.girlAge} years | Account age: ${ssyStatus.accountAge} years`}
                             startDate={ssyOpenDate}

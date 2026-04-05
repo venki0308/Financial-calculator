@@ -154,6 +154,20 @@ export default function GoalPlanner() {
                 `₹${Math.round(p.invested).toLocaleString('en-IN')}`,
                 `₹${Math.round(p.value).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(goalStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Months Invested', `${goalStatus.sipRunningYears}y ${goalStatus.sipRunningMonths}m`],
+                        ['Total Invested', formatINR(goalStatus.totalInvested)],
+                        ['Current Value', formatINR(goalStatus.currentValue)],
+                        ['Progress to Goal', `${goalStatus.progressToGoal.toFixed(1)}%`],
+                        ['Expected Goal Date', goalStatus.expectedGoalDate || 'N/A'],
+                        ['Still Needed', formatINR(Math.max(0, result.targetFV - goalStatus.currentValue))],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_Goal_Planner_${dateTag()}`,
         };
         await exportToPDF(config);
@@ -332,6 +346,8 @@ export default function GoalPlanner() {
                 {goalStatus && selectedGoal && (
                     <div className="mt-5">
                         <LiveStatusCard
+                            calculatorType="Goal Planner"
+                            profileData={{ monthlySip: result.monthlySIP, annualReturn: expectedReturn, startDate: goalStartDate, targetAmount: result.targetFV }}
                             title="Live Goal Status"
                             subtitle={t(selectedGoal.labelKey)}
                             startDate={goalStartDate}

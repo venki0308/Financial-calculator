@@ -4688,6 +4688,17 @@
         "interestAccruingDaily": "प्रतिदिन ब्याज जमा हो रहा है",
         "perDay": "प्रति दिन",
         "perHour": "प्रति घंटा",
-        "untilNextEmi": "{{date}} तक अगली EMI तक लगभग {{amount}} और ब्याज जमा होगा।"
+        "untilNextEmi": "{{date}} तक अगली EMI तक लगभग {{amount}} और ब्याज जमा होगा।",
+        "saveTracker": "इस ट्रैकर को सहेजें",
+        "savedToProfile": "प्रोफाइल में सहेजा गया",
+        "nameTracker": "इस ट्रैकर का नाम दें",
+        "namePlaceholder": "जैसे PNB होम लोन, मेरी SIP",
+        "saveBtn": "ट्रैकर सहेजें",
+        "removeBtn": "हटाएं",
+        "cancelBtn": "रद्द करें",
+        "myTrackedTitle": "मेरे ट्रैक किए निवेश और लोन",
+        "view": "देखें",
+        "savedOn": "सहेजा गया",
+        "noTrackers": "अभी कोई ट्रैकर सहेजा नहीं है"
     }
 }

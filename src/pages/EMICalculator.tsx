@@ -18,7 +18,7 @@ import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import LiveLoanStatus from '../components/LiveLoanStatus';
-import type { LoanProfile } from '../utils/loanStatusEngine';
+import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
 
 import {
     calculateReducingEMI, calculateFlatEMI, calculateEffectiveRate,
@@ -288,6 +288,25 @@ export default function EMICalculator() {
                     ['Interest Saved', formatINR(prepayInsight.interestSaved)],
                 ],
             });
+        }
+        if (loanProfile) {
+            const liveStatus = calculateLiveLoanStatus(loanProfile);
+            if (!liveStatus.loanNotStarted) {
+                tables.push({
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['EMIs Paid', String(liveStatus.emisPaid)],
+                        ['Principal Outstanding', formatINR(liveStatus.principalOutstanding)],
+                        ['Interest Paid So Far', formatINR(liveStatus.interestPaidSoFar)],
+                        ['Total Paid So Far', formatINR(liveStatus.totalPaidSoFar)],
+                        ['Next EMI Date', liveStatus.nextEmiDate],
+                        ['Daily Interest', formatINR(liveStatus.dailyInterest)],
+                        ['Settlement Amount Today', formatINR(liveStatus.totalSettlementToday)],
+                        ['Interest Saved if Closed Today', formatINR(liveStatus.interestSavedIfCloseToday)],
+                    ],
+                });
+            }
         }
         return tables.length > 0 ? tables : undefined;
     };

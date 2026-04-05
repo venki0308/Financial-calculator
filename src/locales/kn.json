@@ -4689,6 +4689,17 @@
         "interestAccruingDaily": "ಪ್ರತಿದಿನ ಬಡ್ಡಿ ಸಂಗ್ರಹವಾಗುತ್ತಿದೆ",
         "perDay": "ದಿನಕ್ಕೆ",
         "perHour": "ಗಂಟೆಗೆ",
-        "untilNextEmi": "{{date}} ಮುಂದಿನ EMI ವರೆಗೆ ಸುಮಾರು {{amount}} ಹೆಚ್ಚು ಬಡ್ಡಿ ಸಂಗ್ರಹವಾಗುತ್ತದೆ."
+        "untilNextEmi": "{{date}} ಮುಂದಿನ EMI ವರೆಗೆ ಸುಮಾರು {{amount}} ಹೆಚ್ಚು ಬಡ್ಡಿ ಸಂಗ್ರಹವಾಗುತ್ತದೆ.",
+        "saveTracker": "ಈ ಟ್ರಾಕರ್ ಉಳಿಸಿ",
+        "savedToProfile": "ಪ್ರೊಫೈಲ್ಗೆ ಉಳಿಸಲಾಗಿದೆ",
+        "nameTracker": "ಈ ಟ್ರಾಕರ್ಗೆ ಹೆಸರು ನೀಡಿ",
+        "namePlaceholder": "ಉದಾ: PNB ಮನೆ ಸಾಲ, ನನ್ನ SIP",
+        "saveBtn": "ಟ್ರಾಕರ್ ಉಳಿಸಿ",
+        "removeBtn": "ತೆಗೆದುಹಾಕಿ",
+        "cancelBtn": "ರದ್ದು",
+        "myTrackedTitle": "ನನ್ನ ಟ್ರಾಕ್ ಮಾಡಿದ ಹೂಡಿಕೆಗಳು & ಸಾಲಗಳು",
+        "view": "ನೋಡಿ",
+        "savedOn": "ಉಳಿಸಿದ ದಿನಾಂಕ",
+        "noTrackers": "ಇನ್ನೂ ಟ್ರಾಕರ್ಗಳು ಉಳಿಸಲಾಗಿಲ್ಲ"
     }
 }

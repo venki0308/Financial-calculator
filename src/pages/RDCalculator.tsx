@@ -199,6 +199,20 @@ export default function RDCalculator() {
                 `₹${Math.round(r.cumInterest).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.balance).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(rdStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Months Completed', String(rdStatus.monthsInvested)],
+                        ['Total Deposited', formatINR(rdStatus.totalDeposited)],
+                        ['Interest Earned', formatINR(rdStatus.interestEarned)],
+                        ['Current Value', formatINR(rdStatus.currentValue)],
+                        ['Months Remaining', String(rdStatus.monthsRemaining)],
+                        ['Maturity Date', rdStatus.maturityDate],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_RD_Report_${tag}`,
         };
         await exportToPDF(config);
@@ -222,6 +236,20 @@ export default function RDCalculator() {
             projectionTitle: 'Monthly RD Schedule',
             projectionColumns: ['Month', 'Monthly Deposit', 'Interest Accrued', 'Cumulative Interest', 'Balance'],
             projectionRows: result.schedule.map((r: any) => [r.month, Math.round(r.deposit), Math.round(r.interestEarned), Math.round(r.cumInterest), Math.round(r.balance)]),
+            additionalTables: [
+                ...(rdStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Months Completed', String(rdStatus.monthsInvested)],
+                        ['Total Deposited', formatINR(rdStatus.totalDeposited)],
+                        ['Interest Earned', formatINR(rdStatus.interestEarned)],
+                        ['Current Value', formatINR(rdStatus.currentValue)],
+                        ['Months Remaining', String(rdStatus.monthsRemaining)],
+                        ['Maturity Date', rdStatus.maturityDate],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_RD_Report_${tag}`,
         };
         await exportToExcel(config);
@@ -526,6 +554,8 @@ export default function RDCalculator() {
             {rdStatus && (
                 <div className="px-4 mb-5">
                     <LiveStatusCard
+                        calculatorType="RD"
+                        profileData={{ monthlyDeposit: monthly, annualRate: effectiveRate, tenureMonths: months, startDate: rdStartDate }}
                         title="Live RD Status"
                         subtitle={`${months} Month RD @ ${effectiveRate}%`}
                         startDate={rdStartDate}

@@ -272,6 +272,21 @@ export default function SIPCalculator() {
                 `₹${Math.round(r.returns).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.invested + r.returns).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(sipStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['SIP Running For', `${sipStatus.sipRunningYears}y ${sipStatus.sipRunningMonths}m`],
+                        ['Total Invested', formatINR(sipStatus.totalInvested)],
+                        ['Current Estimated Value', formatINR(sipStatus.currentValue)],
+                        ['Wealth Gained', formatINR(sipStatus.wealthGained)],
+                        ['Return %', `${sipStatus.returnPercent.toFixed(1)}%`],
+                        ...(activeTab === 'goal' && sipStatus.progressToGoal > 0 ? [['Progress to Goal', `${sipStatus.progressToGoal.toFixed(1)}%`]] : []),
+                        ...(sipStatus.expectedGoalDate ? [['Expected Goal Date', sipStatus.expectedGoalDate]] : []),
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_SIP_Report_${tag}`,
         };
         await exportToPDF(config);
@@ -308,6 +323,21 @@ export default function SIPCalculator() {
                 Math.round(r.returns),
                 Math.round(r.invested + r.returns),
             ]),
+            additionalTables: [
+                ...(sipStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['SIP Running For', `${sipStatus.sipRunningYears}y ${sipStatus.sipRunningMonths}m`],
+                        ['Total Invested', formatINR(sipStatus.totalInvested)],
+                        ['Current Estimated Value', formatINR(sipStatus.currentValue)],
+                        ['Wealth Gained', formatINR(sipStatus.wealthGained)],
+                        ['Return %', `${sipStatus.returnPercent.toFixed(1)}%`],
+                        ...(activeTab === 'goal' && sipStatus.progressToGoal > 0 ? [['Progress to Goal', `${sipStatus.progressToGoal.toFixed(1)}%`]] : []),
+                        ...(sipStatus.expectedGoalDate ? [['Expected Goal Date', sipStatus.expectedGoalDate]] : []),
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_SIP_Report_${tag}`,
         };
         await exportToExcel(config);
@@ -548,6 +578,8 @@ export default function SIPCalculator() {
                 {sipStatus && (
                     <div className="mb-5">
                         <LiveStatusCard
+                            calculatorType="SIP"
+                            profileData={{ monthlySip: monthly, annualReturn: rate, startDate: sipStartDate, targetAmount: activeTab === 'goal' ? goalTarget : undefined }}
                             title={t('sip.liveInvestmentStatus')}
                             subtitle={`${activeTab === 'basic' ? t('sip.basicSip') : activeTab === 'stepup' ? t('sip.stepUpSip') : t('sip.goalSip')}`}
                             startDate={sipStartDate}

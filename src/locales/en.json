@@ -2274,7 +2274,9 @@
         "disbursementDate": "Loan Disbursement Date",
         "disbursementDateHint": "Date loan was disbursed",
         "emiDueDay": "EMI Due Day",
-        "emiDueDayHint": "Day of month your EMI is debited"
+        "emiDueDayHint": "Day of month your EMI is debited",
+        "saveCalculation": "Save Calculation",
+        "saved": "Saved!"
     },
     "compare": {
         "title": "Compare Scenarios",
@@ -2619,7 +2621,9 @@
         "tipBreachTitle": "Avoid Limit Breach",
         "tipBreachDesc": "Exceeding the sanctioned limit triggers heavy penal interest (usually +2% to +4%). Keep a buffer for safety.",
         "tipRenegotiateTitle": "Renegotiate Rates",
-        "tipRenegotiateDesc": "If your limit utilization is consistently high and credit score is good, request your bank for a lower interest rate."
+        "tipRenegotiateDesc": "If your limit utilization is consistently high and credit score is good, request your bank for a lower interest rate.",
+        "saveCalculation": "Save Calculation",
+        "saved": "Saved!"
     },
     "breakeven": {
         "title": "Break-Even Calculator",
@@ -3599,6 +3603,17 @@
         "startDateHint": "Enter to see live progress",
         "accountOpenDate": "Account Opening Date",
         "purchaseDate": "Purchase Date",
-        "girlDobLabel": "Girl's Date of Birth"
+        "girlDobLabel": "Girl's Date of Birth",
+        "saveTracker": "Save this tracker",
+        "savedToProfile": "Saved to Profile",
+        "nameTracker": "Name this tracker",
+        "namePlaceholder": "e.g., PNB Home Loan, My SIP",
+        "saveBtn": "Save Tracker",
+        "removeBtn": "Remove",
+        "cancelBtn": "Cancel",
+        "myTrackedTitle": "My Tracked Investments & Loans",
+        "view": "View",
+        "savedOn": "Saved on",
+        "noTrackers": "No saved trackers yet"
     }
 }

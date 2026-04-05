@@ -159,6 +159,22 @@ export default function AdvancedPPFCalculator() {
                 `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.closing).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(ppfStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Account Age (years)', String(ppfStatus.yearsCompleted)],
+                        ['Current Year (of 15)', String(ppfStatus.currentYear)],
+                        ['Balance Today', formatINR(ppfStatus.balanceToday)],
+                        ['Total Deposited', formatINR(ppfStatus.totalDeposited)],
+                        ['Interest Earned', formatINR(ppfStatus.interestEarned)],
+                        ['Maturity Date', ppfStatus.maturityDate],
+                        ['Loan Eligible', ppfStatus.loanEligible ? 'Yes' : 'No'],
+                        ['Withdrawal Eligible', ppfStatus.withdrawalEligible ? 'Yes' : 'No'],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_PPF_Report_${tag}`,
         });
     };
@@ -180,6 +196,22 @@ export default function AdvancedPPFCalculator() {
             projectionTitle: t('ppf.yearlyGrowth'),
             projectionColumns: [t('ppf.year'), t('ppf.openingBalance'), t('ppf.annualDeposit'), t('ppf.interestEarned'), t('ppf.closingBalance')],
             projectionRows: schedule.map((r: any) => [r.year, Math.round(r.opening || 0), Math.round(r.contribution), Math.round(r.interest), Math.round(r.closing)]),
+            additionalTables: [
+                ...(ppfStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['Account Age (years)', String(ppfStatus.yearsCompleted)],
+                        ['Current Year (of 15)', String(ppfStatus.currentYear)],
+                        ['Balance Today', formatINR(ppfStatus.balanceToday)],
+                        ['Total Deposited', formatINR(ppfStatus.totalDeposited)],
+                        ['Interest Earned', formatINR(ppfStatus.interestEarned)],
+                        ['Maturity Date', ppfStatus.maturityDate],
+                        ['Loan Eligible', ppfStatus.loanEligible ? 'Yes' : 'No'],
+                        ['Withdrawal Eligible', ppfStatus.withdrawalEligible ? 'Yes' : 'No'],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_PPF_Report_${tag}`,
         });
     };
@@ -402,6 +434,8 @@ export default function AdvancedPPFCalculator() {
                 {ppfStatus && (
                     <div className="mb-5">
                         <LiveStatusCard
+                            calculatorType="PPF"
+                            profileData={{ yearlyDeposit: annualContribution, rate, openingDate: ppfOpenDate }}
                             title="PPF Live Status"
                             subtitle={`Year ${ppfStatus.currentYear} of 15`}
                             startDate={ppfOpenDate}

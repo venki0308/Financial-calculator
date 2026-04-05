@@ -157,6 +157,20 @@ export default function NSCCalculator() {
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(nscStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['NSC Age', `${nscStatus.yearsCompleted}y ${nscStatus.monthsInCurrentYear}m`],
+                        ['Current Value', fmtINR(nscStatus.valueToday)],
+                        ['Interest Earned', fmtINR(nscStatus.interestEarned)],
+                        ['Maturity Date', nscStatus.maturityDate],
+                        ['Days to Maturity', String(nscStatus.daysToMaturity)],
+                        ['Maturity Value', fmtINR(nscStatus.maturityValue)],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_NSC_Report_${tag}`,
         });
     };
@@ -188,6 +202,20 @@ export default function NSCCalculator() {
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
+            additionalTables: [
+                ...(nscStatus ? [{
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
+                    rows: [
+                        ['NSC Age', `${nscStatus.yearsCompleted}y ${nscStatus.monthsInCurrentYear}m`],
+                        ['Current Value', fmtINR(nscStatus.valueToday)],
+                        ['Interest Earned', fmtINR(nscStatus.interestEarned)],
+                        ['Maturity Date', nscStatus.maturityDate],
+                        ['Days to Maturity', String(nscStatus.daysToMaturity)],
+                        ['Maturity Value', fmtINR(nscStatus.maturityValue)],
+                    ] as Array<Array<string | number>>,
+                }] : []),
+            ],
             filename: `FinCalix_NSC_Report_${tag}`,
         });
     };
@@ -419,6 +447,8 @@ export default function NSCCalculator() {
             {nscStatus && (
                 <div className="px-4 mb-5">
                     <LiveStatusCard
+                        calculatorType="NSC"
+                        profileData={{ principal: investment, rate, purchaseDate: nscPurchaseDate }}
                         title="NSC Live Status"
                         subtitle={`Year ${nscStatus.yearsCompleted} of 5${nscStatus.yearsCompleted >= 5 ? ' — Matured!' : ''}`}
                         startDate={nscPurchaseDate}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bookmark, ChevronDown, ChevronUp, Trash2, Calculator, TrendingUp, IndianRupee, Calendar, Percent, CreditCard, PiggyBank, Home, Briefcase, Heart, GraduationCap } from 'lucide-react';
+import { ArrowLeft, Bookmark, ChevronDown, ChevronUp, Trash2, Calculator, TrendingUp, IndianRupee, Calendar, Percent, CreditCard, PiggyBank, Home, Briefcase, Heart, GraduationCap, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore, Calculation } from '../store/useCalculatorStore';
@@ -63,6 +63,9 @@ const calcMeta: Record<string, { label: string; icon: any; color: string; gradie
     'Flat Price': { label: 'Flat Price Calculator', icon: Home, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
     'Simple Interest': { label: 'Simple Interest', icon: Calculator, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
     'Compound Interest': { label: 'Compound Interest', icon: Calculator, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
+    'Advanced Mortgage': { label: 'Advanced Mortgage', icon: Home, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
+    'Overdraft Calculator': { label: 'Overdraft Calculator', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
+    'Live Loan Status': { label: 'Loan Tracker', icon: Activity, color: '#10B981', gradient: 'from-emerald-600/20 to-teal-600/20' },
 };
 
 const defaultMeta = { label: 'Calculator', icon: Calculator, color: '#64748B', gradient: 'from-slate-600/20 to-gray-600/20' };

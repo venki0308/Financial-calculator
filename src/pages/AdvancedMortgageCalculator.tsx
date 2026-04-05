@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Info, Plus, Trash2, ChevronDown, ChevronUp, Calculator, Home, AlertTriangle, AlertCircle, CheckCircle2, IndianRupee, Receipt, FileText, Download, TrendingDown, Sliders } from 'lucide-react';
+import { ArrowLeft, Info, Plus, Trash2, ChevronDown, ChevronUp, Calculator, Home, AlertTriangle, AlertCircle, CheckCircle2, IndianRupee, Receipt, FileText, Download, TrendingDown, Sliders, Save, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import NumberInput from '../components/NumberInput';
@@ -12,10 +12,11 @@ import {
     formatINRShort,
 } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
+import { useCalculatorStore } from '../store/useCalculatorStore';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import DateInput from '../components/DateInput';
 import LiveLoanStatus from '../components/LiveLoanStatus';
-import type { LoanProfile } from '../utils/loanStatusEngine';
+import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
 import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
@@ -29,6 +30,9 @@ export default function AdvancedMortgageCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Advanced_Mortgage_Calculator'); }, []);
     const navigate = useNavigate();
     const c = useAppColors();
+    const { addSaved, removeSaved } = useCalculatorStore();
+    const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
 
     // ─── Input State ────────────────────────────────────────────────────────
     const [propertyValue, setPropertyValue] = useState(10000000);
@@ -364,6 +368,25 @@ export default function AdvancedMortgageCalculator() {
                         ['Total Payment', forExcel ? result.totalPayment : formatINR(result.totalPayment), forExcel ? wiResult.totalPayment : formatINR(wiResult.totalPayment), forExcel ? wiResult.paymentDiff : formatINR(wiResult.paymentDiff)],
                     ] as Array<Array<string | number>>,
                 }] : []),
+                ...(() => {
+                    if (!loanProfile) return [];
+                    const liveStatus = calculateLiveLoanStatus(loanProfile);
+                    if (liveStatus.loanNotStarted) return [];
+                    return [{
+                        title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                        columns: ['Metric', 'Value'],
+                        rows: [
+                            ['EMIs Paid', String(liveStatus.emisPaid)],
+                            ['Principal Outstanding', formatINR(liveStatus.principalOutstanding)],
+                            ['Interest Paid So Far', formatINR(liveStatus.interestPaidSoFar)],
+                            ['Total Paid So Far', formatINR(liveStatus.totalPaidSoFar)],
+                            ['Next EMI Date', liveStatus.nextEmiDate],
+                            ['Daily Interest', formatINR(liveStatus.dailyInterest)],
+                            ['Settlement Amount Today', formatINR(liveStatus.totalSettlementToday)],
+                            ['Interest Saved if Closed Today', formatINR(liveStatus.interestSavedIfCloseToday)],
+                        ] as Array<Array<string | number>>,
+                    }];
+                })(),
             ],
             filename: `FinCalix_Mortgage_Report_${tag}`,
         };
@@ -375,6 +398,27 @@ export default function AdvancedMortgageCalculator() {
 
     const handleDownloadExcel = async () => {
         await exportToExcel(buildExportConfig(true));
+    };
+
+    const handleSave = () => {
+        const newId = `AdvMortgage-Save-${Date.now()}`;
+        addSaved({
+            id: newId,
+            calculatorType: 'Advanced Mortgage',
+            inputValues: { propertyValue, downPayment, loanAmount, interestRate, tenureYears, loanRateType, loanPurpose },
+            resultValues: { originalEmi: result.originalEmi, totalInterest: result.totalInterest, totalPayment: result.totalPayment },
+            timestamp: Date.now(),
+        });
+        setLastSavedId(newId);
+        setSaved(true);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     // ─── Render ─────────────────────────────────────────────────────────────
@@ -741,6 +785,23 @@ export default function AdvancedMortgageCalculator() {
                         <Download size={18} className="text-emerald-500" /> {t('mortgage.exportExcel')}
                     </motion.button>
                 </div>
+
+                {/* Save / Remove Button */}
+                {saved ? (
+                    <div className="flex gap-2">
+                        <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: '#10B98115', color: '#10B981', border: '1px solid #10B98130' }}>
+                            <Check size={16} /> Saved
+                        </div>
+                        <button onClick={handleRemove} className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: '#EF444415', color: '#EF4444', border: '1px solid #EF444430' }}>
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                ) : (
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave}
+                        className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg">
+                        <Save size={16} /> Save Calculation
+                    </motion.button>
+                )}
 
                 {/* Savings Banner */}
                 {enablePrepayment && (result.interestSaved > 0 || result.timeSavedMonths > 0) && (
