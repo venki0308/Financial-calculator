@@ -516,6 +516,22 @@ export default function POMISCalculator() {
                 </div>
             </div>
 
+            {pomisStatus && (
+                <LiveStatusCard
+                    title="MIS Status Today"
+                    subtitle={`${pomisStatus.monthsCompleted} of 60 months complete`}
+                    startDate={pomisStartDate}
+                    metrics={[
+                        { label: 'Monthly Income', value: formatINR(pomisStatus.monthlyIncome), color: 'green' },
+                        { label: 'Total Received', value: formatINR(pomisStatus.totalIncomeReceived), color: 'blue' },
+                        { label: 'Months Left', value: `${pomisStatus.monthsRemaining}` },
+                    ]}
+                    progressPercent={(pomisStatus.monthsCompleted / 60) * 100}
+                    progressLabel={`${pomisStatus.monthsCompleted} of 60 months (${((pomisStatus.monthsCompleted / 60) * 100).toFixed(0)}%)`}
+                    insightText={`Received ${formatINR(pomisStatus.totalIncomeReceived)} income so far. ${pomisStatus.monthsRemaining} months to maturity on ${new Date(pomisStatus.maturityDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}.`}
+                />
+            )}
+
             <DisclaimerComponent module="pomis" />
         </div>
     );

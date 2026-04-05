@@ -422,12 +422,41 @@ export default function EMICalculator() {
             </div>
 
             
-            {/* Live Loan Status */}
-            {loanProfile && (
-                <div className="px-4 mt-4">
-                    <LiveLoanStatus profile={loanProfile} />
+            {/* ── Live Loan Tracker ────────────────────────────── */}
+            <div className="px-4 mt-4 space-y-4">
+                <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-sm dark:shadow-none space-y-3">
+                    <div className="flex items-center gap-2">
+                        <span className="text-lg">📍</span>
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-800 dark:text-foreground">{t('emi.liveTracker')}</h3>
+                            <p className="text-[10px] text-muted-foreground">{t('emi.liveTrackerDesc')}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="text-xs font-semibold text-slate-700 dark:text-muted-foreground mb-1.5 block">{t('emi.disbursementDate')}</label>
+                        <DateInput value={loanStartDate} onChange={setLoanStartDate} />
+                    </div>
+                    {loanStartDate && (
+                        <div>
+                            <label className="text-xs font-semibold text-slate-700 dark:text-muted-foreground mb-1.5 block">{t('emi.emiDueDay')}</label>
+                            <div className="flex gap-2 flex-wrap">
+                                {[1, 5, 7, 10, 15].map((d) => (
+                                    <button key={d} onClick={() => setEmiDueDay(d)}
+                                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${emiDueDay === d
+                                            ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm'
+                                            : 'bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-slate-600 dark:text-muted-foreground'
+                                        }`}>
+                                        {d}
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="text-[9px] text-muted-foreground mt-1">{t('emi.emiDueDayHint')}</p>
+                        </div>
+                    )}
                 </div>
-            )}
+
+                {loanProfile && <LiveLoanStatus profile={loanProfile} />}
+            </div>
 
             <DisclaimerComponent module="emi" />
 
@@ -498,29 +527,6 @@ export default function EMICalculator() {
                             min={1} max={tenureUnit === 'months' ? config.maxTenureYears * 12 : config.maxTenureYears}
                             suffix={tenureUnit === 'months' ? ' months' : ' years'}
                             helperText={tenureUnit === 'months' ? `1 - ${config.maxTenureYears * 12} months` : `1 - ${config.maxTenureYears} years`} />
-                    </div>
-                </div>
-
-                {/* ── Live Loan Tracker Inputs ────────────────────── */}
-                <div className="mb-5 p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-sm dark:shadow-none space-y-3">
-                    <div>
-                        <h3 className="text-sm font-bold text-slate-800 dark:text-foreground">{t('emi.liveTracker')}</h3>
-                        <p className="text-[10px] text-muted-foreground">{t('emi.liveTrackerDesc')}</p>
-                    </div>
-                    <DateInput value={loanStartDate} onChange={setLoanStartDate} />
-                    <div>
-                        <label className="text-xs font-semibold text-slate-700 dark:text-muted-foreground mb-1.5 block">{t('emi.emiDueDay')}</label>
-                        <div className="flex gap-2 flex-wrap">
-                            {[1, 5, 7, 10, 15].map((d) => (
-                                <button key={d} onClick={() => setEmiDueDay(d)}
-                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${emiDueDay === d
-                                        ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm'
-                                        : 'bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-slate-600 dark:text-muted-foreground'
-                                    }`}>
-                                    {d}
-                                </button>
-                            ))}
-                        </div>
                     </div>
                 </div>
 

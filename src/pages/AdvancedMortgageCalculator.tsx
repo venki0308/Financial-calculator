@@ -523,38 +523,6 @@ export default function AdvancedMortgageCalculator() {
                             min={0} max={5000000} step={1000} prefix="₹" helperText={t('mortgage.preEmiInterestHelper')} />
                     </div>
 
-                    {/* Live Loan Status Inputs */}
-                    <div className="pt-4 border-t space-y-4" style={{ borderColor: c.border }}>
-                        <div className="flex items-center gap-2">
-                            <Info className="w-4 h-4" style={{ color: '#3B82F6' }} />
-                            <p className="text-sm font-semibold" style={{ color: c.text }}>{t('mortgage.liveTracker')}</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <p className="text-sm font-medium mb-2" style={{ color: c.textSecondary }}>{t('mortgage.loanDisbursementDate', 'Loan Disbursement Date')}</p>
-                                <DateInput
-                                    value={loanStartDate}
-                                    onChange={setLoanStartDate}
-                                />
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium mb-2" style={{ color: c.textSecondary }}>{t('mortgage.emiDueDay', 'EMI Due Day')}</p>
-                                <div className="flex gap-2 flex-wrap">
-                                    {[1, 5, 7, 10, 15].map(day => (
-                                        <button key={day} onClick={() => setEmiDueDay(day)}
-                                            className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all border"
-                                            style={{
-                                                backgroundColor: emiDueDay === day ? '#3B82F6' : 'transparent',
-                                                color: emiDueDay === day ? '#fff' : c.textSecondary,
-                                                borderColor: emiDueDay === day ? '#3B82F6' : c.border,
-                                            }}>
-                                            {day}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 {/* 2. AFFORDABILITY & INSIGHTS */}
@@ -1228,10 +1196,41 @@ export default function AdvancedMortgageCalculator() {
                     </AnimatePresence>
                 </div>
 
-                {/* Live Loan Status */}
-                {loanProfile && (
-                    <LiveLoanStatus profile={loanProfile} />
-                )}
+                {/* ── Live Loan Tracker ──────────────────────────── */}
+                <div className="p-5 rounded-2xl border shadow-sm space-y-4" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                    <div className="flex items-center gap-2">
+                        <span className="text-lg">📍</span>
+                        <div>
+                            <h3 className="font-semibold text-sm" style={{ color: c.text }}>{t('mortgage.liveTracker')}</h3>
+                            <p className="text-[10px]" style={{ color: c.textSecondary }}>{t('mortgage.liveTrackerDesc')}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p className="text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>{t('mortgage.disbursementDate')}</p>
+                        <DateInput value={loanStartDate} onChange={setLoanStartDate} />
+                    </div>
+                    {loanStartDate && (
+                        <div>
+                            <p className="text-xs font-medium mb-1.5" style={{ color: c.textSecondary }}>{t('mortgage.emiDueDay')}</p>
+                            <div className="flex gap-2 flex-wrap">
+                                {[1, 5, 7, 10, 15].map(day => (
+                                    <button key={day} onClick={() => setEmiDueDay(day)}
+                                        className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all border"
+                                        style={{
+                                            backgroundColor: emiDueDay === day ? '#3B82F6' : 'transparent',
+                                            color: emiDueDay === day ? '#fff' : c.textSecondary,
+                                            borderColor: emiDueDay === day ? '#3B82F6' : c.border,
+                                        }}>
+                                        {day}
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="text-[9px] mt-1" style={{ color: c.textSecondary }}>{t('mortgage.emiDueDayHint')}</p>
+                        </div>
+                    )}
+                </div>
+
+                {loanProfile && <LiveLoanStatus profile={loanProfile} />}
 
                 <DisclaimerComponent module="mortgage" />
 
