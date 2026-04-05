@@ -11,6 +11,7 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import DateInput from '../components/DateInput';
 import { useAppColors } from '../theme/useAppColors';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 
 // Helper to extract number
 const parseFormattedNumber = (value: string): number => {
@@ -33,6 +34,29 @@ export default function OverdraftCalculator() {
   const { addSaved, removeSaved } = useCalculatorStore();
   const [saved, setSaved] = useState(false);
   const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+  const [loanSaved, setLoanSaved] = useState(false);
+
+  const handleSaveToMyLoans = () => {
+    const loan: SavedLoan = {
+      id: generateLoanId(),
+      nickName: `${odType === 'business' ? 'Business' : odType === 'personal' ? 'Personal' : odType === 'salary' ? 'Salary' : 'Secured'} OD`,
+      loanType: 'other',
+      lenderName: '',
+      loanAmount: utilizedNum,
+      interestRate: rateNum,
+      tenureMonths: Math.max(1, Math.round(daysNum / 30)),
+      emiAmount: Math.round(totalInterest / Math.max(1, Math.round(daysNum / 30))),
+      rateType: 'floating',
+      disbursementDate: startDate,
+      emiDueDay: 1,
+      notes: `OD Limit: ${formatINR(limitNum)} | Utilized: ${formatINR(utilizedNum)} | ${daysNum} days`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isActive: true,
+    };
+    saveLoanToStorage(loan);
+    setLoanSaved(true);
+  };
 
   const [odType, setOdType] = useState('business');
   const [odLimit, setOdLimit] = useState('10,00,000');
@@ -691,6 +715,23 @@ export default function OverdraftCalculator() {
               <p className="text-[10px] text-purple-600/80 dark:text-purple-200/70">{t('od.tipRenegotiateDesc')}</p>
           </div>
       </div>
+
+      {/* Save to My Loans */}
+      {utilizedNum > 0 && (
+        <div className="p-4 rounded-2xl border shadow-sm mb-6" style={{ backgroundColor: c.card, borderColor: c.border }}>
+          {loanSaved ? (
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-500" />
+              <span className="text-sm font-bold text-emerald-500">{t('tw.savedToMyLoans')}</span>
+              <button onClick={() => navigate('/my-loans')} className="ml-auto text-xs font-bold text-violet-500">{t('tw.viewInMyLoans')}</button>
+            </div>
+          ) : (
+            <button onClick={handleSaveToMyLoans} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 font-bold text-sm border border-emerald-500/20">
+              <Save size={16} /> {t('tw.saveToMyLoans')}
+            </button>
+          )}
+        </div>
+      )}
 
       <DisclaimerComponent module="overdraft" />
 

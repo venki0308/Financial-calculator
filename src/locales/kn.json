@@ -218,6 +218,10 @@
             "preGst": "GST ಮುಂಚಿನ ಮೊತ್ತ",
             "postGst": "GST ನಂತರದ ಮೊತ್ತ"
         },
+        "twoWheeler": {
+            "name": "ಟೂ ವೀಲರ್ ಲೋನ್",
+            "desc": "ಪೆಟ್ರೋಲ್, ಎಲೆಕ್ಟ್ರಿಕ್ & CNG — ಸಂಪೂರ್ಣ ವಿಶ್ಲೇಷಣೆ"
+        },
         "carLoan": {
             "name": "ಕಾರ್ ಸಾಲ ಕ್ಯಾಲ್ಕುಲೇಟರ್",
             "desc": "ರಿಯಾಯಿತಿ & ಡೌನ್ ಪೇಮೆಂಟ್",
@@ -4831,6 +4835,38 @@
         "myTrackedTitle": "ನನ್ನ ಟ್ರ್ಯಾಕ್ ಮಾಡಿದ ಹೂಡಿಕೆಗಳು & ಸಾಲಗಳು",
         "view": "ವೀಕ್ಷಿಸಿ",
         "noTrackers": "ಇನ್ನೂ ಉಳಿಸಿದ ಟ್ರ್ಯಾಕರ್‌ಗಳಿಲ್ಲ"
+    },
+    "tw": {
+        "title": "ಟೂ ವೀಲರ್ ಲೋನ್",
+        "subtitle": "ಪೆಟ್ರೋಲ್, ಎಲೆಕ್ಟ್ರಿಕ್ & CNG — ಸಂಪೂರ್ಣ ವಿಶ್ಲೇಷಣೆ",
+        "vehicleSeg": "ವಾಹನ ವಿಭಾಗ",
+        "exShowroom": "ಎಕ್ಸ್-ಶೋರೂಮ್ ಬೆಲೆ",
+        "evSubsidies": "EV ಸಬ್ಸಿಡಿಗಳು",
+        "onRoadPrice": "ಆನ್-ರೋಡ್ ಬೆಲೆ",
+        "loanDetails": "ಸಾಲ ವಿವರಗಳು",
+        "downPayment": "ಡೌನ್ ಪೇಮೆಂಟ್",
+        "cibilScore": "CIBIL ಸ್ಕೋರ್",
+        "womenBorrower": "ಮಹಿಳಾ ಸಾಲಗಾರ",
+        "rate": "ಬಡ್ಡಿ ದರ",
+        "tenure": "ಅವಧಿ",
+        "calcBtn": "EMI & ಒಟ್ಟು ವೆಚ್ಚ ಲೆಕ್ಕ ಹಾಕಿ",
+        "monthlyEmi": "ಮಾಸಿಕ EMI",
+        "loanAmt": "ಸಾಲ ಮೊತ್ತ",
+        "totalInt": "ಒಟ್ಟು ಬಡ್ಡಿ",
+        "totalPayment": "ಒಟ್ಟು ಪಾವತಿ",
+        "trueCost": "ಒಡೆತನದ ಒಟ್ಟು ವೆಚ್ಚ",
+        "totalOwnership": "ಒಟ್ಟು ಒಡೆತನ ವೆಚ್ಚ",
+        "canAfford": "ಇದನ್ನು ನೀವು ಭರಿಸಬಹುದೇ?",
+        "monthlyIncome": "ಮಾಸಿಕ ಆದಾಯ",
+        "intSaved": "ಉಳಿತಾಯ ಬಡ್ಡಿ",
+        "yearWiseAmort": "ವರ್ಷವಾರು ಅಮಾರ್ಟೈಜೇಶನ್",
+        "advisorTips": "ಹಣಕಾಸು ಸಲಹೆಗಾರ ಸಲಹೆ",
+        "yourRights": "ಸಾಲಗಾರರಾಗಿ ನಿಮ್ಮ ಹಕ್ಕುಗಳು",
+        "saveCalc": "ಲೆಕ್ಕಾಚಾರ ಉಳಿಸಿ",
+        "share": "ಹಂಚಿಕೊಳ್ಳಿ",
+        "saveToMyLoans": "ಸಾಲ ಟ್ರ್ಯಾಕರ್‌ನಲ್ಲಿ ಉಳಿಸಿ",
+        "savedToMyLoans": "ಸಾಲಗಳಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ",
+        "viewInMyLoans": "ಸಾಲಗಳಲ್ಲಿ ವೀಕ್ಷಿಸಿ →"
     },
     "myLoans": {
         "title": "ನನ್ನ ಸಾಲಗಳು",

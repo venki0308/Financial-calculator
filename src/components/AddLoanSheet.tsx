@@ -141,7 +141,7 @@ export default function AddLoanSheet({ open, onClose, onSaved, editLoan, prefill
                             </button>
                         </div>
 
-                        <div className="px-5 pb-8 space-y-4">
+                        <div className="px-5 pb-28 space-y-4">
                             {/* Nickname */}
                             <div>
                                 <label className="text-xs font-bold mb-1.5 block" style={{ color: c.textSecondary }}>{t('myLoans.loanNickname')} *</label>

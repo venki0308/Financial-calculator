@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
     ArrowLeft, IndianRupee, Calendar, BarChart3, Clock, ChevronDown, ChevronUp,
-    TrendingDown, Lightbulb, Trash2, CheckCircle2, Info, Download,
+    TrendingDown, TrendingUp, Lightbulb, Trash2, CheckCircle2, Info, Download, Banknote, Target, Wallet,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
@@ -522,51 +522,53 @@ export default function LoanDetail() {
         return { columns: [], rows: [] };
     }, [d, typeLC]);
 
-    // Summary metrics
-    const investmentMetrics = useMemo(() => {
+    // Summary metrics — now returns cards (3 hero colored boxes) + rows (details) + progress
+    type MetricCard = { label: string; value: string; color: string };
+    const investmentMetrics = useMemo((): { cards: MetricCard[]; rows: string[][]; progress: number; statusText: string; headline: string; headlineLabel: string } => {
+        const empty = { cards: [], rows: [], progress: 0, statusText: '—', headline: '—', headlineLabel: '' };
         try {
             if (mt('sip', 'sip calculator')) {
                 const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate });
-                return { rows: [['Months Invested', String(s.monthsInvested)], ['Total Invested', formatINR(s.totalInvested)], ['Current Value', formatINR(s.currentValue)], ['Wealth Gained', formatINR(s.wealthGained)], ['Return %', `${s.returnPercent.toFixed(2)}%`], ['Running Since', `${s.sipRunningYears}Y ${s.sipRunningMonths}M`]], progress: Math.min(100, s.monthsInvested), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
+                return { cards: [{ label: 'Invested', value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: 'Value Today', value: formatINR(s.currentValue), color: '#10B981' }, { label: 'Gain', value: formatINR(s.wealthGained), color: '#F59E0B' }], rows: [['Months Invested', String(s.monthsInvested)], ['Return %', `${s.returnPercent.toFixed(2)}%`], ['Running Since', `${s.sipRunningYears}Y ${s.sipRunningMonths}M`], ['Monthly SIP', formatINR(d.monthlySip || d.monthlyAmount || 0)], ['Expected Return', `${d.annualReturn || 12}% p.a.`]], progress: Math.min(100, s.monthsInvested * 0.8), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
             }
             if (mt('fd', 'fd calculator', 'potd', 'post office td')) {
                 const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4 });
-                return { rows: [['Days Invested', String(s.daysInvested)], ['Principal', formatINR(d.principal)], ['Value Today', formatINR(s.valueToday)], ['Interest Earned', formatINR(s.interestEarnedToday)], ['Daily Earning', formatINR(s.dailyEarning)], ['Maturity Date', fmtDate(s.maturityDate)], ['Maturity Value', formatINR(s.maturityValue)], ['Days Remaining', String(s.daysRemaining)]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}%`, headline: formatINR(s.valueToday), headlineLabel: 'Value Today' };
+                return { cards: [{ label: 'Deposited', value: formatINR(d.principal), color: '#3B82F6' }, { label: 'Value Today', value: formatINR(s.valueToday), color: '#10B981' }, { label: 'Interest', value: formatINR(s.interestEarnedToday), color: '#F59E0B' }], rows: [['Days Invested', String(s.daysInvested)], ['Daily Earning', formatINR(s.dailyEarning)], ['Maturity Date', fmtDate(s.maturityDate)], ['Maturity Value', formatINR(s.maturityValue)], ['Days Remaining', String(s.daysRemaining)], ['Interest Rate', `${d.annualRate}% p.a.`], ['Premature Value', formatINR(s.prematureValue)]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.valueToday), headlineLabel: 'Value Today' };
             }
             if (mt('rd')) {
                 const s = calculateRdStatus({ monthlyDeposit: d.monthlyDeposit || 0, annualRate: d.annualRate || 5.8, tenureMonths: d.tenureMonths || 60, startDate: d.startDate });
-                return { rows: [['Total Deposited', formatINR(s.totalDeposited)], ['Current Value', formatINR(s.currentValue)], ['Interest Earned', formatINR(s.interestEarned)], ['Completion', `${s.percentComplete.toFixed(1)}%`]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}%`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
+                return { cards: [{ label: 'Deposited', value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: 'Value Today', value: formatINR(s.currentValue), color: '#10B981' }, { label: 'Interest', value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [['Monthly Deposit', formatINR(d.monthlyDeposit || 0)], ['Interest Rate', `${d.annualRate || 5.8}% p.a.`], ['Tenure', `${d.tenureMonths || 60} months`], ['Completion', `${s.percentComplete.toFixed(1)}%`]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
             }
             if (mt('ppf', 'ppf calculator')) {
                 const s = calculatePpfStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 7.1, openingDate: d.openingDate || d.startDate });
-                return { rows: [['Year', `${s.currentYear} of 15`], ['Total Deposited', formatINR(s.totalDeposited)], ['Current Balance', formatINR(s.balanceToday)], ['Interest Earned', formatINR(s.interestEarned)], ['Maturity Date', fmtDate(s.maturityDate)], ['Loan Eligible', s.loanEligible ? 'Yes' : 'No'], ['Withdrawal Eligible', s.withdrawalEligible ? 'Yes' : 'No']], progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: `Year ${s.currentYear}/15`, headline: formatINR(s.balanceToday), headlineLabel: 'Current Balance' };
+                return { cards: [{ label: 'Deposited', value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: 'Balance', value: formatINR(s.balanceToday), color: '#10B981' }, { label: 'Interest', value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [['Year', `${s.currentYear} of 15`], ['Yearly Deposit', formatINR(d.yearlyDeposit || 0)], ['Rate', `${d.rate || d.annualRate || 7.1}% p.a.`], ['Maturity Date', fmtDate(s.maturityDate)], ['Maturity Value', formatINR(s.maturityValue || 0)], ['Loan Eligible', s.loanEligible ? `Yes — up to ${formatINR(s.loanAmount)}` : 'No (available yr 3-6)'], ['Withdrawal Eligible', s.withdrawalEligible ? `Yes — up to ${formatINR(s.withdrawalAmount)}` : 'No (available after yr 7)']], progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: `Year ${s.currentYear}/15`, headline: formatINR(s.balanceToday), headlineLabel: 'Current Balance' };
             }
             if (mt('ssy', 'ssy calculator')) {
                 const s = calculateSsyStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 8.2, openingDate: d.openingDate || d.startDate, girlDob: d.girlDob || d.openingDate || d.startDate });
-                return { rows: [['Girl\'s Age', `${s.girlAge} years`], ['Account Age', `${s.accountAge} of 21 years`], ['Deposit Phase', s.depositPhaseActive ? `Active (${s.depositYearsRemaining}yr left)` : 'Complete'], ['Total Deposited', formatINR(s.totalDeposited)], ['Current Balance', formatINR(Math.round(s.balanceToday))], ['Interest Earned', formatINR(Math.round(s.interestEarned))], ['Maturity Value', formatINR(Math.round(s.maturityValue))], ['Maturity Date', fmtDate(s.maturityDate)], ['Withdrawal Eligible', s.withdrawalEligible ? `Yes — up to ${formatINR(s.withdrawalAmount)}` : 'After girl turns 18']], progress: Math.min(100, (s.accountAge / 21) * 100), statusText: `Year ${s.accountAge}/21`, headline: formatINR(Math.round(s.balanceToday)), headlineLabel: 'Current Balance' };
+                return { cards: [{ label: 'Deposited', value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: 'Balance', value: formatINR(Math.round(s.balanceToday)), color: '#10B981' }, { label: 'Interest', value: formatINR(Math.round(s.interestEarned)), color: '#EC4899' }], rows: [['Girl\'s Age', `${s.girlAge} years`], ['Account Age', `${s.accountAge} of 21 years`], ['Deposit Phase', s.depositPhaseActive ? `Active (${s.depositYearsRemaining}yr left)` : 'Complete — interest compounding'], ['Yearly Deposit', formatINR(d.yearlyDeposit || 0)], ['Rate', `${d.rate || d.annualRate || 8.2}% p.a.`], ['Maturity Value', formatINR(Math.round(s.maturityValue))], ['Maturity Date', fmtDate(s.maturityDate)], ['Days to Maturity', String(s.daysToMaturity)], ['Withdrawal', s.withdrawalEligible ? `Eligible — up to ${formatINR(s.withdrawalAmount)}` : 'After girl turns 18']], progress: Math.min(100, (s.accountAge / 21) * 100), statusText: `Year ${s.accountAge}/21`, headline: formatINR(Math.round(s.balanceToday)), headlineLabel: 'Current Balance' };
             }
             if (mt('nsc', 'nsc calculator')) {
                 const s = calculateNscStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.7, purchaseDate: d.purchaseDate || d.startDate });
-                return { rows: [['Invested', formatINR(d.principal)], ['Value Today', formatINR(Math.round(s.valueToday))], ['Interest Earned', formatINR(Math.round(s.interestEarned))], ['Maturity Value', formatINR(Math.round(s.maturityValue))], ['Years Completed', `${s.yearsCompleted.toFixed(1)} of 5`], ['Maturity Date', fmtDate(s.maturityDate)], ['Days Remaining', String(s.daysToMaturity)]], progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: `${(Math.min(1, s.yearsCompleted / 5) * 100).toFixed(0)}%`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: 'Value Today' };
+                return { cards: [{ label: 'Invested', value: formatINR(d.principal), color: '#3B82F6' }, { label: 'Value Today', value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: 'Interest', value: formatINR(Math.round(s.interestEarned)), color: '#F59E0B' }], rows: [['Years Completed', `${s.yearsCompleted.toFixed(1)} of 5`], ['Rate', `${d.rate || d.annualRate || 7.7}% p.a.`], ['Maturity Value', formatINR(Math.round(s.maturityValue))], ['Maturity Date', fmtDate(s.maturityDate)], ['Days Remaining', String(s.daysToMaturity)], ['Sec 80C Eligible', 'Yes — Interest reinvested']], progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: `${(Math.min(1, s.yearsCompleted / 5) * 100).toFixed(0)}% of 5yr`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: 'Value Today' };
             }
             if (mt('kvp', 'kvp calculator')) {
                 const s = calculateKvpStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.5, purchaseDate: d.purchaseDate || d.startDate });
-                return { rows: [['Invested', formatINR(d.principal)], ['Value Today', formatINR(Math.round(s.valueToday))], ['Gain So Far', formatINR(Math.round(s.gainSoFar))], ['Progress to 2x', `${s.progressToDoubling.toFixed(1)}%`], ['Doubling Date', fmtDate(s.doublingDate)], ['Days to Doubling', String(s.daysToDoubling)], ['Premature Eligible', s.prematureEligible ? 'Yes' : `After ${fmtDate(s.prematureEligibleDate)}`]], progress: s.progressToDoubling, statusText: `${s.progressToDoubling.toFixed(0)}% to 2x`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: 'Value Today' };
+                return { cards: [{ label: 'Invested', value: formatINR(d.principal), color: '#3B82F6' }, { label: 'Value Today', value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: 'Gain', value: formatINR(Math.round(s.gainSoFar)), color: '#F59E0B' }], rows: [['Progress to 2x', `${s.progressToDoubling.toFixed(1)}%`], ['Rate', `${d.rate || d.annualRate || 7.5}% p.a.`], ['Doubling Date', fmtDate(s.doublingDate)], ['Days to Doubling', String(s.daysToDoubling)], ['Maturity Amount', formatINR(d.principal * 2)], ['Premature', s.prematureEligible ? 'Eligible now' : `After ${fmtDate(s.prematureEligibleDate)}`]], progress: s.progressToDoubling, statusText: `${s.progressToDoubling.toFixed(0)}% to 2x`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: 'Value Today' };
             }
             if (mt('pomis', 'post office mis')) {
                 const s = calculatePomisStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.4, startDate: d.startDate });
-                return { rows: [['Invested', formatINR(d.principal)], ['Monthly Income', formatINR(s.monthlyIncome)], ['Payouts Received', `${s.monthsCompleted} of 60`], ['Total Income Received', formatINR(s.totalIncomeReceived)], ['Total 5yr Income', formatINR(s.monthlyIncome * 60)], ['Maturity Date', fmtDate(s.maturityDate)]], progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: `${s.monthsCompleted}/60 payouts`, headline: formatINR(s.monthlyIncome), headlineLabel: 'Monthly Income' };
+                return { cards: [{ label: 'Invested', value: formatINR(d.principal), color: '#3B82F6' }, { label: 'Monthly Income', value: formatINR(s.monthlyIncome), color: '#10B981' }, { label: 'Total Earned', value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [['Payouts Received', `${s.monthsCompleted} of 60`], ['Rate', `${d.rate || d.annualRate || 7.4}% p.a.`], ['Total 5yr Income', formatINR(s.monthlyIncome * 60)], ['Remaining Payouts', `${60 - s.monthsCompleted}`], ['Maturity Date', fmtDate(s.maturityDate)]], progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: `${s.monthsCompleted}/60 payouts`, headline: formatINR(s.monthlyIncome), headlineLabel: 'Monthly Income' };
             }
             if (mt('scss', 'scss calculator')) {
                 const s = calculateScssStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 8.2, startDate: d.startDate, tenure: d.tenure || 5 });
-                return { rows: [['Invested', formatINR(d.principal)], ['Quarterly Income', formatINR(s.quarterlyIncome)], ['Quarters Completed', `${s.quartersCompleted} of 20`], ['Total Income Received', formatINR(s.totalIncomeReceived)], ['Total 5yr Income', formatINR(s.quarterlyIncome * 20)], ['Maturity Date', fmtDate(s.maturityDate)]], progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: `${s.quartersCompleted}/20 qtrs`, headline: formatINR(s.quarterlyIncome), headlineLabel: 'Quarterly Income' };
+                return { cards: [{ label: 'Invested', value: formatINR(d.principal), color: '#3B82F6' }, { label: 'Quarterly', value: formatINR(s.quarterlyIncome), color: '#10B981' }, { label: 'Total Earned', value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [['Quarters Completed', `${s.quartersCompleted} of 20`], ['Rate', `${d.rate || d.annualRate || 8.2}% p.a.`], ['Annual Income', formatINR(s.quarterlyIncome * 4)], ['Total 5yr Income', formatINR(s.quarterlyIncome * 20)], ['Maturity Date', fmtDate(s.maturityDate)]], progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: `${s.quartersCompleted}/20 qtrs`, headline: formatINR(s.quarterlyIncome), headlineLabel: 'Quarterly Income' };
             }
             if (mt('goal planner', 'goal')) {
                 const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate, targetAmount: d.targetAmount });
-                return { rows: [['Invested', formatINR(s.totalInvested)], ['Current Value', formatINR(s.currentValue)], ['Wealth Gained', formatINR(s.wealthGained)], ['Goal Progress', `${s.progressToGoal.toFixed(1)}%`], ['Target Amount', d.targetAmount ? formatINR(d.targetAmount) : '—']], progress: s.progressToGoal, statusText: `${s.progressToGoal.toFixed(0)}% to goal`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
+                return { cards: [{ label: 'Invested', value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: 'Value', value: formatINR(s.currentValue), color: '#10B981' }, { label: 'Goal', value: `${s.progressToGoal.toFixed(0)}%`, color: '#8B5CF6' }], rows: [['Wealth Gained', formatINR(s.wealthGained)], ['Target Amount', d.targetAmount ? formatINR(d.targetAmount) : '—'], ['Goal Progress', `${s.progressToGoal.toFixed(1)}%`]], progress: s.progressToGoal, statusText: `${s.progressToGoal.toFixed(0)}% to goal`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
             }
         } catch { /* skip */ }
-        return { rows: [], progress: 0, statusText: '—', headline: '—', headlineLabel: '' };
+        return empty;
     }, [profile, d, typeLC]);
 
     const [showYearTable, setShowYearTable] = useState(false);
@@ -577,8 +579,12 @@ export default function LoanDetail() {
         const config: ExportConfig = {
             title: profile.name,
             subtitle: `${profile.calculatorType} — Live Status Report (${fmtDate(new Date().toISOString().split('T')[0])})`,
-            inputs: investmentMetrics.rows.map(([label, value]) => ({ label, value: String(value) })),
-            results: [{ label: investmentMetrics.headlineLabel, value: investmentMetrics.headline }, { label: 'Progress', value: investmentMetrics.statusText }],
+            inputs: investmentMetrics.cards.map(card => ({ label: card.label, value: card.value })),
+            results: [
+                { label: investmentMetrics.headlineLabel, value: investmentMetrics.headline },
+                { label: 'Progress', value: investmentMetrics.statusText },
+                ...investmentMetrics.rows.map(([label, value]) => ({ label, value: String(value) })),
+            ],
             ...(yearWiseTable.rows.length > 0 ? {
                 projectionTitle: 'Year-wise Breakdown',
                 projectionColumns: yearWiseTable.columns,
@@ -611,24 +617,60 @@ export default function LoanDetail() {
                     <p className="text-xs font-bold uppercase tracking-wider" style={{ color: c.textSecondary }}>{t('liveStatus.liveAsOf', { date: fmtDate(new Date().toISOString().split('T')[0]) })}</p>
                 </div>
 
-                {/* Headline */}
-                <div className="p-5 rounded-2xl border-2 shadow-sm text-center" style={{ backgroundColor: c.card, borderColor: '#10B981' }}>
-                    <p className="text-[10px] uppercase font-bold tracking-wider mb-1" style={{ color: c.textSecondary }}>{investmentMetrics.headlineLabel}</p>
-                    <p className="text-3xl font-black text-emerald-500">{investmentMetrics.headline}</p>
+                {/* Hero Headline Card */}
+                <div className="p-5 rounded-2xl border-2 shadow-sm" style={{ backgroundColor: c.card, borderColor: '#10B981' }}>
+                    <div className="flex items-center gap-2 mb-3">
+                        <IndianRupee className="w-5 h-5 text-emerald-500" />
+                        <h3 className="text-sm font-bold" style={{ color: c.text }}>{investmentMetrics.headlineLabel}</h3>
+                    </div>
+                    <p className="text-3xl font-black text-emerald-500 mb-1">{investmentMetrics.headline}</p>
+                    <p className="text-[10px]" style={{ color: c.textSecondary }}>{t('liveStatus.liveAsOf', { date: fmtDate(new Date().toISOString().split('T')[0]) })}</p>
                 </div>
 
-                {/* Progress */}
+                {/* 3 Colored Metric Cards (like loan EMI status) */}
+                {investmentMetrics.cards.length > 0 && (
+                    <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                        <div className="flex items-center gap-2 mb-3">
+                            <Wallet className="w-4 h-4 text-blue-500" />
+                            <h3 className="text-sm font-bold" style={{ color: c.text }}>Investment Status</h3>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                            {investmentMetrics.cards.map((card, i) => (
+                                <div key={i} className="p-3 rounded-xl text-center" style={{ backgroundColor: `${card.color}15` }}>
+                                    <p className="text-[9px] uppercase font-bold mb-1" style={{ color: card.color }}>{card.label}</p>
+                                    <p className="text-sm font-black" style={{ color: card.color }}>{card.value}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Progress Card */}
                 <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                    <div className="w-full h-3 rounded-full overflow-hidden mb-1" style={{ backgroundColor: c.bg }}><div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" style={{ width: `${Math.min(investmentMetrics.progress, 100)}%` }} /></div>
-                    <p className="text-[10px] font-bold text-right" style={{ color: '#10B981' }}>{investmentMetrics.statusText}</p>
+                    <div className="flex items-center gap-2 mb-3">
+                        <BarChart3 className="w-4 h-4 text-violet-500" />
+                        <h3 className="text-sm font-bold" style={{ color: c.text }}>Progress</h3>
+                        <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#10B98115', color: '#10B981' }}>{investmentMetrics.statusText}</span>
+                    </div>
+                    <div className="w-full h-3 rounded-full overflow-hidden mb-1" style={{ backgroundColor: c.bg }}>
+                        <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all" style={{ width: `${Math.min(investmentMetrics.progress, 100)}%` }} />
+                    </div>
+                    <div className="flex justify-between mt-1.5">
+                        <span className="text-[9px] font-medium" style={{ color: c.textSecondary }}>Start</span>
+                        <span className="text-[9px] font-bold" style={{ color: '#10B981' }}>{Math.min(investmentMetrics.progress, 100).toFixed(1)}% complete</span>
+                        <span className="text-[9px] font-medium" style={{ color: c.textSecondary }}>Maturity</span>
+                    </div>
                 </div>
 
-                {/* Details Table */}
+                {/* Detailed Information Card */}
                 <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                    <div className="flex items-center gap-2 mb-3"><Info className="w-4 h-4 text-blue-500" /><h3 className="text-sm font-bold" style={{ color: c.text }}>{t('myLoans.loanInformation')}</h3></div>
+                    <div className="flex items-center gap-2 mb-3">
+                        <Info className="w-4 h-4 text-blue-500" />
+                        <h3 className="text-sm font-bold" style={{ color: c.text }}>Complete Details</h3>
+                    </div>
                     <div className="space-y-0">
                         {investmentMetrics.rows.map(([label, value], i) => (
-                            <div key={i} className="flex justify-between py-2 border-b text-xs" style={{ borderColor: `${c.border}50` }}>
+                            <div key={i} className="flex justify-between py-2.5 border-b text-xs" style={{ borderColor: `${c.border}50` }}>
                                 <span style={{ color: c.textSecondary }}>{label}</span>
                                 <span className="font-bold" style={{ color: c.text }}>{value}</span>
                             </div>

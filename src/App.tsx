@@ -101,6 +101,7 @@ const AgeCalculator              = lr(() => import('./pages/AgeCalculator'));
 const WorldClock                 = lr(() => import('./pages/WorldClock'));
 const InsuranceCalculator        = lr(() => import('./pages/InsuranceCalculator'));
 const InsuranceCompare           = lr(() => import('./pages/InsuranceCompare'));
+const TwoWheelerLoanCalculator   = lr(() => import('./pages/TwoWheelerLoanCalculator'));
 
 // My Loans — lazy loaded with retry
 const MyLoans                    = lr(() => import('./pages/MyLoans'));
@@ -351,6 +352,7 @@ function AppContent() {
                         <Route path="/my-loans" element={<MyLoans />} />
                         <Route path="/my-loans/:loanId" element={<LoanDetail />} />
                         <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
+                        <Route path="/two-wheeler-loan" element={<TwoWheelerLoanCalculator />} />
                         <Route path="/dev/validator" element={<ValidatorPage />} />
                     </Route>
 
