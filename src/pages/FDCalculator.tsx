@@ -261,27 +261,6 @@ export default function FDCalculator() {
                 </div>
             </div>
 
-            {fdStatus && (
-                <div className="px-4 mb-5">
-                    <LiveStatusCard
-                        calculatorType="FD"
-                        profileData={{ principal, annualRate: effectiveRate, tenureMonths: years * 12, startDate: fdStartDate, compoundingFreq: compounding }}
-                        title="Live FD Status"
-                        subtitle={`${years} Year FD @ ${effectiveRate}%`}
-                        startDate={fdStartDate}
-                        metrics={[
-                            { label: 'Principal', value: formatINR(principal) },
-                            { label: 'Interest Earned', value: formatINR(fdStatus.interestEarnedToday), color: 'amber' },
-                            { label: 'Value Today', value: formatINR(fdStatus.valueToday), color: 'green' },
-                        ]}
-                        progressPercent={fdStatus.percentComplete}
-                        progressLabel={`${fdStatus.percentComplete.toFixed(1)}% of tenure complete (${fdStatus.daysInvested} of ${fdStatus.daysInvested + fdStatus.daysRemaining} days)`}
-                        insightText={fdStatus.daysRemaining > 0 ? `Premature withdrawal would cost you ${formatINR(fdStatus.costOfBreaking)} in lost interest. Maturity on ${fdStatus.maturityDate}.` : `Your FD has matured! Total value: ${formatINR(fdStatus.maturityValue)}.`}
-                    />
-                </div>
-            )}
-
-
             <DisclaimerComponent module="fd" />
 
             <div className="px-4 pb-28 pt-4 space-y-5">
@@ -478,6 +457,25 @@ export default function FDCalculator() {
                     ]}
                     gradient="from-indigo-600 via-purple-500 to-pink-500"
                 />
+
+                {/* Live FD Status */}
+                {fdStatus && (
+                    <LiveStatusCard
+                        calculatorType="FD Calculator"
+                        profileData={{ principal, annualRate: effectiveRate, tenureMonths: years * 12, startDate: fdStartDate, compoundingFreq: compounding }}
+                        title={t('liveStatus.liveFdStatus')}
+                        subtitle={`${years} ${t('fd.yearsAt')} ${effectiveRate}%`}
+                        startDate={fdStartDate}
+                        metrics={[
+                            { label: t('fd.invested'), value: formatINR(principal) },
+                            { label: t('liveStatus.interestEarned'), value: formatINR(fdStatus.interestEarnedToday), color: 'amber' },
+                            { label: t('liveStatus.valueToday'), value: formatINR(fdStatus.valueToday), color: 'green' },
+                        ]}
+                        progressPercent={fdStatus.percentComplete}
+                        progressLabel={t('liveStatus.tenureProgress', { percent: fdStatus.percentComplete.toFixed(1), done: fdStatus.daysInvested, total: fdStatus.daysInvested + fdStatus.daysRemaining })}
+                        insightText={fdStatus.daysRemaining > 0 ? t('liveStatus.fdPrematureInsight', { cost: formatINR(fdStatus.costOfBreaking), date: fdStatus.maturityDate }) : t('liveStatus.fdMaturedInsight', { value: formatINR(fdStatus.maturityValue) })}
+                    />
+                )}
             </div>
         </div>
     );

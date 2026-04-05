@@ -108,7 +108,7 @@ export default function LiveStatusCard({ title, subtitle, startDate, metrics, pr
                     <h3 className="font-bold text-sm" style={{ color: c.text }}>{title}</h3>
                 </div>
                 {subtitle && <p className="text-xs ml-6" style={{ color: c.textSecondary }}>{subtitle}</p>}
-                {startDate && <p className="text-[10px] ml-6 mt-0.5" style={{ color: c.textSecondary }}>Since {fmtDate(startDate)}</p>}
+                {startDate && <p className="text-[10px] ml-6 mt-0.5" style={{ color: c.textSecondary }}>{t('liveStatus.since', { date: fmtDate(startDate) })}</p>}
             </div>
 
             {/* Metrics Row */}
@@ -168,24 +168,24 @@ export default function LiveStatusCard({ title, subtitle, startDate, metrics, pr
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Check className="w-4 h-4 text-emerald-500" />
-                                <span className="text-sm font-bold text-emerald-500">Saved to Profile</span>
+                                <span className="text-sm font-bold text-emerald-500">{t('liveStatus.savedToProfile')}</span>
                             </div>
                             <button
                                 onClick={handleRemove}
                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 text-xs font-bold border border-red-500/20"
                             >
-                                <Trash2 size={12} /> Remove
+                                <Trash2 size={12} /> {t('liveStatus.removeBtn')}
                             </button>
                         </div>
                     ) : showSaveForm ? (
                         <div className="space-y-3">
-                            <p className="text-sm font-bold" style={{ color: c.text }}>Name this tracker</p>
+                            <p className="text-sm font-bold" style={{ color: c.text }}>{t('liveStatus.nameTracker')}</p>
                             <input
                                 autoFocus
                                 value={profileName}
                                 onChange={(e) => setProfileName(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-                                placeholder={`e.g., My ${calculatorType}`}
+                                placeholder={t('liveStatus.investmentPlaceholder', { type: calculatorType })}
                                 className="w-full bg-transparent border rounded-xl px-3 py-2.5 text-sm outline-none"
                                 style={{ borderColor: c.border, color: c.text }}
                                 maxLength={40}
@@ -196,14 +196,14 @@ export default function LiveStatusCard({ title, subtitle, startDate, metrics, pr
                                     className="flex-1 py-2.5 rounded-xl text-xs font-bold border"
                                     style={{ borderColor: c.border, color: c.textSecondary }}
                                 >
-                                    Cancel
+                                    {t('liveStatus.cancelBtn')}
                                 </button>
                                 <button
                                     onClick={handleSave}
                                     disabled={!profileName.trim()}
                                     className="flex-1 py-2.5 rounded-xl bg-emerald-500 text-white text-xs font-bold disabled:opacity-40"
                                 >
-                                    Save Tracker
+                                    {t('liveStatus.saveBtn')}
                                 </button>
                             </div>
                         </div>
@@ -212,7 +212,7 @@ export default function LiveStatusCard({ title, subtitle, startDate, metrics, pr
                             onClick={() => setShowSaveForm(true)}
                             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 font-bold text-sm border border-emerald-500/20"
                         >
-                            <Save size={16} /> Save this tracker
+                            <Save size={16} /> {t('liveStatus.saveTracker')}
                         </button>
                     )}
                 </div>
