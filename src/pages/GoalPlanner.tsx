@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, GraduationCap, Car, Umbrella, Target, TrendingUp, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
+import DateInput from '../components/DateInput';
+import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { formatINR } from '../utils/calculations';
+import { calculateSipStatus, type SipStatusInput } from '../utils/investmentStatusEngine';
 import { exportToPDF, type ExportConfig, dateTag } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useNotificationStore } from '../store/useNotificationStore';
@@ -39,6 +42,7 @@ export default function GoalPlanner() {
     const [targetYears, setTargetYears] = useState(10);
     const [expectedReturn, setExpectedReturn] = useState(12);
     const [currentSavings, setCurrentSavings] = useState(0);
+    const [goalStartDate, setGoalStartDate] = useState('');
 
     const handleSelectGoal = (goal: GoalPreset) => {
         setSelectedGoal(goal);
@@ -106,6 +110,16 @@ export default function GoalPlanner() {
         }
         return data;
     }, [targetYears, expectedReturn, result.monthlySIP, currentSavings]);
+
+    const goalStatus = useMemo(() => {
+        if (!goalStartDate || !selectedGoal || result.monthlySIP <= 0) return null;
+        return calculateSipStatus({
+            monthlySip: result.monthlySIP,
+            annualReturn: expectedReturn,
+            startDate: goalStartDate,
+            targetAmount: result.targetFV,
+        });
+    }, [goalStartDate, selectedGoal, result.monthlySIP, expectedReturn, result.targetFV]);
 
     const handleDownloadPDF = async () => {
         const config: ExportConfig = {
@@ -223,6 +237,15 @@ export default function GoalPlanner() {
                                 <NumberInput label={t('goalPlanner.inflationRate')} value={inflationRate} onChange={setInflationRate} min={0} max={20} suffix="%" step={0.5} />
                             </div>
                             <NumberInput label={t('goalPlanner.expectedReturn')} value={expectedReturn} onChange={setExpectedReturn} min={1} max={30} suffix="%" step={0.5} />
+                            <div>
+                                <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">SIP Start Date</label>
+                                <DateInput
+                                    value={goalStartDate}
+                                    onChange={setGoalStartDate}
+                                    max={new Date().toISOString().split('T')[0]}
+                                    className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50"
+                                />
+                            </div>
                         </div>
 
                         {/* Result */}
@@ -306,7 +329,26 @@ export default function GoalPlanner() {
                     </div>
                 )}
 
-                
+                {goalStatus && selectedGoal && (
+                    <div className="mt-5">
+                        <LiveStatusCard
+                            title="Live Goal Status"
+                            subtitle={t(selectedGoal.labelKey)}
+                            startDate={goalStartDate}
+                            metrics={[
+                                { label: 'Invested', value: formatINR(goalStatus.totalInvested) },
+                                { label: 'Current Value', value: formatINR(goalStatus.currentValue), color: 'green' },
+                                { label: 'Still Needed', value: formatINR(Math.max(0, result.targetFV - goalStatus.currentValue)), color: 'amber' },
+                            ]}
+                            progressPercent={goalStatus.progressToGoal}
+                            progressLabel={`${goalStatus.progressToGoal.toFixed(1)}% towards goal of ${formatINR(result.targetFV)}`}
+                            insightText={goalStatus.progressToGoal >= 100 ? `Congratulations! You have reached your goal target.` : goalStatus.currentValue > goalStatus.totalInvested ? `On track! Your ${formatINR(goalStatus.totalInvested)} has grown to ${formatINR(goalStatus.currentValue)}. Expected goal date: ${goalStatus.expectedGoalDate}.` : undefined}
+                            warningText={goalStatus.progressToGoal < 100 && goalStatus.currentValue <= goalStatus.totalInvested && goalStatus.totalInvested > 0 ? `Your investments haven't started compounding yet. Stay consistent with your ${formatINR(result.monthlySIP)}/month SIP.` : undefined}
+                        />
+                    </div>
+                )}
+
+
                 <DisclaimerComponent module="goal" />
             </div>
         </div>

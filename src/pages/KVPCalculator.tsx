@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
@@ -11,7 +11,10 @@ import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
 import { TaxRegime, calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
+import DateInput from '../components/DateInput';
+import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { calculateKvpStatus, type KvpStatusInput } from '../utils/investmentStatusEngine';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 const ITEMS_PER_PAGE = 5;
@@ -23,7 +26,7 @@ const PREMATURE_LOCK = 30;
 export default function KVPCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
 
     useEffect(() => { AnalyticsService.trackScreen('KVP_Calculator'); }, []);
 
@@ -35,7 +38,9 @@ export default function KVPCalculator() {
     
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(0);
+    const [kvpPurchaseDate, setKvpPurchaseDate] = useState('');
 
     const result = useMemo(() => {
         // Exact doubling time using annual compounding: t = ln(2) / ln(1 + r/100)
@@ -96,6 +101,11 @@ export default function KVPCalculator() {
         };
     }, [investment, rate, annualIncome, taxRegime, inflation]);
 
+    const kvpStatus = useMemo(() => {
+        if (!kvpPurchaseDate) return null;
+        return calculateKvpStatus({ principal: investment, rate, purchaseDate: kvpPurchaseDate });
+    }, [investment, rate, kvpPurchaseDate]);
+
     const doublingYears = Math.floor(result.doublingMonths / 12);
     const doublingMonthsRem = result.doublingMonths % 12;
 
@@ -110,15 +120,24 @@ export default function KVPCalculator() {
     }), [result, riskConfig.risk]);
 
     const handleSave = () => {
+        const calcId = crypto.randomUUID();
         addSaved({
-            id: crypto.randomUUID(),
+            id: calcId,
             calculatorType: 'KVP Calculator',
             inputValues: { investment, rate, annualIncome, taxRegime },
             resultValues: { primary: result.maturity, ...result },
             timestamp: Date.now()
         });
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handlePDFExport = async () => {
@@ -210,9 +229,20 @@ export default function KVPCalculator() {
                             <p className="text-muted-foreground text-xs">{t('kvp.subtitle')}</p>
                         </div>
                     </div>
-                    <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-green">
-                        {saved ? <Check size={18} /> : <Save size={18} />}
-                    </button>
+                    {saved ? (
+                        <div className="flex gap-1">
+                            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+                                <Check size={18} />
+                            </div>
+                            <button onClick={handleRemove} className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 transition-all active:scale-95">
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-green">
+                            <Save size={18} />
+                        </button>
+                    )}
                 </div>
                 <RiskCategoryTags risk={riskConfig.risk} categories={riskConfig.categories} />
             </div>
@@ -233,6 +263,15 @@ export default function KVPCalculator() {
                             <input type="number" value={rate} step={0.1} onChange={e => setRate(Number(e.target.value) || 0)} className={inputCls + " pr-8"} />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
                         </div>
+                    </div>
+                    <div>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">KVP Purchase Date (optional)</label>
+                        <DateInput
+                            value={kvpPurchaseDate}
+                            onChange={setKvpPurchaseDate}
+                            max={new Date().toISOString().slice(0, 10)}
+                            className={inputCls}
+                        />
                     </div>
                 </div>
 
@@ -429,6 +468,33 @@ export default function KVPCalculator() {
                     </AnimatePresence>
                 </div>
             </div>
+
+            {kvpStatus && (
+                <div className="px-4 mb-5">
+                    <LiveStatusCard
+                        title="KVP Live Status"
+                        subtitle={`${Math.floor(kvpStatus.monthsElapsed / 12)}y ${kvpStatus.monthsElapsed % 12}m elapsed of ${Math.floor(kvpStatus.doublingMonths / 12)}y ${kvpStatus.doublingMonths % 12}m`}
+                        startDate={kvpPurchaseDate}
+                        metrics={[
+                            { label: 'Invested', value: fmtINR(investment) },
+                            { label: 'Value Today', value: fmtINR(kvpStatus.valueToday), color: 'green' },
+                            { label: 'Gain', value: fmtINR(kvpStatus.gainSoFar), color: 'green' },
+                        ]}
+                        progressPercent={kvpStatus.progressToDoubling}
+                        progressLabel={`${kvpStatus.progressToDoubling.toFixed(1)}% to doubling${kvpStatus.daysToDoubling > 0 ? ` — ${kvpStatus.daysToDoubling} days remaining` : ''}`}
+                        warningText={
+                            !kvpStatus.prematureEligible
+                                ? `Premature encashment not available yet. Eligible after 2.5 years (from ${new Date(kvpStatus.prematureEligibleDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}).`
+                                : undefined
+                        }
+                        insightText={
+                            kvpStatus.prematureEligible
+                                ? `Premature encashment is available. Current value: ${fmtINR(kvpStatus.valueToday)}. Your investment will double to ${fmtINR(investment * 2)} on maturity.`
+                                : undefined
+                        }
+                    />
+                </div>
+            )}
 
             <DisclaimerComponent module="kvp" />
         </div>

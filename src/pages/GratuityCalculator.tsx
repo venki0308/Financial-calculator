@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, Lightbulb } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, Lightbulb, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
@@ -20,7 +20,7 @@ const ITEMS_PER_PAGE = 10;
 export default function GratuityCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
 
     useEffect(() => { AnalyticsService.trackScreen('Gratuity'); }, []);
 
@@ -35,6 +35,7 @@ export default function GratuityCalculator() {
 
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(0);
 
     const result = useMemo(() => {
@@ -92,15 +93,24 @@ export default function GratuityCalculator() {
     }, [salary, years, annualIncome, taxRegime, salaryHike, projectionYears]);
 
     const handleSave = () => {
+        const calcId = crypto.randomUUID();
         addSaved({
-            id: crypto.randomUUID(),
+            id: calcId,
             calculatorType: 'Gratuity Calculator',
             inputValues: { salary, years },
             resultValues: result,
             timestamp: Date.now()
         });
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handlePDFExport = async () => {
@@ -184,9 +194,20 @@ export default function GratuityCalculator() {
                             </div>
                         </div>
                     </div>
-                    <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-blue">
-                        {saved ? <Check size={18} /> : <Save size={18} />}
-                    </button>
+                    {saved ? (
+                        <div className="flex gap-1">
+                            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+                                <Check size={18} />
+                            </div>
+                            <button onClick={handleRemove} className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 transition-all active:scale-95">
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-blue">
+                            <Save size={18} />
+                        </button>
+                    )}
                 </div>
             </div>
 

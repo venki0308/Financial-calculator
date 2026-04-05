@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Info, Download, Share2, Shield, Calendar, TrendingUp, IndianRupee, ChevronDown, ChevronUp, Save } from 'lucide-react';
+import { ArrowLeft, Info, Download, Share2, Shield, Calendar, TrendingUp, IndianRupee, ChevronDown, ChevronUp, Save, Check, Trash2 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -30,7 +30,7 @@ export default function NPSCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('NPS_Calculator_Advanced'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
     const chartRef = useRef<any>(null);
     const c = useAppColors();
 
@@ -43,6 +43,7 @@ export default function NPSCalculator() {
     const [showTimeline, setShowTimeline] = useState(false);
     const [showTaxInfo, setShowTaxInfo] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
 
     const result = useMemo(() => {
         const years = Math.max(retireAge - age, 1);
@@ -80,8 +81,18 @@ export default function NPSCalculator() {
     }), [result.timeline, t]);
 
     const handleSave = () => {
-        addSaved({ id: `nps-${Date.now()}`, calculatorType: 'NPS Calculator', inputValues: { monthly, rate, age, retireAge, annuityPct }, resultValues: { primary: result.corpus }, timestamp: Date.now() });
-        setSaved(true); setTimeout(() => setSaved(false), 2000);
+        const calcId = `nps-${Date.now()}`;
+        addSaved({ id: calcId, calculatorType: 'NPS Calculator', inputValues: { monthly, rate, age, retireAge, annuityPct }, resultValues: { primary: result.corpus }, timestamp: Date.now() });
+        setSaved(true);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handleDownloadPDF = async () => {
@@ -183,9 +194,21 @@ export default function NPSCalculator() {
                         <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('nps.lumpsumAt60')}</p><p className="text-blue-400 font-bold text-sm">{formatINR(result.lumpsum)}</p></div>
                         <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('nps.monthlyPension')}</p><p className="text-amber-400 font-bold text-sm">{formatINR(result.monthlyPension)}</p></div>
                     </div>
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
-                        <Save size={16} /> {saved ? t('nps.saved') : t('nps.saveCalculation')}
-                    </motion.button>
+                    {saved ? (
+                        <div className="flex gap-2 mt-4">
+                            <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                <Check size={16} /> {t('common.saved')}
+                            </div>
+                            <button onClick={handleRemove}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
+                            <Save size={16} /> {t('nps.saveCalculation')}
+                        </motion.button>
+                    )}
                 </motion.div>
 
                 {/* Pension Visualization */}

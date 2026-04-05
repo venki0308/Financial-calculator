@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Info, Share2, TrendingUp, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Info, Share2, TrendingUp, AlertCircle, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
@@ -70,7 +70,8 @@ export default function SalaryHikeCalculator() {
     const [periodUnit, setPeriodUnit] = useState<'months' | 'years'>('years');
     const [selectedIndustry, setSelectedIndustry] = useState('India Overall Avg');
     const [isSaved, setIsSaved] = useState(false);
-    const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+    const { addHistory, addSaved, removeSaved, savedCalculations } = useCalculatorStore();
     const [showInfo, setShowInfo] = useState(false);
 
     // CTC Breakdown inputs
@@ -447,8 +448,9 @@ export default function SalaryHikeCalculator() {
     }, []);
 
     const handleSave = () => {
+        const calcId = `SalaryHike-Save-${Date.now()}`;
         addSaved({
-            id: `SalaryHike-Save-${Date.now()}`,
+            id: calcId,
             calculatorType: 'Salary Hike Calculator',
             inputValues: mode === 'ctcBreakdown'
                 ? { ctcAmount, variablePct, achievementPct, fixedHikePct, mode }
@@ -463,6 +465,15 @@ export default function SalaryHikeCalculator() {
             timestamp: Date.now(),
         });
         setIsSaved(true);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setIsSaved(false);
+        }
     };
 
     const isAlreadySaved = useMemo(() => {
@@ -1058,14 +1069,25 @@ export default function SalaryHikeCalculator() {
                 )}
 
                 {/* Action Buttons */}
-                <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={handleSave}
-                    disabled={isSaved || isAlreadySaved}
-                    className={`w-full py-3.5 rounded-2xl font-semibold text-sm mb-5 flex items-center justify-center gap-2 transition-all ${isSaved || isAlreadySaved ? 'bg-brand-green/10 text-brand-green border border-brand-green/20' : 'bg-brand-green text-white'}`}
-                >
-                    {isSaved || isAlreadySaved ? <><Check size={18} /> {t('salary.saved')}</> : <><Save size={18} /> {t('salary.saveCalculation')}</>}
-                </motion.button>
+                {isSaved || isAlreadySaved ? (
+                    <div className="flex gap-2 mb-5">
+                        <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                            <Check size={16} /> {t('common.saved')}
+                        </div>
+                        <button onClick={handleRemove}
+                            className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                ) : (
+                    <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={handleSave}
+                        className="w-full py-3.5 rounded-2xl font-semibold text-sm mb-5 flex items-center justify-center gap-2 transition-all bg-brand-green text-white"
+                    >
+                        <Save size={18} /> {t('salary.saveCalculation')}
+                    </motion.button>
+                )}
 
                 <div className="flex gap-3 mb-5">
                     <button onClick={handleDownloadPDF} className="flex-1 py-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors active:bg-indigo-100 dark:active:bg-indigo-500/20">

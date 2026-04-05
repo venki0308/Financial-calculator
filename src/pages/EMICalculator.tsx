@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import {
     ArrowLeft, Info, Share2, ChevronDown, ChevronUp, Save, Check, Download,
-    Calculator, TrendingDown, FileText, ChevronLeft, ChevronRight
+    Calculator, TrendingDown, FileText, ChevronLeft, ChevronRight, Trash2
 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
 import { useAppColors } from '../theme/useAppColors';
@@ -15,7 +15,10 @@ import {
 } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
+import DateInput from '../components/DateInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import LiveLoanStatus from '../components/LiveLoanStatus';
+import type { LoanProfile } from '../utils/loanStatusEngine';
 
 import {
     calculateReducingEMI, calculateFlatEMI, calculateEffectiveRate,
@@ -61,6 +64,10 @@ export default function EMICalculator() {
     const [showInfo, setShowInfo] = useState(false);
     const [monthlyIncome, setMonthlyIncome] = useState(0);
 
+    // Live Loan Tracker state
+    const [loanStartDate, setLoanStartDate] = useState('');
+    const [emiDueDay, setEmiDueDay] = useState(5);
+
     // Foreclosure state
     const [showForeclosure, setShowForeclosure] = useState(false);
     const [foreclosureMonths, setForeclosureMonths] = useState(24);
@@ -70,7 +77,7 @@ export default function EMICalculator() {
     const [enableReminder, setEnableReminder] = useState(false);
     const [reminderDate, setReminderDate] = useState(5);
 
-    const { addHistory, addSaved, updateSaved, savedCalculations } = useCalculatorStore();
+    const { addHistory, addSaved, removeSaved, updateSaved, savedCalculations } = useCalculatorStore();
     const chartRef = useRef<any>(null);
 
     const c = useAppColors();
@@ -108,7 +115,19 @@ export default function EMICalculator() {
         return calculatePrepaymentSavings(principal, rate, months, result.emi);
     }, [principal, rate, months, result.emi, method]);
 
-
+    // ─── Live Loan Profile ─────────────────────────────────────────────
+    const loanProfile = useMemo<LoanProfile | null>(() => {
+        if (!loanStartDate || !result || result.emi <= 0) return null;
+        return {
+            loanAmount: principal,
+            annualRate: rate,
+            tenureMonths: months,
+            emiAmount: result.emi,
+            disbursementDate: loanStartDate,
+            emiDueDay,
+            loanType: 'floating',
+        };
+    }, [loanStartDate, emiDueDay, principal, rate, months, result]);
 
     // ─── Amortization pagination ────────────────────────────────────────
     const totalPages = Math.ceil((result.schedule?.length || 0) / ROWS_PER_PAGE);
@@ -207,6 +226,14 @@ export default function EMICalculator() {
                 emi: result.emi
             }
         });
+    };
+
+    const handleRemove = () => {
+        if (savedId) {
+            removeSaved(savedId);
+            setSavedId(null);
+            setIsSaved(false);
+        }
     };
 
     const isAlreadySaved = useMemo(() => {
@@ -395,6 +422,13 @@ export default function EMICalculator() {
             </div>
 
             
+            {/* Live Loan Status */}
+            {loanProfile && (
+                <div className="px-4 mt-4">
+                    <LiveLoanStatus profile={loanProfile} />
+                </div>
+            )}
+
             <DisclaimerComponent module="emi" />
 
             <div className="px-4 pb-28">
@@ -464,6 +498,29 @@ export default function EMICalculator() {
                             min={1} max={tenureUnit === 'months' ? config.maxTenureYears * 12 : config.maxTenureYears}
                             suffix={tenureUnit === 'months' ? ' months' : ' years'}
                             helperText={tenureUnit === 'months' ? `1 - ${config.maxTenureYears * 12} months` : `1 - ${config.maxTenureYears} years`} />
+                    </div>
+                </div>
+
+                {/* ── Live Loan Tracker Inputs ────────────────────── */}
+                <div className="mb-5 p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-sm dark:shadow-none space-y-3">
+                    <div>
+                        <h3 className="text-sm font-bold text-slate-800 dark:text-foreground">{t('emi.liveTracker')}</h3>
+                        <p className="text-[10px] text-muted-foreground">{t('emi.liveTrackerDesc')}</p>
+                    </div>
+                    <DateInput value={loanStartDate} onChange={setLoanStartDate} />
+                    <div>
+                        <label className="text-xs font-semibold text-slate-700 dark:text-muted-foreground mb-1.5 block">{t('emi.emiDueDay')}</label>
+                        <div className="flex gap-2 flex-wrap">
+                            {[1, 5, 7, 10, 15].map((d) => (
+                                <button key={d} onClick={() => setEmiDueDay(d)}
+                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${emiDueDay === d
+                                        ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm'
+                                        : 'bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-slate-600 dark:text-muted-foreground'
+                                    }`}>
+                                    {d}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
@@ -751,23 +808,29 @@ export default function EMICalculator() {
                         </motion.button>
                     </div>
 
-                    <motion.button
-                        whileTap={{ scale: 0.97 }}
-                        onClick={handleSave}
-                        disabled={isSaved}
-                        className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${isSaved
-                                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
-                                : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/20'
-                            }`}
-                    >
-                        {isSaved ? (
-                            <><Check size={18} /> {t('emi.saved')}</>
-                        ) : savedId ? (
-                            <><Save size={18} /> {t('emi.updateCalculation')}</>
-                        ) : (
-                            <><Save size={18} /> {t('emi.saveCalculation')}</>
-                        )}
-                    </motion.button>
+                    {isSaved ? (
+                        <div className="flex gap-2">
+                            <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                <Check size={16} /> {t('common.saved')}
+                            </div>
+                            <button onClick={handleRemove}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <motion.button
+                            whileTap={{ scale: 0.97 }}
+                            onClick={handleSave}
+                            className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-500/20"
+                        >
+                            {savedId ? (
+                                <><Save size={18} /> {t('emi.updateCalculation')}</>
+                            ) : (
+                                <><Save size={18} /> {t('emi.saveCalculation')}</>
+                            )}
+                        </motion.button>
+                    )}
                 </div>
 
                 {/* ── Shareable Card ──────────────────────────────── */}

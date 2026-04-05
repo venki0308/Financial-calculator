@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Save, Check, Download, Info, Receipt, ArrowUpRight, Percent, FileText, BarChart3, ChevronDown, ChevronUp, Share2 } from 'lucide-react';
+import { ArrowLeft, Save, Check, Download, Info, Receipt, ArrowUpRight, Percent, FileText, BarChart3, ChevronDown, ChevronUp, Share2, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -55,11 +55,12 @@ export default function GSTCalculator() {
     useTrackCalculator();
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { addSaved, savedCalculations } = useCalculatorStore();
+    const { addSaved, removeSaved, savedCalculations } = useCalculatorStore();
 
     const [mode, setMode] = useState<GSTMode>('standard');
     const [showInfo, setShowInfo] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [showBreakdown, setShowBreakdown] = useState(false);
 
     // Standard / Reverse mode
@@ -206,6 +207,7 @@ export default function GSTCalculator() {
         const calcId = `GST-${mode}-${Date.now()}`;
         addSaved({ id: calcId, calculatorType: `GST Calculator (${mode})`, inputValues, resultValues, timestamp: Date.now() });
         setSaved(true);
+        setLastSavedId(calcId);
 
         triggerCalcNotification({
             type: 'general',
@@ -217,6 +219,14 @@ export default function GSTCalculator() {
                 icon: '🧾'
             }
         });
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handleDownloadPDF = async () => {
@@ -696,13 +706,22 @@ export default function GSTCalculator() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 mb-5">
-                    <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} disabled={saved}
-                        className={`flex-1 py-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${saved
-                            ? 'bg-brand-green/10 text-brand-green border border-brand-green/20'
-                            : 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20'
-                            }`}>
-                        {saved ? <><Check size={18} /> {t('gst.saved')}</> : <><Save size={18} /> {t('gst.save')}</>}
-                    </motion.button>
+                    {saved ? (
+                        <>
+                            <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                <Check size={16} /> {t('common.saved')}
+                            </div>
+                            <button onClick={handleRemove}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                                <Trash2 size={16} />
+                            </button>
+                        </>
+                    ) : (
+                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave}
+                            className="flex-1 py-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all bg-brand-purple text-white shadow-lg shadow-brand-purple/20">
+                            <Save size={18} /> {t('gst.save')}
+                        </motion.button>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mb-8">

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
@@ -12,6 +12,9 @@ import RiskCategoryTags from '../components/RiskCategoryTags';
 import { TaxRegime, calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import LiveStatusCard from '../components/LiveStatusCard';
+import DateInput from '../components/DateInput';
+import { calculatePomisStatus, type PomisStatusInput } from '../utils/investmentStatusEngine';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 const LOCK_IN_YEARS = 5;
@@ -20,7 +23,7 @@ const ITEMS_PER_PAGE = 12;
 export default function POMISCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
 
     useEffect(() => { AnalyticsService.trackScreen('POMIS_Calculator'); }, []);
 
@@ -37,7 +40,9 @@ export default function POMISCalculator() {
 
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(0);
+    const [pomisStartDate, setPomisStartDate] = useState('');
 
     const maxLimit = isJoint ? 1500000 : 900000;
 
@@ -116,6 +121,11 @@ export default function POMISCalculator() {
         };
     }, [investment, rate, isJoint, maxLimit, userIncome, taxRegime, reinvestRate, inflation, fdRate]);
 
+    const pomisStatus = useMemo(() => {
+        if (!pomisStartDate) return null;
+        return calculatePomisStatus({ principal: Math.min(investment, maxLimit), rate, startDate: pomisStartDate });
+    }, [investment, rate, pomisStartDate, maxLimit]);
+
     const riskConfig = DecisionEngine.getRiskConfig('POMIS');
     const recommendation = useMemo(() => DecisionEngine.getRecommendation({
         calculatorId: 'POMIS',
@@ -127,15 +137,24 @@ export default function POMISCalculator() {
     }), [result.realReturn, result.postTaxYield, riskConfig.risk]);
 
     const handleSave = () => {
+        const calcId = crypto.randomUUID();
         addSaved({
-            id: crypto.randomUUID(),
+            id: calcId,
             calculatorType: 'Post Office MIS',
             inputValues: { investment, rate, isJoint, userIncome, taxRegime },
             resultValues: { primary: result.monthlyIncome, totalInterest: result.totalInterest },
             timestamp: Date.now()
         });
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handlePDFExport = async () => {
@@ -217,9 +236,20 @@ export default function POMISCalculator() {
                             <p className="text-muted-foreground text-xs">{t('pomis.subtitle')}</p>
                         </div>
                     </div>
-                    <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-blue">
-                        {saved ? <Check size={18} /> : <Save size={18} />}
-                    </button>
+                    {saved ? (
+                        <div className="flex gap-1">
+                            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+                                <Check size={18} />
+                            </div>
+                            <button onClick={handleRemove} className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 transition-all active:scale-95">
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-blue">
+                            <Save size={18} />
+                        </button>
+                    )}
                 </div>
                 <RiskCategoryTags risk={riskConfig.risk} categories={riskConfig.categories} />
             </div>
@@ -243,6 +273,16 @@ export default function POMISCalculator() {
                             <input type="number" value={rate} step={0.1} onChange={e => setRate(Number(e.target.value) || 0)} className={inputCls + " pr-8"} />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Investment Start Date (optional)</label>
+                        <DateInput
+                            value={pomisStartDate}
+                            onChange={setPomisStartDate}
+                            max={new Date().toISOString().slice(0, 10)}
+                            className={inputCls}
+                        />
                     </div>
 
                     {/* Account type toggle */}

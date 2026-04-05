@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTrackCalculator } from '../hooks/useTrackCalculator'
-import { ArrowLeft, Info, Save, Check, Download, TrendingUp, Target, ArrowUpRight, Share2 } from 'lucide-react'
+import { ArrowLeft, Info, Save, Check, Download, TrendingUp, Target, ArrowUpRight, Share2, Trash2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import {
     Chart as ChartJS,
@@ -18,9 +18,12 @@ import {
 } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
+import DateInput from '../components/DateInput';
+import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { calculateSIP, formatINR } from '../utils/calculations';
+import { calculateSipStatus, type SipStatusInput } from '../utils/investmentStatusEngine';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
@@ -57,9 +60,10 @@ export default function SIPCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('SIP_Calculator'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
-    const { addHistory, addSaved, savedCalculations } = useCalculatorStore();
+    const { addHistory, addSaved, removeSaved, savedCalculations } = useCalculatorStore();
     const [activeTab, setActiveTab] = useState<SIPTab>('basic');
     const [isSaved, setIsSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [showInfo, setShowInfo] = useState(false);
     const chartRef = useRef<any>(null);
     const c = useAppColors();
@@ -79,6 +83,21 @@ export default function SIPCalculator() {
     const [goalTarget, setGoalTarget] = useState(1000000);
     const [goalYears, setGoalYears] = useState(5);
     const [goalRate, setGoalRate] = useState(12);
+
+    // Live Status
+    const [sipStartDate, setSipStartDate] = useState('');
+
+    const sipStatus = useMemo(() => {
+        if (!sipStartDate) return null;
+        const monthlySip = activeTab === 'basic' ? monthly : activeTab === 'stepup' ? suInitial : 0;
+        const annualReturn = activeTab === 'basic' ? rate : activeTab === 'stepup' ? suRate : goalRate;
+        return calculateSipStatus({
+            monthlySip,
+            annualReturn,
+            startDate: sipStartDate,
+            targetAmount: activeTab === 'goal' ? goalTarget : undefined,
+        });
+    }, [sipStartDate, activeTab, monthly, rate, suInitial, suRate, goalRate, goalTarget]);
 
     // Reset saved state when switching tabs or changing inputs
     useEffect(() => { setIsSaved(false); }, [activeTab, monthly, rate, years, suInitial, suStepUp, suRate, suYears, goalTarget, goalYears, goalRate]);
@@ -188,6 +207,7 @@ export default function SIPCalculator() {
             timestamp: Date.now()
         });
         setIsSaved(true);
+        setLastSavedId(calcId);
         triggerCalcNotification({
             type: 'sip_due',
             metadata: {
@@ -196,6 +216,14 @@ export default function SIPCalculator() {
                 isTomorrow: false
             }
         });
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setIsSaved(false);
+        }
     };
 
     const isAlreadySaved = useMemo(() => {
@@ -347,6 +375,15 @@ export default function SIPCalculator() {
                             <NumberInput label={t('sip.expectedReturn')} value={goalRate} onChange={setGoalRate} min={1} max={30} suffix="%" step={0.5} />
                         </>
                     )}
+                    <div>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('sip.sipStartDate')}</label>
+                        <DateInput
+                            value={sipStartDate}
+                            onChange={setSipStartDate}
+                            max={new Date().toISOString().split('T')[0]}
+                            className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50"
+                        />
+                    </div>
                 </div>
 
                 {/* Result Card */}
@@ -390,17 +427,25 @@ export default function SIPCalculator() {
                         </div>
                     )}
 
-                    <motion.button
-                        whileTap={{ scale: 0.97 }}
-                        onClick={handleSave}
-                        disabled={isSaved || isAlreadySaved}
-                        className={`w-full py-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${isSaved || isAlreadySaved
-                            ? 'bg-brand-green/10 text-brand-green border border-brand-green/20'
-                            : 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20'
-                            }`}
-                    >
-                        {isSaved || isAlreadySaved ? <><Check size={18} /> {t('sip.saved')}</> : <><Save size={18} /> {t('sip.saveInvestment')}</>}
-                    </motion.button>
+                    {isSaved || isAlreadySaved ? (
+                        <div className="flex gap-2">
+                            <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                <Check size={16} /> {t('common.saved')}
+                            </div>
+                            <button onClick={handleRemove}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <motion.button
+                            whileTap={{ scale: 0.97 }}
+                            onClick={handleSave}
+                            className="w-full py-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all bg-brand-purple text-white shadow-lg shadow-brand-purple/20"
+                        >
+                            <Save size={18} /> {t('sip.saveInvestment')}
+                        </motion.button>
+                    )}
                 </motion.div>
 
                 {/* Growth Chart (Basic & Step-Up only) */}
@@ -500,9 +545,26 @@ export default function SIPCalculator() {
                     onClose={() => setShowInfo(false)}
                     calculatorTitle={t('sip.sipCalculator')}
                 />
+                {sipStatus && (
+                    <div className="mb-5">
+                        <LiveStatusCard
+                            title={t('sip.liveInvestmentStatus')}
+                            subtitle={`${activeTab === 'basic' ? t('sip.basicSip') : activeTab === 'stepup' ? t('sip.stepUpSip') : t('sip.goalSip')}`}
+                            startDate={sipStartDate}
+                            metrics={[
+                                { label: t('sip.totalInvested'), value: formatINR(sipStatus.totalInvested), color: 'green' },
+                                { label: t('sip.futureValue'), value: formatINR(sipStatus.currentValue), color: 'blue' },
+                                { label: t('sip.returns'), value: formatINR(sipStatus.wealthGained), subValue: `${sipStatus.returnPercent.toFixed(1)}% return`, color: 'green' },
+                            ]}
+                            progressPercent={sipStatus.progressToGoal}
+                            progressLabel={activeTab === 'goal' && sipStatus.progressToGoal > 0 ? `${sipStatus.progressToGoal.toFixed(1)}% towards goal of ${formatINR(goalTarget)}` : undefined}
+                            insightText={sipStatus.totalInvested > 0 ? `Your ${formatINR(sipStatus.totalInvested)} has grown to ${formatINR(sipStatus.currentValue)}. Compounding added ${formatINR(sipStatus.wealthGained)} so far.` : undefined}
+                        />
+                    </div>
+                )}
             </div>
-            
-            
+
+
             <DisclaimerComponent module="sip" />
         </div>
     );

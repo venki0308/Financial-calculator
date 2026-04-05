@@ -2,17 +2,20 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Save, Shield, Calendar, IndianRupee, ChevronDown, ChevronUp, Download, Share2 } from 'lucide-react';
+import { ArrowLeft, Save, Check, Shield, Calendar, IndianRupee, ChevronDown, ChevronUp, Download, Share2, Trash2 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
+import DateInput from '../components/DateInput';
+import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import SmartInsight from '../components/SmartInsight';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import ShareableCard from '../components/ShareableCard';
 import { formatINR } from '../utils/calculations';
+import { calculateScssStatus, type ScssStatusInput } from '../utils/investmentStatusEngine';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -25,16 +28,28 @@ export default function SCSSCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('SCSS_Calculator_Advanced'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
     const c = useAppColors();
 
     const [investment, setInvestment] = useState(1500000);
     const [rate, setRate] = useState(8.2);
     const [tenure, setTenure] = useState<5 | 8>(5);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+    const [scssStartDate, setScssStartDate] = useState('');
     const [showTaxInfo, setShowTaxInfo] = useState(false);
     const [showBreakdown, setShowBreakdown] = useState(false);
     const [showPenalty, setShowPenalty] = useState(false);
+
+    const scssStatus = useMemo(() => {
+        if (!scssStartDate) return null;
+        return calculateScssStatus({
+            principal: investment,
+            rate,
+            startDate: scssStartDate,
+            tenure,
+        });
+    }, [scssStartDate, investment, rate, tenure]);
 
     const result = useMemo(() => {
         const annualInterest = investment * rate / 100;
@@ -90,15 +105,24 @@ export default function SCSSCalculator() {
     }), [investment, result.totalInterest, c.card]);
 
     const handleSave = () => {
+        const calcId = `scss-${Date.now()}`;
         addSaved({
-            id: `scss-${Date.now()}`,
+            id: calcId,
             calculatorType: 'SCSS Calculator',
             inputValues: { investment, rate, tenure },
             resultValues: { primary: result.quarterlyIncome, maturity: result.maturityAmount },
             timestamp: Date.now(),
         });
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handleDownloadPDF = async () => {
@@ -206,6 +230,15 @@ export default function SCSSCalculator() {
                             <p className="text-[10px] text-muted-foreground px-1">{t('scss.extensionNote')}</p>
                         )}
                     </div>
+                    <div>
+                        <label className="text-foreground text-sm font-medium mb-1.5 block">SCSS Start Date</label>
+                        <DateInput
+                            value={scssStartDate}
+                            onChange={setScssStartDate}
+                            max={new Date().toISOString().split('T')[0]}
+                            className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50"
+                        />
+                    </div>
                 </div>
 
                 {/* Result Card */}
@@ -230,9 +263,21 @@ export default function SCSSCalculator() {
                             <p className="text-amber-600 dark:text-amber-400 font-bold text-sm">{formatINR(result.maturityAmount)}</p>
                         </div>
                     </div>
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/20 dark:bg-white/10 border border-white/20 text-slate-800 dark:text-slate-100 font-bold text-sm">
-                        <Save size={16} /> {saved ? t('scss.saved') : t('scss.saveCalculation')}
-                    </motion.button>
+                    {saved ? (
+                        <div className="flex gap-2 mt-4">
+                            <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                <Check size={16} /> {t('common.saved')}
+                            </div>
+                            <button onClick={handleRemove}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/20 dark:bg-white/10 border border-white/20 text-slate-800 dark:text-slate-100 font-bold text-sm">
+                            <Save size={16} /> {t('scss.saveCalculation')}
+                        </motion.button>
+                    )}
                 </motion.div>
 
                 {/* TDS Alert Banner */}
@@ -403,6 +448,24 @@ export default function SCSSCalculator() {
                     gradient="from-purple-600 via-indigo-600 to-violet-600"
                 />
             </div>
+
+            {scssStatus && (
+                <div className="px-4 mb-5">
+                    <LiveStatusCard
+                        title="Live SCSS Status"
+                        subtitle={`${tenure} Year SCSS @ ${rate}%`}
+                        startDate={scssStartDate}
+                        metrics={[
+                            { label: 'Quarterly Income', value: formatINR(scssStatus.quarterlyIncome), color: 'green' },
+                            { label: 'Total Received', value: formatINR(scssStatus.totalIncomeReceived), color: 'blue' },
+                            { label: 'Remaining', value: formatINR(scssStatus.totalIncomeOnMaturity - scssStatus.totalIncomeReceived) },
+                        ]}
+                        progressPercent={(scssStatus.quartersCompleted / (tenure * 4)) * 100}
+                        progressLabel={`${scssStatus.quartersCompleted} of ${tenure * 4} quarters completed`}
+                        insightText={scssStatus.quartersRemaining > 0 ? `${scssStatus.quartersRemaining} quarters remaining. Total income on maturity: ${formatINR(scssStatus.totalIncomeOnMaturity)}.` : `Your SCSS has matured! Total income received: ${formatINR(scssStatus.totalIncomeOnMaturity)}.`}
+                    />
+                </div>
+            )}
 
             <DisclaimerComponent module="scss" />
         </div>

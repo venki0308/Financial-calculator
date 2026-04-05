@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Download, Share2, Save, TrendingUp, ChevronDown, ChevronUp, DollarSign, Target } from 'lucide-react';
+import { ArrowLeft, Download, Share2, Save, Check, TrendingUp, ChevronDown, ChevronUp, DollarSign, Target, Trash2 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -27,7 +27,7 @@ export default function BreakEvenCalculator() {
     useTrackCalculator();
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
     const chartRef = useRef<any>(null);
     const c = useAppColors();
 
@@ -36,6 +36,7 @@ export default function BreakEvenCalculator() {
     const [variable, setVariable] = useState(120);
     const [showProjection, setShowProjection] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
 
     const result = useMemo(() => {
         const contribution = price - variable;
@@ -77,8 +78,18 @@ export default function BreakEvenCalculator() {
     }), [result.projection, t]);
 
     const handleSave = () => {
-        addSaved({ id: `be-${Date.now()}`, calculatorType: 'Break Even Calculator', inputValues: { fixed, price, variable }, resultValues: { primary: result.breakEvenUnits }, timestamp: Date.now() });
-        setSaved(true); setTimeout(() => setSaved(false), 2000);
+        const calcId = `be-${Date.now()}`;
+        addSaved({ id: calcId, calculatorType: 'Break Even Calculator', inputValues: { fixed, price, variable }, resultValues: { primary: result.breakEvenUnits }, timestamp: Date.now() });
+        setSaved(true);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handlePDF = async () => {
@@ -172,9 +183,21 @@ export default function BreakEvenCalculator() {
                         <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('breakeven.contributionMargin')}</p><p className="text-amber-400 font-bold text-sm">{result.marginPct}%</p></div>
                         <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('breakeven.fixedCostRecovery')}</p><p className="text-foreground font-bold text-sm">{formatINR(fixed)}</p></div>
                     </div>
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
-                        <Save size={16} /> {saved ? t('breakeven.saved') : t('breakeven.saveCalculation')}
-                    </motion.button>
+                    {saved ? (
+                        <div className="flex gap-2 mt-4">
+                            <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                <Check size={16} /> {t('common.saved')}
+                            </div>
+                            <button onClick={handleRemove}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
+                            <Save size={16} /> {t('breakeven.saveCalculation')}
+                        </motion.button>
+                    )}
                 </motion.div>
 
                 {/* Revenue vs Cost Chart */}

@@ -13,6 +13,9 @@ import {
 } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import DateInput from '../components/DateInput';
+import LiveLoanStatus from '../components/LiveLoanStatus';
+import type { LoanProfile } from '../utils/loanStatusEngine';
 import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
@@ -34,6 +37,11 @@ export default function AdvancedMortgageCalculator() {
     const [tenureYears, setTenureYears] = useState(20);
     const [monthlyIncome, setMonthlyIncome] = useState(150000);
     const [loanRateType, setLoanRateType] = useState<'floating' | 'fixed'>('floating');
+    const [loanPurpose, setLoanPurpose] = useState<'home' | 'plot' | 'renovation'>('home');
+
+    // ─── Live Loan Status Inputs ───────────────────────────────────────────
+    const [loanStartDate, setLoanStartDate] = useState('');
+    const [emiDueDay, setEmiDueDay] = useState(5);
 
     // ─── True Cost Inputs ──────────────────────────────────────────────────
     const [processingFee, setProcessingFee] = useState(0);
@@ -196,6 +204,20 @@ export default function AdvancedMortgageCalculator() {
         };
     }, [showWhatIf, wiRate, wiTenure, loanAmount, result]);
 
+    // ─── Live Loan Status Profile ────────────────────────────────────────
+    const loanProfile = useMemo<LoanProfile | null>(() => {
+        if (!loanStartDate || loanAmount <= 0 || result.originalEmi <= 0) return null;
+        return {
+            loanAmount,
+            annualRate: interestRate,
+            tenureMonths: months,
+            emiAmount: result.originalEmi,
+            disbursementDate: loanStartDate,
+            emiDueDay,
+            loanType: loanRateType,
+        };
+    }, [loanStartDate, emiDueDay, loanAmount, interestRate, months, result, loanRateType]);
+
     // ─── Export helpers ──────────────────────────────────────────────────
     const buildExportConfig = (forExcel = false): ExportConfig => {
         const tag = dateTag();
@@ -210,12 +232,19 @@ export default function AdvancedMortgageCalculator() {
             { label: 'Interest Rate', value: `${interestRate}% p.a.` },
             { label: 'Tenure', value: `${tenureYears} Years (${months} months)` },
             ...(monthlyIncome > 0 ? [{ label: 'Monthly Income', value: formatINR(monthlyIncome) }] : []),
+            { label: 'Loan Purpose', value: loanPurpose === 'home' ? 'Home Purchase / Construction' : loanPurpose === 'plot' ? 'Residential Plot / Land' : 'Home Renovation' },
         ];
 
         const results: ExportConfig['results'] = [
             { label: 'Monthly EMI', value: formatINR(result.originalEmi) },
-            { label: 'Total Interest', value: formatINR(result.totalInterest) },
-            { label: 'Total Payment', value: formatINR(result.totalPayment) },
+            ...(preEmiInterest > 0 ? [
+                { label: 'Pre-EMI Interest', value: formatINR(preEmiInterest) },
+                { label: 'EMI Interest', value: formatINR(result.totalInterest) },
+                { label: 'Total Interest (EMI + Pre-EMI)', value: formatINR(result.totalInterest + preEmiInterest) },
+            ] : [
+                { label: 'Total Interest', value: formatINR(result.totalInterest) },
+            ]),
+            { label: 'Total Payment', value: formatINR(result.totalPayment + preEmiInterest) },
             ...(monthlyIncome > 0 ? [
                 { label: 'EMI to Income Ratio', value: `${emiRatio.toFixed(1)}%` },
                 { label: 'Affordability Status', value: affordStatus },
@@ -272,7 +301,7 @@ export default function AdvancedMortgageCalculator() {
                 type: 'pie',
                 segments: [
                     { label: 'Principal', value: loanAmount, color: '#10B981' },
-                    { label: 'Total Interest', value: result.totalInterest, color: '#F59E0B' },
+                    { label: 'Total Interest', value: result.totalInterest + preEmiInterest, color: '#F59E0B' },
                 ],
             },
             projectionTitle: 'Monthly Amortization Schedule',
@@ -291,7 +320,9 @@ export default function AdvancedMortgageCalculator() {
                     rows: yearlyRows,
                 },
                 {
-                    title: 'Tax Benefits (Year-wise)',
+                    title: loanPurpose === 'plot'
+                        ? 'Tax Benefits (Year-wise) — PLOT LOAN: Deductions apply only after construction completion & Completion Certificate. Pre-construction interest claimable in 5 equal instalments post-construction. Verify with a CA.'
+                        : 'Tax Benefits (Year-wise)',
                     columns: ['Year', 'Principal Paid', 'Interest Paid', '80C Deduction', '24(b) Deduction', 'Total Benefit'],
                     rows: taxRows,
                 },
@@ -460,6 +491,28 @@ export default function AdvancedMortgageCalculator() {
                         )}
                     </div>
 
+                    {/* Loan Purpose */}
+                    <div>
+                        <p className="text-sm font-medium mb-2" style={{ color: c.textSecondary }}>{t('mortgage.loanPurpose')}</p>
+                        <div className="flex gap-2 flex-wrap">
+                            {([
+                                { id: 'home' as const, label: t('mortgage.purposeHome') },
+                                { id: 'plot' as const, label: t('mortgage.purposePlot') },
+                                { id: 'renovation' as const, label: t('mortgage.purposeRenovation') },
+                            ]).map(opt => (
+                                <button key={opt.id} onClick={() => setLoanPurpose(opt.id)}
+                                    className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all border"
+                                    style={{
+                                        backgroundColor: loanPurpose === opt.id ? '#3B82F6' : 'transparent',
+                                        color: loanPurpose === opt.id ? '#fff' : c.textSecondary,
+                                        borderColor: loanPurpose === opt.id ? '#3B82F6' : c.border,
+                                    }}>
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* True Cost Inputs */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <NumberInput label={t('mortgage.processingFee')} value={processingFee} onChange={setProcessingFee}
@@ -468,6 +521,39 @@ export default function AdvancedMortgageCalculator() {
                             min={0} max={5000000} step={1000} prefix="₹" helperText={t('mortgage.loanInsuranceHelper')} />
                         <NumberInput label={t('mortgage.preEmiInterest')} value={preEmiInterest} onChange={setPreEmiInterest}
                             min={0} max={5000000} step={1000} prefix="₹" helperText={t('mortgage.preEmiInterestHelper')} />
+                    </div>
+
+                    {/* Live Loan Status Inputs */}
+                    <div className="pt-4 border-t space-y-4" style={{ borderColor: c.border }}>
+                        <div className="flex items-center gap-2">
+                            <Info className="w-4 h-4" style={{ color: '#3B82F6' }} />
+                            <p className="text-sm font-semibold" style={{ color: c.text }}>{t('mortgage.liveTracker')}</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <p className="text-sm font-medium mb-2" style={{ color: c.textSecondary }}>{t('mortgage.loanDisbursementDate', 'Loan Disbursement Date')}</p>
+                                <DateInput
+                                    value={loanStartDate}
+                                    onChange={setLoanStartDate}
+                                />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium mb-2" style={{ color: c.textSecondary }}>{t('mortgage.emiDueDay', 'EMI Due Day')}</p>
+                                <div className="flex gap-2 flex-wrap">
+                                    {[1, 5, 7, 10, 15].map(day => (
+                                        <button key={day} onClick={() => setEmiDueDay(day)}
+                                            className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all border"
+                                            style={{
+                                                backgroundColor: emiDueDay === day ? '#3B82F6' : 'transparent',
+                                                color: emiDueDay === day ? '#fff' : c.textSecondary,
+                                                borderColor: emiDueDay === day ? '#3B82F6' : c.border,
+                                            }}>
+                                            {day}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -655,12 +741,21 @@ export default function AdvancedMortgageCalculator() {
 
                         <div>
                             <p className="text-emerald-100 text-xs font-medium uppercase tracking-wider">{t('mortgage.totalInterest')}</p>
-                            <p className="text-xl font-bold mt-1">{formatINR(result.totalInterest)}</p>
+                            {preEmiInterest > 0 ? (
+                                <div>
+                                    <p className="text-xl font-bold mt-1">{formatINR(result.totalInterest + preEmiInterest)}</p>
+                                    <p className="text-emerald-200/70 text-[10px] mt-0.5">
+                                        EMI: {formatINRShort(result.totalInterest)} + Pre-EMI: {formatINRShort(preEmiInterest)}
+                                    </p>
+                                </div>
+                            ) : (
+                                <p className="text-xl font-bold mt-1">{formatINR(result.totalInterest)}</p>
+                            )}
                         </div>
-                        
+
                         <div>
                             <p className="text-emerald-100 text-xs font-medium uppercase tracking-wider">{t('mortgage.totalPayment')}</p>
-                            <p className="text-xl font-bold mt-1">{formatINR(result.totalPayment)}</p>
+                            <p className="text-xl font-bold mt-1">{formatINR(result.totalPayment + preEmiInterest)}</p>
                         </div>
                     </div>
                 </div>
@@ -759,18 +854,47 @@ export default function AdvancedMortgageCalculator() {
                     <p className="text-sm" style={{ color: c.textSecondary }}>
                         {t('mortgage.taxBenefitsDesc')}
                     </p>
-                    
+
+                    {/* Plot Loan Tax Warning */}
+                    {loanPurpose === 'plot' && (
+                        <div className="p-4 rounded-xl border border-amber-500/30" style={{ backgroundColor: '#F59E0B15' }}>
+                            <div className="flex items-start gap-2 mb-2">
+                                <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                                <p className="text-sm font-bold text-amber-600 dark:text-amber-400">{t('mortgage.plotLoanTitle')}</p>
+                            </div>
+                            <div className="space-y-2 text-xs leading-relaxed" style={{ color: c.textSecondary }}>
+                                <p>{t('mortgage.plotLoanSec24')}</p>
+                                <p>{t('mortgage.plotLoanPreConstruction')}</p>
+                                <p>{t('mortgage.plotLoanSec80C')}</p>
+                                <p className="font-semibold text-amber-600 dark:text-amber-400">{t('mortgage.plotLoanConsultCA')}</p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-4 mt-4">
                         <div className="p-4 rounded-xl border" style={{ backgroundColor: c.bg, borderColor: c.border }}>
                             <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: c.textSecondary }}>{t('mortgage.sec80CPrincipal')}</p>
                             <p className="text-2xl font-bold text-emerald-500">{formatINRShort(result.taxBenefits.total80C)}</p>
-                            <p className="text-xs mt-1" style={{ color: c.textSecondary }}>{t('mortgage.totalPotentialClaim')}</p>
+                            <div className="flex items-center gap-1 mt-1">
+                                <p className="text-xs" style={{ color: c.textSecondary }}>{t('mortgage.totalPotentialClaim')}</p>
+                                {loanPurpose === 'plot' && (
+                                    <span className="text-[9px] text-amber-500 font-bold">*</span>
+                                )}
+                            </div>
                         </div>
                         <div className="p-4 rounded-xl border" style={{ backgroundColor: c.bg, borderColor: c.border }}>
                             <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: c.textSecondary }}>{t('mortgage.sec24Interest')}</p>
                             <p className="text-2xl font-bold text-amber-500">{formatINRShort(result.taxBenefits.total24)}</p>
-                            <p className="text-xs mt-1" style={{ color: c.textSecondary }}>{t('mortgage.totalPotentialClaim')}</p>
+                            <div className="flex items-center gap-1 mt-1">
+                                <p className="text-xs" style={{ color: c.textSecondary }}>{t('mortgage.totalPotentialClaim')}</p>
+                                {loanPurpose === 'plot' && (
+                                    <span className="text-[9px] text-amber-500 font-bold">*</span>
+                                )}
+                            </div>
                         </div>
+                        {loanPurpose === 'plot' && (
+                            <p className="col-span-2 text-[10px] text-amber-500 font-medium">* {t('mortgage.plotLoanDisclaimer')}</p>
+                        )}
                     </div>
                 </div>
 
@@ -1103,6 +1227,11 @@ export default function AdvancedMortgageCalculator() {
                         )}
                     </AnimatePresence>
                 </div>
+
+                {/* Live Loan Status */}
+                {loanProfile && (
+                    <LiveLoanStatus profile={loanProfile} />
+                )}
 
                 <DisclaimerComponent module="mortgage" />
 

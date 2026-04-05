@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, ShieldCheck, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
@@ -11,7 +11,10 @@ import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
 import { TaxRegime, calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
+import DateInput from '../components/DateInput';
+import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { calculateNscStatus, type NscStatusInput } from '../utils/investmentStatusEngine';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 const ITEMS_PER_PAGE = 5;
@@ -20,7 +23,7 @@ const LOCK_IN = 5;
 export default function NSCCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
 
     useEffect(() => { AnalyticsService.trackScreen('NSC_Calculator'); }, []);
 
@@ -32,7 +35,9 @@ export default function NSCCalculator() {
 
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(0);
+    const [nscPurchaseDate, setNscPurchaseDate] = useState('');
 
     const result = useMemo(() => {
         // NSC: annually compounded, 5-year lock-in
@@ -82,6 +87,11 @@ export default function NSCCalculator() {
         };
     }, [investment, rate, annualIncome, taxRegime, inflation]);
 
+    const nscStatus = useMemo(() => {
+        if (!nscPurchaseDate) return null;
+        return calculateNscStatus({ principal: investment, rate, purchaseDate: nscPurchaseDate });
+    }, [investment, rate, nscPurchaseDate]);
+
     const riskConfig = DecisionEngine.getRiskConfig('NSC');
     const recommendation = useMemo(() => DecisionEngine.getRecommendation({
         calculatorId: 'NSC',
@@ -93,15 +103,24 @@ export default function NSCCalculator() {
     }), [result, taxRegime, riskConfig.risk]);
 
     const handleSave = () => {
+        const calcId = crypto.randomUUID();
         addSaved({
-            id: crypto.randomUUID(),
+            id: calcId,
             calculatorType: 'NSC Calculator',
             inputValues: { investment, rate, annualIncome, taxRegime },
             resultValues: { primary: result.maturity, ...result },
             timestamp: Date.now()
         });
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handlePDFExport = async () => {
@@ -194,9 +213,20 @@ export default function NSCCalculator() {
                             <p className="text-muted-foreground text-xs">{t('nsc.subtitle')}</p>
                         </div>
                     </div>
-                    <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-gold">
-                        {saved ? <Check size={18} /> : <Save size={18} />}
-                    </button>
+                    {saved ? (
+                        <div className="flex gap-1">
+                            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+                                <Check size={18} />
+                            </div>
+                            <button onClick={handleRemove} className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 transition-all active:scale-95">
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-gold">
+                            <Save size={18} />
+                        </button>
+                    )}
                 </div>
                 <RiskCategoryTags risk={riskConfig.risk} categories={riskConfig.categories} />
             </div>
@@ -217,6 +247,15 @@ export default function NSCCalculator() {
                             <input type="number" value={rate} step={0.1} onChange={e => setRate(Number(e.target.value) || 0)} className={inputCls + " pr-8"} />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
                         </div>
+                    </div>
+                    <div>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">NSC Purchase Date (optional)</label>
+                        <DateInput
+                            value={nscPurchaseDate}
+                            onChange={setNscPurchaseDate}
+                            max={new Date().toISOString().slice(0, 10)}
+                            className={inputCls}
+                        />
                     </div>
                 </div>
 
@@ -376,6 +415,28 @@ export default function NSCCalculator() {
                     </AnimatePresence>
                 </div>
             </div>
+
+            {nscStatus && (
+                <div className="px-4 mb-5">
+                    <LiveStatusCard
+                        title="NSC Live Status"
+                        subtitle={`Year ${nscStatus.yearsCompleted} of 5${nscStatus.yearsCompleted >= 5 ? ' — Matured!' : ''}`}
+                        startDate={nscPurchaseDate}
+                        metrics={[
+                            { label: 'Invested', value: fmtINR(investment) },
+                            { label: 'Current Value', value: fmtINR(nscStatus.valueToday), color: 'green' },
+                            { label: 'Interest', value: fmtINR(nscStatus.interestEarned), color: 'amber' },
+                        ]}
+                        progressPercent={(nscStatus.yearsCompleted / 5) * 100}
+                        progressLabel={`Year ${nscStatus.yearsCompleted} of 5 completed${nscStatus.daysToMaturity > 0 ? ` — ${nscStatus.daysToMaturity} days to maturity` : ''}`}
+                        insightText={
+                            nscStatus.yearsCompleted >= 5
+                                ? `Your NSC has matured! Maturity value: ${fmtINR(nscStatus.maturityValue)}. You can reinvest for another 5-year term.`
+                                : `Year-wise values: ${nscStatus.yearValues.slice(1, nscStatus.yearsCompleted + 2).map((v, i) => `Yr${i + 1}: ${fmtINR(v)}`).join(' | ')}`
+                        }
+                    />
+                </div>
+            )}
 
             <DisclaimerComponent module="nsc" />
         </div>

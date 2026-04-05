@@ -1,11 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Info, Share2, Save, Check, Download, FileText, Landmark, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Info, Share2, Save, Check, Download, FileText, Landmark, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { nativeShare } from '../utils/nativeShare';
 import NumberInput from '../components/NumberInput';
+import DateInput from '../components/DateInput';
+import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { calculatePpfStatus, type PpfStatusInput } from '../utils/investmentStatusEngine';
 
 import { formatINR, formatINRWords } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -59,8 +62,10 @@ export default function AdvancedPPFCalculator() {
     const [showTable, setShowTable] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+    const [ppfOpenDate, setPpfOpenDate] = useState('');
 
-    const { addHistory, addSaved } = useCalculatorStore();
+    const { addHistory, addSaved, removeSaved } = useCalculatorStore();
 
     // Reset save state when inputs change
     useEffect(() => {
@@ -80,6 +85,11 @@ export default function AdvancedPPFCalculator() {
     const maturityValue = schedule.length > 0 ? schedule[schedule.length - 1].closing : 0;
     const totalInterest = maturityValue - totalInvested;
 
+    const ppfStatus = useMemo(() => {
+        if (!ppfOpenDate) return null;
+        return calculatePpfStatus({ yearlyDeposit: annualContribution, rate, openingDate: ppfOpenDate });
+    }, [annualContribution, rate, ppfOpenDate]);
+
     // History tracking
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -95,14 +105,24 @@ export default function AdvancedPPFCalculator() {
     }, [annualContribution, rate, years]);
 
     const handleSave = () => {
+        const calcId = `PPF-Save-${Date.now()}`;
         addSaved({
-            id: `PPF-Save-${Date.now()}`,
+            id: calcId,
             calculatorType: 'PPF Calculator',
             inputValues: { annualContribution, rate, years, frequency },
             resultValues: { primary: maturityValue, totalInvested, totalInterest },
             timestamp: Date.now()
         });
         setIsSaved(true);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setIsSaved(false);
+        }
     };
 
     const handlePDF = async () => {
@@ -220,6 +240,15 @@ export default function AdvancedPPFCalculator() {
                     <NumberInput label={t('ppf.investmentPeriod')} value={years} onChange={setYears}
                         min={PPF_LOCK_IN_YEARS} max={50} suffix={` ${t('ppf.years')}`}
                         helperText={t('ppf.minYearsHelper', { min: PPF_LOCK_IN_YEARS, ext: PPF_EXTENSION_YEARS })} />
+                    <div>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Account Opening Date (optional)</label>
+                        <DateInput
+                            value={ppfOpenDate}
+                            onChange={setPpfOpenDate}
+                            max={new Date().toISOString().slice(0, 10)}
+                            className="w-full bg-white dark:bg-card border border-slate-200 dark:border-border rounded-xl px-4 py-3 text-slate-900 dark:text-foreground text-sm font-semibold focus:outline-none"
+                        />
+                    </div>
                 </div>
 
                 {/* Annual Contribution Banner */}
@@ -340,13 +369,22 @@ export default function AdvancedPPFCalculator() {
                             <Download size={16} /> {t('ppf.excel')}
                         </motion.button>
                     </div>
-                    <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} disabled={isSaved}
-                        className={`w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${isSaved
-                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
-                            : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20'
-                        }`}>
-                        {isSaved ? <><Check size={18} /> {t('ppf.saved')}</> : <><Save size={18} /> {t('ppf.saveCalculation')}</>}
-                    </motion.button>
+                    {isSaved ? (
+                        <div className="flex gap-2">
+                            <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                <Check size={16} /> {t('common.saved')}
+                            </div>
+                            <button onClick={handleRemove}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave}
+                            className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/20">
+                            <Save size={18} /> {t('ppf.saveCalculation')}
+                        </motion.button>
+                    )}
                 </div>
 
                 <ShareableCard
@@ -360,6 +398,33 @@ export default function AdvancedPPFCalculator() {
                     ]}
                     gradient="from-emerald-600 via-teal-500 to-cyan-600"
                 />
+
+                {ppfStatus && (
+                    <div className="mb-5">
+                        <LiveStatusCard
+                            title="PPF Live Status"
+                            subtitle={`Year ${ppfStatus.currentYear} of 15`}
+                            startDate={ppfOpenDate}
+                            metrics={[
+                                { label: 'Deposited', value: formatINR(ppfStatus.totalDeposited) },
+                                { label: 'Interest', value: formatINR(ppfStatus.interestEarned), color: 'amber' },
+                                { label: 'Balance', value: formatINR(ppfStatus.balanceToday), color: 'green' },
+                            ]}
+                            progressPercent={(ppfStatus.yearsCompleted / 15) * 100}
+                            progressLabel={`Year ${ppfStatus.yearsCompleted} of 15 completed${ppfStatus.daysToMaturity > 0 ? ` — ${ppfStatus.daysToMaturity} days to maturity` : ''}`}
+                            warningText={ppfStatus.yearsCompleted < 3 ? 'No withdrawal or loan facility available yet (eligible from Year 3).' : undefined}
+                            insightText={
+                                ppfStatus.yearsCompleted >= 15
+                                    ? `Your PPF has matured! Maturity value: ${formatINR(ppfStatus.maturityValue)}. You can extend in blocks of 5 years.`
+                                    : ppfStatus.yearsCompleted >= 7
+                                        ? `Partial withdrawal eligible — up to ${formatINR(ppfStatus.withdrawalAmount)} (50% of Year 4 balance).`
+                                        : ppfStatus.yearsCompleted >= 3
+                                            ? `Loan facility available — up to ${formatINR(ppfStatus.loanAmount)} (25% of Year 2 balance).`
+                                            : undefined
+                            }
+                        />
+                    </div>
+                )}
 
                 <DisclaimerComponent module="ppf" />
                 <CalculatorInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} calculatorTitle={t('ppf.title')} />

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Building2, MapPin, ArrowRightLeft, Copy, Check, Home, FileText, Info, Download, Landmark, ChevronDown, ChevronUp, Calculator } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, ArrowRightLeft, Copy, Check, Home, FileText, Info, Download, Landmark, ChevronDown, ChevronUp, Calculator, Save, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -25,6 +25,17 @@ export default function PropertyCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const addSaved = useCalculatorStore((s) => s.addSaved);
+    const removeSaved = useCalculatorStore((s) => s.removeSaved);
+    const [propertySaved, setPropertySaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+
+    const handlePropertyRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setPropertySaved(false);
+        }
+    };
     const [mode, setMode] = useState<Mode>('land');
 
     // ── Land ─────────────────────────────────────────────────────────────────
@@ -650,12 +661,23 @@ export default function PropertyCalculator() {
 
                                         {/* Actions */}
                                         <div className="grid grid-cols-2 gap-2">
-                                            <button
-                                                onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Land Value', inputValues: { landArea, landUnit, landPrice }, resultValues: { primary: landResult.totalValue }, timestamp: Date.now() })}
-                                                className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold"
-                                            >
-                                                {t('property.save')}
-                                            </button>
+                                            {propertySaved ? (
+                                                <div className="flex gap-1">
+                                                    <div className="flex-1 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold flex items-center justify-center gap-1">
+                                                        <Check size={14} /> {t('common.saved')}
+                                                    </div>
+                                                    <button onClick={handlePropertyRemove} className="px-3 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold flex items-center justify-center active:scale-95">
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: 'Land Value', inputValues: { landArea, landUnit, landPrice }, resultValues: { primary: landResult.totalValue }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
+                                                    className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold"
+                                                >
+                                                    {t('property.save')}
+                                                </button>
+                                            )}
                                             <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
                                                 📄 PDF
                                             </button>
@@ -775,8 +797,19 @@ export default function PropertyCalculator() {
                                         )}
 
                                         <div className="grid grid-cols-2 gap-2">
-                                            <button onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Flat Price', inputValues: { builtUp, carpet, ppsf, parking, amenities, maint, gstPct }, resultValues: { primary: flatResult.totalCost }, timestamp: Date.now() })}
-                                                className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
+                                            {propertySaved ? (
+                                                <div className="flex gap-1">
+                                                    <div className="flex-1 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold flex items-center justify-center gap-1">
+                                                        <Check size={14} /> {t('common.saved')}
+                                                    </div>
+                                                    <button onClick={handlePropertyRemove} className="px-3 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold flex items-center justify-center active:scale-95">
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: 'Flat Price', inputValues: { builtUp, carpet, ppsf, parking, amenities, maint, gstPct }, resultValues: { primary: flatResult.totalCost }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
+                                                    className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
+                                            )}
                                             <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 PDF</button>
                                         </div>
                                     </motion.div>
@@ -901,8 +934,19 @@ export default function PropertyCalculator() {
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-2">
-                                            <button onClick={() => addSaved({ id: Date.now().toString(), calculatorType: 'Villa Construction', inputValues: { groundFloor, firstFloor, secondFloor, constRate }, resultValues: { primary: villaResult.totalCost }, timestamp: Date.now() })}
-                                                className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
+                                            {propertySaved ? (
+                                                <div className="flex gap-1">
+                                                    <div className="flex-1 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold flex items-center justify-center gap-1">
+                                                        <Check size={14} /> {t('common.saved')}
+                                                    </div>
+                                                    <button onClick={handlePropertyRemove} className="px-3 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold flex items-center justify-center active:scale-95">
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: 'Villa Construction', inputValues: { groundFloor, firstFloor, secondFloor, constRate }, resultValues: { primary: villaResult.totalCost }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
+                                                    className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
+                                            )}
                                             <button onClick={handleVillaPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 PDF</button>
                                         </div>
                                     </motion.div>

@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Info, Save, Check, Download, Share2, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Info, Save, Check, Download, Share2, ChevronDown, ChevronUp, TrendingUp, Trash2 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -10,12 +10,15 @@ import {
 } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
+import DateInput from '../components/DateInput';
+import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { calculateFD, formatINR } from '../utils/calculations';
+import { calculateFdStatus, type FdStatusInput } from '../utils/investmentStatusEngine';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
@@ -29,7 +32,7 @@ export default function FDCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('FD_Calculator'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
-    const { addSaved, savedCalculations } = useCalculatorStore();
+    const { addSaved, removeSaved, savedCalculations } = useCalculatorStore();
     const [principal, setPrincipal] = useState(100000);
     const [rate, setRate] = useState(7);
     const [years, setYears] = useState(5);
@@ -37,13 +40,26 @@ export default function FDCalculator() {
     const [inflation, setInflation] = useState(6);
     const [isSeniorCitizen, setIsSeniorCitizen] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [showCompare, setShowCompare] = useState(false);
     const [showGrowth, setShowGrowth] = useState(false);
+    const [fdStartDate, setFdStartDate] = useState('');
     const chartRef = useRef<any>(null);
     const c = useAppColors();
 
     // Senior citizens get +0.50% extra on FD (most banks)
     const effectiveRate = isSeniorCitizen ? rate + 0.5 : rate;
+
+    const fdStatus = useMemo(() => {
+        if (!fdStartDate) return null;
+        return calculateFdStatus({
+            principal,
+            annualRate: effectiveRate,
+            tenureMonths: years * 12,
+            startDate: fdStartDate,
+            compoundingFreq: compounding,
+        });
+    }, [fdStartDate, principal, effectiveRate, years, compounding]);
 
     const result = useMemo(() => calculateFD(principal, effectiveRate, years, compounding), [principal, effectiveRate, years, compounding]);
 
@@ -110,6 +126,7 @@ export default function FDCalculator() {
         const calcId = `FD-${Date.now()}`;
         addSaved({ id: calcId, calculatorType: 'FD Calculator', inputValues: { principal, rate, years, compounding }, resultValues: { primary: result.amount, ...result }, timestamp: Date.now() });
         setSaved(true);
+        setLastSavedId(calcId);
         triggerCalcNotification({
             type: 'fd_maturity',
             metadata: {
@@ -118,6 +135,14 @@ export default function FDCalculator() {
                 date: new Date(Date.now() + years * 31536000000).toISOString().split('T')[0]
             }
         });
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const isAlreadySaved = useMemo(() => {
@@ -206,7 +231,25 @@ export default function FDCalculator() {
                 </div>
             </div>
 
-            
+            {fdStatus && (
+                <div className="px-4 mb-5">
+                    <LiveStatusCard
+                        title="Live FD Status"
+                        subtitle={`${years} Year FD @ ${effectiveRate}%`}
+                        startDate={fdStartDate}
+                        metrics={[
+                            { label: 'Principal', value: formatINR(principal) },
+                            { label: 'Interest Earned', value: formatINR(fdStatus.interestEarnedToday), color: 'amber' },
+                            { label: 'Value Today', value: formatINR(fdStatus.valueToday), color: 'green' },
+                        ]}
+                        progressPercent={fdStatus.percentComplete}
+                        progressLabel={`${fdStatus.percentComplete.toFixed(1)}% of tenure complete (${fdStatus.daysInvested} of ${fdStatus.daysInvested + fdStatus.daysRemaining} days)`}
+                        insightText={fdStatus.daysRemaining > 0 ? `Premature withdrawal would cost you ${formatINR(fdStatus.costOfBreaking)} in lost interest. Maturity on ${fdStatus.maturityDate}.` : `Your FD has matured! Total value: ${formatINR(fdStatus.maturityValue)}.`}
+                    />
+                </div>
+            )}
+
+
             <DisclaimerComponent module="fd" />
 
             <div className="px-4 pb-28 pt-4 space-y-5">
@@ -238,6 +281,15 @@ export default function FDCalculator() {
                     )}
                     <NumberInput label={t('fd.tenure')} value={years} onChange={setYears} min={1} max={20} suffix=" years" />
                     <NumberInput label={t('fd.assumedInflation')} value={inflation} onChange={setInflation} min={1} max={15} suffix="%" step={0.5} helperText={t('fd.usedForInflationAdjusted')} />
+                    <div>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">FD Start Date</label>
+                        <DateInput
+                            value={fdStartDate}
+                            onChange={setFdStartDate}
+                            max={new Date().toISOString().split('T')[0]}
+                            className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50"
+                        />
+                    </div>
                 </div>
 
                 {/* Result Card */}
@@ -280,10 +332,22 @@ export default function FDCalculator() {
                         <Pie ref={chartRef} data={chartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
                     </div>
 
-                    <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave} disabled={saved || isAlreadySaved}
-                        className={`w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all ${saved || isAlreadySaved ? 'bg-brand-green/10 text-brand-green border border-brand-green/20' : 'bg-brand-purple text-white shadow-lg shadow-brand-purple/20'}`}>
-                        {saved || isAlreadySaved ? <><Check size={18} /> {t('fd.saved')}</> : <><Save size={18} /> {t('fd.saveCalculation')}</>}
-                    </motion.button>
+                    {saved || isAlreadySaved ? (
+                        <div className="flex gap-2">
+                            <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                <Check size={16} /> {t('common.saved')}
+                            </div>
+                            <button onClick={handleRemove}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleSave}
+                            className="w-full py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all bg-brand-purple text-white shadow-lg shadow-brand-purple/20">
+                            <Save size={18} /> {t('fd.saveCalculation')}
+                        </motion.button>
+                    )}
                 </motion.div>
 
                 {/* Inflation-adjusted Insight */}

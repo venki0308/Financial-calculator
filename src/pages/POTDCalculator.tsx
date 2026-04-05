@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
@@ -11,7 +11,10 @@ import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
 import { TaxRegime, calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
+import DateInput from '../components/DateInput';
+import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { calculateFdStatus, type FdStatusInput } from '../utils/investmentStatusEngine';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -26,7 +29,7 @@ const TD_RATES: Record<string, number> = {
 export default function POTDCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
 
     useEffect(() => { AnalyticsService.trackScreen('POTD_Calculator'); }, []);
 
@@ -39,10 +42,23 @@ export default function POTDCalculator() {
     const [inflation, setInflation] = useState(6.0);
     const [fdRate, setFdRate] = useState(7.0);
 
+    const [potdStartDate, setPotdStartDate] = useState('');
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
 
     const rate = TD_RATES[years];
+
+    const potdStatus = useMemo(() => {
+        if (!potdStartDate) return null;
+        return calculateFdStatus({
+            principal: investment,
+            annualRate: rate,
+            tenureMonths: Number(years) * 12,
+            startDate: potdStartDate,
+            compoundingFreq: 4,
+        });
+    }, [potdStartDate, investment, rate, years]);
 
     const result = useMemo(() => {
         const yr = Number(years);
@@ -127,15 +143,24 @@ export default function POTDCalculator() {
     }), [result.realReturn, result.postTaxCAGR, result.is5Year, riskConfig.risk]);
 
     const handleSave = () => {
+        const calcId = crypto.randomUUID();
         addSaved({
-            id: crypto.randomUUID(),
+            id: calcId,
             calculatorType: 'Post Office TD',
             inputValues: { investment, years, rate, userIncome, taxRegime },
             resultValues: { primary: result.maturity, totalInterest: result.totalInterest },
             timestamp: Date.now()
         });
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handlePDFExport = async () => {
@@ -220,9 +245,20 @@ export default function POTDCalculator() {
                             <p className="text-muted-foreground text-xs">{t('potd.subtitle')}</p>
                         </div>
                     </div>
-                    <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-blue">
-                        {saved ? <Check size={18} /> : <Save size={18} />}
-                    </button>
+                    {saved ? (
+                        <div className="flex gap-1">
+                            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500">
+                                <Check size={18} />
+                            </div>
+                            <button onClick={handleRemove} className="p-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 transition-all active:scale-95">
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-blue">
+                            <Save size={18} />
+                        </button>
+                    )}
                 </div>
                 <RiskCategoryTags risk={riskConfig.risk} categories={riskConfig.categories} />
             </div>
@@ -254,6 +290,15 @@ export default function POTDCalculator() {
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                             <input type="number" value={investment} onChange={e => setInvestment(Number(e.target.value) || 0)} className={inputCls + " pl-8"} />
                         </div>
+                    </div>
+                    <div>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">POTD Start Date</label>
+                        <DateInput
+                            value={potdStartDate}
+                            onChange={setPotdStartDate}
+                            max={new Date().toISOString().split('T')[0]}
+                            className={inputCls}
+                        />
                     </div>
                 </div>
 
@@ -443,6 +488,24 @@ export default function POTDCalculator() {
                     </AnimatePresence>
                 </div>
             </div>
+
+            {potdStatus && (
+                <div className="px-4 mb-5">
+                    <LiveStatusCard
+                        title="Live POTD Status"
+                        subtitle={`${years} Year Post Office TD @ ${rate}%`}
+                        startDate={potdStartDate}
+                        metrics={[
+                            { label: 'Principal', value: fmtINR(investment) },
+                            { label: 'Interest Earned', value: fmtINR(potdStatus.interestEarnedToday), color: 'amber' },
+                            { label: 'Value Today', value: fmtINR(potdStatus.valueToday), color: 'green' },
+                        ]}
+                        progressPercent={potdStatus.percentComplete}
+                        progressLabel={`${potdStatus.percentComplete.toFixed(1)}% of tenure complete (${potdStatus.daysInvested} of ${potdStatus.daysInvested + potdStatus.daysRemaining} days)`}
+                        insightText={potdStatus.daysRemaining > 0 ? `Premature withdrawal would cost you ${fmtINR(potdStatus.costOfBreaking)} in lost interest. Maturity on ${potdStatus.maturityDate}.` : `Your POTD has matured! Total value: ${fmtINR(potdStatus.maturityValue)}.`}
+                    />
+                </div>
+            )}
 
             <DisclaimerComponent module="potd" />
         </div>

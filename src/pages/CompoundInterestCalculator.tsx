@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Info, ChevronDown, ChevronUp, Save, Check, BrainCircuit, Activity, Settings, FileText, ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Info, ChevronDown, ChevronUp, Save, Check, BrainCircuit, Activity, Settings, FileText, ChevronLeft, ChevronRight, TrendingUp, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -19,7 +19,7 @@ export default function CompoundInterestCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Compound_Interest_Advanced'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
 
     // Base States
     const [principal, setPrincipal] = useState(100000);
@@ -39,6 +39,7 @@ export default function CompoundInterestCalculator() {
     const [showWhatIf, setShowWhatIf] = useState(false);
     const [showTable, setShowTable] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [page, setPage] = useState(1);
 
     // Core Calculation (Actual)
@@ -87,15 +88,24 @@ export default function CompoundInterestCalculator() {
     }, [rate, inflation, years, result.amount, principal, t]);
 
     const handleSave = () => {
+        const calcId = `ci-${Date.now()}`;
         addSaved({
-            id: `ci-${Date.now()}`,
+            id: calcId,
             calculatorType: 'ci',
             inputValues: { principal, rate, years, freq },
             resultValues: { primary: result.amount, label: 'Maturity Value', invested: principal, returns: result.interest },
             timestamp: Date.now(),
         });
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handleDownloadPDF = async () => {
@@ -274,10 +284,21 @@ export default function CompoundInterestCalculator() {
                 </div>
 
                 {/* SAVE BUTTON */}
-                <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-purple text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-purple/20">
-                    {saved ? <Check size={18} /> : <Save size={18} />}
-                    {saved ? t('ci.calculationSaved') : t('ci.saveCalculation')}
-                </button>
+                {saved ? (
+                    <div className="flex gap-2">
+                        <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                            <Check size={16} /> {t('common.saved')}
+                        </div>
+                        <button onClick={handleRemove}
+                            className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                ) : (
+                    <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-purple text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-purple/20">
+                        <Save size={18} /> {t('ci.saveCalculation')}
+                    </button>
+                )}
 
                 {/* 3. ADVANCED DETAILS (Collapsible) */}
                 <div className="rounded-3xl border border-border bg-card overflow-hidden">

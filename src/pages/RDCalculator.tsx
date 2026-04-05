@@ -1,20 +1,23 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, Target, BarChart2, RotateCw, Info } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, Target, BarChart2, RotateCw, Info, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import DateInput from '../components/DateInput';
+import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { calculateRdStatus, type RdStatusInput } from '../utils/investmentStatusEngine';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
 export default function RDCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
 
     useEffect(() => { AnalyticsService.trackScreen('RD_Advanced'); }, []);
 
@@ -25,6 +28,19 @@ export default function RDCalculator() {
     const [isSeniorCitizen, setIsSeniorCitizen] = useState(false);
     const effectiveRate = isSeniorCitizen ? rate + 0.5 : rate;
 
+    // Live Status
+    const [rdStartDate, setRdStartDate] = useState('');
+
+    const rdStatus = useMemo(() => {
+        if (!rdStartDate) return null;
+        return calculateRdStatus({
+            monthlyDeposit: monthly,
+            annualRate: effectiveRate,
+            tenureMonths: months,
+            startDate: rdStartDate,
+        });
+    }, [rdStartDate, monthly, effectiveRate, months]);
+
     // Advanced Inputs
     const [inflationRate, setInflationRate] = useState(6.0);
     const [whatIfExtra, setWhatIfExtra] = useState(1000);
@@ -34,6 +50,7 @@ export default function RDCalculator() {
     const [showWhatIf, setShowWhatIf] = useState(false);
     const [showTable, setShowTable] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [page, setPage] = useState(1);
 
     // 1. CORE CALCULATION — RBI standard: quarterly compounding at whole-quarter boundaries.
@@ -128,15 +145,24 @@ export default function RDCalculator() {
     }, [result, rate, inflationRate]);
 
     const handleSave = () => {
+        const calcId = `rd-${Date.now()}`;
         addSaved({
-            id: `rd-${Date.now()}`,
+            id: calcId,
             calculatorType: 'rd',
             inputValues: { monthly, rate, months },
             resultValues: { primary: result.maturity, label: 'Maturity Amount', invested: result.invested, returns: result.totalInterest },
             timestamp: Date.now(),
         });
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handleDownloadPDF = async () => {
@@ -258,6 +284,15 @@ export default function RDCalculator() {
                     {isSeniorCitizen && (
                         <p className="text-[10px] text-emerald-500 font-medium -mt-1">{t('rd.effectiveRateLabel', { effectiveRate, baseRate: rate })}</p>
                     )}
+                    <div>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">RD Start Date</label>
+                        <DateInput
+                            value={rdStartDate}
+                            onChange={setRdStartDate}
+                            max={new Date().toISOString().split('T')[0]}
+                            className={inputCls}
+                        />
+                    </div>
                 </div>
 
                 {/* 2. RESULTS HERO */}
@@ -295,10 +330,21 @@ export default function RDCalculator() {
                 </div>
 
                 {/* SAVE BUTTON */}
-                <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-foreground/10">
-                    {saved ? <Check size={18} /> : <Save size={18} />}
-                    {saved ? t('rd.calculationSaved') : t('rd.saveCalculation')}
-                </button>
+                {saved ? (
+                    <div className="flex gap-2">
+                        <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                            <Check size={16} /> {t('common.saved')}
+                        </div>
+                        <button onClick={handleRemove}
+                            className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                ) : (
+                    <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-foreground/10">
+                        <Save size={18} /> {t('rd.saveCalculation')}
+                    </button>
+                )}
 
 
                 {/* 3. ADVANCED DETAILS */}
@@ -476,6 +522,24 @@ export default function RDCalculator() {
                     </button>
                 </div>
             </div>
+
+            {rdStatus && (
+                <div className="px-4 mb-5">
+                    <LiveStatusCard
+                        title="Live RD Status"
+                        subtitle={`${months} Month RD @ ${effectiveRate}%`}
+                        startDate={rdStartDate}
+                        metrics={[
+                            { label: 'Deposited', value: fmtINR(rdStatus.totalDeposited) },
+                            { label: 'Interest', value: fmtINR(rdStatus.interestEarned), color: 'amber' },
+                            { label: 'Current Value', value: fmtINR(rdStatus.currentValue), color: 'green' },
+                        ]}
+                        progressPercent={rdStatus.percentComplete}
+                        progressLabel={`${rdStatus.monthsInvested} of ${months} months complete (${rdStatus.percentComplete.toFixed(1)}%)`}
+                        insightText={rdStatus.monthsRemaining > 0 ? `Maturity date: ${rdStatus.maturityDate}. Expected maturity value: ${fmtINR(rdStatus.maturityValue)}.` : `Your RD has matured! Total value: ${fmtINR(rdStatus.maturityValue)}.`}
+                    />
+                </div>
+            )}
 
             <DisclaimerComponent module="rd" />
         </div>

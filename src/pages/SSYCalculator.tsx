@@ -2,14 +2,17 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Heart, Info, Download, Share2, ChevronDown, ChevronUp, BookOpen, AlertCircle, GraduationCap, Shield, Calendar, Save } from 'lucide-react';
+import { ArrowLeft, Heart, Info, Download, Share2, ChevronDown, ChevronUp, BookOpen, AlertCircle, GraduationCap, Shield, Calendar, Save, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title,
 } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
+import DateInput from '../components/DateInput';
+import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { calculateSsyStatus, type SsyStatusInput } from '../utils/investmentStatusEngine';
 
 import SmartInsight from '../components/SmartInsight';
 import { formatINR } from '../utils/calculations';
@@ -29,7 +32,7 @@ export default function SSYCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('SSY_Calculator_Advanced'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
     const chartRef = useRef<any>(null);
     const c = useAppColors();
 
@@ -42,6 +45,9 @@ export default function SSYCalculator() {
     const [showTimeline, setShowTimeline] = useState(false);
     const [showRules, setShowRules] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+    const [ssyOpenDate, setSsyOpenDate] = useState('');
+    const [girlDob, setGirlDob] = useState('');
 
     const investYears = 15;
     const maturityYears = 21;
@@ -88,6 +94,11 @@ export default function SSYCalculator() {
         };
     }, [effectiveAnnual, rate, childAge]);
 
+    const ssyStatus = useMemo(() => {
+        if (!ssyOpenDate || !girlDob) return null;
+        return calculateSsyStatus({ yearlyDeposit: effectiveAnnual, rate, openingDate: ssyOpenDate, girlDob });
+    }, [effectiveAnnual, rate, ssyOpenDate, girlDob]);
+
     // Pie chart
     const pieData = useMemo(() => ({
         labels: [t('ssy.totalInvested'), t('ssy.interestEarned')],
@@ -109,15 +120,24 @@ export default function SSYCalculator() {
     }), [result.timeline, t]);
 
     const handleSave = () => {
+        const calcId = `ssy-${Date.now()}`;
         addSaved({
-            id: `ssy-${Date.now()}`,
+            id: calcId,
             calculatorType: 'ssy',
             inputValues: { annual, rate, childAge },
             resultValues: { primary: result.maturity, label: t('ssy.maturityAmount'), invested: result.invested, returns: result.totalInterest },
             timestamp: Date.now(),
         });
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handleDownloadPDF = async () => {
@@ -222,6 +242,24 @@ export default function SSYCalculator() {
                     )}
                     <NumberInput label={t('ssy.interestRate')} value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText={t('ssy.currentRate')} />
                     <NumberInput label={t('ssy.girlChildAge')} value={childAge} onChange={setChildAge} min={0} max={10} suffix={` ${t('ssy.years')}`} helperText={t('ssy.ageHelper')} />
+                    <div>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Account Opening Date (optional)</label>
+                        <DateInput
+                            value={ssyOpenDate}
+                            onChange={setSsyOpenDate}
+                            max={new Date().toISOString().slice(0, 10)}
+                            className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Girl's Date of Birth (optional)</label>
+                        <DateInput
+                            value={girlDob}
+                            onChange={setGirlDob}
+                            max={new Date().toISOString().slice(0, 10)}
+                            className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none"
+                        />
+                    </div>
                 </div>
 
                 {/* Result Card */}
@@ -248,9 +286,21 @@ export default function SSYCalculator() {
                         </div>
                     </div>
 
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
-                        <Save size={16} /> {saved ? t('ssy.saved') : t('ssy.saveCalculation')}
-                    </motion.button>
+                    {saved ? (
+                        <div className="flex gap-2 mt-4">
+                            <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                <Check size={16} /> {t('common.saved')}
+                            </div>
+                            <button onClick={handleRemove}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
+                            <Save size={16} /> {t('ssy.saveCalculation')}
+                        </motion.button>
+                    )}
                 </motion.div>
 
                 {/* Education Withdrawal Info */}
@@ -394,8 +444,35 @@ export default function SSYCalculator() {
                     gradient="from-pink-600 via-rose-500 to-red-500"
                 />
 
-                
-                
+                {ssyStatus && (
+                    <div className="mb-5">
+                        <LiveStatusCard
+                            title="SSY Live Status"
+                            subtitle={`Girl's age: ${ssyStatus.girlAge} years | Account age: ${ssyStatus.accountAge} years`}
+                            startDate={ssyOpenDate}
+                            metrics={[
+                                { label: 'Deposited', value: formatINR(ssyStatus.totalDeposited) },
+                                { label: 'Interest', value: formatINR(ssyStatus.interestEarned), color: 'amber' },
+                                { label: 'Balance', value: formatINR(ssyStatus.balanceToday), color: 'green' },
+                            ]}
+                            progressPercent={(ssyStatus.accountAge / 21) * 100}
+                            progressLabel={`Year ${ssyStatus.accountAge} of 21${ssyStatus.daysToMaturity > 0 ? ` — ${ssyStatus.daysToMaturity} days to maturity` : ''}`}
+                            warningText={
+                                !ssyStatus.depositPhaseActive
+                                    ? 'Deposit phase (15 years) is over. Interest continues to accrue until maturity at 21 years.'
+                                    : undefined
+                            }
+                            insightText={
+                                ssyStatus.withdrawalEligible
+                                    ? `Partial withdrawal eligible (girl is 18+) — up to ${formatINR(ssyStatus.withdrawalAmount)} (50% of balance) for education/marriage.`
+                                    : ssyStatus.depositPhaseActive
+                                        ? `Deposit phase active — ${ssyStatus.depositYearsRemaining} year(s) of deposits remaining.`
+                                        : undefined
+                            }
+                        />
+                    </div>
+                )}
+
             </div>
 
             <DisclaimerComponent module="ssy" />

@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, Target, BarChart2 } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, Target, BarChart2, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
@@ -14,7 +14,7 @@ const fmtINR = (v: number) => formatINR(Math.round(v));
 export default function CAGRCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { addSaved } = useCalculatorStore();
+    const { addSaved, removeSaved } = useCalculatorStore();
 
     useEffect(() => { AnalyticsService.trackScreen('CAGR_Advanced'); }, []);
 
@@ -31,6 +31,7 @@ export default function CAGRCalculator() {
     const [showGoal, setShowGoal] = useState(false);
     const [showTable, setShowTable] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [page, setPage] = useState(1);
 
     // 1. CORE CALCULATION
@@ -103,15 +104,24 @@ export default function CAGRCalculator() {
     }, [result]);
 
     const handleSave = () => {
+        const calcId = `cagr-${Date.now()}`;
         addSaved({
-            id: `cagr-${Date.now()}`,
+            id: calcId,
             calculatorType: 'cagr',
             inputValues: { initial, final, years },
             resultValues: { primary: result.cagr, label: 'CAGR (%)', invested: initial, returns: final - initial },
             timestamp: Date.now(),
         });
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
     };
 
     const handleDownloadPDF = async () => {
@@ -256,10 +266,21 @@ export default function CAGRCalculator() {
                 </div>
 
                 {/* SAVE BUTTON */}
-                <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-purple text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-purple/20">
-                    {saved ? <Check size={18} /> : <Save size={18} />}
-                    {saved ? t('cagr.calculationSaved') : t('cagr.saveCalculation')}
-                </button>
+                {saved ? (
+                    <div className="flex gap-2">
+                        <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                            <Check size={16} /> {t('common.saved')}
+                        </div>
+                        <button onClick={handleRemove}
+                            className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                ) : (
+                    <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-purple text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-purple/20">
+                        <Save size={18} /> {t('cagr.saveCalculation')}
+                    </button>
+                )}
 
 
                 {/* 3. ADVANCED DETAILS */}
