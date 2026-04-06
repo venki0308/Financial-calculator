@@ -127,8 +127,8 @@ export default function AddLoanSheet({ open, onClose, onSaved, editLoan, prefill
                     <motion.div
                         initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] flex flex-col rounded-t-3xl shadow-2xl"
-                        style={{ backgroundColor: c.card }}
+                        className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl shadow-2xl"
+                        style={{ backgroundColor: c.card, maxHeight: 'calc(100dvh - 60px)' }}
                     >
                         {/* Handle */}
                         <div className="shrink-0 pt-3 pb-2 px-5 flex items-center justify-between" style={{ backgroundColor: c.card }}>
@@ -282,8 +282,8 @@ export default function AddLoanSheet({ open, onClose, onSaved, editLoan, prefill
 
                         </div>
 
-                        {/* Fixed Buttons */}
-                        <div className="shrink-0 px-5 py-4 pb-8 border-t flex gap-3" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                        {/* Fixed Buttons - always visible above nav bar */}
+                        <div className="shrink-0 px-5 pt-3 border-t flex gap-3" style={{ backgroundColor: c.card, borderColor: c.border, paddingBottom: 'calc(env(safe-area-inset-bottom, 16px) + 80px)' }}>
                             <button onClick={onClose}
                                 className="flex-1 py-3 rounded-xl text-sm font-bold border"
                                 style={{ borderColor: c.border, color: c.textSecondary }}

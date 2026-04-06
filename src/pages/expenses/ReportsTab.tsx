@@ -49,6 +49,10 @@ export default function ReportsTab() {
   const isDark = theme.bgPrimary === '#0F1923';
 
   const [generating, setGenerating] = useState<string | null>(null);
+  const [reportMonthOffset, setReportMonthOffset] = useState(0);
+  const [reportYearOffset, setReportYearOffset] = useState(0);
+  const [reportWeekOffset, setReportWeekOffset] = useState(0);
+  const [reportDate, setReportDate] = useState(getTodayStr());
 
   // Current period info
   const today = getTodayStr();
@@ -79,34 +83,39 @@ export default function ReportsTab() {
 
   const monthsWithData = last6Months.filter(m => m.hasData);
 
+  // Selected period ranges
+  const selectedMonth = getMonthRange(reportMonthOffset);
+  const selectedWeek = getWeekRange(reportWeekOffset);
+  const selectedYear = getYearRange(reportYearOffset);
+
   // ── Report generators ──
   const handleGenerate = async (type: 'daily' | 'weekly' | 'monthly' | 'annual') => {
     setGenerating(type);
     try {
       switch (type) {
         case 'daily': {
-          const entries = getEntriesForDateRange(today, today);
-          const dateLabel = new Date().toLocaleDateString('en-IN', {
+          const entries = getEntriesForDateRange(reportDate, reportDate);
+          const dateLabel = new Date(reportDate + 'T00:00:00').toLocaleDateString('en-IN', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
           });
           await generateExpenseReport('daily', entries, undefined, undefined, dateLabel);
           break;
         }
         case 'weekly': {
-          const entries = getEntriesForDateRange(currentWeekRange.start, currentWeekRange.end);
-          await generateExpenseReport('weekly', entries, undefined, undefined, currentWeekRange.label);
+          const entries = getEntriesForDateRange(selectedWeek.start, selectedWeek.end);
+          await generateExpenseReport('weekly', entries, undefined, undefined, selectedWeek.label);
           break;
         }
         case 'monthly': {
-          const entries = getEntriesForMonth(currentMonthRange.year, currentMonthRange.month);
-          const budget = getBudgetForMonth(currentMonthRange.monthStr);
+          const entries = getEntriesForMonth(selectedMonth.year, selectedMonth.month);
+          const budget = getBudgetForMonth(selectedMonth.monthStr);
           const accounts = getAllAccounts();
-          await generateExpenseReport('monthly', entries, budget, accounts, currentMonthRange.label);
+          await generateExpenseReport('monthly', entries, budget, accounts, selectedMonth.label);
           break;
         }
         case 'annual': {
-          const entries = getEntriesForYear(currentYearRange.year);
-          await generateExpenseReport('annual', entries, undefined, undefined, `Year ${currentYearRange.year}`);
+          const entries = getEntriesForYear(selectedYear.year);
+          await generateExpenseReport('annual', entries, undefined, undefined, `Year ${selectedYear.year}`);
           break;
         }
       }
@@ -129,30 +138,38 @@ export default function ReportsTab() {
     {
       type: 'daily' as const,
       title: t('expenses.dailyReport'),
-      subtitle: t('expenses.todayLabel'),
+      subtitle: new Date(reportDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
       icon: Calendar,
       tint: { bg: isDark ? 'rgba(59,130,246,0.1)' : '#EFF6FF', border: isDark ? 'rgba(59,130,246,0.2)' : '#BFDBFE', accent: '#3b82f6' },
+      onPrev: () => { const d = new Date(reportDate); d.setDate(d.getDate() - 1); setReportDate(d.toISOString().split('T')[0]); },
+      onNext: () => { const d = new Date(reportDate); d.setDate(d.getDate() + 1); if (d <= new Date()) setReportDate(d.toISOString().split('T')[0]); },
     },
     {
       type: 'weekly' as const,
       title: t('expenses.weeklyReport'),
-      subtitle: t('expenses.thisWeek'),
+      subtitle: selectedWeek.label,
       icon: BarChart3,
       tint: { bg: isDark ? 'rgba(16,185,129,0.1)' : '#ECFDF5', border: isDark ? 'rgba(16,185,129,0.2)' : '#A7F3D0', accent: '#10b981' },
+      onPrev: () => setReportWeekOffset(o => o - 1),
+      onNext: () => { if (reportWeekOffset < 0) setReportWeekOffset(o => o + 1); },
     },
     {
       type: 'monthly' as const,
       title: t('expenses.monthlyReport'),
-      subtitle: currentMonthRange.label,
+      subtitle: selectedMonth.label,
       icon: FileText,
       tint: { bg: isDark ? 'rgba(124,58,237,0.1)' : '#F5F3FF', border: isDark ? 'rgba(124,58,237,0.2)' : '#C4B5FD', accent: '#7c3aed' },
+      onPrev: () => setReportMonthOffset(o => o - 1),
+      onNext: () => { if (reportMonthOffset < 0) setReportMonthOffset(o => o + 1); },
     },
     {
       type: 'annual' as const,
       title: t('expenses.annualReport'),
-      subtitle: String(currentYearRange.year),
+      subtitle: String(selectedYear.year),
       icon: TrendingUp,
       tint: { bg: isDark ? 'rgba(217,119,6,0.1)' : '#FFFBEB', border: isDark ? 'rgba(217,119,6,0.2)' : '#FDE68A', accent: '#d97706' },
+      onPrev: () => setReportYearOffset(o => o - 1),
+      onNext: () => { if (reportYearOffset < 0) setReportYearOffset(o => o + 1); },
     },
   ];
 
@@ -181,59 +198,54 @@ export default function ReportsTab() {
             const isLoading = generating === card.type;
 
             return (
-              <motion.button
+              <motion.div
                 key={card.type}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: idx * 0.08 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => handleGenerate(card.type)}
-                disabled={generating !== null}
-                className="flex flex-col items-start gap-2.5 p-3.5 rounded-xl text-left disabled:opacity-50 transition-all"
+                className="rounded-xl p-3.5 flex flex-col gap-2"
                 style={{
                   backgroundColor: card.tint.bg,
                   border: `1px solid ${card.tint.border}`,
                 }}
               >
-                <div
-                  className="w-9 h-9 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${card.tint.accent}20` }}
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${card.tint.accent}20` }}>
+                    <Icon size={14} style={{ color: card.tint.accent }} />
+                  </div>
+                  <span className="text-xs font-bold" style={{ color: theme.textPrimary }}>{card.title}</span>
+                </div>
+
+                {/* Period selector */}
+                <div className="flex items-center justify-between">
+                  <button onClick={(e) => { e.stopPropagation(); card.onPrev(); }} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: `${card.tint.accent}15` }}>
+                    <ChevronLeft size={12} style={{ color: card.tint.accent }} />
+                  </button>
+                  <span className="text-[10px] font-bold" style={{ color: theme.textSecondary }}>{card.subtitle}</span>
+                  <button onClick={(e) => { e.stopPropagation(); card.onNext(); }} className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: `${card.tint.accent}15` }}>
+                    <ChevronRight size={12} style={{ color: card.tint.accent }} />
+                  </button>
+                </div>
+
+                {/* Download button */}
+                <button
+                  onClick={() => handleGenerate(card.type)}
+                  disabled={generating !== null}
+                  className="w-full py-2 rounded-lg text-[10px] font-bold text-white disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-1"
+                  style={{ backgroundColor: card.tint.accent }}
                 >
                   {isLoading ? (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                    >
-                      <Download size={16} style={{ color: card.tint.accent }} />
+                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                      <Download size={12} />
                     </motion.div>
                   ) : (
-                    <Icon size={16} style={{ color: card.tint.accent }} />
+                    <>
+                      <Download size={12} />
+                      {t('common.download')}
+                    </>
                   )}
-                </div>
-
-                <div>
-                  <span
-                    className="text-xs font-bold block leading-tight"
-                    style={{ color: theme.textPrimary }}
-                  >
-                    {card.title}
-                  </span>
-                  <span
-                    className="text-[10px] font-medium"
-                    style={{ color: theme.textSecondary }}
-                  >
-                    {card.subtitle}
-                  </span>
-                </div>
-
-                <span
-                  className="text-[10px] font-bold flex items-center gap-1"
-                  style={{ color: card.tint.accent }}
-                >
-                  {t('expenses.downloadDailyReport').includes('Report') ? 'Download' : t('expenses.downloadDailyReport').split(' ')[0]}
-                  <span style={{ fontSize: 12 }}>&rarr;</span>
-                </span>
-              </motion.button>
+                </button>
+              </motion.div>
             );
           })}
         </div>

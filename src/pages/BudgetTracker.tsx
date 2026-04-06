@@ -13,9 +13,9 @@ const MonthlyTab = lazy(() => import('./expenses/MonthlyTab'));
 const ReportsTab = lazy(() => import('./expenses/ReportsTab'));
 
 const TABS = [
+    { id: 'budget', labelKey: 'expenses.budget', icon: Target },
     { id: 'daily', labelKey: 'expenses.daily', icon: CalendarDays },
     { id: 'monthly', labelKey: 'expenses.monthly', icon: BarChart3 },
-    { id: 'budget', labelKey: 'expenses.budget', icon: Target },
     { id: 'reports', labelKey: 'expenses.reports', icon: FileText },
 ] as const;
 
@@ -28,7 +28,7 @@ export default function BudgetTracker() {
     }, []);
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<TabId>('daily');
+    const [activeTab, setActiveTab] = useState<TabId>('budget');
 
     const Spinner = () => (
         <div className="flex items-center justify-center py-20">

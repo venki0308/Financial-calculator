@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense, useRef, useMemo } from 'react';
+import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target } from 'lucide-react';
@@ -18,12 +18,12 @@ const BudgetTab = lazy(() => import('./expenses/BudgetTab'));
 
 // ─── TAB DEFINITIONS ─────────────────────────────────────────
 const TABS = [
+  { id: 'budget',  labelKey: 'expenses.budget',  icon: Target,       emoji: '\u{1F3AF}' },
   { id: 'daily',   labelKey: 'expenses.daily',   icon: CalendarDays, emoji: '\u{1F4C5}' },
   { id: 'weekly',  labelKey: 'expenses.weekly',  icon: Calendar,     emoji: '\u{1F4C6}' },
   { id: 'monthly', labelKey: 'expenses.monthly', icon: BarChart3,    emoji: '\u{1F4CA}' },
   { id: 'yearly',  labelKey: 'expenses.yearly',  icon: TrendingUp,   emoji: '\u{1F4C8}' },
   { id: 'reports', labelKey: 'expenses.reports', icon: FileText,     emoji: '\u{1F4CB}' },
-  { id: 'budget',  labelKey: 'expenses.budget',  icon: Target,       emoji: '\u{1F3AF}' },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
@@ -60,20 +60,12 @@ export default function ExpenseTracker() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useExpenseTheme();
-  const [activeTab, setActiveTab] = useState<TabId>('daily');
-  const tabContainerRef = useRef<HTMLDivElement>(null);
-
+  const [activeTab, setActiveTab] = useState<TabId>('budget');
   // Migrate old data on first mount
   useEffect(() => {
     migrateFromOldStore();
     AnalyticsService.trackScreen('Expense_Tracker');
   }, []);
-
-  // Calculate sliding pill position
-  const activeIndex = useMemo(
-    () => TABS.findIndex(t => t.id === activeTab),
-    [activeTab],
-  );
 
   // Period subtitle that changes per tab
   const periodSubtitle = useMemo(() => {
@@ -151,47 +143,27 @@ export default function ExpenseTracker() {
           </div>
         </div>
 
-        {/* ── Tab Bar with sliding pill ── */}
-        <div className="relative px-3 pb-3" ref={tabContainerRef}>
-          <div
-            className="flex rounded-2xl p-1 gap-0.5"
-            style={{ backgroundColor: theme.bgPrimary }}
-          >
-            {/* Sliding pill indicator */}
-            <motion.div
-              className="absolute rounded-xl"
-              style={{
-                backgroundColor: theme.accentInvestment,
-                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)',
-                height: 'calc(100% - 8px)',
-                width: `calc(${100 / TABS.length}% - 4px)`,
-                top: '4px',
-              }}
-              animate={{
-                x: `calc(${activeIndex * 100}% + ${activeIndex * 4}px)`,
-              }}
-              transition={{
-                type: 'spring',
-                stiffness: 380,
-                damping: 32,
-              }}
-            />
-
+        {/* ── Tab Bar ── */}
+        <div className="px-3 pb-3">
+          <div className="flex rounded-2xl p-1 gap-1" style={{ backgroundColor: theme.bgPrimary }}>
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl relative z-10 transition-colors duration-200"
+                  className="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl transition-all duration-200"
+                  style={{
+                    backgroundColor: isActive ? theme.accentPrimary : 'transparent',
+                    boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                  }}
                 >
-                  {/* Emoji icon above label */}
                   <span className="text-xs leading-none">{tab.emoji}</span>
                   <span
                     className="tracking-wide leading-tight"
                     style={{
-                      fontSize: '10px',
-                      fontWeight: isActive ? 700 : 400,
+                      fontSize: '9px',
+                      fontWeight: isActive ? 700 : 500,
                       color: isActive ? '#FFFFFF' : theme.textMuted,
                     }}
                   >
