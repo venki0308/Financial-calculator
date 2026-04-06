@@ -30,6 +30,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
+import CibilBadge from '../components/CibilBadge';
 import { AnalyticsService } from '../lib/analytics';
 import ShareableCard from '../components/ShareableCard';
 import { triggerCalcNotification } from '../services/calcNotifications';
@@ -336,29 +337,29 @@ export default function EMICalculator() {
         }
 
         const config: ExportConfig = {
-            title: `${loanType} EMI Report`,
-            subtitle: `${method === 'flat' ? 'Flat Rate' : 'Reducing Balance'} Method`,
+            title: `${loanType} ${t('emi.emiReport')}`,
+            subtitle: `${method === 'flat' ? t('emi.flatRate') : t('emi.reducingBalance')} ${t('emi.method')}`,
             inputs: [
-                { label: 'Loan Amount', value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: 'Annual Interest Rate', value: `${rate}% p.a.` },
-                { label: 'Loan Tenure', value: `${tenureYears} Years (${months} months)` },
-                { label: 'Interest Method', value: method === 'flat' ? 'Flat Rate' : 'Reducing Balance' },
+                { label: t('common.loanAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: t('emi.annualInterestRate'), value: `${rate}% p.a.` },
+                { label: t('emi.loanTenure'), value: `${tenureYears} ${t('common.years')} (${months} ${t('common.months')})` },
+                { label: t('emi.interestMethod'), value: method === 'flat' ? t('emi.flatRate') : t('emi.reducingBalance') },
             ],
             results: [
-                { label: 'Monthly EMI', value: `₹${Math.round(result.emi).toLocaleString('en-IN')}` },
-                { label: 'Total Interest', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Payment', value: `₹${Math.round(result.totalPayment).toLocaleString('en-IN')}` },
-                { label: 'Loan Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: t('common.monthlyEmi'), value: `₹${Math.round(result.emi).toLocaleString('en-IN')}` },
+                { label: t('common.totalInterest'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('emi.totalPayment'), value: `₹${Math.round(result.totalPayment).toLocaleString('en-IN')}` },
+                { label: t('common.loanAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Principal Amount', value: principal, color: '#10B981' },
-                    { label: 'Total Interest', value: result.totalInterest, color: '#EF4444' },
+                    { label: t('common.principalAmount'), value: principal, color: '#10B981' },
+                    { label: t('common.totalInterest'), value: result.totalInterest, color: '#EF4444' },
                 ],
             },
-            projectionTitle: 'Amortization Schedule',
-            projectionColumns: ['Month', 'EMI (₹)', 'Principal (₹)', 'Interest (₹)', 'Balance (₹)'],
+            projectionTitle: t('emi.amortizationSchedule'),
+            projectionColumns: [t('emi.month'), t('emi.emiCol'), t('emi.principalCol'), t('emi.interestCol'), t('emi.balanceCol')],
             projectionRows: schedule.map((r: any) => [
                 r.month,
                 Math.round(r.emi),
@@ -378,20 +379,20 @@ export default function EMICalculator() {
         const schedule = result.schedule || [];
 
         const config: ExportConfig = {
-            title: `${loanType} EMI Report`,
+            title: `${loanType} ${t('emi.emiReport')}`,
             inputs: [
-                { label: 'Loan Amount', value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: 'Annual Interest Rate', value: `${rate}% p.a.` },
-                { label: 'Loan Tenure', value: `${tenureYears} Years (${months} months)` },
-                { label: 'Interest Method', value: method === 'flat' ? 'Flat Rate' : 'Reducing Balance' },
+                { label: t('common.loanAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: t('emi.annualInterestRate'), value: `${rate}% p.a.` },
+                { label: t('emi.loanTenure'), value: `${tenureYears} ${t('common.years')} (${months} ${t('common.months')})` },
+                { label: t('emi.interestMethod'), value: method === 'flat' ? t('emi.flatRate') : t('emi.reducingBalance') },
             ],
             results: [
-                { label: 'Monthly EMI', value: `₹${Math.round(result.emi).toLocaleString('en-IN')}` },
-                { label: 'Total Interest', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Payment', value: `₹${Math.round(result.totalPayment).toLocaleString('en-IN')}` },
+                { label: t('common.monthlyEmi'), value: `₹${Math.round(result.emi).toLocaleString('en-IN')}` },
+                { label: t('common.totalInterest'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('emi.totalPayment'), value: `₹${Math.round(result.totalPayment).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Amortization Schedule',
-            projectionColumns: ['Month', 'EMI', 'Principal', 'Interest', 'Outstanding Balance'],
+            projectionTitle: t('emi.amortizationSchedule'),
+            projectionColumns: [t('emi.month'), t('emi.emiShort'), t('emi.principalCol'), t('emi.interestCol'), t('emi.outstandingBalance')],
             projectionRows: schedule.map((r: any) => [
                 r.month,
                 Math.round(r.emi),
@@ -445,6 +446,9 @@ export default function EMICalculator() {
             <DisclaimerComponent module="emi" />
 
             <div className="px-4 pb-28">
+                {/* CIBIL Badge */}
+                <CibilBadge loanType={loanType === 'Home Loan' ? 'home_loan' : loanType === 'Car Loan' ? 'car_loan' : loanType === 'Education Loan' ? 'education_loan' : 'personal_loan'} />
+
                 {/* ── Loan Type Pills ─────────────────────────────── */}
                 <div className="flex gap-2 overflow-x-auto hide-scrollbar py-3">
                     {loanTypes.map((lt) => (

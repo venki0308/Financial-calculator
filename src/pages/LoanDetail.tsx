@@ -25,12 +25,14 @@ function fmtDate(d: string | number): string {
     return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-function fmtYM(months: number): string {
+function fmtYM(months: number, t?: (key: string) => string): string {
     const y = Math.floor(months / 12);
     const m = months % 12;
-    if (y === 0) return `${m}m`;
-    if (m === 0) return `${y}y`;
-    return `${y}y ${m}m`;
+    const mLabel = t ? t('myLoans.fmtM') : 'm';
+    const yLabel = t ? t('myLoans.fmtY') : 'y';
+    if (y === 0) return `${m}${mLabel}`;
+    if (m === 0) return `${y}${yLabel}`;
+    return `${y}${yLabel} ${m}${mLabel}`;
 }
 
 export default function LoanDetail() {
@@ -183,32 +185,32 @@ export default function LoanDetail() {
             const tag = new Date().toISOString().split('T')[0];
             const config: ExportConfig = {
                 title: profile.name,
-                subtitle: `Loan Tracker Report — ${fmtDate(status.today)}`,
+                subtitle: `${t('myLoans.pdfLoanTrackerReport')} — ${fmtDate(status.today)}`,
                 inputs: [
-                    { label: 'Loan Amount', value: formatINR(d.loanAmount) },
-                    { label: 'Interest Rate', value: `${d.annualRate}% p.a.` },
-                    { label: 'Tenure', value: `${d.tenureMonths} months` },
-                    { label: 'EMI', value: formatINR(d.emiAmount) },
-                    { label: 'Disbursed', value: fmtDate(d.disbursementDate) },
-                    { label: 'Rate Type', value: d.loanType === 'floating' ? 'Floating' : 'Fixed' },
+                    { label: t('myLoans.pdfLoanAmount'), value: formatINR(d.loanAmount) },
+                    { label: t('myLoans.pdfInterestRate'), value: `${d.annualRate}% ${t('myLoans.pdfPa')}` },
+                    { label: t('myLoans.pdfTenure'), value: `${d.tenureMonths} ${t('myLoans.pdfMonths')}` },
+                    { label: t('myLoans.pdfEmi'), value: formatINR(d.emiAmount) },
+                    { label: t('myLoans.pdfDisbursed'), value: fmtDate(d.disbursementDate) },
+                    { label: t('myLoans.pdfRateType'), value: d.loanType === 'floating' ? t('myLoans.pdfFloating') : t('myLoans.pdfFixed') },
                 ],
                 results: [
-                    { label: 'Outstanding Principal', value: formatINR(status.principalOutstanding) },
-                    { label: 'EMIs Paid', value: `${status.emisPaid} of ${d.tenureMonths}` },
-                    { label: 'Total Paid So Far', value: formatINR(status.totalPaidSoFar) },
-                    { label: 'Principal Paid', value: formatINR(status.principalPaidSoFar) },
-                    { label: 'Interest Paid', value: formatINR(status.interestPaidSoFar) },
-                    { label: 'Settlement Today', value: formatINR(status.totalSettlementToday) },
-                    { label: 'Interest Saved if Close', value: formatINR(status.interestSavedIfCloseToday) },
-                    { label: 'Daily Interest', value: formatINR(status.dailyInterest) },
-                    { label: 'Progress', value: `${status.percentComplete.toFixed(1)}%` },
+                    { label: t('myLoans.pdfOutstandingPrincipal'), value: formatINR(status.principalOutstanding) },
+                    { label: t('myLoans.pdfEmisPaid'), value: `${status.emisPaid} of ${d.tenureMonths}` },
+                    { label: t('myLoans.pdfTotalPaidSoFar'), value: formatINR(status.totalPaidSoFar) },
+                    { label: t('myLoans.pdfPrincipalPaid'), value: formatINR(status.principalPaidSoFar) },
+                    { label: t('myLoans.pdfInterestPaid'), value: formatINR(status.interestPaidSoFar) },
+                    { label: t('myLoans.pdfSettlementToday'), value: formatINR(status.totalSettlementToday) },
+                    { label: t('myLoans.pdfInterestSavedIfClose'), value: formatINR(status.interestSavedIfCloseToday) },
+                    { label: t('myLoans.pdfDailyInterest'), value: formatINR(status.dailyInterest) },
+                    { label: t('myLoans.pdfProgress'), value: `${status.percentComplete.toFixed(1)}%` },
                 ],
-                projectionTitle: 'Month-wise Amortization Schedule',
-                projectionColumns: ['Month', 'Date', 'EMI', 'Interest', 'Principal', 'Balance'],
+                projectionTitle: t('myLoans.pdfMonthWiseSchedule'),
+                projectionColumns: [t('myLoans.pdfColMonth'), t('myLoans.pdfColDate'), t('myLoans.pdfColEmi'), t('myLoans.pdfColInterest'), t('myLoans.pdfColPrincipal'), t('myLoans.pdfColBalance')],
                 projectionRows: fullSchedule.map(r => [r.month, fmtDate(r.date), formatINR(r.emi), formatINR(r.interest), formatINR(r.principal), formatINR(r.balance)]),
                 additionalTables: [{
-                    title: 'Year-wise Summary',
-                    columns: ['Year', 'Total Paid', 'Principal', 'Interest', 'Closing Balance'],
+                    title: t('myLoans.pdfYearWiseSummary'),
+                    columns: [t('myLoans.pdfColYear'), t('myLoans.pdfColTotalPaid'), t('myLoans.pdfColPrincipal'), t('myLoans.pdfColInterest'), t('myLoans.pdfColClosingBalance')],
                     rows: yearlySummary.map(r => [r.year, formatINR(r.totalPaid), formatINR(r.principal), formatINR(r.interest), formatINR(r.closingBal)]),
                 }],
                 filename: `FinCalix_LoanTracker_${tag}`,
@@ -372,7 +374,7 @@ export default function LoanDetail() {
                             {prepayResult && (
                                 <div className="mt-3 grid grid-cols-3 gap-2">
                                     <div className="p-2 rounded-lg text-center" style={{ backgroundColor: '#10B98115' }}><p className="text-[8px] uppercase font-bold text-emerald-500">{t('liveStatus.interestSaved')}</p><p className="text-[11px] font-black text-emerald-500">{formatINR(prepayResult.interestSaved)}</p></div>
-                                    <div className="p-2 rounded-lg text-center" style={{ backgroundColor: '#3B82F615' }}><p className="text-[8px] uppercase font-bold text-blue-500">{t('myLoans.tenureReduced')}</p><p className="text-[11px] font-black text-blue-500">{fmtYM(prepayResult.monthsReduced)}</p></div>
+                                    <div className="p-2 rounded-lg text-center" style={{ backgroundColor: '#3B82F615' }}><p className="text-[8px] uppercase font-bold text-blue-500">{t('myLoans.tenureReduced')}</p><p className="text-[11px] font-black text-blue-500">{fmtYM(prepayResult.monthsReduced, t)}</p></div>
                                     <div className="p-2 rounded-lg text-center" style={{ backgroundColor: '#8B5CF615' }}><p className="text-[8px] uppercase font-bold text-violet-500">{t('myLoans.newClosure')}</p><p className="text-[11px] font-black text-violet-500">{prepayResult.newClosureDate}</p></div>
                                 </div>
                             )}

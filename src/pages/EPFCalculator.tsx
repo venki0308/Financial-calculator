@@ -189,8 +189,8 @@ export default function EPFCalculator() {
             title: t('epf.reportTitle'),
             inputs: [
                 { label: t('epf.basicMonthlySalary'), value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
-                { label: t('epf.employeeContribution'), value: `${totalEmpPct}%${vpfPct > 0 ? ` (12% + ${vpfPct}% VPF)` : ''}` },
-                { label: t('epf.epfInterestRate'), value: `${rate}% p.a.` },
+                { label: t('epf.employeeContribution'), value: `${totalEmpPct}%${vpfPct > 0 ? ` ${t('epf.vpfBreakdown', { vpf: vpfPct })}` : ''}` },
+                { label: t('epf.epfInterestRate'), value: `${rate}% ${t('epf.perAnnum')}` },
                 { label: t('epf.currentAge'), value: `${age} ${t('epf.years')}` },
                 { label: t('epf.retirementAge'), value: `${retireAge} ${t('epf.years')}` },
                 { label: t('epf.annualSalaryHike'), value: `${hike}%` },
@@ -233,7 +233,7 @@ export default function EPFCalculator() {
             title: t('epf.reportTitle'),
             inputs: [
                 { label: t('epf.basicMonthlySalary'), value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
-                { label: t('epf.employeeContribution'), value: `${totalEmpPct}%${vpfPct > 0 ? ` (12% + ${vpfPct}% VPF)` : ''}` },
+                { label: t('epf.employeeContribution'), value: `${totalEmpPct}%${vpfPct > 0 ? ` ${t('epf.vpfBreakdown', { vpf: vpfPct })}` : ''}` },
                 { label: t('epf.epfInterestRate'), value: `${rate}%` },
                 { label: t('epf.currentAge'), value: `${age}` },
                 { label: t('epf.retirementAge'), value: `${retireAge}` },

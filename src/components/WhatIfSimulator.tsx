@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Sliders, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 import { formatINR } from '../utils/calculations';
@@ -23,7 +24,9 @@ interface WhatIfSimulatorProps {
     resultPrefix?: string;
 }
 
-export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, currentInputs, calculateResult, resultLabel, resultPrefix = '₹' }: WhatIfSimulatorProps) {
+export default function WhatIfSimulator({ title, sliders, currentInputs, calculateResult, resultLabel, resultPrefix = '₹' }: WhatIfSimulatorProps) {
+    const { t } = useTranslation();
+    const displayTitle = title || t('whatIf.title');
     const [adjustedInputs, setAdjustedInputs] = useState<Record<string, number>>({ ...currentInputs });
 
     const currentResult = useMemo(() => calculateResult(currentInputs), [currentInputs, calculateResult]);
@@ -43,7 +46,7 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
         <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-2 mb-4">
                 <Sliders size={16} className="text-indigo-600 dark:text-indigo-400" />
-                <h3 className="text-slate-900 dark:text-foreground font-bold text-sm">{title}</h3>
+                <h3 className="text-slate-900 dark:text-foreground font-bold text-sm">{displayTitle}</h3>
             </div>
 
             {/* Sliders */}
@@ -113,7 +116,7 @@ export default function WhatIfSimulator({ title = 'What-If Simulator', sliders, 
 
             {!hasChanges && (
                 <div className="p-3 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-600 text-center shadow-sm dark:shadow-none">
-                    <p className="text-slate-600 dark:text-slate-300 text-xs font-medium">Adjust sliders to see how changes affect your result</p>
+                    <p className="text-slate-600 dark:text-slate-300 text-xs font-medium">{t('whatIf.adjustPrompt')}</p>
                 </div>
             )}
         </div>

@@ -472,6 +472,7 @@ export default function InsuranceCalculator() {
     title: t(`ins.planTypes.${k}.title`),
     what: t(`ins.planTypes.${k}.what`),
     premiumRange: t(`ins.planTypes.${k}.premiumRange`),
+    maturity: t(`ins.planTypes.${k}.maturity`),
     xirr: t(`ins.planTypes.${k}.xirr`),
     note: t(`ins.planTypes.${k}.note`),
   })), [t]);
@@ -949,7 +950,7 @@ export default function InsuranceCalculator() {
               <NumberInput label={t('ins.life.annualIncome')} value={annualIncome} onChange={setAnnualIncome} min={100000} max={100000000} prefix="₹" helperText={t('ins.life.annualIncomeHelper')} />
               <div className="h-3" />
               <PillSelector label={t('ins.life.dependents')}
-                options={[0, 1, 2, 3].map(n => ({ label: n === 0 ? t('ins.life.none') : String(n), value: n })).concat([{ label: '4+', value: 4 }])}
+                options={[0, 1, 2, 3].map(n => ({ label: n === 0 ? t('ins.life.none') : String(n), value: n })).concat([{ label: t('ins.life.fourPlus'), value: 4 }])}
                 value={dependents} onChange={setDependents} />
               <NumberInput label={t('ins.life.outstandingLoans')} value={outstandingLoans} onChange={setOutstandingLoans}
                 min={0} max={100000000} prefix="₹" helperText={t('ins.life.loansHelper')} />
@@ -957,7 +958,7 @@ export default function InsuranceCalculator() {
               <p className="text-xs font-medium text-muted-foreground mb-2">{t('ins.life.policyTerm')}</p>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-lg font-bold text-foreground">{policyTerm} {t('ins.health.years')}</span>
-                <span className="text-[10px] text-muted-foreground">10 — 40 {t('ins.health.years')}</span>
+                <span className="text-[10px] text-muted-foreground">{t('ins.life.termRange', { min: 10, max: 40 })}</span>
               </div>
               <input type="range" min={10} max={40} step={5} value={policyTerm}
                 onChange={e => setPolicyTerm(Number(e.target.value))}

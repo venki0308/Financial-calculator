@@ -8,6 +8,7 @@ import { usePageViewTracker } from './hooks/usePageViewTracker';
 import { AnalyticsService } from './services/analyticsService';
 import { setupErrorHandling } from './utils/errorHandler';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { CibilProvider } from './context/CibilContext';
 import { FeatureFlagService } from './services/featureFlags.service';
 import { UpdateChecker } from './components/UpdateChecker';
 import { APP_VERSION } from './config/app';
@@ -103,6 +104,7 @@ const InsuranceCalculator        = lr(() => import('./pages/InsuranceCalculator'
 const InsuranceCompare           = lr(() => import('./pages/InsuranceCompare'));
 const TwoWheelerLoanCalculator   = lr(() => import('./pages/TwoWheelerLoanCalculator'));
 const CibilScoreCalculator       = lr(() => import('./pages/CibilScoreCalculator'));
+const CibilProfileSetup          = lr(() => import('./pages/CibilProfileSetup'));
 
 // My Loans — lazy loaded with retry
 const MyLoans                    = lr(() => import('./pages/MyLoans'));
@@ -355,6 +357,7 @@ function AppContent() {
                         <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
                         <Route path="/two-wheeler-loan" element={<TwoWheelerLoanCalculator />} />
                         <Route path="/cibil-score" element={<CibilScoreCalculator />} />
+                        <Route path="/cibil-profile" element={<CibilProfileSetup />} />
                         <Route path="/dev/validator" element={<ValidatorPage />} />
                     </Route>
 
@@ -378,9 +381,11 @@ export default function App() {
     if (Capacitor.isNativePlatform() || isDevMode) {
         return (
             <ErrorBoundary>
-                <BrowserRouter>
-                    <AppContent />
-                </BrowserRouter>
+                <CibilProvider>
+                    <BrowserRouter>
+                        <AppContent />
+                    </BrowserRouter>
+                </CibilProvider>
             </ErrorBoundary>
         );
     }

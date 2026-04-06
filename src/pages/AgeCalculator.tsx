@@ -52,7 +52,7 @@ function getNextBirthday(birthDate: Date, today: Date) {
 
 export default function AgeCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Age_Calculator'); }, []);
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [birthDate, setBirthDate] = useState('');
     const today = new Date();
@@ -65,7 +65,7 @@ export default function AgeCalculator() {
         const age = calculateAge(bd, today);
         const gen = getGeneration(bd.getFullYear());
         const nextBday = getNextBirthday(bd, today);
-        const dayOfWeek = bd.toLocaleDateString('en-US', { weekday: 'long' });
+        const dayOfWeek = bd.toLocaleDateString(i18n.language, { weekday: 'long' });
 
         const heartbeats = age.totalDays * 103680; // ~72 bpm
         const breaths = age.totalDays * 23040; // ~16 bpm
@@ -106,7 +106,7 @@ export default function AgeCalculator() {
                         <div className="p-5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-center shadow-lg">
                             <p className="text-violet-200 text-xs mb-1">{t('age.yourAge')}</p>
                             <p className="text-4xl font-bold">{result.age.years} <span className="text-xl font-medium text-violet-200">{t('age.years')}</span></p>
-                            <p className="text-violet-200 text-sm mt-1">{result.age.months} {t('age.monthsAndDays', { days: result.age.days })}</p>
+                            <p className="text-violet-200 text-sm mt-1">{t('age.monthsAndDays', { months: result.age.months, days: result.age.days })}</p>
                         </div>
 
                         {/* Detailed Breakdown */}
@@ -160,7 +160,7 @@ export default function AgeCalculator() {
                                 {t('age.nextBirthdayIn')} <span className="text-pink-600 dark:text-pink-400 text-xl">{result.nextBday.daysLeft}</span> {t('age.days')}
                             </p>
                             <p className="text-pink-500 text-xs mt-1">
-                                {result.nextBday.date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                {result.nextBday.date.toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                             </p>
                             <p className="text-pink-500 text-xs mt-0.5">{t('age.youllTurn', { age: result.age.years + 1 })}</p>
                         </div>

@@ -13,14 +13,7 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
-const SUM_INSURED_OPTIONS = [
-  { label: '₹5L', value: 5 },
-  { label: '₹10L', value: 10 },
-  { label: '₹15L', value: 15 },
-  { label: '₹25L', value: 25 },
-  { label: '₹50L', value: 50 },
-  { label: '₹1Cr', value: 100 },
-];
+const SUM_INSURED_VALUES = [5, 10, 15, 25, 50, 100] as const;
 
 const PRIORITY_OPTIONS = [
   { id: 'csr', label: 'Highest CSR' },
@@ -135,14 +128,15 @@ function calcAdequacy(
 // ─── Sub-components ─────────────────────────────────────────────────────────────
 
 function ScoreDial({ score, label: overrideLabel }: { score: number; label?: string }) {
+  const { t } = useTranslation();
   const R = 90;
   const circ = Math.PI * R;
   const color = score <= 40 ? '#ef4444' : score <= 75 ? '#f59e0b' : '#22c55e';
-  const label = overrideLabel || (score <= 40 ? 'Critically Underinsured'
-    : score <= 60 ? 'Underinsured'
-    : score <= 75 ? 'Adequate for basics'
-    : score <= 88 ? 'Well covered'
-    : 'Comprehensively covered');
+  const label = overrideLabel || (score <= 40 ? t('insCompare.scoreCriticallyUnderinsured')
+    : score <= 60 ? t('insCompare.scoreUnderinsured')
+    : score <= 75 ? t('insCompare.scoreAdequateForBasics')
+    : score <= 88 ? t('insCompare.scoreWellCovered')
+    : t('insCompare.scoreComprehensivelyCovered'));
   return (
     <div className="flex flex-col items-center py-2">
       <svg viewBox="0 0 200 110" className="w-56 h-[130px]" style={{ overflow: 'visible' }}>
@@ -292,6 +286,11 @@ export default function InsuranceCompare() {
     { id: 'senior', label: t('ins.compare.prioritySenior') },
     { id: 'child', label: t('ins.compare.priorityChild') },
   ], [t]);
+
+  const tSumInsuredOptions = useMemo(() => SUM_INSURED_VALUES.map(value => ({
+    label: t(`insCompare.sumInsured_${value}`),
+    value,
+  })), [t]);
 
   // ── Family helpers ────────────────────────────────────────────────────────────
   const addChild = useCallback(() => { if (children.length < 4) setChildren(p => [...p, 5]); }, [children.length]);
@@ -581,7 +580,7 @@ export default function InsuranceCompare() {
                 <div className="p-4 rounded-2xl bg-card border border-border mb-3">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">{t('ins.compare.sumInsured')}</p>
                   <div className="flex flex-wrap gap-2">
-                    {SUM_INSURED_OPTIONS.map(opt => (
+                    {tSumInsuredOptions.map(opt => (
                       <button key={opt.value} onClick={() => setSumInsured(opt.value)}
                         className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${sumInsured === opt.value
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'

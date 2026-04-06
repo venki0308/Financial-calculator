@@ -102,7 +102,7 @@ export default function AdvancedMortgageCalculator() {
 
     // ─── Chart Config ───────────────────────────────────────────────────────
     const chartData = {
-        labels: ['Principal', 'Interest'],
+        labels: [t('mortgage.chartPrincipal'), t('mortgage.chartInterest')],
         datasets: [{
             data: [loanAmount, result.totalInterest],
             backgroundColor: ['#10B981', '#F59E0B'],
@@ -226,44 +226,44 @@ export default function AdvancedMortgageCalculator() {
     const buildExportConfig = (forExcel = false): ExportConfig => {
         const tag = dateTag();
         const emiRatio = monthlyIncome > 0 ? (result.originalEmi / monthlyIncome) * 100 : 0;
-        const affordStatus = emiRatio > 50 ? 'HIGH RISK (>50%)' : emiRatio > 40 ? 'CAUTION (>40%)' : 'SAFE';
+        const affordStatus = emiRatio > 50 ? t('mortgage.affordHighRisk') : emiRatio > 40 ? t('mortgage.affordCaution') : t('mortgage.affordSafe');
 
         const inputs: ExportConfig['inputs'] = [
-            { label: 'Property Value', value: formatINR(propertyValue) },
-            { label: 'Down Payment', value: formatINR(downPayment) },
-            { label: 'Loan Amount', value: formatINR(loanAmount) },
-            { label: 'LTV (Loan to Value)', value: `${ltv.toFixed(1)}% (RBI max: ${maxLtv}%)` },
-            { label: 'Interest Rate', value: `${interestRate}% p.a.` },
-            { label: 'Tenure', value: `${tenureYears} Years (${months} months)` },
-            ...(monthlyIncome > 0 ? [{ label: 'Monthly Income', value: formatINR(monthlyIncome) }] : []),
-            { label: 'Loan Purpose', value: loanPurpose === 'home' ? 'Home Purchase / Construction' : loanPurpose === 'plot' ? 'Residential Plot / Land' : 'Home Renovation' },
+            { label: t('mortgage.exportPropertyValue'), value: formatINR(propertyValue) },
+            { label: t('mortgage.exportDownPayment'), value: formatINR(downPayment) },
+            { label: t('mortgage.exportLoanAmount'), value: formatINR(loanAmount) },
+            { label: t('mortgage.exportLTV'), value: `${ltv.toFixed(1)}% (${t('mortgage.exportRbiMax')}: ${maxLtv}%)` },
+            { label: t('mortgage.exportInterestRate'), value: `${interestRate}% ${t('mortgage.exportPerAnnum')}` },
+            { label: t('mortgage.exportTenure'), value: `${tenureYears} ${t('mortgage.exportYears')} (${months} ${t('mortgage.exportMonths')})` },
+            ...(monthlyIncome > 0 ? [{ label: t('mortgage.exportMonthlyIncome'), value: formatINR(monthlyIncome) }] : []),
+            { label: t('mortgage.exportLoanPurpose'), value: loanPurpose === 'home' ? t('mortgage.exportPurposeHome') : loanPurpose === 'plot' ? t('mortgage.exportPurposePlot') : t('mortgage.exportPurposeRenovation') },
         ];
 
         const results: ExportConfig['results'] = [
-            { label: 'Monthly EMI', value: formatINR(result.originalEmi) },
+            { label: t('mortgage.exportMonthlyEMI'), value: formatINR(result.originalEmi) },
             ...(preEmiInterest > 0 ? [
-                { label: 'Pre-EMI Interest', value: formatINR(preEmiInterest) },
-                { label: 'EMI Interest', value: formatINR(result.totalInterest) },
-                { label: 'Total Interest (EMI + Pre-EMI)', value: formatINR(result.totalInterest + preEmiInterest) },
+                { label: t('mortgage.exportPreEmiInterest'), value: formatINR(preEmiInterest) },
+                { label: t('mortgage.exportEmiInterest'), value: formatINR(result.totalInterest) },
+                { label: t('mortgage.exportTotalInterestEmiPreEmi'), value: formatINR(result.totalInterest + preEmiInterest) },
             ] : [
-                { label: 'Total Interest', value: formatINR(result.totalInterest) },
+                { label: t('mortgage.exportTotalInterest'), value: formatINR(result.totalInterest) },
             ]),
-            { label: 'Total Payment', value: formatINR(result.totalPayment + preEmiInterest) },
+            { label: t('mortgage.exportTotalPayment'), value: formatINR(result.totalPayment + preEmiInterest) },
             ...(monthlyIncome > 0 ? [
-                { label: 'EMI to Income Ratio', value: `${emiRatio.toFixed(1)}%` },
-                { label: 'Affordability Status', value: affordStatus },
+                { label: t('mortgage.exportEmiToIncomeRatio'), value: `${emiRatio.toFixed(1)}%` },
+                { label: t('mortgage.exportAffordabilityStatus'), value: affordStatus },
             ] : []),
             ...(enablePrepayment ? [
-                { label: 'Prepayment Strategy', value: prepaymentMode === 'reduce_tenure' ? 'Reduce Tenure' : 'Reduce EMI' },
-                ...(monthlyExtraEMI > 0 ? [{ label: 'Monthly Extra EMI', value: formatINR(monthlyExtraEMI) }] : []),
-                ...(result.interestSaved > 0 ? [{ label: 'Interest Saved', value: formatINR(result.interestSaved) }] : []),
-                ...(result.timeSavedMonths > 0 ? [{ label: 'Time Saved', value: `${Math.floor(result.timeSavedMonths / 12)}y ${result.timeSavedMonths % 12}m` }] : []),
+                { label: t('mortgage.exportPrepaymentStrategy'), value: prepaymentMode === 'reduce_tenure' ? t('mortgage.reduceTenure') : t('mortgage.reduceEMI') },
+                ...(monthlyExtraEMI > 0 ? [{ label: t('mortgage.exportMonthlyExtraEMI'), value: formatINR(monthlyExtraEMI) }] : []),
+                ...(result.interestSaved > 0 ? [{ label: t('mortgage.exportInterestSaved'), value: formatINR(result.interestSaved) }] : []),
+                ...(result.timeSavedMonths > 0 ? [{ label: t('mortgage.exportTimeSaved'), value: `${Math.floor(result.timeSavedMonths / 12)}y ${result.timeSavedMonths % 12}m` }] : []),
             ] : []),
-            { label: 'Sec 80C (Principal) — Total', value: formatINR(result.taxBenefits.total80C) },
-            { label: 'Sec 24(b) (Interest) — Total', value: formatINR(result.taxBenefits.total24) },
+            { label: t('mortgage.exportSec80C'), value: formatINR(result.taxBenefits.total80C) },
+            { label: t('mortgage.exportSec24b'), value: formatINR(result.taxBenefits.total24) },
             ...(trueCost.extras > 0 ? [
-                { label: 'True Cost of Loan', value: formatINR(trueCost.totalAmountPaid) },
-                { label: 'Cost Over Loan Amount', value: `${formatINR(trueCost.costOverLoan)} (+${trueCost.costPercent.toFixed(1)}%)` },
+                { label: t('mortgage.exportTrueCost'), value: formatINR(trueCost.totalAmountPaid) },
+                { label: t('mortgage.exportCostOverLoan'), value: `${formatINR(trueCost.costOverLoan)} (+${trueCost.costPercent.toFixed(1)}%)` },
             ] : []),
         ];
 
@@ -297,19 +297,19 @@ export default function AdvancedMortgageCalculator() {
         ]);
 
         return {
-            title: 'Advanced Mortgage Report',
-            subtitle: 'Home Loan Analysis',
+            title: t('mortgage.exportReportTitle'),
+            subtitle: t('mortgage.exportReportSubtitle'),
             inputs,
             results,
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Principal', value: loanAmount, color: '#10B981' },
-                    { label: 'Total Interest', value: result.totalInterest + preEmiInterest, color: '#F59E0B' },
+                    { label: t('mortgage.chartPrincipal'), value: loanAmount, color: '#10B981' },
+                    { label: t('mortgage.exportTotalInterest'), value: result.totalInterest + preEmiInterest, color: '#F59E0B' },
                 ],
             },
-            projectionTitle: 'Monthly Amortization Schedule',
-            projectionColumns: ['Month', 'Payment', 'Principal', 'Interest', 'Balance'],
+            projectionTitle: t('mortgage.exportProjectionTitle'),
+            projectionColumns: [t('mortgage.exportColMonth'), t('mortgage.exportColPayment'), t('mortgage.chartPrincipal'), t('mortgage.chartInterest'), t('mortgage.exportColBalance')],
             projectionRows: result.schedule.map(r => [
                 r.month,
                 forExcel ? Math.round(r.emi) : formatINR(r.emi),
@@ -319,20 +319,20 @@ export default function AdvancedMortgageCalculator() {
             ]),
             additionalTables: [
                 {
-                    title: 'Year-wise Summary',
-                    columns: ['Year', 'Total Paid', 'Principal', 'Interest', 'Balance'],
+                    title: t('mortgage.exportYearlySummary'),
+                    columns: [t('mortgage.exportColYear'), t('mortgage.exportColTotalPaid'), t('mortgage.chartPrincipal'), t('mortgage.chartInterest'), t('mortgage.exportColBalance')],
                     rows: yearlyRows,
                 },
                 {
                     title: loanPurpose === 'plot'
-                        ? 'Tax Benefits (Year-wise) — PLOT LOAN: Deductions apply only after construction completion & Completion Certificate. Pre-construction interest claimable in 5 equal instalments post-construction. Verify with a CA.'
-                        : 'Tax Benefits (Year-wise)',
-                    columns: ['Year', 'Principal Paid', 'Interest Paid', '80C Deduction', '24(b) Deduction', 'Total Benefit'],
+                        ? t('mortgage.exportTaxBenefitsPlotTitle')
+                        : t('mortgage.exportTaxBenefitsTitle'),
+                    columns: [t('mortgage.exportColYear'), t('mortgage.exportColPrincipalPaid'), t('mortgage.exportColInterestPaid'), t('mortgage.exportCol80C'), t('mortgage.exportCol24b'), t('mortgage.exportColTotalBenefit')],
                     rows: taxRows,
                 },
                 ...(fcTimeline.length > 1 ? [{
-                    title: 'Foreclosure Timeline (Year-wise)',
-                    columns: ['Year', 'Outstanding', 'Settlement', 'You Save'],
+                    title: t('mortgage.exportFcTimelineTitle'),
+                    columns: [t('mortgage.exportColYear'), t('mortgage.exportColOutstanding'), t('mortgage.exportColSettlement'), t('mortgage.youSave')],
                     rows: fcTimeline.map(t => [
                         t.year,
                         forExcel ? t.outstanding : formatINR(t.outstanding),
@@ -341,31 +341,31 @@ export default function AdvancedMortgageCalculator() {
                     ]),
                 }] : []),
                 ...(fcResult ? [{
-                    title: 'Foreclosure Simulation',
-                    columns: ['Metric', 'Amount'],
+                    title: t('mortgage.exportFcSimulationTitle'),
+                    columns: [t('mortgage.exportColMetric'), t('mortgage.exportColAmount')],
                     rows: [
-                        ['Months Paid', String(fcMonths)],
-                        ['Rate Type', fcRateType === 'floating' ? 'Floating (RBI: NIL charge)' : `Fixed (${fcChargePercent}% charge)`],
-                        ['EMIs Paid So Far', forExcel ? fcResult.emisPaid : formatINR(fcResult.emisPaid)],
-                        ['Outstanding Principal', forExcel ? fcResult.outstanding : formatINR(fcResult.outstanding)],
-                        ['Interest Already Paid', forExcel ? fcResult.intPaid : formatINR(fcResult.intPaid)],
-                        ['Foreclosure Charge', forExcel ? fcResult.charge : formatINR(fcResult.charge)],
-                        ['Settlement Amount', forExcel ? fcResult.settlement : formatINR(fcResult.settlement)],
-                        ['Interest Saved', forExcel ? fcResult.intSaved : formatINR(fcResult.intSaved)],
-                        ['Total Cost (Close Today)', forExcel ? fcResult.totalCostClose : formatINR(fcResult.totalCostClose)],
-                        ['Total Cost (Full Term)', forExcel ? fcResult.totalCostFull : formatINR(fcResult.totalCostFull)],
-                        ['Total Savings', forExcel ? fcResult.saving : formatINR(fcResult.saving)],
+                        [t('mortgage.exportFcMonthsPaid'), String(fcMonths)],
+                        [t('mortgage.exportFcRateType'), fcRateType === 'floating' ? t('mortgage.exportFcFloatingNil') : t('mortgage.exportFcFixedCharge', { percent: fcChargePercent })],
+                        [t('mortgage.exportFcEmisPaid'), forExcel ? fcResult.emisPaid : formatINR(fcResult.emisPaid)],
+                        [t('mortgage.exportFcOutstandingPrincipal'), forExcel ? fcResult.outstanding : formatINR(fcResult.outstanding)],
+                        [t('mortgage.exportFcInterestAlreadyPaid'), forExcel ? fcResult.intPaid : formatINR(fcResult.intPaid)],
+                        [t('mortgage.exportFcForeclosureCharge'), forExcel ? fcResult.charge : formatINR(fcResult.charge)],
+                        [t('mortgage.exportFcSettlementAmount'), forExcel ? fcResult.settlement : formatINR(fcResult.settlement)],
+                        [t('mortgage.exportFcInterestSaved'), forExcel ? fcResult.intSaved : formatINR(fcResult.intSaved)],
+                        [t('mortgage.exportFcCostCloseToday'), forExcel ? fcResult.totalCostClose : formatINR(fcResult.totalCostClose)],
+                        [t('mortgage.exportFcCostFullTerm'), forExcel ? fcResult.totalCostFull : formatINR(fcResult.totalCostFull)],
+                        [t('mortgage.exportFcTotalSavings'), forExcel ? fcResult.saving : formatINR(fcResult.saving)],
                     ] as Array<Array<string | number>>,
                 }] : []),
                 ...(wiResult ? [{
-                    title: 'What-If Scenario',
-                    columns: ['Metric', 'Current', 'What-If', 'Difference'],
+                    title: t('mortgage.exportWhatIfTitle'),
+                    columns: [t('mortgage.exportColMetric'), t('mortgage.exportColCurrent'), t('mortgage.exportColWhatIf'), t('mortgage.exportColDifference')],
                     rows: [
-                        ['Interest Rate', `${interestRate}%`, `${wiRate}%`, `${(wiRate - interestRate) > 0 ? '+' : ''}${(wiRate - interestRate).toFixed(1)}%`],
-                        ['Tenure', `${tenureYears} yrs`, `${wiTenure} yrs`, `${wiTenure - tenureYears} yrs`],
-                        ['Monthly EMI', forExcel ? result.originalEmi : formatINR(result.originalEmi), forExcel ? wiResult.emi : formatINR(wiResult.emi), forExcel ? wiResult.emiDiff : formatINR(wiResult.emiDiff)],
-                        ['Total Interest', forExcel ? result.totalInterest : formatINR(result.totalInterest), forExcel ? wiResult.totalInterest : formatINR(wiResult.totalInterest), forExcel ? wiResult.interestDiff : formatINR(wiResult.interestDiff)],
-                        ['Total Payment', forExcel ? result.totalPayment : formatINR(result.totalPayment), forExcel ? wiResult.totalPayment : formatINR(wiResult.totalPayment), forExcel ? wiResult.paymentDiff : formatINR(wiResult.paymentDiff)],
+                        [t('mortgage.exportInterestRate'), `${interestRate}%`, `${wiRate}%`, `${(wiRate - interestRate) > 0 ? '+' : ''}${(wiRate - interestRate).toFixed(1)}%`],
+                        [t('mortgage.exportTenure'), `${tenureYears} ${t('mortgage.exportYrsShort')}`, `${wiTenure} ${t('mortgage.exportYrsShort')}`, `${wiTenure - tenureYears} ${t('mortgage.exportYrsShort')}`],
+                        [t('mortgage.exportMonthlyEMI'), forExcel ? result.originalEmi : formatINR(result.originalEmi), forExcel ? wiResult.emi : formatINR(wiResult.emi), forExcel ? wiResult.emiDiff : formatINR(wiResult.emiDiff)],
+                        [t('mortgage.exportTotalInterest'), forExcel ? result.totalInterest : formatINR(result.totalInterest), forExcel ? wiResult.totalInterest : formatINR(wiResult.totalInterest), forExcel ? wiResult.interestDiff : formatINR(wiResult.interestDiff)],
+                        [t('mortgage.exportTotalPayment'), forExcel ? result.totalPayment : formatINR(result.totalPayment), forExcel ? wiResult.totalPayment : formatINR(wiResult.totalPayment), forExcel ? wiResult.paymentDiff : formatINR(wiResult.paymentDiff)],
                     ] as Array<Array<string | number>>,
                 }] : []),
                 ...(() => {
@@ -373,17 +373,17 @@ export default function AdvancedMortgageCalculator() {
                     const liveStatus = calculateLiveLoanStatus(loanProfile);
                     if (liveStatus.loanNotStarted) return [];
                     return [{
-                        title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                        columns: ['Metric', 'Value'],
+                        title: t('mortgage.exportLiveStatusTitle', { date: new Date().toLocaleDateString('en-IN') }),
+                        columns: [t('mortgage.exportColMetric'), t('mortgage.exportColValue')],
                         rows: [
-                            ['EMIs Paid', String(liveStatus.emisPaid)],
-                            ['Principal Outstanding', formatINR(liveStatus.principalOutstanding)],
-                            ['Interest Paid So Far', formatINR(liveStatus.interestPaidSoFar)],
-                            ['Total Paid So Far', formatINR(liveStatus.totalPaidSoFar)],
-                            ['Next EMI Date', liveStatus.nextEmiDate],
-                            ['Daily Interest', formatINR(liveStatus.dailyInterest)],
-                            ['Settlement Amount Today', formatINR(liveStatus.totalSettlementToday)],
-                            ['Interest Saved if Closed Today', formatINR(liveStatus.interestSavedIfCloseToday)],
+                            [t('mortgage.exportLiveEmisPaid'), String(liveStatus.emisPaid)],
+                            [t('mortgage.exportLivePrincipalOutstanding'), formatINR(liveStatus.principalOutstanding)],
+                            [t('mortgage.exportLiveInterestPaid'), formatINR(liveStatus.interestPaidSoFar)],
+                            [t('mortgage.exportLiveTotalPaid'), formatINR(liveStatus.totalPaidSoFar)],
+                            [t('mortgage.exportLiveNextEmiDate'), liveStatus.nextEmiDate],
+                            [t('mortgage.exportLiveDailyInterest'), formatINR(liveStatus.dailyInterest)],
+                            [t('mortgage.exportLiveSettlementToday'), formatINR(liveStatus.totalSettlementToday)],
+                            [t('mortgage.exportLiveInterestSavedIfClosed'), formatINR(liveStatus.interestSavedIfCloseToday)],
                         ] as Array<Array<string | number>>,
                     }];
                 })(),
@@ -404,7 +404,7 @@ export default function AdvancedMortgageCalculator() {
         const newId = `AdvMortgage-Save-${Date.now()}`;
         addSaved({
             id: newId,
-            calculatorType: 'Advanced Mortgage',
+            calculatorType: t('mortgage.calculatorType'),
             inputValues: { propertyValue, downPayment, loanAmount, interestRate, tenureYears, loanRateType, loanPurpose },
             resultValues: { originalEmi: result.originalEmi, totalInterest: result.totalInterest, totalPayment: result.totalPayment },
             timestamp: Date.now(),
@@ -757,7 +757,7 @@ export default function AdvancedMortgageCalculator() {
                                 <div>
                                     <p className="text-xl font-bold mt-1">{formatINR(result.totalInterest + preEmiInterest)}</p>
                                     <p className="text-emerald-200/70 text-[10px] mt-0.5">
-                                        EMI: {formatINRShort(result.totalInterest)} + Pre-EMI: {formatINRShort(preEmiInterest)}
+                                        {t('mortgage.emiLabel')}: {formatINRShort(result.totalInterest)} + {t('mortgage.preEmiLabel')}: {formatINRShort(preEmiInterest)}
                                     </p>
                                 </div>
                             ) : (
@@ -790,7 +790,7 @@ export default function AdvancedMortgageCalculator() {
                 {saved ? (
                     <div className="flex gap-2">
                         <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: '#10B98115', color: '#10B981', border: '1px solid #10B98130' }}>
-                            <Check size={16} /> Saved
+                            <Check size={16} /> {t('mortgage.saved')}
                         </div>
                         <button onClick={handleRemove} className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: '#EF444415', color: '#EF4444', border: '1px solid #EF444430' }}>
                             <Trash2 size={16} />
@@ -799,7 +799,7 @@ export default function AdvancedMortgageCalculator() {
                 ) : (
                     <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave}
                         className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg">
-                        <Save size={16} /> Save Calculation
+                        <Save size={16} /> {t('mortgage.saveCalculation')}
                     </motion.button>
                 )}
 

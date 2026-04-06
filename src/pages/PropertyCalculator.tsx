@@ -313,7 +313,7 @@ export default function PropertyCalculator() {
             await exportToPDF({
                 title: t('property.pdfFlatCostReport'),
                 inputs: [
-                    { label: t('property.builtUpArea'), value: `${builtUp} sq.ft` },
+                    { label: t('property.builtUpArea'), value: `${builtUp} ${t('property.sqftUnit')}` },
                     { label: t('property.pricePerSqft'), value: fmt(Number(ppsf)) },
                     { label: t('property.gstRate'), value: `${gstPct}%` },
                 ],
@@ -434,7 +434,7 @@ export default function PropertyCalculator() {
             title: t('property.pdfHomeLoanReport'),
             inputs: [
                 { label: t('property.loanAmount'), value: fmt(Number(loanAmt)) },
-                { label: t('property.interestRate'), value: `${loanRate}% p.a.` },
+                { label: t('property.interestRate'), value: `${loanRate}% ${t('property.perAnnum')}` },
                 { label: t('property.tenure'), value: `${loanTenure} ${t('property.years')}` },
             ],
             results: [
@@ -463,10 +463,10 @@ export default function PropertyCalculator() {
         await exportToPDF({
             title: t('property.pdfVillaReport'),
             inputs: [
-                { label: t('property.totalBuiltUpArea'), value: `${totalBUA.toLocaleString('en-IN')} sq.ft` },
+                { label: t('property.totalBuiltUpArea'), value: `${totalBUA.toLocaleString('en-IN')} ${t('property.sqftUnit')}` },
                 { label: t('property.constructionGrade'), value: gradeName },
                 { label: t('property.ratePerSqft'), value: fmt(Number(constRate)) },
-                ...(Number(wallPerimeter) > 0 ? [{ label: t('property.compoundWall'), value: `${wallPerimeter} ft @ ₹${wallRate}/ft` }] : []),
+                ...(Number(wallPerimeter) > 0 ? [{ label: t('property.compoundWall'), value: `${wallPerimeter} ${t('property.ft')} @ ₹${wallRate}/${t('property.ft')}` }] : []),
             ],
             results: [
                 { label: t('property.constructionCost'), value: fmt(villaResult.constructionCost) },
@@ -639,7 +639,7 @@ export default function PropertyCalculator() {
                                                 </div>
                                             )}
                                             <button 
-                                                onClick={() => copyResult(landResult.totalValue, 'Land Value')}
+                                                onClick={() => copyResult(landResult.totalValue, t('property.landValue'))}
                                                 className="absolute top-2 right-2 p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors"
                                             >
                                                 {copied === 'res-copy' ? <Check size={14} /> : <Copy size={14} />}
@@ -672,14 +672,14 @@ export default function PropertyCalculator() {
                                                 </div>
                                             ) : (
                                                 <button
-                                                    onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: 'Land Value', inputValues: { landArea, landUnit, landPrice }, resultValues: { primary: landResult.totalValue }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
+                                                    onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: t('property.landValue'), inputValues: { landArea, landUnit, landPrice }, resultValues: { primary: landResult.totalValue }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
                                                     className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold"
                                                 >
                                                     {t('property.save')}
                                                 </button>
                                             )}
                                             <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
-                                                📄 PDF
+                                                📄 {t('property.pdf')}
                                             </button>
                                         </div>
                                     </motion.div>
@@ -754,7 +754,7 @@ export default function PropertyCalculator() {
                                             <div className="border-t border-slate-700 pt-2">
                                                 <CostRow label={t('property.subtotal')} value={flatResult.subtotal} />
                                             </div>
-                                            <CostRow label={`GST (${gstPct}%)`} value={flatResult.gstAmt} accent="text-yellow-400" />
+                                            <CostRow label={`${t('property.gst')} (${gstPct}%)`} value={flatResult.gstAmt} accent="text-yellow-400" />
                                             <div className="border-t border-brand-green/30 pt-2">
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-foreground text-sm font-bold">{t('property.totalPropertyCost')}</span>
@@ -762,7 +762,7 @@ export default function PropertyCalculator() {
                                                 </div>
                                             </div>
                                             <button 
-                                                onClick={() => copyResult(flatResult.totalCost, 'Flat Total Price')}
+                                                onClick={() => copyResult(flatResult.totalCost, t('property.flatTotalPrice'))}
                                                 className="absolute top-2 right-2 p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors"
                                             >
                                                 {copied === 'res-copy' ? <Check size={14} /> : <Copy size={14} />}
@@ -807,10 +807,10 @@ export default function PropertyCalculator() {
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: 'Flat Price', inputValues: { builtUp, carpet, ppsf, parking, amenities, maint, gstPct }, resultValues: { primary: flatResult.totalCost }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
+                                                <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: t('property.flatPrice'), inputValues: { builtUp, carpet, ppsf, parking, amenities, maint, gstPct }, resultValues: { primary: flatResult.totalCost }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
                                                     className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
                                             )}
-                                            <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 PDF</button>
+                                            <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 {t('property.pdf')}</button>
                                         </div>
                                     </motion.div>
                                 )}
@@ -926,7 +926,7 @@ export default function PropertyCalculator() {
                                                 <p className="text-muted-foreground text-xs mt-1 text-right">₹{villaResult.costPerSqft.toLocaleString('en-IN')} / {t('property.sqft')}</p>
                                             </div>
                                             <button 
-                                                onClick={() => copyResult(villaResult.totalCost, 'Villa Cost')}
+                                                onClick={() => copyResult(villaResult.totalCost, t('property.villaCost'))}
                                                 className="absolute top-2 right-2 p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors"
                                             >
                                                 {copied === 'res-copy' ? <Check size={14} /> : <Copy size={14} />}
@@ -944,10 +944,10 @@ export default function PropertyCalculator() {
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: 'Villa Construction', inputValues: { groundFloor, firstFloor, secondFloor, constRate }, resultValues: { primary: villaResult.totalCost }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
+                                                <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: t('property.villaConstruction'), inputValues: { groundFloor, firstFloor, secondFloor, constRate }, resultValues: { primary: villaResult.totalCost }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
                                                     className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
                                             )}
-                                            <button onClick={handleVillaPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 PDF</button>
+                                            <button onClick={handleVillaPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 {t('property.pdf')}</button>
                                         </div>
                                     </motion.div>
                                 )}
@@ -1264,7 +1264,7 @@ function HomeLoanSection({
             <Field label={t('property.loanAmount')} value={loanAmt} onChange={setLoanAmt} type="number" prefix="₹" placeholder="e.g. 6000000" />
             <div className="grid grid-cols-2 gap-2">
                 <Field label={t('property.interestRate')} value={loanRate} onChange={setLoanRate} type="number" suffix="%" placeholder="8.5" />
-                <Field label={t('property.tenure')} value={loanTenure} onChange={setLoanTenure} type="number" suffix=" yrs" placeholder="20" />
+                <Field label={t('property.tenure')} value={loanTenure} onChange={setLoanTenure} type="number" suffix={` ${t('property.yrsShort')}`} placeholder="20" />
             </div>
             <motion.button whileTap={{ scale: 0.97 }} onClick={calculateEMI}
                 className="w-full py-3 bg-brand-purple text-white font-bold rounded-xl text-sm shadow-lg shadow-brand-purple/20">

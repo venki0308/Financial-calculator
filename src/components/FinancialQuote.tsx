@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
 import { dailyQuotes } from '../data/quotes';
 
@@ -7,6 +8,7 @@ import { dailyQuotes } from '../data/quotes';
  * Uses day-of-year so every user sees the same quote on the same day.
  */
 export default function FinancialQuote() {
+    const { t } = useTranslation();
     const quote = useMemo(() => {
         const now = new Date();
         const start = new Date(now.getFullYear(), 0, 0);
@@ -21,7 +23,7 @@ export default function FinancialQuote() {
                     <Sparkles size={14} className="text-amber-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">💡 Daily Financial Quote</p>
+                    <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">💡 {t('quote.dailyTitle')}</p>
                     <p className="text-xs text-foreground/80 dark:text-foreground/70 leading-relaxed italic">
                         "{quote.en}"
                     </p>

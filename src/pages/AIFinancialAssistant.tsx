@@ -153,11 +153,11 @@ export default function AIFinancialAssistant() {
                     const downPaymentYears = downPayment > savings ? Math.ceil((downPayment - savings) / (monthlySavings * 0.4) / 12) : 0;
                     monthlySIP = Math.round((downPayment - savings) > 0 ? (downPayment - savings) / (downPaymentYears * 12) : 0);
                     targetCorpus = downPayment;
-                    timeline = downPaymentYears > 0 ? `${downPaymentYears} years to save down payment` : 'Down payment ready!';
+                    timeline = downPaymentYears > 0 ? t('advisor.rec.yearsToSaveDownPayment', { years: downPaymentYears }) : t('advisor.rec.downPaymentReady');
                     recs.push(
-                        { icon: Home, title: 'Home Loan Affordability', value: formatINR(affordability), detail: 'Based on 5x annual income', color: '#10B981' },
-                        { icon: PiggyBank, title: 'Recommended Max EMI', value: formatINR(recommendedEMI) + '/mo', detail: '28% of monthly income', color: '#3B82F6' },
-                        { icon: Shield, title: 'Down Payment Target', value: formatINR(downPayment), detail: `20% of property value • ${timeline}`, color: '#8B5CF6' },
+                        { icon: Home, title: t('advisor.rec.homeLoanAffordability'), value: formatINR(affordability), detail: t('advisor.rec.basedOn5xIncome'), color: '#10B981' },
+                        { icon: PiggyBank, title: t('advisor.rec.recommendedMaxEMI'), value: formatINR(recommendedEMI) + '/mo', detail: t('advisor.rec.pctOfMonthlyIncome', { pct: 28 }), color: '#3B82F6' },
+                        { icon: Shield, title: t('advisor.rec.downPaymentTarget'), value: formatINR(downPayment), detail: t('advisor.rec.pctOfPropertyValue', { pct: 20, timeline }), color: '#8B5CF6' },
                     );
                     break;
                 }
@@ -166,11 +166,11 @@ export default function AIFinancialAssistant() {
                     const educationCost = 2500000;
                     monthlySIP = Math.round(sipForCorpus(educationCost, yearsToEducation));
                     targetCorpus = educationCost;
-                    timeline = `${yearsToEducation} years`;
+                    timeline = t('advisor.rec.nYears', { n: yearsToEducation });
                     recs.push(
-                        { icon: GraduationCap, title: 'Education Corpus Target', value: formatINR(educationCost), detail: `In ${yearsToEducation} years at current costs`, color: '#3B82F6' },
-                        { icon: TrendingUp, title: 'Required Monthly SIP', value: formatINR(monthlySIP) + '/mo', detail: `Invest in equity mutual funds for ${yearsToEducation} years`, color: '#10B981' },
-                        { icon: PiggyBank, title: 'Projected Growth', value: formatINR(sipFV(monthlySIP, yearsToEducation)), detail: 'At 12% annual return', color: '#8B5CF6' },
+                        { icon: GraduationCap, title: t('advisor.rec.educationCorpusTarget'), value: formatINR(educationCost), detail: t('advisor.rec.inYearsAtCurrentCosts', { years: yearsToEducation }), color: '#3B82F6' },
+                        { icon: TrendingUp, title: t('advisor.rec.requiredMonthlySIP'), value: formatINR(monthlySIP) + '/mo', detail: t('advisor.rec.investEquityForYears', { years: yearsToEducation }), color: '#10B981' },
+                        { icon: PiggyBank, title: t('advisor.rec.projectedGrowth'), value: formatINR(sipFV(monthlySIP, yearsToEducation)), detail: t('advisor.rec.at12Return'), color: '#8B5CF6' },
                     );
                     break;
                 }
@@ -181,11 +181,11 @@ export default function AIFinancialAssistant() {
                     const corpusNeeded = monthlyCorpus * 12 * 25;
                     monthlySIP = Math.round(sipForCorpus(corpusNeeded, yearsToRetire));
                     targetCorpus = corpusNeeded;
-                    timeline = `${yearsToRetire} years to retirement`;
+                    timeline = t('advisor.rec.yearsToRetirement', { years: yearsToRetire });
                     recs.push(
-                        { icon: Umbrella, title: 'Retirement Corpus', value: formatINR(corpusNeeded), detail: `For comfortable life after age ${retireAge}`, color: '#8B5CF6' },
-                        { icon: TrendingUp, title: 'Monthly SIP Required', value: formatINR(monthlySIP) + '/mo', detail: `${yearsToRetire} years of investing`, color: '#10B981' },
-                        { icon: Shield, title: 'Monthly Pension (est.)', value: formatINR(monthlyCorpus) + '/mo', detail: '4% withdrawal rate', color: '#F59E0B' },
+                        { icon: Umbrella, title: t('advisor.rec.retirementCorpus'), value: formatINR(corpusNeeded), detail: t('advisor.rec.comfortableLifeAfterAge', { age: retireAge }), color: '#8B5CF6' },
+                        { icon: TrendingUp, title: t('advisor.rec.monthlySIPRequired'), value: formatINR(monthlySIP) + '/mo', detail: t('advisor.rec.yearsOfInvesting', { years: yearsToRetire }), color: '#10B981' },
+                        { icon: Shield, title: t('advisor.rec.monthlyPension'), value: formatINR(monthlyCorpus) + '/mo', detail: t('advisor.rec.withdrawalRate', { pct: 4 }), color: '#F59E0B' },
                     );
                     break;
                 }
@@ -196,11 +196,11 @@ export default function AIFinancialAssistant() {
                     const saveMonths = monthlySavings > 0 ? Math.ceil(downPay / (monthlySavings * 0.3)) : 60;
                     monthlySIP = Math.round(downPay / Math.max(saveMonths, 1));
                     targetCorpus = carBudget;
-                    timeline = `${Math.ceil(saveMonths / 12)} years to save down payment`;
+                    timeline = t('advisor.rec.yearsToSaveDownPayment', { years: Math.ceil(saveMonths / 12) });
                     recs.push(
-                        { icon: Car, title: 'Affordable Car Budget', value: formatINR(carBudget), detail: '~15 months salary', color: '#F59E0B' },
-                        { icon: PiggyBank, title: 'Down Payment (20%)', value: formatINR(downPay), detail: `Save ~${formatINR(monthlySIP)}/mo for ${saveMonths} months`, color: '#3B82F6' },
-                        { icon: Shield, title: 'Estimated Car EMI', value: formatINR(carEMI) + '/mo', detail: '80% financed over 5 years', color: '#10B981' },
+                        { icon: Car, title: t('advisor.rec.affordableCarBudget'), value: formatINR(carBudget), detail: t('advisor.rec.monthsSalary', { months: 15 }), color: '#F59E0B' },
+                        { icon: PiggyBank, title: t('advisor.rec.downPayment20'), value: formatINR(downPay), detail: t('advisor.rec.savePerMonthForMonths', { amount: formatINR(monthlySIP), months: saveMonths }), color: '#3B82F6' },
+                        { icon: Shield, title: t('advisor.rec.estimatedCarEMI'), value: formatINR(carEMI) + '/mo', detail: t('advisor.rec.financedOverYears', { pct: 80, years: 5 }), color: '#10B981' },
                     );
                     break;
                 }
@@ -211,12 +211,12 @@ export default function AIFinancialAssistant() {
                     const fv20 = sipFV(idealSIP, 20);
                     monthlySIP = idealSIP;
                     targetCorpus = fv10;
-                    timeline = '10+ years growth plan';
+                    timeline = t('advisor.rec.growthPlanTimeline');
                     recs.push(
-                        { icon: TrendingUp, title: 'Monthly SIP', value: formatINR(idealSIP) + '/mo', detail: '50% of monthly surplus', color: '#10B981' },
-                        { icon: PiggyBank, title: '5-Year Value', value: formatINR(fv5), detail: 'At 12% annual return', color: '#3B82F6' },
-                        { icon: Shield, title: '10-Year Value', value: formatINR(fv10), detail: 'Power of compounding', color: '#8B5CF6' },
-                        { icon: Sparkles, title: '20-Year Value', value: formatINR(fv20), detail: 'Long-term wealth creation', color: '#F59E0B' },
+                        { icon: TrendingUp, title: t('advisor.rec.monthlySIPLabel'), value: formatINR(idealSIP) + '/mo', detail: t('advisor.rec.pctOfSurplus', { pct: 50 }), color: '#10B981' },
+                        { icon: PiggyBank, title: t('advisor.rec.fiveYearValue'), value: formatINR(fv5), detail: t('advisor.rec.at12Return'), color: '#3B82F6' },
+                        { icon: Shield, title: t('advisor.rec.tenYearValue'), value: formatINR(fv10), detail: t('advisor.rec.powerOfCompounding'), color: '#8B5CF6' },
+                        { icon: Sparkles, title: t('advisor.rec.twentyYearValue'), value: formatINR(fv20), detail: t('advisor.rec.longTermWealthCreation'), color: '#F59E0B' },
                     );
                     break;
                 }
@@ -225,11 +225,11 @@ export default function AIFinancialAssistant() {
                     const saveYears = 3;
                     monthlySIP = Math.round(sipForCorpus(businessFund, saveYears, 10));
                     targetCorpus = businessFund;
-                    timeline = `${saveYears} years to build fund`;
+                    timeline = t('advisor.rec.yearsToBuildFund', { years: saveYears });
                     recs.push(
-                        { icon: Briefcase, title: 'Business Fund Target', value: formatINR(businessFund), detail: '1.5x annual income recommended', color: '#EC4899' },
-                        { icon: TrendingUp, title: 'Monthly Savings Needed', value: formatINR(monthlySIP) + '/mo', detail: `Save over ${saveYears} years`, color: '#10B981' },
-                        { icon: Shield, title: 'Emergency Buffer', value: formatINR(expenses * 12), detail: '12 months expenses before starting', color: '#F59E0B' },
+                        { icon: Briefcase, title: t('advisor.rec.businessFundTarget'), value: formatINR(businessFund), detail: t('advisor.rec.annualIncomeRecommended', { factor: '1.5x' }), color: '#EC4899' },
+                        { icon: TrendingUp, title: t('advisor.rec.monthlySavingsNeeded'), value: formatINR(monthlySIP) + '/mo', detail: t('advisor.rec.saveOverYears', { years: saveYears }), color: '#10B981' },
+                        { icon: Shield, title: t('advisor.rec.emergencyBuffer'), value: formatINR(expenses * 12), detail: t('advisor.rec.monthsExpensesBeforeStarting', { months: 12 }), color: '#F59E0B' },
                     );
                     break;
                 }
@@ -246,15 +246,15 @@ export default function AIFinancialAssistant() {
         // Alerts
         const alerts: FinancialPlan['alerts'] = [];
         // EMI alert: RBI guideline is 40% of net monthly income
-        if (emiRatio > 40) alerts.push({ type: 'warning', text: `Your EMI is ${emiRatio.toFixed(0)}% of net income — above the safe limit of 40%. Lenders may reject new loans.` });
-        else if (emiRatio > 30) alerts.push({ type: 'warning', text: `Your EMI is ${emiRatio.toFixed(0)}% of net income. Keep it under 40% for healthy finances.` });
-        if (savingsRatio < 15) alerts.push({ type: 'warning', text: `You're saving only ${savingsRatio.toFixed(0)}% of gross income. Target 20%+ for financial security.` });
-        if (emergencyMonths < 3) alerts.push({ type: 'warning', text: `Emergency fund covers only ${emergencyMonths.toFixed(1)} months of expenses. Build a 3–6 month buffer first.` });
-        else if (emergencyMonths < 6) alerts.push({ type: 'warning', text: `Emergency fund covers ${emergencyMonths.toFixed(1)} months. Aim for 6 months of expenses (${formatINR(expenses * 6)}).` });
-        if (totalMonthlySIP > monthlySavings * 0.9) alerts.push({ type: 'warning', text: `Total SIP needed (${formatINR(totalMonthlySIP)}/mo) exceeds 90% of your surplus. Consider prioritizing goals.` });
-        if (savingsRatio >= 25) alerts.push({ type: 'positive', text: `Great savings rate of ${savingsRatio.toFixed(0)}%! You're building wealth faster than most.` });
-        if (emiRatio <= 15 && emi > 0) alerts.push({ type: 'positive', text: `Your debt is well-managed at ${emiRatio.toFixed(0)}% of net income. Keep it up!` });
-        if (emergencyMonths >= 6) alerts.push({ type: 'positive', text: `Solid emergency fund — ${emergencyMonths.toFixed(1)} months of expenses covered. Well done!` });
+        if (emiRatio > 40) alerts.push({ type: 'warning', text: t('advisor.alert.emiAboveLimit', { pct: emiRatio.toFixed(0), limit: 40 }) });
+        else if (emiRatio > 30) alerts.push({ type: 'warning', text: t('advisor.alert.emiWarning', { pct: emiRatio.toFixed(0), limit: 40 }) });
+        if (savingsRatio < 15) alerts.push({ type: 'warning', text: t('advisor.alert.lowSavings', { pct: savingsRatio.toFixed(0), target: 20 }) });
+        if (emergencyMonths < 3) alerts.push({ type: 'warning', text: t('advisor.alert.emergencyLow', { months: emergencyMonths.toFixed(1) }) });
+        else if (emergencyMonths < 6) alerts.push({ type: 'warning', text: t('advisor.alert.emergencyBelow6', { months: emergencyMonths.toFixed(1), target: formatINR(expenses * 6) }) });
+        if (totalMonthlySIP > monthlySavings * 0.9) alerts.push({ type: 'warning', text: t('advisor.alert.sipExceedsSurplus', { sip: formatINR(totalMonthlySIP) }) });
+        if (savingsRatio >= 25) alerts.push({ type: 'positive', text: t('advisor.alert.greatSavings', { pct: savingsRatio.toFixed(0) }) });
+        if (emiRatio <= 15 && emi > 0) alerts.push({ type: 'positive', text: t('advisor.alert.debtWellManaged', { pct: emiRatio.toFixed(0) }) });
+        if (emergencyMonths >= 6) alerts.push({ type: 'positive', text: t('advisor.alert.solidEmergencyFund', { months: emergencyMonths.toFixed(1) }) });
 
         const monthlyBudget = {
             savings: monthlySavings,
@@ -276,23 +276,23 @@ export default function AIFinancialAssistant() {
         const tag = dateTag();
 
         const inputs: ExportConfig['inputs'] = [
-            { label: 'Monthly Salary', value: formatINR(salary) },
-            { label: 'Age', value: `${age} years` },
-            { label: 'Monthly Expenses', value: formatINR(expenses) },
-            { label: 'Existing Savings', value: formatINR(savings) },
-            { label: 'Existing EMI', value: formatINR(emi) },
-            { label: 'Selected Goals', value: selectedGoals.map(g => goals.find(gl => gl.id === g)?.label).join(', ') },
+            { label: t('advisor.export.monthlySalary'), value: formatINR(salary) },
+            { label: t('advisor.export.age'), value: `${age} ${t('advisor.export.years')}` },
+            { label: t('advisor.export.monthlyExpenses'), value: formatINR(expenses) },
+            { label: t('advisor.export.existingSavings'), value: formatINR(savings) },
+            { label: t('advisor.export.existingEMI'), value: formatINR(emi) },
+            { label: t('advisor.export.selectedGoals'), value: selectedGoals.map(g => goals.find(gl => gl.id === g)?.label).join(', ') },
         ];
 
         const results: ExportConfig['results'] = [
-            { label: 'Financial Health Score', value: `${plan.score}/100` },
-            { label: 'Monthly Surplus', value: formatINR(salary - expenses - emi) },
-            { label: 'Total Monthly SIP Needed', value: formatINR(plan.totalMonthlySIP) },
-            { label: '50/30/20 — Needs (50%)', value: formatINR(plan.needs50) },
-            { label: '50/30/20 — Wants (30%)', value: formatINR(plan.wants30) },
-            { label: '50/30/20 — Savings (20%)', value: formatINR(plan.savings20) },
-            { label: 'Max EMI Allowed', value: formatINR(plan.maxEmiAllowed) },
-            { label: 'EMI-to-Income Ratio', value: `${plan.emiRatio.toFixed(1)}%` },
+            { label: t('advisor.export.financialHealthScore'), value: `${plan.score}/100` },
+            { label: t('advisor.export.monthlySurplus'), value: formatINR(salary - expenses - emi) },
+            { label: t('advisor.export.totalMonthlySIP'), value: formatINR(plan.totalMonthlySIP) },
+            { label: t('advisor.export.needs50'), value: formatINR(plan.needs50) },
+            { label: t('advisor.export.wants30'), value: formatINR(plan.wants30) },
+            { label: t('advisor.export.savings20'), value: formatINR(plan.savings20) },
+            { label: t('advisor.export.maxEMIAllowed'), value: formatINR(plan.maxEmiAllowed) },
+            { label: t('advisor.export.emiToIncomeRatio'), value: `${plan.emiRatio.toFixed(1)}%` },
         ];
 
         // Goal-wise breakdown as projection table
@@ -306,30 +306,30 @@ export default function AIFinancialAssistant() {
 
         // Alerts as additional table
         const alertRows = plan.alerts.map(a => [
-            a.type === 'warning' ? 'Warning' : 'Positive',
+            a.type === 'warning' ? t('advisor.export.warning') : t('advisor.export.positive'),
             a.text,
         ]);
 
         const config: ExportConfig = {
-            title: 'Financial Plan Report',
-            subtitle: 'AI-Powered Financial Advisor',
+            title: t('advisor.export.reportTitle'),
+            subtitle: t('advisor.export.reportSubtitle'),
             inputs,
             results,
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Expenses', value: expenses, color: '#EF4444' },
-                    { label: 'EMI', value: emi || 1, color: '#F59E0B' },
-                    { label: 'Investments (SIP)', value: plan.totalMonthlySIP, color: '#10B981' },
-                    { label: 'Remaining', value: Math.max(0, salary - expenses - emi - plan.totalMonthlySIP), color: '#6366F1' },
+                    { label: t('advisor.chart.expenses'), value: expenses, color: '#EF4444' },
+                    { label: t('advisor.chart.emi'), value: emi || 1, color: '#F59E0B' },
+                    { label: t('advisor.chart.investmentsSIP'), value: plan.totalMonthlySIP, color: '#10B981' },
+                    { label: t('advisor.chart.remaining'), value: Math.max(0, salary - expenses - emi - plan.totalMonthlySIP), color: '#6366F1' },
                 ],
             },
-            projectionTitle: 'Goal-wise Investment Plan',
-            projectionColumns: ['Goal', 'Monthly SIP', 'Target Corpus', 'Timeline'],
+            projectionTitle: t('advisor.export.projectionTitle'),
+            projectionColumns: [t('advisor.export.colGoal'), t('advisor.export.colMonthlySIP'), t('advisor.export.colTargetCorpus'), t('advisor.export.colTimeline')],
             projectionRows: goalRows,
             additionalTables: alertRows.length > 0 ? [{
-                title: 'Alerts & Recommendations',
-                columns: ['Type', 'Details'],
+                title: t('advisor.export.alertsTitle'),
+                columns: [t('advisor.export.colType'), t('advisor.export.colDetails')],
                 rows: alertRows,
             }] : [],
             filename: `FinCalix_Financial_Plan_${tag}`,
@@ -368,7 +368,7 @@ export default function AIFinancialAssistant() {
                                 </h2>
                                 <div className="space-y-3">
                                     <NumberInput label={t('advisor.monthlyIncome')} value={salary} onChange={setSalary} min={5000} max={10000000} prefix="₹" />
-                                    <NumberInput label="Age" value={age} onChange={setAge} min={18} max={70} suffix=" years" />
+                                    <NumberInput label={t('advisor.age')} value={age} onChange={setAge} min={18} max={70} suffix={` ${t('advisor.export.years')}`} />
                                     <NumberInput label={t('advisor.monthlyExpenses')} value={expenses} onChange={setExpenses} min={0} max={salary} prefix="₹" />
                                     <NumberInput label={t('advisor.existingSavings')} value={savings} onChange={setSavings} min={0} max={100000000} prefix="₹" />
                                     <NumberInput label={t('advisor.existingEMI')} value={emi} onChange={setEmi} min={0} max={salary} prefix="₹" />
@@ -409,7 +409,7 @@ export default function AIFinancialAssistant() {
                                 </div>
                                 {selectedGoals.length > 0 && (
                                     <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-brand-purple font-bold mt-3 text-center">
-                                        {selectedGoals.length} goal{selectedGoals.length > 1 ? 's' : ''} selected
+                                        {t('advisor.goalsSelected', { count: selectedGoals.length })}
                                     </motion.p>
                                 )}
                             </div>
@@ -457,7 +457,7 @@ export default function AIFinancialAssistant() {
                                     </div>
                                 </div>
                                 <p className={`text-sm font-bold ${plan.score >= 70 ? 'text-brand-green' : plan.score >= 40 ? 'text-amber-500' : 'text-red-500'}`}>
-                                    {plan.score >= 80 ? 'Excellent!' : plan.score >= 60 ? 'Good' : plan.score >= 40 ? 'Needs Improvement' : 'At Risk'}
+                                    {plan.score >= 80 ? t('advisor.score.excellent') : plan.score >= 60 ? t('advisor.score.good') : plan.score >= 40 ? t('advisor.score.needsImprovement') : t('advisor.score.atRisk')}
                                 </p>
                             </div>
 
@@ -465,14 +465,14 @@ export default function AIFinancialAssistant() {
                             <div className="p-4 rounded-2xl bg-card border border-border mb-4">
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t('advisor.monthlyBudget')}</h3>
                                 <div className="grid grid-cols-2 gap-2.5">
-                                    <BudgetCard label="Gross Income" value={formatINR(salary)} color="#10B981" />
-                                    <BudgetCard label="Est. Post-Tax" value={formatINR(plan.postTaxMonthly)} color="#3B82F6" />
+                                    <BudgetCard label={t('advisor.budget.grossIncome')} value={formatINR(salary)} color="#10B981" />
+                                    <BudgetCard label={t('advisor.budget.estPostTax')} value={formatINR(plan.postTaxMonthly)} color="#3B82F6" />
                                     <BudgetCard label={t('advisor.expenses')} value={formatINR(expenses)} color="#EF4444" />
                                     <BudgetCard label={t('advisor.emi')} value={formatINR(emi)} color="#F59E0B" />
                                 </div>
                                 <div className="mt-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-xs text-muted-foreground">Total SIP needed for all goals</span>
+                                        <span className="text-xs text-muted-foreground">{t('advisor.totalSIPNeeded')}</span>
                                         <span className={`text-sm font-bold ${plan.totalMonthlySIP > (salary - expenses - emi) * 0.9 ? 'text-red-500' : 'text-brand-green'}`}>
                                             {formatINR(plan.totalMonthlySIP)}/mo
                                         </span>
@@ -483,10 +483,10 @@ export default function AIFinancialAssistant() {
                             {/* 50-30-20 Rule (on post-tax income) */}
                             <div className="p-4 rounded-2xl bg-card border border-border mb-4">
                                 <div className="flex items-center justify-between mb-1">
-                                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">50-30-20 Rule</h3>
-                                    <span className="text-[10px] text-muted-foreground">On post-tax income</span>
+                                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('advisor.rule503020')}</h3>
+                                    <span className="text-[10px] text-muted-foreground">{t('advisor.onPostTaxIncome')}</span>
                                 </div>
-                                <p className="text-[10px] text-muted-foreground mb-3">Est. post-tax: <span className="font-bold text-foreground">{formatINR(plan.postTaxMonthly)}/mo</span> (tax ~{formatINR(plan.annualTax)}/yr)</p>
+                                <p className="text-[10px] text-muted-foreground mb-3">{t('advisor.estPostTax')}: <span className="font-bold text-foreground">{formatINR(plan.postTaxMonthly)}/mo</span> ({t('advisor.taxPerYear', { amount: formatINR(plan.annualTax) })})</p>
                                 {/* Progress bar */}
                                 <div className="flex rounded-full overflow-hidden h-3 mb-3">
                                     <div style={{ width: '50%' }} className="bg-blue-500" />
@@ -496,19 +496,19 @@ export default function AIFinancialAssistant() {
                                 <div className="grid grid-cols-3 gap-2 text-center">
                                     <div>
                                         <div className="w-2 h-2 rounded-full bg-blue-500 mx-auto mb-1" />
-                                        <p className="text-[10px] text-muted-foreground font-bold">NEEDS</p>
+                                        <p className="text-[10px] text-muted-foreground font-bold">{t('advisor.budget.needs')}</p>
                                         <p className="text-foreground text-xs font-bold">{formatINR(plan.needs50)}</p>
                                         <p className="text-[9px] text-muted-foreground">50%</p>
                                     </div>
                                     <div>
                                         <div className="w-2 h-2 rounded-full bg-purple-500 mx-auto mb-1" />
-                                        <p className="text-[10px] text-muted-foreground font-bold">WANTS</p>
+                                        <p className="text-[10px] text-muted-foreground font-bold">{t('advisor.budget.wants')}</p>
                                         <p className="text-foreground text-xs font-bold">{formatINR(plan.wants30)}</p>
                                         <p className="text-[9px] text-muted-foreground">30%</p>
                                     </div>
                                     <div>
                                         <div className="w-2 h-2 rounded-full bg-green-500 mx-auto mb-1" />
-                                        <p className="text-[10px] text-muted-foreground font-bold">SAVINGS</p>
+                                        <p className="text-[10px] text-muted-foreground font-bold">{t('advisor.budget.savingsLabel')}</p>
                                         <p className="text-foreground text-xs font-bold">{formatINR(plan.savings20)}</p>
                                         <p className="text-[9px] text-muted-foreground">20%</p>
                                     </div>
@@ -517,28 +517,28 @@ export default function AIFinancialAssistant() {
 
                             {/* Loan Eligibility */}
                             <div className="p-4 rounded-2xl bg-card border border-border mb-5">
-                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">🏦 Loan Eligibility</h3>
+                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">{t('advisor.loan.title')}</h3>
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-center py-2 border-b border-border/50">
-                                        <span className="text-xs text-muted-foreground">Net Monthly Income (post-tax)</span>
+                                        <span className="text-xs text-muted-foreground">{t('advisor.loan.netMonthlyIncome')}</span>
                                         <span className="text-sm font-bold text-foreground">{formatINR(plan.postTaxMonthly)}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-border/50">
-                                        <span className="text-xs text-muted-foreground">Max EMI allowed (40% of NMI)</span>
+                                        <span className="text-xs text-muted-foreground">{t('advisor.loan.maxEMIAllowed')}</span>
                                         <span className="text-sm font-bold text-brand-green">{formatINR(plan.maxEmiAllowed)}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-border/50">
-                                        <span className="text-xs text-muted-foreground">Current EMI</span>
+                                        <span className="text-xs text-muted-foreground">{t('advisor.loan.currentEMI')}</span>
                                         <span className={`text-sm font-bold ${plan.emiRatio > 40 ? 'text-red-500' : 'text-foreground'}`}>{formatINR(emi)}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-2">
-                                        <span className="text-xs text-muted-foreground">Additional EMI headroom</span>
+                                        <span className="text-xs text-muted-foreground">{t('advisor.loan.additionalHeadroom')}</span>
                                         <span className={`text-sm font-bold ${plan.maxAdditionalEmi > 0 ? 'text-brand-green' : 'text-red-500'}`}>
-                                            {plan.maxAdditionalEmi > 0 ? `+ ${formatINR(plan.maxAdditionalEmi)}` : 'Over limit'}
+                                            {plan.maxAdditionalEmi > 0 ? `+ ${formatINR(plan.maxAdditionalEmi)}` : t('advisor.loan.overLimit')}
                                         </span>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-muted-foreground mt-2">* 40% EMI/NMI cap follows RBI Fair Practice Code guidelines</p>
+                                <p className="text-[10px] text-muted-foreground mt-2">{t('advisor.loan.disclaimer')}</p>
                             </div>
 
 
@@ -570,7 +570,7 @@ export default function AIFinancialAssistant() {
                             <div className="mb-5">
                                 <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
                                     <Sparkles size={13} className="text-amber-500" />
-                                    Goal-wise Financial Plan
+                                    {t('advisor.goalWisePlan')}
                                 </h3>
                                 <div className="space-y-3">
                                     {plan.goalPlans.map((gp, gi) => {
@@ -615,7 +615,7 @@ export default function AIFinancialAssistant() {
                                                             <div className="p-4 space-y-3">
                                                                 <div className="flex items-center gap-2 pb-2 border-b border-border/40">
                                                                     <Shield size={14} className="text-amber-500" />
-                                                                    <span className="text-xs text-muted-foreground">Target Corpus:</span>
+                                                                    <span className="text-xs text-muted-foreground">{t('advisor.targetCorpus')}:</span>
                                                                     <span className="text-sm font-bold text-foreground">{formatINR(gp.targetCorpus)}</span>
                                                                 </div>
                                                                 {gp.recommendations.map((rec, i) => {
@@ -648,9 +648,9 @@ export default function AIFinancialAssistant() {
                                 <div className="flex items-center gap-3">
                                     <Shield size={20} className="text-amber-500" />
                                     <div>
-                                        <p className="text-xs text-muted-foreground uppercase font-bold">Emergency Fund</p>
+                                        <p className="text-xs text-muted-foreground uppercase font-bold">{t('advisor.emergencyFund')}</p>
                                         <p className="text-foreground font-bold">{formatINR(expenses * 6)}</p>
-                                        <p className="text-xs text-muted-foreground">6 months of expenses • You have {(savings / expenses).toFixed(1)} months saved</p>
+                                        <p className="text-xs text-muted-foreground">{t('advisor.emergencyFundDetail', { target: 6, saved: (savings / expenses).toFixed(1) })}</p>
                                     </div>
                                 </div>
                             </div>
@@ -666,7 +666,7 @@ export default function AIFinancialAssistant() {
                                 <button
                                     onClick={() => {
                                         const goalSummary = plan.goalPlans.map(gp => `${gp.goalLabel}: SIP ${formatINR(gp.monthlySIP)}/mo → ${formatINR(gp.targetCorpus)}`).join('\n');
-                                        nativeShare('My Financial Plan - FinCalix', `My Financial Health Score: ${plan.score}/100\n\n${goalSummary}\n\nTotal SIP: ${formatINR(plan.totalMonthlySIP)}/mo\n\nGenerated with FinCalix`);
+                                        nativeShare(t('advisor.share.title'), t('advisor.share.body', { score: plan.score, goalSummary, totalSIP: formatINR(plan.totalMonthlySIP) }));
                                     }}
                                     className="flex-1 py-4 rounded-2xl bg-brand-purple text-white font-bold text-sm shadow-lg shadow-brand-purple/20 flex items-center justify-center gap-2"
                                 >

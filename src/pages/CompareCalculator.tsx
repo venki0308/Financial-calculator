@@ -89,27 +89,27 @@ export default function CompareCalculator() {
             const interestDiff = Math.abs(emiResultB.totalInterest - emiResultA.totalInterest);
             const emiDiff = Math.abs(emiResultB.emi - emiResultA.emi);
             const winner = emiResultA.totalInterest <= emiResultB.totalInterest ? 'A' : 'B';
-            if (interestDiff > 0) insights.push({ text: `Scenario ${winner} saves ${formatINR(interestDiff)} in total interest.`, type: 'positive' });
-            if (emiDiff > 0) insights.push({ text: `EMI difference: ${formatINR(emiDiff)}/month between scenarios.`, type: 'info' });
+            if (interestDiff > 0) insights.push({ text: t('compare.insightSavesInterest', { scenario: winner, amount: formatINR(interestDiff) }), type: 'positive' });
+            if (emiDiff > 0) insights.push({ text: t('compare.insightEmiDifference', { amount: formatINR(emiDiff) }), type: 'info' });
             const rateDiff = Math.abs(emiA.rate - emiB.rate);
             if (rateDiff > 0 && emiA.principal === emiB.principal && emiA.years === emiB.years) {
-                insights.push({ text: `Reducing interest by ${rateDiff.toFixed(1)}% lowers EMI by ${formatINR(emiDiff)}/month.`, type: 'tip' });
+                insights.push({ text: t('compare.insightReducingInterest', { rate: rateDiff.toFixed(1), amount: formatINR(emiDiff) }), type: 'tip' });
             }
             const totalDiff = Math.abs(emiResultA.totalPayment - emiResultB.totalPayment);
-            if (totalDiff > 0) insights.push({ text: `Total payment difference: ${formatINR(totalDiff)} over full tenure.`, type: 'info' });
+            if (totalDiff > 0) insights.push({ text: t('compare.insightTotalPaymentDiff', { amount: formatINR(totalDiff) }), type: 'info' });
         } else if (selectedType === 'sip') {
             const diff = Math.abs(sipResultB.futureValue - sipResultA.futureValue);
             const winner = sipResultA.futureValue >= sipResultB.futureValue ? 'A' : 'B';
-            if (diff > 0) insights.push({ text: `Scenario ${winner} grows ${formatINR(diff)} more wealth.`, type: 'positive' });
+            if (diff > 0) insights.push({ text: t('compare.insightGrowsMoreWealth', { scenario: winner, amount: formatINR(diff) }), type: 'positive' });
             const returnsDiff = Math.abs(sipResultA.wealthGained - sipResultB.wealthGained);
-            if (returnsDiff > 0) insights.push({ text: `Returns difference: ${formatINR(returnsDiff)}`, type: 'info' });
+            if (returnsDiff > 0) insights.push({ text: t('compare.insightReturnsDifference', { amount: formatINR(returnsDiff) }), type: 'info' });
         } else {
             const diff = Math.abs(fdResultB.maturity - fdResultA.maturity);
             const winner = fdResultA.maturity >= fdResultB.maturity ? 'A' : 'B';
-            if (diff > 0) insights.push({ text: `Scenario ${winner} earns ${formatINR(diff)} more at maturity.`, type: 'positive' });
+            if (diff > 0) insights.push({ text: t('compare.insightEarnsMoreAtMaturity', { scenario: winner, amount: formatINR(diff) }), type: 'positive' });
         }
         return insights;
-    }, [selectedType, emiResultA, emiResultB, sipResultA, sipResultB, fdResultA, fdResultB, emiA, emiB]);
+    }, [selectedType, emiResultA, emiResultB, sipResultA, sipResultB, fdResultA, fdResultB, emiA, emiB, t]);
 
     const winner = useMemo(() => {
         if (selectedType === 'emi') return emiResultA.totalInterest <= emiResultB.totalInterest ? 'A' : 'B';
@@ -148,8 +148,8 @@ export default function CompareCalculator() {
         if (selectedType === 'emi') {
             await exportComparisonPDF({
                 type: 'emi',
-                scenarioA: { label: 'Scenario A', principal: emiA.principal, rate: emiA.rate, years: emiA.years, emi: emiResultA.emi, totalInterest: emiResultA.totalInterest, totalPayment: emiResultA.totalPayment, amortization: emiResultA.amortization },
-                scenarioB: { label: 'Scenario B', principal: emiB.principal, rate: emiB.rate, years: emiB.years, emi: emiResultB.emi, totalInterest: emiResultB.totalInterest, totalPayment: emiResultB.totalPayment, amortization: emiResultB.amortization },
+                scenarioA: { label: t('compare.scenarioA'), principal: emiA.principal, rate: emiA.rate, years: emiA.years, emi: emiResultA.emi, totalInterest: emiResultA.totalInterest, totalPayment: emiResultA.totalPayment, amortization: emiResultA.amortization },
+                scenarioB: { label: t('compare.scenarioB'), principal: emiB.principal, rate: emiB.rate, years: emiB.years, emi: emiResultB.emi, totalInterest: emiResultB.totalInterest, totalPayment: emiResultB.totalPayment, amortization: emiResultB.amortization },
                 insights: deltaInsights.map(i => i.text),
                 winner,
             });
@@ -382,13 +382,13 @@ export default function CompareCalculator() {
                     <h3 className="text-foreground font-bold text-sm mb-4">{t('compare.headToHead')}</h3>
                     {selectedType === 'emi' && (
                         <div className="space-y-4">
-                            <CompareBar labelA="A EMI" labelB="B EMI" valA={emiResultA.emi} valB={emiResultB.emi} />
-                            <CompareBar labelA="A Interest" labelB="B Interest" valA={emiResultA.totalInterest} valB={emiResultB.totalInterest} />
-                            <CompareBar labelA="A Total" labelB="B Total" valA={emiResultA.totalPayment} valB={emiResultB.totalPayment} />
+                            <CompareBar labelA={t('compare.aEmi')} labelB={t('compare.bEmi')} valA={emiResultA.emi} valB={emiResultB.emi} />
+                            <CompareBar labelA={t('compare.aInterest')} labelB={t('compare.bInterest')} valA={emiResultA.totalInterest} valB={emiResultB.totalInterest} />
+                            <CompareBar labelA={t('compare.aTotal')} labelB={t('compare.bTotal')} valA={emiResultA.totalPayment} valB={emiResultB.totalPayment} />
                         </div>
                     )}
-                    {selectedType === 'sip' && <CompareBar labelA="A Future Value" labelB="B Future Value" valA={sipResultA.futureValue} valB={sipResultB.futureValue} />}
-                    {selectedType === 'fd' && <CompareBar labelA="A Maturity" labelB="B Maturity" valA={fdResultA.maturity} valB={fdResultB.maturity} />}
+                    {selectedType === 'sip' && <CompareBar labelA={t('compare.aFutureValue')} labelB={t('compare.bFutureValue')} valA={sipResultA.futureValue} valB={sipResultB.futureValue} />}
+                    {selectedType === 'fd' && <CompareBar labelA={t('compare.aMaturity')} labelB={t('compare.bMaturity')} valA={fdResultA.maturity} valB={fdResultB.maturity} />}
                 </div>
 
                 {/* Download PDF (all types) */}

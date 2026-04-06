@@ -141,7 +141,7 @@ export default function AddLoanSheet({ open, onClose, onSaved, editLoan, prefill
                             </button>
                         </div>
 
-                        <div className="px-5 pb-36 space-y-4">
+                        <div className="px-5 pb-6 space-y-4">
                             {/* Nickname */}
                             <div>
                                 <label className="text-xs font-bold mb-1.5 block" style={{ color: c.textSecondary }}>{t('myLoans.loanNickname')} *</label>
@@ -228,7 +228,7 @@ export default function AddLoanSheet({ open, onClose, onSaved, editLoan, prefill
                                             className={`flex-1 py-2 rounded-lg text-xs font-semibold capitalize ${tenureUnit === u ? 'bg-violet-600 text-white' : ''}`}
                                             style={tenureUnit !== u ? { color: c.textSecondary } : {}}
                                         >
-                                            {u}
+                                            {t(`liveStatus.tenureUnit_${u}`)}
                                         </button>
                                     ))}
                                 </div>
@@ -238,7 +238,7 @@ export default function AddLoanSheet({ open, onClose, onSaved, editLoan, prefill
                                     onChange={setTenureMonths}
                                     min={1}
                                     max={tenureUnit === 'years' ? 40 : 480}
-                                    suffix={tenureUnit === 'years' ? ' years' : ' months'}
+                                    suffix={tenureUnit === 'years' ? ` ${t('liveStatus.tenureUnit_years')}` : ` ${t('liveStatus.tenureUnit_months')}`}
                                 />
                             </div>
 
@@ -280,20 +280,21 @@ export default function AddLoanSheet({ open, onClose, onSaved, editLoan, prefill
                                 />
                             </div>
 
-                            {/* Buttons */}
-                            <div className="flex gap-3 pt-2">
-                                <button onClick={onClose}
-                                    className="flex-1 py-3 rounded-xl text-sm font-bold border"
-                                    style={{ borderColor: c.border, color: c.textSecondary }}
-                                >
-                                    {t('myLoans.cancel')}
-                                </button>
-                                <button onClick={handleSave} disabled={!canSave}
-                                    className="flex-1 py-3 rounded-xl text-sm font-bold text-white bg-emerald-500 disabled:opacity-40"
-                                >
-                                    {editLoan ? t('myLoans.updateLoan') : t('myLoans.saveLoan')}
-                                </button>
-                            </div>
+                        </div>
+
+                        {/* Sticky Buttons */}
+                        <div className="sticky bottom-0 left-0 right-0 px-5 py-4 border-t flex gap-3" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                            <button onClick={onClose}
+                                className="flex-1 py-3 rounded-xl text-sm font-bold border"
+                                style={{ borderColor: c.border, color: c.textSecondary }}
+                            >
+                                {t('myLoans.cancel')}
+                            </button>
+                            <button onClick={handleSave} disabled={!canSave}
+                                className={`flex-1 py-3 rounded-xl text-sm font-bold text-white transition-all ${canSave ? 'bg-emerald-500 active:scale-95' : 'bg-slate-500 opacity-50 cursor-not-allowed'}`}
+                            >
+                                {editLoan ? t('myLoans.updateLoan') : t('myLoans.saveLoan')}
+                            </button>
                         </div>
                     </motion.div>
                 </>

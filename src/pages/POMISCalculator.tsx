@@ -161,37 +161,37 @@ export default function POMISCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: 'Post Office MIS (Monthly Income Scheme) Report',
+            title: t('pomis.reportTitle'),
             inputs: [
-                { label: 'Investment Amount', value: `₹${Math.round(result.clampedInvestment).toLocaleString('en-IN')}` },
-                { label: 'Account Type', value: isJoint ? 'Joint Account' : 'Single Account' },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
-                { label: 'Tenure', value: '5 Years (60 months)' },
+                { label: t('pomis.investmentAmountLabel'), value: `₹${Math.round(result.clampedInvestment).toLocaleString('en-IN')}` },
+                { label: t('pomis.accountTypeLabel'), value: isJoint ? t('pomis.jointAccountType') : t('pomis.singleAccountType') },
+                { label: t('pomis.interestRateLabel'), value: `${rate}% ${t('pomis.perAnnum')}` },
+                { label: t('pomis.tenureLabel'), value: t('pomis.tenureValue') },
             ],
             results: [
-                { label: 'Monthly Income (Gross)', value: `₹${Math.round(result.monthlyIncome).toLocaleString('en-IN')}` },
-                { label: 'Annual Earnings', value: `₹${Math.round(result.yearlyInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Interest over 5 Years', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Net Monthly Income (After Tax)', value: `₹${Math.round(result.netMonthlyAfterTax).toLocaleString('en-IN')}` },
-                { label: 'Post-Tax Effective Yield', value: `${result.postTaxYield.toFixed(2)}%` },
+                { label: t('pomis.monthlyIncomeGrossLabel'), value: `₹${Math.round(result.monthlyIncome).toLocaleString('en-IN')}` },
+                { label: t('pomis.annualEarningsLabel'), value: `₹${Math.round(result.yearlyInterest).toLocaleString('en-IN')}` },
+                { label: t('pomis.totalInterest5yLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('pomis.netMonthlyAfterTaxLabel'), value: `₹${Math.round(result.netMonthlyAfterTax).toLocaleString('en-IN')}` },
+                { label: t('pomis.postTaxYieldLabel'), value: `${result.postTaxYield.toFixed(2)}%` },
             ],
-            projectionTitle: 'Monthly Payout Schedule (60 Months)',
-            projectionColumns: ['Month', 'Monthly Payout', 'Cumulative Income'],
+            projectionTitle: t('pomis.payoutScheduleTitle'),
+            projectionColumns: [t('pomis.monthColumn'), t('pomis.monthlyPayoutColumn'), t('pomis.cumulativeIncomeColumn')],
             projectionRows: result.schedule.map((r: any) => [
-                `Month ${r.month}`,
+                `${t('pomis.monthPrefix')} ${r.month}`,
                 `₹${Math.round(r.payout).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(pomisStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('pomis.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('pomis.metricColumn'), t('pomis.valueColumn')],
                     rows: [
-                        ['Months Completed', String(pomisStatus.monthsCompleted)],
-                        ['Monthly Income', formatINR(pomisStatus.monthlyIncome)],
-                        ['Total Income Received', formatINR(pomisStatus.totalIncomeReceived)],
-                        ['Months Remaining', String(pomisStatus.monthsRemaining)],
-                        ['Maturity Date', pomisStatus.maturityDate],
+                        [t('pomis.monthsCompleted'), String(pomisStatus.monthsCompleted)],
+                        [t('pomis.monthlyIncomeLabel'), formatINR(pomisStatus.monthlyIncome)],
+                        [t('pomis.totalIncomeReceived'), formatINR(pomisStatus.totalIncomeReceived)],
+                        [t('pomis.monthsRemaining'), String(pomisStatus.monthsRemaining)],
+                        [t('pomis.maturityDateLabel'), pomisStatus.maturityDate],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -203,37 +203,37 @@ export default function POMISCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: 'Post Office MIS (Monthly Income Scheme) Report',
+            title: t('pomis.reportTitle'),
             inputs: [
-                { label: 'Investment Amount', value: `₹${Math.round(result.clampedInvestment).toLocaleString('en-IN')}` },
-                { label: 'Account Type', value: isJoint ? 'Joint Account' : 'Single Account' },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
-                { label: 'Tenure', value: '5 Years (60 months)' },
+                { label: t('pomis.investmentAmountLabel'), value: `₹${Math.round(result.clampedInvestment).toLocaleString('en-IN')}` },
+                { label: t('pomis.accountTypeLabel'), value: isJoint ? t('pomis.jointAccountType') : t('pomis.singleAccountType') },
+                { label: t('pomis.interestRateLabel'), value: `${rate}% ${t('pomis.perAnnum')}` },
+                { label: t('pomis.tenureLabel'), value: t('pomis.tenureValue') },
             ],
             results: [
-                { label: 'Monthly Income (Gross)', value: `₹${Math.round(result.monthlyIncome).toLocaleString('en-IN')}` },
-                { label: 'Annual Earnings', value: `₹${Math.round(result.yearlyInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Interest over 5 Years', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Net Monthly Income (After Tax)', value: `₹${Math.round(result.netMonthlyAfterTax).toLocaleString('en-IN')}` },
-                { label: 'Post-Tax Effective Yield', value: `${result.postTaxYield.toFixed(2)}%` },
+                { label: t('pomis.monthlyIncomeGrossLabel'), value: `₹${Math.round(result.monthlyIncome).toLocaleString('en-IN')}` },
+                { label: t('pomis.annualEarningsLabel'), value: `₹${Math.round(result.yearlyInterest).toLocaleString('en-IN')}` },
+                { label: t('pomis.totalInterest5yLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('pomis.netMonthlyAfterTaxLabel'), value: `₹${Math.round(result.netMonthlyAfterTax).toLocaleString('en-IN')}` },
+                { label: t('pomis.postTaxYieldLabel'), value: `${result.postTaxYield.toFixed(2)}%` },
             ],
-            projectionTitle: 'Monthly Payout Schedule (60 Months)',
-            projectionColumns: ['Month', 'Monthly Payout', 'Cumulative Income'],
+            projectionTitle: t('pomis.payoutScheduleTitle'),
+            projectionColumns: [t('pomis.monthColumn'), t('pomis.monthlyPayoutColumn'), t('pomis.cumulativeIncomeColumn')],
             projectionRows: result.schedule.map((r: any) => [
-                `Month ${r.month}`,
+                `${t('pomis.monthPrefix')} ${r.month}`,
                 `₹${Math.round(r.payout).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(pomisStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('pomis.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('pomis.metricColumn'), t('pomis.valueColumn')],
                     rows: [
-                        ['Months Completed', String(pomisStatus.monthsCompleted)],
-                        ['Monthly Income', formatINR(pomisStatus.monthlyIncome)],
-                        ['Total Income Received', formatINR(pomisStatus.totalIncomeReceived)],
-                        ['Months Remaining', String(pomisStatus.monthsRemaining)],
-                        ['Maturity Date', pomisStatus.maturityDate],
+                        [t('pomis.monthsCompleted'), String(pomisStatus.monthsCompleted)],
+                        [t('pomis.monthlyIncomeLabel'), formatINR(pomisStatus.monthlyIncome)],
+                        [t('pomis.totalIncomeReceived'), formatINR(pomisStatus.totalIncomeReceived)],
+                        [t('pomis.monthsRemaining'), String(pomisStatus.monthsRemaining)],
+                        [t('pomis.maturityDateLabel'), pomisStatus.maturityDate],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -302,7 +302,7 @@ export default function POMISCalculator() {
                     </div>
 
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Investment Start Date (optional)</label>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('pomis.investmentStartDate')}</label>
                         <DateInput
                             value={pomisStartDate}
                             onChange={setPomisStartDate}
@@ -422,7 +422,7 @@ export default function POMISCalculator() {
                                             </div>
                                             <div className="flex justify-between items-center py-1 pt-2 border-t border-border">
                                                 <span className="text-foreground font-semibold text-[11px]">{t('pomis.netMonthlyPayout')}</span>
-                                                <span className="text-brand-green font-bold text-[12px]">{fmtINR(result.netMonthlyAfterTax)}/mo</span>
+                                                <span className="text-brand-green font-bold text-[12px]">{fmtINR(result.netMonthlyAfterTax)}{t('pomis.perMonth')}</span>
                                             </div>
                                             <div className="flex justify-between items-center py-1 bg-muted/50 px-2 rounded-lg mt-1">
                                                 <span className="text-foreground font-semibold text-[11px]">{t('pomis.postTaxEffectiveYield')}</span>
@@ -546,17 +546,17 @@ export default function POMISCalculator() {
                 <LiveStatusCard
                     calculatorType="POMIS"
                     profileData={{ principal: investment, rate, startDate: pomisStartDate }}
-                    title="MIS Status Today"
-                    subtitle={`${pomisStatus.monthsCompleted} of 60 months complete`}
+                    title={t('pomis.misStatusToday')}
+                    subtitle={t('pomis.monthsCompleteSubtitle', { completed: pomisStatus.monthsCompleted, total: 60 })}
                     startDate={pomisStartDate}
                     metrics={[
-                        { label: 'Monthly Income', value: formatINR(pomisStatus.monthlyIncome), color: 'green' },
-                        { label: 'Total Received', value: formatINR(pomisStatus.totalIncomeReceived), color: 'blue' },
-                        { label: 'Months Left', value: `${pomisStatus.monthsRemaining}` },
+                        { label: t('pomis.monthlyIncomeLabel'), value: formatINR(pomisStatus.monthlyIncome), color: 'green' },
+                        { label: t('pomis.totalReceivedLabel'), value: formatINR(pomisStatus.totalIncomeReceived), color: 'blue' },
+                        { label: t('pomis.monthsLeftLabel'), value: `${pomisStatus.monthsRemaining}` },
                     ]}
                     progressPercent={(pomisStatus.monthsCompleted / 60) * 100}
-                    progressLabel={`${pomisStatus.monthsCompleted} of 60 months (${((pomisStatus.monthsCompleted / 60) * 100).toFixed(0)}%)`}
-                    insightText={`Received ${formatINR(pomisStatus.totalIncomeReceived)} income so far. ${pomisStatus.monthsRemaining} months to maturity on ${new Date(pomisStatus.maturityDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}.`}
+                    progressLabel={t('pomis.progressLabel', { completed: pomisStatus.monthsCompleted, total: 60, percent: ((pomisStatus.monthsCompleted / 60) * 100).toFixed(0) })}
+                    insightText={t('pomis.insightText', { totalReceived: formatINR(pomisStatus.totalIncomeReceived), monthsRemaining: pomisStatus.monthsRemaining, maturityDate: new Date(pomisStatus.maturityDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) })}
                 />
             )}
 

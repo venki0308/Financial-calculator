@@ -133,16 +133,16 @@ export default function RDCalculator() {
     // 3. SMART INSIGHTS
     const insight = useMemo(() => {
         if (result.effectiveYield > inflationRate + 1.5) {
-            return { msg: `Good choice! Your RD's effective yield (${result.effectiveYield.toFixed(2)}%) outpaces inflation (${inflationRate}%), meaningfully growing your real wealth.`, type: 'success' };
+            return { msg: t('rd.insightGoodChoice', { effectiveYield: result.effectiveYield.toFixed(2), inflationRate }), type: 'success' };
         }
         if (result.interestPct > 35) {
-             return { msg: `Long tenure advantage: ${result.interestPct.toFixed(1)}% of your final maturity amount comes purely from earned interest!`, type: 'success' };
+             return { msg: t('rd.insightLongTenure', { interestPct: result.interestPct.toFixed(1) }), type: 'success' };
         }
         if (result.effectiveYield <= inflationRate) {
-             return { msg: `Warning: Your effective return drops to ${result.realRate.toFixed(2)}% when adjusted for inflation. The purchasing power of your maturity amount will be roughly ${fmtINR(result.purchasingPower)}.`, type: 'warn' };
+             return { msg: t('rd.insightInflationWarning', { realRate: result.realRate.toFixed(2), purchasingPower: fmtINR(result.purchasingPower) }), type: 'warn' };
         }
-        return { msg: `Quarterly compounding effectively bumps your nominal ${rate}% rate to a ${result.effectiveYield.toFixed(2)}% annual yield. Consistent saving pays off!`, type: 'info' };
-    }, [result, rate, inflationRate]);
+        return { msg: t('rd.insightCompounding', { rate, effectiveYield: result.effectiveYield.toFixed(2) }), type: 'info' };
+    }, [result, rate, inflationRate, t]);
 
     const handleSave = () => {
         const calcId = `rd-${Date.now()}`;
@@ -150,7 +150,7 @@ export default function RDCalculator() {
             id: calcId,
             calculatorType: 'rd',
             inputValues: { monthly, rate, months },
-            resultValues: { primary: result.maturity, label: 'Maturity Amount', invested: result.invested, returns: result.totalInterest },
+            resultValues: { primary: result.maturity, label: t('rd.maturityAmount'), invested: result.invested, returns: result.totalInterest },
             timestamp: Date.now(),
         });
         setSaved(true);
@@ -169,31 +169,31 @@ export default function RDCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'Recurring Deposit (RD) Report',
+            title: t('rd.reportTitle'),
             inputs: [
-                { label: 'Monthly Deposit', value: `₹${monthly.toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${effectiveRate}% p.a.${isSeniorCitizen ? ' (Senior +0.5%)' : ''}` },
-                { label: 'Tenure', value: `${months} Months` },
-                { label: 'Assumed Inflation', value: `${inflationRate}% p.a.` },
+                { label: t('rd.monthlyDeposit'), value: `₹${monthly.toLocaleString('en-IN')}` },
+                { label: t('rd.interestRate'), value: `${effectiveRate}% ${t('rd.perAnnum')}${isSeniorCitizen ? ` (${t('rd.seniorExtra')})` : ''}` },
+                { label: t('rd.tenure'), value: `${months} ${t('rd.months')}` },
+                { label: t('rd.assumedInflation'), value: `${inflationRate}% ${t('rd.perAnnum')}` },
             ],
             results: [
-                { label: 'Total Invested', value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
-                { label: 'Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
-                { label: 'Effective Annual Yield', value: `${result.effectiveYield.toFixed(2)}%` },
-                { label: 'Purchasing Power (Inflation-adj)', value: `₹${Math.round(result.purchasingPower).toLocaleString('en-IN')}` },
+                { label: t('rd.totalInvested'), value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
+                { label: t('rd.interestEarned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('rd.maturityAmount'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: t('rd.effectiveAnnualYield'), value: `${result.effectiveYield.toFixed(2)}%` },
+                { label: t('rd.purchasingPowerInflAdj'), value: `₹${Math.round(result.purchasingPower).toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Total Deposits', value: result.invested, color: '#4F46E5' },
-                    { label: 'Interest Earned', value: result.totalInterest, color: '#10B981' },
+                    { label: t('rd.totalDeposits'), value: result.invested, color: '#4F46E5' },
+                    { label: t('rd.interestEarned'), value: result.totalInterest, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'Monthly RD Schedule',
-            projectionColumns: ['Month', 'Monthly Deposit', 'Interest Accrued', 'Cumulative Interest', 'Balance'],
+            projectionTitle: t('rd.monthlyRdSchedule'),
+            projectionColumns: [t('rd.month'), t('rd.monthlyDeposit'), t('rd.interestAccrued'), t('rd.cumulativeInterest'), t('rd.balance')],
             projectionRows: result.schedule.map((r: any) => [
-                `Month ${r.month}`,
+                `${t('rd.month')} ${r.month}`,
                 `₹${Math.round(r.deposit).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.interestEarned).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumInterest).toLocaleString('en-IN')}`,
@@ -201,15 +201,15 @@ export default function RDCalculator() {
             ]),
             additionalTables: [
                 ...(rdStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: t('rd.liveStatusAsOf', { date: new Date().toLocaleDateString('en-IN') }),
+                    columns: [t('rd.metric'), t('rd.value')],
                     rows: [
-                        ['Months Completed', String(rdStatus.monthsInvested)],
-                        ['Total Deposited', formatINR(rdStatus.totalDeposited)],
-                        ['Interest Earned', formatINR(rdStatus.interestEarned)],
-                        ['Current Value', formatINR(rdStatus.currentValue)],
-                        ['Months Remaining', String(rdStatus.monthsRemaining)],
-                        ['Maturity Date', rdStatus.maturityDate],
+                        [t('rd.monthsCompleted'), String(rdStatus.monthsInvested)],
+                        [t('rd.totalDeposited'), formatINR(rdStatus.totalDeposited)],
+                        [t('rd.interestEarned'), formatINR(rdStatus.interestEarned)],
+                        [t('rd.currentValue'), formatINR(rdStatus.currentValue)],
+                        [t('rd.monthsRemaining'), String(rdStatus.monthsRemaining)],
+                        [t('rd.maturityDate'), rdStatus.maturityDate],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -222,31 +222,31 @@ export default function RDCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'Recurring Deposit (RD) Report',
+            title: t('rd.reportTitle'),
             inputs: [
-                { label: 'Monthly Deposit', value: `₹${monthly.toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${effectiveRate}% p.a.${isSeniorCitizen ? ' (Senior +0.5%)' : ''}` },
-                { label: 'Tenure', value: `${months} Months` },
+                { label: t('rd.monthlyDeposit'), value: `₹${monthly.toLocaleString('en-IN')}` },
+                { label: t('rd.interestRate'), value: `${effectiveRate}% ${t('rd.perAnnum')}${isSeniorCitizen ? ` (${t('rd.seniorExtra')})` : ''}` },
+                { label: t('rd.tenure'), value: `${months} ${t('rd.months')}` },
             ],
             results: [
-                { label: 'Total Invested', value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
-                { label: 'Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: t('rd.totalInvested'), value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
+                { label: t('rd.interestEarned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('rd.maturityAmount'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Monthly RD Schedule',
-            projectionColumns: ['Month', 'Monthly Deposit', 'Interest Accrued', 'Cumulative Interest', 'Balance'],
+            projectionTitle: t('rd.monthlyRdSchedule'),
+            projectionColumns: [t('rd.month'), t('rd.monthlyDeposit'), t('rd.interestAccrued'), t('rd.cumulativeInterest'), t('rd.balance')],
             projectionRows: result.schedule.map((r: any) => [r.month, Math.round(r.deposit), Math.round(r.interestEarned), Math.round(r.cumInterest), Math.round(r.balance)]),
             additionalTables: [
                 ...(rdStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: t('rd.liveStatusAsOf', { date: new Date().toLocaleDateString('en-IN') }),
+                    columns: [t('rd.metric'), t('rd.value')],
                     rows: [
-                        ['Months Completed', String(rdStatus.monthsInvested)],
-                        ['Total Deposited', formatINR(rdStatus.totalDeposited)],
-                        ['Interest Earned', formatINR(rdStatus.interestEarned)],
-                        ['Current Value', formatINR(rdStatus.currentValue)],
-                        ['Months Remaining', String(rdStatus.monthsRemaining)],
-                        ['Maturity Date', rdStatus.maturityDate],
+                        [t('rd.monthsCompleted'), String(rdStatus.monthsInvested)],
+                        [t('rd.totalDeposited'), formatINR(rdStatus.totalDeposited)],
+                        [t('rd.interestEarned'), formatINR(rdStatus.interestEarned)],
+                        [t('rd.currentValue'), formatINR(rdStatus.currentValue)],
+                        [t('rd.monthsRemaining'), String(rdStatus.monthsRemaining)],
+                        [t('rd.maturityDate'), rdStatus.maturityDate],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -294,7 +294,7 @@ export default function RDCalculator() {
                             <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('rd.timePeriod')}</label>
                             <div className="relative">
                                 <input type="number" value={months} onChange={e => setMonths(Number(e.target.value)||0)} className={inputCls + " pr-10 bg-muted/30 focus:bg-card"} />
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-bold">MO.</span>
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-bold">{t('rd.moAbbr')}</span>
                             </div>
                         </div>
                     </div>
@@ -313,7 +313,7 @@ export default function RDCalculator() {
                         <p className="text-[10px] text-emerald-500 font-medium -mt-1">{t('rd.effectiveRateLabel', { effectiveRate, baseRate: rate })}</p>
                     )}
                     <div>
-                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">RD Start Date</label>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('rd.rdStartDate')}</label>
                         <DateInput
                             value={rdStartDate}
                             onChange={setRdStartDate}
@@ -556,17 +556,17 @@ export default function RDCalculator() {
                     <LiveStatusCard
                         calculatorType="RD"
                         profileData={{ monthlyDeposit: monthly, annualRate: effectiveRate, tenureMonths: months, startDate: rdStartDate }}
-                        title="Live RD Status"
-                        subtitle={`${months} Month RD @ ${effectiveRate}%`}
+                        title={t('rd.liveRdStatus')}
+                        subtitle={t('rd.liveRdSubtitle', { months, effectiveRate })}
                         startDate={rdStartDate}
                         metrics={[
-                            { label: 'Deposited', value: fmtINR(rdStatus.totalDeposited) },
-                            { label: 'Interest', value: fmtINR(rdStatus.interestEarned), color: 'amber' },
-                            { label: 'Current Value', value: fmtINR(rdStatus.currentValue), color: 'green' },
+                            { label: t('rd.deposited'), value: fmtINR(rdStatus.totalDeposited) },
+                            { label: t('rd.interest'), value: fmtINR(rdStatus.interestEarned), color: 'amber' },
+                            { label: t('rd.currentValue'), value: fmtINR(rdStatus.currentValue), color: 'green' },
                         ]}
                         progressPercent={rdStatus.percentComplete}
-                        progressLabel={`${rdStatus.monthsInvested} of ${months} months complete (${rdStatus.percentComplete.toFixed(1)}%)`}
-                        insightText={rdStatus.monthsRemaining > 0 ? `Maturity date: ${rdStatus.maturityDate}. Expected maturity value: ${fmtINR(rdStatus.maturityValue)}.` : `Your RD has matured! Total value: ${fmtINR(rdStatus.maturityValue)}.`}
+                        progressLabel={t('rd.progressLabel', { monthsInvested: rdStatus.monthsInvested, months, percentComplete: rdStatus.percentComplete.toFixed(1) })}
+                        insightText={rdStatus.monthsRemaining > 0 ? t('rd.insightMaturityPending', { maturityDate: rdStatus.maturityDate, maturityValue: fmtINR(rdStatus.maturityValue) }) : t('rd.insightMatured', { maturityValue: fmtINR(rdStatus.maturityValue) })}
                     />
                 </div>
             )}

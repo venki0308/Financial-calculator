@@ -17,20 +17,20 @@ import AddLoanSheet from '../components/AddLoanSheet';
 import { AnalyticsService } from '../lib/analytics';
 import { useEffect } from 'react';
 
-const TYPE_META: Record<string, { icon: string; color: string }> = {
-    'Loan EMI': { icon: '🏠', color: '#8B5CF6' },
-    'Mortgage': { icon: '🏗️', color: '#8B5CF6' },
-    'SIP Calculator': { icon: '📈', color: '#3B82F6' },
-    'FD Calculator': { icon: '🏦', color: '#F59E0B' },
-    'RD': { icon: '💰', color: '#F59E0B' },
-    'PPF Calculator': { icon: '🏛️', color: '#06B6D4' },
-    'SSY Calculator': { icon: '👧', color: '#EC4899' },
-    'NSC Calculator': { icon: '📜', color: '#14B8A6' },
-    'KVP Calculator': { icon: '📋', color: '#22C55E' },
-    'Post Office MIS': { icon: '📬', color: '#8B5CF6' },
-    'SCSS Calculator': { icon: '👴', color: '#EC4899' },
-    'Post Office TD': { icon: '📮', color: '#F97316' },
-    'Goal Planner': { icon: '🎯', color: '#3B82F6' },
+const TYPE_META: Record<string, { icon: string; color: string; labelKey: string }> = {
+    'Loan EMI': { icon: '🏠', color: '#8B5CF6', labelKey: 'myLoans.typeLabelLoanEmi' },
+    'Mortgage': { icon: '🏗️', color: '#8B5CF6', labelKey: 'myLoans.typeLabelMortgage' },
+    'SIP Calculator': { icon: '📈', color: '#3B82F6', labelKey: 'myLoans.typeLabelSip' },
+    'FD Calculator': { icon: '🏦', color: '#F59E0B', labelKey: 'myLoans.typeLabelFd' },
+    'RD': { icon: '💰', color: '#F59E0B', labelKey: 'myLoans.typeLabelRd' },
+    'PPF Calculator': { icon: '🏛️', color: '#06B6D4', labelKey: 'myLoans.typeLabelPpf' },
+    'SSY Calculator': { icon: '👧', color: '#EC4899', labelKey: 'myLoans.typeLabelSsy' },
+    'NSC Calculator': { icon: '📜', color: '#14B8A6', labelKey: 'myLoans.typeLabelNsc' },
+    'KVP Calculator': { icon: '📋', color: '#22C55E', labelKey: 'myLoans.typeLabelKvp' },
+    'Post Office MIS': { icon: '📬', color: '#8B5CF6', labelKey: 'myLoans.typeLabelPomis' },
+    'SCSS Calculator': { icon: '👴', color: '#EC4899', labelKey: 'myLoans.typeLabelScss' },
+    'Post Office TD': { icon: '📮', color: '#F97316', labelKey: 'myLoans.typeLabelPotd' },
+    'Goal Planner': { icon: '🎯', color: '#3B82F6', labelKey: 'myLoans.typeLabelGoal' },
 };
 
 function fmtDate(ts: number | string): string {
@@ -53,7 +53,7 @@ function matchType(type: string, ...names: string[]): boolean {
     return names.some(n => t === n.toLowerCase());
 }
 
-function computeMetrics(p: SavedLiveProfile): LiveMetrics | null {
+function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => string): LiveMetrics | null {
     const d = p.profileData;
     if (!d) return null;
     try {
@@ -61,49 +61,49 @@ function computeMetrics(p: SavedLiveProfile): LiveMetrics | null {
         if (matchType(type, 'loan emi', 'mortgage')) {
             const lp: LoanProfile = { loanAmount: d.loanAmount, annualRate: d.annualRate, tenureMonths: d.tenureMonths, emiAmount: d.emiAmount, disbursementDate: d.disbursementDate, emiDueDay: d.emiDueDay || 5, loanType: d.loanType || 'floating' };
             const s = calculateLiveLoanStatus(lp);
-            if (s.loanFullyPaid) return { label1: 'Total Paid', value1: formatINR(s.totalPaidSoFar), label2: 'Interest', value2: formatINR(s.interestPaidSoFar), label3: 'Status', value3: 'Paid Off', progress: 100, statusText: 'Complete' };
-            if (s.loanNotStarted) return { label1: 'Amount', value1: formatINR(d.loanAmount), label2: 'EMI', value2: formatINR(d.emiAmount), label3: 'Starts', value3: fmtDate(d.disbursementDate), progress: 0, statusText: 'Not Started' };
-            return { label1: 'Outstanding', value1: formatINR(s.principalOutstanding), label2: 'EMIs Paid', value2: `${s.emisPaid}/${lp.tenureMonths}`, label3: 'Next EMI', value3: fmtDate(s.nextEmiDate), progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}%` };
+            if (s.loanFullyPaid) return { label1: t('myLoans.metricTotalPaid'), value1: formatINR(s.totalPaidSoFar), label2: t('myLoans.metricInterest'), value2: formatINR(s.interestPaidSoFar), label3: t('myLoans.metricStatus'), value3: t('myLoans.metricPaidOff'), progress: 100, statusText: t('myLoans.metricComplete') };
+            if (s.loanNotStarted) return { label1: t('myLoans.metricAmount'), value1: formatINR(d.loanAmount), label2: t('myLoans.metricEmi'), value2: formatINR(d.emiAmount), label3: t('myLoans.metricStarts'), value3: fmtDate(d.disbursementDate), progress: 0, statusText: t('myLoans.metricNotStarted') };
+            return { label1: t('myLoans.metricOutstanding'), value1: formatINR(s.principalOutstanding), label2: t('myLoans.metricEmisPaid'), value2: `${s.emisPaid}/${lp.tenureMonths}`, label3: t('myLoans.metricNextEmi'), value3: fmtDate(s.nextEmiDate), progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}%` };
         }
         if (matchType(type, 'sip', 'sip calculator')) {
             const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate });
-            return { label1: 'Invested', value1: formatINR(s.totalInvested), label2: 'Value', value2: formatINR(s.currentValue), label3: 'Gain', value3: formatINR(s.wealthGained), progress: Math.min(100, s.monthsInvested), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M` };
+            return { label1: t('myLoans.metricInvested'), value1: formatINR(s.totalInvested), label2: t('myLoans.metricValue'), value2: formatINR(s.currentValue), label3: t('myLoans.metricGain'), value3: formatINR(s.wealthGained), progress: Math.min(100, s.monthsInvested), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M` };
         }
         if (matchType(type, 'fd', 'fd calculator', 'potd', 'post office td')) {
             const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4 });
-            return { label1: 'Deposited', value1: formatINR(d.principal), label2: 'Value', value2: formatINR(s.valueToday), label3: 'Interest', value3: formatINR(s.interestEarnedToday), progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}%` };
+            return { label1: t('myLoans.metricDeposited'), value1: formatINR(d.principal), label2: t('myLoans.metricValue'), value2: formatINR(s.valueToday), label3: t('myLoans.metricInterest'), value3: formatINR(s.interestEarnedToday), progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}%` };
         }
         if (matchType(type, 'rd')) {
             const s = calculateRdStatus({ monthlyDeposit: d.monthlyDeposit || 0, annualRate: d.annualRate || 5.8, tenureMonths: d.tenureMonths || 60, startDate: d.startDate });
-            return { label1: 'Deposited', value1: formatINR(s.totalDeposited), label2: 'Value', value2: formatINR(s.currentValue), label3: 'Interest', value3: formatINR(s.interestEarned), progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}%` };
+            return { label1: t('myLoans.metricDeposited'), value1: formatINR(s.totalDeposited), label2: t('myLoans.metricValue'), value2: formatINR(s.currentValue), label3: t('myLoans.metricInterest'), value3: formatINR(s.interestEarned), progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}%` };
         }
         if (matchType(type, 'ppf', 'ppf calculator')) {
             const s = calculatePpfStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 7.1, openingDate: d.openingDate || d.startDate });
-            return { label1: 'Deposited', value1: formatINR(s.totalDeposited), label2: 'Balance', value2: formatINR(s.balanceToday), label3: 'Interest', value3: formatINR(s.interestEarned), progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: `Year ${s.currentYear}/15` };
+            return { label1: t('myLoans.metricDeposited'), value1: formatINR(s.totalDeposited), label2: t('myLoans.metricBalance'), value2: formatINR(s.balanceToday), label3: t('myLoans.metricInterest'), value3: formatINR(s.interestEarned), progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: t('myLoans.metricYearOf15', { year: s.currentYear }) };
         }
         if (matchType(type, 'ssy', 'ssy calculator')) {
             const s = calculateSsyStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 8.2, openingDate: d.openingDate || d.startDate, girlDob: d.girlDob || d.openingDate || d.startDate });
-            return { label1: 'Deposited', value1: formatINR(s.totalDeposited), label2: 'Balance', value2: formatINR(s.balanceToday), label3: 'Interest', value3: formatINR(s.interestEarned), progress: Math.min(100, (s.accountAge / 21) * 100), statusText: `Year ${s.accountAge}/21` };
+            return { label1: t('myLoans.metricDeposited'), value1: formatINR(s.totalDeposited), label2: t('myLoans.metricBalance'), value2: formatINR(s.balanceToday), label3: t('myLoans.metricInterest'), value3: formatINR(s.interestEarned), progress: Math.min(100, (s.accountAge / 21) * 100), statusText: t('myLoans.metricYearOf21', { year: s.accountAge }) };
         }
         if (matchType(type, 'nsc', 'nsc calculator')) {
             const s = calculateNscStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.7, purchaseDate: d.purchaseDate || d.startDate });
-            return { label1: 'Invested', value1: formatINR(d.principal), label2: 'Value', value2: formatINR(s.valueToday), label3: 'Interest', value3: formatINR(s.interestEarned), progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: `${(Math.min(1, s.yearsCompleted / 5) * 100).toFixed(0)}% of 5yr` };
+            return { label1: t('myLoans.metricInvested'), value1: formatINR(d.principal), label2: t('myLoans.metricValue'), value2: formatINR(s.valueToday), label3: t('myLoans.metricInterest'), value3: formatINR(s.interestEarned), progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: t('myLoans.metricPctOf5yr', { pct: (Math.min(1, s.yearsCompleted / 5) * 100).toFixed(0) }) };
         }
         if (matchType(type, 'kvp', 'kvp calculator')) {
             const s = calculateKvpStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.5, purchaseDate: d.purchaseDate || d.startDate });
-            return { label1: 'Invested', value1: formatINR(d.principal), label2: 'Value', value2: formatINR(s.valueToday), label3: 'Gain', value3: formatINR(s.gainSoFar), progress: s.progressToDoubling, statusText: `${s.progressToDoubling.toFixed(0)}% to 2x` };
+            return { label1: t('myLoans.metricInvested'), value1: formatINR(d.principal), label2: t('myLoans.metricValue'), value2: formatINR(s.valueToday), label3: t('myLoans.metricGain'), value3: formatINR(s.gainSoFar), progress: s.progressToDoubling, statusText: t('myLoans.metricPctTo2x', { pct: s.progressToDoubling.toFixed(0) }) };
         }
         if (matchType(type, 'pomis', 'post office mis')) {
             const s = calculatePomisStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.4, startDate: d.startDate });
-            return { label1: 'Invested', value1: formatINR(d.principal), label2: 'Monthly', value2: formatINR(s.monthlyIncome), label3: 'Earned', value3: formatINR(s.totalIncomeReceived), progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: `${s.monthsCompleted}/60` };
+            return { label1: t('myLoans.metricInvested'), value1: formatINR(d.principal), label2: t('myLoans.metricMonthly'), value2: formatINR(s.monthlyIncome), label3: t('myLoans.metricEarned'), value3: formatINR(s.totalIncomeReceived), progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: t('myLoans.metricOf60', { count: s.monthsCompleted }) };
         }
         if (matchType(type, 'scss', 'scss calculator')) {
             const s = calculateScssStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 8.2, startDate: d.startDate, tenure: d.tenure || 5 });
-            return { label1: 'Invested', value1: formatINR(d.principal), label2: 'Quarterly', value2: formatINR(s.quarterlyIncome), label3: 'Earned', value3: formatINR(s.totalIncomeReceived), progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: `${s.quartersCompleted}/20 qtrs` };
+            return { label1: t('myLoans.metricInvested'), value1: formatINR(d.principal), label2: t('myLoans.metricQuarterly'), value2: formatINR(s.quarterlyIncome), label3: t('myLoans.metricEarned'), value3: formatINR(s.totalIncomeReceived), progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: t('myLoans.metricOf20Qtrs', { count: s.quartersCompleted }) };
         }
         if (matchType(type, 'goal planner', 'goal')) {
             const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate, targetAmount: d.targetAmount });
-            return { label1: 'Invested', value1: formatINR(s.totalInvested), label2: 'Value', value2: formatINR(s.currentValue), label3: 'Goal', value3: `${s.progressToGoal.toFixed(0)}%`, progress: s.progressToGoal, statusText: `${s.progressToGoal.toFixed(0)}% to goal` };
+            return { label1: t('myLoans.metricInvested'), value1: formatINR(s.totalInvested), label2: t('myLoans.metricValue'), value2: formatINR(s.currentValue), label3: t('myLoans.metricGoal'), value3: `${s.progressToGoal.toFixed(0)}%`, progress: s.progressToGoal, statusText: t('myLoans.metricPctToGoal', { pct: s.progressToGoal.toFixed(0) }) };
         }
     } catch { return null; }
     return null;
@@ -181,8 +181,8 @@ export default function MyLoans() {
     };
 
     const renderCard = (p: SavedLiveProfile, i: number) => {
-        const meta = TYPE_META[p.calculatorType] || { icon: '📊', color: '#64748B' };
-        const metrics = computeMetrics(p);
+        const meta = TYPE_META[p.calculatorType] || { icon: '📊', color: '#64748B', labelKey: '' };
+        const metrics = computeMetrics(p, t);
 
         return (
             <motion.div key={p.id}
@@ -198,7 +198,7 @@ export default function MyLoans() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-sm truncate" style={{ color: c.text }}>{p.name}</h3>
-                        <p className="text-[10px]" style={{ color: c.textSecondary }}>{p.calculatorType}</p>
+                        <p className="text-[10px]" style={{ color: c.textSecondary }}>{meta.labelKey ? t(meta.labelKey) : p.calculatorType}</p>
                     </div>
                     {metrics && (
                         <span className="text-[9px] px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: `${meta.color}15`, color: meta.color }}>

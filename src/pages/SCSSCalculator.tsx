@@ -95,20 +95,20 @@ export default function SCSSCalculator() {
     }, [investment, rate, tenure]);
 
     const pieData = useMemo(() => ({
-        labels: ['Principal', 'Total Interest'],
+        labels: [t('scss.principalLabel'), t('scss.totalInterestLabel')],
         datasets: [{
             data: [investment, result.totalInterest],
             backgroundColor: ['#3B82F6', '#8B5CF6'],
             borderColor: [c.card, c.card],
             borderWidth: 2,
         }],
-    }), [investment, result.totalInterest, c.card]);
+    }), [investment, result.totalInterest, c.card, t]);
 
     const handleSave = () => {
         const calcId = `scss-${Date.now()}`;
         addSaved({
             id: calcId,
-            calculatorType: 'SCSS Calculator',
+            calculatorType: t('scss.calculatorType'),
             inputValues: { investment, rate, tenure },
             resultValues: { primary: result.quarterlyIncome, maturity: result.maturityAmount },
             timestamp: Date.now(),
@@ -129,33 +129,33 @@ export default function SCSSCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: 'SCSS (Senior Citizen Savings Scheme) Report',
+            title: t('scss.reportTitle'),
             inputs: [
-                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
-                { label: 'Tenure', value: `${tenure} Years` },
+                { label: t('scss.investmentAmountLabel'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: t('scss.interestRateLabel'), value: `${rate}% p.a.` },
+                { label: t('scss.tenureLabel'), value: `${tenure} ${t('scss.years')}` },
             ],
             results: [
-                { label: 'Quarterly Interest Payout', value: `₹${Math.round(result.quarterlyIncome).toLocaleString('en-IN')}` },
-                { label: 'Annual Interest', value: `₹${Math.round(result.annualInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Interest over Tenure', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Maturity Amount', value: `₹${Math.round(result.maturityAmount).toLocaleString('en-IN')}` },
+                { label: t('scss.quarterlyInterestPayout'), value: `₹${Math.round(result.quarterlyIncome).toLocaleString('en-IN')}` },
+                { label: t('scss.annualInterestLabel'), value: `₹${Math.round(result.annualInterest).toLocaleString('en-IN')}` },
+                { label: t('scss.totalInterestOverTenure'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('scss.maturityAmountLabel'), value: `₹${Math.round(result.maturityAmount).toLocaleString('en-IN')}` },
                 ...(result.tdsApplicable ? [
-                    { label: 'Annual TDS (10%)', value: `₹${Math.round(result.annualTDS).toLocaleString('en-IN')}` },
-                    { label: 'Net Annual Income', value: `₹${Math.round(result.netAnnualIncome).toLocaleString('en-IN')}` },
+                    { label: t('scss.annualTDS10'), value: `₹${Math.round(result.annualTDS).toLocaleString('en-IN')}` },
+                    { label: t('scss.netAnnualIncomeLabel'), value: `₹${Math.round(result.netAnnualIncome).toLocaleString('en-IN')}` },
                 ] : []),
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Principal Invested', value: investment, color: '#4F46E5' },
-                    { label: 'Total Interest', value: result.totalInterest, color: '#10B981' },
+                    { label: t('scss.principalInvested'), value: investment, color: '#4F46E5' },
+                    { label: t('scss.totalInterestLabel'), value: result.totalInterest, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'Annual Interest Payout Schedule',
-            projectionColumns: ['Year', 'Annual Interest', 'TDS Deducted', 'Net Interest', 'Cumulative Interest'],
+            projectionTitle: t('scss.annualInterestPayoutSchedule'),
+            projectionColumns: [t('scss.yearCol'), t('scss.annualInterestLabel'), t('scss.tdsDeducted'), t('scss.netInterestCol'), t('scss.cumulativeInterestCol')],
             projectionRows: result.yearlyBreakdown.map((r: any) => [
-                `Year ${r.year}`,
+                `${t('scss.yearCol')} ${r.year}`,
                 `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.tds).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.netInterest).toLocaleString('en-IN')}`,
@@ -163,14 +163,14 @@ export default function SCSSCalculator() {
             ]),
             additionalTables: [
                 ...(scssStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: t('scss.liveStatusAsOf', { date: new Date().toLocaleDateString('en-IN') }),
+                    columns: [t('scss.metricCol'), t('scss.valueCol')],
                     rows: [
-                        ['Quarters Completed', String(scssStatus.quartersCompleted)],
-                        ['Quarterly Income', formatINR(scssStatus.quarterlyIncome)],
-                        ['Total Income Received', formatINR(scssStatus.totalIncomeReceived)],
-                        ['Quarters Remaining', String(scssStatus.quartersRemaining)],
-                        ['Maturity Date', scssStatus.maturityDate],
+                        [t('scss.quartersCompleted'), String(scssStatus.quartersCompleted)],
+                        [t('scss.quarterlyIncomeLabel'), formatINR(scssStatus.quarterlyIncome)],
+                        [t('scss.totalIncomeReceived'), formatINR(scssStatus.totalIncomeReceived)],
+                        [t('scss.quartersRemaining'), String(scssStatus.quartersRemaining)],
+                        [t('scss.maturityDateLabel'), scssStatus.maturityDate],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -182,29 +182,29 @@ export default function SCSSCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: 'SCSS (Senior Citizen Savings Scheme) Report',
+            title: t('scss.reportTitle'),
             inputs: [
-                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}%` },
-                { label: 'Tenure', value: `${tenure} Years` },
+                { label: t('scss.investmentAmountLabel'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: t('scss.interestRateLabel'), value: `${rate}%` },
+                { label: t('scss.tenureLabel'), value: `${tenure} ${t('scss.years')}` },
             ],
             results: [
-                { label: 'Quarterly Payout', value: `₹${Math.round(result.quarterlyIncome).toLocaleString('en-IN')}` },
-                { label: 'Total Interest', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('scss.quarterlyPayout'), value: `₹${Math.round(result.quarterlyIncome).toLocaleString('en-IN')}` },
+                { label: t('scss.totalInterestLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Annual Payout Schedule',
-            projectionColumns: ['Year', 'Annual Interest', 'TDS Deducted', 'Net Interest', 'Cumulative Interest'],
+            projectionTitle: t('scss.annualPayoutSchedule'),
+            projectionColumns: [t('scss.yearCol'), t('scss.annualInterestLabel'), t('scss.tdsDeducted'), t('scss.netInterestCol'), t('scss.cumulativeInterestCol')],
             projectionRows: result.yearlyBreakdown.map((r: any) => [r.year, Math.round(r.interest), Math.round(r.tds), Math.round(r.netInterest), Math.round(r.cumInterest)]),
             additionalTables: [
                 ...(scssStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: t('scss.liveStatusAsOf', { date: new Date().toLocaleDateString('en-IN') }),
+                    columns: [t('scss.metricCol'), t('scss.valueCol')],
                     rows: [
-                        ['Quarters Completed', String(scssStatus.quartersCompleted)],
-                        ['Quarterly Income', formatINR(scssStatus.quarterlyIncome)],
-                        ['Total Income Received', formatINR(scssStatus.totalIncomeReceived)],
-                        ['Quarters Remaining', String(scssStatus.quartersRemaining)],
-                        ['Maturity Date', scssStatus.maturityDate],
+                        [t('scss.quartersCompleted'), String(scssStatus.quartersCompleted)],
+                        [t('scss.quarterlyIncomeLabel'), formatINR(scssStatus.quarterlyIncome)],
+                        [t('scss.totalIncomeReceived'), formatINR(scssStatus.totalIncomeReceived)],
+                        [t('scss.quartersRemaining'), String(scssStatus.quartersRemaining)],
+                        [t('scss.maturityDateLabel'), scssStatus.maturityDate],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -213,8 +213,8 @@ export default function SCSSCalculator() {
     };
 
     const handleShare = async () => {
-        const text = `🏦 My SCSS Investment Plan\n\n💰 Investment: ${formatINR(investment)}\n📈 Rate: ${rate}% p.a.\n📅 Tenure: ${tenure} Years\n\n✅ Quarterly Income: ${formatINR(result.quarterlyIncome)}\n✅ Total Interest: ${formatINR(result.totalInterest)}\n✅ Maturity Amount: ${formatINR(result.maturityAmount)}\n\nCalculated with FinCalix 🧮`;
-        await nativeShare('SCSS Plan – FinCalix', text);
+        const text = `🏦 ${t('scss.shareTitle')}\n\n💰 ${t('scss.investmentAmountLabel')}: ${formatINR(investment)}\n📈 ${t('scss.rateLabel')}: ${rate}% p.a.\n📅 ${t('scss.tenureLabel')}: ${tenure} ${t('scss.years')}\n\n✅ ${t('scss.quarterlyIncomeLabel')}: ${formatINR(result.quarterlyIncome)}\n✅ ${t('scss.totalInterestLabel')}: ${formatINR(result.totalInterest)}\n✅ ${t('scss.maturityAmountLabel')}: ${formatINR(result.maturityAmount)}\n\n${t('scss.calculatedWithFinCalix')} 🧮`;
+        await nativeShare(t('scss.sharePlanTitle'), text);
     };
 
     return (
@@ -257,7 +257,7 @@ export default function SCSSCalculator() {
                         )}
                     </div>
                     <div>
-                        <label className="text-foreground text-sm font-medium mb-1.5 block">SCSS Start Date</label>
+                        <label className="text-foreground text-sm font-medium mb-1.5 block">{t('scss.scssStartDate')}</label>
                         <DateInput
                             value={scssStartDate}
                             onChange={setScssStartDate}
@@ -480,17 +480,17 @@ export default function SCSSCalculator() {
                     <LiveStatusCard
                         calculatorType="SCSS"
                         profileData={{ principal: investment, rate, startDate: scssStartDate, tenure }}
-                        title="Live SCSS Status"
-                        subtitle={`${tenure} Year SCSS @ ${rate}%`}
+                        title={t('scss.liveScssStatus')}
+                        subtitle={t('scss.liveScssSubtitle', { tenure, rate })}
                         startDate={scssStartDate}
                         metrics={[
-                            { label: 'Quarterly Income', value: formatINR(scssStatus.quarterlyIncome), color: 'green' },
-                            { label: 'Total Received', value: formatINR(scssStatus.totalIncomeReceived), color: 'blue' },
-                            { label: 'Remaining', value: formatINR(scssStatus.totalIncomeOnMaturity - scssStatus.totalIncomeReceived) },
+                            { label: t('scss.quarterlyIncomeLabel'), value: formatINR(scssStatus.quarterlyIncome), color: 'green' },
+                            { label: t('scss.totalReceived'), value: formatINR(scssStatus.totalIncomeReceived), color: 'blue' },
+                            { label: t('scss.remaining'), value: formatINR(scssStatus.totalIncomeOnMaturity - scssStatus.totalIncomeReceived) },
                         ]}
                         progressPercent={(scssStatus.quartersCompleted / (tenure * 4)) * 100}
-                        progressLabel={`${scssStatus.quartersCompleted} of ${tenure * 4} quarters completed`}
-                        insightText={scssStatus.quartersRemaining > 0 ? `${scssStatus.quartersRemaining} quarters remaining. Total income on maturity: ${formatINR(scssStatus.totalIncomeOnMaturity)}.` : `Your SCSS has matured! Total income received: ${formatINR(scssStatus.totalIncomeOnMaturity)}.`}
+                        progressLabel={t('scss.progressLabel', { completed: scssStatus.quartersCompleted, total: tenure * 4 })}
+                        insightText={scssStatus.quartersRemaining > 0 ? t('scss.insightRemaining', { quarters: scssStatus.quartersRemaining, amount: formatINR(scssStatus.totalIncomeOnMaturity) }) : t('scss.insightMatured', { amount: formatINR(scssStatus.totalIncomeOnMaturity) })}
                     />
                 </div>
             )}

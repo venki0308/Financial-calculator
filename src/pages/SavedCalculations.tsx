@@ -8,14 +8,14 @@ import { formatINR } from '../utils/calculations';
 
 // Map calculator types to readable labels and icons
 const calcMeta: Record<string, { label: string; icon: any; color: string; gradient: string }> = {
-    'emi': { label: 'EMI Calculator', icon: CreditCard, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
-    'EMI Calculator': { label: 'EMI Calculator', icon: CreditCard, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
-    'Loan EMI Calculator': { label: 'Loan EMI', icon: CreditCard, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
-    'sip': { label: 'SIP Calculator', icon: TrendingUp, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
-    'SIP Calculator': { label: 'SIP Calculator', icon: TrendingUp, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
-    'Advanced SIP Calculator': { label: 'Advanced SIP', icon: TrendingUp, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
-    'fd': { label: 'FD Calculator', icon: PiggyBank, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
-    'FD Calculator': { label: 'FD Calculator', icon: PiggyBank, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
+    'emi': { label: 'saved.calc.emiCalculator', icon: CreditCard, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
+    'EMI Calculator': { label: 'saved.calc.emiCalculator', icon: CreditCard, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
+    'Loan EMI Calculator': { label: 'saved.calc.loanEmi', icon: CreditCard, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
+    'sip': { label: 'saved.calc.sipCalculator', icon: TrendingUp, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
+    'SIP Calculator': { label: 'saved.calc.sipCalculator', icon: TrendingUp, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
+    'Advanced SIP Calculator': { label: 'saved.calc.advancedSip', icon: TrendingUp, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
+    'fd': { label: 'saved.calc.fdCalculator', icon: PiggyBank, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
+    'FD Calculator': { label: 'saved.calc.fdCalculator', icon: PiggyBank, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
     'nps': { label: 'calculators.nps.name', icon: Heart, color: '#10B981', gradient: 'from-green-600/20 to-emerald-600/20' },
     'NPS Calculator': { label: 'calculators.nps.name', icon: Heart, color: '#10B981', gradient: 'from-green-600/20 to-emerald-600/20' },
     'ppf': { label: 'calculators.ppf.name', icon: PiggyBank, color: '#06B6D4', gradient: 'from-cyan-600/20 to-teal-600/20' },
@@ -24,75 +24,75 @@ const calcMeta: Record<string, { label: string; icon: any; color: string; gradie
     'EPF Calculator': { label: 'calculators.epf.name', icon: Briefcase, color: '#14B8A6', gradient: 'from-teal-600/20 to-cyan-600/20' },
     'ssy': { label: 'calculators.ssy.name', icon: GraduationCap, color: '#EC4899', gradient: 'from-pink-600/20 to-rose-600/20' },
     'SSY Calculator': { label: 'calculators.ssy.name', icon: GraduationCap, color: '#EC4899', gradient: 'from-pink-600/20 to-rose-600/20' },
-    'tax': { label: 'Income Tax', icon: IndianRupee, color: '#EF4444', gradient: 'from-red-600/20 to-orange-600/20' },
-    'breakeven': { label: 'Break-even', icon: Calculator, color: '#22C55E', gradient: 'from-green-600/20 to-lime-600/20' },
-    'Break Even Calculator': { label: 'Break-even Calculator', icon: Calculator, color: '#22C55E', gradient: 'from-green-600/20 to-lime-600/20' },
-    'home_loan': { label: 'Home Loan', icon: Home, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
-    'car_loan': { label: 'Car Loan', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
-    'Car Loan Calculator': { label: 'Car Loan', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
+    'tax': { label: 'saved.calc.incomeTax', icon: IndianRupee, color: '#EF4444', gradient: 'from-red-600/20 to-orange-600/20' },
+    'breakeven': { label: 'saved.calc.breakEven', icon: Calculator, color: '#22C55E', gradient: 'from-green-600/20 to-lime-600/20' },
+    'Break Even Calculator': { label: 'saved.calc.breakEvenCalculator', icon: Calculator, color: '#22C55E', gradient: 'from-green-600/20 to-lime-600/20' },
+    'home_loan': { label: 'saved.calc.homeLoan', icon: Home, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
+    'car_loan': { label: 'saved.calc.carLoan', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
+    'Car Loan Calculator': { label: 'saved.calc.carLoan', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
     'lumpsum': { label: 'calculators.lumpsum.name', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-blue-600/20' },
     'Lumpsum Calculator': { label: 'calculators.lumpsum.name', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-blue-600/20' },
     'salary_hike': { label: 'calculators.salaryHike.name', icon: TrendingUp, color: '#22D3EE', gradient: 'from-cyan-600/20 to-sky-600/20' },
     'Salary Hike Calculator': { label: 'calculators.salaryHike.name', icon: TrendingUp, color: '#22D3EE', gradient: 'from-cyan-600/20 to-sky-600/20' },
-    'gst': { label: 'GST Calculator', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
-    'GST Calculator (standard)': { label: 'GST Standard', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
-    'GST Calculator (reverse)': { label: 'GST Reverse', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
-    'GST Calculator (profit)': { label: 'GST Profit Margin', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
-    'GST Calculator (itc)': { label: 'GST ITC', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
-    'GST Calculator (invoice)': { label: 'GST Invoice', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
+    'gst': { label: 'saved.calc.gstCalculator', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
+    'GST Calculator (standard)': { label: 'saved.calc.gstStandard', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
+    'GST Calculator (reverse)': { label: 'saved.calc.gstReverse', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
+    'GST Calculator (profit)': { label: 'saved.calc.gstProfitMargin', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
+    'GST Calculator (itc)': { label: 'saved.calc.gstItc', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
+    'GST Calculator (invoice)': { label: 'saved.calc.gstInvoice', icon: Calculator, color: '#A855F7', gradient: 'from-purple-600/20 to-fuchsia-600/20' },
     // Short-ID keys used by individual calculator pages
-    'swp': { label: 'SWP Calculator', icon: TrendingUp, color: '#EF4444', gradient: 'from-red-600/20 to-orange-600/20' },
-    'rd': { label: 'RD Calculator', icon: PiggyBank, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
-    'ci': { label: 'Compound Interest', icon: Calculator, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
-    'cagr': { label: 'CAGR Calculator', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
+    'swp': { label: 'saved.calc.swpCalculator', icon: TrendingUp, color: '#EF4444', gradient: 'from-red-600/20 to-orange-600/20' },
+    'rd': { label: 'saved.calc.rdCalculator', icon: PiggyBank, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
+    'ci': { label: 'saved.calc.compoundInterest', icon: Calculator, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
+    'cagr': { label: 'saved.calc.cagrCalculator', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
     // GenericCalculator-based types (full name keys)
-    'CAGR Calculator': { label: 'CAGR Calculator', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
-    'Gratuity Calculator': { label: 'Gratuity Calculator', icon: Briefcase, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
-    'HRA Calculator': { label: 'HRA Calculator', icon: Home, color: '#10B981', gradient: 'from-green-600/20 to-emerald-600/20' },
-    'Goal SIP Calculator': { label: 'Goal SIP', icon: TrendingUp, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
-    'Step Up SIP': { label: 'Step-Up SIP', icon: TrendingUp, color: '#06B6D4', gradient: 'from-cyan-600/20 to-teal-600/20' },
-    'Recurring Deposit': { label: 'RD Calculator', icon: PiggyBank, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
-    'NSC Calculator': { label: 'NSC Calculator', icon: PiggyBank, color: '#14B8A6', gradient: 'from-teal-600/20 to-cyan-600/20' },
-    'KVP Calculator': { label: 'KVP Calculator', icon: PiggyBank, color: '#22C55E', gradient: 'from-green-600/20 to-lime-600/20' },
-    'SCSS Calculator': { label: 'SCSS Calculator', icon: Heart, color: '#EC4899', gradient: 'from-pink-600/20 to-rose-600/20' },
-    'Post Office TD': { label: 'Post Office TD', icon: PiggyBank, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
-    'Post Office MIS': { label: 'Post Office MIS', icon: PiggyBank, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
-    'SWP Calculator': { label: 'SWP Calculator', icon: TrendingUp, color: '#EF4444', gradient: 'from-red-600/20 to-orange-600/20' },
-    'Villa Construction': { label: 'Villa Construction', icon: Home, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
-    'Land Value': { label: 'Land Value Calculator', icon: Home, color: '#22C55E', gradient: 'from-green-600/20 to-emerald-600/20' },
-    'Flat Price': { label: 'Flat Price Calculator', icon: Home, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
-    'Simple Interest': { label: 'Simple Interest', icon: Calculator, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
-    'Compound Interest': { label: 'Compound Interest', icon: Calculator, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
-    'Advanced Mortgage': { label: 'Advanced Mortgage', icon: Home, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
-    'Overdraft Calculator': { label: 'Overdraft Calculator', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
-    'Live Loan Status': { label: 'Loan Tracker', icon: Activity, color: '#10B981', gradient: 'from-emerald-600/20 to-teal-600/20' },
+    'CAGR Calculator': { label: 'saved.calc.cagrCalculator', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
+    'Gratuity Calculator': { label: 'saved.calc.gratuityCalculator', icon: Briefcase, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
+    'HRA Calculator': { label: 'saved.calc.hraCalculator', icon: Home, color: '#10B981', gradient: 'from-green-600/20 to-emerald-600/20' },
+    'Goal SIP Calculator': { label: 'saved.calc.goalSip', icon: TrendingUp, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
+    'Step Up SIP': { label: 'saved.calc.stepUpSip', icon: TrendingUp, color: '#06B6D4', gradient: 'from-cyan-600/20 to-teal-600/20' },
+    'Recurring Deposit': { label: 'saved.calc.rdCalculator', icon: PiggyBank, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
+    'NSC Calculator': { label: 'saved.calc.nscCalculator', icon: PiggyBank, color: '#14B8A6', gradient: 'from-teal-600/20 to-cyan-600/20' },
+    'KVP Calculator': { label: 'saved.calc.kvpCalculator', icon: PiggyBank, color: '#22C55E', gradient: 'from-green-600/20 to-lime-600/20' },
+    'SCSS Calculator': { label: 'saved.calc.scssCalculator', icon: Heart, color: '#EC4899', gradient: 'from-pink-600/20 to-rose-600/20' },
+    'Post Office TD': { label: 'saved.calc.postOfficeTd', icon: PiggyBank, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
+    'Post Office MIS': { label: 'saved.calc.postOfficeMis', icon: PiggyBank, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
+    'SWP Calculator': { label: 'saved.calc.swpCalculator', icon: TrendingUp, color: '#EF4444', gradient: 'from-red-600/20 to-orange-600/20' },
+    'Villa Construction': { label: 'saved.calc.villaConstruction', icon: Home, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
+    'Land Value': { label: 'saved.calc.landValueCalculator', icon: Home, color: '#22C55E', gradient: 'from-green-600/20 to-emerald-600/20' },
+    'Flat Price': { label: 'saved.calc.flatPriceCalculator', icon: Home, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
+    'Simple Interest': { label: 'saved.calc.simpleInterest', icon: Calculator, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
+    'Compound Interest': { label: 'saved.calc.compoundInterest', icon: Calculator, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
+    'Advanced Mortgage': { label: 'saved.calc.advancedMortgage', icon: Home, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
+    'Overdraft Calculator': { label: 'saved.calc.overdraftCalculator', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
+    'Live Loan Status': { label: 'saved.calc.loanTracker', icon: Activity, color: '#10B981', gradient: 'from-emerald-600/20 to-teal-600/20' },
 };
 
-const defaultMeta = { label: 'Calculator', icon: Calculator, color: '#64748B', gradient: 'from-slate-600/20 to-gray-600/20' };
+const defaultMeta = { label: 'saved.calc.default', icon: Calculator, color: '#64748B', gradient: 'from-slate-600/20 to-gray-600/20' };
 
 // Format input/result labels nicely
 const labelMap: Record<string, string> = {
-    principal: 'Loan/Deposit Amount', rate: 'Interest Rate', years: 'Tenure (Years)', months: 'Tenure (Months)',
-    tenure: 'Tenure', monthly: 'Monthly Amount', annual: 'Annual Amount', amount: 'Amount',
-    emi: 'Monthly EMI', totalInterest: 'Total Interest', totalPayment: 'Total Payment',
-    futureValue: 'Future Value', invested: 'Total Invested', wealthGained: 'Returns',
-    maturity: 'Maturity Amount', interest: 'Interest Earned', corpus: 'Total Corpus',
-    monthlyPension: 'Monthly Pension', lumpsum: 'Lumpsum at Retirement', annuity: 'Annuity Amount',
-    primary: 'Result', compounding: 'Compounding Freq.', retireAge: 'Retirement Age',
-    age: 'Current Age', annuityPct: 'Annuity %', childAge: "Child's Age",
-    price: 'Price/Unit', variable: 'Variable Cost/Unit', fixed: 'Fixed Costs',
-    stepUp: 'Annual Step-Up %', goalTarget: 'Target Amount', loanType: 'Loan Type',
-    method: 'Calculation Method', tenureUnit: 'Tenure Unit',
-    items: 'Items', invoiceIsIGST: 'Is IGST', stdAmount: 'Amount', stdRate: 'GST Rate',
-    stdDirection: 'Direction', isIGST: 'Interstate (IGST)', costPrice: 'Cost Price',
-    sellingPrice: 'Selling Price', profitGstRate: 'GST Rate', purchaseGst: 'Purchase GST',
-    salesGst: 'Sales GST', carPrice: 'Car Price', discount: 'Discount', downPayment: 'Down Payment',
-    interestRate: 'Interest Rate',
+    principal: 'saved.label.principal', rate: 'saved.label.rate', years: 'saved.label.years', months: 'saved.label.months',
+    tenure: 'saved.label.tenure', monthly: 'saved.label.monthly', annual: 'saved.label.annual', amount: 'saved.label.amount',
+    emi: 'saved.label.emi', totalInterest: 'saved.label.totalInterest', totalPayment: 'saved.label.totalPayment',
+    futureValue: 'saved.label.futureValue', invested: 'saved.label.invested', wealthGained: 'saved.label.wealthGained',
+    maturity: 'saved.label.maturity', interest: 'saved.label.interest', corpus: 'saved.label.corpus',
+    monthlyPension: 'saved.label.monthlyPension', lumpsum: 'saved.label.lumpsum', annuity: 'saved.label.annuity',
+    primary: 'saved.label.primary', compounding: 'saved.label.compounding', retireAge: 'saved.label.retireAge',
+    age: 'saved.label.age', annuityPct: 'saved.label.annuityPct', childAge: 'saved.label.childAge',
+    price: 'saved.label.price', variable: 'saved.label.variable', fixed: 'saved.label.fixed',
+    stepUp: 'saved.label.stepUp', goalTarget: 'saved.label.goalTarget', loanType: 'saved.label.loanType',
+    method: 'saved.label.method', tenureUnit: 'saved.label.tenureUnit',
+    items: 'saved.label.items', invoiceIsIGST: 'saved.label.invoiceIsIGST', stdAmount: 'saved.label.stdAmount', stdRate: 'saved.label.stdRate',
+    stdDirection: 'saved.label.stdDirection', isIGST: 'saved.label.isIGST', costPrice: 'saved.label.costPrice',
+    sellingPrice: 'saved.label.sellingPrice', profitGstRate: 'saved.label.profitGstRate', purchaseGst: 'saved.label.purchaseGst',
+    salesGst: 'saved.label.salesGst', carPrice: 'saved.label.carPrice', discount: 'saved.label.discount', downPayment: 'saved.label.downPayment',
+    interestRate: 'saved.label.interestRate',
 };
 
-function formatValue(key: string, val: any): string {
+function formatValue(key: string, val: any, t: (key: string) => string): string {
     if (val === undefined || val === null) return '—';
-    if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+    if (typeof val === 'boolean') return val ? t('saved.yes') : t('saved.no');
     if (typeof val === 'string') return val;
     if (Array.isArray(val)) {
         // Handle arrays of objects (e.g., invoice items)
@@ -108,7 +108,7 @@ function formatValue(key: string, val: any): string {
         return JSON.stringify(val);
     }
     if (key === 'rate' || key === 'annuityPct' || key === 'stepUp' || key === 'profitGstRate' || key === 'stdRate') return `${val}%`;
-    if (key === 'compounding') return val === 4 ? 'Quarterly' : val === 12 ? 'Monthly' : val === 1 ? 'Yearly' : `${val}x/yr`;
+    if (key === 'compounding') return val === 4 ? t('saved.quarterly') : val === 12 ? t('saved.monthly') : val === 1 ? t('saved.yearly') : `${val}x/yr`;
     if (key === 'years' || key === 'age' || key === 'retireAge' || key === 'childAge' || key === 'months' || key === 'tenure') return `${val}`;
     if (typeof val === 'number' && val > 100) return formatINR(val);
     if (typeof val === 'number') return val.toLocaleString('en-IN');
@@ -164,12 +164,12 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
                             {/* Inputs Section */}
                             {inputEntries.length > 0 && (
                                 <div className="mb-3">
-                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-2">📥 Inputs</p>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-2">📥 {t('saved.inputs')}</p>
                                     <div className="grid grid-cols-2 gap-2">
                                         {inputEntries.map(([key, val]) => (
                                             <div key={key} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800/50">
-                                                <p className="text-[9px] text-muted-foreground uppercase font-bold">{labelMap[key] || key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                                                <p className="text-foreground font-bold text-xs mt-0.5">{formatValue(key, val)}</p>
+                                                <p className="text-[9px] text-muted-foreground uppercase font-bold">{t(labelMap[key] || key.replace(/([A-Z])/g, ' $1').trim())}</p>
+                                                <p className="text-foreground font-bold text-xs mt-0.5">{formatValue(key, val, t)}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -179,12 +179,12 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
                             {/* Results Section */}
                             {resultEntries.length > 0 && (
                                 <div className="mb-3">
-                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-2">📊 Results</p>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-2">📊 {t('saved.results')}</p>
                                     <div className="grid grid-cols-2 gap-2">
                                         {resultEntries.map(([key, val]) => (
                                             <div key={key} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800/50">
-                                                <p className="text-[9px] text-muted-foreground uppercase font-bold">{labelMap[key] || key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                                                <p className="text-brand-green font-bold text-xs mt-0.5">{formatValue(key, val)}</p>
+                                                <p className="text-[9px] text-muted-foreground uppercase font-bold">{t(labelMap[key] || key.replace(/([A-Z])/g, ' $1').trim())}</p>
+                                                <p className="text-brand-green font-bold text-xs mt-0.5">{formatValue(key, val, t)}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -194,7 +194,7 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
                             {/* Delete button */}
                             <button onClick={(e) => { e.stopPropagation(); onRemove(); }}
                                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-red-500/10 text-red-400 font-bold text-xs border border-red-500/20 mt-1">
-                                <Trash2 size={14} /> Remove
+                                <Trash2 size={14} /> {t('saved.remove')}
                             </button>
                         </div>
                     </motion.div>
@@ -205,6 +205,7 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
 }
 
 export default function SavedCalculations() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { savedCalculations, removeSaved } = useCalculatorStore();
 
@@ -216,8 +217,8 @@ export default function SavedCalculations() {
                         <ArrowLeft size={18} className="text-muted-foreground" />
                     </button>
                     <div className="flex-1">
-                        <h1 className="text-lg font-bold text-foreground">Saved Calculations</h1>
-                        <p className="text-muted-foreground text-xs">{savedCalculations.length} saved plan{savedCalculations.length !== 1 ? 's' : ''}</p>
+                        <h1 className="text-lg font-bold text-foreground">{t('saved.title')}</h1>
+                        <p className="text-muted-foreground text-xs">{t('saved.savedPlanCount', { count: savedCalculations.length })}</p>
                     </div>
                 </div>
             </div>
@@ -226,8 +227,8 @@ export default function SavedCalculations() {
                 {savedCalculations.length === 0 ? (
                     <div className="text-center py-20">
                         <Bookmark size={48} className="text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground text-sm">No saved calculations yet</p>
-                        <p className="text-slate-600 text-xs mt-2">Save from any calculator to track your plans</p>
+                        <p className="text-muted-foreground text-sm">{t('saved.noSavedYet')}</p>
+                        <p className="text-slate-600 text-xs mt-2">{t('saved.saveHint')}</p>
                     </div>
                 ) : (
                     <div className="space-y-3">

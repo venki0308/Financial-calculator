@@ -101,33 +101,33 @@ export default function HRACalculator() {
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const taxSaved = Math.round((actualResult.exempt * taxSlab) / 100);
         const config: ExportConfig = {
-            title: 'HRA Tax Exemption Report',
+            title: t('hra.reportTitle'),
             inputs: [
-                { label: 'Tax Regime', value: taxRegime === 'old' ? 'Old Regime' : 'New Regime' },
-                { label: 'City Type', value: isMetro ? 'Metro City (50% rule)' : 'Non-Metro (40% rule)' },
-                { label: 'Basic Salary (Annual)', value: `₹${Math.round(basic * 12).toLocaleString('en-IN')}` },
-                { label: 'DA (Annual)', value: `₹${Math.round(da * 12).toLocaleString('en-IN')}` },
-                { label: 'HRA Received (Annual)', value: `₹${Math.round(hra * 12).toLocaleString('en-IN')}` },
-                { label: 'Rent Paid (Annual)', value: `₹${Math.round(rent * 12).toLocaleString('en-IN')}` },
-                { label: 'Tax Slab', value: `${taxSlab}%` },
+                { label: t('hra.taxRegimeLabel'), value: taxRegime === 'old' ? t('hra.oldRegimeValue') : t('hra.newRegimeValue') },
+                { label: t('hra.cityTypeLabel'), value: isMetro ? t('hra.metroCityRule') : t('hra.nonMetroRule') },
+                { label: t('hra.basicSalaryAnnual'), value: `₹${Math.round(basic * 12).toLocaleString('en-IN')}` },
+                { label: t('hra.daAnnual'), value: `₹${Math.round(da * 12).toLocaleString('en-IN')}` },
+                { label: t('hra.hraReceivedAnnual'), value: `₹${Math.round(hra * 12).toLocaleString('en-IN')}` },
+                { label: t('hra.rentPaidAnnual'), value: `₹${Math.round(rent * 12).toLocaleString('en-IN')}` },
+                { label: t('hra.taxSlabLabel'), value: `${taxSlab}%` },
             ],
             results: [
-                { label: 'Condition 1: Actual HRA Received', value: `₹${Math.round(actualResult.opt1).toLocaleString('en-IN')}` },
-                { label: `Condition 2: ${isMetro ? '50%' : '40%'} of Basic+DA`, value: `₹${Math.round(actualResult.opt2).toLocaleString('en-IN')}` },
-                { label: 'Condition 3: Rent - 10% of Salary', value: `₹${Math.round(actualResult.opt3).toLocaleString('en-IN')}` },
-                { label: 'HRA Exemption (Minimum of above)', value: `₹${Math.round(actualResult.exempt).toLocaleString('en-IN')}` },
-                { label: 'Taxable HRA', value: `₹${Math.round(actualResult.taxable).toLocaleString('en-IN')}` },
-                { label: 'Estimated Annual Tax Saving', value: `₹${taxSaved.toLocaleString('en-IN')}` },
+                { label: t('hra.condition1ActualHRA'), value: `₹${Math.round(actualResult.opt1).toLocaleString('en-IN')}` },
+                { label: t('hra.condition2BasicDA', { pct: isMetro ? '50%' : '40%' }), value: `₹${Math.round(actualResult.opt2).toLocaleString('en-IN')}` },
+                { label: t('hra.condition3RentSalary'), value: `₹${Math.round(actualResult.opt3).toLocaleString('en-IN')}` },
+                { label: t('hra.hraExemptionMinimum'), value: `₹${Math.round(actualResult.exempt).toLocaleString('en-IN')}` },
+                { label: t('hra.taxableHRALabel'), value: `₹${Math.round(actualResult.taxable).toLocaleString('en-IN')}` },
+                { label: t('hra.estimatedAnnualTaxSaving'), value: `₹${taxSaved.toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'HRA Calculation Breakdown',
-            projectionColumns: ['Component', 'Amount', 'Notes'],
+            projectionTitle: t('hra.hraCalcBreakdown'),
+            projectionColumns: [t('hra.component'), t('hra.amount'), t('hra.notes')],
             projectionRows: [
-                ['Actual HRA Received (Annual)', `₹${Math.round(hra * 12).toLocaleString('en-IN')}`, 'Condition 1'],
-                [`${isMetro ? '50%' : '40%'} of Basic+DA`, `₹${Math.round(actualResult.opt2).toLocaleString('en-IN')}`, 'Condition 2'],
-                ['Rent - 10% of Basic+DA', `₹${Math.round(actualResult.opt3).toLocaleString('en-IN')}`, 'Condition 3'],
-                ['HRA Exemption (Minimum)', `₹${Math.round(actualResult.exempt).toLocaleString('en-IN')}`, 'Tax-free'],
-                ['Taxable HRA', `₹${Math.round(actualResult.taxable).toLocaleString('en-IN')}`, 'Added to income'],
-                ['Tax Saving', `₹${taxSaved.toLocaleString('en-IN')}`, `At ${taxSlab}% slab`],
+                [t('hra.actualHraReceivedAnnual'), `₹${Math.round(hra * 12).toLocaleString('en-IN')}`, t('hra.condition1Short')],
+                [t('hra.pctOfBasicDA', { pct: isMetro ? '50%' : '40%' }), `₹${Math.round(actualResult.opt2).toLocaleString('en-IN')}`, t('hra.condition2Short')],
+                [t('hra.rentMinus10BasicDA'), `₹${Math.round(actualResult.opt3).toLocaleString('en-IN')}`, t('hra.condition3Short')],
+                [t('hra.hraExemptionMin'), `₹${Math.round(actualResult.exempt).toLocaleString('en-IN')}`, t('hra.taxFree')],
+                [t('hra.taxableHRALabel'), `₹${Math.round(actualResult.taxable).toLocaleString('en-IN')}`, t('hra.addedToIncome')],
+                [t('hra.taxSaving'), `₹${taxSaved.toLocaleString('en-IN')}`, t('hra.atSlabPct', { slab: taxSlab })],
             ],
             filename: `FinCalix_HRA_Report_${tag}`,
         };
@@ -139,26 +139,26 @@ export default function HRACalculator() {
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const taxSaved = Math.round((actualResult.exempt * taxSlab) / 100);
         const config: ExportConfig = {
-            title: 'HRA Tax Exemption Report',
+            title: t('hra.reportTitle'),
             inputs: [
-                { label: 'Tax Regime', value: taxRegime },
-                { label: 'City Type', value: isMetro ? 'Metro' : 'Non-Metro' },
-                { label: 'Basic Salary (Annual)', value: `₹${Math.round(basic * 12).toLocaleString('en-IN')}` },
-                { label: 'HRA Received (Annual)', value: `₹${Math.round(hra * 12).toLocaleString('en-IN')}` },
-                { label: 'Rent Paid (Annual)', value: `₹${Math.round(rent * 12).toLocaleString('en-IN')}` },
+                { label: t('hra.taxRegimeLabel'), value: taxRegime },
+                { label: t('hra.cityTypeLabel'), value: isMetro ? t('hra.metro') : t('hra.nonMetro') },
+                { label: t('hra.basicSalaryAnnual'), value: `₹${Math.round(basic * 12).toLocaleString('en-IN')}` },
+                { label: t('hra.hraReceivedAnnual'), value: `₹${Math.round(hra * 12).toLocaleString('en-IN')}` },
+                { label: t('hra.rentPaidAnnual'), value: `₹${Math.round(rent * 12).toLocaleString('en-IN')}` },
             ],
             results: [
-                { label: 'HRA Exemption', value: `₹${Math.round(actualResult.exempt).toLocaleString('en-IN')}` },
-                { label: 'Taxable HRA', value: `₹${Math.round(actualResult.taxable).toLocaleString('en-IN')}` },
-                { label: 'Tax Saving', value: `₹${taxSaved.toLocaleString('en-IN')}` },
+                { label: t('hra.hraExemption'), value: `₹${Math.round(actualResult.exempt).toLocaleString('en-IN')}` },
+                { label: t('hra.taxableHRALabel'), value: `₹${Math.round(actualResult.taxable).toLocaleString('en-IN')}` },
+                { label: t('hra.taxSaving'), value: `₹${taxSaved.toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'HRA Calculation Breakdown',
-            projectionColumns: ['Component', 'Amount', 'Notes'],
+            projectionTitle: t('hra.hraCalcBreakdown'),
+            projectionColumns: [t('hra.component'), t('hra.amount'), t('hra.notes')],
             projectionRows: [
-                ['HRA Received', Math.round(hra * 12), 'Annual'],
-                ['HRA Exemption', Math.round(actualResult.exempt), 'Tax-free'],
-                ['Taxable HRA', Math.round(actualResult.taxable), 'Taxable'],
-                ['Tax Saving', taxSaved, `At ${taxSlab}%`],
+                [t('hra.hraReceivedLabel'), Math.round(hra * 12), t('hra.annualLabel')],
+                [t('hra.hraExemption'), Math.round(actualResult.exempt), t('hra.taxFree')],
+                [t('hra.taxableHRALabel'), Math.round(actualResult.taxable), t('hra.taxableLabel')],
+                [t('hra.taxSaving'), taxSaved, t('hra.atPct', { slab: taxSlab })],
             ],
             filename: `FinCalix_HRA_Report_${tag}`,
         };
@@ -182,7 +182,7 @@ export default function HRACalculator() {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                         <button onClick={() => nativeShare("HRA Tax Savings", `I saved ${fmtINR(actualTaxSaved)} in taxes with my HRA! Check FinCalix.`)} className="p-2 rounded-xl bg-card border border-border text-muted-foreground hover:bg-muted active:scale-95 transition-all">
+                         <button onClick={() => nativeShare(t('hra.shareTitle'), t('hra.shareMessage', { amount: fmtINR(actualTaxSaved) }))} className="p-2 rounded-xl bg-card border border-border text-muted-foreground hover:bg-muted active:scale-95 transition-all">
                             <Share2 size={16} />
                         </button>
                     </div>
@@ -397,7 +397,7 @@ export default function HRACalculator() {
                                         <div>
                                             <div className="flex justify-between items-center mb-2">
                                                 <span className="text-xs font-bold text-foreground">{t('hra.basicSalary')}</span>
-                                                <span className="text-xs font-mono text-primary font-bold">₹{simBasic.toLocaleString('en-IN')}/mo</span>
+                                                <span className="text-xs font-mono text-primary font-bold">₹{simBasic.toLocaleString('en-IN')}/{t('hra.mo')}</span>
                                             </div>
                                             <input type="range" min={basic * 0.5} max={basic * 2} step={1000} value={simBasic} onChange={e => setSimBasic(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary" />
                                         </div>
@@ -405,7 +405,7 @@ export default function HRACalculator() {
                                         <div>
                                             <div className="flex justify-between items-center mb-2">
                                                 <span className="text-xs font-bold text-foreground">{t('hra.rentPaid')}</span>
-                                                <span className="text-xs font-mono text-emerald-500 font-bold">₹{simRent.toLocaleString('en-IN')}/mo</span>
+                                                <span className="text-xs font-mono text-emerald-500 font-bold">₹{simRent.toLocaleString('en-IN')}/{t('hra.mo')}</span>
                                             </div>
                                             <input type="range" min={rent * 0.5} max={rent * 2} step={500} value={simRent} onChange={e => setSimRent(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-emerald-500" />
                                         </div>
@@ -418,7 +418,7 @@ export default function HRACalculator() {
                                             </div>
                                             <div className="flex justify-between items-center">
                                                 <span className="text-[10px] uppercase font-bold text-muted-foreground">{t('hra.estTaxSaved')} ({taxSlab}%)</span>
-                                                <span className="font-black text-sm text-amber-500">{fmtINR(simTaxSaved)}/yr</span>
+                                                <span className="font-black text-sm text-amber-500">{fmtINR(simTaxSaved)}/{t('hra.yr')}</span>
                                             </div>
 
                                             {taxDiff !== 0 && (

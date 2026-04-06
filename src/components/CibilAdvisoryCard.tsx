@@ -39,10 +39,10 @@ export default function CibilAdvisoryCard({ score, loanType, loanAmount, tenureM
     const comparison = useMemo(() => {
         if (loanAmount <= 0 || tenureMonths <= 0) return [];
         const tiers = [
-            { label: '650-699', rate: config.rates['average'] },
-            { label: '700-749', rate: config.rates['good'] },
-            { label: '750-779', rate: config.rates['very_good'] },
-            { label: '780+', rate: config.rates['excellent'] },
+            { label: t('cibil.range650'), rate: config.rates['average'] },
+            { label: t('cibil.range700'), rate: config.rates['good'] },
+            { label: t('cibil.range750'), rate: config.rates['very_good'] },
+            { label: t('cibil.range780'), rate: config.rates['excellent'] },
         ];
         return tiers.map(t => {
             const midRate = (t.rate.min + t.rate.max) / 2;
@@ -131,7 +131,7 @@ export default function CibilAdvisoryCard({ score, loanType, loanAmount, tenureM
                 <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
                     <h4 className="text-xs font-bold mb-2" style={{ color: c.textSecondary }}>{t('cibil.costComparison')}</h4>
                     <table className="w-full text-[10px]">
-                        <thead><tr style={{ color: c.textSecondary, borderBottom: `1px solid ${c.border}` }}><th className="py-1.5 text-left font-bold">CIBIL</th><th className="py-1.5 text-right font-bold">{t('cibil.rate')}</th><th className="py-1.5 text-right font-bold">EMI</th><th className="py-1.5 text-right font-bold">{t('cibil.totalInt')}</th></tr></thead>
+                        <thead><tr style={{ color: c.textSecondary, borderBottom: `1px solid ${c.border}` }}><th className="py-1.5 text-left font-bold">CIBIL</th><th className="py-1.5 text-right font-bold">{t('cibil.rate')}</th><th className="py-1.5 text-right font-bold">{t('cibil.pdfEmi')}</th><th className="py-1.5 text-right font-bold">{t('cibil.totalInt')}</th></tr></thead>
                         <tbody>
                             {comparison.map((row, i) => (
                                 <tr key={i} className={row.isCurrent ? 'bg-emerald-500/10' : ''} style={{ borderBottom: `1px solid ${c.border}40`, color: c.text }}>
@@ -160,7 +160,7 @@ export default function CibilAdvisoryCard({ score, loanType, loanAmount, tenureM
                                     <div key={tip.id} className="p-3 rounded-xl border" style={{ borderColor: c.border }}>
                                         <div className="flex items-center justify-between mb-1">
                                             <p className="text-xs font-bold" style={{ color: c.text }}>{t(tip.titleKey)}</p>
-                                            <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${tip.impact === 'High' ? 'bg-emerald-500/15 text-emerald-500' : 'bg-amber-500/15 text-amber-500'}`}>{tip.impact} · {tip.points} pts</span>
+                                            <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${tip.impact === 'High' ? 'bg-emerald-500/15 text-emerald-500' : 'bg-amber-500/15 text-amber-500'}`}>{tip.impact} · {tip.points} {t('cibil.pts')}</span>
                                         </div>
                                         <p className="text-[10px]" style={{ color: c.textSecondary }}>{t(tip.descKey)}</p>
                                         <p className="text-[9px] mt-1 font-medium" style={{ color: c.textSecondary }}>⏱ {tip.time}</p>

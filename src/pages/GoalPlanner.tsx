@@ -60,8 +60,8 @@ export default function GoalPlanner() {
                 useNotificationStore.getState().addNotification({
                     type: 'saving_insight',
                     category: 'insight',
-                    title: '🎉 Goal Reached!',
-                    body: `Congratulations! You have reached your target of ${formatINR(currentCost)} for ${t(selectedGoal.labelKey)}.`,
+                    title: t('goal.goalReachedTitle'),
+                    body: t('goal.goalReachedBody', { target: formatINR(currentCost), goalName: t(selectedGoal.labelKey) }),
                     icon: '🎉',
                     actionRoute: '/goal-planner',
                     isActionable: true,
@@ -130,8 +130,8 @@ export default function GoalPlanner() {
                 { label: t('goalPlanner.pdfCurrentCost'), value: `₹${currentCost.toLocaleString('en-IN')}` },
                 { label: t('goalPlanner.pdfCurrentSavings'), value: `₹${currentSavings.toLocaleString('en-IN')}` },
                 { label: t('goalPlanner.pdfTargetYears'), value: `${targetYears} ${t('goalPlanner.pdfYears')}` },
-                { label: t('goalPlanner.pdfInflationRate'), value: `${inflationRate}% p.a.` },
-                { label: t('goalPlanner.pdfExpectedReturn'), value: `${expectedReturn}% p.a.` },
+                { label: t('goalPlanner.pdfInflationRate'), value: `${inflationRate}% ${t('goal.perAnnum')}` },
+                { label: t('goalPlanner.pdfExpectedReturn'), value: `${expectedReturn}% ${t('goal.perAnnum')}` },
             ],
             results: [
                 { label: t('goalPlanner.pdfMonthlySIP'), value: `₹${Math.round(result.monthlySIP).toLocaleString('en-IN')}` },
@@ -156,15 +156,15 @@ export default function GoalPlanner() {
             ]),
             additionalTables: [
                 ...(goalStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: t('goal.liveStatusAsOf', { date: new Date().toLocaleDateString('en-IN') }),
+                    columns: [t('goal.metric'), t('goal.value')],
                     rows: [
-                        ['Months Invested', `${goalStatus.sipRunningYears}y ${goalStatus.sipRunningMonths}m`],
-                        ['Total Invested', formatINR(goalStatus.totalInvested)],
-                        ['Current Value', formatINR(goalStatus.currentValue)],
-                        ['Progress to Goal', `${goalStatus.progressToGoal.toFixed(1)}%`],
-                        ['Expected Goal Date', goalStatus.expectedGoalDate || 'N/A'],
-                        ['Still Needed', formatINR(Math.max(0, result.targetFV - goalStatus.currentValue))],
+                        [t('goal.monthsInvested'), `${goalStatus.sipRunningYears}${t('goal.yearShort')} ${goalStatus.sipRunningMonths}${t('goal.monthShort')}`],
+                        [t('goal.totalInvested'), formatINR(goalStatus.totalInvested)],
+                        [t('goal.currentValue'), formatINR(goalStatus.currentValue)],
+                        [t('goal.progressToGoal'), `${goalStatus.progressToGoal.toFixed(1)}%`],
+                        [t('goal.expectedGoalDate'), goalStatus.expectedGoalDate || t('goal.notAvailable')],
+                        [t('goal.stillNeeded'), formatINR(Math.max(0, result.targetFV - goalStatus.currentValue))],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -252,7 +252,7 @@ export default function GoalPlanner() {
                             </div>
                             <NumberInput label={t('goalPlanner.expectedReturn')} value={expectedReturn} onChange={setExpectedReturn} min={1} max={30} suffix="%" step={0.5} />
                             <div>
-                                <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">SIP Start Date</label>
+                                <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('goal.sipStartDate')}</label>
                                 <DateInput
                                     value={goalStartDate}
                                     onChange={setGoalStartDate}
@@ -346,20 +346,20 @@ export default function GoalPlanner() {
                 {goalStatus && selectedGoal && (
                     <div className="mt-5">
                         <LiveStatusCard
-                            calculatorType="Goal Planner"
+                            calculatorType={t('goal.goalPlannerType')}
                             profileData={{ monthlySip: result.monthlySIP, annualReturn: expectedReturn, startDate: goalStartDate, targetAmount: result.targetFV }}
-                            title="Live Goal Status"
+                            title={t('goal.liveGoalStatus')}
                             subtitle={t(selectedGoal.labelKey)}
                             startDate={goalStartDate}
                             metrics={[
-                                { label: 'Invested', value: formatINR(goalStatus.totalInvested) },
-                                { label: 'Current Value', value: formatINR(goalStatus.currentValue), color: 'green' },
-                                { label: 'Still Needed', value: formatINR(Math.max(0, result.targetFV - goalStatus.currentValue)), color: 'amber' },
+                                { label: t('goal.invested'), value: formatINR(goalStatus.totalInvested) },
+                                { label: t('goal.currentValue'), value: formatINR(goalStatus.currentValue), color: 'green' },
+                                { label: t('goal.stillNeeded'), value: formatINR(Math.max(0, result.targetFV - goalStatus.currentValue)), color: 'amber' },
                             ]}
                             progressPercent={goalStatus.progressToGoal}
-                            progressLabel={`${goalStatus.progressToGoal.toFixed(1)}% towards goal of ${formatINR(result.targetFV)}`}
-                            insightText={goalStatus.progressToGoal >= 100 ? `Congratulations! You have reached your goal target.` : goalStatus.currentValue > goalStatus.totalInvested ? `On track! Your ${formatINR(goalStatus.totalInvested)} has grown to ${formatINR(goalStatus.currentValue)}. Expected goal date: ${goalStatus.expectedGoalDate}.` : undefined}
-                            warningText={goalStatus.progressToGoal < 100 && goalStatus.currentValue <= goalStatus.totalInvested && goalStatus.totalInvested > 0 ? `Your investments haven't started compounding yet. Stay consistent with your ${formatINR(result.monthlySIP)}/month SIP.` : undefined}
+                            progressLabel={t('goal.progressLabel', { percent: goalStatus.progressToGoal.toFixed(1), target: formatINR(result.targetFV) })}
+                            insightText={goalStatus.progressToGoal >= 100 ? t('goal.insightGoalReached') : goalStatus.currentValue > goalStatus.totalInvested ? t('goal.insightOnTrack', { invested: formatINR(goalStatus.totalInvested), currentValue: formatINR(goalStatus.currentValue), goalDate: goalStatus.expectedGoalDate }) : undefined}
+                            warningText={goalStatus.progressToGoal < 100 && goalStatus.currentValue <= goalStatus.totalInvested && goalStatus.totalInvested > 0 ? t('goal.warningNotCompounding', { sip: formatINR(result.monthlySIP) }) : undefined}
                         />
                     </div>
                 )}

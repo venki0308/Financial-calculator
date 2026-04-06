@@ -101,15 +101,15 @@ export default function SWPCalculator() {
         const swr = (withdrawal * 12 / principal) * 100;
 
         // SWR Risk: <4% = Low, 4-6% = Moderate, >6% = High
-        let swrRisk = 'Low'; let swrColor = 'text-brand-green'; let swrBg = 'bg-brand-green/10 border-brand-green/20';
-        if (swr > 6) { swrRisk = 'High'; swrColor = 'text-rose-500'; swrBg = 'bg-rose-500/10 border-rose-500/20'; }
-        else if (swr >= 4) { swrRisk = 'Moderate'; swrColor = 'text-amber-500'; swrBg = 'bg-amber-500/10 border-amber-500/20'; }
+        let swrRisk = t('swp.riskLow'); let swrColor = 'text-brand-green'; let swrBg = 'bg-brand-green/10 border-brand-green/20';
+        if (swr > 6) { swrRisk = t('swp.riskHigh'); swrColor = 'text-rose-500'; swrBg = 'bg-rose-500/10 border-rose-500/20'; }
+        else if (swr >= 4) { swrRisk = t('swp.riskModerate'); swrColor = 'text-amber-500'; swrBg = 'bg-amber-500/10 border-amber-500/20'; }
 
         // Inflation adjusted final withdrawal
         const realWithdrawalValueAtEnd = withdrawal / Math.pow(1 + (inflation / 100), years);
 
         return { finalBalance, totalWithdrawn, yearlySchedule, depletionMonth, depletionYear, swr, swrRisk, swrColor, swrBg, realWithdrawalValueAtEnd };
-    }, [principal, withdrawal, rate, years, inflation]);
+    }, [principal, withdrawal, rate, years, inflation, t]);
 
 
     // 3. SIMULATOR
@@ -128,19 +128,19 @@ export default function SWPCalculator() {
     // 4. SMART INSIGHTS
     const insight = useMemo(() => {
         if (result.depletionMonth) {
-            return { msg: `Warning: Your withdrawals are too high. Your corpus will completely deplete in year ${result.depletionYear}.`, type: 'warn' };
+            return { msg: t('swp.insightDepletion', { year: result.depletionYear }), type: 'warn' };
         }
         if (result.swr > 8) {
-            return { msg: `Your Safe Withdrawal Rate is ${result.swr.toFixed(1)}%. This is considered aggressive and may not survive market down-cycles.`, type: 'warn' };
+            return { msg: t('swp.insightAggressiveSWR', { swr: result.swr.toFixed(1) }), type: 'warn' };
         }
         if (rate <= 4 && withdrawal > 0) {
-           return { msg: "Your expected returns are very low. This forces your corpus to erode faster. Consider optimizing asset allocation.", type: 'warn' };
+           return { msg: t('swp.insightLowReturns'), type: 'warn' };
         }
         if (result.finalBalance > principal) {
-            return { msg: "Excellent! Your returns outpace your withdrawals, meaning your corpus is actually growing while providing income.", type: 'success' };
+            return { msg: t('swp.insightGrowing'), type: 'success' };
         }
-        return { msg: "Your plan is sustainable for the chosen tenure with your corpus slowly depleting as designed.", type: 'info' };
-    }, [result, rate, principal, withdrawal]);
+        return { msg: t('swp.insightSustainable'), type: 'info' };
+    }, [result, rate, principal, withdrawal, t]);
 
 
     const handleSave = () => {
@@ -149,7 +149,7 @@ export default function SWPCalculator() {
             id: calcId,
             calculatorType: 'swp',
             inputValues: { principal, withdrawal, rate, years },
-            resultValues: { primary: result.finalBalance, label: 'Final Balance', invested: principal, returns: result.totalWithdrawn },
+            resultValues: { primary: result.finalBalance, label: t('swp.finalBalance'), invested: principal, returns: result.totalWithdrawn },
             timestamp: Date.now(),
         });
         setSaved(true);
@@ -168,30 +168,30 @@ export default function SWPCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'SWP (Systematic Withdrawal Plan) Report',
+            title: t('swp.reportTitle'),
             inputs: [
-                { label: 'Invested Corpus', value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: 'Monthly Withdrawal', value: `₹${withdrawal.toLocaleString('en-IN')}` },
-                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
-                { label: 'Withdrawal Period', value: `${years} Years` },
+                { label: t('swp.investedCorpus'), value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: t('swp.monthlyWithdrawal'), value: `₹${withdrawal.toLocaleString('en-IN')}` },
+                { label: t('swp.expectedReturnRate'), value: `${rate}% ${t('swp.perAnnum')}` },
+                { label: t('swp.withdrawalPeriod'), value: `${years} ${t('swp.years')}` },
             ],
             results: [
-                { label: 'Total Amount Withdrawn', value: `₹${Math.round(result.totalWithdrawn).toLocaleString('en-IN')}` },
-                { label: 'Final Corpus Balance', value: `₹${Math.round(result.finalBalance).toLocaleString('en-IN')}` },
-                { label: 'Safe Withdrawal Rate', value: `${result.swr.toFixed(1)}% (${result.swrRisk} Risk)` },
-                { label: 'Corpus Status', value: result.depletionMonth ? `Depletes in ${(result.depletionMonth/12).toFixed(1)} years` : `Sustainable for ${years} years` },
+                { label: t('swp.totalAmountWithdrawn'), value: `₹${Math.round(result.totalWithdrawn).toLocaleString('en-IN')}` },
+                { label: t('swp.finalCorpusBalance'), value: `₹${Math.round(result.finalBalance).toLocaleString('en-IN')}` },
+                { label: t('swp.safeWithdrawalRate'), value: `${result.swr.toFixed(1)}% (${result.swrRisk} ${t('swp.risk')})` },
+                { label: t('swp.corpusStatus'), value: result.depletionMonth ? t('swp.depletesInYears', { years: (result.depletionMonth/12).toFixed(1) }) : t('swp.sustainableForYears', { years }) },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Total Withdrawn', value: result.totalWithdrawn, color: '#EF4444' },
-                    { label: 'Remaining Corpus', value: Math.max(0, result.finalBalance), color: '#10B981' },
+                    { label: t('swp.totalWithdrawn'), value: result.totalWithdrawn, color: '#EF4444' },
+                    { label: t('swp.remainingCorpus'), value: Math.max(0, result.finalBalance), color: '#10B981' },
                 ],
             },
-            projectionTitle: 'Annual Withdrawal Schedule',
-            projectionColumns: ['Year', 'Opening Balance', 'Total Withdrawn', 'Returns Earned', 'Closing Balance'],
+            projectionTitle: t('swp.annualWithdrawalSchedule'),
+            projectionColumns: [t('swp.yearCol'), t('swp.openingBalance'), t('swp.totalWithdrawnCol'), t('swp.returnsEarned'), t('swp.closingBalance')],
             projectionRows: result.yearlySchedule.map((r: any) => [
-                `Year ${r.year}`,
+                `${t('swp.yearCol')} ${r.year}`,
                 `₹${Math.round(r.open).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.withdrawn).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
@@ -206,19 +206,19 @@ export default function SWPCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'SWP (Systematic Withdrawal Plan) Report',
+            title: t('swp.reportTitle'),
             inputs: [
-                { label: 'Invested Corpus', value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: 'Monthly Withdrawal', value: `₹${withdrawal.toLocaleString('en-IN')}` },
-                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
-                { label: 'Withdrawal Period', value: `${years} Years` },
+                { label: t('swp.investedCorpus'), value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: t('swp.monthlyWithdrawal'), value: `₹${withdrawal.toLocaleString('en-IN')}` },
+                { label: t('swp.expectedReturnRate'), value: `${rate}% ${t('swp.perAnnum')}` },
+                { label: t('swp.withdrawalPeriod'), value: `${years} ${t('swp.years')}` },
             ],
             results: [
-                { label: 'Total Amount Withdrawn', value: `₹${Math.round(result.totalWithdrawn).toLocaleString('en-IN')}` },
-                { label: 'Final Corpus Balance', value: `₹${Math.round(result.finalBalance).toLocaleString('en-IN')}` },
+                { label: t('swp.totalAmountWithdrawn'), value: `₹${Math.round(result.totalWithdrawn).toLocaleString('en-IN')}` },
+                { label: t('swp.finalCorpusBalance'), value: `₹${Math.round(result.finalBalance).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Annual Withdrawal Schedule',
-            projectionColumns: ['Year', 'Opening Balance', 'Total Withdrawn', 'Returns Earned', 'Closing Balance'],
+            projectionTitle: t('swp.annualWithdrawalSchedule'),
+            projectionColumns: [t('swp.yearCol'), t('swp.openingBalance'), t('swp.totalWithdrawnCol'), t('swp.returnsEarned'), t('swp.closingBalance')],
             projectionRows: result.yearlySchedule.map((r: any) => [
                 r.year,
                 Math.round(r.open),
@@ -411,7 +411,7 @@ export default function SWPCalculator() {
                                     <div>
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('swp.withdrawal')}</span>
-                                            <span className="text-sm font-black text-rose-500">{fmtINR(simWithdrawal)}/mo</span>
+                                            <span className="text-sm font-black text-rose-500">{fmtINR(simWithdrawal)}{t('swp.perMonth')}</span>
                                         </div>
                                         <input type="range" min={1000} max={principal * 0.05} step={1000} value={simWithdrawal} onChange={e => setSimWithdrawal(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-rose-500" />
                                     </div>
@@ -427,7 +427,7 @@ export default function SWPCalculator() {
                                     <div>
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('swp.duration')}</span>
-                                            <span className="text-sm font-black text-blue-500">{simYears} yrs</span>
+                                            <span className="text-sm font-black text-blue-500">{simYears} {t('swp.yrs')}</span>
                                         </div>
                                         <input type="range" min={1} max={40} step={1} value={simYears} onChange={e => setSimYears(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-blue-500" />
                                     </div>

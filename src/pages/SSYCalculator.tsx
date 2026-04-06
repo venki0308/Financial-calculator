@@ -177,17 +177,17 @@ export default function SSYCalculator() {
             ]),
             additionalTables: [
                 ...(ssyStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('ssy.liveStatus')} (${t('ssy.asOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('ssy.metric'), t('ssy.value')],
                     rows: [
-                        ["Girl's Age", `${ssyStatus.girlAge} years`],
-                        ['Account Age', `${ssyStatus.accountAge} years`],
-                        ['Deposit Phase', ssyStatus.depositPhaseActive ? 'Active' : 'Complete'],
-                        ['Balance Today', formatINR(ssyStatus.balanceToday)],
-                        ['Total Deposited', formatINR(ssyStatus.totalDeposited)],
-                        ['Interest Earned', formatINR(ssyStatus.interestEarned)],
-                        ['Maturity Date', ssyStatus.maturityDate],
-                        ['Withdrawal Eligible', ssyStatus.withdrawalEligible ? 'Yes' : 'No'],
+                        [t('ssy.girlsAge'), `${ssyStatus.girlAge} ${t('ssy.years')}`],
+                        [t('ssy.accountAge'), `${ssyStatus.accountAge} ${t('ssy.years')}`],
+                        [t('ssy.depositPhase'), ssyStatus.depositPhaseActive ? t('ssy.active') : t('ssy.complete')],
+                        [t('ssy.balanceToday'), formatINR(ssyStatus.balanceToday)],
+                        [t('ssy.totalDeposited'), formatINR(ssyStatus.totalDeposited)],
+                        [t('ssy.interestEarned'), formatINR(ssyStatus.interestEarned)],
+                        [t('ssy.maturityDate'), ssyStatus.maturityDate],
+                        [t('ssy.withdrawalEligible'), ssyStatus.withdrawalEligible ? t('ssy.yes') : t('ssy.no')],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -215,17 +215,17 @@ export default function SSYCalculator() {
             projectionRows: result.timeline.map((row: any) => [row.year, row.age, Math.round(row.deposit), Math.round(row.interest), Math.round(row.balance), Math.round(row.cumDeposit), Math.round(row.cumInterest)]),
             additionalTables: [
                 ...(ssyStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('ssy.liveStatus')} (${t('ssy.asOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('ssy.metric'), t('ssy.value')],
                     rows: [
-                        ["Girl's Age", `${ssyStatus.girlAge} years`],
-                        ['Account Age', `${ssyStatus.accountAge} years`],
-                        ['Deposit Phase', ssyStatus.depositPhaseActive ? 'Active' : 'Complete'],
-                        ['Balance Today', formatINR(ssyStatus.balanceToday)],
-                        ['Total Deposited', formatINR(ssyStatus.totalDeposited)],
-                        ['Interest Earned', formatINR(ssyStatus.interestEarned)],
-                        ['Maturity Date', ssyStatus.maturityDate],
-                        ['Withdrawal Eligible', ssyStatus.withdrawalEligible ? 'Yes' : 'No'],
+                        [t('ssy.girlsAge'), `${ssyStatus.girlAge} ${t('ssy.years')}`],
+                        [t('ssy.accountAge'), `${ssyStatus.accountAge} ${t('ssy.years')}`],
+                        [t('ssy.depositPhase'), ssyStatus.depositPhaseActive ? t('ssy.active') : t('ssy.complete')],
+                        [t('ssy.balanceToday'), formatINR(ssyStatus.balanceToday)],
+                        [t('ssy.totalDeposited'), formatINR(ssyStatus.totalDeposited)],
+                        [t('ssy.interestEarned'), formatINR(ssyStatus.interestEarned)],
+                        [t('ssy.maturityDate'), ssyStatus.maturityDate],
+                        [t('ssy.withdrawalEligible'), ssyStatus.withdrawalEligible ? t('ssy.yes') : t('ssy.no')],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -234,7 +234,7 @@ export default function SSYCalculator() {
     };
 
     const handleShare = async () => {
-        const text = `🌸 ${t('ssy.shareTitle')}\n\n💰 ${t('ssy.annualDeposit')}: ${formatINR(annual)}\n📈 ${t('ssy.interestRateLabel')}: ${rate}%\n🎂 ${t('ssy.childAge')}: ${childAge} ${t('ssy.years')}\n\n✅ ${t('ssy.maturityAmount')}: ${formatINR(result.maturity)}\n📅 ${t('ssy.maturityAge')}: ${result.maturityAge} ${t('ssy.years')}\n💰 ${t('ssy.totalInvested')}: ${formatINR(result.invested)}\n📊 ${t('ssy.interestEarned')}: ${formatINR(result.totalInterest)}\n\nCalculated with FinCalix 🧮`;
+        const text = `🌸 ${t('ssy.shareTitle')}\n\n💰 ${t('ssy.annualDeposit')}: ${formatINR(annual)}\n📈 ${t('ssy.interestRateLabel')}: ${rate}%\n🎂 ${t('ssy.childAge')}: ${childAge} ${t('ssy.years')}\n\n✅ ${t('ssy.maturityAmount')}: ${formatINR(result.maturity)}\n📅 ${t('ssy.maturityAge')}: ${result.maturityAge} ${t('ssy.years')}\n💰 ${t('ssy.totalInvested')}: ${formatINR(result.invested)}\n📊 ${t('ssy.interestEarned')}: ${formatINR(result.totalInterest)}\n\n${t('ssy.calculatedWith')} 🧮`;
         await nativeShare(t('ssy.shareNativeTitle'), text);
     };
 
@@ -275,7 +275,7 @@ export default function SSYCalculator() {
                     <NumberInput label={t('ssy.interestRate')} value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText={t('ssy.currentRate')} />
                     <NumberInput label={t('ssy.girlChildAge')} value={childAge} onChange={setChildAge} min={0} max={10} suffix={` ${t('ssy.years')}`} helperText={t('ssy.ageHelper')} />
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Account Opening Date (optional)</label>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('ssy.accountOpeningDateLabel')}</label>
                         <DateInput
                             value={ssyOpenDate}
                             onChange={setSsyOpenDate}
@@ -284,7 +284,7 @@ export default function SSYCalculator() {
                         />
                     </div>
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Girl's Date of Birth (optional)</label>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('ssy.girlDobLabel')}</label>
                         <DateInput
                             value={girlDob}
                             onChange={setGirlDob}
@@ -295,26 +295,26 @@ export default function SSYCalculator() {
                 </div>
 
                 {/* Result Card */}
-                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-pink-600/20 to-rose-600/20 border border-pink-500/20">
-                    <p className="text-pink-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">{t('ssy.maturityAmount')}</p>
-                    <p className="text-3xl font-black text-foreground mb-4">{formatINR(result.maturity)}</p>
+                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-pink-100 to-rose-100 dark:from-pink-600/20 dark:to-rose-600/20 border border-pink-300 dark:border-pink-500/20">
+                    <p className="text-pink-500 dark:text-pink-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">{t('ssy.maturityAmount')}</p>
+                    <p className="text-3xl font-black text-slate-900 dark:text-foreground mb-4">{formatINR(result.maturity)}</p>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.totalInvested')}</p>
-                            <p className="text-foreground font-bold text-sm">{formatINR(result.invested)}</p>
+                            <p className="text-slate-500 dark:text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.totalInvested')}</p>
+                            <p className="text-slate-800 dark:text-foreground font-bold text-sm">{formatINR(result.invested)}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.interestEarned')}</p>
-                            <p className="text-brand-green font-bold text-sm">{formatINR(result.totalInterest)}</p>
+                            <p className="text-slate-500 dark:text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.interestEarned')}</p>
+                            <p className="text-emerald-600 dark:text-brand-green font-bold text-sm">{formatINR(result.totalInterest)}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.maturityAge')}</p>
-                            <p className="text-blue-400 font-bold text-sm">{result.maturityAge} {t('ssy.years')}</p>
+                            <p className="text-slate-500 dark:text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.maturityAge')}</p>
+                            <p className="text-blue-600 dark:text-blue-400 font-bold text-sm">{result.maturityAge} {t('ssy.years')}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.returnsMultiplier')}</p>
-                            <p className="text-amber-400 font-bold text-sm">{(result.maturity / result.invested).toFixed(2)}x</p>
+                            <p className="text-slate-500 dark:text-muted-foreground text-[10px] uppercase font-bold">{t('ssy.returnsMultiplier')}</p>
+                            <p className="text-amber-600 dark:text-amber-400 font-bold text-sm">{(result.maturity / result.invested).toFixed(2)}x</p>
                         </div>
                     </div>
 
@@ -481,26 +481,26 @@ export default function SSYCalculator() {
                         <LiveStatusCard
                             calculatorType="SSY"
                             profileData={{ yearlyDeposit: effectiveAnnual, rate, openingDate: ssyOpenDate, girlDob }}
-                            title="SSY Live Status"
-                            subtitle={`Girl's age: ${ssyStatus.girlAge} years | Account age: ${ssyStatus.accountAge} years`}
+                            title={t('ssy.liveStatusTitle')}
+                            subtitle={`${t('ssy.girlsAge')}: ${ssyStatus.girlAge} ${t('ssy.years')} | ${t('ssy.accountAge')}: ${ssyStatus.accountAge} ${t('ssy.years')}`}
                             startDate={ssyOpenDate}
                             metrics={[
-                                { label: 'Deposited', value: formatINR(ssyStatus.totalDeposited) },
-                                { label: 'Interest', value: formatINR(ssyStatus.interestEarned), color: 'amber' },
-                                { label: 'Balance', value: formatINR(ssyStatus.balanceToday), color: 'green' },
+                                { label: t('ssy.deposited'), value: formatINR(ssyStatus.totalDeposited) },
+                                { label: t('ssy.interest'), value: formatINR(ssyStatus.interestEarned), color: 'amber' },
+                                { label: t('ssy.balance'), value: formatINR(ssyStatus.balanceToday), color: 'green' },
                             ]}
                             progressPercent={(ssyStatus.accountAge / 21) * 100}
-                            progressLabel={`Year ${ssyStatus.accountAge} of 21${ssyStatus.daysToMaturity > 0 ? ` — ${ssyStatus.daysToMaturity} days to maturity` : ''}`}
+                            progressLabel={`${t('ssy.year')} ${ssyStatus.accountAge} ${t('ssy.ofTotal')} 21${ssyStatus.daysToMaturity > 0 ? ` — ${ssyStatus.daysToMaturity} ${t('ssy.daysToMaturity')}` : ''}`}
                             warningText={
                                 !ssyStatus.depositPhaseActive
-                                    ? 'Deposit phase (15 years) is over. Interest continues to accrue until maturity at 21 years.'
+                                    ? t('ssy.depositPhaseOverWarning')
                                     : undefined
                             }
                             insightText={
                                 ssyStatus.withdrawalEligible
-                                    ? `Partial withdrawal eligible (girl is 18+) — up to ${formatINR(ssyStatus.withdrawalAmount)} (50% of balance) for education/marriage.`
+                                    ? t('ssy.partialWithdrawalEligibleInsight', { amount: formatINR(ssyStatus.withdrawalAmount) })
                                     : ssyStatus.depositPhaseActive
-                                        ? `Deposit phase active — ${ssyStatus.depositYearsRemaining} year(s) of deposits remaining.`
+                                        ? t('ssy.depositPhaseActiveInsight', { years: ssyStatus.depositYearsRemaining })
                                         : undefined
                             }
                         />

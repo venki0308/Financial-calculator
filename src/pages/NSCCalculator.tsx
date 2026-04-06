@@ -106,7 +106,7 @@ export default function NSCCalculator() {
         const calcId = crypto.randomUUID();
         addSaved({
             id: calcId,
-            calculatorType: 'NSC Calculator',
+            calculatorType: t('nsc.calculatorType'),
             inputValues: { investment, rate, annualIncome, taxRegime },
             resultValues: { primary: result.maturity, ...result },
             timestamp: Date.now()
@@ -127,47 +127,47 @@ export default function NSCCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: 'NSC (National Savings Certificate) Report',
+            title: t('nsc.reportTitle'),
             inputs: [
-                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
-                { label: 'Tenure', value: '5 Years (fixed)' },
-                { label: 'Tax Regime', value: taxRegime === 'old' ? 'Old Regime' : 'New Regime' },
+                { label: t('nsc.investmentAmountLabel'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: t('nsc.interestRateLabel'), value: `${rate}% ${t('nsc.perAnnum')}` },
+                { label: t('nsc.tenureLabel'), value: t('nsc.fiveYearsFixed') },
+                { label: t('nsc.taxRegimeLabel'), value: taxRegime === 'old' ? t('nsc.oldRegime') : t('nsc.newRegime') },
             ],
             results: [
-                { label: 'Maturity Amount (5 Years)', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
-                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Sec 80C / 123 Deduction', value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
-                { label: 'Tax Saving (Sec 80C/123)', value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
-                { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
-                { label: 'Inflation-Adjusted Value', value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
+                { label: t('nsc.maturityAmountLabel'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: t('nsc.totalInterestEarnedLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('nsc.sec80CDeductionLabel'), value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
+                { label: t('nsc.taxSavingLabel'), value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
+                { label: t('nsc.postTaxMaturityLabel'), value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+                { label: t('nsc.inflationAdjustedValueLabel'), value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Principal Invested', value: investment, color: '#4F46E5' },
-                    { label: 'Interest Earned', value: result.totalInterest, color: '#10B981' },
+                    { label: t('nsc.principalInvested'), value: investment, color: '#4F46E5' },
+                    { label: t('nsc.interestEarnedChart'), value: result.totalInterest, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'NSC Year-Wise Growth',
-            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionTitle: t('nsc.yearWiseGrowth'),
+            projectionColumns: [t('nsc.yearCol'), t('nsc.openingBalanceCol'), t('nsc.interestEarnedCol'), t('nsc.closingBalanceCol')],
             projectionRows: result.table.map((y: any) => [
-                `Year ${y.year}`,
+                `${t('nsc.yearPrefix')} ${y.year}`,
                 `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(nscStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('nsc.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('nsc.metricCol'), t('nsc.valueCol')],
                     rows: [
-                        ['NSC Age', `${nscStatus.yearsCompleted}y ${nscStatus.monthsInCurrentYear}m`],
-                        ['Current Value', fmtINR(nscStatus.valueToday)],
-                        ['Interest Earned', fmtINR(nscStatus.interestEarned)],
-                        ['Maturity Date', nscStatus.maturityDate],
-                        ['Days to Maturity', String(nscStatus.daysToMaturity)],
-                        ['Maturity Value', fmtINR(nscStatus.maturityValue)],
+                        [t('nsc.nscAge'), `${nscStatus.yearsCompleted}y ${nscStatus.monthsInCurrentYear}m`],
+                        [t('nsc.currentValue'), fmtINR(nscStatus.valueToday)],
+                        [t('nsc.interestEarnedMetric'), fmtINR(nscStatus.interestEarned)],
+                        [t('nsc.maturityDate'), nscStatus.maturityDate],
+                        [t('nsc.daysToMaturity'), String(nscStatus.daysToMaturity)],
+                        [t('nsc.maturityValue'), fmtINR(nscStatus.maturityValue)],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -179,40 +179,40 @@ export default function NSCCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: 'NSC (National Savings Certificate) Report',
+            title: t('nsc.reportTitle'),
             inputs: [
-                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
-                { label: 'Tenure', value: '5 Years (fixed)' },
-                { label: 'Tax Regime', value: taxRegime === 'old' ? 'Old Regime' : 'New Regime' },
+                { label: t('nsc.investmentAmountLabel'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: t('nsc.interestRateLabel'), value: `${rate}% ${t('nsc.perAnnum')}` },
+                { label: t('nsc.tenureLabel'), value: t('nsc.fiveYearsFixed') },
+                { label: t('nsc.taxRegimeLabel'), value: taxRegime === 'old' ? t('nsc.oldRegime') : t('nsc.newRegime') },
             ],
             results: [
-                { label: 'Maturity Amount (5 Years)', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
-                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Sec 80C / 123 Deduction', value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
-                { label: 'Tax Saving (Sec 80C/123)', value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
-                { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
-                { label: 'Inflation-Adjusted Value', value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
+                { label: t('nsc.maturityAmountLabel'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: t('nsc.totalInterestEarnedLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('nsc.sec80CDeductionLabel'), value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
+                { label: t('nsc.taxSavingLabel'), value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
+                { label: t('nsc.postTaxMaturityLabel'), value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+                { label: t('nsc.inflationAdjustedValueLabel'), value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'NSC Year-Wise Growth',
-            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionTitle: t('nsc.yearWiseGrowth'),
+            projectionColumns: [t('nsc.yearCol'), t('nsc.openingBalanceCol'), t('nsc.interestEarnedCol'), t('nsc.closingBalanceCol')],
             projectionRows: result.table.map((y: any) => [
-                `Year ${y.year}`,
+                `${t('nsc.yearPrefix')} ${y.year}`,
                 `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(nscStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('nsc.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('nsc.metricCol'), t('nsc.valueCol')],
                     rows: [
-                        ['NSC Age', `${nscStatus.yearsCompleted}y ${nscStatus.monthsInCurrentYear}m`],
-                        ['Current Value', fmtINR(nscStatus.valueToday)],
-                        ['Interest Earned', fmtINR(nscStatus.interestEarned)],
-                        ['Maturity Date', nscStatus.maturityDate],
-                        ['Days to Maturity', String(nscStatus.daysToMaturity)],
-                        ['Maturity Value', fmtINR(nscStatus.maturityValue)],
+                        [t('nsc.nscAge'), `${nscStatus.yearsCompleted}y ${nscStatus.monthsInCurrentYear}m`],
+                        [t('nsc.currentValue'), fmtINR(nscStatus.valueToday)],
+                        [t('nsc.interestEarnedMetric'), fmtINR(nscStatus.interestEarned)],
+                        [t('nsc.maturityDate'), nscStatus.maturityDate],
+                        [t('nsc.daysToMaturity'), String(nscStatus.daysToMaturity)],
+                        [t('nsc.maturityValue'), fmtINR(nscStatus.maturityValue)],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -277,7 +277,7 @@ export default function NSCCalculator() {
                         </div>
                     </div>
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">NSC Purchase Date (optional)</label>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('nsc.purchaseDateLabel')}</label>
                         <DateInput
                             value={nscPurchaseDate}
                             onChange={setNscPurchaseDate}
@@ -449,20 +449,20 @@ export default function NSCCalculator() {
                     <LiveStatusCard
                         calculatorType="NSC"
                         profileData={{ principal: investment, rate, purchaseDate: nscPurchaseDate }}
-                        title="NSC Live Status"
-                        subtitle={`Year ${nscStatus.yearsCompleted} of 5${nscStatus.yearsCompleted >= 5 ? ' — Matured!' : ''}`}
+                        title={t('nsc.liveStatusTitle')}
+                        subtitle={`${t('nsc.yearPrefix')} ${nscStatus.yearsCompleted} ${t('nsc.ofTotal')} 5${nscStatus.yearsCompleted >= 5 ? ` — ${t('nsc.matured')}` : ''}`}
                         startDate={nscPurchaseDate}
                         metrics={[
-                            { label: 'Invested', value: fmtINR(investment) },
-                            { label: 'Current Value', value: fmtINR(nscStatus.valueToday), color: 'green' },
-                            { label: 'Interest', value: fmtINR(nscStatus.interestEarned), color: 'amber' },
+                            { label: t('nsc.invested'), value: fmtINR(investment) },
+                            { label: t('nsc.currentValue'), value: fmtINR(nscStatus.valueToday), color: 'green' },
+                            { label: t('nsc.interestLabel'), value: fmtINR(nscStatus.interestEarned), color: 'amber' },
                         ]}
                         progressPercent={(nscStatus.yearsCompleted / 5) * 100}
-                        progressLabel={`Year ${nscStatus.yearsCompleted} of 5 completed${nscStatus.daysToMaturity > 0 ? ` — ${nscStatus.daysToMaturity} days to maturity` : ''}`}
+                        progressLabel={`${t('nsc.yearPrefix')} ${nscStatus.yearsCompleted} ${t('nsc.ofTotal')} 5 ${t('nsc.completed')}${nscStatus.daysToMaturity > 0 ? ` — ${nscStatus.daysToMaturity} ${t('nsc.daysToMaturitySuffix')}` : ''}`}
                         insightText={
                             nscStatus.yearsCompleted >= 5
-                                ? `Your NSC has matured! Maturity value: ${fmtINR(nscStatus.maturityValue)}. You can reinvest for another 5-year term.`
-                                : `Year-wise values: ${nscStatus.yearValues.slice(1, nscStatus.yearsCompleted + 2).map((v, i) => `Yr${i + 1}: ${fmtINR(v)}`).join(' | ')}`
+                                ? `${t('nsc.maturedInsight', { maturityValue: fmtINR(nscStatus.maturityValue) })}`
+                                : `${t('nsc.yearWiseValues')}: ${nscStatus.yearValues.slice(1, nscStatus.yearsCompleted + 2).map((v, i) => `${t('nsc.yr')}${i + 1}: ${fmtINR(v)}`).join(' | ')}`
                         }
                     />
                 </div>

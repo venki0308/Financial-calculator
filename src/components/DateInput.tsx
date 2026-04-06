@@ -19,18 +19,18 @@ const START_YEAR = 1500;
 const END_YEAR  = new Date().getFullYear();
 const YEARS     = Array.from({ length: END_YEAR - START_YEAR + 1 }, (_, i) => END_YEAR - i);
 
-const MONTH_NAMES = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December',
+const MONTH_KEYS = [
+    'january','february','march','april','may','june',
+    'july','august','september','october','november','december',
 ];
-const DAY_HEADERS = ['S','M','T','W','T','F','S'];
+const DAY_HEADER_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
 
 /* ────────────────────────── helpers ──────────────────────────── */
 
 function pad(n: number) { return n < 10 ? `0${n}` : `${n}`; }
 
-function formatDisplay(s: string): string {
-    if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return 'Select date';
+function formatDisplay(s: string, t: (key: string) => string): string {
+    if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return t('dateInput:selectDate');
     const [y, m, d] = s.split('-').map(Number);
     const date = new Date(y, m - 1, d);
     return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -97,6 +97,7 @@ export default function DateInput({ value, onChange, className = '', max, min, p
 interface NativeProps extends Props { isDark: boolean; }
 
 function NativeCalendarInput({ value, onChange, className, max, min, placeholder, isDark }: NativeProps) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
 
     // Determine initial month/year when modal opens
@@ -117,7 +118,7 @@ function NativeCalendarInput({ value, onChange, className, max, min, placeholder
                 className={className}
                 style={{ textAlign: 'left' }}
             >
-                {value ? formatDisplay(value) : (placeholder ?? 'Select date')}
+                {value ? formatDisplay(value, t) : (placeholder ?? t('dateInput:selectDate'))}
             </button>
 
             {open && (
@@ -152,6 +153,7 @@ interface ModalProps {
 }
 
 function CalendarModal({ isDark, selected, initialYear, initialMonth, max, min, onSelect, onClose }: ModalProps) {
+    const { t } = useTranslation();
     const [year, setYear]   = useState(initialYear);
     const [month, setMonth] = useState(initialMonth);
     const [showYearPicker, setShowYearPicker] = useState(false);
@@ -219,7 +221,7 @@ function CalendarModal({ isDark, selected, initialYear, initialMonth, max, min, 
                         padding: '16px 20px', borderBottom: `1px solid ${border}`,
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     }}>
-                        <span style={{ fontWeight: 700, fontSize: 16, color: textPrimary }}>Select Year</span>
+                        <span style={{ fontWeight: 700, fontSize: 16, color: textPrimary }}>{t('dateInput:selectYear')}</span>
                         <button onClick={() => setShowYearPicker(false)}
                             style={{ color: textMuted, fontSize: 22, background: 'none', border: 'none', lineHeight: 1 }}>✕</button>
                     </div>
@@ -278,7 +280,7 @@ function CalendarModal({ isDark, selected, initialYear, initialMonth, max, min, 
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0,
                     }}>
                         <span style={{ fontWeight: 700, fontSize: 17, color: textPrimary }}>
-                            {MONTH_NAMES[month]}
+                            {t(`dateInput:months.${MONTH_KEYS[month]}`)}
                         </span>
                         <span style={{ fontSize: 13, color: accent, fontWeight: 600 }}>
                             {year} ▾
@@ -298,12 +300,12 @@ function CalendarModal({ isDark, selected, initialYear, initialMonth, max, min, 
                     display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)',
                     padding: '0 12px', marginBottom: 4,
                 }}>
-                    {DAY_HEADERS.map((d, i) => (
+                    {DAY_HEADER_KEYS.map((key: string, i: number) => (
                         <div key={i} style={{
                             textAlign: 'center', fontSize: 12, fontWeight: 700,
                             color: textMuted, padding: '6px 0',
                             textTransform: 'uppercase', letterSpacing: 0.5,
-                        }}>{d}</div>
+                        }}>{t(`dateInput:days.${key}`)}</div>
                     ))}
                 </div>
 
@@ -366,15 +368,15 @@ function CalendarModal({ isDark, selected, initialYear, initialMonth, max, min, 
                         padding: '8px 20px', borderRadius: 10, fontSize: 14, fontWeight: 600,
                         background: surface, color: textPrimary, border: `1px solid ${border}`,
                         cursor: 'pointer',
-                    }}>Cancel</button>
+                    }}>{t('dateInput:cancel')}</button>
                     <button onClick={() => {
-                        const t = new Date();
-                        onSelect(`${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`);
+                        const now = new Date();
+                        onSelect(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
                     }} style={{
                         padding: '8px 20px', borderRadius: 10, fontSize: 14, fontWeight: 600,
                         background: accent, color: '#ffffff', border: 'none',
                         cursor: 'pointer',
-                    }}>Today</button>
+                    }}>{t('dateInput:today')}</button>
                 </div>
             </div>
         </div>

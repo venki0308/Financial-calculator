@@ -96,7 +96,7 @@ export default function GratuityCalculator() {
         const calcId = crypto.randomUUID();
         addSaved({
             id: calcId,
-            calculatorType: 'Gratuity Calculator',
+            calculatorType: t('gratuity.calculatorType'),
             inputValues: { salary, years },
             resultValues: result,
             timestamp: Date.now()
@@ -117,26 +117,26 @@ export default function GratuityCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: 'Gratuity Calculator Report',
+            title: t('gratuity.reportTitle'),
             inputs: [
-                { label: 'Last Drawn Salary (Basic + DA)', value: `₹${Math.round(salary).toLocaleString('en-IN')}` },
-                { label: 'Years of Service', value: `${years} Years` },
-                { label: 'Employer Type', value: employerType },
+                { label: t('gratuity.lastDrawnSalaryLabel'), value: `₹${Math.round(salary).toLocaleString('en-IN')}` },
+                { label: t('gratuity.yearsOfServiceLabel'), value: `${years} ${t('gratuity.yearsUnit')}` },
+                { label: t('gratuity.employerTypeLabel'), value: employerType === 'Govt' ? t('gratuity.govtSector') : t('gratuity.privateSector') },
             ],
             results: [
-                { label: 'Estimated Gratuity', value: `₹${Math.round(result.gratuity).toLocaleString('en-IN')}` },
-                { label: 'Tax Exemption Limit', value: `₹${Math.round(result.exemptionLimit).toLocaleString('en-IN')}` },
-                { label: 'Taxable Gratuity', value: `₹${Math.round(result.taxableGratuity).toLocaleString('en-IN')}` },
-                { label: 'Estimated Tax', value: `₹${Math.round(result.estimatedTax).toLocaleString('en-IN')}` },
-                { label: 'Net Gratuity (After Tax)', value: `₹${Math.round(result.netGratuity).toLocaleString('en-IN')}` },
-                { label: 'Eligibility', value: result.isEligible ? 'Eligible' : 'Not Eligible (< 5 years)' },
+                { label: t('gratuity.estimatedGratuityLabel'), value: `₹${Math.round(result.gratuity).toLocaleString('en-IN')}` },
+                { label: t('gratuity.taxExemptionLimitLabel'), value: `₹${Math.round(result.exemptionLimit).toLocaleString('en-IN')}` },
+                { label: t('gratuity.taxableGratuityLabel'), value: `₹${Math.round(result.taxableGratuity).toLocaleString('en-IN')}` },
+                { label: t('gratuity.estimatedTaxLabel'), value: `₹${Math.round(result.estimatedTax).toLocaleString('en-IN')}` },
+                { label: t('gratuity.netGratuityLabel'), value: `₹${Math.round(result.netGratuity).toLocaleString('en-IN')}` },
+                { label: t('gratuity.eligibilityLabel'), value: result.isEligible ? t('gratuity.eligible') : t('gratuity.notEligibleShort') },
             ],
-            projectionTitle: 'Year-Wise Service Impact',
-            projectionColumns: ['Year of Service', 'Gratuity Amount', 'Eligibility'],
+            projectionTitle: t('gratuity.yearWiseServiceImpact'),
+            projectionColumns: [t('gratuity.yearOfServiceCol'), t('gratuity.gratuityAmountCol'), t('gratuity.eligibilityCol')],
             projectionRows: result.yearWiseData.map((r: any) => [
-                `Year ${r.year}`,
+                t('gratuity.yearN', { n: r.year }),
                 `₹${Math.round(r.gratuity).toLocaleString('en-IN')}`,
-                r.eligible ? 'Eligible' : 'Not Eligible',
+                r.eligible ? t('gratuity.eligible') : t('gratuity.notEligibleLabel'),
             ]),
             filename: `FinCalix_Gratuity_Report_${tag}`,
         });
@@ -146,25 +146,25 @@ export default function GratuityCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: 'Gratuity Calculator Report',
+            title: t('gratuity.reportTitle'),
             inputs: [
-                { label: 'Last Drawn Salary (Basic + DA)', value: `₹${Math.round(salary).toLocaleString('en-IN')}` },
-                { label: 'Years of Service', value: `${years} Years` },
-                { label: 'Employer Type', value: employerType },
+                { label: t('gratuity.lastDrawnSalaryLabel'), value: `₹${Math.round(salary).toLocaleString('en-IN')}` },
+                { label: t('gratuity.yearsOfServiceLabel'), value: `${years} ${t('gratuity.yearsUnit')}` },
+                { label: t('gratuity.employerTypeLabel'), value: employerType === 'Govt' ? t('gratuity.govtSector') : t('gratuity.privateSector') },
             ],
             results: [
-                { label: 'Estimated Gratuity', value: String(Math.round(result.gratuity)) },
-                { label: 'Taxable Gratuity', value: String(Math.round(result.taxableGratuity)) },
-                { label: 'Estimated Tax', value: String(Math.round(result.estimatedTax)) },
-                { label: 'Net Gratuity (After Tax)', value: String(Math.round(result.netGratuity)) },
-                { label: 'Eligibility', value: result.isEligible ? 'Eligible' : 'Not Eligible (< 5 years)' },
+                { label: t('gratuity.estimatedGratuityLabel'), value: String(Math.round(result.gratuity)) },
+                { label: t('gratuity.taxableGratuityLabel'), value: String(Math.round(result.taxableGratuity)) },
+                { label: t('gratuity.estimatedTaxLabel'), value: String(Math.round(result.estimatedTax)) },
+                { label: t('gratuity.netGratuityLabel'), value: String(Math.round(result.netGratuity)) },
+                { label: t('gratuity.eligibilityLabel'), value: result.isEligible ? t('gratuity.eligible') : t('gratuity.notEligibleShort') },
             ],
-            projectionTitle: 'Year-Wise Service Impact',
-            projectionColumns: ['Year of Service', 'Gratuity Amount', 'Eligibility'],
+            projectionTitle: t('gratuity.yearWiseServiceImpact'),
+            projectionColumns: [t('gratuity.yearOfServiceCol'), t('gratuity.gratuityAmountCol'), t('gratuity.eligibilityCol')],
             projectionRows: result.yearWiseData.map((r: any) => [
-                `Year ${r.year}`,
+                t('gratuity.yearN', { n: r.year }),
                 Math.round(r.gratuity),
-                r.eligible ? 'Eligible' : 'Not Eligible',
+                r.eligible ? t('gratuity.eligible') : t('gratuity.notEligibleLabel'),
             ]),
             filename: `FinCalix_Gratuity_Report_${tag}`,
         });

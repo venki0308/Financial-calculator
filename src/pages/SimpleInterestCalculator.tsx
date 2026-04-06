@@ -54,22 +54,22 @@ function buildPeriodTable(
     return rows;
 }
 
-const FREQ_OPTIONS: { label: string; val: FrequencyMonths }[] = [
-    { label: 'Monthly', val: 1 },
-    { label: 'Quarterly', val: 3 },
-    { label: 'Half-yearly', val: 6 },
-    { label: 'Yearly', val: 12 },
-];
-
-const FREQ_LABEL: Record<FrequencyMonths, string> = {
-    1: 'Monthly',
-    3: 'Quarterly',
-    6: 'Half-yearly',
-    12: 'Yearly',
-};
-
 export default function SimpleInterestCalculator() {
     const { t } = useTranslation();
+
+    const FREQ_OPTIONS: { label: string; val: FrequencyMonths }[] = [
+        { label: t('si.freqMonthly'), val: 1 },
+        { label: t('si.freqQuarterly'), val: 3 },
+        { label: t('si.freqHalfyearly'), val: 6 },
+        { label: t('si.freqYearly'), val: 12 },
+    ];
+
+    const FREQ_LABEL: Record<FrequencyMonths, string> = {
+        1: t('si.freqMonthly'),
+        3: t('si.freqQuarterly'),
+        6: t('si.freqHalfyearly'),
+        12: t('si.freqYearly'),
+    };
     useEffect(() => { AnalyticsService.trackScreen('Simple_Interest'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
@@ -149,61 +149,61 @@ export default function SimpleInterestCalculator() {
         const freqName = FREQ_LABEL[payFreq];
 
         const inputs: Array<{ label: string; value: string }> = [
-            { label: 'Principal Amount', value: `₹${principal.toLocaleString('en-IN')}` },
-            { label: 'Interest Mode', value: mode === 'flat' ? 'Flat Rate' : mode === 'simple' ? 'Simple Interest' : 'Compound Interest' },
+            { label: t('si.pdfPrincipalAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
+            { label: t('si.pdfInterestMode'), value: mode === 'flat' ? t('si.flatRate') : mode === 'simple' ? t('si.simpleInterest') : t('si.compoundInterest') },
         ];
         const results: Array<{ label: string; value: string }> = [];
 
         if (mode === 'flat') {
             const r = result as { monthlyInterest: number; equivalentMonthlyPct: number; equivalentAnnualPct: number; totalInterest: number; totalPayable: number };
             inputs.push(
-                { label: 'Rate', value: `₹${flatRate} per ₹100/month` },
-                { label: 'Tenure', value: `${tenure} Months` },
-                { label: 'Payment Frequency', value: freqName },
+                { label: t('si.rate'), value: `₹${flatRate} ${t('si.perHundredPerMonth')}` },
+                { label: t('si.tenure'), value: `${tenure} ${t('si.months')}` },
+                { label: t('si.paymentFrequency'), value: freqName },
             );
             results.push(
-                { label: 'Monthly Interest', value: `₹${Math.round(r.monthlyInterest).toLocaleString('en-IN')}` },
-                { label: 'Equiv. Monthly Rate', value: `${r.equivalentMonthlyPct.toFixed(2)}%` },
-                { label: 'Equiv. Annual Rate', value: `${r.equivalentAnnualPct.toFixed(2)}%` },
-                { label: 'Total Interest', value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Payable', value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
+                { label: t('si.monthlyInterest'), value: `₹${Math.round(r.monthlyInterest).toLocaleString('en-IN')}` },
+                { label: t('si.pdfEquivMonthlyRate'), value: `${r.equivalentMonthlyPct.toFixed(2)}%` },
+                { label: t('si.pdfEquivAnnualRate'), value: `${r.equivalentAnnualPct.toFixed(2)}%` },
+                { label: t('si.pdfTotalInterest'), value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('si.totalPayable'), value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
             );
         } else if (mode === 'simple') {
             const r = result as { totalInterest: number; totalAmount: number; monthlyEMI: number };
             inputs.push(
-                { label: 'Annual Rate', value: `${annualRate}%` },
-                { label: 'Tenure', value: `${tenure} Months` },
-                { label: 'Payment Frequency', value: freqName },
+                { label: t('si.annualRate'), value: `${annualRate}%` },
+                { label: t('si.tenure'), value: `${tenure} ${t('si.months')}` },
+                { label: t('si.paymentFrequency'), value: freqName },
             );
             results.push(
-                { label: 'Total Interest (SI)', value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Amount', value: `₹${Math.round(r.totalAmount).toLocaleString('en-IN')}` },
-                { label: 'Monthly EMI', value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
+                { label: t('si.totalInterestSI'), value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('si.totalAmount'), value: `₹${Math.round(r.totalAmount).toLocaleString('en-IN')}` },
+                { label: t('si.monthlyEMI'), value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
             );
         } else {
             const r = result as { compoundInterest: number; totalPayable: number; monthlyEMI: number };
-            const compFreqLabel = compFreqOptions.find(f => f.val === compoundFreq)?.label || 'Monthly';
+            const compFreqLabel = compFreqOptions.find(f => f.val === compoundFreq)?.label || t('si.freqMonthly');
             inputs.push(
-                { label: 'Annual Rate', value: `${annualRate}%` },
-                { label: 'Tenure', value: `${tenure} Months` },
-                { label: 'Compounding Frequency', value: compFreqLabel },
+                { label: t('si.annualRate'), value: `${annualRate}%` },
+                { label: t('si.tenure'), value: `${tenure} ${t('si.months')}` },
+                { label: t('si.compoundingFrequency'), value: compFreqLabel },
             );
             results.push(
-                { label: 'Compound Interest', value: `₹${Math.round(r.compoundInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Payable', value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
-                { label: 'Avg Monthly Payment', value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
+                { label: t('si.compoundInterestLabel'), value: `₹${Math.round(r.compoundInterest).toLocaleString('en-IN')}` },
+                { label: t('si.totalPayable'), value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
+                { label: t('si.avgMonthlyPayment'), value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
             );
         }
 
         const config: ExportConfig = {
-            title: 'Interest Calculator Report',
-            subtitle: mode === 'flat' ? 'Flat Rate Interest' : mode === 'simple' ? 'Simple Interest' : 'Compound Interest',
+            title: t('si.pdfReportTitle'),
+            subtitle: mode === 'flat' ? t('si.flatRateInterest') : mode === 'simple' ? t('si.simpleInterest') : t('si.compoundInterest'),
             inputs,
             results,
-            projectionTitle: 'Payment Schedule',
-            projectionColumns: periodRows.length > 0 ? ['Period', 'Due Date', 'Interest', 'Cumulative Interest'] : undefined,
+            projectionTitle: t('si.pdfPaymentSchedule'),
+            projectionColumns: periodRows.length > 0 ? [t('si.period'), t('si.dueDate'), t('si.interest'), t('si.pdfCumulativeInterest')] : undefined,
             projectionRows: periodRows.map((r: any) => [
-                `Period ${r.period}`,
+                `${t('si.period')} ${r.period}`,
                 r.dueDate || '',
                 `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
@@ -218,49 +218,49 @@ export default function SimpleInterestCalculator() {
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
 
         const inputs: Array<{ label: string; value: string }> = [
-            { label: 'Principal', value: `₹${principal.toLocaleString('en-IN')}` },
-            { label: 'Mode', value: mode },
+            { label: t('si.principal'), value: `₹${principal.toLocaleString('en-IN')}` },
+            { label: t('si.excelMode'), value: mode },
         ];
         const results: Array<{ label: string; value: string }> = [];
 
         if (mode === 'flat') {
             const r = result as { monthlyInterest: number; totalInterest: number; totalPayable: number };
-            inputs.push({ label: 'Rate (₹/₹100/month)', value: String(flatRate) });
+            inputs.push({ label: t('si.excelRateFlat'), value: String(flatRate) });
             results.push(
-                { label: 'Monthly Interest', value: `₹${Math.round(r.monthlyInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Interest', value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Payable', value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
+                { label: t('si.monthlyInterest'), value: `₹${Math.round(r.monthlyInterest).toLocaleString('en-IN')}` },
+                { label: t('si.pdfTotalInterest'), value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('si.totalPayable'), value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
             );
         } else if (mode === 'simple') {
             const r = result as { totalInterest: number; totalAmount: number; monthlyEMI: number };
             inputs.push(
-                { label: 'Rate (%)', value: String(annualRate) },
-                { label: 'Tenure (months)', value: String(tenure) },
+                { label: t('si.excelRatePercent'), value: String(annualRate) },
+                { label: t('si.excelTenureMonths'), value: String(tenure) },
             );
             results.push(
-                { label: 'Total Interest', value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Amount', value: `₹${Math.round(r.totalAmount).toLocaleString('en-IN')}` },
-                { label: 'Monthly EMI', value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
+                { label: t('si.pdfTotalInterest'), value: `₹${Math.round(r.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('si.totalAmount'), value: `₹${Math.round(r.totalAmount).toLocaleString('en-IN')}` },
+                { label: t('si.monthlyEMI'), value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
             );
         } else {
             const r = result as { compoundInterest: number; totalPayable: number; monthlyEMI: number };
             inputs.push(
-                { label: 'Rate (%)', value: String(annualRate) },
-                { label: 'Tenure (months)', value: String(tenure) },
+                { label: t('si.excelRatePercent'), value: String(annualRate) },
+                { label: t('si.excelTenureMonths'), value: String(tenure) },
             );
             results.push(
-                { label: 'Compound Interest', value: `₹${Math.round(r.compoundInterest).toLocaleString('en-IN')}` },
-                { label: 'Total Payable', value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
-                { label: 'Monthly EMI', value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
+                { label: t('si.compoundInterestLabel'), value: `₹${Math.round(r.compoundInterest).toLocaleString('en-IN')}` },
+                { label: t('si.totalPayable'), value: `₹${Math.round(r.totalPayable).toLocaleString('en-IN')}` },
+                { label: t('si.monthlyEMI'), value: `₹${Math.round(r.monthlyEMI).toLocaleString('en-IN')}` },
             );
         }
 
         const config: ExportConfig = {
-            title: 'Interest Calculator Report',
+            title: t('si.pdfReportTitle'),
             inputs,
             results,
-            projectionTitle: 'Payment Schedule',
-            projectionColumns: periodRows.length > 0 ? ['Period', 'Due Date', 'Interest', 'Cumulative'] : undefined,
+            projectionTitle: t('si.pdfPaymentSchedule'),
+            projectionColumns: periodRows.length > 0 ? [t('si.period'), t('si.dueDate'), t('si.interest'), t('si.cumulative')] : undefined,
             projectionRows: periodRows.map((r: any) => [r.period, r.dueDate || '', Math.round(r.interest), Math.round(r.cumulative)]),
             filename: `FinCalix_Interest_Report_${tag}`,
         };
@@ -276,7 +276,7 @@ export default function SimpleInterestCalculator() {
     const compFreqOptions = [
         { label: t('si.freqMonthly'), val: 12 },
         { label: t('si.freqQuarterly'), val: 4 },
-        { label: t('si.freqHalfYr'), val: 2 },
+        { label: t('si.freqHalfyearly'), val: 2 },
         { label: t('si.freqYearly'), val: 1 },
     ];
 
@@ -300,7 +300,7 @@ export default function SimpleInterestCalculator() {
                         </button>
                         <button
                             className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border"
-                            onClick={() => nativeShare('Interest Calculator', 'Check out this Interest Calculator on FinCalix!', window.location.href)}
+                            onClick={() => nativeShare(t('si.shareTitle'), t('si.shareText'), window.location.href)}
                         >
                             <Share2 size={16} className="text-muted-foreground" />
                         </button>
@@ -408,7 +408,7 @@ export default function SimpleInterestCalculator() {
                                             : 'bg-white dark:bg-card border-slate-200 dark:border-border text-muted-foreground'
                                             }`}
                                     >
-                                        {t(`si.freq${opt.label.replace('-', '')}`)}
+                                        {opt.label}
                                     </button>
                                 ))}
                             </div>
@@ -470,8 +470,8 @@ export default function SimpleInterestCalculator() {
                                     <div className="space-y-1">
                                         {[1, 1.5, 2, 3, 5].map(r => (
                                             <div key={r} className="flex justify-between">
-                                                <span className="text-slate-600 dark:text-muted-foreground text-[11px]">₹{r}/₹100 → ₹{((principal / 100) * r).toLocaleString('en-IN')}/month</span>
-                                                <span className="text-muted-foreground text-[11px]">= {(r * 12).toFixed(0)}% p.a.</span>
+                                                <span className="text-slate-600 dark:text-muted-foreground text-[11px]">₹{r}/₹100 → ₹{((principal / 100) * r).toLocaleString('en-IN')}/{t('si.month')}</span>
+                                                <span className="text-muted-foreground text-[11px]">= {(r * 12).toFixed(0)}% {t('si.perAnnum')}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -527,7 +527,7 @@ export default function SimpleInterestCalculator() {
 
                     {mode === 'compound' && (() => {
                         const r = result as { compoundInterest: number; totalPayable: number; monthlyEMI: number; tenureInYears: number };
-                        const freqLabel = compFreqOptions.find(f => f.val === compoundFreq)?.label || 'Monthly';
+                        const freqLabel = compFreqOptions.find(f => f.val === compoundFreq)?.label || t('si.freqMonthly');
                         return (
                             <>
                                 <div className="text-center mb-4">
@@ -582,7 +582,7 @@ export default function SimpleInterestCalculator() {
                     >
                         <div className="px-4 py-3 border-b border-slate-200 dark:border-border flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-bold text-foreground">{t(`si.freq${FREQ_LABEL[payFreq].replace('-', '')}`)} {t('si.interestSchedule')}</p>
+                                <p className="text-xs font-bold text-foreground">{FREQ_LABEL[payFreq]} {t('si.interestSchedule')}</p>
                                 <p className="text-[10px] text-muted-foreground">{periodRows.length} {t('si.periods')} · {tenure} {t('si.monthsTotal')}</p>
                             </div>
                             <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${mode === 'flat' ? 'bg-amber-500/10 text-amber-600' : 'bg-brand-blue/10 text-brand-blue'}`}>

@@ -32,12 +32,12 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 
 type GSTMode = 'standard' | 'reverse' | 'profit' | 'itc' | 'invoice';
 
-const modes: { key: GSTMode; label: string; icon: React.ElementType; desc: string }[] = [
-    { key: 'standard', label: 'Standard', icon: Receipt, desc: 'Add/Remove GST' },
-    { key: 'reverse', label: 'Reverse', icon: ArrowUpRight, desc: 'Find base price' },
-    { key: 'profit', label: 'Profit Margin', icon: Percent, desc: 'GST on profit' },
-    { key: 'itc', label: 'ITC', icon: BarChart3, desc: 'Input Tax Credit' },
-    { key: 'invoice', label: 'Invoice', icon: FileText, desc: 'Generate invoice' },
+const modes: { key: GSTMode; labelKey: string; icon: React.ElementType; descKey: string }[] = [
+    { key: 'standard', labelKey: 'gst.mode_standard', icon: Receipt, descKey: 'gst.desc_standard' },
+    { key: 'reverse', labelKey: 'gst.mode_reverse', icon: ArrowUpRight, descKey: 'gst.desc_reverse' },
+    { key: 'profit', labelKey: 'gst.mode_profit', icon: Percent, descKey: 'gst.desc_profit' },
+    { key: 'itc', labelKey: 'gst.mode_itc', icon: BarChart3, descKey: 'gst.desc_itc' },
+    { key: 'invoice', labelKey: 'gst.mode_invoice', icon: FileText, descKey: 'gst.desc_invoice' },
 ];
 
 const gstRates = [0, 5, 12, 18, 28];
@@ -80,7 +80,7 @@ export default function GSTCalculator() {
 
     // Invoice mode
     const [invoiceItems, setInvoiceItems] = useState<InvoiceItem[]>([
-        { id: 1, name: 'Item 1', qty: 1, price: 1000, rate: 18 },
+        { id: 1, name: t('gst.defaultItemName', { number: 1 }), qty: 1, price: 1000, rate: 18 },
     ]);
     const [invoiceIsIGST, setInvoiceIsIGST] = useState(false);
 
@@ -165,25 +165,25 @@ export default function GSTCalculator() {
     const chartData = useMemo(() => {
         if (mode === 'standard' && stdResult) {
             return {
-                labels: ['Base Amount', 'GST Amount'],
+                labels: [t('gst.chartBaseAmount'), t('gst.chartGSTAmount')],
                 datasets: [{ data: [stdResult.base, stdResult.gst], backgroundColor: ['#4F46E5', '#10B981'], borderColor: [c.card, c.card], borderWidth: 2 }]
             };
         }
         if (mode === 'reverse' && reverseResult) {
             return {
-                labels: ['Base Amount', 'GST Amount'],
+                labels: [t('gst.chartBaseAmount'), t('gst.chartGSTAmount')],
                 datasets: [{ data: [reverseResult.base, reverseResult.gst], backgroundColor: ['#4F46E5', '#10B981'], borderColor: [c.card, c.card], borderWidth: 2 }]
             };
         }
         if (mode === 'invoice') {
             return {
-                labels: ['Taxable Amount', 'Total GST'],
+                labels: [t('gst.chartTaxableAmount'), t('gst.chartTotalGST')],
                 datasets: [{ data: [invoiceTotals.amount, invoiceTotals.gst], backgroundColor: ['#4F46E5', '#10B981'], borderColor: [c.card, c.card], borderWidth: 2 }]
             };
         }
         if (mode === 'itc' && itcResult) {
             return {
-                labels: ['Input Tax (Purchase)', 'Output Tax (Sales)', 'Net Payable'],
+                labels: [t('gst.chartInputTax'), t('gst.chartOutputTax'), t('gst.chartNetPayable')],
                 datasets: [{
                     data: [itcResult.itc, itcResult.liability, itcResult.netPayable],
                     backgroundColor: ['#3B82F6', '#EF4444', '#F59E0B'],
@@ -193,7 +193,7 @@ export default function GSTCalculator() {
             };
         }
         return null;
-    }, [mode, stdResult, reverseResult, invoiceTotals, itcResult, c.card]);
+    }, [mode, stdResult, reverseResult, invoiceTotals, itcResult, c.card, t]);
 
     const handleSave = () => {
         let inputValues: any = {};
@@ -205,7 +205,7 @@ export default function GSTCalculator() {
         else if (mode === 'invoice') { inputValues = { items: invoiceItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, rate: i.rate })), invoiceIsIGST }; resultValues = { primary: invoiceTotals.total, ...invoiceTotals }; }
 
         const calcId = `GST-${mode}-${Date.now()}`;
-        addSaved({ id: calcId, calculatorType: `GST Calculator (${mode})`, inputValues, resultValues, timestamp: Date.now() });
+        addSaved({ id: calcId, calculatorType: t('gst.calculatorType', { mode }), inputValues, resultValues, timestamp: Date.now() });
         setSaved(true);
         setLastSavedId(calcId);
 
@@ -213,8 +213,8 @@ export default function GSTCalculator() {
             type: 'general',
             metadata: {
                 calcId,
-                title: `GST Calculation Saved (${mode})`,
-                summary: `Successfully saved your GST ${mode} calculation.`,
+                title: t('gst.notifTitle', { mode }),
+                summary: t('gst.notifSummary', { mode }),
                 route: '/calculator/gst',
                 icon: '🧾'
             }
@@ -241,104 +241,104 @@ export default function GSTCalculator() {
             const r = (mode === 'standard' ? stdResult : reverseResult)!;
             if (!r) return;
             inputs = [
-                { label: 'Mode', value: mode === 'standard' ? 'Add GST (Exclusive to Inclusive)' : 'Remove GST (Inclusive to Exclusive)' },
-                { label: 'Amount', value: `₹${stdAmount.toLocaleString('en-IN')}` },
-                { label: 'GST Rate', value: `${stdRate}%` },
-                { label: 'Transaction Type', value: isIGST ? 'IGST (Inter-state)' : 'CGST + SGST (Intra-state)' },
+                { label: t('gst.pdfMode'), value: mode === 'standard' ? t('gst.pdfAddGST') : t('gst.pdfRemoveGST') },
+                { label: t('gst.pdfAmount'), value: `₹${stdAmount.toLocaleString('en-IN')}` },
+                { label: t('gst.pdfGSTRate'), value: `${stdRate}%` },
+                { label: t('gst.pdfTransactionType'), value: isIGST ? t('gst.pdfIGSTInterState') : t('gst.pdfCGSTSGSTIntraState') },
             ];
             results = isIGST ? [
-                { label: 'Base Amount', value: `₹${Math.round(r.base).toLocaleString('en-IN')}` },
-                { label: 'IGST', value: `₹${Math.round(r.igst).toLocaleString('en-IN')}` },
-                { label: 'Total Amount', value: `₹${Math.round(r.total).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfBaseAmount'), value: `₹${Math.round(r.base).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfIGST'), value: `₹${Math.round(r.igst).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfTotalAmount'), value: `₹${Math.round(r.total).toLocaleString('en-IN')}` },
             ] : [
-                { label: 'Base Amount', value: `₹${Math.round(r.base).toLocaleString('en-IN')}` },
-                { label: 'CGST', value: `₹${Math.round(r.cgst).toLocaleString('en-IN')}` },
-                { label: 'SGST/UTGST', value: `₹${Math.round(r.sgst).toLocaleString('en-IN')}` },
-                { label: 'Total GST', value: `₹${Math.round(r.gst).toLocaleString('en-IN')}` },
-                { label: 'Total Amount', value: `₹${Math.round(r.total).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfBaseAmount'), value: `₹${Math.round(r.base).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfCGST'), value: `₹${Math.round(r.cgst).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfSGSTUTGST'), value: `₹${Math.round(r.sgst).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfTotalGST'), value: `₹${Math.round(r.gst).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfTotalAmount'), value: `₹${Math.round(r.total).toLocaleString('en-IN')}` },
             ];
-            projCols = ['Component', 'Rate', 'Amount'];
+            projCols = [t('gst.pdfComponent'), t('gst.pdfRate'), t('gst.pdfAmount')];
             projRows = isIGST ? [
-                ['Base Amount', '-', `₹${Math.round(r.base).toLocaleString('en-IN')}`],
-                ['IGST', `${stdRate}%`, `₹${Math.round(r.igst).toLocaleString('en-IN')}`],
-                ['Total', '-', `₹${Math.round(r.total).toLocaleString('en-IN')}`],
+                [t('gst.pdfBaseAmount'), '-', `₹${Math.round(r.base).toLocaleString('en-IN')}`],
+                [t('gst.pdfIGST'), `${stdRate}%`, `₹${Math.round(r.igst).toLocaleString('en-IN')}`],
+                [t('gst.pdfTotal'), '-', `₹${Math.round(r.total).toLocaleString('en-IN')}`],
             ] : [
-                ['Base Amount', '-', `₹${Math.round(r.base).toLocaleString('en-IN')}`],
-                ['CGST', `${stdRate / 2}%`, `₹${Math.round(r.cgst).toLocaleString('en-IN')}`],
-                ['SGST/UTGST', `${stdRate / 2}%`, `₹${Math.round(r.sgst).toLocaleString('en-IN')}`],
-                ['Total GST', `${stdRate}%`, `₹${Math.round(r.gst).toLocaleString('en-IN')}`],
-                ['Total Amount', '-', `₹${Math.round(r.total).toLocaleString('en-IN')}`],
+                [t('gst.pdfBaseAmount'), '-', `₹${Math.round(r.base).toLocaleString('en-IN')}`],
+                [t('gst.pdfCGST'), `${stdRate / 2}%`, `₹${Math.round(r.cgst).toLocaleString('en-IN')}`],
+                [t('gst.pdfSGSTUTGST'), `${stdRate / 2}%`, `₹${Math.round(r.sgst).toLocaleString('en-IN')}`],
+                [t('gst.pdfTotalGST'), `${stdRate}%`, `₹${Math.round(r.gst).toLocaleString('en-IN')}`],
+                [t('gst.pdfTotalAmount'), '-', `₹${Math.round(r.total).toLocaleString('en-IN')}`],
             ];
         } else if (mode === 'profit') {
             if (!profitResult) return;
             inputs = [
-                { label: 'Cost Price', value: `₹${costPrice.toLocaleString('en-IN')}` },
-                { label: 'Selling Price', value: `₹${sellingPrice.toLocaleString('en-IN')}` },
-                { label: 'GST Rate', value: `${profitGstRate}%` },
+                { label: t('gst.pdfCostPrice'), value: `₹${costPrice.toLocaleString('en-IN')}` },
+                { label: t('gst.pdfSellingPrice'), value: `₹${sellingPrice.toLocaleString('en-IN')}` },
+                { label: t('gst.pdfGSTRate'), value: `${profitGstRate}%` },
             ];
             results = [
-                { label: 'Profit (Before GST)', value: `₹${Math.round(profitResult.profit).toLocaleString('en-IN')}` },
-                { label: 'Profit %', value: `${profitResult.profitPct.toFixed(2)}%` },
-                { label: 'GST on Sale', value: `₹${Math.round(profitResult.gstOnSale).toLocaleString('en-IN')}` },
-                { label: 'Net GST Payable', value: `₹${Math.round(profitResult.netGst).toLocaleString('en-IN')}` },
-                { label: 'Total with GST', value: `₹${Math.round(profitResult.totalWithGst).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfProfitBeforeGST'), value: `₹${Math.round(profitResult.profit).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfProfitPercent'), value: `${profitResult.profitPct.toFixed(2)}%` },
+                { label: t('gst.pdfGSTOnSale'), value: `₹${Math.round(profitResult.gstOnSale).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfNetGSTPayable'), value: `₹${Math.round(profitResult.netGst).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfTotalWithGST'), value: `₹${Math.round(profitResult.totalWithGst).toLocaleString('en-IN')}` },
             ];
-            projCols = ['Component', 'Amount'];
+            projCols = [t('gst.pdfComponent'), t('gst.pdfAmount')];
             projRows = [
-                ['Cost Price', `₹${costPrice.toLocaleString('en-IN')}`],
-                ['Selling Price', `₹${sellingPrice.toLocaleString('en-IN')}`],
-                ['Profit', `₹${Math.round(profitResult.profit).toLocaleString('en-IN')}`],
-                ['GST on Sale', `₹${Math.round(profitResult.gstOnSale).toLocaleString('en-IN')}`],
-                ['GST on Cost', `₹${Math.round(profitResult.gstOnCost).toLocaleString('en-IN')}`],
-                ['Net GST Payable', `₹${Math.round(profitResult.netGst).toLocaleString('en-IN')}`],
+                [t('gst.pdfCostPrice'), `₹${costPrice.toLocaleString('en-IN')}`],
+                [t('gst.pdfSellingPrice'), `₹${sellingPrice.toLocaleString('en-IN')}`],
+                [t('gst.pdfProfit'), `₹${Math.round(profitResult.profit).toLocaleString('en-IN')}`],
+                [t('gst.pdfGSTOnSale'), `₹${Math.round(profitResult.gstOnSale).toLocaleString('en-IN')}`],
+                [t('gst.pdfGSTOnCost'), `₹${Math.round(profitResult.gstOnCost).toLocaleString('en-IN')}`],
+                [t('gst.pdfNetGSTPayable'), `₹${Math.round(profitResult.netGst).toLocaleString('en-IN')}`],
             ];
         } else if (mode === 'itc') {
             if (!itcResult) return;
             inputs = [
-                { label: 'Input GST Paid', value: `₹${purchaseGst.toLocaleString('en-IN')}` },
-                { label: 'Output GST Collected', value: `₹${salesGst.toLocaleString('en-IN')}` },
+                { label: t('gst.pdfInputGSTPaid'), value: `₹${purchaseGst.toLocaleString('en-IN')}` },
+                { label: t('gst.pdfOutputGSTCollected'), value: `₹${salesGst.toLocaleString('en-IN')}` },
             ];
             results = [
-                { label: 'ITC Available', value: `₹${Math.round(itcResult.itc).toLocaleString('en-IN')}` },
-                { label: 'GST Liability', value: `₹${Math.round(itcResult.liability).toLocaleString('en-IN')}` },
-                { label: 'Net GST Payable', value: `₹${Math.round(itcResult.netPayable).toLocaleString('en-IN')}` },
-                { label: 'ITC Refund', value: `₹${Math.round(itcResult.refund).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfITCAvailable'), value: `₹${Math.round(itcResult.itc).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfGSTLiability'), value: `₹${Math.round(itcResult.liability).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfNetGSTPayable'), value: `₹${Math.round(itcResult.netPayable).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfITCRefund'), value: `₹${Math.round(itcResult.refund).toLocaleString('en-IN')}` },
             ];
-            projCols = ['Component', 'Amount'];
+            projCols = [t('gst.pdfComponent'), t('gst.pdfAmount')];
             projRows = [
-                ['Input GST (ITC)', `₹${Math.round(itcResult.itc).toLocaleString('en-IN')}`],
-                ['Output GST Liability', `₹${Math.round(itcResult.liability).toLocaleString('en-IN')}`],
-                ['Net Payable', `₹${Math.round(itcResult.netPayable).toLocaleString('en-IN')}`],
-                ['Refund', `₹${Math.round(itcResult.refund).toLocaleString('en-IN')}`],
+                [t('gst.pdfInputGSTITC'), `₹${Math.round(itcResult.itc).toLocaleString('en-IN')}`],
+                [t('gst.pdfOutputGSTLiability'), `₹${Math.round(itcResult.liability).toLocaleString('en-IN')}`],
+                [t('gst.pdfNetPayable'), `₹${Math.round(itcResult.netPayable).toLocaleString('en-IN')}`],
+                [t('gst.pdfRefund'), `₹${Math.round(itcResult.refund).toLocaleString('en-IN')}`],
             ];
         } else if (mode === 'invoice') {
             inputs = [
-                { label: 'Invoice Type', value: invoiceIsIGST ? 'IGST (Inter-state)' : 'CGST+SGST (Intra-state)' },
-                { label: 'Total Line Items', value: String(invoiceItems.length) },
+                { label: t('gst.pdfInvoiceType'), value: invoiceIsIGST ? t('gst.pdfIGSTInterState') : t('gst.pdfCGSTSGSTIntraStateShort') },
+                { label: t('gst.pdfTotalLineItems'), value: String(invoiceItems.length) },
             ];
             results = [
-                { label: 'Invoice Sub-total', value: `₹${Math.round(invoiceTotals.amount).toLocaleString('en-IN')}` },
-                { label: 'Total GST', value: `₹${Math.round(invoiceTotals.gst).toLocaleString('en-IN')}` },
-                { label: 'Invoice Total', value: `₹${Math.round(invoiceTotals.total).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfInvoiceSubtotal'), value: `₹${Math.round(invoiceTotals.amount).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfTotalGST'), value: `₹${Math.round(invoiceTotals.gst).toLocaleString('en-IN')}` },
+                { label: t('gst.pdfInvoiceTotal'), value: `₹${Math.round(invoiceTotals.total).toLocaleString('en-IN')}` },
             ];
             projCols = invoiceIsIGST
-                ? ['Item', 'Qty', 'Rate', 'GST%', 'Amount', 'IGST', 'Total']
-                : ['Item', 'Qty', 'Rate', 'GST%', 'Amount', 'CGST', 'SGST', 'Total'];
+                ? [t('gst.pdfItem'), t('gst.pdfQty'), t('gst.pdfRate'), t('gst.pdfGSTPercent'), t('gst.pdfAmount'), t('gst.pdfIGST'), t('gst.pdfTotal')]
+                : [t('gst.pdfItem'), t('gst.pdfQty'), t('gst.pdfRate'), t('gst.pdfGSTPercent'), t('gst.pdfAmount'), t('gst.pdfCGST'), t('gst.pdfSGST'), t('gst.pdfTotal')];
             projRows = invoiceResult.map((item: any) => invoiceIsIGST ? [
-                item.name || `Item ${item.id}`, item.qty, `₹${item.price}`, `${item.rate}%`,
+                item.name || t('gst.defaultItemName', { number: item.id }), item.qty, `₹${item.price}`, `${item.rate}%`,
                 Math.round(item.amount), Math.round(item.igst), Math.round(item.total),
             ] : [
-                item.name || `Item ${item.id}`, item.qty, `₹${item.price}`, `${item.rate}%`,
+                item.name || t('gst.defaultItemName', { number: item.id }), item.qty, `₹${item.price}`, `${item.rate}%`,
                 Math.round(item.amount), Math.round(item.cgst), Math.round(item.sgst), Math.round(item.total),
             ]);
         }
 
         await exportToPDF({
-            title: 'GST Calculator Report',
-            subtitle: `Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`,
+            title: t('gst.pdfReportTitle'),
+            subtitle: t('gst.pdfReportSubtitle', { mode: mode.charAt(0).toUpperCase() + mode.slice(1) }),
             inputs,
             results,
-            projectionTitle: mode === 'invoice' ? 'Invoice Line Items' : 'GST Breakdown',
+            projectionTitle: mode === 'invoice' ? t('gst.pdfInvoiceLineItems') : t('gst.pdfGSTBreakdown'),
             projectionColumns: projCols,
             projectionRows: projRows,
             filename: `FinCalix_GST_Report_${tag}`,
@@ -356,22 +356,22 @@ export default function GSTCalculator() {
         if (mode === 'standard' || mode === 'reverse') {
             const r = (mode === 'standard' ? stdResult : reverseResult)!;
             if (!r) return;
-            inputs = [{ label: 'Mode', value: mode }, { label: 'Amount', value: String(stdAmount) }, { label: 'GST Rate', value: `${stdRate}%` }];
-            results = [{ label: 'Base', value: String(Math.round(r.base)) }, { label: 'GST', value: String(Math.round(r.gst)) }, { label: 'Total', value: String(Math.round(r.total)) }];
-            projCols = ['Component', 'Amount'];
-            projRows = [['Base', Math.round(r.base)], ['CGST', Math.round(r.cgst)], ['SGST', Math.round(r.sgst)], ['IGST', Math.round(r.igst)], ['Total', Math.round(r.total)]];
+            inputs = [{ label: t('gst.pdfMode'), value: mode }, { label: t('gst.pdfAmount'), value: String(stdAmount) }, { label: t('gst.pdfGSTRate'), value: `${stdRate}%` }];
+            results = [{ label: t('gst.excelBase'), value: String(Math.round(r.base)) }, { label: t('gst.excelGST'), value: String(Math.round(r.gst)) }, { label: t('gst.pdfTotal'), value: String(Math.round(r.total)) }];
+            projCols = [t('gst.pdfComponent'), t('gst.pdfAmount')];
+            projRows = [[t('gst.excelBase'), Math.round(r.base)], [t('gst.pdfCGST'), Math.round(r.cgst)], [t('gst.pdfSGST'), Math.round(r.sgst)], [t('gst.pdfIGST'), Math.round(r.igst)], [t('gst.pdfTotal'), Math.round(r.total)]];
         } else if (mode === 'invoice') {
-            inputs = [{ label: 'Type', value: invoiceIsIGST ? 'IGST' : 'CGST+SGST' }];
-            results = [{ label: 'Sub-total', value: String(Math.round(invoiceTotals.amount)) }, { label: 'Total GST', value: String(Math.round(invoiceTotals.gst)) }, { label: 'Invoice Total', value: String(Math.round(invoiceTotals.total)) }];
-            projCols = ['Item', 'Qty', 'Price', 'GST%', 'Amount', 'GST', 'Total'];
-            projRows = invoiceResult.map((item: any) => [item.name || `Item ${item.id}`, item.qty, item.price, item.rate, Math.round(item.amount), Math.round(item.gst), Math.round(item.total)]);
+            inputs = [{ label: t('gst.excelType'), value: invoiceIsIGST ? t('gst.pdfIGST') : t('gst.excelCGSTSGST') }];
+            results = [{ label: t('gst.excelSubtotal'), value: String(Math.round(invoiceTotals.amount)) }, { label: t('gst.pdfTotalGST'), value: String(Math.round(invoiceTotals.gst)) }, { label: t('gst.pdfInvoiceTotal'), value: String(Math.round(invoiceTotals.total)) }];
+            projCols = [t('gst.pdfItem'), t('gst.pdfQty'), t('gst.excelPrice'), t('gst.pdfGSTPercent'), t('gst.pdfAmount'), t('gst.excelGST'), t('gst.pdfTotal')];
+            projRows = invoiceResult.map((item: any) => [item.name || t('gst.defaultItemName', { number: item.id }), item.qty, item.price, item.rate, Math.round(item.amount), Math.round(item.gst), Math.round(item.total)]);
         }
 
         await exportToExcel({
-            title: 'GST Calculator Report',
+            title: t('gst.pdfReportTitle'),
             inputs,
             results,
-            projectionTitle: 'GST Breakdown',
+            projectionTitle: t('gst.pdfGSTBreakdown'),
             projectionColumns: projCols,
             projectionRows: projRows,
             filename: `FinCalix_GST_Report_${tag}`,
@@ -379,7 +379,7 @@ export default function GSTCalculator() {
     };
 
     const addInvoiceItem = () => {
-        setInvoiceItems(prev => [...prev, { id: Date.now(), name: `Item ${prev.length + 1}`, qty: 1, price: 0, rate: 18 }]);
+        setInvoiceItems(prev => [...prev, { id: Date.now(), name: t('gst.defaultItemName', { number: prev.length + 1 }), qty: 1, price: 0, rate: 18 }]);
     };
 
     const removeInvoiceItem = (id: number) => {
@@ -395,20 +395,22 @@ export default function GSTCalculator() {
     const insight = useMemo(() => {
         if (mode === 'standard' && stdResult) {
             const gstPct = ((stdResult.gst / stdResult.total) * 100).toFixed(1);
-            return `GST constitutes ${gstPct}% of the total amount. ${stdRate >= 18 ? 'This falls in the higher GST slab — check if ITC is available.' : ''}`;
+            const base = t('gst.insightStandard', { gstPct });
+            const extra = stdRate >= 18 ? ` ${t('gst.insightHighSlab')}` : '';
+            return base + extra;
         }
         if (mode === 'profit' && profitResult) {
             return profitResult.profitPct >= 30
-                ? `High profit margin of ${profitResult.profitPct.toFixed(1)}%. Net GST liability: ${formatINR(profitResult.netGst)}`
-                : `Profit margin: ${profitResult.profitPct.toFixed(1)}%. Consider optimizing costs to improve margin.`;
+                ? t('gst.insightHighProfit', { pct: profitResult.profitPct.toFixed(1), netGst: formatINR(profitResult.netGst) })
+                : t('gst.insightLowProfit', { pct: profitResult.profitPct.toFixed(1) });
         }
         if (mode === 'itc' && itcResult) {
             return itcResult.refund > 0
-                ? `You have an ITC surplus of ${formatINR(itcResult.refund)}. You can claim this as a refund.`
-                : `Net GST payable after ITC offset: ${formatINR(itcResult.netPayable)}`;
+                ? t('gst.insightITCSurplus', { amount: formatINR(itcResult.refund) })
+                : t('gst.insightITCPayable', { amount: formatINR(itcResult.netPayable) });
         }
         return null;
-    }, [mode, stdResult, profitResult, itcResult, stdRate]);
+    }, [mode, stdResult, profitResult, itcResult, stdRate, t]);
 
     return (
         <div className="min-h-dvh bg-background animate-fade-in">
@@ -499,11 +501,11 @@ export default function GSTCalculator() {
                                     <Row label={t('gst.totalInclGST')} value={stdAmount} color="text-foreground" />
                                     <Row label={t('gst.basePrice')} value={reverseResult.base} color="text-brand-green" dot="bg-brand-green" />
                                     {isIGST ? (
-                                        <Row label={`IGST (${stdRate}%)`} value={reverseResult.igst} color="text-brand-purple" dot="bg-brand-purple" />
+                                        <Row label={`${t('gst.igst')} (${stdRate}%)`} value={reverseResult.igst} color="text-brand-purple" dot="bg-brand-purple" />
                                     ) : (
                                         <>
-                                            <Row label={`CGST (${stdRate / 2}%)`} value={reverseResult.cgst} color="text-brand-blue" dot="bg-brand-blue" />
-                                            <Row label={`SGST (${stdRate / 2}%)`} value={reverseResult.sgst} color="text-brand-gold" dot="bg-brand-gold" />
+                                            <Row label={`${t('gst.cgst')} (${stdRate / 2}%)`} value={reverseResult.cgst} color="text-brand-blue" dot="bg-brand-blue" />
+                                            <Row label={`${t('gst.sgst')} (${stdRate / 2}%)`} value={reverseResult.sgst} color="text-brand-gold" dot="bg-brand-gold" />
                                         </>
                                     )}
                                     <div className="pt-2 border-t border-border/40">

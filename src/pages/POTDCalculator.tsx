@@ -146,7 +146,7 @@ export default function POTDCalculator() {
         const calcId = crypto.randomUUID();
         addSaved({
             id: calcId,
-            calculatorType: 'Post Office TD',
+            calculatorType: t('potd.calculatorType'),
             inputValues: { investment, years, rate, userIncome, taxRegime },
             resultValues: { primary: result.maturity, totalInterest: result.totalInterest },
             timestamp: Date.now()
@@ -167,46 +167,46 @@ export default function POTDCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: `Post Office Time Deposit (${years}-Year) Report`,
+            title: t('potd.exportReportTitle', { years }),
             inputs: [
-                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
-                { label: 'Tenure', value: `${years} Year${Number(years) > 1 ? 's' : ''}` },
-                { label: 'Interest Rate', value: `${rate}% p.a. (Quarterly Compounding)` },
-                { label: 'Sec 80C / 123 Eligible', value: result.is5Year ? 'Yes (5-year deposit)' : 'No' },
+                { label: t('potd.investmentAmountLabel'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: t('potd.tenureLabel'), value: `${years} ${t('potd.yearUnit', { count: Number(years) })}` },
+                { label: t('potd.interestRateLabel'), value: `${rate}% ${t('potd.paQuarterlyCompounding')}` },
+                { label: t('potd.sec80C123EligibleLabel'), value: result.is5Year ? t('potd.yes5YearDeposit') : t('potd.no') },
             ],
             results: [
-                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
-                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Effective Annual Yield', value: `${result.effectiveYield.toFixed(2)}%` },
-                { label: 'CAGR', value: `${result.cagr.toFixed(2)}%` },
-                { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+                { label: t('potd.maturityAmountLabel'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: t('potd.totalInterestEarnedLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('potd.effectiveAnnualYieldLabel'), value: `${result.effectiveYield.toFixed(2)}%` },
+                { label: t('potd.cagrLabel'), value: `${result.cagr.toFixed(2)}%` },
+                { label: t('potd.postTaxMaturityLabel'), value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Principal Invested', value: investment, color: '#4F46E5' },
-                    { label: 'Interest Earned', value: result.totalInterest, color: '#10B981' },
+                    { label: t('potd.principalInvested'), value: investment, color: '#4F46E5' },
+                    { label: t('potd.interestEarned'), value: result.totalInterest, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'Year-Wise TD Growth',
-            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionTitle: t('potd.yearWiseTDGrowth'),
+            projectionColumns: [t('potd.yearCol'), t('potd.openingBalanceCol'), t('potd.interestEarnedCol'), t('potd.closingBalanceCol')],
             projectionRows: result.table.map((y: any) => [
-                `Year ${y.year}`,
+                `${t('potd.yearCol')} ${y.year}`,
                 `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(potdStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: t('potd.liveStatusAsOf', { date: new Date().toLocaleDateString('en-IN') }),
+                    columns: [t('potd.metricCol'), t('potd.valueCol')],
                     rows: [
-                        ['Days Invested', String(potdStatus.daysInvested)],
-                        ['Interest Earned', fmtINR(potdStatus.interestEarnedToday)],
-                        ['Current Value', fmtINR(potdStatus.valueToday)],
-                        ['Days Remaining', String(potdStatus.daysRemaining)],
-                        ['Maturity Date', potdStatus.maturityDate],
-                        ['Daily Earning', fmtINR(potdStatus.dailyEarning)],
+                        [t('potd.daysInvested'), String(potdStatus.daysInvested)],
+                        [t('potd.interestEarned'), fmtINR(potdStatus.interestEarnedToday)],
+                        [t('potd.currentValue'), fmtINR(potdStatus.valueToday)],
+                        [t('potd.daysRemaining'), String(potdStatus.daysRemaining)],
+                        [t('potd.maturityDateLabel'), potdStatus.maturityDate],
+                        [t('potd.dailyEarning'), fmtINR(potdStatus.dailyEarning)],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -218,39 +218,39 @@ export default function POTDCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: `Post Office Time Deposit (${years}-Year) Report`,
+            title: t('potd.exportReportTitle', { years }),
             inputs: [
-                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
-                { label: 'Tenure', value: `${years} Year${Number(years) > 1 ? 's' : ''}` },
-                { label: 'Interest Rate', value: `${rate}% p.a. (Quarterly Compounding)` },
-                { label: 'Sec 80C / 123 Eligible', value: result.is5Year ? 'Yes (5-year deposit)' : 'No' },
+                { label: t('potd.investmentAmountLabel'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: t('potd.tenureLabel'), value: `${years} ${t('potd.yearUnit', { count: Number(years) })}` },
+                { label: t('potd.interestRateLabel'), value: `${rate}% ${t('potd.paQuarterlyCompounding')}` },
+                { label: t('potd.sec80C123EligibleLabel'), value: result.is5Year ? t('potd.yes5YearDeposit') : t('potd.no') },
             ],
             results: [
-                { label: 'Maturity Amount', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
-                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Effective Annual Yield', value: `${result.effectiveYield.toFixed(2)}%` },
-                { label: 'CAGR', value: `${result.cagr.toFixed(2)}%` },
-                { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+                { label: t('potd.maturityAmountLabel'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: t('potd.totalInterestEarnedLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('potd.effectiveAnnualYieldLabel'), value: `${result.effectiveYield.toFixed(2)}%` },
+                { label: t('potd.cagrLabel'), value: `${result.cagr.toFixed(2)}%` },
+                { label: t('potd.postTaxMaturityLabel'), value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Year-Wise TD Growth',
-            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionTitle: t('potd.yearWiseTDGrowth'),
+            projectionColumns: [t('potd.yearCol'), t('potd.openingBalanceCol'), t('potd.interestEarnedCol'), t('potd.closingBalanceCol')],
             projectionRows: result.table.map((y: any) => [
-                `Year ${y.year}`,
+                `${t('potd.yearCol')} ${y.year}`,
                 `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(potdStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: t('potd.liveStatusAsOf', { date: new Date().toLocaleDateString('en-IN') }),
+                    columns: [t('potd.metricCol'), t('potd.valueCol')],
                     rows: [
-                        ['Days Invested', String(potdStatus.daysInvested)],
-                        ['Interest Earned', fmtINR(potdStatus.interestEarnedToday)],
-                        ['Current Value', fmtINR(potdStatus.valueToday)],
-                        ['Days Remaining', String(potdStatus.daysRemaining)],
-                        ['Maturity Date', potdStatus.maturityDate],
-                        ['Daily Earning', fmtINR(potdStatus.dailyEarning)],
+                        [t('potd.daysInvested'), String(potdStatus.daysInvested)],
+                        [t('potd.interestEarned'), fmtINR(potdStatus.interestEarnedToday)],
+                        [t('potd.currentValue'), fmtINR(potdStatus.valueToday)],
+                        [t('potd.daysRemaining'), String(potdStatus.daysRemaining)],
+                        [t('potd.maturityDateLabel'), potdStatus.maturityDate],
+                        [t('potd.dailyEarning'), fmtINR(potdStatus.dailyEarning)],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -320,7 +320,7 @@ export default function POTDCalculator() {
                         </div>
                     </div>
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">POTD Start Date</label>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('potd.potdStartDate')}</label>
                         <DateInput
                             value={potdStartDate}
                             onChange={setPotdStartDate}
@@ -522,17 +522,17 @@ export default function POTDCalculator() {
                     <LiveStatusCard
                         calculatorType="POTD"
                         profileData={{ principal: investment, annualRate: rate, tenureMonths: Number(years) * 12, startDate: potdStartDate, compoundingFreq: 4 }}
-                        title="Live POTD Status"
-                        subtitle={`${years} Year Post Office TD @ ${rate}%`}
+                        title={t('potd.livePotdStatus')}
+                        subtitle={t('potd.liveStatusSubtitle', { years, rate })}
                         startDate={potdStartDate}
                         metrics={[
-                            { label: 'Principal', value: fmtINR(investment) },
-                            { label: 'Interest Earned', value: fmtINR(potdStatus.interestEarnedToday), color: 'amber' },
-                            { label: 'Value Today', value: fmtINR(potdStatus.valueToday), color: 'green' },
+                            { label: t('potd.principal'), value: fmtINR(investment) },
+                            { label: t('potd.interestEarned'), value: fmtINR(potdStatus.interestEarnedToday), color: 'amber' },
+                            { label: t('potd.valueToday'), value: fmtINR(potdStatus.valueToday), color: 'green' },
                         ]}
                         progressPercent={potdStatus.percentComplete}
-                        progressLabel={`${potdStatus.percentComplete.toFixed(1)}% of tenure complete (${potdStatus.daysInvested} of ${potdStatus.daysInvested + potdStatus.daysRemaining} days)`}
-                        insightText={potdStatus.daysRemaining > 0 ? `Premature withdrawal would cost you ${fmtINR(potdStatus.costOfBreaking)} in lost interest. Maturity on ${potdStatus.maturityDate}.` : `Your POTD has matured! Total value: ${fmtINR(potdStatus.maturityValue)}.`}
+                        progressLabel={t('potd.progressLabel', { percent: potdStatus.percentComplete.toFixed(1), daysInvested: potdStatus.daysInvested, totalDays: potdStatus.daysInvested + potdStatus.daysRemaining })}
+                        insightText={potdStatus.daysRemaining > 0 ? t('potd.insightPrematureWithdrawal', { cost: fmtINR(potdStatus.costOfBreaking), maturityDate: potdStatus.maturityDate }) : t('potd.insightMatured', { totalValue: fmtINR(potdStatus.maturityValue) })}
                     />
                 </div>
             )}

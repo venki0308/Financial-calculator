@@ -211,7 +211,7 @@ export default function SIPCalculator() {
         triggerCalcNotification({
             type: 'sip_due',
             metadata: {
-                fundName: 'SIP Investment',
+                fundName: t('sip.sipInvestment'),
                 amount: displayValues.primary,
                 isTomorrow: false
             }
@@ -234,56 +234,56 @@ export default function SIPCalculator() {
     const handleDownloadPDF = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
-        const tabLabel = activeTab === 'basic' ? 'Basic SIP' : activeTab === 'stepup' ? 'Step-Up SIP' : 'Goal SIP';
+        const tabLabel = activeTab === 'basic' ? t('sip.basicSip') : activeTab === 'stepup' ? t('sip.stepUpSip') : t('sip.goalSip');
         const config: ExportConfig = {
-            title: 'SIP Calculator Report',
+            title: t('sip.sipCalculatorReport'),
             subtitle: tabLabel,
             inputs: activeTab === 'goal' ? [
-                { label: 'Target Amount', value: `₹${goalTarget.toLocaleString('en-IN')}` },
-                { label: 'Investment Period', value: `${goalYears} Years` },
-                { label: 'Expected Return', value: `${goalRate}% p.a.` },
+                { label: t('sip.targetAmount'), value: `₹${goalTarget.toLocaleString('en-IN')}` },
+                { label: t('sip.investmentPeriod'), value: `${goalYears} ${t('sip.years')}` },
+                { label: t('sip.expectedReturn'), value: `${goalRate}% ${t('sip.perAnnum')}` },
             ] : [
-                { label: 'Monthly SIP Amount', value: `₹${monthly.toLocaleString('en-IN')}` },
-                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
-                { label: 'Investment Period', value: `${years} Years` },
+                { label: t('sip.monthlySipAmount'), value: `₹${monthly.toLocaleString('en-IN')}` },
+                { label: t('sip.expectedReturnRate'), value: `${rate}% ${t('sip.perAnnum')}` },
+                { label: t('sip.investmentPeriod'), value: `${years} ${t('sip.years')}` },
             ],
             results: activeTab === 'goal' ? [
-                { label: 'Monthly SIP Required', value: `₹${Math.round(goalResult.monthlyNeeded).toLocaleString('en-IN')}` },
-                { label: 'Total to be Invested', value: `₹${Math.round(goalResult.totalInvested).toLocaleString('en-IN')}` },
-                { label: 'Estimated Returns', value: `₹${Math.round(goalResult.returns).toLocaleString('en-IN')}` },
-                { label: 'Target Amount', value: `₹${goalTarget.toLocaleString('en-IN')}` },
+                { label: t('sip.monthlySipRequired'), value: `₹${Math.round(goalResult.monthlyNeeded).toLocaleString('en-IN')}` },
+                { label: t('sip.totalToBeInvested'), value: `₹${Math.round(goalResult.totalInvested).toLocaleString('en-IN')}` },
+                { label: t('sip.estimatedReturns'), value: `₹${Math.round(goalResult.returns).toLocaleString('en-IN')}` },
+                { label: t('sip.targetAmount'), value: `₹${goalTarget.toLocaleString('en-IN')}` },
             ] : [
-                { label: 'Total Invested', value: `₹${Math.round(displayValues.invested).toLocaleString('en-IN')}` },
-                { label: 'Estimated Returns', value: `₹${Math.round(displayValues.returns).toLocaleString('en-IN')}` },
-                { label: 'Total Value', value: `₹${Math.round(displayValues.primary).toLocaleString('en-IN')}` },
+                { label: t('sip.totalInvested'), value: `₹${Math.round(displayValues.invested).toLocaleString('en-IN')}` },
+                { label: t('sip.estimatedReturns'), value: `₹${Math.round(displayValues.returns).toLocaleString('en-IN')}` },
+                { label: t('sip.totalValue'), value: `₹${Math.round(displayValues.primary).toLocaleString('en-IN')}` },
             ],
             chart: activeTab !== 'goal' ? {
                 type: 'pie',
                 segments: [
-                    { label: 'Amount Invested', value: displayValues.invested, color: '#4F46E5' },
-                    { label: 'Est. Returns', value: displayValues.returns, color: '#10B981' },
+                    { label: t('sip.amountInvested'), value: displayValues.invested, color: '#4F46E5' },
+                    { label: t('sip.estReturns'), value: displayValues.returns, color: '#10B981' },
                 ],
             } : undefined,
-            projectionTitle: 'Yearly Growth Schedule',
-            projectionColumns: ['Year', 'Amount Invested', 'Est. Returns', 'Total Value'],
+            projectionTitle: t('sip.yearlyGrowthSchedule'),
+            projectionColumns: [t('sip.year'), t('sip.amountInvested'), t('sip.estReturns'), t('sip.totalValue')],
             projectionRows: (growthData || []).map((r: any) => [
-                `Year ${r.year}`,
+                `${t('sip.year')} ${r.year}`,
                 `₹${Math.round(r.invested).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.returns).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.invested + r.returns).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(sipStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('sip.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('sip.metric'), t('sip.value')],
                     rows: [
-                        ['SIP Running For', `${sipStatus.sipRunningYears}y ${sipStatus.sipRunningMonths}m`],
-                        ['Total Invested', formatINR(sipStatus.totalInvested)],
-                        ['Current Estimated Value', formatINR(sipStatus.currentValue)],
-                        ['Wealth Gained', formatINR(sipStatus.wealthGained)],
-                        ['Return %', `${sipStatus.returnPercent.toFixed(1)}%`],
-                        ...(activeTab === 'goal' && sipStatus.progressToGoal > 0 ? [['Progress to Goal', `${sipStatus.progressToGoal.toFixed(1)}%`]] : []),
-                        ...(sipStatus.expectedGoalDate ? [['Expected Goal Date', sipStatus.expectedGoalDate]] : []),
+                        [t('sip.sipRunningFor'), `${sipStatus.sipRunningYears}y ${sipStatus.sipRunningMonths}m`],
+                        [t('sip.totalInvested'), formatINR(sipStatus.totalInvested)],
+                        [t('sip.currentEstimatedValue'), formatINR(sipStatus.currentValue)],
+                        [t('sip.wealthGained'), formatINR(sipStatus.wealthGained)],
+                        [t('sip.returnPercent'), `${sipStatus.returnPercent.toFixed(1)}%`],
+                        ...(activeTab === 'goal' && sipStatus.progressToGoal > 0 ? [[t('sip.progressToGoal'), `${sipStatus.progressToGoal.toFixed(1)}%`]] : []),
+                        ...(sipStatus.expectedGoalDate ? [[t('sip.expectedGoalDate'), sipStatus.expectedGoalDate]] : []),
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -296,27 +296,27 @@ export default function SIPCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'SIP Calculator Report',
+            title: t('sip.sipCalculatorReport'),
             inputs: activeTab === 'goal' ? [
-                { label: 'Target Amount', value: `₹${goalTarget.toLocaleString('en-IN')}` },
-                { label: 'Investment Period', value: `${goalYears} Years` },
-                { label: 'Expected Return', value: `${goalRate}% p.a.` },
+                { label: t('sip.targetAmount'), value: `₹${goalTarget.toLocaleString('en-IN')}` },
+                { label: t('sip.investmentPeriod'), value: `${goalYears} ${t('sip.years')}` },
+                { label: t('sip.expectedReturn'), value: `${goalRate}% ${t('sip.perAnnum')}` },
             ] : [
-                { label: 'Monthly SIP Amount', value: `₹${monthly.toLocaleString('en-IN')}` },
-                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
-                { label: 'Investment Period', value: `${years} Years` },
+                { label: t('sip.monthlySipAmount'), value: `₹${monthly.toLocaleString('en-IN')}` },
+                { label: t('sip.expectedReturnRate'), value: `${rate}% ${t('sip.perAnnum')}` },
+                { label: t('sip.investmentPeriod'), value: `${years} ${t('sip.years')}` },
             ],
             results: activeTab === 'goal' ? [
-                { label: 'Monthly SIP Required', value: `₹${Math.round(goalResult.monthlyNeeded).toLocaleString('en-IN')}` },
-                { label: 'Total to be Invested', value: `₹${Math.round(goalResult.totalInvested).toLocaleString('en-IN')}` },
-                { label: 'Estimated Returns', value: `₹${Math.round(goalResult.returns).toLocaleString('en-IN')}` },
+                { label: t('sip.monthlySipRequired'), value: `₹${Math.round(goalResult.monthlyNeeded).toLocaleString('en-IN')}` },
+                { label: t('sip.totalToBeInvested'), value: `₹${Math.round(goalResult.totalInvested).toLocaleString('en-IN')}` },
+                { label: t('sip.estimatedReturns'), value: `₹${Math.round(goalResult.returns).toLocaleString('en-IN')}` },
             ] : [
-                { label: 'Total Invested', value: `₹${Math.round(displayValues.invested).toLocaleString('en-IN')}` },
-                { label: 'Estimated Returns', value: `₹${Math.round(displayValues.returns).toLocaleString('en-IN')}` },
-                { label: 'Total Value', value: `₹${Math.round(displayValues.primary).toLocaleString('en-IN')}` },
+                { label: t('sip.totalInvested'), value: `₹${Math.round(displayValues.invested).toLocaleString('en-IN')}` },
+                { label: t('sip.estimatedReturns'), value: `₹${Math.round(displayValues.returns).toLocaleString('en-IN')}` },
+                { label: t('sip.totalValue'), value: `₹${Math.round(displayValues.primary).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Yearly Growth Schedule',
-            projectionColumns: ['Year', 'Amount Invested', 'Est. Returns', 'Total Value'],
+            projectionTitle: t('sip.yearlyGrowthSchedule'),
+            projectionColumns: [t('sip.year'), t('sip.amountInvested'), t('sip.estReturns'), t('sip.totalValue')],
             projectionRows: (growthData || []).map((r: any) => [
                 r.year,
                 Math.round(r.invested),
@@ -325,16 +325,16 @@ export default function SIPCalculator() {
             ]),
             additionalTables: [
                 ...(sipStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('sip.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('sip.metric'), t('sip.value')],
                     rows: [
-                        ['SIP Running For', `${sipStatus.sipRunningYears}y ${sipStatus.sipRunningMonths}m`],
-                        ['Total Invested', formatINR(sipStatus.totalInvested)],
-                        ['Current Estimated Value', formatINR(sipStatus.currentValue)],
-                        ['Wealth Gained', formatINR(sipStatus.wealthGained)],
-                        ['Return %', `${sipStatus.returnPercent.toFixed(1)}%`],
-                        ...(activeTab === 'goal' && sipStatus.progressToGoal > 0 ? [['Progress to Goal', `${sipStatus.progressToGoal.toFixed(1)}%`]] : []),
-                        ...(sipStatus.expectedGoalDate ? [['Expected Goal Date', sipStatus.expectedGoalDate]] : []),
+                        [t('sip.sipRunningFor'), `${sipStatus.sipRunningYears}y ${sipStatus.sipRunningMonths}m`],
+                        [t('sip.totalInvested'), formatINR(sipStatus.totalInvested)],
+                        [t('sip.currentEstimatedValue'), formatINR(sipStatus.currentValue)],
+                        [t('sip.wealthGained'), formatINR(sipStatus.wealthGained)],
+                        [t('sip.returnPercent'), `${sipStatus.returnPercent.toFixed(1)}%`],
+                        ...(activeTab === 'goal' && sipStatus.progressToGoal > 0 ? [[t('sip.progressToGoal'), `${sipStatus.progressToGoal.toFixed(1)}%`]] : []),
+                        ...(sipStatus.expectedGoalDate ? [[t('sip.expectedGoalDate'), sipStatus.expectedGoalDate]] : []),
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -387,7 +387,7 @@ export default function SIPCalculator() {
                         <>
                             <NumberInput label={t('sip.monthlyInvestment')} value={monthly} onChange={setMonthly} min={500} max={1000000} prefix="₹" />
                             <NumberInput label={t('sip.expectedReturn')} value={rate} onChange={setRate} min={1} max={30} suffix="%" step={0.5} />
-                            <NumberInput label={t('sip.timePeriod')} value={years} onChange={setYears} min={1} max={40} suffix=" years" />
+                            <NumberInput label={t('sip.timePeriod')} value={years} onChange={setYears} min={1} max={40} suffix={` ${t('sip.yearsSuffix')}`} />
                         </>
                     )}
                     {activeTab === 'stepup' && (
@@ -395,13 +395,13 @@ export default function SIPCalculator() {
                             <NumberInput label={t('sip.initialMonthlySip')} value={suInitial} onChange={setSuInitial} min={500} max={1000000} prefix="₹" />
                             <NumberInput label={t('sip.annualStepUp')} value={suStepUp} onChange={setSuStepUp} min={1} max={100} suffix="%" step={1} />
                             <NumberInput label={t('sip.expectedReturn')} value={suRate} onChange={setSuRate} min={1} max={30} suffix="%" step={0.5} />
-                            <NumberInput label={t('sip.timePeriod')} value={suYears} onChange={setSuYears} min={1} max={40} suffix=" years" />
+                            <NumberInput label={t('sip.timePeriod')} value={suYears} onChange={setSuYears} min={1} max={40} suffix={` ${t('sip.yearsSuffix')}`} />
                         </>
                     )}
                     {activeTab === 'goal' && (
                         <>
                             <NumberInput label={t('sip.targetAmount')} value={goalTarget} onChange={setGoalTarget} min={10000} max={1000000000} prefix="₹" />
-                            <NumberInput label={t('sip.inHowManyYears')} value={goalYears} onChange={setGoalYears} min={1} max={40} suffix=" years" />
+                            <NumberInput label={t('sip.inHowManyYears')} value={goalYears} onChange={setGoalYears} min={1} max={40} suffix={` ${t('sip.yearsSuffix')}`} />
                             <NumberInput label={t('sip.expectedReturn')} value={goalRate} onChange={setGoalRate} min={1} max={30} suffix="%" step={0.5} />
                         </>
                     )}
@@ -535,8 +535,8 @@ export default function SIPCalculator() {
                         <Download size={16} /> {t('sip.excel')}
                     </button>
                     <button onClick={async () => {
-                        const text = `📈 My SIP Investment Plan\n\n💰 Monthly: ${formatINR(displayValues.invested / (activeTab === 'basic' ? years * 12 : activeTab === 'stepup' ? suYears * 12 : goalYears * 12))}\n📅 Duration: ${activeTab === 'basic' ? years : activeTab === 'stepup' ? suYears : goalYears} years\n\n✅ Future Value: ${formatINR(displayValues.primary)}\n💵 Invested: ${formatINR(displayValues.invested)}\n📊 Returns: ${formatINR(displayValues.returns)}\n\nCalculated with FinCalix 🧮`;
-                        await nativeShare('SIP Plan – FinCalix', text);
+                        const text = `📈 ${t('sip.mySipInvestmentPlan')}\n\n💰 ${t('sip.monthly')}: ${formatINR(displayValues.invested / (activeTab === 'basic' ? years * 12 : activeTab === 'stepup' ? suYears * 12 : goalYears * 12))}\n📅 ${t('sip.duration')}: ${activeTab === 'basic' ? years : activeTab === 'stepup' ? suYears : goalYears} ${t('sip.years')}\n\n✅ ${t('sip.futureValue')}: ${formatINR(displayValues.primary)}\n💵 ${t('sip.invested')}: ${formatINR(displayValues.invested)}\n📊 ${t('sip.returns')}: ${formatINR(displayValues.returns)}\n\n${t('sip.calculatedWithFinCalix')}`;
+                        await nativeShare(t('sip.sipPlanFinCalix'), text);
                     }} className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-[10px] font-bold">
                         <Share2 size={16} /> {t('sip.share')}
                     </button>
@@ -586,11 +586,11 @@ export default function SIPCalculator() {
                             metrics={[
                                 { label: t('sip.totalInvested'), value: formatINR(sipStatus.totalInvested), color: 'green' },
                                 { label: t('sip.futureValue'), value: formatINR(sipStatus.currentValue), color: 'blue' },
-                                { label: t('sip.returns'), value: formatINR(sipStatus.wealthGained), subValue: `${sipStatus.returnPercent.toFixed(1)}% return`, color: 'green' },
+                                { label: t('sip.returns'), value: formatINR(sipStatus.wealthGained), subValue: `${sipStatus.returnPercent.toFixed(1)}% ${t('sip.return')}`, color: 'green' },
                             ]}
                             progressPercent={sipStatus.progressToGoal}
-                            progressLabel={activeTab === 'goal' && sipStatus.progressToGoal > 0 ? `${sipStatus.progressToGoal.toFixed(1)}% towards goal of ${formatINR(goalTarget)}` : undefined}
-                            insightText={sipStatus.totalInvested > 0 ? `Your ${formatINR(sipStatus.totalInvested)} has grown to ${formatINR(sipStatus.currentValue)}. Compounding added ${formatINR(sipStatus.wealthGained)} so far.` : undefined}
+                            progressLabel={activeTab === 'goal' && sipStatus.progressToGoal > 0 ? `${sipStatus.progressToGoal.toFixed(1)}% ${t('sip.towardsGoalOf')} ${formatINR(goalTarget)}` : undefined}
+                            insightText={sipStatus.totalInvested > 0 ? t('sip.compoundingInsight', { invested: formatINR(sipStatus.totalInvested), currentValue: formatINR(sipStatus.currentValue), wealthGained: formatINR(sipStatus.wealthGained) }) : undefined}
                         />
                     </div>
                 )}

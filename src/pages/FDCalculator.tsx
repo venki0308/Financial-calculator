@@ -80,10 +80,10 @@ export default function FDCalculator() {
     // Compounding comparison
     const compoundingComparison = useMemo(() => {
         const freqs = [
-            { label: 'Yearly', freq: 1 },
-            { label: 'Quarterly', freq: 4 },
-            { label: 'Monthly', freq: 12 },
-            { label: 'Daily', freq: 365 },
+            { label: t('fd.yearly'), freq: 1 },
+            { label: t('fd.quarterly'), freq: 4 },
+            { label: t('fd.monthly'), freq: 12 },
+            { label: t('fd.daily'), freq: 365 },
         ];
         return freqs.map(f => {
             const mat = principal * Math.pow(1 + effectiveRate / (100 * f.freq), years * f.freq);
@@ -152,55 +152,55 @@ export default function FDCalculator() {
     const handleDownloadPDF = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
-        const compLabel = compounding === 12 ? 'Monthly' : compounding === 4 ? 'Quarterly' : compounding === 365 ? 'Daily' : 'Yearly';
+        const compLabel = compounding === 12 ? t('fd.monthly') : compounding === 4 ? t('fd.quarterly') : compounding === 365 ? t('fd.daily') : t('fd.yearly');
         const config: ExportConfig = {
-            title: 'Fixed Deposit (FD) Report',
+            title: t('fd.reportTitle'),
             inputs: [
-                { label: 'Deposit Amount', value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${effectiveRate}% p.a.${isSeniorCitizen ? ' (Senior +0.5%)' : ''}` },
-                { label: 'Tenure', value: `${years} Years` },
-                { label: 'Compounding Frequency', value: compLabel },
-                { label: 'Senior Citizen', value: isSeniorCitizen ? 'Yes' : 'No' },
-                { label: 'Assumed Inflation', value: `${inflation}% p.a.` },
+                { label: t('fd.depositAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: t('fd.interestRate'), value: `${effectiveRate}% p.a.${isSeniorCitizen ? ` (${t('fd.seniorCitizen')} +0.5%)` : ''}` },
+                { label: t('fd.tenure'), value: `${years} ${t('fd.years')}` },
+                { label: t('fd.compoundingFrequency'), value: compLabel },
+                { label: t('fd.seniorCitizen'), value: isSeniorCitizen ? t('common.yes') : t('common.no') },
+                { label: t('fd.assumedInflation'), value: `${inflation}% p.a.` },
             ],
             results: [
-                { label: 'Principal Invested', value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: 'Interest Earned (Gross)', value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
-                { label: 'Maturity Amount', value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
+                { label: t('fd.principalInvested'), value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: t('fd.interestEarnedGross'), value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
+                { label: t('fd.maturityAmount'), value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
                 ...(tdsInfo.isTdsApplicable ? [
-                    { label: 'TDS Deducted (@10%)', value: `₹${tdsInfo.totalTds.toLocaleString('en-IN')}` },
-                    { label: 'Net Interest (After TDS)', value: `₹${tdsInfo.netInterest.toLocaleString('en-IN')}` },
+                    { label: t('fd.tdsDeducted'), value: `₹${tdsInfo.totalTds.toLocaleString('en-IN')}` },
+                    { label: t('fd.netInterestAfterTds'), value: `₹${tdsInfo.netInterest.toLocaleString('en-IN')}` },
                 ] : []),
-                { label: 'Inflation-Adjusted Value', value: `₹${Math.round(inflationAdj.realValue).toLocaleString('en-IN')}` },
-                { label: 'Real Return Rate', value: `${inflationAdj.realReturn}%` },
+                { label: t('fd.inflationAdjustedValue'), value: `₹${Math.round(inflationAdj.realValue).toLocaleString('en-IN')}` },
+                { label: t('fd.realReturnRate'), value: `${inflationAdj.realReturn}%` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Principal Invested', value: principal, color: '#4F46E5' },
-                    { label: 'Interest Earned', value: result.interest, color: '#10B981' },
+                    { label: t('fd.principalInvested'), value: principal, color: '#4F46E5' },
+                    { label: t('fd.interestEarned'), value: result.interest, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'Year-Wise FD Growth',
-            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionTitle: t('fd.yearWiseGrowth'),
+            projectionColumns: [t('fd.year'), t('fd.openingBalance'), t('fd.interestEarned'), t('fd.closingBalance')],
             projectionRows: yearWise.map((r: any) => [
-                `Year ${r.year}`,
+                `${t('fd.year')} ${r.year}`,
                 `₹${Math.round(r.value - r.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.value).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(fdStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('fd.liveStatus')} (${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('fd.metric'), t('fd.value')],
                     rows: [
-                        ['FD Running For (days)', String(fdStatus.daysInvested)],
-                        ['Interest Earned So Far', formatINR(fdStatus.interestEarnedToday)],
-                        ['Current Value', formatINR(fdStatus.valueToday)],
-                        ['Days to Maturity', String(fdStatus.daysRemaining)],
-                        ['Maturity Value', formatINR(fdStatus.maturityValue)],
-                        ['Daily Earning', formatINR(fdStatus.dailyEarning)],
-                        ['Premature Value (if broken today)', formatINR(fdStatus.prematureValue)],
+                        [t('fd.fdRunningDays'), String(fdStatus.daysInvested)],
+                        [t('fd.interestSoFar'), formatINR(fdStatus.interestEarnedToday)],
+                        [t('fd.currentValue'), formatINR(fdStatus.valueToday)],
+                        [t('fd.daysToMaturity'), String(fdStatus.daysRemaining)],
+                        [t('fd.maturityValue'), formatINR(fdStatus.maturityValue)],
+                        [t('fd.dailyEarning'), formatINR(fdStatus.dailyEarning)],
+                        [t('fd.prematureValue'), formatINR(fdStatus.prematureValue)],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -213,32 +213,32 @@ export default function FDCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'Fixed Deposit (FD) Report',
+            title: t('fd.reportTitle'),
             inputs: [
-                { label: 'Deposit Amount', value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
-                { label: 'Tenure', value: `${years} Years` },
-                { label: 'Compounding Frequency', value: String(compounding) },
+                { label: t('fd.depositAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: t('fd.interestRate'), value: `${rate}% p.a.` },
+                { label: t('fd.tenure'), value: `${years} ${t('fd.years')}` },
+                { label: t('fd.compoundingFrequency'), value: String(compounding) },
             ],
             results: [
-                { label: 'Interest Earned', value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
-                { label: 'Maturity Amount', value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
+                { label: t('fd.interestEarned'), value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
+                { label: t('fd.maturityAmount'), value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Year-Wise FD Growth',
-            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionTitle: t('fd.yearWiseGrowth'),
+            projectionColumns: [t('fd.year'), t('fd.openingBalance'), t('fd.interestEarned'), t('fd.closingBalance')],
             projectionRows: yearWise.map((r: any) => [r.year, Math.round(r.value - r.interest), Math.round(r.interest), Math.round(r.value)]),
             additionalTables: [
                 ...(fdStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('fd.liveStatus')} (${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('fd.metric'), t('fd.value')],
                     rows: [
-                        ['FD Running For (days)', String(fdStatus.daysInvested)],
-                        ['Interest Earned So Far', formatINR(fdStatus.interestEarnedToday)],
-                        ['Current Value', formatINR(fdStatus.valueToday)],
-                        ['Days to Maturity', String(fdStatus.daysRemaining)],
-                        ['Maturity Value', formatINR(fdStatus.maturityValue)],
-                        ['Daily Earning', formatINR(fdStatus.dailyEarning)],
-                        ['Premature Value (if broken today)', formatINR(fdStatus.prematureValue)],
+                        [t('fd.fdRunningDays'), String(fdStatus.daysInvested)],
+                        [t('fd.interestSoFar'), formatINR(fdStatus.interestEarnedToday)],
+                        [t('fd.currentValue'), formatINR(fdStatus.valueToday)],
+                        [t('fd.daysToMaturity'), String(fdStatus.daysRemaining)],
+                        [t('fd.maturityValue'), formatINR(fdStatus.maturityValue)],
+                        [t('fd.dailyEarning'), formatINR(fdStatus.dailyEarning)],
+                        [t('fd.prematureValue'), formatINR(fdStatus.prematureValue)],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -248,7 +248,7 @@ export default function FDCalculator() {
     };
 
     const handleShare = async () => {
-        const text = `🏦 My FD Investment\n\n💰 Deposit: ${formatINR(principal)}\n📈 Rate: ${rate}%\n📅 Tenure: ${years} years\n\n✅ Maturity: ${formatINR(result.amount)}\n💵 Interest: ${formatINR(result.interest)}\n📉 After inflation: ${formatINR(inflationAdj.realValue)}\n\nCalculated with FinCalix 🧮`;
+        const text = `🏦 ${t('fd.myFdInvestment')}\n\n💰 ${t('fd.deposit')}: ${formatINR(principal)}\n📈 ${t('fd.rate')}: ${rate}%\n📅 ${t('fd.tenure')}: ${years} ${t('fd.years')}\n\n✅ ${t('fd.maturity')}: ${formatINR(result.amount)}\n💵 ${t('fd.interest')}: ${formatINR(result.interest)}\n📉 ${t('fd.afterInflation')}: ${formatINR(inflationAdj.realValue)}\n\nCalculated with FinCalix 🧮`;
         await nativeShare('FD Calculation – FinCalix', text);
     };
 
@@ -293,7 +293,7 @@ export default function FDCalculator() {
                     <NumberInput label={t('fd.tenure')} value={years} onChange={setYears} min={1} max={20} suffix=" years" />
                     <NumberInput label={t('fd.assumedInflation')} value={inflation} onChange={setInflation} min={1} max={15} suffix="%" step={0.5} helperText={t('fd.usedForInflationAdjusted')} />
                     <div>
-                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">FD Start Date</label>
+                        <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('fd.startDate')}</label>
                         <DateInput
                             value={fdStartDate}
                             onChange={setFdStartDate}

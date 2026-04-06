@@ -146,17 +146,17 @@ function CollapsibleSection({ title, children, defaultOpen = true }: { title: st
 }
 
 // ─── Validation ───────────────────────────────────────────────────────────────
-function getWarning(k: string, rawValue: string): string | undefined {
+function getWarning(k: string, rawValue: string, t: (key: string, opts?: Record<string, unknown>) => string): string | undefined {
     const val = parseFloat(rawValue || '0') || 0;
     const limit = LIMITS[k];
     if (!limit || val <= limit) return undefined;
-    const labels: Record<string, string> = {
-        section80C: 'Section 80C (Sec 123)',
-        section80D: 'Section 80D (Sec 126)',
-        section80CCD: 'Section 80CCD(1B) (Sec 124)',
-        homeLoan: 'Home Loan Interest (Sec 24B / 22)',
+    const labelKeys: Record<string, string> = {
+        section80C: 'tax.warningLabelSec80C',
+        section80D: 'tax.warningLabelSec80D',
+        section80CCD: 'tax.warningLabelSec80CCD',
+        homeLoan: 'tax.warningLabelHomeLoan',
     };
-    return `You entered ${fmt(val)} in ${labels[k]}. Maximum allowed is ${fmt(limit)}. Only ${fmt(limit)} will be considered.`;
+    return t('tax.warningExceeded', { value: fmt(val), label: t(labelKeys[k]), limit: fmt(limit) });
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -329,22 +329,22 @@ export default function IncomeTaxCalculator() {
         if (bothZero || grossSalary === 0) return '';
         if (betterRegime === 'Old') {
             const totalDedUsed = oldDeductions - 50000; // exclude std deduction
-            return `Old Regime saves ${fmt(saving)} because your deductions (80C/123, 80D/126, HRA, etc.) total ${fmt(totalDedUsed)}, which reduces your taxable income significantly. With deductions exceeding ${fmt(75000 - 50000)} (difference between new std deduction and old), the old regime is more beneficial.`;
+            return t('tax.regimeExplanationOld', { saving: fmt(saving), totalDeductions: fmt(totalDedUsed), difference: fmt(75000 - 50000) });
         }
-        return `New Regime saves ${fmt(saving)} because the higher standard deduction of ${fmt(75000)} and revised tax slabs offset your old regime deductions of ${fmt(oldDeductions - 50000)}. The new regime offers simpler filing with lower rates.`;
-    }, [bothZero, grossSalary, betterRegime, saving, oldDeductions]);
+        return t('tax.regimeExplanationNew', { saving: fmt(saving), stdDeduction: fmt(75000), oldDeductions: fmt(oldDeductions - 50000) });
+    }, [bothZero, grossSalary, betterRegime, saving, oldDeductions, t]);
 
     // ─── Tax-Saving Suggestions ───────────────────────────────────────────────
     const tips: string[] = useMemo(() => {
-        const t: string[] = [];
-        if (grossSalary === 0) return t;
+        const suggestions: string[] = [];
+        if (grossSalary === 0) return suggestions;
         const used80C = Math.min(num('section80C'), 150000);
-        if (used80C < 150000) t.push(`Invest ${fmt(150000 - used80C)} more under Sec 80C / Sec 123 (PPF, ELSS, LIC, etc.) — max limit Rs 1,50,000.`);
-        if (num('section80D') < 25000) t.push(`Claim health insurance under Sec 80D / Sec 126 — up to Rs 25,000 for self & family.`);
-        if (!num('section80CCD') && regime === 'old') t.push(`NPS contribution under Sec 80CCD(1B) / Sec 124 offers additional deduction up to Rs 50,000 (old regime only).`);
-        if (!num('homeLoan')) t.push(`Home loan interest under Sec 24B / Sec 22 (ITA 2025) allows deduction up to Rs 2,00,000.`);
-        return t;
-    }, [inputs, grossSalary, num]);
+        if (used80C < 150000) suggestions.push(t('tax.tipInvest80C', { amount: fmt(150000 - used80C) }));
+        if (num('section80D') < 25000) suggestions.push(t('tax.tipClaim80D'));
+        if (!num('section80CCD') && regime === 'old') suggestions.push(t('tax.tipNPS80CCD'));
+        if (!num('homeLoan')) suggestions.push(t('tax.tipHomeLoan'));
+        return suggestions;
+    }, [inputs, grossSalary, num, regime, t]);
 
     // Removed automatic notification trigger
 
@@ -352,40 +352,40 @@ export default function IncomeTaxCalculator() {
     const handleDownloadPDF = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
-        const modeLabel = inputMode === 'monthly' ? 'Monthly' : inputMode === 'annual' ? 'Annual' : inputMode === 'ctc' ? 'CTC' : 'Payslip';
+        const modeLabel = inputMode === 'monthly' ? t('tax.pdfModeMonthly') : inputMode === 'annual' ? t('tax.pdfModeAnnual') : inputMode === 'ctc' ? t('tax.pdfModeCTC') : t('tax.pdfModePayslip');
 
         const inputFields: Array<{ label: string; value: string }> = [
-            { label: 'Financial Year', value: `FY ${fy}` },
-            { label: 'Input Mode', value: modeLabel },
-            { label: 'Tax Regime', value: regime === 'old' ? 'Old Regime' : 'New Regime' },
+            { label: t('tax.pdfFinancialYear'), value: `FY ${fy}` },
+            { label: t('tax.pdfInputMode'), value: modeLabel },
+            { label: t('tax.pdfTaxRegime'), value: regime === 'old' ? t('tax.oldRegime') : t('tax.newRegime') },
         ];
         if (inputMode === 'ctc') {
             inputFields.push(
-                { label: 'Annual CTC', value: fmt(num('ctcAmount')) },
-                { label: 'Gross Salary (In-hand)', value: fmt(ctcGross) },
+                { label: t('tax.pdfAnnualCTC'), value: fmt(num('ctcAmount')) },
+                { label: t('tax.pdfGrossSalaryInHand'), value: fmt(ctcGross) },
             );
         } else {
             inputFields.push(
-                { label: 'Basic Salary (Annual)', value: fmt(num('basicSalary') * multiplier) },
-                { label: 'HRA (Annual)', value: fmt(num('hra') * multiplier) },
-                { label: 'Special Allowance (Annual)', value: fmt(num('special') * multiplier) },
-                { label: 'Other Income (Annual)', value: fmt(num('otherIncome') * multiplier) },
+                { label: t('tax.pdfBasicSalaryAnnual'), value: fmt(num('basicSalary') * multiplier) },
+                { label: t('tax.pdfHRAAnnual'), value: fmt(num('hra') * multiplier) },
+                { label: t('tax.pdfSpecialAllowanceAnnual'), value: fmt(num('special') * multiplier) },
+                { label: t('tax.pdfOtherIncomeAnnual'), value: fmt(num('otherIncome') * multiplier) },
             );
         }
-        if (num('variablePay') > 0) inputFields.push({ label: 'Variable Pay / Performance Bonus', value: fmt(num('variablePay') * (inputMode === 'ctc' ? 1 : multiplier)) });
-        if (num('annualBonus') > 0) inputFields.push({ label: 'Annual Bonus / Ex-Gratia', value: fmt(num('annualBonus') * (inputMode === 'ctc' ? 1 : multiplier)) });
-        inputFields.push({ label: 'Gross Annual Income', value: fmt(grossSalary) });
+        if (num('variablePay') > 0) inputFields.push({ label: t('tax.pdfVariablePayBonus'), value: fmt(num('variablePay') * (inputMode === 'ctc' ? 1 : multiplier)) });
+        if (num('annualBonus') > 0) inputFields.push({ label: t('tax.pdfAnnualBonusExGratia'), value: fmt(num('annualBonus') * (inputMode === 'ctc' ? 1 : multiplier)) });
+        inputFields.push({ label: t('tax.pdfGrossAnnualIncome'), value: fmt(grossSalary) });
 
         const resultFields: Array<{ label: string; value: string }> = [
-            { label: 'Taxable Income', value: fmt(activeTaxableIncome) },
-            { label: 'Old Regime Tax', value: fmt(oldTotalTax) },
-            { label: 'New Regime Tax', value: fmt(newTotalTax) },
-            { label: `Recommended Regime`, value: `${betterRegime} Regime${saving > 0 ? ` (Save ${fmt(saving)})` : ''}` },
-            { label: 'Total Tax Liability', value: fmt(activeTotalTax) },
-            { label: 'Health & Education Cess (4%)', value: fmt(activeCess) },
-            { label: 'Net Annual Income', value: fmt(netAnnual) },
-            { label: 'Monthly Take-Home', value: fmt(monthlyTakeHome) },
-            { label: 'Effective Tax Rate', value: `${effectiveRate.toFixed(2)}%` },
+            { label: t('tax.pdfTaxableIncome'), value: fmt(activeTaxableIncome) },
+            { label: t('tax.pdfOldRegimeTax'), value: fmt(oldTotalTax) },
+            { label: t('tax.pdfNewRegimeTax'), value: fmt(newTotalTax) },
+            { label: t('tax.pdfRecommendedRegime'), value: `${betterRegime} ${t('tax.regime')}${saving > 0 ? ` (${t('tax.pdfSave')} ${fmt(saving)})` : ''}` },
+            { label: t('tax.pdfTotalTaxLiability'), value: fmt(activeTotalTax) },
+            { label: t('tax.pdfHealthEducationCess'), value: fmt(activeCess) },
+            { label: t('tax.pdfNetAnnualIncome'), value: fmt(netAnnual) },
+            { label: t('tax.pdfMonthlyTakeHome'), value: fmt(monthlyTakeHome) },
+            { label: t('tax.pdfEffectiveTaxRate'), value: `${effectiveRate.toFixed(2)}%` },
         ];
 
         // Build slab breakdown comparing old vs new regime
@@ -400,7 +400,7 @@ export default function IncomeTaxCalculator() {
             const newSlab = NEW_REGIME.find(s => s.min === slabMin);
             const oldRate = oldSlab ? oldSlab.rate : OLD_REGIME.filter(s => s.min <= slabMin).pop()?.rate ?? 0;
             const newRate = newSlab ? newSlab.rate : NEW_REGIME.filter(s => s.min <= slabMin).pop()?.rate ?? 0;
-            const label = slabMax === Infinity ? `Above ${fmt(slabMin)}` : `${fmt(slabMin)} – ${fmt(slabMax)}`;
+            const label = slabMax === Infinity ? `${t('tax.above')} ${fmt(slabMin)}` : `${fmt(slabMin)} – ${fmt(slabMax)}`;
 
             const oldAmt = oldTaxableIncome > slabMin ? Math.min(oldTaxableIncome, slabMax === Infinity ? oldTaxableIncome : slabMax) - slabMin : 0;
             const newAmt = newTaxableIncome > slabMin ? Math.min(newTaxableIncome, slabMax === Infinity ? newTaxableIncome : slabMax) - slabMin : 0;
@@ -412,20 +412,20 @@ export default function IncomeTaxCalculator() {
                     label,
                     oldAmt > 0 ? fmt(oldAmt) : '-',
                     `${oldRate}%`,
-                    oldTaxAmt > 0 ? fmt(oldTaxAmt) : 'Nil',
+                    oldTaxAmt > 0 ? fmt(oldTaxAmt) : t('tax.nil'),
                     `${newRate}%`,
-                    newTaxAmt > 0 ? fmt(newTaxAmt) : 'Nil',
+                    newTaxAmt > 0 ? fmt(newTaxAmt) : t('tax.nil'),
                 ]);
             }
         }
 
         const config: ExportConfig = {
-            title: 'Income Tax Calculator Report (FY 2026-27)',
-            subtitle: `Tax Regime: ${regime === 'old' ? 'Old Regime' : 'New Regime'}`,
+            title: t('tax.pdfReportTitle'),
+            subtitle: `${t('tax.pdfTaxRegime')}: ${regime === 'old' ? t('tax.oldRegime') : t('tax.newRegime')}`,
             inputs: inputFields,
             results: resultFields,
-            projectionTitle: 'Tax Slab Breakdown',
-            projectionColumns: ['Slab', 'Taxable Amount', 'Old Rate', 'Old Tax', 'New Rate', 'New Tax'],
+            projectionTitle: t('tax.pdfSlabBreakdown'),
+            projectionColumns: [t('tax.pdfColSlab'), t('tax.pdfColTaxableAmount'), t('tax.pdfColOldRate'), t('tax.pdfColOldTax'), t('tax.pdfColNewRate'), t('tax.pdfColNewTax')],
             projectionRows: slabRows,
             filename: `FinCalix_IncomeTax_Report_${tag}`,
         };
@@ -526,14 +526,14 @@ export default function IncomeTaxCalculator() {
                             <div className="bg-muted rounded-xl p-3 space-y-2">
                                 <p className="text-muted-foreground text-xs font-semibold">{t('tax.autoComputedBreakdown')}</p>
                                 {[
-                                    { label: t('tax.basic40'), val: num('ctcAmount') * 0.4 },
-                                    { label: t('tax.employerPF12'), val: Math.min(num('ctcAmount') * 0.4 * 0.12, 21600) },
-                                    { label: t('tax.gratuity481'), val: num('ctcAmount') * 0.4 * 0.0481 },
-                                    { label: t('tax.grossSalaryInHand'), val: ctcGross },
+                                    { label: t('tax.basic40'), val: num('ctcAmount') * 0.4, isTotal: false },
+                                    { label: t('tax.employerPF12'), val: Math.min(num('ctcAmount') * 0.4 * 0.12, 21600), isTotal: false },
+                                    { label: t('tax.gratuity481'), val: num('ctcAmount') * 0.4 * 0.0481, isTotal: false },
+                                    { label: t('tax.grossSalaryInHand'), val: ctcGross, isTotal: true },
                                 ].map(r => (
-                                    <div key={r.label} className={`flex justify-between ${r.label.includes('Gross') ? 'border-t border-slate-200 dark:border-white/10 pt-2 font-bold' : ''}`}>
+                                    <div key={r.label} className={`flex justify-between ${r.isTotal ? 'border-t border-slate-200 dark:border-white/10 pt-2 font-bold' : ''}`}>
                                         <span className="text-muted-foreground dark:text-muted-foreground text-xs">{r.label}</span>
-                                        <span className={`text-xs font-semibold ${r.label.includes('Gross') ? 'text-brand-purple' : 'text-slate-700 dark:text-foreground'}`}>{fmt(r.val)}</span>
+                                        <span className={`text-xs font-semibold ${r.isTotal ? 'text-brand-purple' : 'text-slate-700 dark:text-foreground'}`}>{fmt(r.val)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -633,7 +633,7 @@ export default function IncomeTaxCalculator() {
                                     <span className="text-brand-green text-xs font-semibold">{t('tax.hraExemption')}</span>
                                     <span className="text-brand-green font-bold text-sm">{fmt(hraExemption)}</span>
                                 </div>
-                                <InputRow label={t('tax.homeLoanInterest')} k="homeLoan" value={inputs.homeLoan} onChange={set} hint={t('tax.homeLoanHint')} warning={getWarning('homeLoan', inputs.homeLoan)} />
+                                <InputRow label={t('tax.homeLoanInterest')} k="homeLoan" value={inputs.homeLoan} onChange={set} hint={t('tax.homeLoanHint')} warning={getWarning('homeLoan', inputs.homeLoan, t)} />
                             </CollapsibleSection>
                         </div>
 
@@ -646,12 +646,12 @@ export default function IncomeTaxCalculator() {
                             </div>
 
                             <CollapsibleSection title={t('tax.investmentDeductions')}>
-                                <InputRow label={t('tax.sec80C')} k="section80C" value={inputs.section80C} onChange={set} hint={t('tax.sec80CHint')} warning={getWarning('section80C', inputs.section80C)} />
-                                <InputRow label={t('tax.sec80CCD')} k="section80CCD" value={inputs.section80CCD} onChange={set} hint={t('tax.sec80CCDHint')} warning={getWarning('section80CCD', inputs.section80CCD)} />
+                                <InputRow label={t('tax.sec80C')} k="section80C" value={inputs.section80C} onChange={set} hint={t('tax.sec80CHint')} warning={getWarning('section80C', inputs.section80C, t)} />
+                                <InputRow label={t('tax.sec80CCD')} k="section80CCD" value={inputs.section80CCD} onChange={set} hint={t('tax.sec80CCDHint')} warning={getWarning('section80CCD', inputs.section80CCD, t)} />
                             </CollapsibleSection>
 
                             <CollapsibleSection title={t('tax.insuranceMedical')}>
-                                <InputRow label={t('tax.sec80D')} k="section80D" value={inputs.section80D} onChange={set} hint={t('tax.sec80DHint')} warning={getWarning('section80D', inputs.section80D)} />
+                                <InputRow label={t('tax.sec80D')} k="section80D" value={inputs.section80D} onChange={set} hint={t('tax.sec80DHint')} warning={getWarning('section80D', inputs.section80D, t)} />
                             </CollapsibleSection>
 
                             <CollapsibleSection title={t('tax.additionalDeductions')}>

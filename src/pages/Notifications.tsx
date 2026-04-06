@@ -3,6 +3,7 @@ import { ArrowLeft, Bell, CheckCheck, Trash2, BellOff } from 'lucide-react';
 import { RemoteConfigService } from '../services/remoteConfig.service';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnalyticsService } from '../lib/analytics';
 import { useNotificationStore, AppNotification } from '../store/useNotificationStore';
 
@@ -31,14 +32,14 @@ const TYPE_META: Record<string, { emoji: string; color: string; bg: string }> = 
     general:         { emoji: '🔔', color: '#6B7280', bg: 'bg-slate-50 dark:bg-card border-border' },
 };
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, t: (key: string, opts?: any) => string): string {
     const diff = Date.now() - new Date(iso).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return t('notif.justNow');
+    if (mins < 60) return t('notif.minsAgo', { count: mins });
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+    if (hrs < 24) return t('notif.hrsAgo', { count: hrs });
+    return t('notif.daysAgo', { count: Math.floor(hrs / 24) });
 }
 
 function groupNotifications(notifications: AppNotification[]) {
@@ -62,9 +63,10 @@ interface NotifCardProps {
     onRead: () => void;
     onDismiss: () => void;
     onClick: () => void;
+    t: (key: string, opts?: any) => string;
 }
 
-function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
+function NotifCard({ n, onRead, onDismiss, onClick, t }: NotifCardProps) {
     const meta = TYPE_META[n.type] || TYPE_META.general;
     const isUnread = !n.isRead;
 
@@ -92,14 +94,14 @@ function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
                             {n.title}
                         </h4>
                         <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed line-clamp-2">{n.body}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1.5">{timeAgo(new Date(n.createdAt).toISOString())}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1.5">{timeAgo(new Date(n.createdAt).toISOString(), t)}</p>
                     </div>
                 </div>
             </button>
             <button
                 onClick={onDismiss}
                 className="absolute top-2 right-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-label="Dismiss"
+                aria-label={t('notif.dismiss')}
             >
                 <Trash2 size={12} className="text-muted-foreground" />
             </button>
@@ -110,6 +112,7 @@ function NotifCard({ n, onRead, onDismiss, onClick }: NotifCardProps) {
 export default function Notifications() {
     useEffect(() => { AnalyticsService.trackScreen('Notifications'); }, []);
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { notifications, markRead, markAllRead, deleteNotification, clearAll } = useNotificationStore();
     const unreadCount = useNotificationStore(s => s.getUnreadCount());
 
@@ -134,23 +137,23 @@ export default function Notifications() {
                     </button>
                     <div className="flex-1">
                         <div className="flex items-center gap-2">
-                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">Notifications</h1>
+                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">{t('notif.title')}</h1>
                             {unreadCount > 0 && (
                                 <span className="bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                                     {unreadCount}
                                 </span>
                             )}
                         </div>
-                        <p className="text-muted-foreground text-xs">Financial reminders & alerts</p>
+                        <p className="text-muted-foreground text-xs">{t('notif.subtitle')}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         {unreadCount > 0 && (
-                            <button onClick={markAllRead} className="p-2 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30" title="Mark all read">
+                            <button onClick={markAllRead} className="p-2 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30" title={t('notif.markAllRead')}>
                                 <CheckCheck size={16} className="text-indigo-600 dark:text-indigo-400" />
                             </button>
                         )}
                         {hasAny && (
-                            <button onClick={clearAll} className="p-2 rounded-xl bg-slate-100 dark:bg-card border-border border border-border" title="Clear all">
+                            <button onClick={clearAll} className="p-2 rounded-xl bg-slate-100 dark:bg-card border-border border border-border" title={t('notif.clearAll')}>
                                 <Trash2 size={16} className="text-muted-foreground" />
                             </button>
                         )}
@@ -164,16 +167,16 @@ export default function Notifications() {
                         <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-card border-border flex items-center justify-center mb-4">
                             <BellOff size={32} className="text-muted-foreground" />
                         </div>
-                        <h3 className="text-muted-foreground font-semibold mb-1">All caught up!</h3>
+                        <h3 className="text-muted-foreground font-semibold mb-1">{t('notif.allCaughtUp')}</h3>
                         <p className="text-muted-foreground text-sm text-center leading-relaxed">
-                            No notifications yet. Financial reminders and<br />insights will appear here.
+                            {t('notif.noNotifications')}
                         </p>
                     </motion.div>
                 ) : (
                     <>
                         {groups.today.length > 0 && (
                             <div>
-                                <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">Today</p>
+                                <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mb-2">{t('notif.today')}</p>
                                 <div className="space-y-2">
                                     <AnimatePresence>
                                         {groups.today.map(n => (
@@ -181,6 +184,7 @@ export default function Notifications() {
                                                 onRead={() => markRead(n.id)}
                                                 onDismiss={() => deleteNotification(n.id)}
                                                 onClick={() => handleClick(n)}
+                                                t={t}
                                             />
                                         ))}
                                     </AnimatePresence>
@@ -190,7 +194,7 @@ export default function Notifications() {
 
                         {groups.week.length > 0 && (
                             <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">This Week</p>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('notif.thisWeek')}</p>
                                 <div className="space-y-2">
                                     <AnimatePresence>
                                         {groups.week.map(n => (
@@ -198,6 +202,7 @@ export default function Notifications() {
                                                 onRead={() => markRead(n.id)}
                                                 onDismiss={() => deleteNotification(n.id)}
                                                 onClick={() => handleClick(n)}
+                                                t={t}
                                             />
                                         ))}
                                     </AnimatePresence>
@@ -207,7 +212,7 @@ export default function Notifications() {
 
                         {groups.older.length > 0 && (
                             <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Older</p>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('notif.older')}</p>
                                 <div className="space-y-2">
                                     <AnimatePresence>
                                         {groups.older.map(n => (
@@ -215,6 +220,7 @@ export default function Notifications() {
                                                 onRead={() => markRead(n.id)}
                                                 onDismiss={() => deleteNotification(n.id)}
                                                 onClick={() => handleClick(n)}
+                                                t={t}
                                             />
                                         ))}
                                     </AnimatePresence>

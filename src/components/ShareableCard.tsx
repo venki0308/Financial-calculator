@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Share2, Download, Copy, Check } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 
@@ -11,6 +12,7 @@ interface ShareableCardProps {
 }
 
 export default function ShareableCard({ title, highlight, subtitle, details, gradient = 'from-indigo-600 via-purple-600 to-pink-500' }: ShareableCardProps) {
+    const { t } = useTranslation();
     const cardRef = useRef<HTMLDivElement>(null);
     const [copied, setCopied] = useState(false);
 
@@ -19,7 +21,7 @@ export default function ShareableCard({ title, highlight, subtitle, details, gra
         if (subtitle) text += `${subtitle}\n`;
         text += '\n';
         details.forEach(d => { text += `${d.label}: ${d.value}\n`; });
-        text += '\n📱 Calculated with FinCalix';
+        text += `\n📱 ${t('share.calculatedWith')}`;
         return text;
     };
 
@@ -28,7 +30,7 @@ export default function ShareableCard({ title, highlight, subtitle, details, gra
         try {
             if (Capacitor.isNativePlatform()) {
                 const { Share } = await import('@capacitor/share');
-                await Share.share({ title: `${title} – FinCalix`, text, dialogTitle: 'Share Result' });
+                await Share.share({ title: `${title} – FinCalix`, text, dialogTitle: t('share.dialogTitle') });
             } else if (navigator.share) {
                 await navigator.share({ title: `${title} – FinCalix`, text });
             } else {
@@ -80,14 +82,14 @@ export default function ShareableCard({ title, highlight, subtitle, details, gra
                     onClick={handleShare}
                     className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-xs"
                 >
-                    <Share2 size={14} /> Share
+                    <Share2 size={14} /> {t('share.share')}
                 </button>
                 <button
                     onClick={handleCopy}
                     className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-card border border-border text-muted-foreground text-xs font-medium"
                 >
                     {copied ? <Check size={14} className="text-brand-green" /> : <Copy size={14} />}
-                    {copied ? 'Copied!' : 'Copy'}
+                    {copied ? t('share.copied') : t('share.copy')}
                 </button>
             </div>
         </div>

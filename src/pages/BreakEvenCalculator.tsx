@@ -79,7 +79,7 @@ export default function BreakEvenCalculator() {
 
     const handleSave = () => {
         const calcId = `be-${Date.now()}`;
-        addSaved({ id: calcId, calculatorType: 'Break Even Calculator', inputValues: { fixed, price, variable }, resultValues: { primary: result.breakEvenUnits }, timestamp: Date.now() });
+        addSaved({ id: calcId, calculatorType: t('breakEven.calculatorType'), inputValues: { fixed, price, variable }, resultValues: { primary: result.breakEvenUnits }, timestamp: Date.now() });
         setSaved(true);
         setLastSavedId(calcId);
     };

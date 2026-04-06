@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function GlobalDisclaimerModal() {
+    const { t } = useTranslation();
     const [visible, setVisible] = useState(false);
     const [canAccept, setCanAccept] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -38,9 +40,9 @@ export default function GlobalDisclaimerModal() {
                 {/* Header */}
                 <div className="p-6 pb-4 border-b border-slate-700/50 text-center">
                     <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-1">
-                        Welcome to FinCalix!
+                        {t('disclaimer.welcome')}
                     </h2>
-                    <p className="text-slate-400 text-sm font-medium">Your Personal Finance Companion</p>
+                    <p className="text-slate-400 text-sm font-medium">{t('disclaimer.subtitle')}</p>
                 </div>
 
                 {/* Body */}
@@ -50,48 +52,48 @@ export default function GlobalDisclaimerModal() {
                     className="overflow-y-auto p-6 space-y-6 flex-1 scroll-smooth pb-10"
                 >
                     <p className="text-sm text-slate-300 font-medium leading-relaxed">
-                        Before you continue, please read and accept our expanded terms.
+                        {t('disclaimer.readTerms')}
                     </p>
 
                     <div className="space-y-5">
                         <section>
-                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Calculators are Estimates</h3>
-                            <p className="text-sm text-slate-300 leading-relaxed">All tools (Home Loan, SIP, PPF, FD, Tax, etc.) provide mathematical estimates based on your inputs. They are for planning purposes only. Actual figures from your bank or government may vary.</p>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.estimatesTitle')}</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">{t('disclaimer.estimatesBody')}</p>
                         </section>
 
                         <section>
-                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Expense Tracker Privacy</h3>
-                            <p className="text-sm text-slate-300 leading-relaxed">Your Expense Tracker data is stored locally on this device. We do not collect or monitor your spending habits. If you clear app data, your records are deleted.</p>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.expensePrivacyTitle')}</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">{t('disclaimer.expensePrivacyBody')}</p>
                         </section>
 
                         <section>
-                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Government Schemes</h3>
-                            <p className="text-sm text-slate-300 leading-relaxed">Scheme details are for awareness only. Eligibility and benefits are subject to change. Always verify with official government portals before applying for any scheme.</p>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.govSchemesTitle')}</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">{t('disclaimer.govSchemesBody')}</p>
                         </section>
 
                         <section>
-                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Financial Advisor & Goal Planner</h3>
-                            <p className="text-sm text-slate-300 leading-relaxed">Recommendations are algorithmically generated starting points. They do not replace professional, personalized financial advice from a certified planner.</p>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.advisorTitle')}</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">{t('disclaimer.advisorBody')}</p>
                         </section>
 
                         <section>
-                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Loan & OD Tools</h3>
-                            <p className="text-sm text-slate-300 leading-relaxed">EMI and Overdraft calculations use standard reducing balance methods. Your lender's specific rounding rules or hidden charges (like processing and annual fees) will affect final amounts.</p>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.loanToolsTitle')}</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">{t('disclaimer.loanToolsBody')}</p>
                         </section>
 
                         <section>
-                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Utility Tools</h3>
-                            <p className="text-sm text-slate-300 leading-relaxed">Tools like the Age Calculator and World Clock use system time. Ensure your device time is accurate for precise results.</p>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.utilityTitle')}</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">{t('disclaimer.utilityBody')}</p>
                         </section>
 
                         <section>
-                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">Data Privacy</h3>
-                            <p className="text-sm text-slate-300 leading-relaxed">We prioritize your privacy. Financial inputs in calculators are not transmitted to our servers.</p>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.dataPrivacyTitle')}</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">{t('disclaimer.dataPrivacyBody')}</p>
                         </section>
 
                         <section>
-                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">General Note</h3>
-                            <p className="text-sm text-slate-300 leading-relaxed">Nothing in this app constitutes financial, tax, investment, or legal advice. FinCalix and its developers are not liable for any real-world financial decisions made using this app.</p>
+                            <h3 className="text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.generalNoteTitle')}</h3>
+                            <p className="text-sm text-slate-300 leading-relaxed">{t('disclaimer.generalNoteBody')}</p>
                         </section>
                     </div>
                 </div>
@@ -107,7 +109,7 @@ export default function GlobalDisclaimerModal() {
                                 : 'bg-slate-700 text-slate-400 cursor-not-allowed'
                         }`}
                     >
-                        {canAccept ? 'I Understand, Continue' : 'Please scroll down to read all terms'}
+                        {canAccept ? t('disclaimer.acceptBtn') : t('disclaimer.scrollPrompt')}
                     </button>
                 </div>
             </div>

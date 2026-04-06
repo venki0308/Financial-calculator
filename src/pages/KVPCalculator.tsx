@@ -71,7 +71,7 @@ export default function KVPCalculator() {
         const premature: { months: number; value: number; penalty: string }[] = [];
         for (let m = PREMATURE_LOCK; m < doublingMonths; m += 6) {
             const fv = investment * Math.pow(1 + rate / 100, m / 12);
-            premature.push({ months: m, value: fv, penalty: m < 36 ? '1% approx penalty' : 'No penalty' });
+            premature.push({ months: m, value: fv, penalty: m < 36 ? 'penalty' : 'none' });
         }
 
         // Effective annual return (CAGR)
@@ -144,47 +144,47 @@ export default function KVPCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: 'KVP (Kisan Vikas Patra) Report',
+            title: t('kvp.reportTitle'),
             inputs: [
-                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a. (compounded annually)` },
-                { label: 'Tax Regime', value: taxRegime === 'old' ? 'Old Regime' : 'New Regime' },
-                { label: 'Inflation Rate', value: `${inflation}% p.a.` },
+                { label: t('kvp.investmentAmountLabel'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: t('kvp.interestRateLabel'), value: `${rate}% ${t('kvp.paCompoundedAnnually')}` },
+                { label: t('kvp.taxRegimeLabel'), value: taxRegime === 'old' ? t('kvp.oldRegime') : t('kvp.newRegime') },
+                { label: t('kvp.inflationRateLabel'), value: `${inflation}% ${t('kvp.pa')}` },
             ],
             results: [
-                { label: 'Maturity Amount (Doubled)', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
-                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'Doubling Period', value: `${doublingYears}y ${doublingMonthsRem}m (${result.doublingMonths} months)` },
-                { label: 'CAGR', value: `${result.cagr.toFixed(2)}%` },
-                { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
-                { label: 'Inflation-Adjusted Value', value: `₹${Math.round(result.realMaturity).toLocaleString('en-IN')}` },
+                { label: t('kvp.maturityAmountDoubledLabel'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: t('kvp.totalInterestEarnedLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('kvp.doublingPeriodLabel'), value: `${doublingYears}y ${doublingMonthsRem}m (${result.doublingMonths} ${t('kvp.monthsUnit')})` },
+                { label: t('kvp.cagrLabel'), value: `${result.cagr.toFixed(2)}%` },
+                { label: t('kvp.postTaxMaturityLabel'), value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+                { label: t('kvp.inflationAdjustedValueLabel'), value: `₹${Math.round(result.realMaturity).toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Principal Invested', value: investment, color: '#4F46E5' },
-                    { label: 'Interest Earned', value: result.totalInterest, color: '#10B981' },
+                    { label: t('kvp.principalInvested'), value: investment, color: '#4F46E5' },
+                    { label: t('kvp.interestEarnedChart'), value: result.totalInterest, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'KVP Yearly Growth',
-            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionTitle: t('kvp.yearlyGrowth'),
+            projectionColumns: [t('kvp.yearCol'), t('kvp.openingBalanceCol'), t('kvp.interestEarnedCol'), t('kvp.closingBalanceCol')],
             projectionRows: result.yearTable.map((y: any) => [
-                `Year ${y.year}`,
+                `${t('kvp.yearCol')} ${y.year}`,
                 `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(kvpStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('kvp.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('kvp.metricCol'), t('kvp.valueCol')],
                     rows: [
-                        ['Months Elapsed', String(kvpStatus.monthsElapsed)],
-                        ['Current Value', fmtINR(kvpStatus.valueToday)],
-                        ['Gain So Far', fmtINR(kvpStatus.gainSoFar)],
-                        ['Progress to Doubling', `${kvpStatus.progressToDoubling.toFixed(1)}%`],
-                        ['Doubling Date', kvpStatus.doublingDate],
-                        ['Premature Encashment Eligible', kvpStatus.prematureEligible ? 'Yes' : 'No'],
+                        [t('kvp.monthsElapsed'), String(kvpStatus.monthsElapsed)],
+                        [t('kvp.currentValue'), fmtINR(kvpStatus.valueToday)],
+                        [t('kvp.gainSoFar'), fmtINR(kvpStatus.gainSoFar)],
+                        [t('kvp.progressToDoubling'), `${kvpStatus.progressToDoubling.toFixed(1)}%`],
+                        [t('kvp.doublingDate'), kvpStatus.doublingDate],
+                        [t('kvp.prematureEncashmentEligible'), kvpStatus.prematureEligible ? t('kvp.yes') : t('kvp.no')],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -196,39 +196,39 @@ export default function KVPCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: 'KVP (Kisan Vikas Patra) Report',
+            title: t('kvp.reportTitle'),
             inputs: [
-                { label: 'Investment Amount', value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a. (compounded annually)` },
-                { label: 'Tax Regime', value: taxRegime === 'old' ? 'Old Regime' : 'New Regime' },
-                { label: 'Inflation Rate', value: `${inflation}% p.a.` },
+                { label: t('kvp.investmentAmountLabel'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: t('kvp.interestRateLabel'), value: `${rate}% ${t('kvp.paCompoundedAnnually')}` },
+                { label: t('kvp.taxRegimeLabel'), value: taxRegime === 'old' ? t('kvp.oldRegime') : t('kvp.newRegime') },
+                { label: t('kvp.inflationRateLabel'), value: `${inflation}% ${t('kvp.pa')}` },
             ],
             results: [
-                { label: 'Maturity Amount (Doubled)', value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
-                { label: 'Total Interest Earned', value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: 'CAGR', value: `${result.cagr.toFixed(2)}%` },
-                { label: 'Post-Tax Maturity', value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
-                { label: 'Inflation-Adjusted Value', value: `₹${Math.round(result.realMaturity).toLocaleString('en-IN')}` },
+                { label: t('kvp.maturityAmountDoubledLabel'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: t('kvp.totalInterestEarnedLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: t('kvp.cagrLabel'), value: `${result.cagr.toFixed(2)}%` },
+                { label: t('kvp.postTaxMaturityLabel'), value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+                { label: t('kvp.inflationAdjustedValueLabel'), value: `₹${Math.round(result.realMaturity).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'KVP Yearly Growth',
-            projectionColumns: ['Year', 'Opening Balance', 'Interest Earned', 'Closing Balance'],
+            projectionTitle: t('kvp.yearlyGrowth'),
+            projectionColumns: [t('kvp.yearCol'), t('kvp.openingBalanceCol'), t('kvp.interestEarnedCol'), t('kvp.closingBalanceCol')],
             projectionRows: result.yearTable.map((y: any) => [
-                `Year ${y.year}`,
+                `${t('kvp.yearCol')} ${y.year}`,
                 `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(kvpStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('kvp.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('kvp.metricCol'), t('kvp.valueCol')],
                     rows: [
-                        ['Months Elapsed', String(kvpStatus.monthsElapsed)],
-                        ['Current Value', fmtINR(kvpStatus.valueToday)],
-                        ['Gain So Far', fmtINR(kvpStatus.gainSoFar)],
-                        ['Progress to Doubling', `${kvpStatus.progressToDoubling.toFixed(1)}%`],
-                        ['Doubling Date', kvpStatus.doublingDate],
-                        ['Premature Encashment Eligible', kvpStatus.prematureEligible ? 'Yes' : 'No'],
+                        [t('kvp.monthsElapsed'), String(kvpStatus.monthsElapsed)],
+                        [t('kvp.currentValue'), fmtINR(kvpStatus.valueToday)],
+                        [t('kvp.gainSoFar'), fmtINR(kvpStatus.gainSoFar)],
+                        [t('kvp.progressToDoubling'), `${kvpStatus.progressToDoubling.toFixed(1)}%`],
+                        [t('kvp.doublingDate'), kvpStatus.doublingDate],
+                        [t('kvp.prematureEncashmentEligible'), kvpStatus.prematureEligible ? t('kvp.yes') : t('kvp.no')],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -293,7 +293,7 @@ export default function KVPCalculator() {
                         </div>
                     </div>
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">KVP Purchase Date (optional)</label>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('kvp.purchaseDateLabel')}</label>
                         <DateInput
                             value={kvpPurchaseDate}
                             onChange={setKvpPurchaseDate}
@@ -482,7 +482,7 @@ export default function KVPCalculator() {
                                                         <div key={row.months} className={`grid grid-cols-3 px-3 py-2 ${i % 2 === 0 ? 'bg-background' : 'bg-card'}`}>
                                                             <p className="text-foreground text-[10px]">{Math.floor(row.months / 12)}y {row.months % 12 ? (row.months % 12) + 'm' : ''}</p>
                                                             <p className="text-foreground text-[10px] font-semibold">{fmtINR(row.value)}</p>
-                                                            <p className={`text-[10px] ${row.penalty === 'No penalty' ? 'text-brand-green' : 'text-amber-500'}`}>{row.penalty}</p>
+                                                            <p className={`text-[10px] ${row.penalty === 'none' ? 'text-brand-green' : 'text-amber-500'}`}>{row.penalty === 'none' ? t('kvp.noPenalty') : t('kvp.penaltyApprox')}</p>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -502,24 +502,24 @@ export default function KVPCalculator() {
                     <LiveStatusCard
                         calculatorType="KVP"
                         profileData={{ principal: investment, rate, purchaseDate: kvpPurchaseDate }}
-                        title="KVP Live Status"
-                        subtitle={`${Math.floor(kvpStatus.monthsElapsed / 12)}y ${kvpStatus.monthsElapsed % 12}m elapsed of ${Math.floor(kvpStatus.doublingMonths / 12)}y ${kvpStatus.doublingMonths % 12}m`}
+                        title={t('kvp.liveStatusTitle')}
+                        subtitle={t('kvp.liveStatusSubtitle', { elapsedY: Math.floor(kvpStatus.monthsElapsed / 12), elapsedM: kvpStatus.monthsElapsed % 12, totalY: Math.floor(kvpStatus.doublingMonths / 12), totalM: kvpStatus.doublingMonths % 12 })}
                         startDate={kvpPurchaseDate}
                         metrics={[
-                            { label: 'Invested', value: fmtINR(investment) },
-                            { label: 'Value Today', value: fmtINR(kvpStatus.valueToday), color: 'green' },
-                            { label: 'Gain', value: fmtINR(kvpStatus.gainSoFar), color: 'green' },
+                            { label: t('kvp.invested'), value: fmtINR(investment) },
+                            { label: t('kvp.valueToday'), value: fmtINR(kvpStatus.valueToday), color: 'green' },
+                            { label: t('kvp.gain'), value: fmtINR(kvpStatus.gainSoFar), color: 'green' },
                         ]}
                         progressPercent={kvpStatus.progressToDoubling}
-                        progressLabel={`${kvpStatus.progressToDoubling.toFixed(1)}% to doubling${kvpStatus.daysToDoubling > 0 ? ` — ${kvpStatus.daysToDoubling} days remaining` : ''}`}
+                        progressLabel={`${kvpStatus.progressToDoubling.toFixed(1)}% ${t('kvp.toDoubling')}${kvpStatus.daysToDoubling > 0 ? ` — ${kvpStatus.daysToDoubling} ${t('kvp.daysRemaining')}` : ''}`}
                         warningText={
                             !kvpStatus.prematureEligible
-                                ? `Premature encashment not available yet. Eligible after 2.5 years (from ${new Date(kvpStatus.prematureEligibleDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}).`
+                                ? t('kvp.prematureNotAvailable', { date: new Date(kvpStatus.prematureEligibleDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) })
                                 : undefined
                         }
                         insightText={
                             kvpStatus.prematureEligible
-                                ? `Premature encashment is available. Current value: ${fmtINR(kvpStatus.valueToday)}. Your investment will double to ${fmtINR(investment * 2)} on maturity.`
+                                ? t('kvp.prematureAvailable', { currentValue: fmtINR(kvpStatus.valueToday), maturityValue: fmtINR(investment * 2) })
                                 : undefined
                         }
                     />

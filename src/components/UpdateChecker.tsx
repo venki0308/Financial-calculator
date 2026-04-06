@@ -4,6 +4,7 @@
  * - Shows a dismissible bottom banner for optional updates
  */
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertCircle, Download, X, Sparkles } from 'lucide-react';
 import { RemoteConfigService, FincalixRemoteConfig } from '../services/remoteConfig.service';
 import { APP_VERSION } from '../config/app';
@@ -14,6 +15,7 @@ type UpdateState =
     | { status: 'optional'; title: string; message: string };
 
 export function UpdateChecker() {
+    const { t } = useTranslation();
     const [updateState, setUpdateState] = useState<UpdateState>({ status: 'idle' });
     const [dismissed, setDismissed] = useState(false);
 
@@ -58,7 +60,7 @@ export function UpdateChecker() {
                         <AlertCircle className="w-10 h-10 text-red-500" />
                     </div>
                     <h2 className="text-2xl font-bold text-slate-900 dark:text-foreground mb-2">
-                        Update Required
+                        {t('update.required')}
                     </h2>
                     <p className="text-slate-600 dark:text-muted-foreground mb-2 text-sm font-medium">
                         {updateState.title}
@@ -71,10 +73,10 @@ export function UpdateChecker() {
                         className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-foreground font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg"
                     >
                         <Download className="w-5 h-5" />
-                        Update Now — It's Free
+                        {t('update.updateNowFree')}
                     </button>
                     <p className="text-xs text-muted-foreground mt-4">
-                        You must update to continue using FinCalix
+                        {t('update.mustUpdate')}
                     </p>
                 </div>
             </div>
@@ -105,7 +107,7 @@ export function UpdateChecker() {
                         onClick={handleUpdate}
                         className="mt-3 w-full bg-white/20 hover:bg-white/30 text-foreground font-semibold py-2.5 rounded-xl text-sm transition-colors"
                     >
-                        Update Now
+                        {t('update.updateNow')}
                     </button>
                 </div>
             </div>

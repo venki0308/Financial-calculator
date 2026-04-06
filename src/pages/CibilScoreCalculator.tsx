@@ -72,11 +72,11 @@ export default function CibilScoreCalculator() {
     const handlePDF = async () => {
         const config: ExportConfig = {
             title: t('cibil.title'),
-            subtitle: `CIBIL ${effectiveScore > 0 ? effectiveScore : 'NH'} — ${tier.label}`,
-            inputs: [{ label: 'CIBIL Score', value: effectiveScore > 0 ? String(effectiveScore) : 'No History' }, { label: 'Tier', value: `${tier.emoji} ${tier.label}` }],
-            results: eligibility.map(e => ({ label: e.loanType, value: `${e.status} Bank: ${e.minBank || 'NA'} | NBFC: ${e.minNBFC || 'NA'}` })),
+            subtitle: `CIBIL ${effectiveScore > 0 ? effectiveScore : t('cibil.noHistory')} — ${tier.label}`,
+            inputs: [{ label: t('cibil.pdfCibilScore'), value: effectiveScore > 0 ? String(effectiveScore) : t('cibil.noHistory') }, { label: t('cibil.pdfTier'), value: `${tier.emoji} ${tier.label}` }],
+            results: eligibility.map(e => ({ label: e.loanType, value: `${e.status} ${t('cibil.pdfBank')}${e.minBank || t('cibil.pdfNA')} | ${t('cibil.pdfNBFC')}${e.minNBFC || t('cibil.pdfNA')}` })),
             projectionTitle: t('cibil.rateImpact'),
-            projectionColumns: ['Score', 'Rate', 'EMI', 'Total Interest', 'Extra Cost'],
+            projectionColumns: [t('cibil.pdfScore'), t('cibil.rate'), t('cibil.pdfEmi'), t('cibil.totalInt'), t('cibil.extraCost')],
             projectionRows: rateComparison.map(r => [r.label, `${r.rate.toFixed(1)}%`, formatINR(r.emi), formatINR(r.totalInterest), r.extra > 0 ? `+${formatINR(r.extra)}` : '—']),
             filename: `FinCalix_CIBIL_Guide_${new Date().toISOString().split('T')[0]}`,
         };
@@ -127,7 +127,7 @@ export default function CibilScoreCalculator() {
                         ))}
                     </div>
                     <div className="flex justify-between mt-1 text-[8px] font-bold" style={{ color: c.textSecondary }}>
-                        <span>300</span><span>550</span><span>650</span><span>700</span><span>750</span><span>780</span><span>900</span>
+                        <span>{t('cibil.score300')}</span><span>{t('cibil.score550')}</span><span>{t('cibil.score650')}</span><span>{t('cibil.score700')}</span><span>{t('cibil.score750')}</span><span>{t('cibil.score780')}</span><span>{t('cibil.score900')}</span>
                     </div>
                 </div>
 
@@ -167,7 +167,7 @@ export default function CibilScoreCalculator() {
                     {rateComparison.length > 0 && (
                         <div className="overflow-x-auto">
                             <table className="w-full text-[9px] min-w-[350px]">
-                                <thead><tr style={{ color: c.textSecondary, borderBottom: `1px solid ${c.border}` }}><th className="py-1.5 text-left font-bold">CIBIL</th><th className="py-1.5 text-right font-bold">{t('cibil.rate')}</th><th className="py-1.5 text-right font-bold">EMI</th><th className="py-1.5 text-right font-bold">{t('cibil.totalInt')}</th><th className="py-1.5 text-right font-bold text-red-500">{t('cibil.extraCost')}</th></tr></thead>
+                                <thead><tr style={{ color: c.textSecondary, borderBottom: `1px solid ${c.border}` }}><th className="py-1.5 text-left font-bold">CIBIL</th><th className="py-1.5 text-right font-bold">{t('cibil.rate')}</th><th className="py-1.5 text-right font-bold">{t('cibil.pdfEmi')}</th><th className="py-1.5 text-right font-bold">{t('cibil.totalInt')}</th><th className="py-1.5 text-right font-bold text-red-500">{t('cibil.extraCost')}</th></tr></thead>
                                 <tbody>
                                     {rateComparison.map((r, i) => (
                                         <tr key={i} className={r.isCurrent ? 'bg-emerald-500/10' : ''} style={{ borderBottom: `1px solid ${c.border}40`, color: c.text }}>

@@ -82,7 +82,7 @@ export default function NPSCalculator() {
 
     const handleSave = () => {
         const calcId = `nps-${Date.now()}`;
-        addSaved({ id: calcId, calculatorType: 'NPS Calculator', inputValues: { monthly, rate, age, retireAge, annuityPct }, resultValues: { primary: result.corpus }, timestamp: Date.now() });
+        addSaved({ id: calcId, calculatorType: t('nps.calculatorType'), inputValues: { monthly, rate, age, retireAge, annuityPct }, resultValues: { primary: result.corpus }, timestamp: Date.now() });
         setSaved(true);
         setLastSavedId(calcId);
     };
@@ -102,11 +102,11 @@ export default function NPSCalculator() {
             title: t('nps.reportTitle'),
             inputs: [
                 { label: t('nps.monthlyContribution'), value: `₹${Math.round(monthly).toLocaleString('en-IN')}` },
-                { label: t('nps.expectedReturnRate'), value: `${rate}% p.a.` },
+                { label: t('nps.expectedReturnRate'), value: `${rate}% ${t('nps.perAnnum')}` },
                 { label: t('nps.currentAge'), value: `${age} ${t('nps.years')}` },
                 { label: t('nps.retirementAge'), value: `${retireAge} ${t('nps.years')}` },
                 { label: t('nps.annuityPercentage'), value: `${annuityPct}%` },
-                { label: t('nps.annuityRateLabel'), value: `${annuityRate}% p.a.` },
+                { label: t('nps.annuityRateLabel'), value: `${annuityRate}% ${t('nps.perAnnum')}` },
             ],
             results: [
                 { label: t('nps.totalCorpusAtRetirement'), value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
@@ -162,7 +162,7 @@ export default function NPSCalculator() {
     };
 
     const handleShare = async () => {
-        const text = `🏦 ${t('nps.shareTitle')}\n\n💰 ${t('nps.monthlyContribution')}: ${formatINR(monthly)}\n📈 ${t('nps.returnRate')}: ${rate}%\n🎂 ${t('nps.age')}: ${age} → ${retireAge}\n\n✅ ${t('nps.corpus')}: ${formatINR(result.corpus)}\n💵 ${t('nps.monthlyPension')}: ${formatINR(result.monthlyPension)}\n\nCalculated with FinCalix 🧮`;
+        const text = `🏦 ${t('nps.shareTitle')}\n\n💰 ${t('nps.monthlyContribution')}: ${formatINR(monthly)}\n📈 ${t('nps.returnRate')}: ${rate}%\n🎂 ${t('nps.age')}: ${age} → ${retireAge}\n\n✅ ${t('nps.corpus')}: ${formatINR(result.corpus)}\n💵 ${t('nps.monthlyPension')}: ${formatINR(result.monthlyPension)}\n\n${t('nps.calculatedWithFinCalix')}`;
         await nativeShare(t('nps.shareNativeTitle'), text);
     };
 

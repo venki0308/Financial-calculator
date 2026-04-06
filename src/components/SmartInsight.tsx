@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Lightbulb, TrendingUp, AlertTriangle, ThumbsUp, Star, Zap } from 'lucide-react';
 import { formatINR } from '../utils/calculations';
@@ -30,7 +31,7 @@ const colorMap = {
     best: { bg: '#8B5CF615', border: '#8B5CF630', text: '#8B5CF6' },
 };
 
-function getInsights(type: string, inputs: Record<string, number>, results: Record<string, number>): Insight[] {
+function getInsights(type: string, inputs: Record<string, number>, results: Record<string, number>, t: (key: string, opts?: Record<string, unknown>) => string): Insight[] {
     const insights: Insight[] = [];
 
     switch (type) {
@@ -39,15 +40,15 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             const income = inputs.monthlyIncome || 50000;
             const emiRatio = (emi / income) * 100;
             if (emiRatio > 30) {
-                insights.push({ type: 'warning', text: `Your EMI is ${emiRatio.toFixed(0)}% of estimated income. Recommended EMI limit is below 30%.` });
+                insights.push({ type: 'warning', text: t('insight.emiHighRatio', { ratio: emiRatio.toFixed(0) }) });
             } else {
-                insights.push({ type: 'positive', text: `Your EMI is ${emiRatio.toFixed(0)}% of estimated income — within the safe limit of 30%.` });
+                insights.push({ type: 'positive', text: t('insight.emiSafeRatio', { ratio: emiRatio.toFixed(0) }) });
             }
             const totalInterest = results.totalInterest || 0;
             const principal = inputs.principal || 0;
             if (principal > 0) {
                 const interestRatio = (totalInterest / principal * 100).toFixed(0);
-                insights.push({ type: 'info', text: `You'll pay ${interestRatio}% of loan amount as interest. Consider prepayments to reduce this.` });
+                insights.push({ type: 'info', text: t('insight.emiInterestRatio', { ratio: interestRatio }) });
             }
 
             // What-if: reducing rate by 1%
@@ -60,18 +61,18 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 const emi2 = principal * r2 * Math.pow(1 + r2, months) / (Math.pow(1 + r2, months) - 1);
                 const totalSaved = (emi1 - emi2) * months;
                 if (totalSaved > 10000) {
-                    insights.push({ type: 'tip', text: `Reducing interest by 1% saves ${formatINR(Math.round(totalSaved))} over the full tenure.` });
+                    insights.push({ type: 'tip', text: t('insight.emiRateReduction', { amount: formatINR(Math.round(totalSaved)) }) });
                 }
             }
 
             // What-if: extra EMI per year
             if (principal > 5000000) {
-                insights.push({ type: 'tip', text: 'Making 1 extra EMI per year can reduce your loan tenure by 3-4 years and save lakhs in interest.' });
+                insights.push({ type: 'tip', text: t('insight.emiExtraPayment') });
             }
 
             // Best option
             if (principal > 2000000 && rate > 9) {
-                insights.push({ type: 'best', text: `Best move: Negotiate rate below 9% or consider a balance transfer to save up to ${formatINR(Math.round(totalInterest * 0.15))} in interest.` });
+                insights.push({ type: 'best', text: t('insight.emiBestMove', { amount: formatINR(Math.round(totalInterest * 0.15)) }) });
             }
             break;
         }
@@ -85,7 +86,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 const n = years * 12;
                 const extra = 2000 * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
                 if (extra > 100000) {
-                    insights.push({ type: 'tip', text: `Increasing SIP by ₹2,000/mo adds ${formatINR(Math.round(extra))} to your wealth over ${years} years.` });
+                    insights.push({ type: 'tip', text: t('insight.sipIncrease', { amount: formatINR(Math.round(extra)), years }) });
                 }
 
                 // What-if: start 3 years earlier
@@ -94,16 +95,16 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                     const fvEarly = monthly * (((Math.pow(1 + r, nEarly) - 1) / r) * (1 + r));
                     const diff = fvEarly - futureValue;
                     if (diff > 50000) {
-                        insights.push({ type: 'info', text: `Starting SIP 3 years earlier would increase your wealth by ${formatINR(Math.round(diff))}.` });
+                        insights.push({ type: 'info', text: t('insight.sipEarlierStart', { amount: formatINR(Math.round(diff)) }) });
                     }
                 }
             }
             if (futureValue > 0 && invested > 0) {
                 const multiplier = (futureValue / invested).toFixed(1);
-                insights.push({ type: 'positive', text: `Your money grows ${multiplier}x — the power of compounding!` });
+                insights.push({ type: 'positive', text: t('insight.sipMultiplier', { multiplier }) });
             }
             if (years >= 15) {
-                insights.push({ type: 'info', text: 'Long-term SIP (15+ years) in equity funds has historically given 12-15% CAGR.' });
+                insights.push({ type: 'info', text: t('insight.sipLongTerm') });
             }
 
             // Best option: step-up SIP
@@ -119,7 +120,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 }
                 const extraWealth = stepUpFv - futureValue;
                 if (extraWealth > 100000) {
-                    insights.push({ type: 'best', text: `Best option: Step-Up SIP (10% annual increase) adds ${formatINR(Math.round(extraWealth))} more wealth.` });
+                    insights.push({ type: 'best', text: t('insight.sipBestStepUp', { amount: formatINR(Math.round(extraWealth)) }) });
                 }
             }
             break;
@@ -131,9 +132,9 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             const inflation = 6;
             const realReturn = rate - inflation;
             if (realReturn < 1) {
-                insights.push({ type: 'warning', text: `After ~6% inflation, your real return is only ${realReturn.toFixed(1)}%. Consider equity for long-term goals.` });
+                insights.push({ type: 'warning', text: t('insight.fdLowReal', { realReturn: realReturn.toFixed(1) }) });
             } else {
-                insights.push({ type: 'info', text: `After ~6% inflation, your real return is ~${realReturn.toFixed(1)}%.` });
+                insights.push({ type: 'info', text: t('insight.fdRealReturn', { realReturn: realReturn.toFixed(1) }) });
             }
 
             // What-if: increase tenure by 2 years
@@ -142,12 +143,12 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 const extraMat = principal * Math.pow(1 + rate / 400, (years + 2) * 4);
                 const extraInterest = (extraMat - principal) - (currentMat - principal);
                 if (extraInterest > 1000) {
-                    insights.push({ type: 'tip', text: `Increasing FD tenure by 2 years adds ${formatINR(Math.round(extraInterest))} interest.` });
+                    insights.push({ type: 'tip', text: t('insight.fdTenureIncrease', { amount: formatINR(Math.round(extraInterest)) }) });
                 }
             }
 
             if (principal >= 1500000) {
-                insights.push({ type: 'tip', text: 'Consider Tax Saving FD (5-year lock-in) for Sec 80C / Sec 123 deduction up to ₹1.5L.' });
+                insights.push({ type: 'tip', text: t('insight.fdTaxSaving') });
             }
 
             // Best option: monthly compounding
@@ -156,7 +157,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 const mMat = principal * Math.pow(1 + rate / 1200, years * 12);
                 const extra = mMat - qMat;
                 if (extra > 100) {
-                    insights.push({ type: 'best', text: `Best option: Monthly compounding earns ${formatINR(Math.round(extra))} extra vs quarterly.` });
+                    insights.push({ type: 'best', text: t('insight.fdBestMonthly', { amount: formatINR(Math.round(extra)) }) });
                 }
             }
             break;
@@ -164,13 +165,13 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
         case 'tax': {
             const taxable = results.taxableIncome || 0;
             if (taxable > 0 && taxable <= 1200000) {
-                insights.push({ type: 'positive', text: 'No income tax payable under the new regime — ₹12L rebate applies!' });
+                insights.push({ type: 'positive', text: t('insight.taxNoTax') });
             }
             if (taxable > 1500000) {
-                insights.push({ type: 'tip', text: 'Consider maximizing Sec 80C/123 (₹1.5L), NPS Sec 80CCD(1B)/124 (₹50K), and health insurance Sec 80D/126 (₹25K) to save tax.' });
+                insights.push({ type: 'tip', text: t('insight.taxMaxDeductions') });
             }
             if (taxable > 2400000) {
-                insights.push({ type: 'info', text: 'At your income level, compare both old and new tax regimes to find the lower tax option.' });
+                insights.push({ type: 'info', text: t('insight.taxCompareRegimes') });
             }
             break;
         }
@@ -179,10 +180,10 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             const years = inputs.years || 0;
             const principal = inputs.principal || 0;
             if (rate > 10) {
-                insights.push({ type: 'warning', text: `Your interest rate (${rate}%) is above 10%. Negotiate with your lender or consider balance transfer.` });
+                insights.push({ type: 'warning', text: t('insight.loanHighRate', { rate }) });
             }
             if (years > 15 && principal > 2000000) {
-                insights.push({ type: 'tip', text: 'Making 1 extra EMI per year can reduce your loan tenure by 3-4 years.' });
+                insights.push({ type: 'tip', text: t('insight.loanExtraEmi') });
             }
             // What-if: prepaying 10% of principal
             if (principal > 500000) {
@@ -194,7 +195,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 const emi2 = newPrincipal * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
                 const saved = (emi1 - emi2) * n;
                 if (saved > 10000) {
-                    insights.push({ type: 'info', text: `Prepaying ${formatINR(Math.round(prepayAmt))} (10%) saves ${formatINR(Math.round(saved))} in total interest.` });
+                    insights.push({ type: 'info', text: t('insight.loanPrepay', { prepayAmt: formatINR(Math.round(prepayAmt)), saved: formatINR(Math.round(saved)) }) });
                 }
             }
             break;
@@ -202,17 +203,17 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
         case 'ppf': {
             const invested = inputs.annual || 0;
             if (invested < 150000) {
-                insights.push({ type: 'tip', text: `You can invest up to ₹1.5L/year in PPF. Currently investing ${formatINR(invested)} — ${formatINR(150000 - invested)} more is eligible for Sec 80C / Sec 123.` });
+                insights.push({ type: 'tip', text: t('insight.ppfRoom', { invested: formatINR(invested), remaining: formatINR(150000 - invested) }) });
             }
-            insights.push({ type: 'info', text: 'PPF has a 15-year lock-in (extendable by 5). Interest is fully tax-free.' });
-            insights.push({ type: 'best', text: 'PPF is one of the safest instruments — guaranteed returns with sovereign guarantee + EEE tax status.' });
+            insights.push({ type: 'info', text: t('insight.ppfLockIn') });
+            insights.push({ type: 'best', text: t('insight.ppfBest') });
             break;
         }
         case 'nps': {
             const monthly = inputs.monthly || 0;
             const years = inputs.years || 0;
-            insights.push({ type: 'tip', text: 'NPS gives additional ₹50,000 tax deduction under Sec 80CCD(1B) / Sec 124 — over and above Sec 80C / 123 limit.' });
-            insights.push({ type: 'info', text: '60% of NPS corpus is tax-free at retirement. 40% must be used for annuity.' });
+            insights.push({ type: 'tip', text: t('insight.npsTaxDeduction') });
+            insights.push({ type: 'info', text: t('insight.npsCorpusSplit') });
 
             // What-if: increase monthly by 2000
             if (monthly > 0 && years > 0) {
@@ -220,11 +221,11 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 const n = years * 12;
                 const extra = 2000 * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
                 if (extra > 50000) {
-                    insights.push({ type: 'tip', text: `Increasing NPS contribution by ₹2,000/mo adds ${formatINR(Math.round(extra))} to your retirement corpus.` });
+                    insights.push({ type: 'tip', text: t('insight.npsIncrease', { amount: formatINR(Math.round(extra)) }) });
                 }
             }
 
-            insights.push({ type: 'best', text: 'NPS is ideal for retirement — low-cost, diversified, and gives up to ₹2L tax savings (Sec 80C/123 + Sec 80CCD(1B)/124).' });
+            insights.push({ type: 'best', text: t('insight.npsBest') });
             break;
         }
         case 'lumpsum': {
@@ -235,9 +236,9 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 const r = rate / 12 / 100;
                 const n = years * 12;
                 const monthlySIP = amount / (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
-                insights.push({ type: 'info', text: `Alternatively, you could invest ${formatINR(Math.round(monthlySIP))}/month via SIP for ${years} years to reach the same goal.` });
+                insights.push({ type: 'info', text: t('insight.lumpsumAltSip', { amount: formatINR(Math.round(monthlySIP)), years }) });
             }
-            insights.push({ type: 'best', text: 'For large lumpsum, consider STP (Systematic Transfer Plan) to reduce market-timing risk.' });
+            insights.push({ type: 'best', text: t('insight.lumpsumBestStp') });
             break;
         }
         case 'stepup': {
@@ -252,11 +253,11 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 const wealthGained = results.wealthGained || 0;
                 const diff = (wealthGained + (initial * n)) - flatFV;
                 if (diff > 0) {
-                    insights.push({ type: 'positive', text: `Step-up SIP adds ${formatINR(Math.round(diff))} more than a flat SIP of ${formatINR(initial)}/mo!` });
+                    insights.push({ type: 'positive', text: t('insight.stepupExtra', { extra: formatINR(Math.round(diff)), monthly: formatINR(initial) }) });
                 }
             }
-            insights.push({ type: 'tip', text: `A ${inputs.stepUp || 10}% annual step-up follows your salary growth. Increase it with each raise.` });
-            insights.push({ type: 'best', text: 'Step-Up SIP is the smartest SIP strategy — small increments create massive wealth over time.' });
+            insights.push({ type: 'tip', text: t('insight.stepupFollow', { percent: inputs.stepUp || 10 }) });
+            insights.push({ type: 'best', text: t('insight.stepupBest') });
             break;
         }
         case 'breakeven': {
@@ -267,29 +268,29 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             if (margin > 0 && price > 0) {
                 const marginPct = (margin / price * 100).toFixed(0);
                 if (Number(marginPct) < 30) {
-                    insights.push({ type: 'warning', text: `Your contribution margin is ${marginPct}%. Below 30% makes scaling difficult.` });
+                    insights.push({ type: 'warning', text: t('insight.breakevenLowMargin', { margin: marginPct }) });
                 } else if (Number(marginPct) > 50) {
-                    insights.push({ type: 'positive', text: `Excellent margin at ${marginPct}%! You have strong pricing power.` });
+                    insights.push({ type: 'positive', text: t('insight.breakevenHighMargin', { margin: marginPct }) });
                 }
                 const beUnits = Math.ceil(fixed / margin);
                 const doubleProfit = beUnits * 2 * margin - fixed;
-                insights.push({ type: 'info', text: `Selling ${beUnits * 2} units (2x breakeven) yields ${formatINR(Math.round(doubleProfit))} profit.` });
+                insights.push({ type: 'info', text: t('insight.breakevenDouble', { units: beUnits * 2, profit: formatINR(Math.round(doubleProfit)) }) });
             }
             if (fixed > 0 && margin > 0) {
                 const reduced = Math.ceil((fixed * 0.9) / margin);
                 const original = Math.ceil(fixed / margin);
-                insights.push({ type: 'tip', text: `Cutting fixed costs by 10% reduces breakeven from ${original} to ${reduced} units.` });
+                insights.push({ type: 'tip', text: t('insight.breakevenCutCosts', { original, reduced }) });
             }
             break;
         }
         case 'gratuity': {
-            insights.push({ type: 'info', text: 'Gratuity is payable after 5 years of continuous service under the Payment of Gratuity Act.' });
-            insights.push({ type: 'tip', text: 'Tax-free gratuity limit is ₹20L for employees under the Act and ₹25L for central/state govt employees.' });
+            insights.push({ type: 'info', text: t('insight.gratuityInfo') });
+            insights.push({ type: 'tip', text: t('insight.gratuityTaxFree') });
             break;
         }
         case 'hra': {
-            insights.push({ type: 'tip', text: 'HRA exemption is the minimum of: actual HRA, 50%/40% of salary, or rent paid minus 10% of salary.' });
-            insights.push({ type: 'info', text: 'If you don\'t receive HRA, you can claim deduction under Sec 80GG (up to ₹5,000/month).' });
+            insights.push({ type: 'tip', text: t('insight.hraExemption') });
+            insights.push({ type: 'info', text: t('insight.hraNoHra') });
             break;
         }
         case 'scss': {
@@ -298,18 +299,18 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
             const annualInterest = results.annualInterest || 0;
             if (investment < 3000000) {
                 const remaining = 3000000 - investment;
-                insights.push({ type: 'tip', text: `You can invest up to ${formatINR(remaining)} more in SCSS (max ₹30 Lakhs limit).` });
+                insights.push({ type: 'tip', text: t('insight.scssRoom', { remaining: formatINR(remaining) }) });
             }
             if (annualInterest > 50000) {
-                insights.push({ type: 'warning', text: 'Your annual interest exceeds ₹50,000 — TDS @ 10% will be deducted. Submit Form 15H to avoid it if income is below taxable limit.' });
+                insights.push({ type: 'warning', text: t('insight.scssTds') });
             } else {
-                insights.push({ type: 'positive', text: 'Annual interest is within ₹50,000 — no TDS deduction applicable.' });
+                insights.push({ type: 'positive', text: t('insight.scssNoTds') });
             }
-            insights.push({ type: 'info', text: 'SCSS investment qualifies for Sec 80C / Sec 123 deduction up to ₹1.5 lakh. Combine with PPF or ELSS for full benefit.' });
+            insights.push({ type: 'info', text: t('insight.scss80c') });
             if (rate >= 8.0) {
-                insights.push({ type: 'positive', text: `At ${rate}% p.a., SCSS offers one of the highest guaranteed returns for senior citizens — better than most bank FDs.` });
+                insights.push({ type: 'positive', text: t('insight.scssHighRate', { rate }) });
             }
-            insights.push({ type: 'best', text: 'Best strategy: Invest the full ₹30L in SCSS for maximum guaranteed quarterly income. Pair with PMVVY for additional pension security.' });
+            insights.push({ type: 'best', text: t('insight.scssBest') });
             break;
         }
         default:
@@ -320,7 +321,8 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
 }
 
 export default function SmartInsight({ calculatorType, inputs, results }: SmartInsightProps) {
-    const insights = useMemo(() => getInsights(calculatorType, inputs, results), [calculatorType, inputs, results]);
+    const { t } = useTranslation();
+    const insights = useMemo(() => getInsights(calculatorType, inputs, results, t), [calculatorType, inputs, results, t]);
 
     if (insights.length === 0) return null;
 
@@ -332,7 +334,7 @@ export default function SmartInsight({ calculatorType, inputs, results }: SmartI
         <div className="space-y-2.5 mt-4">
             <div className="flex items-center gap-1.5 px-1">
                 <Lightbulb size={13} className="text-amber-400" />
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Smart Insights</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t('insight.smartInsights')}</span>
             </div>
             {regular.map((insight, i) => {
                 const Icon = iconMap[insight.type];
@@ -364,7 +366,7 @@ export default function SmartInsight({ calculatorType, inputs, results }: SmartI
                         <div className="w-6 h-6 rounded-full bg-violet-500/20 flex items-center justify-center">
                             <Zap size={12} className="text-violet-400" />
                         </div>
-                        <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider">Best Financial Option</span>
+                        <span className="text-[10px] font-bold text-violet-400 uppercase tracking-wider">{t('insight.bestOption')}</span>
                     </div>
                     <p className="text-xs font-medium text-slate-300 leading-relaxed">{bestOption.text}</p>
                 </motion.div>

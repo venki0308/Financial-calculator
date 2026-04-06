@@ -49,9 +49,9 @@ export default function CAGRCalculator() {
         else if (cagr < 0) doubleTime = -1; // Never
 
         // Investment Quality Tag
-        let qualityTag = 'Low Growth'; let qualityColor = 'text-rose-500'; let qualityBg = 'bg-rose-500/10 border-rose-500/20';
-        if (cagr > 15) { qualityTag = 'Aggressive'; qualityColor = 'text-brand-green'; qualityBg = 'bg-brand-green/10 border-brand-green/20'; }
-        else if (cagr >= 8) { qualityTag = 'Good'; qualityColor = 'text-blue-500'; qualityBg = 'bg-blue-500/10 border-blue-500/20'; }
+        let qualityTag = t('cagr.qualityLowGrowth'); let qualityColor = 'text-rose-500'; let qualityBg = 'bg-rose-500/10 border-rose-500/20';
+        if (cagr > 15) { qualityTag = t('cagr.qualityAggressive'); qualityColor = 'text-brand-green'; qualityBg = 'bg-brand-green/10 border-brand-green/20'; }
+        else if (cagr >= 8) { qualityTag = t('cagr.qualityGood'); qualityColor = 'text-blue-500'; qualityBg = 'bg-blue-500/10 border-blue-500/20'; }
 
         // Year-wise schedule
         // In reality, CAGR implies a smooth curve. We just show the theoretical year-end values.
@@ -65,7 +65,7 @@ export default function CAGRCalculator() {
         }
 
         return { cagr, absReturn, doubleTime, qualityTag, qualityColor, qualityBg, schedule, validInitial, validFinal, validYears };
-    }, [initial, final, years]);
+    }, [initial, final, years, t]);
 
     // 2. GOAL MATCHING ENGINE
     const goalData = useMemo(() => {
@@ -92,16 +92,16 @@ export default function CAGRCalculator() {
     // 3. SMART INSIGHTS
     const insight = useMemo(() => {
         if (result.doubleTime > 0 && result.doubleTime <= result.validYears) {
-            return { msg: `Strong performance! Your investment effectively doubled every ${result.doubleTime.toFixed(1)} years during this period.`, type: 'success' };
+            return { msg: t('cagr.insightStrongPerformance', { doubleTime: result.doubleTime.toFixed(1) }), type: 'success' };
         }
         if (result.cagr < 6) {
-            return { msg: `Your CAGR is ${result.cagr.toFixed(1)}%, which might not outpace inflation. Consider exploring higher-yield asset classes.`, type: 'warn' };
+            return { msg: t('cagr.insightLowCAGR', { cagr: result.cagr.toFixed(1) }), type: 'warn' };
         }
         if (result.absReturn > 100 && result.cagr < 10) {
-             return { msg: `While absolute returns look huge (${result.absReturn.toFixed(0)}%), the annualized rate (CAGR) reveals a more modest ${result.cagr.toFixed(1)}% yearly growth due to the long tenure.`, type: 'info' };
+             return { msg: t('cagr.insightHighAbsLowCAGR', { absReturn: result.absReturn.toFixed(0), cagr: result.cagr.toFixed(1) }), type: 'info' };
         }
-        return { msg: `CAGR smooths out volatility, showing you earned a steady ${result.cagr.toFixed(1)}% equivalent return every year.`, type: 'info' };
-    }, [result]);
+        return { msg: t('cagr.insightSteadyGrowth', { cagr: result.cagr.toFixed(1) }), type: 'info' };
+    }, [result, t]);
 
     const handleSave = () => {
         const calcId = `cagr-${Date.now()}`;
@@ -109,7 +109,7 @@ export default function CAGRCalculator() {
             id: calcId,
             calculatorType: 'cagr',
             inputValues: { initial, final, years },
-            resultValues: { primary: result.cagr, label: 'CAGR (%)', invested: initial, returns: final - initial },
+            resultValues: { primary: result.cagr, label: t('cagr.cagrPercent'), invested: initial, returns: final - initial },
             timestamp: Date.now(),
         });
         setSaved(true);
@@ -128,30 +128,30 @@ export default function CAGRCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'CAGR Calculator Report',
+            title: t('cagr.reportTitle'),
             inputs: [
-                { label: 'Initial Investment', value: `₹${initial.toLocaleString('en-IN')}` },
-                { label: 'Final Value', value: `₹${final.toLocaleString('en-IN')}` },
-                { label: 'Investment Period', value: `${years} Years` },
+                { label: t('cagr.initialInvestment'), value: `₹${initial.toLocaleString('en-IN')}` },
+                { label: t('cagr.finalValueLabel'), value: `₹${final.toLocaleString('en-IN')}` },
+                { label: t('cagr.investmentPeriod'), value: `${years} ${t('cagr.years')}` },
             ],
             results: [
-                { label: 'CAGR (Compound Annual Growth Rate)', value: `${result.cagr.toFixed(2)}%` },
-                { label: 'Absolute Return', value: `${result.absReturn.toFixed(2)}%` },
-                { label: 'Total Profit Generated', value: `₹${Math.round(final - initial).toLocaleString('en-IN')}` },
-                { label: 'Investment Quality', value: result.qualityTag },
-                { label: 'Doubling Time (Rule of 72)', value: result.doubleTime > 0 ? `${result.doubleTime.toFixed(1)} years` : 'N/A' },
+                { label: t('cagr.cagrFull'), value: `${result.cagr.toFixed(2)}%` },
+                { label: t('cagr.absoluteReturnLabel'), value: `${result.absReturn.toFixed(2)}%` },
+                { label: t('cagr.totalProfitGenerated'), value: `₹${Math.round(final - initial).toLocaleString('en-IN')}` },
+                { label: t('cagr.investmentQuality'), value: result.qualityTag },
+                { label: t('cagr.doublingTimeRule72'), value: result.doubleTime > 0 ? `${result.doubleTime.toFixed(1)} ${t('cagr.yearsLower')}` : t('cagr.na') },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: 'Initial Investment', value: initial, color: '#4F46E5' },
-                    { label: 'Total Profit', value: final - initial, color: '#10B981' },
+                    { label: t('cagr.initialInvestment'), value: initial, color: '#4F46E5' },
+                    { label: t('cagr.totalProfit'), value: final - initial, color: '#10B981' },
                 ],
             },
-            projectionTitle: 'Yearly Value Progression',
-            projectionColumns: ['Year', 'Year-End Value', 'Growth %', 'Absolute Return from Initial'],
+            projectionTitle: t('cagr.yearlyValueProgression'),
+            projectionColumns: [t('cagr.colYear'), t('cagr.colYearEndValue'), t('cagr.colGrowthPercent'), t('cagr.colAbsReturnFromInitial')],
             projectionRows: result.schedule.map((r: any) => [
-                `Year ${r.year}`,
+                `${t('cagr.colYear')} ${r.year}`,
                 `₹${Math.round(r.value).toLocaleString('en-IN')}`,
                 `${Number(r.growthPct).toFixed(2)}%`,
                 `₹${Math.round(r.value - initial).toLocaleString('en-IN')}`,
@@ -165,19 +165,19 @@ export default function CAGRCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: 'CAGR Calculator Report',
+            title: t('cagr.reportTitle'),
             inputs: [
-                { label: 'Initial Investment', value: `₹${initial.toLocaleString('en-IN')}` },
-                { label: 'Final Value', value: `₹${final.toLocaleString('en-IN')}` },
-                { label: 'Investment Period', value: `${years} Years` },
+                { label: t('cagr.initialInvestment'), value: `₹${initial.toLocaleString('en-IN')}` },
+                { label: t('cagr.finalValueLabel'), value: `₹${final.toLocaleString('en-IN')}` },
+                { label: t('cagr.investmentPeriod'), value: `${years} ${t('cagr.years')}` },
             ],
             results: [
-                { label: 'CAGR', value: `${result.cagr.toFixed(2)}%` },
-                { label: 'Absolute Return', value: `${result.absReturn.toFixed(2)}%` },
-                { label: 'Total Profit', value: `₹${Math.round(final - initial).toLocaleString('en-IN')}` },
+                { label: t('cagr.cagrShort'), value: `${result.cagr.toFixed(2)}%` },
+                { label: t('cagr.absoluteReturnLabel'), value: `${result.absReturn.toFixed(2)}%` },
+                { label: t('cagr.totalProfit'), value: `₹${Math.round(final - initial).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Yearly Value Progression',
-            projectionColumns: ['Year', 'Year-End Value', 'Growth %', 'Absolute Return'],
+            projectionTitle: t('cagr.yearlyValueProgression'),
+            projectionColumns: [t('cagr.colYear'), t('cagr.colYearEndValue'), t('cagr.colGrowthPercent'), t('cagr.colAbsReturn')],
             projectionRows: result.schedule.map((r: any) => [
                 r.year,
                 Math.round(r.value),
@@ -327,7 +327,7 @@ export default function CAGRCalculator() {
                                             <p className="text-amber-700 dark:text-amber-300 text-xs font-medium">{t('cagr.estimatedDoublingTime')}</p>
                                         </div>
                                         <p className="font-black text-xl text-amber-500">
-                                            {result.doubleTime > 0 ? `${result.doubleTime.toFixed(1)}y` : 'N/A'}
+                                            {result.doubleTime > 0 ? `${result.doubleTime.toFixed(1)}${t('cagr.yShort')}` : t('cagr.na')}
                                         </p>
                                     </div>
 

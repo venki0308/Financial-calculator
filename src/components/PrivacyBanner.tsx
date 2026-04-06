@@ -51,10 +51,10 @@ export function PrivacyBanner() {
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-sm font-bold text-foreground mb-1">
-                                    {t('privacyBanner.title', 'Your Privacy First')}
+                                    {t('privacy:title')}
                                 </h3>
                                 <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-                                    {t('privacyBanner.message', 'FinCalix operates completely offline. We do not collect, store, or share your financial data or personal information. Everything stays on your device.')}
+                                    {t('privacy:message')}
                                 </p>
                                 
                                 <div className="flex items-center gap-3">
@@ -62,13 +62,13 @@ export function PrivacyBanner() {
                                         onClick={handleViewPolicy}
                                         className="text-xs font-semibold text-brand-purple hover:text-brand-purple/80 transition-colors"
                                     >
-                                        {t('privacyBanner.viewPolicy', 'View Policy')}
+                                        {t('privacy:viewPolicy')}
                                     </button>
                                     <button
                                         onClick={handleAccept}
                                         className="flex-1 py-2 px-4 bg-brand-purple hover:bg-brand-purple/90 text-white text-xs font-bold rounded-xl transition-colors text-center"
                                     >
-                                        {t('privacyBanner.accept', 'I Understand')}
+                                        {t('privacy:accept')}
                                     </button>
                                 </div>
                             </div>

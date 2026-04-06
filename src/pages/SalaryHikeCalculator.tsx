@@ -15,18 +15,18 @@ import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
 
 // India FY 2026-27 industry avg hike benchmarks (Source: Aon Salary Survey 2026, EY Future of Pay 2026)
-const INDUSTRY_BENCHMARKS: { name: string; avg: number; top: number }[] = [
-    { name: 'IT / Software', avg: 11.0, top: 18 },
-    { name: 'AI / ML / Cybersecurity', avg: 15.0, top: 25 },
-    { name: 'GCC / Global Captives', avg: 10.4, top: 18 },
-    { name: 'BFSI', avg: 10.0, top: 17 },
-    { name: 'Pharma / Life Sciences', avg: 9.7, top: 16 },
-    { name: 'Manufacturing / Auto', avg: 9.5, top: 15 },
-    { name: 'E-Commerce / Retail', avg: 9.9, top: 17 },
-    { name: 'FMCG / Consumer', avg: 9.0, top: 15 },
-    { name: 'Startups', avg: 12.0, top: 25 },
-    { name: 'Consulting', avg: 10.0, top: 20 },
-    { name: 'India Overall Avg', avg: 9.1, top: 18 },
+const INDUSTRY_BENCHMARKS: { name: string; i18nKey: string; avg: number; top: number }[] = [
+    { name: 'IT / Software', i18nKey: 'industryItSoftware', avg: 11.0, top: 18 },
+    { name: 'AI / ML / Cybersecurity', i18nKey: 'industryAiMlCyber', avg: 15.0, top: 25 },
+    { name: 'GCC / Global Captives', i18nKey: 'industryGcc', avg: 10.4, top: 18 },
+    { name: 'BFSI', i18nKey: 'industryBfsi', avg: 10.0, top: 17 },
+    { name: 'Pharma / Life Sciences', i18nKey: 'industryPharma', avg: 9.7, top: 16 },
+    { name: 'Manufacturing / Auto', i18nKey: 'industryManufacturing', avg: 9.5, top: 15 },
+    { name: 'E-Commerce / Retail', i18nKey: 'industryEcommerce', avg: 9.9, top: 17 },
+    { name: 'FMCG / Consumer', i18nKey: 'industryFmcg', avg: 9.0, top: 15 },
+    { name: 'Startups', i18nKey: 'industryStartups', avg: 12.0, top: 25 },
+    { name: 'Consulting', i18nKey: 'industryConsulting', avg: 10.0, top: 20 },
+    { name: 'India Overall Avg', i18nKey: 'industryIndiaOverall', avg: 9.1, top: 18 },
 ];
 const INDIA_INFLATION = 4.8; // CPI FY 2026-27 estimate (RBI)
 
@@ -124,10 +124,10 @@ export default function SalaryHikeCalculator() {
         // Industry benchmark
         const bench = INDUSTRY_BENCHMARKS.find(b => b.name === selectedIndustry) || INDUSTRY_BENCHMARKS[INDUSTRY_BENCHMARKS.length - 1];
         let benchStatus = '';
-        if (computedHikePct >= bench.top * 0.8) benchStatus = t('salary.benchExcellent');
-        else if (computedHikePct >= bench.avg) benchStatus = t('salary.benchAboveAvg');
-        else if (computedHikePct >= bench.avg * 0.7) benchStatus = t('salary.benchBelowAvg');
-        else benchStatus = t('salary.benchSignificantlyBelow');
+        if (computedHikePct >= bench.top * 0.8) benchStatus = t('sh.benchExcellent');
+        else if (computedHikePct >= bench.avg) benchStatus = t('sh.benchAboveAvg');
+        else if (computedHikePct >= bench.avg * 0.7) benchStatus = t('sh.benchBelowAvg');
+        else benchStatus = t('sh.benchSignificantlyBelow');
 
         const projection: { month: number; salary: number; cumulative: number; year: number; isNewYear: boolean }[] = [];
         let cumulative = 0;
@@ -246,26 +246,26 @@ export default function SalaryHikeCalculator() {
 
         if (mode === 'ctcBreakdown') {
             const config: ExportConfig = {
-                title: 'Salary Hike — Full CTC Breakdown Report',
+                title: t('sh.pdfCtcBreakdownTitle'),
                 inputs: [
-                    { label: 'Current Total CTC (Annual)', value: `₹${Math.round(ctcAmount).toLocaleString('en-IN')}` },
-                    { label: 'Variable Pay %', value: `${variablePct}%` },
-                    { label: 'Achievement %', value: `${achievementPct}%` },
-                    { label: 'Fixed Pay Hike %', value: `${fixedHikePct}%` },
-                    { label: 'Variable Hike %', value: `${ctcResult.effVariableHike}%` },
+                    { label: t('sh.currentTotalCTC'), value: `₹${Math.round(ctcAmount).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfVariablePayPct'), value: `${variablePct}%` },
+                    { label: t('sh.pdfAchievementPct'), value: `${achievementPct}%` },
+                    { label: t('sh.pdfFixedPayHikePct'), value: `${fixedHikePct}%` },
+                    { label: t('sh.pdfVariableHikePct'), value: `${ctcResult.effVariableHike}%` },
                 ],
                 results: [
-                    { label: 'Current Fixed Pay (Annual)', value: `₹${Math.round(ctcResult.currentFixed).toLocaleString('en-IN')}` },
-                    { label: 'New Fixed Pay (Annual)', value: `₹${Math.round(ctcResult.newFixed).toLocaleString('en-IN')}` },
-                    { label: 'New CTC (Annual)', value: `₹${Math.round(ctcResult.newCTC).toLocaleString('en-IN')}` },
-                    { label: 'Variable Payout (at achievement %)', value: `₹${Math.round(ctcResult.newVariableActual).toLocaleString('en-IN')}` },
-                    { label: 'Est. Take-Home (Monthly)', value: `₹${Math.round(ctcResult.estimatedTakeHomeMonthly).toLocaleString('en-IN')}` },
-                    { label: 'In-Hand % of new CTC', value: `${ctcResult.inHandPct.toFixed(1)}%` },
+                    { label: t('sh.currentFixedPayAnnual'), value: `₹${Math.round(ctcResult.currentFixed).toLocaleString('en-IN')}` },
+                    { label: t('sh.newFixedPayAnnual'), value: `₹${Math.round(ctcResult.newFixed).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfNewCTCAnnual'), value: `₹${Math.round(ctcResult.newCTC).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfVariablePayoutAtAch'), value: `₹${Math.round(ctcResult.newVariableActual).toLocaleString('en-IN')}` },
+                    { label: t('sh.estTakeHomeMonthly'), value: `₹${Math.round(ctcResult.estimatedTakeHomeMonthly).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfInHandPctOfNewCTC'), value: `${ctcResult.inHandPct.toFixed(1)}%` },
                 ],
-                projectionTitle: 'Year-wise CTC Projection',
-                projectionColumns: ['Year', 'Fixed Pay', 'Variable Target', 'Variable Payout', 'Total CTC'],
+                projectionTitle: t('sh.yearWiseCTCProjection'),
+                projectionColumns: [t('sh.year'), t('sh.fixedPay'), t('sh.pdfVariableTarget'), t('sh.pdfVariablePayout'), t('sh.totalCTC')],
                 projectionRows: ctcResult.ctcProjection.map(r => [
-                    `Year ${r.year}`,
+                    `${t('sh.year')} ${r.year}`,
                     `₹${r.fixed.toLocaleString('en-IN')}`,
                     `₹${r.variableTarget.toLocaleString('en-IN')}`,
                     `₹${r.variablePayout.toLocaleString('en-IN')}`,
@@ -280,19 +280,19 @@ export default function SalaryHikeCalculator() {
         if (mode === 'compare') {
             const { a, b } = compareResult;
             const config: ExportConfig = {
-                title: 'Salary Hike — Offer Comparison Report',
+                title: t('sh.pdfOfferComparisonTitle'),
                 inputs: [
-                    { label: 'Offer A Fixed CTC', value: `₹${Math.round(a.fixed).toLocaleString('en-IN')}` },
-                    { label: 'Offer A Variable %', value: `${offerA_variable}%` },
-                    { label: 'Offer B Fixed CTC', value: `₹${Math.round(b.fixed).toLocaleString('en-IN')}` },
-                    { label: 'Offer B Variable %', value: `${offerB_variable}%` },
+                    { label: t('sh.pdfOfferAFixedCTC'), value: `₹${Math.round(a.fixed).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfOfferAVariablePct'), value: `${offerA_variable}%` },
+                    { label: t('sh.pdfOfferBFixedCTC'), value: `₹${Math.round(b.fixed).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfOfferBVariablePct'), value: `${offerB_variable}%` },
                 ],
                 results: [
-                    { label: 'Offer A Total CTC', value: `₹${Math.round(a.totalCTC).toLocaleString('en-IN')}` },
-                    { label: 'Offer B Total CTC', value: `₹${Math.round(b.totalCTC).toLocaleString('en-IN')}` },
-                    { label: 'Better CTC', value: `Offer ${compareResult.betterCTC}` },
-                    { label: 'Better Take-Home', value: `Offer ${compareResult.betterTakeHome}` },
-                    { label: 'Better Year 1 (incl. joining bonus)', value: `Offer ${compareResult.betterYear1}` },
+                    { label: t('sh.pdfOfferATotalCTC'), value: `₹${Math.round(a.totalCTC).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfOfferBTotalCTC'), value: `₹${Math.round(b.totalCTC).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfBetterCTC'), value: `${t('sh.offer')} ${compareResult.betterCTC}` },
+                    { label: t('sh.pdfBetterTakeHome'), value: `${t('sh.offer')} ${compareResult.betterTakeHome}` },
+                    { label: t('sh.pdfBetterYear1InclJoining'), value: `${t('sh.offer')} ${compareResult.betterYear1}` },
                 ],
                 projectionTitle: '',
                 projectionColumns: [],
@@ -304,24 +304,24 @@ export default function SalaryHikeCalculator() {
         }
 
         const config: ExportConfig = {
-            title: 'Salary Hike Calculator Report',
+            title: t('sh.pdfSalaryHikeTitle'),
             inputs: [
-                { label: 'Current Salary (Annual)', value: `₹${Math.round(result.currentAnnual).toLocaleString('en-IN')}` },
-                { label: 'Hike Percentage', value: `${result.hikePctComputed.toFixed(1)}%` },
-                { label: 'Period', value: `${period} ${periodUnit}` },
+                { label: t('sh.pdfCurrentSalaryAnnual'), value: `₹${Math.round(result.currentAnnual).toLocaleString('en-IN')}` },
+                { label: t('sh.hikePercentage'), value: `${result.hikePctComputed.toFixed(1)}%` },
+                { label: t('sh.pdfPeriod'), value: `${period} ${periodUnit}` },
             ],
             results: [
-                { label: 'New Annual CTC', value: `₹${Math.round(result.newAnnual).toLocaleString('en-IN')}` },
-                { label: 'Hike Amount (Annual)', value: `₹${Math.round(result.hikeAmount).toLocaleString('en-IN')}` }, // fixed: was *12
-                { label: 'New Monthly Salary', value: `₹${Math.round(result.newMonthly).toLocaleString('en-IN')}` },
-                { label: 'Monthly Increase', value: `₹${Math.round(result.newMonthly - result.currentMonthly).toLocaleString('en-IN')}` },
-                { label: 'Real Hike (after inflation)', value: `${result.realHikePct.toFixed(2)}%` },
-                { label: 'Additional Tax (approx)', value: `₹${Math.round(result.additionalTax).toLocaleString('en-IN')}` },
+                { label: t('sh.pdfNewAnnualCTC'), value: `₹${Math.round(result.newAnnual).toLocaleString('en-IN')}` },
+                { label: t('sh.hikeAmountAnnual'), value: `₹${Math.round(result.hikeAmount).toLocaleString('en-IN')}` },
+                { label: t('sh.newMonthlySalary'), value: `₹${Math.round(result.newMonthly).toLocaleString('en-IN')}` },
+                { label: t('sh.pdfMonthlyIncrease'), value: `₹${Math.round(result.newMonthly - result.currentMonthly).toLocaleString('en-IN')}` },
+                { label: t('sh.pdfRealHikeAfterInflation'), value: `${result.realHikePct.toFixed(2)}%` },
+                { label: t('sh.pdfAdditionalTaxApprox'), value: `₹${Math.round(result.additionalTax).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: 'Monthly Salary Projection',
-            projectionColumns: ['Month', 'Monthly Salary', 'Cumulative Earnings'],
+            projectionTitle: t('sh.pdfMonthlySalaryProjection'),
+            projectionColumns: [t('sh.pdfMonth'), t('sh.pdfMonthlySalary'), t('sh.pdfCumulativeEarnings')],
             projectionRows: result.projection.map((r: any) => [
-                `Month ${r.month} (Yr ${r.year})`,
+                `${t('sh.pdfMonth')} ${r.month} (${t('sh.yr')} ${r.year})`,
                 `₹${Math.round(r.salary).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
             ]),
@@ -336,23 +336,23 @@ export default function SalaryHikeCalculator() {
 
         if (mode === 'ctcBreakdown') {
             const config: ExportConfig = {
-                title: 'Salary Hike — Full CTC Breakdown Report',
+                title: t('sh.pdfCtcBreakdownTitle'),
                 inputs: [
-                    { label: 'Current Total CTC (Annual)', value: `₹${Math.round(ctcAmount).toLocaleString('en-IN')}` },
-                    { label: 'Variable Pay %', value: `${variablePct}%` },
-                    { label: 'Achievement %', value: `${achievementPct}%` },
-                    { label: 'Fixed Pay Hike %', value: `${fixedHikePct}%` },
+                    { label: t('sh.currentTotalCTC'), value: `₹${Math.round(ctcAmount).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfVariablePayPct'), value: `${variablePct}%` },
+                    { label: t('sh.pdfAchievementPct'), value: `${achievementPct}%` },
+                    { label: t('sh.pdfFixedPayHikePct'), value: `${fixedHikePct}%` },
                 ],
                 results: [
-                    { label: 'Current Fixed Pay', value: `₹${Math.round(ctcResult.currentFixed).toLocaleString('en-IN')}` },
-                    { label: 'New Fixed Pay', value: `₹${Math.round(ctcResult.newFixed).toLocaleString('en-IN')}` },
-                    { label: 'New CTC', value: `₹${Math.round(ctcResult.newCTC).toLocaleString('en-IN')}` },
-                    { label: 'Est. Monthly Take-Home', value: `₹${Math.round(ctcResult.estimatedTakeHomeMonthly).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfCurrentFixedPay'), value: `₹${Math.round(ctcResult.currentFixed).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfNewFixedPay'), value: `₹${Math.round(ctcResult.newFixed).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfNewCTC'), value: `₹${Math.round(ctcResult.newCTC).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfEstMonthlyTakeHome'), value: `₹${Math.round(ctcResult.estimatedTakeHomeMonthly).toLocaleString('en-IN')}` },
                 ],
-                projectionTitle: 'Year-wise CTC Projection',
-                projectionColumns: ['Year', 'Fixed Pay', 'Variable Target', 'Variable Payout', 'Total CTC'],
+                projectionTitle: t('sh.yearWiseCTCProjection'),
+                projectionColumns: [t('sh.year'), t('sh.fixedPay'), t('sh.pdfVariableTarget'), t('sh.pdfVariablePayout'), t('sh.totalCTC')],
                 projectionRows: ctcResult.ctcProjection.map(r => [
-                    `Year ${r.year}`,
+                    `${t('sh.year')} ${r.year}`,
                     `₹${r.fixed.toLocaleString('en-IN')}`,
                     `₹${r.variableTarget.toLocaleString('en-IN')}`,
                     `₹${r.variablePayout.toLocaleString('en-IN')}`,
@@ -367,25 +367,25 @@ export default function SalaryHikeCalculator() {
         if (mode === 'compare') {
             const { a, b } = compareResult;
             const config: ExportConfig = {
-                title: 'Salary Hike — Offer Comparison Report',
+                title: t('sh.pdfOfferComparisonTitle'),
                 inputs: [
-                    { label: 'Offer A Fixed CTC', value: `₹${Math.round(a.fixed).toLocaleString('en-IN')}` },
-                    { label: 'Offer B Fixed CTC', value: `₹${Math.round(b.fixed).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfOfferAFixedCTC'), value: `₹${Math.round(a.fixed).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfOfferBFixedCTC'), value: `₹${Math.round(b.fixed).toLocaleString('en-IN')}` },
                 ],
                 results: [
-                    { label: 'Offer A Total CTC', value: `₹${Math.round(a.totalCTC).toLocaleString('en-IN')}` },
-                    { label: 'Offer B Total CTC', value: `₹${Math.round(b.totalCTC).toLocaleString('en-IN')}` },
-                    { label: 'Better CTC', value: `Offer ${compareResult.betterCTC}` },
+                    { label: t('sh.pdfOfferATotalCTC'), value: `₹${Math.round(a.totalCTC).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfOfferBTotalCTC'), value: `₹${Math.round(b.totalCTC).toLocaleString('en-IN')}` },
+                    { label: t('sh.pdfBetterCTC'), value: `${t('sh.offer')} ${compareResult.betterCTC}` },
                 ],
-                projectionTitle: 'Offer Comparison Details',
-                projectionColumns: ['Metric', 'Offer A', 'Offer B'],
+                projectionTitle: t('sh.pdfOfferComparisonDetails'),
+                projectionColumns: [t('sh.metric'), t('sh.offerA'), t('sh.offerB')],
                 projectionRows: [
-                    ['Fixed CTC', `₹${Math.round(a.fixed).toLocaleString('en-IN')}`, `₹${Math.round(b.fixed).toLocaleString('en-IN')}`],
-                    ['Variable Target', `₹${Math.round(a.varTarget).toLocaleString('en-IN')}`, `₹${Math.round(b.varTarget).toLocaleString('en-IN')}`],
-                    ['Total CTC', `₹${Math.round(a.totalCTC).toLocaleString('en-IN')}`, `₹${Math.round(b.totalCTC).toLocaleString('en-IN')}`],
-                    ['Est. Take-Home/mo', `₹${Math.round(a.takeHomeMonthly).toLocaleString('en-IN')}`, `₹${Math.round(b.takeHomeMonthly).toLocaleString('en-IN')}`],
-                    ['Joining Bonus', `₹${Math.round(a.joining).toLocaleString('en-IN')}`, `₹${Math.round(b.joining).toLocaleString('en-IN')}`],
-                    ['Total Year 1 Value', `₹${Math.round(a.totalYear1).toLocaleString('en-IN')}`, `₹${Math.round(b.totalYear1).toLocaleString('en-IN')}`],
+                    [t('sh.fixedCTC'), `₹${Math.round(a.fixed).toLocaleString('en-IN')}`, `₹${Math.round(b.fixed).toLocaleString('en-IN')}`],
+                    [t('sh.pdfVariableTarget'), `₹${Math.round(a.varTarget).toLocaleString('en-IN')}`, `₹${Math.round(b.varTarget).toLocaleString('en-IN')}`],
+                    [t('sh.totalCTC'), `₹${Math.round(a.totalCTC).toLocaleString('en-IN')}`, `₹${Math.round(b.totalCTC).toLocaleString('en-IN')}`],
+                    [t('sh.pdfEstTakeHomeMo'), `₹${Math.round(a.takeHomeMonthly).toLocaleString('en-IN')}`, `₹${Math.round(b.takeHomeMonthly).toLocaleString('en-IN')}`],
+                    [t('sh.joiningBonus'), `₹${Math.round(a.joining).toLocaleString('en-IN')}`, `₹${Math.round(b.joining).toLocaleString('en-IN')}`],
+                    [t('sh.totalYear1Value'), `₹${Math.round(a.totalYear1).toLocaleString('en-IN')}`, `₹${Math.round(b.totalYear1).toLocaleString('en-IN')}`],
                 ],
                 filename: `FinCalix_OfferComparison_${tag}`,
             };
@@ -394,21 +394,21 @@ export default function SalaryHikeCalculator() {
         }
 
         const config: ExportConfig = {
-            title: 'Salary Hike Calculator Report',
+            title: t('sh.pdfSalaryHikeTitle'),
             inputs: [
-                { label: 'Current Annual Salary', value: `₹${Math.round(result.currentAnnual).toLocaleString('en-IN')}` },
-                { label: 'Hike Percentage', value: `${result.hikePctComputed.toFixed(1)}%` },
+                { label: t('sh.pdfCurrentAnnualSalary'), value: `₹${Math.round(result.currentAnnual).toLocaleString('en-IN')}` },
+                { label: t('sh.hikePercentage'), value: `${result.hikePctComputed.toFixed(1)}%` },
             ],
             results: [
-                { label: 'New Annual CTC', value: `₹${Math.round(result.newAnnual).toLocaleString('en-IN')}` },
-                { label: 'New Monthly Salary', value: `₹${Math.round(result.newMonthly).toLocaleString('en-IN')}` },
-                { label: 'Real Hike (after inflation)', value: `${result.realHikePct.toFixed(2)}%` },
+                { label: t('sh.pdfNewAnnualCTC'), value: `₹${Math.round(result.newAnnual).toLocaleString('en-IN')}` },
+                { label: t('sh.newMonthlySalary'), value: `₹${Math.round(result.newMonthly).toLocaleString('en-IN')}` },
+                { label: t('sh.pdfRealHikeAfterInflation'), value: `${result.realHikePct.toFixed(2)}%` },
             ],
-            projectionTitle: 'Monthly Salary Projection',
-            projectionColumns: ['Month', 'Year', 'Monthly Salary', 'Cumulative Earnings'],
+            projectionTitle: t('sh.pdfMonthlySalaryProjection'),
+            projectionColumns: [t('sh.pdfMonth'), t('sh.year'), t('sh.pdfMonthlySalary'), t('sh.pdfCumulativeEarnings')],
             projectionRows: result.projection.map((r: any) => [
-                `Month ${r.month}`,
-                `Year ${r.year}`,
+                `${t('sh.pdfMonth')} ${r.month}`,
+                `${t('sh.year')} ${r.year}`,
                 `₹${Math.round(r.salary).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
             ]),
@@ -486,10 +486,10 @@ export default function SalaryHikeCalculator() {
     }, [savedCalculations, currentSalary, hikePct, period, periodUnit, mode, result.hikePctComputed, ctcAmount, variablePct, achievementPct, fixedHikePct, offerA_salary, offerB_salary]);
 
     const modeOptions: { key: 'findHike' | 'findSalary' | 'ctcBreakdown' | 'compare'; label: string }[] = [
-        { key: 'findSalary', label: t('salary.findHikePct') },
-        { key: 'findHike', label: t('salary.findNewSalary') },
-        { key: 'ctcBreakdown', label: t('salary.ctcBreakdown') },
-        { key: 'compare', label: t('salary.compareOffers') },
+        { key: 'findSalary', label: t('sh.findHikePct') },
+        { key: 'findHike', label: t('sh.findNewSalary') },
+        { key: 'ctcBreakdown', label: t('sh.ctcBreakdown') },
+        { key: 'compare', label: t('sh.compareOffers') },
     ];
 
     const benchmarkItem = INDUSTRY_BENCHMARKS.find(b => b.name === selectedIndustry) || INDUSTRY_BENCHMARKS[INDUSTRY_BENCHMARKS.length - 1];
@@ -508,8 +508,8 @@ export default function SalaryHikeCalculator() {
                             <ArrowLeft size={18} className="text-muted-foreground dark:text-muted-foreground" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">{t('salary.title')}</h1>
-                            <p className="text-muted-foreground text-xs">{t('salary.subtitle')}</p>
+                            <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">{t('sh.title')}</h1>
+                            <p className="text-muted-foreground text-xs">{t('sh.subtitle')}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -518,7 +518,7 @@ export default function SalaryHikeCalculator() {
                         </button>
                         <button
                             className="p-2 rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border"
-                            onClick={() => nativeShare('Salary Hike Calculator', `My salary after ${result.hikePctComputed.toFixed(1)}% hike: ${formatINR(result.newSalary)}`)}
+                            onClick={() => nativeShare(t('sh.title'), t('sh.shareText', { hikePct: result.hikePctComputed.toFixed(1), newSalary: formatINR(result.newSalary) }))}
                         >
                             <Share2 size={16} className="text-muted-foreground" />
                         </button>
@@ -529,7 +529,7 @@ export default function SalaryHikeCalculator() {
             <div className="px-4 pb-32 pt-4">
                 {/* Mode Selector — 4 modes */}
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-card border border-slate-200 dark:border-border mb-4 mt-2">
-                    <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold mb-3 uppercase tracking-wider">{t('salary.calculatorMode')}</p>
+                    <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold mb-3 uppercase tracking-wider">{t('sh.calculatorMode')}</p>
                     <div className="grid grid-cols-2 gap-2">
                         {modeOptions.map(opt => (
                             <label
@@ -551,41 +551,41 @@ export default function SalaryHikeCalculator() {
                     <>
                         <div className="space-y-3 mb-5">
                             <NumberInput
-                                label={t('salary.currentAnnualSalary')}
+                                label={t('sh.currentAnnualSalary')}
                                 value={currentSalary}
                                 onChange={setCurrentSalary}
                                 min={1000}
                                 max={100000000}
                                 prefix="₹"
-                                helperText={t('salary.salaryRange')}
+                                helperText={t('sh.salaryRange')}
                             />
 
                             {mode === 'findHike' ? (
                                 <NumberInput
-                                    label={t('salary.newSalary')}
+                                    label={t('sh.newSalary')}
                                     value={newSalaryInput}
                                     onChange={setNewSalaryInput}
                                     min={1000}
                                     max={100000000}
                                     prefix="₹"
-                                    helperText={t('salary.salaryRange')}
+                                    helperText={t('sh.salaryRange')}
                                 />
                             ) : (
                                 <NumberInput
-                                    label={t('salary.expectedHikePct')}
+                                    label={t('sh.expectedHikePct')}
                                     value={hikePct}
                                     onChange={setHikePct}
                                     min={0}
                                     max={200}
                                     suffix="%"
                                     step={0.5}
-                                    helperText={t('salary.hikePctRange')}
+                                    helperText={t('sh.hikePctRange')}
                                 />
                             )}
 
                             {/* Industry selector */}
                             <div className="rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border p-4">
-                                <p className="text-xs font-semibold text-muted-foreground mb-2">{t('salary.yourIndustry')}</p>
+                                <p className="text-xs font-semibold text-muted-foreground mb-2">{t('sh.yourIndustry')}</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {INDUSTRY_BENCHMARKS.map(b => (
                                         <button
@@ -593,7 +593,7 @@ export default function SalaryHikeCalculator() {
                                             onClick={() => setSelectedIndustry(b.name)}
                                             className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all ${selectedIndustry === b.name ? 'bg-brand-green text-white' : 'bg-slate-100 dark:bg-slate-800 text-muted-foreground'}`}
                                         >
-                                            {b.name}
+                                            {t(`sh.${b.i18nKey}`)}
                                         </button>
                                     ))}
                                 </div>
@@ -611,18 +611,18 @@ export default function SalaryHikeCalculator() {
                                             }}
                                             className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all capitalize ${periodUnit === u ? 'bg-brand-green text-white' : 'text-muted-foreground'}`}
                                         >
-                                            {u === 'months' ? t('salary.months') : t('salary.years')}
+                                            {u === 'months' ? t('sh.months') : t('sh.years')}
                                         </button>
                                     ))}
                                 </div>
                                 <NumberInput
-                                    label={t('salary.projectionPeriod')}
+                                    label={t('sh.projectionPeriod')}
                                     value={period}
                                     onChange={setPeriod}
                                     min={1}
                                     max={periodUnit === 'months' ? 120 : 10}
-                                    suffix={periodUnit === 'months' ? ` ${t('salary.months')}` : ` ${t('salary.years')}`}
-                                    helperText={periodUnit === 'months' ? t('salary.monthsRange') : t('salary.yearsRange')}
+                                    suffix={periodUnit === 'months' ? ` ${t('sh.months')}` : ` ${t('sh.years')}`}
+                                    helperText={periodUnit === 'months' ? t('sh.monthsRange') : t('sh.yearsRange')}
                                 />
                             </div>
                         </div>
@@ -632,56 +632,56 @@ export default function SalaryHikeCalculator() {
                             <div className="text-center mb-4">
                                 {mode === 'findHike' ? (
                                     <>
-                                        <p className="text-muted-foreground text-sm mb-1">{t('salary.hikePercentage')}</p>
+                                        <p className="text-muted-foreground text-sm mb-1">{t('sh.hikePercentage')}</p>
                                         <motion.p key={result.hikePctComputed} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-3xl font-bold text-brand-green">
                                             {result.hikePctComputed.toFixed(2)}%
                                         </motion.p>
-                                        <p className="text-brand-blue text-sm font-medium mt-1">{t('salary.hike')}: {formatINR(result.hikeMonthly)}/{t('salary.mo')} · {formatINR(result.hikeAmount)}/{t('salary.yr')}</p>
+                                        <p className="text-brand-blue text-sm font-medium mt-1">{t('sh.hike')}: {formatINR(result.hikeMonthly)}/{t('sh.mo')} · {formatINR(result.hikeAmount)}/{t('sh.yr')}</p>
                                     </>
                                 ) : (
                                     <>
-                                        <p className="text-muted-foreground text-sm mb-1">{t('salary.salaryAfterHike')}</p>
+                                        <p className="text-muted-foreground text-sm mb-1">{t('sh.salaryAfterHike')}</p>
                                         <motion.p key={result.newSalary} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-3xl font-bold text-brand-green">
                                             {formatINR(result.newSalary)}
                                         </motion.p>
-                                        <p className="text-brand-blue text-sm font-medium mt-1">{t('salary.annualIncrease')}: {formatINR(result.annualIncrease)}</p>
+                                        <p className="text-brand-blue text-sm font-medium mt-1">{t('sh.annualIncrease')}: {formatINR(result.annualIncrease)}</p>
                                     </>
                                 )}
                             </div>
 
                             <div className="space-y-2.5 pt-3 border-t border-slate-200 dark:border-border">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground text-xs">{t('salary.currentAnnualSalary')}</span>
+                                    <span className="text-muted-foreground text-xs">{t('sh.currentAnnualSalary')}</span>
                                     <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(result.currentAnnual)}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground text-xs">{t('salary.currentMonthlySalary')}</span>
+                                    <span className="text-muted-foreground text-xs">{t('sh.currentMonthlySalary')}</span>
                                     <span className="font-semibold text-sm text-slate-600 dark:text-slate-300">{formatINR(result.currentMonthly)}</span>
                                 </div>
                                 {mode === 'findHike' && (
                                     <div className="flex items-center justify-between">
-                                        <span className="text-muted-foreground text-xs">{t('salary.newAnnualSalary')}</span>
+                                        <span className="text-muted-foreground text-xs">{t('sh.newAnnualSalary')}</span>
                                         <span className="font-semibold text-sm text-brand-blue">{formatINR(newSalaryInput)}</span>
                                     </div>
                                 )}
                                 <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground text-xs">{t('salary.hikePercentage')}</span>
+                                    <span className="text-muted-foreground text-xs">{t('sh.hikePercentage')}</span>
                                     <span className="font-semibold text-sm text-brand-green">{result.hikePctComputed.toFixed(2)}%</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground text-xs">{t('salary.hikeAmountAnnual')}</span>
+                                    <span className="text-muted-foreground text-xs">{t('sh.hikeAmountAnnual')}</span>
                                     <span className="font-semibold text-sm text-brand-green">{formatINR(result.hikeAmount)}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground text-xs">{t('salary.hikeAmountMonthly')}</span>
+                                    <span className="text-muted-foreground text-xs">{t('sh.hikeAmountMonthly')}</span>
                                     <span className="font-semibold text-sm text-brand-green">{formatINR(result.hikeMonthly)}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground text-xs">{t('salary.newAnnualSalary')}</span>
+                                    <span className="text-muted-foreground text-xs">{t('sh.newAnnualSalary')}</span>
                                     <span className="font-semibold text-sm text-brand-blue">{formatINR(result.newAnnual)}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground text-xs">{t('salary.newMonthlySalary')}</span>
+                                    <span className="text-muted-foreground text-xs">{t('sh.newMonthlySalary')}</span>
                                     <span className="font-semibold text-sm text-brand-blue">{formatINR(result.newMonthly)}</span>
                                 </div>
                             </div>
@@ -691,26 +691,26 @@ export default function SalaryHikeCalculator() {
                         <div className={`rounded-2xl border mb-4 p-4 ${result.beatsInflation ? 'bg-brand-green/5 border-brand-green/20' : 'bg-amber-500/5 border-amber-500/20'}`}>
                             <div className="flex items-center gap-2 mb-2">
                                 <TrendingUp size={15} className={result.beatsInflation ? 'text-brand-green' : 'text-amber-500'} />
-                                <p className="text-xs font-bold text-slate-700 dark:text-foreground">{t('salary.realHikeVsInflation')}</p>
+                                <p className="text-xs font-bold text-slate-700 dark:text-foreground">{t('sh.realHikeVsInflation')}</p>
                             </div>
                             <div className="grid grid-cols-3 gap-2 mb-2">
                                 <div className="text-center">
-                                    <p className="text-[10px] text-muted-foreground">{t('salary.nominalHike')}</p>
+                                    <p className="text-[10px] text-muted-foreground">{t('sh.nominalHike')}</p>
                                     <p className="font-bold text-sm text-slate-800 dark:text-foreground">{result.hikePctComputed.toFixed(1)}%</p>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-[10px] text-muted-foreground">{t('salary.indiaInflation')}</p>
+                                    <p className="text-[10px] text-muted-foreground">{t('sh.indiaInflation')}</p>
                                     <p className="font-bold text-sm text-amber-500">{INDIA_INFLATION}%</p>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-[10px] text-muted-foreground">{t('salary.realHike')}</p>
+                                    <p className="text-[10px] text-muted-foreground">{t('sh.realHike')}</p>
                                     <p className={`font-bold text-sm ${result.realHikePct > 0 ? 'text-brand-green' : 'text-red-400'}`}>{result.realHikePct.toFixed(2)}%</p>
                                 </div>
                             </div>
                             <p className="text-[10px] text-muted-foreground">
                                 {result.beatsInflation
-                                    ? `✓ ${t('salary.hikeBeatsInflation', { diff: (result.hikePctComputed - INDIA_INFLATION).toFixed(1) })}`
-                                    : `⚠ ${t('salary.hikeBelowInflation', { inflation: INDIA_INFLATION })}`}
+                                    ? `✓ ${t('sh.hikeBeatsInflation', { diff: (result.hikePctComputed - INDIA_INFLATION).toFixed(1) })}`
+                                    : `⚠ ${t('sh.hikeBelowInflation', { inflation: INDIA_INFLATION })}`}
                             </p>
                         </div>
 
@@ -718,19 +718,19 @@ export default function SalaryHikeCalculator() {
                         <div className="rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 p-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <AlertCircle size={15} className="text-brand-blue" />
-                                <p className="text-xs font-bold text-slate-700 dark:text-foreground">{t('salary.industryBenchmark')} — {selectedIndustry}</p>
+                                <p className="text-xs font-bold text-slate-700 dark:text-foreground">{t('sh.industryBenchmark')} — {t(`sh.${benchmarkItem.i18nKey}`)}</p>
                             </div>
                             <div className="grid grid-cols-3 gap-2 mb-3">
                                 <div className="text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2">
-                                    <p className="text-[10px] text-muted-foreground">{t('salary.yourHike')}</p>
+                                    <p className="text-[10px] text-muted-foreground">{t('sh.yourHike')}</p>
                                     <p className={`font-bold text-sm ${benchColor}`}>{result.hikePctComputed.toFixed(1)}%</p>
                                 </div>
                                 <div className="text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2">
-                                    <p className="text-[10px] text-muted-foreground">{t('salary.avgHike')}</p>
+                                    <p className="text-[10px] text-muted-foreground">{t('sh.avgHike')}</p>
                                     <p className="font-bold text-sm text-slate-700 dark:text-foreground">{benchmarkItem.avg}%</p>
                                 </div>
                                 <div className="text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2">
-                                    <p className="text-[10px] text-muted-foreground">{t('salary.topPerformer')}</p>
+                                    <p className="text-[10px] text-muted-foreground">{t('sh.topPerformer')}</p>
                                     <p className="font-bold text-sm text-brand-blue">{benchmarkItem.top}%</p>
                                 </div>
                             </div>
@@ -741,28 +741,28 @@ export default function SalaryHikeCalculator() {
                             }`}>
                                 {result.benchStatus}
                             </div>
-                            <p className="text-[10px] text-muted-foreground mt-2">{t('salary.benchmarkSource')}</p>
+                            <p className="text-[10px] text-muted-foreground mt-2">{t('sh.benchmarkSource')}</p>
                         </div>
 
                         {/* Tax Impact */}
                         {result.additionalTax > 0 && (
                             <div className="rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 p-4">
-                                <p className="text-xs font-bold text-slate-700 dark:text-foreground mb-3">{t('salary.taxImpactOfHike')}</p>
+                                <p className="text-xs font-bold text-slate-700 dark:text-foreground mb-3">{t('sh.taxImpactOfHike')}</p>
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-muted-foreground text-xs">{t('salary.grossHikeAmount')}</span>
+                                        <span className="text-muted-foreground text-xs">{t('sh.grossHikeAmount')}</span>
                                         <span className="font-semibold text-sm text-brand-green">{formatINR(result.hikeAmount)}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-muted-foreground text-xs">{t('salary.additionalTaxOnHike')}</span>
+                                        <span className="text-muted-foreground text-xs">{t('sh.additionalTaxOnHike')}</span>
                                         <span className="font-semibold text-sm text-red-400">-{formatINR(result.additionalTax)}</span>
                                     </div>
                                     <div className="flex items-center justify-between border-t border-slate-100 dark:border-border pt-2">
-                                        <span className="text-slate-700 dark:text-foreground text-xs font-bold">{t('salary.netTakeHomeIncrease')}</span>
+                                        <span className="text-slate-700 dark:text-foreground text-xs font-bold">{t('sh.netTakeHomeIncrease')}</span>
                                         <span className="font-bold text-sm text-brand-green">{formatINR(result.netTakeHomeIncrease)}</span>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-muted-foreground mt-2 italic">{t('salary.taxDisclaimer')}</p>
+                                <p className="text-[10px] text-muted-foreground mt-2 italic">{t('sh.taxDisclaimer')}</p>
                             </div>
                         )}
                     </>
@@ -773,43 +773,43 @@ export default function SalaryHikeCalculator() {
                     <>
                         <div className="space-y-3 mb-5">
                             <NumberInput
-                                label={t('salary.currentTotalCTC')}
+                                label={t('sh.currentTotalCTC')}
                                 value={ctcAmount}
                                 onChange={setCtcAmount}
                                 min={100000}
                                 max={100000000}
                                 prefix="₹"
-                                helperText={t('salary.ctcHelper')}
+                                helperText={t('sh.ctcHelper')}
                             />
                             <NumberInput
-                                label={t('salary.variablePayComponent')}
+                                label={t('sh.variablePayComponent')}
                                 value={variablePct}
                                 onChange={setVariablePct}
                                 min={0}
                                 max={50}
                                 suffix="%"
                                 step={1}
-                                helperText={t('salary.variablePayHelper')}
+                                helperText={t('sh.variablePayHelper')}
                             />
                             <NumberInput
-                                label={t('salary.achievementVsTarget')}
+                                label={t('sh.achievementVsTarget')}
                                 value={achievementPct}
                                 onChange={setAchievementPct}
                                 min={0}
                                 max={150}
                                 suffix="%"
                                 step={5}
-                                helperText={t('salary.achievementHelper')}
+                                helperText={t('sh.achievementHelper')}
                             />
                             <NumberInput
-                                label={t('salary.hikePctOnFixed')}
+                                label={t('sh.hikePctOnFixed')}
                                 value={fixedHikePct}
                                 onChange={setFixedHikePct}
                                 min={0}
                                 max={100}
                                 suffix="%"
                                 step={0.5}
-                                helperText={t('salary.hikePctOnFixedHelper')}
+                                helperText={t('sh.hikePctOnFixedHelper')}
                             />
                             <div className="flex items-center gap-3 px-1">
                                 <input
@@ -820,19 +820,19 @@ export default function SalaryHikeCalculator() {
                                     className="w-4 h-4 accent-brand-green"
                                 />
                                 <label htmlFor="customVarHike" className="text-xs text-muted-foreground cursor-pointer">
-                                    {t('salary.customVariableHikeLabel')}
+                                    {t('sh.customVariableHikeLabel')}
                                 </label>
                             </div>
                             {useCustomVariableHike && (
                                 <NumberInput
-                                    label={t('salary.hikePctOnVariable')}
+                                    label={t('sh.hikePctOnVariable')}
                                     value={variableHikePct}
                                     onChange={setVariableHikePct}
                                     min={0}
                                     max={100}
                                     suffix="%"
                                     step={0.5}
-                                    helperText={t('salary.hikePctOnVariableHelper')}
+                                    helperText={t('sh.hikePctOnVariableHelper')}
                                 />
                             )}
                             <div>
@@ -845,40 +845,40 @@ export default function SalaryHikeCalculator() {
                                                 setPeriodUnit(u);
                                             }}
                                             className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all capitalize ${periodUnit === u ? 'bg-brand-green text-white' : 'text-muted-foreground'}`}
-                                        >{u === 'months' ? t('salary.months') : t('salary.years')}</button>
+                                        >{u === 'months' ? t('sh.months') : t('sh.years')}</button>
                                     ))}
                                 </div>
                                 <NumberInput
-                                    label={t('salary.projectionPeriod')}
+                                    label={t('sh.projectionPeriod')}
                                     value={period}
                                     onChange={setPeriod}
                                     min={1}
                                     max={periodUnit === 'months' ? 120 : 10}
-                                    suffix={periodUnit === 'months' ? ` ${t('salary.months')}` : ` ${t('salary.years')}`}
-                                    helperText={periodUnit === 'months' ? t('salary.monthsRange') : t('salary.yearsRange')}
+                                    suffix={periodUnit === 'months' ? ` ${t('sh.months')}` : ` ${t('sh.years')}`}
+                                    helperText={periodUnit === 'months' ? t('sh.monthsRange') : t('sh.yearsRange')}
                                 />
                             </div>
                         </div>
 
                         <motion.div layout className="rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 shadow-sm overflow-hidden">
                             <div className="p-5 text-center border-b border-slate-100 dark:border-border">
-                                <p className="text-muted-foreground text-sm mb-1">{t('salary.newTotalCTC')}</p>
+                                <p className="text-muted-foreground text-sm mb-1">{t('sh.newTotalCTC')}</p>
                                 <motion.p key={ctcResult.newCTC} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-3xl font-bold text-brand-green">
                                     {formatINR(ctcResult.newCTC)}
                                 </motion.p>
-                                <p className="text-brand-blue text-sm font-medium mt-1">{t('salary.estTakeHome')}: {formatINR(ctcResult.estimatedTakeHomeMonthly)}/{t('salary.month')}</p>
-                                <p className="text-muted-foreground text-xs mt-0.5">{t('salary.inHand')} ≈ {ctcResult.inHandPct.toFixed(1)}% {t('salary.ofNewCTC')}</p>
+                                <p className="text-brand-blue text-sm font-medium mt-1">{t('sh.estTakeHome')}: {formatINR(ctcResult.estimatedTakeHomeMonthly)}/{t('sh.month')}</p>
+                                <p className="text-muted-foreground text-xs mt-0.5">{t('sh.inHand')} ≈ {ctcResult.inHandPct.toFixed(1)}% {t('sh.ofNewCTC')}</p>
                             </div>
 
                             <div className="px-5 pt-4 pb-3 border-b border-slate-100 dark:border-border">
-                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">{t('salary.fixedPay')}</p>
+                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">{t('sh.fixedPay')}</p>
                                 <div className="space-y-2">
                                     {[
-                                        { label: t('salary.currentFixedPayAnnual'), val: ctcResult.currentFixed, color: 'text-slate-900 dark:text-foreground' },
-                                        { label: t('salary.currentFixedPayMonthly'), val: ctcResult.currentFixed / 12, color: 'text-slate-600 dark:text-slate-300' },
-                                        { label: t('salary.newFixedPayAnnual'), val: ctcResult.newFixed, color: 'text-brand-green' },
-                                        { label: t('salary.newFixedPayMonthly'), val: ctcResult.newFixed / 12, color: 'text-brand-green' },
-                                        { label: t('salary.fixedPayHikeAnnual'), val: ctcResult.fixedHikeAmount, color: 'text-brand-blue' },
+                                        { label: t('sh.currentFixedPayAnnual'), val: ctcResult.currentFixed, color: 'text-slate-900 dark:text-foreground' },
+                                        { label: t('sh.currentFixedPayMonthly'), val: ctcResult.currentFixed / 12, color: 'text-slate-600 dark:text-slate-300' },
+                                        { label: t('sh.newFixedPayAnnual'), val: ctcResult.newFixed, color: 'text-brand-green' },
+                                        { label: t('sh.newFixedPayMonthly'), val: ctcResult.newFixed / 12, color: 'text-brand-green' },
+                                        { label: t('sh.fixedPayHikeAnnual'), val: ctcResult.fixedHikeAmount, color: 'text-brand-blue' },
                                     ].map(r => (
                                         <div key={r.label} className="flex items-center justify-between">
                                             <span className="text-muted-foreground text-xs">{r.label}</span>
@@ -889,13 +889,13 @@ export default function SalaryHikeCalculator() {
                             </div>
 
                             <div className="px-5 pt-4 pb-3 border-b border-slate-100 dark:border-border">
-                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">{t('salary.variablePay')}</p>
+                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">{t('sh.variablePay')}</p>
                                 <div className="space-y-2">
                                     {[
-                                        { label: t('salary.currentVariableTarget'), val: ctcResult.currentVariableTarget, color: 'text-slate-900 dark:text-foreground' },
-                                        { label: `${t('salary.actualPayout')} (${achievementPct}% ${t('salary.achievement')})`, val: ctcResult.currentVariableActual, color: 'text-brand-blue' },
-                                        { label: t('salary.newVariableTarget'), val: ctcResult.newVariableTarget, color: 'text-brand-green' },
-                                        { label: `${t('salary.newPayout')} (${achievementPct}% ${t('salary.achievement')})`, val: ctcResult.newVariableActual, color: 'text-brand-green' },
+                                        { label: t('sh.currentVariableTarget'), val: ctcResult.currentVariableTarget, color: 'text-slate-900 dark:text-foreground' },
+                                        { label: `${t('sh.actualPayout')} (${achievementPct}% ${t('sh.achievement')})`, val: ctcResult.currentVariableActual, color: 'text-brand-blue' },
+                                        { label: t('sh.newVariableTarget'), val: ctcResult.newVariableTarget, color: 'text-brand-green' },
+                                        { label: `${t('sh.newPayout')} (${achievementPct}% ${t('sh.achievement')})`, val: ctcResult.newVariableActual, color: 'text-brand-green' },
                                     ].map(r => (
                                         <div key={r.label} className="flex items-center justify-between">
                                             <span className="text-muted-foreground text-xs">{r.label}</span>
@@ -906,39 +906,39 @@ export default function SalaryHikeCalculator() {
                             </div>
 
                             <div className="px-5 pt-4 pb-3 border-b border-slate-100 dark:border-border">
-                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">{t('salary.estimatedTakeHomeNewFixed')}</p>
+                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">{t('sh.estimatedTakeHomeNewFixed')}</p>
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-muted-foreground text-xs">{t('salary.basic50PctNewFixed')}</span>
+                                        <span className="text-muted-foreground text-xs">{t('sh.basic50PctNewFixed')}</span>
                                         <span className="font-semibold text-sm text-slate-900 dark:text-foreground">{formatINR(ctcResult.basic)}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-muted-foreground text-xs">{t('salary.pfDeduction')}</span>
-                                        <span className="font-semibold text-sm text-red-400">-{formatINR(ctcResult.pfAnnual)}/yr</span>
+                                        <span className="text-muted-foreground text-xs">{t('sh.pfDeduction')}</span>
+                                        <span className="font-semibold text-sm text-red-400">-{formatINR(ctcResult.pfAnnual)}/{t('sh.yr')}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-muted-foreground text-xs">{t('salary.professionalTax')}</span>
-                                        <span className="font-semibold text-sm text-red-400">-{formatINR(ctcResult.profTaxAnnual)}/yr</span>
+                                        <span className="text-muted-foreground text-xs">{t('sh.professionalTax')}</span>
+                                        <span className="font-semibold text-sm text-red-400">-{formatINR(ctcResult.profTaxAnnual)}/{t('sh.yr')}</span>
                                     </div>
                                     <div className="flex items-center justify-between border-t border-slate-100 dark:border-border pt-2 mt-1">
-                                        <span className="text-slate-700 dark:text-foreground text-xs font-bold">{t('salary.estTakeHomeAnnual')}</span>
+                                        <span className="text-slate-700 dark:text-foreground text-xs font-bold">{t('sh.estTakeHomeAnnual')}</span>
                                         <span className="font-bold text-sm text-brand-green">{formatINR(ctcResult.estimatedTakeHomeAnnual)}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-slate-700 dark:text-foreground text-xs font-bold">{t('salary.estTakeHomeMonthly')}</span>
+                                        <span className="text-slate-700 dark:text-foreground text-xs font-bold">{t('sh.estTakeHomeMonthly')}</span>
                                         <span className="font-bold text-sm text-brand-green">{formatINR(ctcResult.estimatedTakeHomeMonthly)}</span>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-muted-foreground mt-2 italic">{t('salary.takeHomeDisclaimer')}</p>
+                                <p className="text-[10px] text-muted-foreground mt-2 italic">{t('sh.takeHomeDisclaimer')}</p>
                             </div>
 
                             <div className="px-5 pt-4 pb-4">
-                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">{t('salary.variablePayAchievementScenarios')}</p>
+                                <p className="text-xs font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider mb-2.5">{t('sh.variablePayAchievementScenarios')}</p>
                                 <div className="p-3 rounded-xl bg-brand-blue/5 border border-brand-blue/15 text-xs text-muted-foreground leading-relaxed mb-3">
-                                    Your variable pay target is <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.currentVariableTarget)}/year</span>.{' '}
-                                    At <span className="text-amber-500 font-semibold">80%</span> you receive <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.varAt80)}</span>.{' '}
-                                    At <span className="text-brand-green font-semibold">100%</span> you receive <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.varAt100)}</span>.{' '}
-                                    At <span className="text-brand-blue font-semibold">120% stretch</span> you receive <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.varAt120)}</span>.
+                                    {t('sh.varPayTargetIs')} <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.currentVariableTarget)}/{t('sh.yearUnit')}</span>.{' '}
+                                    {t('sh.at')} <span className="text-amber-500 font-semibold">80%</span> {t('sh.youReceive')} <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.varAt80)}</span>.{' '}
+                                    {t('sh.at')} <span className="text-brand-green font-semibold">100%</span> {t('sh.youReceive')} <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.varAt100)}</span>.{' '}
+                                    {t('sh.at')} <span className="text-brand-blue font-semibold">{t('sh.stretchPct', { pct: '120' })}</span> {t('sh.youReceive')} <span className="font-semibold text-slate-800 dark:text-foreground">{formatINR(ctcResult.varAt120)}</span>.
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
                                     {[
@@ -947,7 +947,7 @@ export default function SalaryHikeCalculator() {
                                         { label: '120%', val: ctcResult.varAt120, color: 'text-brand-blue', bg: 'bg-brand-blue/8' },
                                     ].map(s => (
                                         <div key={s.label} className={`${s.bg} rounded-xl p-2.5 text-center`}>
-                                            <p className={`text-[10px] font-semibold ${s.color}`}>{s.label} {t('salary.achievement')}</p>
+                                            <p className={`text-[10px] font-semibold ${s.color}`}>{s.label} {t('sh.achievement')}</p>
                                             <p className="text-slate-800 dark:text-foreground font-bold text-xs mt-0.5">{formatINR(s.val)}</p>
                                         </div>
                                     ))}
@@ -957,21 +957,21 @@ export default function SalaryHikeCalculator() {
 
                         <div className="rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 overflow-hidden">
                             <div className="px-4 py-3 border-b border-slate-100 dark:border-border">
-                                <p className="text-sm font-bold text-slate-900 dark:text-foreground">{t('salary.yearWiseCTCProjection')}</p>
+                                <p className="text-sm font-bold text-slate-900 dark:text-foreground">{t('sh.yearWiseCTCProjection')}</p>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-xs">
                                     <thead>
                                         <tr className="bg-slate-50 dark:bg-slate-800/50">
-                                            {[t('salary.year'), t('salary.fixedPay'), t('salary.varTarget'), t('salary.varPayout'), t('salary.totalCTC')].map(h => (
-                                                <th key={h} className={`px-3 py-2 ${h === 'Year' ? 'text-left' : 'text-right'} text-muted-foreground font-semibold whitespace-nowrap`}>{h}</th>
+                                            {[t('sh.year'), t('sh.fixedPay'), t('sh.varTarget'), t('sh.varPayout'), t('sh.totalCTC')].map((h, idx) => (
+                                                <th key={h} className={`px-3 py-2 ${idx === 0 ? 'text-left' : 'text-right'} text-muted-foreground font-semibold whitespace-nowrap`}>{h}</th>
                                             ))}
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {ctcResult.ctcProjection.map((row, i) => (
                                             <tr key={row.year} className={`border-t border-slate-50 dark:border-slate-800 ${i === 0 ? 'bg-slate-50/50 dark:bg-slate-800/20' : ''}`}>
-                                                <td className="px-3 py-2.5 font-semibold text-slate-700 dark:text-foreground">{t('salary.yr')} {row.year}</td>
+                                                <td className="px-3 py-2.5 font-semibold text-slate-700 dark:text-foreground">{t('sh.yr')} {row.year}</td>
                                                 <td className="px-3 py-2.5 text-right text-slate-600 dark:text-slate-300">{formatINR(row.fixed)}</td>
                                                 <td className="px-3 py-2.5 text-right text-slate-600 dark:text-slate-300">{formatINR(row.variableTarget)}</td>
                                                 <td className="px-3 py-2.5 text-right text-brand-blue font-medium">{formatINR(row.variablePayout)}</td>
@@ -991,44 +991,44 @@ export default function SalaryHikeCalculator() {
                         <div className="grid grid-cols-2 gap-3 mb-4">
                             {/* Offer A */}
                             <div className="rounded-2xl bg-white dark:bg-card border-2 border-brand-green/40 p-3 space-y-3">
-                                <p className="text-xs font-bold text-brand-green uppercase tracking-wider text-center">{t('salary.offerA')}</p>
-                                <NumberInput label={t('salary.fixedCTC')} value={offerA_salary} onChange={setOfferA_salary} min={100000} max={100000000} prefix="₹" />
-                                <NumberInput label={t('salary.variablePct')} value={offerA_variable} onChange={setOfferA_variable} min={0} max={100} suffix="%" step={1} />
-                                <NumberInput label={t('salary.joiningBonus')} value={offerA_joining} onChange={setOfferA_joining} min={0} max={10000000} prefix="₹" />
-                                <NumberInput label={t('salary.esopValue')} value={offerA_esop} onChange={setOfferA_esop} min={0} max={100000000} prefix="₹" />
+                                <p className="text-xs font-bold text-brand-green uppercase tracking-wider text-center">{t('sh.offerA')}</p>
+                                <NumberInput label={t('sh.fixedCTC')} value={offerA_salary} onChange={setOfferA_salary} min={100000} max={100000000} prefix="₹" />
+                                <NumberInput label={t('sh.variablePct')} value={offerA_variable} onChange={setOfferA_variable} min={0} max={100} suffix="%" step={1} />
+                                <NumberInput label={t('sh.joiningBonus')} value={offerA_joining} onChange={setOfferA_joining} min={0} max={10000000} prefix="₹" />
+                                <NumberInput label={t('sh.esopValue')} value={offerA_esop} onChange={setOfferA_esop} min={0} max={100000000} prefix="₹" />
                             </div>
                             {/* Offer B */}
                             <div className="rounded-2xl bg-white dark:bg-card border-2 border-brand-blue/40 p-3 space-y-3">
-                                <p className="text-xs font-bold text-brand-blue uppercase tracking-wider text-center">{t('salary.offerB')}</p>
-                                <NumberInput label={t('salary.fixedCTC')} value={offerB_salary} onChange={setOfferB_salary} min={100000} max={100000000} prefix="₹" />
-                                <NumberInput label={t('salary.variablePct')} value={offerB_variable} onChange={setOfferB_variable} min={0} max={100} suffix="%" step={1} />
-                                <NumberInput label={t('salary.joiningBonus')} value={offerB_joining} onChange={setOfferB_joining} min={0} max={10000000} prefix="₹" />
-                                <NumberInput label={t('salary.esopValue')} value={offerB_esop} onChange={setOfferB_esop} min={0} max={100000000} prefix="₹" />
+                                <p className="text-xs font-bold text-brand-blue uppercase tracking-wider text-center">{t('sh.offerB')}</p>
+                                <NumberInput label={t('sh.fixedCTC')} value={offerB_salary} onChange={setOfferB_salary} min={100000} max={100000000} prefix="₹" />
+                                <NumberInput label={t('sh.variablePct')} value={offerB_variable} onChange={setOfferB_variable} min={0} max={100} suffix="%" step={1} />
+                                <NumberInput label={t('sh.joiningBonus')} value={offerB_joining} onChange={setOfferB_joining} min={0} max={10000000} prefix="₹" />
+                                <NumberInput label={t('sh.esopValue')} value={offerB_esop} onChange={setOfferB_esop} min={0} max={100000000} prefix="₹" />
                             </div>
                         </div>
 
                         {/* Comparison Results */}
                         <div className="rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 overflow-hidden">
                             <div className="px-4 py-3 border-b border-slate-100 dark:border-border">
-                                <p className="text-sm font-bold text-slate-900 dark:text-foreground">{t('salary.sideBySideComparison')}</p>
+                                <p className="text-sm font-bold text-slate-900 dark:text-foreground">{t('sh.sideBySideComparison')}</p>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-xs">
                                     <thead>
                                         <tr className="bg-slate-50 dark:bg-slate-800/50">
-                                            <th className="px-3 py-2 text-left text-muted-foreground font-semibold">{t('salary.metric')}</th>
-                                            <th className="px-3 py-2 text-right text-brand-green font-semibold">{t('salary.offerA')}</th>
-                                            <th className="px-3 py-2 text-right text-brand-blue font-semibold">{t('salary.offerB')}</th>
+                                            <th className="px-3 py-2 text-left text-muted-foreground font-semibold">{t('sh.metric')}</th>
+                                            <th className="px-3 py-2 text-right text-brand-green font-semibold">{t('sh.offerA')}</th>
+                                            <th className="px-3 py-2 text-right text-brand-blue font-semibold">{t('sh.offerB')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {[
-                                            { label: t('salary.fixedCTCAnnual'), a: compareResult.a.fixed, b: compareResult.b.fixed },
-                                            { label: t('salary.varTarget'), a: compareResult.a.varTarget, b: compareResult.b.varTarget },
-                                            { label: t('salary.totalCTC'), a: compareResult.a.totalCTC, b: compareResult.b.totalCTC, bold: true },
-                                            { label: t('salary.estTakeHomePerMo'), a: compareResult.a.takeHomeMonthly, b: compareResult.b.takeHomeMonthly },
-                                            { label: t('salary.joiningBonus'), a: compareResult.a.joining, b: compareResult.b.joining },
-                                            { label: t('salary.totalYear1Value'), a: compareResult.a.totalYear1, b: compareResult.b.totalYear1, bold: true },
+                                            { label: t('sh.fixedCTCAnnual'), a: compareResult.a.fixed, b: compareResult.b.fixed },
+                                            { label: t('sh.varTarget'), a: compareResult.a.varTarget, b: compareResult.b.varTarget },
+                                            { label: t('sh.totalCTC'), a: compareResult.a.totalCTC, b: compareResult.b.totalCTC, bold: true },
+                                            { label: t('sh.estTakeHomePerMo'), a: compareResult.a.takeHomeMonthly, b: compareResult.b.takeHomeMonthly },
+                                            { label: t('sh.joiningBonus'), a: compareResult.a.joining, b: compareResult.b.joining },
+                                            { label: t('sh.totalYear1Value'), a: compareResult.a.totalYear1, b: compareResult.b.totalYear1, bold: true },
                                         ].map(row => {
                                             const aWins = row.a >= row.b;
                                             return (
@@ -1050,20 +1050,20 @@ export default function SalaryHikeCalculator() {
 
                         {/* Verdict */}
                         <div className="rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border mb-4 p-4">
-                            <p className="text-xs font-bold text-slate-700 dark:text-foreground mb-3 uppercase tracking-wider">{t('salary.verdict')}</p>
+                            <p className="text-xs font-bold text-slate-700 dark:text-foreground mb-3 uppercase tracking-wider">{t('sh.verdict')}</p>
                             <div className="space-y-2">
                                 {[
-                                    { label: t('salary.higherCTC'), winner: compareResult.betterCTC, color: compareResult.betterCTC === 'A' ? 'text-brand-green' : 'text-brand-blue' },
-                                    { label: t('salary.higherTakeHome'), winner: compareResult.betterTakeHome, color: compareResult.betterTakeHome === 'A' ? 'text-brand-green' : 'text-brand-blue' },
-                                    { label: t('salary.betterYear1'), winner: compareResult.betterYear1, color: compareResult.betterYear1 === 'A' ? 'text-brand-green' : 'text-brand-blue' },
+                                    { label: t('sh.higherCTC'), winner: compareResult.betterCTC, color: compareResult.betterCTC === 'A' ? 'text-brand-green' : 'text-brand-blue' },
+                                    { label: t('sh.higherTakeHome'), winner: compareResult.betterTakeHome, color: compareResult.betterTakeHome === 'A' ? 'text-brand-green' : 'text-brand-blue' },
+                                    { label: t('sh.betterYear1'), winner: compareResult.betterYear1, color: compareResult.betterYear1 === 'A' ? 'text-brand-green' : 'text-brand-blue' },
                                 ].map(v => (
                                     <div key={v.label} className="flex items-center justify-between">
                                         <span className="text-muted-foreground text-xs">{v.label}</span>
-                                        <span className={`font-bold text-sm ${v.color}`}>{t('salary.offer')} {v.winner} ✓</span>
+                                        <span className={`font-bold text-sm ${v.color}`}>{t('sh.offer')} {v.winner} ✓</span>
                                     </div>
                                 ))}
                             </div>
-                            <p className="text-[10px] text-muted-foreground mt-3 italic">{t('salary.compareDisclaimer')}</p>
+                            <p className="text-[10px] text-muted-foreground mt-3 italic">{t('sh.compareDisclaimer')}</p>
                         </div>
                     </>
                 )}
@@ -1072,7 +1072,7 @@ export default function SalaryHikeCalculator() {
                 {isSaved || isAlreadySaved ? (
                     <div className="flex gap-2 mb-5">
                         <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                            <Check size={16} /> {t('common.saved')}
+                            <Check size={16} /> {t('sh.saved')}
                         </div>
                         <button onClick={handleRemove}
                             className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
@@ -1085,26 +1085,26 @@ export default function SalaryHikeCalculator() {
                         onClick={handleSave}
                         className="w-full py-3.5 rounded-2xl font-semibold text-sm mb-5 flex items-center justify-center gap-2 transition-all bg-brand-green text-white"
                     >
-                        <Save size={18} /> {t('salary.saveCalculation')}
+                        <Save size={18} /> {t('sh.saveCalculation')}
                     </motion.button>
                 )}
 
                 <div className="flex gap-3 mb-5">
                     <button onClick={handleDownloadPDF} className="flex-1 py-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors active:bg-indigo-100 dark:active:bg-indigo-500/20">
-                        📄 {t('salary.exportPDF')}
+                        📄 {t('sh.exportPDF')}
                     </button>
                     <button onClick={handleDownloadExcel} className="flex-1 py-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center justify-center gap-2 transition-colors active:bg-emerald-100 dark:active:bg-emerald-500/20">
-                        📊 {t('salary.exportExcel')}
+                        📊 {t('sh.exportExcel')}
                     </button>
                 </div>
 
                 <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50 dark:bg-brand-blue/5 border border-blue-100 dark:border-brand-blue/15">
                     <p className="text-muted-foreground dark:text-muted-foreground text-[10px] leading-relaxed italic">
-                        📐 {t('salary.projectionDisclaimer')}
+                        📐 {t('sh.projectionDisclaimer')}
                     </p>
                 </div>
 
-                <CalculatorInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} calculatorTitle={t('salary.title')} />
+                <CalculatorInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} calculatorTitle={t('sh.title')} />
 
                 <div className="mt-8">
                     <DisclaimerComponent module="general" />

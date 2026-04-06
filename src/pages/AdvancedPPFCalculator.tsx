@@ -161,17 +161,17 @@ export default function AdvancedPPFCalculator() {
             ]),
             additionalTables: [
                 ...(ppfStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('ppf.liveStatus')} (${t('ppf.asOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('ppf.metric'), t('ppf.value')],
                     rows: [
-                        ['Account Age (years)', String(ppfStatus.yearsCompleted)],
-                        ['Current Year (of 15)', String(ppfStatus.currentYear)],
-                        ['Balance Today', formatINR(ppfStatus.balanceToday)],
-                        ['Total Deposited', formatINR(ppfStatus.totalDeposited)],
-                        ['Interest Earned', formatINR(ppfStatus.interestEarned)],
-                        ['Maturity Date', ppfStatus.maturityDate],
-                        ['Loan Eligible', ppfStatus.loanEligible ? 'Yes' : 'No'],
-                        ['Withdrawal Eligible', ppfStatus.withdrawalEligible ? 'Yes' : 'No'],
+                        [t('ppf.accountAgeYears'), String(ppfStatus.yearsCompleted)],
+                        [t('ppf.currentYearOf15'), String(ppfStatus.currentYear)],
+                        [t('ppf.balanceToday'), formatINR(ppfStatus.balanceToday)],
+                        [t('ppf.totalDepositedLabel'), formatINR(ppfStatus.totalDeposited)],
+                        [t('ppf.interestEarnedLabel'), formatINR(ppfStatus.interestEarned)],
+                        [t('ppf.maturityDateLabel'), ppfStatus.maturityDate],
+                        [t('ppf.loanEligible'), ppfStatus.loanEligible ? t('ppf.yes') : t('ppf.no')],
+                        [t('ppf.withdrawalEligible'), ppfStatus.withdrawalEligible ? t('ppf.yes') : t('ppf.no')],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -198,17 +198,17 @@ export default function AdvancedPPFCalculator() {
             projectionRows: schedule.map((r: any) => [r.year, Math.round(r.opening || 0), Math.round(r.contribution), Math.round(r.interest), Math.round(r.closing)]),
             additionalTables: [
                 ...(ppfStatus ? [{
-                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: ['Metric', 'Value'],
+                    title: `${t('ppf.liveStatus')} (${t('ppf.asOf')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [t('ppf.metric'), t('ppf.value')],
                     rows: [
-                        ['Account Age (years)', String(ppfStatus.yearsCompleted)],
-                        ['Current Year (of 15)', String(ppfStatus.currentYear)],
-                        ['Balance Today', formatINR(ppfStatus.balanceToday)],
-                        ['Total Deposited', formatINR(ppfStatus.totalDeposited)],
-                        ['Interest Earned', formatINR(ppfStatus.interestEarned)],
-                        ['Maturity Date', ppfStatus.maturityDate],
-                        ['Loan Eligible', ppfStatus.loanEligible ? 'Yes' : 'No'],
-                        ['Withdrawal Eligible', ppfStatus.withdrawalEligible ? 'Yes' : 'No'],
+                        [t('ppf.accountAgeYears'), String(ppfStatus.yearsCompleted)],
+                        [t('ppf.currentYearOf15'), String(ppfStatus.currentYear)],
+                        [t('ppf.balanceToday'), formatINR(ppfStatus.balanceToday)],
+                        [t('ppf.totalDepositedLabel'), formatINR(ppfStatus.totalDeposited)],
+                        [t('ppf.interestEarnedLabel'), formatINR(ppfStatus.interestEarned)],
+                        [t('ppf.maturityDateLabel'), ppfStatus.maturityDate],
+                        [t('ppf.loanEligible'), ppfStatus.loanEligible ? t('ppf.yes') : t('ppf.no')],
+                        [t('ppf.withdrawalEligible'), ppfStatus.withdrawalEligible ? t('ppf.yes') : t('ppf.no')],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -273,7 +273,7 @@ export default function AdvancedPPFCalculator() {
                         min={PPF_LOCK_IN_YEARS} max={50} suffix={` ${t('ppf.years')}`}
                         helperText={t('ppf.minYearsHelper', { min: PPF_LOCK_IN_YEARS, ext: PPF_EXTENSION_YEARS })} />
                     <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">Account Opening Date (optional)</label>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('ppf.accountOpeningDate')}</label>
                         <DateInput
                             value={ppfOpenDate}
                             onChange={setPpfOpenDate}
@@ -436,24 +436,24 @@ export default function AdvancedPPFCalculator() {
                         <LiveStatusCard
                             calculatorType="PPF"
                             profileData={{ yearlyDeposit: annualContribution, rate, openingDate: ppfOpenDate }}
-                            title="PPF Live Status"
-                            subtitle={`Year ${ppfStatus.currentYear} of 15`}
+                            title={t('ppf.ppfLiveStatus')}
+                            subtitle={t('ppf.yearXOf15', { year: ppfStatus.currentYear })}
                             startDate={ppfOpenDate}
                             metrics={[
-                                { label: 'Deposited', value: formatINR(ppfStatus.totalDeposited) },
-                                { label: 'Interest', value: formatINR(ppfStatus.interestEarned), color: 'amber' },
-                                { label: 'Balance', value: formatINR(ppfStatus.balanceToday), color: 'green' },
+                                { label: t('ppf.deposited'), value: formatINR(ppfStatus.totalDeposited) },
+                                { label: t('ppf.interestLabel'), value: formatINR(ppfStatus.interestEarned), color: 'amber' },
+                                { label: t('ppf.balanceLabel'), value: formatINR(ppfStatus.balanceToday), color: 'green' },
                             ]}
                             progressPercent={(ppfStatus.yearsCompleted / 15) * 100}
-                            progressLabel={`Year ${ppfStatus.yearsCompleted} of 15 completed${ppfStatus.daysToMaturity > 0 ? ` — ${ppfStatus.daysToMaturity} days to maturity` : ''}`}
-                            warningText={ppfStatus.yearsCompleted < 3 ? 'No withdrawal or loan facility available yet (eligible from Year 3).' : undefined}
+                            progressLabel={`${t('ppf.yearXOf15Completed', { year: ppfStatus.yearsCompleted })}${ppfStatus.daysToMaturity > 0 ? ` — ${t('ppf.daysToMaturity', { days: ppfStatus.daysToMaturity })}` : ''}`}
+                            warningText={ppfStatus.yearsCompleted < 3 ? t('ppf.noWithdrawalOrLoanYet') : undefined}
                             insightText={
                                 ppfStatus.yearsCompleted >= 15
-                                    ? `Your PPF has matured! Maturity value: ${formatINR(ppfStatus.maturityValue)}. You can extend in blocks of 5 years.`
+                                    ? t('ppf.ppfMaturedInsight', { maturityValue: formatINR(ppfStatus.maturityValue) })
                                     : ppfStatus.yearsCompleted >= 7
-                                        ? `Partial withdrawal eligible — up to ${formatINR(ppfStatus.withdrawalAmount)} (50% of Year 4 balance).`
+                                        ? t('ppf.partialWithdrawalInsight', { amount: formatINR(ppfStatus.withdrawalAmount) })
                                         : ppfStatus.yearsCompleted >= 3
-                                            ? `Loan facility available — up to ${formatINR(ppfStatus.loanAmount)} (25% of Year 2 balance).`
+                                            ? t('ppf.loanFacilityInsight', { amount: formatINR(ppfStatus.loanAmount) })
                                             : undefined
                             }
                         />
