@@ -47,7 +47,26 @@ const QUICK_ADD_CATS = [
 function shiftDay(current: string, delta: number): string {
   const d = new Date(current + 'T00:00:00');
   d.setDate(d.getDate() + delta);
-  return d.toISOString().split('T')[0];
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** Build array of 7 days centered around a date (3 before, current, 3 after) */
+function buildWeekStrip(center: string): { date: string; dayName: string; dayNum: number; isToday: boolean }[] {
+  const today = getTodayStr();
+  const days: { date: string; dayName: string; dayNum: number; isToday: boolean }[] = [];
+  const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  for (let i = -3; i <= 3; i++) {
+    const dt = new Date(center + 'T00:00:00');
+    dt.setDate(dt.getDate() + i);
+    const dateStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+    days.push({
+      date: dateStr,
+      dayName: DAY_SHORT[dt.getDay()],
+      dayNum: dt.getDate(),
+      isToday: dateStr === today,
+    });
+  }
+  return days;
 }
 
 function typeColor(type: EntryType, et: ReturnType<typeof useExpenseTheme>): string {
@@ -117,6 +136,7 @@ export default function DailyTab() {
 
   const isToday = selectedDate === getTodayStr();
   const canGoForward = selectedDate < getTodayStr();
+  const weekStrip = useMemo(() => buildWeekStrip(selectedDate), [selectedDate]);
 
   const spentRatio = todayIncome > 0 ? Math.min((todayExpense / todayIncome) * 100, 100) : 0;
 
@@ -145,60 +165,91 @@ export default function DailyTab() {
     <div className="space-y-4 pb-24">
 
       {/* ════════════════════════════════════════════════════════
-          1. DATE NAVIGATOR
+          1. DATE NAVIGATOR — 7-Day Strip
           ════════════════════════════════════════════════════════ */}
-      <div className="flex items-center gap-3">
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={goPrev}
-          className="flex items-center justify-center flex-shrink-0"
-          style={{
-            width: 40, height: 40,
-            borderRadius: '50%',
-            backgroundColor: et.bgCard,
-            boxShadow: et.shadowSoft,
-          }}
-        >
-          <ChevronLeft size={18} style={{ color: et.textSecondary }} />
-        </motion.button>
-
-        <div
-          className="flex-1 text-center py-2 px-4 font-bold text-sm relative"
-          style={{
-            borderRadius: 999,
-            backgroundColor: et.bgCard,
-            boxShadow: et.shadowSoft,
-            color: et.textPrimary,
-          }}
-        >
-          {formatFullDate(selectedDate)}
-          {isToday && (
-            <span
-              className="ml-2 text-[10px] font-extrabold px-1.5 py-0.5 rounded-full inline-block"
-              style={{
-                backgroundColor: et.accentIncome + '20',
-                color: et.accentIncome,
-              }}
-            >
-              {t('expenses.today', 'Today')}
+      <div
+        className="rounded-2xl p-3"
+        style={{ backgroundColor: et.bgCard, boxShadow: et.shadowSoft }}
+      >
+        {/* Month + arrows row */}
+        <div className="flex items-center justify-between mb-3">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={goPrev}
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: et.bgPrimary }}
+          >
+            <ChevronLeft size={16} style={{ color: et.textSecondary }} />
+          </motion.button>
+          <div className="text-center">
+            <span className="text-xs font-bold" style={{ color: et.textPrimary }}>
+              {formatFullDate(selectedDate)}
             </span>
-          )}
+            {isToday && (
+              <span
+                className="ml-2 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full"
+                style={{ backgroundColor: et.accentIncome + '20', color: et.accentIncome }}
+              >
+                {t('expenses.today', 'Today')}
+              </span>
+            )}
+          </div>
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={goNext}
+            disabled={!canGoForward}
+            className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30"
+            style={{ backgroundColor: et.bgPrimary }}
+          >
+            <ChevronRight size={16} style={{ color: et.textSecondary }} />
+          </motion.button>
         </div>
 
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={goNext}
-          disabled={!canGoForward}
-          className="flex items-center justify-center flex-shrink-0 disabled:opacity-30"
-          style={{
-            width: 40, height: 40,
-            borderRadius: '50%',
-            backgroundColor: et.bgCard,
-            boxShadow: et.shadowSoft,
-          }}
-        >
-          <ChevronRight size={18} style={{ color: et.textSecondary }} />
-        </motion.button>
+        {/* 7-day strip */}
+        <div className="flex gap-1.5 justify-between">
+          {weekStrip.map(day => {
+            const isSelected = day.date === selectedDate;
+            const isFuture = day.date > getTodayStr();
+            return (
+              <motion.button
+                key={day.date}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => !isFuture && setSelectedDate(day.date)}
+                disabled={isFuture}
+                className="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl transition-all"
+                style={{
+                  backgroundColor: isSelected
+                    ? et.accentPrimary
+                    : day.isToday
+                    ? et.accentIncome + '15'
+                    : 'transparent',
+                  opacity: isFuture ? 0.3 : 1,
+                }}
+              >
+                <span
+                  className="text-[9px] font-medium"
+                  style={{ color: isSelected ? '#fff' : et.textMuted }}
+                >
+                  {day.dayName}
+                </span>
+                <span
+                  className="text-sm font-bold"
+                  style={{
+                    color: isSelected ? '#fff' : day.isToday ? et.accentIncome : et.textPrimary,
+                  }}
+                >
+                  {day.dayNum}
+                </span>
+                {day.isToday && !isSelected && (
+                  <div
+                    className="w-1 h-1 rounded-full"
+                    style={{ backgroundColor: et.accentIncome }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ════════════════════════════════════════════════════════

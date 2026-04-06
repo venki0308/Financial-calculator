@@ -1,12 +1,14 @@
-import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
+import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExpenseTheme } from '../theme/expenseTheme';
 import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import { migrateFromOldStore } from '../utils/expenseStorage';
+import { migrateFromOldStore, getAllCategories, getAllAccounts } from '../utils/expenseStorage';
+import { getTodayStr } from '../utils/expenseCalculations';
 
 // ─── LAZY-LOADED TAB COMPONENTS ─────────────────────────────
 const DailyTab = lazy(() => import('./expenses/DailyTab'));
@@ -15,6 +17,7 @@ const MonthlyTab = lazy(() => import('./expenses/MonthlyTab'));
 const YearlyTab = lazy(() => import('./expenses/YearlyTab'));
 const ReportsTab = lazy(() => import('./expenses/ReportsTab'));
 const BudgetTab = lazy(() => import('./expenses/BudgetTab'));
+const AddEntrySheet = lazy(() => import('../components/AddEntrySheet'));
 
 // ─── TAB DEFINITIONS ─────────────────────────────────────────
 const TABS = [
@@ -61,6 +64,12 @@ export default function ExpenseTracker() {
   const navigate = useNavigate();
   const theme = useExpenseTheme();
   const [activeTab, setActiveTab] = useState<TabId>('budget');
+  const [showAddSheet, setShowAddSheet] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Tabs that show the global FAB (Daily has its own)
+  const showFab = ['weekly', 'monthly', 'yearly'].includes(activeTab);
+
   // Migrate old data on first mount
   useEffect(() => {
     migrateFromOldStore();
@@ -201,6 +210,39 @@ export default function ExpenseTracker() {
           <DisclaimerComponent module="expense" />
         </div>
       </div>
+
+      {/* ── Global FAB for Weekly/Monthly/Yearly tabs ── */}
+      {showFab && (
+        <motion.button
+          whileTap={{ scale: 0.88 }}
+          whileHover={{ scale: 1.05 }}
+          onClick={() => setShowAddSheet(true)}
+          className="fixed bottom-20 right-5 z-[999] flex items-center justify-center"
+          style={{
+            width: 56, height: 56,
+            borderRadius: '50%',
+            backgroundColor: theme.accentPrimary,
+            boxShadow: '0 6px 24px rgba(0,0,0,0.18)',
+          }}
+        >
+          <Plus size={26} color="#fff" />
+        </motion.button>
+      )}
+
+      {/* ── Global Add Entry Sheet ── */}
+      {createPortal(
+        <AnimatePresence>
+          {showAddSheet && (
+            <Suspense fallback={null}>
+              <AddEntrySheet
+                onSave={() => { setShowAddSheet(false); setRefreshKey(k => k + 1); }}
+                onClose={() => setShowAddSheet(false)}
+              />
+            </Suspense>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </div>
   );
 }
