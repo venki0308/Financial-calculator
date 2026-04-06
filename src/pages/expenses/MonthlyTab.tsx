@@ -91,9 +91,7 @@ function isCurrentWeek(startDate: string, endDate: string): boolean {
 export default function MonthlyTab() {
   const { t } = useTranslation();
   const theme = useExpenseTheme();
-  const isDark = typeof window !== 'undefined' &&
-    (document.documentElement.classList.contains('dark') ||
-     window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const isDark = theme.isDark;
 
   const [monthOffset, setMonthOffset] = useState(0);
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('expenses');
@@ -425,7 +423,7 @@ export default function MonthlyTab() {
                   color: savingsRating.color,
                 }}
               >
-                {savingsRating.emoji} {savingsRating.label}
+                {savingsRating.emoji} {t(savingsRating.labelKey)}
               </span>
             </div>
           </div>
@@ -663,7 +661,7 @@ function BudgetVsActualCard({
             color: status.color,
           }}
         >
-          {status.label}
+          {t(status.labelKey)}
         </span>
       </div>
 

@@ -396,7 +396,11 @@ export default function BankAccounts() {
                     <Pencil size={14} />
                   </button>
                   <button
-                    onClick={() => handleDelete(acc.id)}
+                    onClick={() => {
+                      if (window.confirm(t('expenses.deleteAccountConfirm', 'Are you sure you want to delete this account?'))) {
+                        handleDelete(acc.id);
+                      }
+                    }}
                     className="p-2 rounded-xl border text-red-400"
                     style={{ borderColor: c.border }}
                   >

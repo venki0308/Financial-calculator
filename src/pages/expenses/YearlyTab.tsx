@@ -198,7 +198,7 @@ interface AnnualSummaryCardProps {
 
 function AnnualSummaryCard({ summary, theme, t }: AnnualSummaryCardProps) {
   const rating = getSavingsRating(summary.savingsRate);
-  const isDark = theme.bgPrimary === '#0F1923';
+  const isDark = theme.isDark;
 
   const items = [
     {
@@ -297,7 +297,7 @@ function AnnualSummaryCard({ summary, theme, t }: AnnualSummaryCardProps) {
               {t('expenses.annualSavingsRate')}
             </span>
             <span className="text-[9px] font-semibold" style={{ color: rating.color }}>
-              {rating.label}
+              {t(rating.labelKey)}
             </span>
           </div>
         </div>

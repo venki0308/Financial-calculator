@@ -26,12 +26,12 @@ import {
 } from '../../utils/expenseCalculations';
 
 // ── pre-filled fixed expense templates ────────────────────────
-const FIXED_TEMPLATES: { name: string; icon: string; category: string }[] = [
-  { name: 'Rent',              icon: '\u{1F3E0}', category: 'rent_housing' },
-  { name: 'Utilities',         icon: '\u{1F4A1}', category: 'utilities' },
-  { name: 'Mobile & Internet', icon: '\u{1F4F1}', category: 'subscription' },
-  { name: 'Insurance',         icon: '\u{1F6E1}', category: 'insurance' },
-  { name: 'EMI',               icon: '\u{1F3E6}', category: 'emi_loan' },
+const FIXED_TEMPLATES: { name: string; nameKey: string; icon: string; category: string }[] = [
+  { name: 'Rent',              nameKey: 'expenses.rent',              icon: '\u{1F3E0}', category: 'rent_housing' },
+  { name: 'Utilities',         nameKey: 'expenses.utilities',         icon: '\u{1F4A1}', category: 'utilities' },
+  { name: 'Mobile & Internet', nameKey: 'expenses.mobile',            icon: '\u{1F4F1}', category: 'subscription' },
+  { name: 'Insurance',         nameKey: 'expenses.insurance',         icon: '\u{1F6E1}', category: 'insurance' },
+  { name: 'EMI',               nameKey: 'expenses.emi',               icon: '\u{1F3E6}', category: 'emi_loan' },
 ];
 
 // ── helpers ───────────────────────────────────────────────────
@@ -60,11 +60,11 @@ const emptyBudget = (monthStr: string): Budget => ({
 
 // ── allocation bar segment colors ─────────────────────────────
 const ALLOC_COLORS = {
-  fixed:       { bg: '#DC2626', label: 'Fixed' },
-  variable:    { bg: '#F59E0B', label: 'Variable' },
-  invest:      { bg: '#7C3AED', label: 'Invest' },
-  unallocated: { bg: '#22C55E', label: 'Free' },
-  over:        { bg: '#EF4444', label: 'Over' },
+  fixed:       { bg: '#DC2626', labelKey: 'expenses.allocFixed' },
+  variable:    { bg: '#F59E0B', labelKey: 'expenses.allocVariable' },
+  invest:      { bg: '#7C3AED', labelKey: 'expenses.allocInvest' },
+  unallocated: { bg: '#22C55E', labelKey: 'expenses.allocFree' },
+  over:        { bg: '#EF4444', labelKey: 'expenses.allocOver' },
 };
 
 export default function BudgetTab() {
@@ -116,7 +116,7 @@ export default function BudgetTab() {
   const totalCategoryLimits = useMemo(() => getBudgetTotalCategoryLimits(budget), [budget]);
   const totalInvestments = useMemo(() => getBudgetTotalInvestments(budget), [budget]);
   const unallocated = useMemo(() => getBudgetUnallocated(budget), [budget]);
-  const available = budget.monthlyIncome - totalFixed;
+  const available = budget.monthlyIncome - totalFixed - totalInvestments;
 
   // ── allocation percentages ────────────────────────────────
   const allocPcts = useMemo(() => {
@@ -293,7 +293,9 @@ export default function BudgetTab() {
               animate={{ scale: 1 }}
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
               style={{
-                backgroundColor: isBudgetSet ? '#F0FDF4' : '#FFF7ED',
+                backgroundColor: isBudgetSet
+                  ? (theme.isDark ? '#052e16' : '#F0FDF4')
+                  : (theme.isDark ? '#451a03' : '#FFF7ED'),
                 color: isBudgetSet ? '#16A34A' : '#D97706',
               }}
             >
@@ -561,7 +563,7 @@ export default function BudgetTab() {
                 style={{ borderColor: theme.borderSubtle }}
               >
                 {budget.fixedExpenses.map(fe => {
-                  const template = FIXED_TEMPLATES.find(t => t.name === fe.name);
+                  const template = FIXED_TEMPLATES.find(tp => tp.name === fe.name);
                   const icon = template?.icon ?? '\u{1F4CB}';
                   const isCustom = !template;
                   return (
@@ -574,7 +576,7 @@ export default function BudgetTab() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] font-semibold mb-1 truncate" style={{ color: theme.textSecondary }}>
-                          {fe.name}
+                          {template ? t(template.nameKey) : fe.name}
                         </p>
                         <div
                           className="flex items-center gap-1.5 rounded-xl px-3 py-2 border"

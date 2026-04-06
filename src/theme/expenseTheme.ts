@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════════════
 // FINCALIX EXPENSE TRACKER — "WARM WEALTH" DESIGN SYSTEM
-// Inspired by: Copilot Money's polish + Indian warmth
 // ═══════════════════════════════════════════════════════════════
+
+import { useSettingsStore } from '../store/useSettingsStore';
 
 export const expenseTheme = {
   light: {
@@ -22,6 +23,7 @@ export const expenseTheme = {
     shadowSoft: '0 2px 12px rgba(0,0,0,0.06)',
     shadowCard: '0 4px 24px rgba(0,0,0,0.08)',
     borderSubtle: 'rgba(0,0,0,0.06)',
+    isDark: false,
   },
   dark: {
     bgPrimary: '#0F1923',
@@ -41,16 +43,16 @@ export const expenseTheme = {
     shadowSoft: '0 2px 12px rgba(0,0,0,0.2)',
     shadowCard: '0 4px 24px rgba(0,0,0,0.3)',
     borderSubtle: 'rgba(255,255,255,0.08)',
+    isDark: true,
   },
 };
 
 export type ExpenseThemeMode = typeof expenseTheme.light;
 
 export function useExpenseTheme(): ExpenseThemeMode {
-  const isDark = typeof window !== 'undefined' &&
-    (document.documentElement.classList.contains('dark') ||
-     window.matchMedia('(prefers-color-scheme: dark)').matches);
-  return isDark ? expenseTheme.dark : expenseTheme.light;
+  // Use the app's actual dark mode setting from Zustand store
+  const darkMode = useSettingsStore(s => s.darkMode);
+  return darkMode ? expenseTheme.dark : expenseTheme.light;
 }
 
 // Entry type colors
@@ -61,45 +63,44 @@ export const TYPE_COLORS = {
   transfer: { light: '#0284c7', dark: '#38bdf8', bg: { light: '#f0f9ff', dark: '#0c4a6e' } },
 };
 
-// Greeting based on time of day
-export function getGreeting(name?: string): string {
+// Greeting keys (return i18n keys, not hardcoded text)
+export function getGreetingKey(): string {
   const h = new Date().getHours();
-  const n = name ? `, ${name}` : '';
-  if (h >= 6 && h < 12) return `Good morning${n}!`;
-  if (h >= 12 && h < 18) return `Good afternoon${n}!`;
-  if (h >= 18 && h < 22) return `Good evening${n}!`;
-  return `Late night expenses?`;
+  if (h >= 6 && h < 12) return 'expenses.greetingMorning';
+  if (h >= 12 && h < 18) return 'expenses.greetingAfternoon';
+  if (h >= 18 && h < 22) return 'expenses.greetingEvening';
+  return 'expenses.greetingNight';
 }
 
-// Savings rate rating
-export function getSavingsRating(rate: number): { label: string; emoji: string; color: string } {
-  if (rate >= 30) return { label: 'Excellent', emoji: '🌟', color: '#16A34A' };
-  if (rate >= 20) return { label: 'Good', emoji: '✅', color: '#22c55e' };
-  if (rate >= 10) return { label: 'Moderate', emoji: '🟡', color: '#D97706' };
-  return { label: 'Needs Improvement', emoji: '⚠️', color: '#DC2626' };
+// Savings rate rating (return keys, not hardcoded labels)
+export function getSavingsRating(rate: number): { labelKey: string; emoji: string; color: string } {
+  if (rate >= 30) return { labelKey: 'expenses.ratingExcellent', emoji: '🌟', color: '#16A34A' };
+  if (rate >= 20) return { labelKey: 'expenses.ratingGood', emoji: '✅', color: '#22c55e' };
+  if (rate >= 10) return { labelKey: 'expenses.ratingModerate', emoji: '🟡', color: '#D97706' };
+  return { labelKey: 'expenses.ratingNeedsWork', emoji: '⚠️', color: '#DC2626' };
 }
 
-// Budget status
-export function getBudgetStatus(pct: number): { label: string; color: string; bgColor: string } {
-  if (pct > 100) return { label: 'Over budget', color: '#DC2626', bgColor: '#FEE2E2' };
-  if (pct >= 90) return { label: 'Almost reached', color: '#EA580C', bgColor: '#FFF7ED' };
-  if (pct >= 70) return { label: 'Watch out', color: '#D97706', bgColor: '#FFFBEB' };
-  return { label: 'On track', color: '#16A34A', bgColor: '#F0FDF4' };
+// Budget status (return keys)
+export function getBudgetStatus(pct: number): { labelKey: string; color: string; bgColor: string } {
+  if (pct > 100) return { labelKey: 'expenses.statusOverBudget', color: '#DC2626', bgColor: '#FEE2E2' };
+  if (pct >= 90) return { labelKey: 'expenses.statusAlmostReached', color: '#EA580C', bgColor: '#FFF7ED' };
+  if (pct >= 70) return { labelKey: 'expenses.statusWatchOut', color: '#D97706', bgColor: '#FFFBEB' };
+  return { labelKey: 'expenses.statusOnTrack', color: '#16A34A', bgColor: '#F0FDF4' };
 }
 
 // Percent change with zero handling
 export function formatChange(current: number, previous: number): { display: string; color: string; isNew: boolean } {
-  if (previous === 0) return { display: 'New', color: '#3b82f6', isNew: true };
+  if (previous === 0) return { display: 'new', color: '#3b82f6', isNew: true };
   const pct = ((current - previous) / previous) * 100;
   const isDown = pct < 0;
   return {
     display: `${isDown ? '' : '+'}${pct.toFixed(0)}%`,
-    color: isDown ? '#16A34A' : '#DC2626', // spending down = good
+    color: isDown ? '#16A34A' : '#DC2626',
     isNew: false,
   };
 }
 
-// Tracking streak (consecutive days with entries)
+// Tracking streak
 export function calculateStreak(entries: { date: string }[]): number {
   if (entries.length === 0) return 0;
   const dates = new Set(entries.map(e => e.date));
@@ -108,9 +109,9 @@ export function calculateStreak(entries: { date: string }[]): number {
   for (let i = 0; i < 365; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
-    const ds = d.toISOString().split('T')[0];
+    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     if (dates.has(ds)) streak++;
-    else if (i > 0) break; // allow today to be missing
+    else if (i > 0) break;
   }
   return streak;
 }

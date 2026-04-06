@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useExpenseTheme, TYPE_COLORS, getGreeting, calculateStreak } from '../../theme/expenseTheme';
+import { useExpenseTheme, TYPE_COLORS, getGreetingKey, calculateStreak } from '../../theme/expenseTheme';
 import type { Entry, EntryType, PaymentMethod, Category } from '../../types/expense';
 import {
   DEFAULT_EXPENSE_CATEGORIES,
@@ -108,7 +108,7 @@ export default function DailyTab() {
     () => dayEntries.filter(e => e.type === 'investment').reduce((s, e) => s + e.amount, 0),
     [dayEntries],
   );
-  const todayNet = todayIncome - todayExpense - todayInvestment;
+  const todayNet = todayIncome - todayExpense;
 
   const filteredEntries = useMemo(() => {
     if (subTab === 'all') return dayEntries;
@@ -139,7 +139,7 @@ export default function DailyTab() {
     allCategories.find(cat => cat.id === entry.category);
 
   /* ── greeting ── */
-  const greeting = getGreeting();
+  const greeting = t(getGreetingKey());
 
   return (
     <div className="space-y-4 pb-24">
@@ -211,7 +211,7 @@ export default function DailyTab() {
           className="px-1"
         >
           <p className="text-base font-bold" style={{ color: et.textPrimary }}>
-            {t('expenses.greeting', greeting)}
+            {greeting}
           </p>
           {streak > 0 && (
             <div className="flex items-center gap-1.5 mt-1">
@@ -795,7 +795,7 @@ function AddEntrySheet({ et, t, defaultDate, categories, accounts, onSave, onClo
                       border: `1px solid ${currentTypeColor}25`,
                     }}
                   >
-                    {t('expenses.quickAmount', '+₹{{amount}}', { amount: val.toLocaleString('en-IN') })}
+                    {`+₹${val.toLocaleString('en-IN')}`}
                   </button>
                 ))}
               </div>

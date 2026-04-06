@@ -66,6 +66,14 @@ export default function WeeklyTab() {
 
   const isCurrentWeek = weekOffset === 0;
 
+  /* ── daily average divisor ── */
+  const dailyAvgDivisor = useMemo(() => {
+    if (weekOffset < 0) return 7;
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    return Math.max(dayOfWeek === 0 ? 7 : dayOfWeek, 1);
+  }, [weekOffset]);
+
   /* ── week ranges ── */
   const week = useMemo(() => getWeekRange(weekOffset), [weekOffset]);
   const prevWeek = useMemo(() => getWeekRange(weekOffset - 1), [weekOffset]);
@@ -233,7 +241,7 @@ export default function WeeklyTab() {
             {change.isNew ? (
               <>
                 <TrendingUp size={12} />
-                {change.display}
+                {t('expenses.new')}
               </>
             ) : (
               <>
@@ -265,14 +273,14 @@ export default function WeeklyTab() {
             },
             {
               label: t('expenses.dailyAverage', 'Daily Avg'),
-              value: fmtINR(summary.totalExpenses / 7),
+              value: fmtINR(summary.totalExpenses / dailyAvgDivisor),
               color: et.accentGold,
               bg: `${et.accentGold}12`,
               icon: <BarChart3 size={14} />,
             },
             {
               label: t('expenses.netSaved', 'Net Saved'),
-              value: fmtINR(Math.abs(summary.netSavings)),
+              value: fmtINR(summary.netSavings),
               color: summary.netSavings >= 0 ? et.accentIncome : et.accentExpense,
               bg: summary.netSavings >= 0 ? et.bgIncome : et.bgExpense,
               icon: <PiggyBank size={14} />,

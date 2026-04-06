@@ -202,7 +202,7 @@ export const migrateFromOldStore = (): boolean => {
       id: old.id || generateEntryId(),
       type: old.entryType === 'investment' ? 'investment' : old.entryType === 'income' ? 'income' : 'expense',
       amount: Math.abs(old.amount || 0),
-      date: old.date ? old.date.split('T')[0] : new Date().toISOString().split('T')[0],
+      date: old.date ? old.date.split('T')[0] : (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })(),
       category: normalizeCategoryId(old.category || 'other_expense'),
       description: old.description || '',
       paymentMethod: normalizePaymentMethod(old.paymentMethod),

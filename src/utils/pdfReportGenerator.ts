@@ -14,6 +14,7 @@ import {
   formatFullDate,
   MONTH_NAMES,
 } from './expenseCalculations';
+import { getCategoryById } from './expenseStorage';
 
 // ─── CATEGORY COLORS ─────────────────────────────────────────
 
@@ -76,7 +77,7 @@ function buildDailyConfig(
     projectionRows: entries.map((e, i) => [
       i + 1,
       e.type.charAt(0).toUpperCase() + e.type.slice(1),
-      e.category,
+      getCategoryById(e.category)?.name || e.category,
       e.description || '—',
       fmtINR(e.amount),
     ]),
