@@ -38,13 +38,20 @@ const PPF_WITHDRAWAL_YEAR = 7;
 interface PPFRow { year: number; contribution: number; opening: number; interest: number; closing: number; }
 
 function computePPF(annualContribution: number, rate: number, years: number): PPFRow[] {
+    // PPF: monthly interest on minimum balance between 5th and month-end,
+    // compounded annually (credited March 31). Assumes deposit at start of April.
+    const monthlyRate = rate / 100 / 12;
     const rows: PPFRow[] = [];
     let balance = 0;
     for (let y = 1; y <= years; y++) {
         const opening = balance;
-        const interest = (opening + annualContribution) * rate / 100;
-        balance = opening + annualContribution + interest;
-        rows.push({ year: y, contribution: annualContribution, opening, interest: Math.round(interest), closing: Math.round(balance) });
+        balance += annualContribution;
+        let yearInterest = 0;
+        for (let m = 0; m < 12; m++) {
+            yearInterest += balance * monthlyRate;
+        }
+        balance += yearInterest;
+        rows.push({ year: y, contribution: annualContribution, opening, interest: Math.round(yearInterest), closing: Math.round(balance) });
     }
     return rows;
 }

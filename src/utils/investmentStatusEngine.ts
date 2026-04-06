@@ -204,13 +204,15 @@ export function calculatePpfStatus(input: PpfStatusInput): PpfStatus {
     const currentYear = Math.min(15, yearsCompleted + 1);
     const matDate = new Date(open); matDate.setFullYear(matDate.getFullYear() + 15);
     const daysToMaturity = Math.max(0, daysBetween(t, matDate));
-    const r = input.rate / 100;
-    // Year-by-year calculation
+    const monthlyRate = input.rate / 100 / 12;
+    // Year-by-year calculation — PPF uses monthly interest, compounded annually
     let balance = 0;
     const yearEndBalances: number[] = [0];
     for (let y = 1; y <= Math.min(yearsCompleted, 15); y++) {
         balance += input.yearlyDeposit;
-        balance *= (1 + r);
+        let yearInt = 0;
+        for (let m = 0; m < 12; m++) { yearInt += balance * monthlyRate; }
+        balance += yearInt;
         yearEndBalances.push(balance);
     }
     const totalDeposited = Math.min(yearsCompleted, 15) * input.yearlyDeposit;
@@ -219,7 +221,9 @@ export function calculatePpfStatus(input: PpfStatusInput): PpfStatus {
     let mat = 0;
     for (let y = 1; y <= 15; y++) {
         mat += input.yearlyDeposit;
-        mat *= (1 + r);
+        let yInt = 0;
+        for (let m = 0; m < 12; m++) { yInt += mat * monthlyRate; }
+        mat += yInt;
     }
     // Loan: year 3-6, 25% of year-2 balance
     const loanEligible = yearsCompleted >= 3 && yearsCompleted <= 6;
@@ -268,21 +272,26 @@ export function calculateSsyStatus(input: SsyStatusInput): SsyStatus {
     const depositYearsRemaining = Math.max(0, 15 - accountAge);
     const matDate = new Date(open); matDate.setFullYear(matDate.getFullYear() + 21);
     const daysToMaturity = Math.max(0, daysBetween(t, matDate));
-    const r = input.rate / 100;
+    const monthlyRate = input.rate / 100 / 12;
     let balance = 0;
     const investYears = 15;
     const maturityYears = 21;
     const yearsToCalc = Math.min(accountAge, maturityYears);
+    // SSY: monthly interest calculation, compounded annually
     for (let y = 1; y <= yearsToCalc; y++) {
         if (y <= investYears) balance += input.yearlyDeposit;
-        balance *= (1 + r);
+        let yearInt = 0;
+        for (let m = 0; m < 12; m++) { yearInt += balance * monthlyRate; }
+        balance += yearInt;
     }
     const totalDeposited = Math.min(accountAge, investYears) * input.yearlyDeposit;
     const interestEarned = balance - totalDeposited;
     let mat = 0;
     for (let y = 1; y <= maturityYears; y++) {
         if (y <= investYears) mat += input.yearlyDeposit;
-        mat *= (1 + r);
+        let yInt = 0;
+        for (let m = 0; m < 12; m++) { yInt += mat * monthlyRate; }
+        mat += yInt;
     }
     const withdrawalEligible = girlAge >= 18;
     const withdrawalAmount = withdrawalEligible ? Math.round(balance * 0.5) : 0;

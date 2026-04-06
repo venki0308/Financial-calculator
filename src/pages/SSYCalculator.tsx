@@ -53,7 +53,13 @@ export default function SSYCalculator() {
     const maturityYears = 21;
 
     const result = useMemo(() => {
-        const r = rate / 100;
+        // SSY Interest Calculation — matches India Post / bank method:
+        // Interest is calculated MONTHLY on minimum balance between
+        // 5th and last day of each month, compounded annually (credited March 31).
+        // Assumption: deposit made on April 1st (start of FY) each year.
+        // This gives ~12 months of interest per deposit year.
+        // Real interest depends on exact deposit date within each month.
+        const monthlyRate = rate / 100 / 12;
         const timeline: YearWise[] = [];
         let balance = 0;
         let cumDeposit = 0;
@@ -62,15 +68,25 @@ export default function SSYCalculator() {
         for (let i = 1; i <= maturityYears; i++) {
             const deposit = i <= investYears ? effectiveAnnual : 0;
             cumDeposit += deposit;
-            balance += deposit;
-            const interest = balance * r;
-            cumInterest += interest;
-            balance += interest;
+
+            // Simulate 12 months: deposit added at start of April (month 1)
+            let yearInterest = 0;
+            for (let m = 1; m <= 12; m++) {
+                // Deposit credited at month 1 (April)
+                if (m === 1) balance += deposit;
+                // Monthly interest on current balance
+                const mInt = balance * monthlyRate;
+                yearInterest += mInt;
+            }
+            // Interest compounded annually (credited at year end / March 31)
+            cumInterest += yearInterest;
+            balance += yearInterest;
+
             timeline.push({
                 year: i,
                 age: childAge + i,
                 deposit,
-                interest: Math.round(interest),
+                interest: Math.round(yearInterest),
                 balance: Math.round(balance),
                 cumDeposit,
                 cumInterest: Math.round(cumInterest),

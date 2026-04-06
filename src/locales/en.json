@@ -3186,7 +3186,7 @@
         },
         "ssy": {
             "title": "SSY Interest",
-            "text": "Sukanya Samriddhi Yojana interest rates are reviewed and set quarterly by the Government of India. Current rates may differ from those used in this calculation."
+            "text": "SSY interest is calculated monthly on the minimum balance between the 5th and last day of each month, compounded annually. This calculator assumes deposits at the start of each financial year (April 1). Your actual interest may differ based on when you make deposits — deposits made later in the year earn less interest. Rates are set quarterly by the Government of India."
         },
         "nsc": {
             "title": "NSC Rates",
@@ -3231,7 +3231,28 @@
         "cibil": {
             "title": "CIBIL Score Guide",
             "text": "This guide is educational and based on RBI guidelines and industry data. Actual loan approval and interest rates depend on each lender's internal policy, your income, employment, existing debts, and other factors. CIBIL score is maintained by TransUnion CIBIL Limited — check cibil.com for your official score. FinCalix does not provide credit advice or access your CIBIL score."
-        }
+        },
+        "welcome": "Welcome to FinCalix",
+        "subtitle": "Please read before continuing",
+        "readTerms": "Please read and accept the following terms to continue using the app.",
+        "estimatesTitle": "Estimates Only",
+        "estimatesBody": "All calculations, projections, and results provided by FinCalix are mathematical estimates for informational and educational purposes only. They should not be considered as formal financial advice.",
+        "expensePrivacyTitle": "Expense Tracker Privacy",
+        "expensePrivacyBody": "All expense and budget data is stored entirely on your device. We do not collect, transmit, or store any of your financial information on external servers.",
+        "govSchemesTitle": "Government Schemes",
+        "govSchemesBody": "Information about government schemes (PPF, NPS, SSY, SCSS, etc.) is for general awareness. Eligibility criteria and benefits are subject to change. Always verify details on official government portals.",
+        "advisorTitle": "Professional Advice",
+        "advisorBody": "For important financial decisions such as investments, loans, or tax planning, please consult a certified financial planner or chartered accountant.",
+        "loanToolsTitle": "Loan Tools",
+        "loanToolsBody": "EMI calculators, loan comparisons, and amortization schedules are based on standard formulas. Actual loan terms depend on your credit profile, lender policies, and prevailing market rates.",
+        "utilityTitle": "Utility Tools",
+        "utilityBody": "Utility features like date calculators, time zone tools, and scientific calculators are for general informational use. Results may vary due to system-level precision differences.",
+        "dataPrivacyTitle": "Data Privacy",
+        "dataPrivacyBody": "FinCalix operates completely offline. We do not collect personal data, track usage, or share any information with third parties. Your privacy is fully protected.",
+        "generalNoteTitle": "General Note",
+        "generalNoteBody": "By continuing, you acknowledge that FinCalix is a tool for estimation and education. All financial decisions should be made after independent research and professional consultation.",
+        "acceptBtn": "I Accept & Continue",
+        "scrollPrompt": "Please scroll down to read all terms"
     },
     "od": {
         "title": "Overdraft Calculator",
@@ -5572,5 +5593,18 @@
         "message": "FinCalix operates completely offline. We do not collect, store, or share your financial data or personal information. Everything stays on your device.",
         "viewPolicy": "View Policy",
         "accept": "I Understand"
+    },
+    "update": {
+        "required": "Update Required",
+        "updateNowFree": "Update Now — It's Free",
+        "mustUpdate": "You must update to continue using FinCalix.",
+        "updateNow": "Update Now"
+    },
+    "share": {
+        "calculatedWith": "Calculated with FinCalix",
+        "dialogTitle": "Share Your Result",
+        "share": "Share",
+        "copied": "Copied!",
+        "copy": "Copy"
     }
 }

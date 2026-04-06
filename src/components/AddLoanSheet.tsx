@@ -127,11 +127,11 @@ export default function AddLoanSheet({ open, onClose, onSaved, editLoan, prefill
                     <motion.div
                         initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] overflow-y-auto rounded-t-3xl shadow-2xl"
+                        className="fixed inset-x-0 bottom-0 z-50 max-h-[90vh] flex flex-col rounded-t-3xl shadow-2xl"
                         style={{ backgroundColor: c.card }}
                     >
                         {/* Handle */}
-                        <div className="sticky top-0 z-10 pt-3 pb-2 px-5 flex items-center justify-between" style={{ backgroundColor: c.card }}>
+                        <div className="shrink-0 pt-3 pb-2 px-5 flex items-center justify-between" style={{ backgroundColor: c.card }}>
                             <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600 mx-auto absolute left-1/2 -translate-x-1/2 top-2" />
                             <h2 className="text-base font-bold" style={{ color: c.text }}>
                                 {editLoan ? t('myLoans.editLoan') : t('myLoans.addLoan')}
@@ -141,7 +141,7 @@ export default function AddLoanSheet({ open, onClose, onSaved, editLoan, prefill
                             </button>
                         </div>
 
-                        <div className="px-5 pb-6 space-y-4">
+                        <div className="px-5 pb-6 space-y-4 overflow-y-auto flex-1">
                             {/* Nickname */}
                             <div>
                                 <label className="text-xs font-bold mb-1.5 block" style={{ color: c.textSecondary }}>{t('myLoans.loanNickname')} *</label>
@@ -282,8 +282,8 @@ export default function AddLoanSheet({ open, onClose, onSaved, editLoan, prefill
 
                         </div>
 
-                        {/* Sticky Buttons */}
-                        <div className="sticky bottom-0 left-0 right-0 px-5 py-4 border-t flex gap-3" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                        {/* Fixed Buttons */}
+                        <div className="shrink-0 px-5 py-4 pb-8 border-t flex gap-3" style={{ backgroundColor: c.card, borderColor: c.border }}>
                             <button onClick={onClose}
                                 className="flex-1 py-3 rounded-xl text-sm font-bold border"
                                 style={{ borderColor: c.border, color: c.textSecondary }}
