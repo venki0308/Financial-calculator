@@ -1,499 +1,286 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Download, TrendingUp, TrendingDown, PiggyBank, Lightbulb } from 'lucide-react';
+import { Download, Calendar, CalendarDays, BarChart3, TrendingUp, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
-import { getReportInsights } from '../../services/InsightEngine';
-import { useAppColors } from '../../theme/useAppColors';
-import { getCategoryDisplayName } from '../../utils/categoryUtils';
 import {
-    Chart as ChartJS, ArcElement, Tooltip, Legend,
-    CategoryScale, LinearScale, PointElement, LineElement,
-    BarElement, Title,
-} from 'chart.js';
-import { Pie, Line, Bar } from 'react-chartjs-2';
-import { exportExpenseReportPDF, ExpenseReportData } from '../../utils/exportUtils';
+  calculateSummary,
+  getMonthRange,
+  getYearRange,
+  fmtINR,
+  fmtPct,
+  MONTH_NAMES,
+  getTodayStr,
+  getWeekRange,
+} from '../../utils/expenseCalculations';
+import {
+  getEntriesForMonth,
+  getEntriesForYear,
+  getEntriesForDateRange,
+  getEntriesForDate,
+  getBudgetForMonth,
+  getAllAccounts,
+} from '../../utils/expenseStorage';
+import { generateExpenseReport } from '../../utils/pdfReportGenerator';
 
-ChartJS.register(
-    ArcElement, Tooltip, Legend,
-    CategoryScale, LinearScale, PointElement, LineElement,
-    BarElement, Title
-);
+// ─── TYPES ───────────────────────────────────────────────────
 
-const COLORS = [
-    '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444',
-    '#3b82f6', '#ec4899', '#84cc16', '#f97316',
-];
+interface MonthSnapshot {
+  month: string;
+  label: string;
+  income: number;
+  expenses: number;
+  savings: number;
+  savingsRate: number;
+  hasData: boolean;
+}
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+// ─── COMPONENT ───────────────────────────────────────────────
 
 export default function ReportsTab() {
-    const { t } = useTranslation();
-    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, netWorthHistory, insights, subscriptions } = useBudgetTrackerStore();
-    const c = useAppColors();
+  const { t } = useTranslation();
+  const [generating, setGenerating] = useState<string | null>(null);
 
-    const pieChartRef = useRef<any>(null);
+  // Current period info
+  const today = getTodayStr();
+  const currentMonthRange = getMonthRange(0);
+  const currentWeekRange = getWeekRange(0);
+  const currentYearRange = getYearRange(0);
 
-    const now = new Date();
-    const currentMonth = now.getMonth() + 1;
-    const currentYear = now.getFullYear();
+  // ── Last 6 months data ──────────────────────────────────────
 
-    const [selectedYear, setSelectedYear] = useState(currentYear);
-    const [selectedMonth, setSelectedMonth] = useState(currentMonth);
-    const [period, setPeriod] = useState<'month' | 'year'>('month');
+  const last6Months: MonthSnapshot[] = useMemo(() => {
+    const snapshots: MonthSnapshot[] = [];
+    for (let i = 0; i < 6; i++) {
+      const range = getMonthRange(-i);
+      const entries = getEntriesForMonth(range.year, range.month);
+      const summary = calculateSummary(entries);
+      snapshots.push({
+        month: range.monthStr,
+        label: `${MONTH_NAMES[range.month - 1]} ${range.year}`,
+        income: summary.totalIncome,
+        expenses: summary.totalExpenses,
+        savings: summary.netSavings,
+        savingsRate: summary.savingsRate,
+        hasData: entries.length > 0,
+      });
+    }
+    return snapshots;
+  }, []);
 
-    const monthEntries = useMemo(
-        () => getEntriesByMonth(selectedYear, selectedMonth),
-        [entries, selectedYear, selectedMonth]
-    );
+  const monthsWithData = last6Months.filter(m => m.hasData);
 
-    const yearEntries = useMemo(
-        () => entries.filter((e) => new Date(e.date).getFullYear() === selectedYear),
-        [entries, selectedYear]
-    );
+  // ── Report generators ───────────────────────────────────────
 
-    // Architect fix: fixed expenses are a recurring monthly BUDGET.
-    // They should only apply to the CURRENT month, or to past/future months
-    // that have actual daily entries (confirming activity happened).
-    // For months with zero daily entries that aren't the current month → treat as no data.
-    const isCurrentMonth = selectedMonth === currentMonth && selectedYear === currentYear;
-    const isCurrentYear = selectedYear === currentYear;
-    const activeEntries = period === 'month' ? monthEntries : yearEntries;
-
-    const totalBudgetSet = getTotalFixed() + Object.values(categoryBudgets as unknown as Record<string, number>).reduce((a, b) => a + b, 0);
-
-    // Strict logic: 
-    // - If current month, show data if income or fixed budget is set.
-    // - If NOT current month, show ONLY if there are ACTUAL daily entries.
-    const hasMonthData = (isCurrentMonth && (monthlyIncome > 0 || totalBudgetSet > 0)) || monthEntries.length > 0;
-    const hasYearData = yearEntries.length > 0 || (isCurrentYear && (monthlyIncome > 0 || totalBudgetSet > 0 || subscriptions.length > 0));
-    const hasData = period === 'month' ? hasMonthData : hasYearData;
-
-    // Subscriptions: calculate monthly equivalent
-    const activeSubsMonthly = useMemo(() => {
-        return subscriptions
-            .filter(s => s.isActive)
-            .reduce((sum, s) => {
-                if (s.billingCycle === 'monthly') return sum + s.amount;
-                if (s.billingCycle === 'quarterly') return sum + s.amount / 3;
-                if (s.billingCycle === 'yearly') return sum + s.amount / 12;
-                return sum;
-            }, 0);
-    }, [subscriptions]);
-
-    const effectiveFixed = period === 'month'
-        ? (hasMonthData ? getTotalFixed() : 0)
-        : (hasYearData ? getTotalFixed() * 12 : 0);
-    const totalFixed = effectiveFixed;
-    const totalDaily = activeEntries.filter(e => (e.entryType || "expense") === "expense").reduce((s, e) => s + e.amount, 0);
-    const totalSubs = period === 'month' ? activeSubsMonthly : activeSubsMonthly * 12;
-    const totalExpenses = totalFixed + totalDaily + (hasData ? totalSubs : 0);
-    const income = (period === 'month' ? (hasMonthData ? monthlyIncome : 0) : (hasYearData ? monthlyIncome * 12 : 0));
-    const savings = income - totalExpenses;
-    const savingsRate = income > 1 ? (savings / income) * 100 : 0;
-
-    // Category breakdown
-    const categoryData = useMemo(() => {
-        const map: Record<string, number> = {};
-        activeEntries.filter(e => (e.entryType || 'expense') === 'expense').forEach((e) => {
-            const cat = e.category || e.categoryId || 'others';
-            map[cat] = (map[cat] || 0) + e.amount;
-        });
-        return Object.entries(map)
-            .map(([id, total]) => {
-                const cat = EXPENSE_CATEGORIES.find((c) => c.id === id);
-                return { id, name: getCategoryDisplayName(id), icon: cat?.icon || '📌', total };
-            })
-            .sort((a, b) => b.total - a.total);
-    }, [activeEntries, t]);
-
-    // Daily Trend
-    const dailyTrend = useMemo(() => {
-        const map: Record<string, number> = {};
-        monthEntries.filter(e => (e.entryType || 'expense') === 'expense').forEach((e) => {
-            const day = new Date(e.date).getDate().toString().padStart(2, '0');
-            map[day] = (map[day] || 0) + e.amount;
-        });
-        const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
-        return Array.from({ length: daysInMonth }, (_, i) => {
-            const day = (i + 1).toString().padStart(2, '0');
-            return { day, amount: map[day] || 0 };
-        });
-    }, [monthEntries, selectedYear, selectedMonth]);
-
-    // Budget vs Actual
-    const budgetVsActual = useMemo(() => {
-        return EXPENSE_CATEGORIES.map((cat) => {
-            const budget = (categoryBudgets as unknown as Record<string, number>)[cat.id] || 0;
-            const actual = activeEntries.filter((e) => (e.entryType || 'expense') === 'expense' && (e.category || e.categoryId) === cat.id).reduce((s, e) => s + e.amount, 0);
-            return { category: cat.icon + ' ' + getCategoryDisplayName(cat.id).split(' ')[0], budget, actual };
-        }).filter((row) => row.budget > 0 || row.actual > 0);
-    }, [activeEntries, categoryBudgets, t]);
-
-    // 6-Month Savings Trend
-    const savingsTrend = useMemo(() => {
-        const trend = [];
-        for (let i = 5; i >= 0; i--) {
-            const d = new Date(currentYear, currentMonth - 1 - i, 1);
-            const y = d.getFullYear();
-            const m = d.getMonth() + 1;
-            const msEntries = entries.filter((e) => {
-                const date = new Date(e.date);
-                return date.getFullYear() === y && date.getMonth() + 1 === m;
-            });
-            const hasMonthActive = (y === currentYear && m === currentMonth) || msEntries.length > 0;
-            const spent = msEntries.filter(e => (e.entryType || 'expense') === 'expense').reduce((s, e) => s + e.amount, 0) + (hasMonthActive ? getTotalFixed() : 0);
-            const inc = hasMonthActive ? monthlyIncome : 0;
-            const saved = inc - spent;
-            trend.push({ month: MONTHS[m - 1], saved, hasData: hasMonthActive });
+  const handleGenerate = async (type: 'daily' | 'weekly' | 'monthly' | 'annual') => {
+    setGenerating(type);
+    try {
+      switch (type) {
+        case 'daily': {
+          const entries = getEntriesForDate(today);
+          const dateLabel = new Date().toLocaleDateString('en-IN', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+          });
+          await generateExpenseReport('daily', entries, undefined, undefined, dateLabel);
+          break;
         }
-        return trend;
-    }, [entries, currentMonth, currentYear, monthlyIncome, getTotalFixed]);
-
-    const maxCategoryTotal = categoryData.length > 0 ? categoryData[0].total : 0;
-
-    // Report-level insights (Part 7)
-    const reportInsights = useMemo(() => {
-        if (!hasData || categoryData.length === 0) return [];
-        return getReportInsights(entries, selectedMonth, selectedYear, income, totalFixed);
-    }, [entries, selectedMonth, selectedYear, income, totalFixed, hasData, categoryData.length]);
-
-    const handleDownloadPDF = async () => {
-        let chartImage: string | undefined;
-        if (pieChartRef.current) {
-            chartImage = pieChartRef.current.toBase64Image();
+        case 'weekly': {
+          const entries = getEntriesForDateRange(currentWeekRange.start, currentWeekRange.end);
+          await generateExpenseReport('weekly', entries, undefined, undefined, currentWeekRange.label);
+          break;
         }
+        case 'monthly': {
+          const entries = getEntriesForMonth(currentMonthRange.year, currentMonthRange.month);
+          const budget = getBudgetForMonth(currentMonthRange.monthStr);
+          const accounts = getAllAccounts();
+          await generateExpenseReport('monthly', entries, budget, accounts, currentMonthRange.label);
+          break;
+        }
+        case 'annual': {
+          const entries = getEntriesForYear(currentYearRange.year);
+          await generateExpenseReport('annual', entries, undefined, undefined, `Year ${currentYearRange.year}`);
+          break;
+        }
+      }
+    } catch (err) {
+      console.error('Report generation failed:', err);
+    } finally {
+      setGenerating(null);
+    }
+  };
 
-        const reportData: ExpenseReportData = {
-            periodLabel: period === 'month' ? `${MONTHS[selectedMonth - 1]} ${selectedYear}` : `${selectedYear}`,
-            income,
-            expenses: totalExpenses,
-            savings,
-            savingsRate,
-            categoryData: categoryData.map((c) => ({
-                name: `${c.icon} ${c.name}`,
-                total: c.total,
-                percentage: totalDaily > 0 ? (c.total / totalDaily) * 100 : 0
-            })),
-            savingsTrend: savingsTrend,
-            budgetVsActual: budgetVsActual.map(b => ({
-                category: b.category,
-                budget: b.budget,
-                actual: b.actual
-            })),
-            chartImage,
-            netWorth: netWorthHistory.length > 0 ? netWorthHistory[netWorthHistory.length - 1].netWorth : undefined,
-            insights: insights.filter(i => !i.dismissed).map(i => i.title + ': ' + i.message)
-        };
+  // ── Savings rate color helper ───────────────────────────────
 
-        await exportExpenseReportPDF(reportData);
-    };
+  const getSavingsColor = (rate: number) => {
+    if (rate >= 20) return { text: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-500/20' };
+    if (rate >= 10) return { text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-500/20' };
+    return { text: 'text-red-600 dark:text-red-400', bg: 'bg-red-100 dark:bg-red-500/20' };
+  };
 
-    return (
-        <div className="space-y-5 pb-6">
-            {/* Period Toggle */}
-            <div className="flex gap-1 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-1">
-                {(['month', 'year'] as const).map((p) => (
-                    <button
-                        key={p}
-                        onClick={() => setPeriod(p)}
-                        className={`flex-1 py-2.5 text-xs font-bold rounded-lg capitalize transition-all ${period === p ? 'bg-brand-purple text-white shadow' : 'text-muted-foreground'}`}
-                    >
-                        {p === 'month' ? `${t(`expenses.periodMonth`)}: ${MONTHS[selectedMonth - 1]} ${selectedYear}` : `${t(`expenses.periodYear`)}: ${selectedYear}`}
-                    </button>
-                ))}
-            </div>
+  // ── RENDER ──────────────────────────────────────────────────
 
-            {/* Month / Year Selectors */}
-            {period === 'month' ? (
-                <div className="flex gap-2">
-                    <select
-                        value={selectedMonth}
-                        onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                        className="flex-1 px-3 py-2 bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-foreground outline-none"
-                    >
-                        {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
-                    </select>
-                    <select
-                        value={selectedYear}
-                        onChange={(e) => setSelectedYear(Number(e.target.value))}
-                        className="flex-1 px-3 py-2 bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-foreground outline-none"
-                    >
-                        {Array.from({ length: currentYear - 2023 }, (_, i) => 2024 + i).map((y) => <option key={y} value={y}>{y}</option>)}
-                    </select>
+  return (
+    <div className="space-y-5 pb-6">
+
+      {/* ── Section 1: Quick Download ─────────────────────────── */}
+      <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+        <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-1">
+          {t('expenses.quickDownload', 'Quick Download')}
+        </h3>
+        <p className="text-muted-foreground text-xs mb-4">
+          {t('expenses.quickDownloadDesc', 'Generate PDF reports for the current period')}
+        </p>
+
+        <div className="grid grid-cols-2 gap-3">
+          {([
+            { type: 'daily' as const, label: t('expenses.dailyReport', 'Daily Report'), icon: Calendar, desc: t('expenses.todayLabel', 'Today') },
+            { type: 'weekly' as const, label: t('expenses.weeklyReport', 'Weekly Report'), icon: CalendarDays, desc: t('expenses.thisWeek', 'This Week') },
+            { type: 'monthly' as const, label: t('expenses.monthlyReport', 'Monthly Report'), icon: BarChart3, desc: currentMonthRange.label },
+            { type: 'annual' as const, label: t('expenses.annualReport', 'Annual Report'), icon: TrendingUp, desc: String(currentYearRange.year) },
+          ]).map(item => {
+            const Icon = item.icon;
+            const isLoading = generating === item.type;
+            return (
+              <motion.button
+                key={item.type}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => handleGenerate(item.type)}
+                disabled={generating !== null}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.03] hover:border-brand-purple/40 hover:bg-brand-purple/5 transition-all disabled:opacity-50"
+              >
+                <div className="w-10 h-10 rounded-full bg-brand-purple/10 flex items-center justify-center">
+                  {isLoading
+                    ? <Loader2 size={18} className="text-brand-purple animate-spin" />
+                    : <Icon size={18} className="text-brand-purple" />
+                  }
                 </div>
-            ) : (
-                <select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-800 dark:text-foreground outline-none"
-                >
-                    {Array.from({ length: currentYear - 2023 }, (_, i) => 2024 + i).map((y) => <option key={y} value={y}>{y}</option>)}
-                </select>
-            )}
-
-            {/* Empty state: month with no activity and not current month */}
-
-
-            {!hasData ? (
-                <div className="flex flex-col items-center justify-center py-16 px-4">
-                    <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-card border-border flex items-center justify-center mb-4">
-                        <span className="text-4xl">📭</span>
-                    </div>
-                    <h3 className="text-slate-800 dark:text-foreground font-bold text-base mb-2">
-                        No data for {period === 'month' ? `${MONTHS[selectedMonth - 1]} ${selectedYear}` : selectedYear}
-                    </h3>
-                    <p className="text-muted-foreground text-sm text-center leading-relaxed">
-                        No expenses were recorded for this {period === 'month' ? 'month' : 'year'}.<br />
-                        Go to the <span className="font-semibold text-brand-purple">Daily tab</span> to add expenses.
-                    </p>
-                </div>
-            ) : (
-                <>
-                    {/* Summary Cards */}
-                    <div className="grid grid-cols-2 gap-3">
-                        {[
-                            { label: t('expenses.income'), value: income, icon: TrendingUp, color: 'text-brand-green', bg: 'bg-brand-green/10' },
-                            { label: t('expenses.expenses'), value: totalExpenses, icon: TrendingDown, color: 'text-red-400', bg: 'bg-red-500/10' },
-                            { label: t('expenses.savings'), value: savings, icon: PiggyBank, color: savings < 0 ? 'text-red-400' : 'text-blue-400', bg: 'bg-blue-500/10' },
-                            { label: t('expenses.rate'), value: null, icon: TrendingUp, color: savingsRate < 0 ? 'text-red-400' : 'text-brand-purple', bg: 'bg-brand-purple/10', label2: `${savingsRate.toFixed(1)}%` },
-                        ].map((card) => (
-                            <div key={card.label} className={`${card.bg} rounded-2xl p-4`}>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <card.icon size={14} className={card.color} />
-                                    <span className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold">{card.label}</span>
-                                </div>
-                                <p className={`font-extrabold text-lg ${card.color}`}>
-                                    {card.label2 || `₹${Math.abs(card.value!).toLocaleString('en-IN')}`}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Notice: fixed expenses present but no daily entries this month */}
-                    {totalFixed > 0 && activeEntries.length === 0 && period === 'month' && (
-                        <div className="flex items-start gap-3 p-4 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-400/20">
-                            <span className="text-xl">ℹ️</span>
-                            <div>
-                                <p className="text-blue-800 dark:text-blue-300 font-semibold text-xs mb-0.5">
-                                    Fixed expenses included
-                                </p>
-                                <p className="text-blue-600 dark:text-blue-400 text-xs leading-relaxed">
-                                    Your ₹{totalFixed.toLocaleString('en-IN')} budget is shown above.
-                                    No daily expense entries for <strong>{MONTHS[selectedMonth - 1]} {selectedYear}</strong> yet —
-                                    add daily spends in the <strong>Daily tab</strong> to see spending charts.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 12-Month Year Grid */}
-                    {period === 'year' && (
-                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.yearlyActivity')}</h3>
-                            <div className="grid grid-cols-4 gap-2">
-                                {MONTHS.map((monthName, i) => {
-                                    const m = i + 1;
-                                    const mEntries = entries.filter((e) => new Date(e.date).getFullYear() === selectedYear && new Date(e.date).getMonth() + 1 === m);
-                                    return { monthName, mEntries, m };
-                                }).filter(({ mEntries, m }) => {
-                                    const hasEntries = mEntries.length > 0;
-                                    const hasIncome = (selectedYear === new Date().getFullYear() && m === new Date().getMonth() + 1) ? monthlyIncome > 0 : false;
-                                    return hasEntries || hasIncome;
-                                }).map(({ monthName }) => {
-                                    const budgetActive = totalBudgetSet > 0 || subscriptions.length > 0;
-                                    let state: 'partial' | 'budgetless' = budgetActive ? 'partial' : 'budgetless';
-                                    
-                                    const styles = {
-                                        partial: 'bg-brand-purple/10 border-brand-purple/20 text-brand-purple dark:bg-brand-purple/20 dark:text-brand-purple-light',
-                                        budgetless: 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 text-orange-600 dark:text-orange-400'
-                                    };
-
-                                    return (
-                                        <div key={monthName} className={`flex flex-col items-center justify-center py-2.5 rounded-xl border ${styles[state]} transition-all`}>
-                                            <span className="text-xs font-bold">{monthName}</span>
-                                            <span className="text-[9px] mt-0.5 opacity-80 capitalize">{t(`expenses.state.${state}`, state)}</span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Report Insights Banner (Part 7) */}
-                    {reportInsights.length > 0 && (
-                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <div className="flex items-center gap-2 mb-3">
-                                <Lightbulb size={14} className="text-amber-500" />
-                                <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">Smart Insights</h3>
-                            </div>
-                            <div className="space-y-2">
-                                {reportInsights.map((insight, i) => (
-                                    <div key={i} className="flex items-start gap-2.5 p-2.5 bg-slate-50 dark:bg-white/5 rounded-xl">
-                                        <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-snug">{insight}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {categoryData.length > 0 && (
-                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.spendingByCategory')}</h3>
-                            <div className="flex flex-col items-center gap-4">
-                                <div className="w-full h-56 relative flex items-center justify-center">
-                                    <Pie
-                                        ref={pieChartRef}
-                                        data={{
-                                            labels: categoryData.map((c) => `${c.icon} ${c.name}`),
-                                            datasets: [{ data: categoryData.map((c) => c.total), backgroundColor: COLORS, borderWidth: 2, borderColor: c.border }],
-                                        }}
-                                        options={{
-                                            responsive: true,
-                                            maintainAspectRatio: false,
-                                            plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${ctx.parsed.toLocaleString('en-IN')}` } } },
-                                        }}
-                                    />
-                                </div>
-                                <div className="w-full space-y-2">
-                                    {categoryData.map((cat, i) => (
-                                        <div key={cat.id} className="flex items-center gap-3">
-                                            <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                                            <span className="text-slate-600 dark:text-muted-foreground text-xs flex-1">{cat.icon} {cat.name}</span>
-                                            <span className="text-slate-800 dark:text-foreground text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</span>
-                                            <span className="text-muted-foreground text-[10px] w-10 text-right">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(0) : 0}%</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Daily Spending Trend - Line Chart */}
-                    {period === 'month' && monthEntries.length > 0 && (
-                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.dailyTrend')}</h3>
-                            <Line
-                                data={{
-                                    labels: dailyTrend.map(d => d.day),
-                                    datasets: [{
-                                        label: 'Amount',
-                                        data: dailyTrend.map(d => d.amount),
-                                        borderColor: '#8b5cf6',
-                                        backgroundColor: 'rgba(139,92,246,0.1)',
-                                        fill: true,
-                                        tension: 0.4,
-                                        pointBackgroundColor: '#8b5cf6',
-                                        pointRadius: (ctx) => (ctx.raw as number) > 0 ? 4 : 0,
-                                        pointHoverRadius: 6,
-                                    }],
-                                }}
-                                options={{
-                                    responsive: true,
-                                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
-                                    scales: {
-                                        x: { grid: { display: false } },
-                                        y: { beginAtZero: true, grid: { color: c.border } }
-                                    },
-                                }}
-                            />
-                        </div>
-                    )}
-
-                    {/* Savings Trend 6-month */}
-                    {savingsTrend.filter(t => t.hasData).length > 0 && (
-                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.savingsTrend')}</h3>
-                            <Bar
-                                data={{
-                                    labels: savingsTrend.filter(t => t.hasData).map(t => t.month),
-                                    datasets: [{
-                                        label: 'Saved',
-                                        data: savingsTrend.filter(t => t.hasData).map(t => t.saved),
-                                        backgroundColor: savingsTrend.filter(t => t.hasData).map(t => t.saved >= 0 ? 'rgba(16,185,129,0.8)' : 'rgba(239,68,68,0.8)'),
-                                        borderRadius: 4
-                                    }]
-                                }}
-                                options={{
-                                    responsive: true,
-                                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
-                                    scales: {
-                                        x: { grid: { display: false } },
-                                        y: { grid: { color: c.border } }
-                                    }
-                                }}
-                            />
-                        </div>
-                    )}
-
-                    {/* Budget vs Actual - Bar Chart */}
-                    {budgetVsActual.length > 0 && (
-                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.budgetVsActual')}</h3>
-                            <Bar
-                                data={{
-                                    labels: budgetVsActual.map((r) => r.category),
-                                    datasets: [
-                                        { label: 'Budget', data: budgetVsActual.map((r) => r.budget), backgroundColor: 'rgba(139,92,246,0.6)', borderRadius: 6 },
-                                        { label: 'Spent', data: budgetVsActual.map((r) => r.actual), backgroundColor: 'rgba(239,68,68,0.6)', borderRadius: 6 },
-                                    ],
-                                }}
-                                options={{
-                                    responsive: true,
-                                    plugins: { legend: { position: 'bottom', align: 'start', labels: { boxWidth: 12, font: { size: 10 } } }, tooltip: { callbacks: { label: (ctx) => ` ₹${(ctx.parsed.y ?? ctx.parsed).toLocaleString('en-IN')}` } } },
-                                    scales: { 
-                                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                                        y: { beginAtZero: true, grid: { color: c.border } } 
-                                    },
-                                }}
-                            />
-                        </div>
-                    )}
-
-                    {/* Top 5 Categories */}
-                    {categoryData.length > 0 && (
-                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
-                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">{t('expenses.topCategories')}</h3>
-                            <div className="space-y-3">
-                                {categoryData.slice(0, 5).map((cat, i) => (
-                                    <div key={cat.id} className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }}>
-                                            {i + 1}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-slate-800 dark:text-foreground text-xs font-semibold truncate">{cat.icon} {cat.name}</p>
-                                            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full mt-1 overflow-hidden">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${maxCategoryTotal > 0 ? (cat.total / maxCategoryTotal) * 100 : 0}%` }}
-                                                    transition={{ duration: 0.6 }}
-                                                    className="h-full rounded-full"
-                                                    style={{ backgroundColor: COLORS[i % COLORS.length] }}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-slate-800 dark:text-foreground text-xs font-bold">₹{cat.total.toLocaleString('en-IN')}</p>
-                                            <p className="text-muted-foreground text-[10px]">{totalDaily > 0 ? ((cat.total / totalDaily) * 100).toFixed(1) : 0}%</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Download PDF Button */}
-                    <motion.button
-                        whileTap={{ scale: 0.97 }}
-                        onClick={handleDownloadPDF}
-                        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm"
-                    >
-                        <Download size={18} /> {t('expenses.downloadReport')}
-                    </motion.button>
-                </>
-            )}
-
-
+                <span className="text-slate-800 dark:text-foreground text-xs font-bold text-center leading-tight">
+                  {item.label}
+                </span>
+                <span className="text-muted-foreground text-[10px]">{item.desc}</span>
+              </motion.button>
+            );
+          })}
         </div>
-    );
+      </div>
+
+      {/* ── Section 2: Last 6 Months Summary ──────────────────── */}
+      <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+        <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">
+          {t('expenses.last6Months', 'Last 6 Months')}
+        </h3>
+
+        {monthsWithData.length === 0 ? (
+          <div className="flex flex-col items-center py-8">
+            <span className="text-3xl mb-2">📭</span>
+            <p className="text-muted-foreground text-xs text-center">
+              {t('expenses.noDataLast6', 'No expense data found for the last 6 months.')}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto -mx-1">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-white/10">
+                  <th className="text-left py-2 px-1 text-muted-foreground font-semibold">
+                    {t('expenses.month', 'Month')}
+                  </th>
+                  <th className="text-right py-2 px-1 text-muted-foreground font-semibold">
+                    {t('expenses.income', 'Income')}
+                  </th>
+                  <th className="text-right py-2 px-1 text-muted-foreground font-semibold">
+                    {t('expenses.expenses', 'Expenses')}
+                  </th>
+                  <th className="text-right py-2 px-1 text-muted-foreground font-semibold">
+                    {t('expenses.savings', 'Savings')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {last6Months.map(m => (
+                  <tr
+                    key={m.month}
+                    className={`border-b border-slate-100 dark:border-white/5 ${!m.hasData ? 'opacity-40' : ''}`}
+                  >
+                    <td className="py-2.5 px-1 font-semibold text-slate-800 dark:text-foreground">
+                      {m.label}
+                    </td>
+                    <td className="py-2.5 px-1 text-right text-emerald-600 dark:text-emerald-400 font-medium">
+                      {m.hasData ? fmtINR(m.income) : '—'}
+                    </td>
+                    <td className="py-2.5 px-1 text-right text-red-500 dark:text-red-400 font-medium">
+                      {m.hasData ? fmtINR(m.expenses) : '—'}
+                    </td>
+                    <td className={`py-2.5 px-1 text-right font-bold ${m.savings >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-500 dark:text-red-400'}`}>
+                      {m.hasData ? fmtINR(m.savings) : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ── Section 3: Savings Rate Trend ─────────────────────── */}
+      {monthsWithData.length > 0 && (
+        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">
+          <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-4">
+            {t('expenses.savingsRateTrend', 'Savings Rate Trend')}
+          </h3>
+
+          <div className="space-y-3">
+            {last6Months.filter(m => m.hasData).map(m => {
+              const colors = getSavingsColor(m.savingsRate);
+              return (
+                <div key={m.month} className="flex items-center gap-3">
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 w-16 flex-shrink-0">
+                    {m.label.split(' ')[0]}
+                  </span>
+                  <div className="flex-1 h-6 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden relative">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.max(0, Math.min(100, m.savingsRate))}%` }}
+                      transition={{ duration: 0.6, ease: 'easeOut' }}
+                      className={`h-full rounded-full ${colors.bg}`}
+                    />
+                    <span className={`absolute inset-y-0 right-2 flex items-center text-[10px] font-bold ${colors.text}`}>
+                      {fmtPct(m.savingsRate)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Legend */}
+          <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-slate-100 dark:border-white/5">
+            {[
+              { label: t('expenses.good', 'Good (20%+)'), color: 'bg-emerald-400' },
+              { label: t('expenses.moderate', 'Moderate (10-20%)'), color: 'bg-amber-400' },
+              { label: t('expenses.low', 'Low (<10%)'), color: 'bg-red-400' },
+            ].map(item => (
+              <div key={item.label} className="flex items-center gap-1.5">
+                <div className={`w-2.5 h-2.5 rounded-full ${item.color}`} />
+                <span className="text-muted-foreground text-[10px]">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Download All Reports ──────────────────────────────── */}
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={() => handleGenerate('monthly')}
+        disabled={generating !== null}
+        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple/10 border-2 border-brand-purple/40 text-brand-purple font-bold text-sm disabled:opacity-50"
+      >
+        {generating === 'monthly'
+          ? <Loader2 size={18} className="animate-spin" />
+          : <Download size={18} />
+        }
+        {t('expenses.downloadMonthlyReport', 'Download Monthly Report')}
+      </motion.button>
+    </div>
+  );
 }

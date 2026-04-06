@@ -58,6 +58,7 @@ const Calculators                = lr(() => import('./pages/Calculators'));
 const Schemes                    = lr(() => import('./pages/Schemes'));
 const SchemeDetail               = lr(() => import('./pages/SchemeDetail'));
 const ExpenseTracker             = lr(() => import('./pages/ExpenseTracker'));
+const BankAccounts               = lr(() => import('./pages/BankAccounts'));
 const Profile                    = lr(() => import('./pages/Profile'));
 const Settings                   = lr(() => import('./pages/Settings'));
 
@@ -297,6 +298,7 @@ function AppContent() {
                         <Route path="/schemes" element={<Schemes />} />
                         <Route path="/scheme/:id" element={<SchemeDetail />} />
                         <Route path="/expenses" element={<ExpenseTracker />} />
+                        <Route path="/expenses/accounts" element={<BankAccounts />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/profile/saved" element={<SavedCalculations />} />
                         <Route path="/profile/history" element={<CalculationHistory />} />

@@ -1,582 +1,652 @@
-import { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Trash2, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ChevronLeft, ChevronRight, Plus, Trash2, Calendar,
+  Wallet, FileText, X,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useBudgetTrackerStore, EXPENSE_CATEGORIES, INVESTMENT_TYPES, INCOME_CATEGORIES, type PaymentMethod, type EntryType, type InvestmentType } from '../../store/useBudgetTrackerStore';
-import { getCategoryDisplayName } from '../../utils/categoryUtils';
-import DateInput from '../../components/DateInput';
+import { useAppColors } from '../../theme/useAppColors';
+import type { Entry, EntryType, PaymentMethod, Category } from '../../types/expense';
+import { PAYMENT_METHOD_LABELS } from '../../types/expense';
+import {
+  getEntriesForDate, saveEntry, deleteEntry as removeEntry,
+  createEntry, getAllAccounts, getAllCategories,
+} from '../../utils/expenseStorage';
+import { fmtINR, getTodayStr, formatFullDate } from '../../utils/expenseCalculations';
 
-const PAYMENT_METHODS: { id: PaymentMethod; icon: string }[] = [
-    { id: 'Cash', icon: '💵' },
-    { id: 'UPI', icon: '📲' },
-    { id: 'Debit Card', icon: '💳' },
-    { id: 'Credit Card', icon: '💳' },
+/* ── constants ── */
+
+const ENTRY_TYPES: { id: EntryType; color: string; bg: string }[] = [
+  { id: 'expense',    color: '#ef4444', bg: 'bg-red-500' },
+  { id: 'income',     color: '#10b981', bg: 'bg-emerald-500' },
+  { id: 'investment', color: '#3b82f6', bg: 'bg-blue-500' },
+  { id: 'transfer',   color: '#8b5cf6', bg: 'bg-violet-500' },
 ];
 
-const QUICK_ADD = [
-    { emoji: '☕', label: 'Coffee', amount: 50, category: 'food' },
-    { emoji: '🍱', label: 'Lunch', amount: 150, category: 'food' },
-    { emoji: '🚕', label: 'Transport', amount: 100, category: 'transportation' },
-    { emoji: '🛒', label: 'Groceries', amount: 500, category: 'groceries' },
-    { emoji: '🍕', label: 'Dinner', amount: 250, category: 'food' },
-    { emoji: '⛽', label: 'Petrol', amount: 500, category: 'transportation' },
-];
+const PM_LIST: PaymentMethod[] = ['cash', 'upi', 'debit_card', 'credit_card', 'net_banking', 'auto_debit'];
 
-function formatDate(dateStr: string) {
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+const SUB_TAB_IDS = ['all', 'expense', 'income', 'investment'] as const;
+type SubTab = typeof SUB_TAB_IDS[number];
+
+/* ── helpers ── */
+
+function dateStr(d: Date): string {
+  return d.toISOString().split('T')[0];
 }
 
-function toDateInput(d: Date) {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
+function shiftDay(current: string, delta: number): string {
+  const d = new Date(current + 'T00:00:00');
+  d.setDate(d.getDate() + delta);
+  return dateStr(d);
 }
 
-export default function DailyTab({ openOnMount }: { openOnMount?: boolean } = {}) {
-    const { t } = useTranslation();
-    const { entries, addEntry, deleteEntry, updateEntry, categoryBudgets, getEntriesByDate, getMonthlySpentByCategory } = useBudgetTrackerStore();
+function amtColor(type: EntryType): string {
+  if (type === 'income') return '#10b981';
+  if (type === 'investment') return '#3b82f6';
+  if (type === 'transfer') return '#8b5cf6';
+  return '#ef4444';
+}
 
-    const [selectedDate, setSelectedDate] = useState(toDateInput(new Date()));
-    const [showAddForm, setShowAddForm] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [initialFormState, setInitialFormState] = useState<{ category: string, amount: string, desc: string, payment: PaymentMethod } | null>(null);
+/* ── component ── */
 
-    const [quickAdds, setQuickAdds] = useState<typeof QUICK_ADD>(() => {
-        const saved = localStorage.getItem('fincalix_quick_adds');
-        return saved ? JSON.parse(saved) : QUICK_ADD;
-    });
+export default function DailyTab({ onAddExpense }: { onAddExpense?: () => void }) {
+  const { t } = useTranslation();
+  const c = useAppColors();
 
-    const [editingQA, setEditingQA] = useState<number | null>(null);
-    const [qaLabel, setQaLabel] = useState('');
-    const [qaAmount, setQaAmount] = useState('');
-    const [qaEmoji, setQaEmoji] = useState('');
+  /* --- state --- */
+  const [selectedDate, setSelectedDate] = useState(getTodayStr());
+  const [subTab, setSubTab] = useState<SubTab>('all');
+  const [showSheet, setShowSheet] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-    // Add form state
-    const [fCategory, setFCategory] = useState('food');
-    const [fAmount, setFAmount] = useState('');
-    const [fDesc, setFDesc] = useState('');
-    const [fPayment, setFPayment] = useState<PaymentMethod>('UPI');
-    const [fEntryType, setFEntryType] = useState<EntryType>('expense');
-    const [fInvestmentType, setFInvestmentType] = useState<InvestmentType>('mutual_funds');
-    const [activeSubTab, setActiveSubTab] = useState<EntryType>('expense');
+  /* Force re-read from storage after mutations */
+  const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
-    const isDirty = initialFormState ? (
-        fCategory !== initialFormState.category ||
-        fAmount !== initialFormState.amount ||
-        fDesc !== initialFormState.desc ||
-        fPayment !== initialFormState.payment
-    ) : false;
+  /* --- derived data --- */
+  const allCategories = useMemo(() => getAllCategories(), []);
+  const accounts = useMemo(() => getAllAccounts(), []);
 
-    const isValid = parseFloat(fAmount) > 0;
+  const dayEntries = useMemo(() => {
+    void refreshKey;
+    return getEntriesForDate(selectedDate)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, [selectedDate, refreshKey]);
 
-    const dayEntries = useMemo(
-        () => getEntriesByDate(selectedDate).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
-        [entries, selectedDate]
-    );
+  const todayIncome = useMemo(
+    () => dayEntries.filter(e => e.type === 'income').reduce((s, e) => s + e.amount, 0),
+    [dayEntries],
+  );
+  const todayExpense = useMemo(
+    () => dayEntries.filter(e => e.type === 'expense').reduce((s, e) => s + e.amount, 0),
+    [dayEntries],
+  );
+  const todayNet = todayIncome - todayExpense;
 
-    const filteredEntries = useMemo(() => {
-        return dayEntries.filter(e => {
-            const type = e.entryType || 'expense';
-            return type === activeSubTab;
-        });
-    }, [dayEntries, activeSubTab]);
+  const filteredEntries = useMemo(() => {
+    if (subTab === 'all') return dayEntries;
+    return dayEntries.filter(e => e.type === subTab);
+  }, [dayEntries, subTab]);
 
-    const todayTotal = dayEntries.filter(e => (e.entryType || 'expense') === 'expense').reduce((s, e) => s + e.amount, 0);
-    const todayIncome = dayEntries.filter(e => e.entryType === 'income').reduce((s, e) => s + e.amount, 0);
-    const todayInvestment = dayEntries.filter(e => e.entryType === 'investment').reduce((s, e) => s + e.amount, 0);
+  const isToday = selectedDate === getTodayStr();
+  const canGoForward = selectedDate < getTodayStr();
 
-    const selectedCatBudget = (categoryBudgets as unknown as Record<string, number>)[fCategory] || 0;
-    const selectedCatSpent = getMonthlySpentByCategory(fCategory);
-    const remaining = selectedCatBudget - selectedCatSpent - (parseFloat(fAmount) || 0);
-    const overBudget = selectedCatBudget > 0 && remaining < 0;
+  /* --- actions --- */
+  const handleDelete = (id: string) => {
+    removeEntry(id);
+    setDeleteConfirm(null);
+    refresh();
+  };
 
-    const handleQuickAdd = (qa: typeof QUICK_ADD[0]) => {
-        setFEntryType('expense');
-        setFCategory(qa.category);
-        setFAmount(qa.amount.toString());
-        setFDesc(t(`expenses.quickAdd.${qa.label.toLowerCase()}`));
-        setInitialFormState({ category: '', amount: '', desc: '', payment: 'UPI' }); // Set blank initial state so it's dirty
-        setShowAddForm(true);
-    };
+  const handleSaved = () => {
+    refresh();
+    setShowSheet(false);
+    onAddExpense?.();
+  };
 
-    const handleSaveEntry = () => {
-        if (!fAmount) return;
+  /* --- navigate dates --- */
+  const goPrev = () => setSelectedDate(d => shiftDay(d, -1));
+  const goNext = () => { if (canGoForward) setSelectedDate(d => shiftDay(d, 1)); };
 
-        if (editingId) {
-            updateEntry(editingId, {
-                category: fCategory,
-                amount: parseFloat(fAmount),
-                description: fDesc || getCategoryDisplayName(fCategory),
-                paymentMethod: fPayment,
-            });
-            setEditingId(null);
-        } else {
-            const now = new Date();
-            const timeStr = now.toTimeString().split(' ')[0];
-            const localIso = `${selectedDate}T${timeStr}`;
+  /* --- category lookup --- */
+  const catFor = (entry: Entry): Category | undefined =>
+    allCategories.find(cat => cat.id === entry.category);
 
-            addEntry({
-                category: fEntryType === 'investment' ? (fInvestmentType || 'other_investment') : fCategory,
-                amount: parseFloat(fAmount),
-                description: fDesc || (fEntryType === 'investment' ? (INVESTMENT_TYPES.find(t => t.id === fInvestmentType)?.label || 'Investment') : fEntryType === 'income' ? 'Income' : getCategoryDisplayName(fCategory)),
-                date: localIso,
-                paymentMethod: fPayment,
-                entryType: fEntryType,
-                investmentType: fEntryType === 'investment' ? fInvestmentType : undefined,
-            });
-        }
-        setFCategory('food');
-        setFAmount('');
-        setFDesc('');
-        setFPayment('UPI');
-        setFEntryType('expense');
-        setFInvestmentType('mutual_funds');
-        setInitialFormState(null);
-        setShowAddForm(false);
-    };
-
-    const openAddForm = () => {
-        setFCategory('food');
-        setFAmount('');
-        setFDesc('');
-        setFPayment('UPI');
-        setFEntryType('expense');
-        setFInvestmentType('mutual_funds');
-        setInitialFormState({ category: 'food', amount: '', desc: '', payment: 'UPI' });
-        setEditingId(null);
-        setShowAddForm(true);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    useEffect(() => { if (openOnMount) openAddForm(); }, [openOnMount]);
-
-    const startEdit = (id: string) => {
-        const e = entries.find(e => e.id === id);
-        if (!e) return;
-        setEditingId(id);
-        setFEntryType(e.entryType || 'expense');
-        setFCategory(e.category);
-        setFAmount(e.amount.toString());
-        setFDesc(e.description);
-        setFPayment(e.paymentMethod || 'UPI');
-        if (e.entryType === 'investment' && e.investmentType) setFInvestmentType(e.investmentType);
-        setInitialFormState({ category: e.category, amount: e.amount.toString(), desc: e.description, payment: e.paymentMethod || 'UPI' });
-        setShowAddForm(true);
-    };
-
-    const handleQuickAddPress = (e: React.MouseEvent | React.TouchEvent, index: number) => {
-        e.preventDefault();
-        const qa = quickAdds[index];
-        setEditingQA(index);
-        setQaLabel(qa.label);
-        setQaAmount(qa.amount.toString());
-        setQaEmoji(qa.emoji);
-    };
-
-    const saveQuickAdd = () => {
-        if (editingQA === null || !qaLabel || !qaAmount || !qaEmoji) return;
-        const newQAs = [...quickAdds];
-        newQAs[editingQA] = { ...newQAs[editingQA], label: qaLabel, amount: parseFloat(qaAmount), emoji: qaEmoji };
-        setQuickAdds(newQAs);
-        localStorage.setItem('fincalix_quick_adds', JSON.stringify(newQAs));
-        setEditingQA(null);
-    };
-
-    function shiftDate(days: number) {
-        const d = new Date(selectedDate);
-        d.setDate(d.getDate() + days);
-        const today = new Date();
-        if (d > today) return;
-        setSelectedDate(toDateInput(d));
-    }
-
-    const isToday = selectedDate === toDateInput(new Date());
-
-    return (
-        <div className="space-y-4 pb-6">
-            {/* Add Expense FAB */}
-            <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={openAddForm}
-                className="w-full bg-gradient-to-r from-brand-purple to-purple-700 hover:from-purple-700 hover:to-brand-purple text-foreground font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/30"
-            >
-                <Plus size={20} /> {t('expenses.addNewExpense')}
-            </motion.button>
-
-            {/* Sub-tab Switcher */}
-            <div className="flex gap-1 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-1">
-                {([{ id: 'expense' as EntryType, label: `💸 ${t('expenses.expenses')}`, bg: 'bg-red-500' }, { id: 'income' as EntryType, label: `💰 ${t('expenses.income')}`, bg: 'bg-emerald-500' }, { id: 'investment' as EntryType, label: `📈 ${t('expenses.investments')}`, bg: 'bg-blue-500' }]).map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveSubTab(tab.id)}
-                        className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
-                            activeSubTab === tab.id ? `${tab.bg} text-white shadow` : 'text-muted-foreground'
-                        }`}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
-
-            {/* Quick Add Shortcuts */}
-            <div>
-                <p className="text-muted-foreground dark:text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-2 flex justify-between">
-                    {t('expenses.quickAddLabel')}
-                    <span className="text-[9px] lowercase font-normal opacity-60">{t('expenses.longPressEdit')}</span>
-                </p>
-                <div className="grid grid-cols-3 gap-2">
-                    {quickAdds.map((qa, idx) => (
-                        <motion.button
-                            key={idx}
-                            whileTap={{ scale: 0.93 }}
-                            onClick={() => handleQuickAdd(qa)}
-                            onContextMenu={(e) => handleQuickAddPress(e, idx)}
-                            onTouchStart={(e) => {
-                                const timer = setTimeout(() => handleQuickAddPress(e, idx), 600);
-                                e.currentTarget.setAttribute('data-timer', timer.toString());
-                            }}
-                            onTouchEnd={(e) => {
-                                const timer = e.currentTarget.getAttribute('data-timer');
-                                if (timer) clearTimeout(Number(timer));
-                            }}
-                            className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-center select-none"
-                        >
-                            <span className="text-2xl">{qa.emoji}</span>
-                            <span className="text-slate-700 dark:text-slate-200 text-[11px] font-semibold">{qa.label}</span>
-                            <span className="text-brand-purple text-xs font-bold">₹{qa.amount}</span>
-                        </motion.button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Edit Quick Add Modal */}
-            {createPortal(
-            <AnimatePresence>
-                {editingQA !== null && (
-                    <motion.div
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/60  z-[10000] flex items-center justify-center p-4"
-                        onClick={() => setEditingQA(null)}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-                            className="w-full max-w-sm bg-background border border-slate-700 rounded-3xl p-6"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <h3 className="text-foreground font-bold text-lg mb-4">{t('expenses.editQuickAdd')}</h3>
-                            <div className="space-y-3 mb-6">
-                                <div>
-                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.label')}</label>
-                                    <input type="text" value={qaLabel} onChange={(e) => setQaLabel(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple" />
-                                </div>
-                                <div>
-                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.amount')}</label>
-                                    <input type="number" value={qaAmount} onChange={(e) => setQaAmount(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple" />
-                                </div>
-                                <div>
-                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.emoji')}</label>
-                                    <input type="text" maxLength={2} value={qaEmoji} onChange={(e) => setQaEmoji(e.target.value)} className="w-full px-4 py-2 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple" />
-                                </div>
-                            </div>
-                            <div className="flex gap-3">
-                                <button onClick={() => setEditingQA(null)} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium text-sm">{t('common.cancel')}</button>
-                                <button onClick={saveQuickAdd} className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm">{t('common.save')}</button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>,
-            document.body
-            )}
-
-            {/* Date Navigator */}
-            <div className="flex items-center gap-2">
-                <button onClick={() => shiftDate(-1)} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10">
-                    <ChevronLeft size={18} className="text-muted-foreground" />
-                </button>
-                <div className="relative flex-1">
-                    <DateInput
-                        value={selectedDate}
-                        onChange={setSelectedDate}
-                        max={toDateInput(new Date())}
-                        className="w-full px-4 py-3 rounded-xl bg-white dark:bg-card border-border border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-foreground text-sm font-semibold outline-none"
-                    />
-                    {!isToday && <div className="absolute top-2 right-4 w-2 h-2 rounded-full border-2 border-white dark:border-slate-800 bg-brand-purple" />}
-                </div>
-                <button onClick={() => shiftDate(1)} disabled={isToday} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 disabled:opacity-30">
-                    <ChevronRight size={18} className="text-muted-foreground" />
-                </button>
-            </div>
-
-            {/* Today's Totals */}
-            <div className="bg-gradient-to-r from-brand-purple/10 to-blue-600/10 border border-brand-purple/20 rounded-2xl p-4 flex flex-col gap-3">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <p className="text-muted-foreground dark:text-muted-foreground text-xs font-medium">
-                            {isToday ? t('expenses.todaySpending') : t('expenses.selectedDaySpending')}
-                        </p>
-                        <p className="text-2xl font-extrabold text-brand-purple mt-0.5">₹{todayTotal.toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="text-4xl">💸</div>
-                </div>
-                <div className="flex gap-2 text-[10px] font-semibold">
-                    <span className="flex-1 text-center py-1.5 rounded-lg bg-red-500/10 text-red-400">{t('expenses.spent')} ₹{todayTotal.toLocaleString('en-IN')}</span>
-                    <span className={`flex-1 text-center py-1.5 rounded-lg ${todayIncome > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-100 dark:bg-white/5 text-muted-foreground'}`}>{t('expenses.earned')} ₹{todayIncome.toLocaleString('en-IN')}</span>
-                    <span className={`flex-1 text-center py-1.5 rounded-lg ${todayInvestment > 0 ? 'bg-blue-500/10 text-blue-400' : 'bg-slate-100 dark:bg-white/5 text-muted-foreground'}`}>{t('expenses.invested')} ₹{todayInvestment.toLocaleString('en-IN')}</span>
-                </div>
-                {(() => {
-                    const dailyBudget = Object.values(categoryBudgets as unknown as Record<string, number>).reduce((a, b) => a + b, 0) / 30;
-                    const pct = dailyBudget > 0 ? Math.min(100, (todayTotal / dailyBudget) * 100) : 0;
-                    return (
-                        <div className="w-full bg-white/50 dark:bg-black/20 rounded-full h-1.5 overflow-hidden">
-                            <div className={`h-full rounded-full transition-all duration-500 ${pct > 90 ? 'bg-red-400' : 'bg-brand-purple'}`} style={{ width: `${pct}%` }} />
-                        </div>
-                    );
-                })()}
-            </div>
-
-            {/* Entries List */}
-            <div>
-                <h3 className="text-slate-900 dark:text-foreground font-bold text-sm mb-3">
-                    {activeSubTab === 'expense' ? t('expenses.expenses') : activeSubTab === 'income' ? t('expenses.income') : t('expenses.investments')}
-                </h3>
-                {filteredEntries.length === 0 && (
-                    <div className="text-center py-10 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
-                        <p className="text-4xl mb-2">{activeSubTab === 'expense' ? '🌿' : activeSubTab === 'income' ? '💰' : '📈'}</p>
-                        <p className="text-muted-foreground text-sm">
-                            {activeSubTab === 'expense' ? t('expenses.noExpensesDay') : activeSubTab === 'income' ? t('expenses.noIncome') : t('expenses.noInvestments')}
-                        </p>
-                        <button onClick={openAddForm} className="mt-3 text-brand-purple text-xs font-semibold">+ {activeSubTab === 'expense' ? t('expenses.addExpense') : activeSubTab === 'income' ? t('expenses.addIncome') : t('expenses.addInvestment')}</button>
-                    </div>
-                )}
-                <div className="space-y-2">
-                    {filteredEntries.map((exp) => {
-                        const type = exp.entryType || 'expense';
-                        const cat = type === 'investment'
-                            ? INVESTMENT_TYPES.find(t => t.id === exp.investmentType)
-                            : type === 'income'
-                            ? INCOME_CATEGORIES.find(c => c.id === exp.category)
-                            : EXPENSE_CATEGORIES.find((c) => c.id === (exp.category || exp.categoryId));
-                        const amtColor = type === 'income' ? 'text-emerald-400' : type === 'investment' ? 'text-blue-400' : 'text-red-400';
-                        const prefix = type === 'income' ? '+' : type === 'investment' ? '' : '-';
-                        return (
-                            <div key={exp.id} className="relative rounded-2xl bg-red-500 overflow-hidden mb-2">
-                                <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center text-foreground">
-                                    <Trash2 size={20} />
-                                </div>
-                                <motion.div
-                                    drag="x"
-                                    dragConstraints={{ left: -80, right: 0 }}
-                                    onDragEnd={(_e, info) => { if (info.offset.x < -50) deleteEntry(exp.id); }}
-                                    className="bg-white dark:bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-3 flex items-center gap-3 relative z-10 cursor-pointer"
-                                    onClick={() => startEdit(exp.id)}
-                                >
-                                    <div className="w-10 h-10 rounded-xl bg-brand-purple/10 flex items-center justify-center text-xl flex-shrink-0">
-                                        {cat && 'icon' in cat ? cat.icon : '📌'}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-slate-800 dark:text-foreground text-sm font-semibold truncate">{exp.description}</p>
-                                        <p className="text-muted-foreground text-[10px]">
-                                            {type === 'investment'
-                                                ? (INVESTMENT_TYPES.find(t => t.id === exp.investmentType)?.label || 'Investment')
-                                                : getCategoryDisplayName((cat as any)?.id || 'others')}
-                                            {' · '}{formatDate(exp.date)}
-                                            {exp.paymentMethod && (
-                                                <span className="ml-1 px-1.5 py-0.5 bg-brand-purple/10 text-brand-purple rounded text-[9px] font-bold">{t(`expenses.paymentMethods.${exp.paymentMethod}`)}</span>
-                                            )}
-                                        </p>
-                                    </div>
-                                    <p className={`${amtColor} font-bold text-sm mr-1`}>{prefix}₹{exp.amount.toLocaleString('en-IN')}</p>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); deleteEntry(exp.id); }}
-                                        className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors flex-shrink-0"
-                                    >
-                                        <Trash2 size={14} />
-                                    </button>
-                                </motion.div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-
-
-            {/* Add Expense Modal */}
-            {createPortal(
-            <AnimatePresence>
-                {showAddForm && (
-                    <motion.div
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/70 z-[10000] flex items-end justify-center"
-                        onClick={() => setShowAddForm(false)}
-                    >
-                        <motion.div
-                            initial={{ y: 400 }} animate={{ y: 0 }} exit={{ y: 400 }}
-                            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                            className="w-full max-w-md bg-background border-t border-slate-700 rounded-t-3xl flex flex-col"
-                            style={{ maxHeight: '85dvh' }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {/* Drag handle + Title - HEADER */}
-                            <div className="flex-shrink-0 px-6 pt-5 pb-2">
-                                <div className="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-5" />
-                                <h3 className="text-foreground font-bold text-lg mb-2">
-                                    {editingId ? t('expenses.editEntry') : fEntryType === 'expense' ? t('expenses.addExpenseTitle') : fEntryType === 'income' ? t('expenses.addIncome') : t('expenses.addInvestment')}
-                                </h3>
-                            </div>
-
-                            {/* Scrollable form content */}
-                            <div className="flex-1 overflow-y-auto px-6 pb-2">
-                            <div className="space-y-3">
-                                {/* Entry Type Selector */}
-                                {!editingId && (
-                                    <div>
-                                        <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.entryType')}</label>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {([{ id: 'expense' as EntryType, emoji: '💸', label: t('expenses.expense'), bg: 'bg-red-500' }, { id: 'income' as EntryType, emoji: '💰', label: t('expenses.income'), bg: 'bg-emerald-500' }, { id: 'investment' as EntryType, emoji: '📈', label: t('expenses.investment'), bg: 'bg-blue-500' }]).map(et => (
-                                                <button
-                                                    key={et.id}
-                                                    onClick={() => { setFEntryType(et.id); if (et.id === 'income') setFCategory('salary'); else if (et.id === 'expense') setFCategory('food'); }}
-                                                    className={`p-2.5 rounded-xl text-center text-xs font-bold transition-all ${fEntryType === et.id ? `${et.bg} text-white` : 'bg-card border-border text-slate-600 dark:text-slate-300'}`}
-                                                >
-                                                    {et.emoji}<br />{et.label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Category / Investment Type */}
-                                {fEntryType === 'investment' ? (
-                                    <div>
-                                        <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.investmentType')}</label>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {INVESTMENT_TYPES.map(inv => (
-                                                <button
-                                                    key={inv.id}
-                                                    onClick={() => setFInvestmentType(inv.id)}
-                                                    className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fInvestmentType === inv.id ? 'text-white' : 'bg-card border-border text-slate-600 dark:text-slate-300'}`}
-                                                    style={fInvestmentType === inv.id ? { backgroundColor: inv.color } : {}}
-                                                >
-                                                    {inv.icon}<br />{inv.label.split('/')[0].trim()}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ) : fEntryType === 'income' ? (
-                                    <div>
-                                        <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.incomeSource')}</label>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {INCOME_CATEGORIES.map(cat => (
-                                                <button
-                                                    key={cat.id}
-                                                    onClick={() => setFCategory(cat.id)}
-                                                    className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fCategory === cat.id ? 'bg-emerald-500 text-white' : 'bg-card border-border text-slate-300'}`}
-                                                >
-                                                    {cat.icon}<br />{cat.name}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.category')}</label>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {EXPENSE_CATEGORIES.map((cat) => (
-                                                <button
-                                                    key={cat.id}
-                                                    onClick={() => setFCategory(cat.id)}
-                                                    className={`p-2 rounded-xl text-center text-xs font-medium transition-all ${fCategory === cat.id ? 'bg-brand-purple text-white' : 'bg-card border-border text-slate-300'}`}
-                                                >
-                                                    {cat.icon}<br />{getCategoryDisplayName(cat.id).split(' ')[0]}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Budget warning */}
-                                {selectedCatBudget > 0 && (
-                                    <div className={`p-3 rounded-xl text-xs font-medium ${overBudget ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
-                                        {t('expenses.budget')}: ₹{selectedCatBudget.toLocaleString('en-IN')} · {t('expenses.spent')}: ₹{selectedCatSpent.toLocaleString('en-IN')} · {t('expenses.remaining')}: ₹{(selectedCatBudget - selectedCatSpent).toLocaleString('en-IN')}
-                                        {overBudget && ` ⚠️ ${t('expenses.overBudget')}`}
-                                    </div>
-                                )}
-
-                                {/* Amount */}
-                                <div>
-                                    <label className="text-muted-foreground text-xs mb-1 block">
-                                        {fEntryType === 'expense' ? t('expenses.amountLabel') : fEntryType === 'income' ? t('expenses.amountReceived') : t('expenses.amountInvested')} *
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={fAmount}
-                                        onChange={(e) => setFAmount(e.target.value)}
-                                        placeholder="0"
-                                        className="w-full px-4 py-3 rounded-xl bg-card border-border border border-slate-600 text-foreground text-lg font-bold focus:outline-none focus:border-brand-purple"
-                                        autoFocus
-                                    />
-                                </div>
-
-                                {/* Description */}
-                                <div>
-                                    <label className="text-muted-foreground text-xs mb-1 block">{t('expenses.descriptionLabel')}</label>
-                                    <input
-                                        type="text"
-                                        value={fDesc}
-                                        onChange={(e) => setFDesc(e.target.value)}
-                                        placeholder={fEntryType === 'expense' ? t('expenses.descriptionPlaceholder') : fEntryType === 'income' ? t('expenses.incomeSourceHint') : t('expenses.investmentHint')}
-                                        className="w-full px-4 py-3 rounded-xl bg-card border-border border border-slate-600 text-foreground text-sm focus:outline-none focus:border-brand-purple"
-                                    />
-                                </div>
-
-                                {/* Payment Method */}
-                                <div>
-                                    <label className="text-muted-foreground text-xs mb-2 flex items-center gap-1.5 block">
-                                        <CreditCard size={12} /> {t('expenses.paymentMethodLabel')}
-                                    </label>
-                                    <div className="grid grid-cols-4 gap-1.5">
-                                        {PAYMENT_METHODS.map((pm) => (
-                                            <button
-                                                key={pm.id}
-                                                onClick={() => setFPayment(pm.id)}
-                                                className={`p-2 rounded-xl text-center transition-all ${fPayment === pm.id
-                                                    ? 'bg-brand-purple text-white'
-                                                    : 'bg-card border-border text-slate-300'
-                                                    }`}
-                                            >
-                                                <span className="text-base block">{pm.icon}</span>
-                                                <span className="text-[9px] font-semibold leading-tight block mt-0.5">{t(`expenses.paymentMethods.${pm.id}`).split(' ')[0]}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                            </div>{/* end scrollable area */}
-
-                            {/* Sticky action buttons - always visible */}
-                            <div className="flex-shrink-0 px-6 pt-3 border-t border-slate-700/60" style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 12px))' }}>
-                                <div className="flex gap-3">
-                                    <button onClick={() => setShowAddForm(false)} className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium text-sm transition-colors hover:bg-slate-200 dark:hover:bg-slate-600">{t('common.cancel')}</button>
-                                    <motion.button
-                                        whileTap={isDirty && isValid ? { scale: 0.97 } : {}}
-                                        onClick={handleSaveEntry}
-                                        disabled={!isDirty || !isValid}
-                                        className="flex-1 py-3 rounded-xl bg-brand-purple text-white font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
-                                    >
-                                        {editingId ? t('common.apply') : t('common.save')}
-                                    </motion.button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>,
-            document.body
-            )}
+  return (
+    <div className="space-y-4 pb-24">
+      {/* ── DATE NAVIGATOR ── */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={goPrev}
+          className="p-2 rounded-xl"
+          style={{ backgroundColor: c.card, border: `1px solid ${c.border}` }}
+        >
+          <ChevronLeft size={18} style={{ color: c.textSecondary }} />
+        </button>
+        <div
+          className="flex-1 text-center py-2.5 rounded-xl font-semibold text-sm"
+          style={{ backgroundColor: c.card, border: `1px solid ${c.border}`, color: c.text }}
+        >
+          {formatFullDate(selectedDate)}
+          {isToday && (
+            <span className="ml-2 text-[10px] font-bold text-purple-500">
+              {t('expenses.today', 'Today')}
+            </span>
+          )}
         </div>
-    );
+        <button
+          onClick={goNext}
+          disabled={!canGoForward}
+          className="p-2 rounded-xl disabled:opacity-30"
+          style={{ backgroundColor: c.card, border: `1px solid ${c.border}` }}
+        >
+          <ChevronRight size={18} style={{ color: c.textSecondary }} />
+        </button>
+      </div>
+
+      {/* ── SUMMARY CARDS ── */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { label: t('expenses.incomeToday', 'Income Today'), value: todayIncome, color: '#10b981' },
+          { label: t('expenses.spentToday', 'Spent Today'), value: todayExpense, color: '#ef4444' },
+          { label: t('expenses.netToday', 'Net Today'), value: todayNet, color: todayNet >= 0 ? '#10b981' : '#ef4444' },
+        ].map(card => (
+          <div
+            key={card.label}
+            className="rounded-2xl p-3 text-center"
+            style={{ backgroundColor: c.card, border: `1px solid ${c.border}` }}
+          >
+            <p className="text-[10px] font-medium mb-1" style={{ color: c.textSecondary }}>
+              {card.label}
+            </p>
+            <p className="text-base font-extrabold" style={{ color: card.color }}>
+              {fmtINR(Math.abs(card.value))}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* ── SUB-TABS ── */}
+      <div
+        className="flex gap-1 rounded-xl p-1"
+        style={{ backgroundColor: c.card, border: `1px solid ${c.border}` }}
+      >
+        {SUB_TAB_IDS.map(id => {
+          const labels: Record<SubTab, string> = {
+            all: t('expenses.all', 'All'),
+            expense: t('expenses.expenses', 'Expenses'),
+            income: t('expenses.income', 'Income'),
+            investment: t('expenses.investments', 'Investments'),
+          };
+          const active = subTab === id;
+          const bgMap: Record<SubTab, string> = {
+            all: '#8b5cf6',
+            expense: '#ef4444',
+            income: '#10b981',
+            investment: '#3b82f6',
+          };
+          return (
+            <button
+              key={id}
+              onClick={() => setSubTab(id)}
+              className="flex-1 py-2 text-xs font-bold rounded-lg transition-all"
+              style={active
+                ? { backgroundColor: bgMap[id], color: '#fff' }
+                : { color: c.textSecondary }
+              }
+            >
+              {labels[id]}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── ENTRY LIST ── */}
+      {filteredEntries.length === 0 ? (
+        <div
+          className="text-center py-12 rounded-2xl"
+          style={{ backgroundColor: c.card, border: `1px solid ${c.border}` }}
+        >
+          <Calendar size={36} className="mx-auto mb-3 opacity-30" style={{ color: c.textSecondary }} />
+          <p className="text-sm" style={{ color: c.textSecondary }}>
+            {t('expenses.noEntriesFor', 'No entries for')} {formatFullDate(selectedDate)}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filteredEntries.map(entry => {
+            const cat = catFor(entry);
+            const color = amtColor(entry.type);
+            const pmLabel = PAYMENT_METHOD_LABELS[entry.paymentMethod];
+            return (
+              <motion.div
+                key={entry.id}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl p-3 flex items-center gap-3"
+                style={{ backgroundColor: c.card, border: `1px solid ${c.border}` }}
+              >
+                {/* icon */}
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                  style={{ backgroundColor: `${cat?.color ?? '#8b5cf6'}20` }}
+                >
+                  {cat?.icon ?? '📦'}
+                </div>
+
+                {/* text */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold truncate" style={{ color: c.text }}>
+                    {entry.description || cat?.name || t('expenses.entry', 'Entry')}
+                  </p>
+                  <p className="text-[10px] mt-0.5" style={{ color: c.textSecondary }}>
+                    {cat?.name ?? entry.category}
+                    {pmLabel ? ` · ${pmLabel.icon} ${pmLabel.label}` : ''}
+                  </p>
+                </div>
+
+                {/* amount */}
+                <p className="text-sm font-bold flex-shrink-0" style={{ color }}>
+                  {entry.type === 'income' ? '+' : entry.type === 'expense' ? '-' : ''}
+                  {fmtINR(entry.amount)}
+                </p>
+
+                {/* delete */}
+                <button
+                  onClick={() => setDeleteConfirm(entry.id)}
+                  className="p-1.5 rounded-lg flex-shrink-0"
+                  style={{ backgroundColor: 'rgba(239,68,68,0.1)', color: '#ef4444' }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── DELETE CONFIRMATION ── */}
+      {createPortal(
+        <AnimatePresence>
+          {deleteConfirm && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[10001] flex items-center justify-center p-4"
+              style={{ backgroundColor: c.isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.3)' }}
+              onClick={() => setDeleteConfirm(null)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="w-full max-w-xs rounded-2xl p-6"
+                style={{ backgroundColor: c.card, border: `1px solid ${c.border}` }}
+                onClick={e => e.stopPropagation()}
+              >
+                <p className="font-bold text-base mb-2" style={{ color: c.text }}>
+                  {t('expenses.deleteConfirmTitle', 'Delete Entry?')}
+                </p>
+                <p className="text-sm mb-5" style={{ color: c.textSecondary }}>
+                  {t('expenses.deleteConfirmMsg', 'This action cannot be undone.')}
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setDeleteConfirm(null)}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium"
+                    style={{ backgroundColor: c.isDark ? '#334155' : '#f1f5f9', color: c.textSecondary }}
+                  >
+                    {t('common.cancel', 'Cancel')}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(deleteConfirm)}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-red-500"
+                  >
+                    {t('common.delete', 'Delete')}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
+
+      {/* ── FAB ── */}
+      <motion.button
+        whileTap={{ scale: 0.92 }}
+        onClick={() => setShowSheet(true)}
+        className="fixed bottom-20 right-5 z-[999] w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
+        style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)' }}
+      >
+        <Plus size={26} color="#fff" />
+      </motion.button>
+
+      {/* ── ADD ENTRY BOTTOM SHEET ── */}
+      {createPortal(
+        <AnimatePresence>
+          {showSheet && (
+            <AddEntrySheet
+              colors={c}
+              t={t}
+              defaultDate={selectedDate}
+              categories={allCategories}
+              accounts={accounts}
+              onSave={handleSaved}
+              onClose={() => setShowSheet(false)}
+            />
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ADD ENTRY BOTTOM SHEET
+   ══════════════════════════════════════════════════════════════ */
+
+interface SheetProps {
+  colors: ReturnType<typeof useAppColors>;
+  t: ReturnType<typeof useTranslation>['t'];
+  defaultDate: string;
+  categories: Category[];
+  accounts: ReturnType<typeof getAllAccounts>;
+  onSave: () => void;
+  onClose: () => void;
+}
+
+function AddEntrySheet({ colors: c, t, defaultDate, categories, accounts, onSave, onClose }: SheetProps) {
+  const [entryType, setEntryType] = useState<EntryType>('expense');
+  const [amount, setAmount] = useState('');
+  const [date, setDate] = useState(defaultDate);
+  const [categoryId, setCategoryId] = useState('food_dining');
+  const [description, setDescription] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('upi');
+  const [accountId, setAccountId] = useState('');
+
+  /* Update default category when type changes */
+  const typeCats = useMemo(
+    () => categories.filter(cat => cat.type === entryType && cat.isActive),
+    [categories, entryType],
+  );
+
+  const handleTypeChange = (newType: EntryType) => {
+    setEntryType(newType);
+    const defaults: Record<EntryType, string> = {
+      expense: 'food_dining',
+      income: 'salary',
+      investment: 'inv_mutual_fund',
+      transfer: 'other_expense',
+    };
+    const firstCat = categories.find(cat => cat.type === newType && cat.isActive);
+    setCategoryId(firstCat?.id ?? defaults[newType]);
+  };
+
+  const isValid = parseFloat(amount) > 0;
+
+  const handleSave = () => {
+    if (!isValid) return;
+    const cat = categories.find(cat => cat.id === categoryId);
+    const entry = createEntry({
+      type: entryType,
+      amount: parseFloat(amount),
+      date,
+      category: categoryId,
+      description: description || cat?.name || '',
+      paymentMethod,
+      accountId: accountId || undefined,
+      recurrence: 'none',
+    });
+    saveEntry(entry);
+    onSave();
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[10000] flex items-end justify-center"
+      style={{ backgroundColor: c.isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.3)' }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+        className="w-full max-w-md rounded-t-3xl flex flex-col"
+        style={{ maxHeight: '88dvh', backgroundColor: c.bg, borderTop: `1px solid ${c.border}` }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Handle bar + header */}
+        <div className="flex-shrink-0 px-6 pt-4 pb-2">
+          <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ backgroundColor: c.border }} />
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-bold text-lg" style={{ color: c.text }}>
+              {t('expenses.addNewEntry', 'Add Entry')}
+            </h3>
+            <button onClick={onClose} className="p-1 rounded-lg" style={{ color: c.textSecondary }}>
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-6 pb-3">
+          <div className="space-y-4">
+
+            {/* Entry type selector */}
+            <div>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: c.textSecondary }}>
+                {t('expenses.entryType', 'Entry Type')}
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {ENTRY_TYPES.map(et => {
+                  const labelMap: Record<EntryType, string> = {
+                    expense: t('expenses.expense', 'Expense'),
+                    income: t('expenses.income', 'Income'),
+                    investment: t('expenses.investment', 'Investment'),
+                    transfer: t('expenses.transfer', 'Transfer'),
+                  };
+                  const emojiMap: Record<EntryType, string> = {
+                    expense: '💸', income: '💰', investment: '📈', transfer: '🔄',
+                  };
+                  const active = entryType === et.id;
+                  return (
+                    <button
+                      key={et.id}
+                      onClick={() => handleTypeChange(et.id)}
+                      className="p-2 rounded-xl text-center text-xs font-bold transition-all"
+                      style={active
+                        ? { backgroundColor: et.color, color: '#fff' }
+                        : { backgroundColor: c.card, border: `1px solid ${c.border}`, color: c.textSecondary }
+                      }
+                    >
+                      <span className="text-base block">{emojiMap[et.id]}</span>
+                      {labelMap[et.id]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Amount */}
+            <div>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: c.textSecondary }}>
+                {t('expenses.amountLabel', 'Amount')}
+              </label>
+              <div className="relative">
+                <span
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold"
+                  style={{ color: c.textSecondary }}
+                >
+                  ₹
+                </span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={e => setAmount(e.target.value)}
+                  placeholder="0"
+                  autoFocus
+                  className="w-full pl-10 pr-4 py-3 rounded-xl text-lg font-bold focus:outline-none focus:ring-2 focus:ring-purple-500/40"
+                  style={{ backgroundColor: c.inputBg, border: `1px solid ${c.border}`, color: c.text }}
+                />
+              </div>
+            </div>
+
+            {/* Date */}
+            <div>
+              <label className="text-xs font-medium mb-1.5 flex items-center gap-1.5 block" style={{ color: c.textSecondary }}>
+                <Calendar size={12} /> {t('expenses.date', 'Date')}
+              </label>
+              <input
+                type="date"
+                value={date}
+                max={getTodayStr()}
+                onChange={e => setDate(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl text-sm font-semibold focus:outline-none"
+                style={{ backgroundColor: c.inputBg, border: `1px solid ${c.border}`, color: c.text }}
+              />
+            </div>
+
+            {/* Category grid */}
+            <div>
+              <label className="text-xs font-medium mb-1.5 block" style={{ color: c.textSecondary }}>
+                {t('expenses.category', 'Category')}
+              </label>
+              <div className="grid grid-cols-4 gap-2 max-h-44 overflow-y-auto pr-1">
+                {typeCats.map(cat => {
+                  const active = categoryId === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setCategoryId(cat.id)}
+                      className="p-2 rounded-xl text-center transition-all"
+                      style={active
+                        ? { backgroundColor: cat.color, color: '#fff' }
+                        : { backgroundColor: c.card, border: `1px solid ${c.border}`, color: c.textSecondary }
+                      }
+                    >
+                      <span className="text-lg block">{cat.icon}</span>
+                      <span className="text-[9px] font-semibold block mt-0.5 truncate leading-tight">
+                        {cat.name.split(' ')[0]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="text-xs font-medium mb-1.5 flex items-center gap-1.5 block" style={{ color: c.textSecondary }}>
+                <FileText size={12} /> {t('expenses.descriptionLabel', 'Description')}
+              </label>
+              <input
+                type="text"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder={t('expenses.descriptionPlaceholder', 'e.g. Lunch at restaurant')}
+                className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/40"
+                style={{ backgroundColor: c.inputBg, border: `1px solid ${c.border}`, color: c.text }}
+              />
+            </div>
+
+            {/* Payment method chips */}
+            <div>
+              <label className="text-xs font-medium mb-1.5 flex items-center gap-1.5 block" style={{ color: c.textSecondary }}>
+                <Wallet size={12} /> {t('expenses.paymentMethodLabel', 'Payment Method')}
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {PM_LIST.map(pm => {
+                  const info = PAYMENT_METHOD_LABELS[pm];
+                  const active = paymentMethod === pm;
+                  return (
+                    <button
+                      key={pm}
+                      onClick={() => setPaymentMethod(pm)}
+                      className="p-2 rounded-xl text-center transition-all"
+                      style={active
+                        ? { backgroundColor: '#7c3aed', color: '#fff' }
+                        : { backgroundColor: c.card, border: `1px solid ${c.border}`, color: c.textSecondary }
+                      }
+                    >
+                      <span className="text-base block">{info.icon}</span>
+                      <span className="text-[9px] font-semibold block mt-0.5">{info.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Account selector */}
+            {accounts.length > 0 && (
+              <div>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: c.textSecondary }}>
+                  {t('expenses.account', 'Account')}
+                </label>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => setAccountId('')}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                    style={!accountId
+                      ? { backgroundColor: '#7c3aed', color: '#fff' }
+                      : { backgroundColor: c.card, border: `1px solid ${c.border}`, color: c.textSecondary }
+                    }
+                  >
+                    {t('expenses.noAccount', 'None')}
+                  </button>
+                  {accounts.map(acc => {
+                    const active = accountId === acc.id;
+                    return (
+                      <button
+                        key={acc.id}
+                        onClick={() => setAccountId(acc.id)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                        style={active
+                          ? { backgroundColor: acc.color || '#7c3aed', color: '#fff' }
+                          : { backgroundColor: c.card, border: `1px solid ${c.border}`, color: c.textSecondary }
+                        }
+                      >
+                        {acc.icon} {acc.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sticky save button */}
+        <div
+          className="flex-shrink-0 px-6 pt-3"
+          style={{
+            paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom, 12px))',
+            borderTop: `1px solid ${c.border}`,
+          }}
+        >
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 py-3 rounded-xl text-sm font-medium transition-colors"
+              style={{ backgroundColor: c.isDark ? '#334155' : '#f1f5f9', color: c.textSecondary }}
+            >
+              {t('common.cancel', 'Cancel')}
+            </button>
+            <motion.button
+              whileTap={isValid ? { scale: 0.97 } : {}}
+              onClick={handleSave}
+              disabled={!isValid}
+              className="flex-1 py-3 rounded-xl text-sm font-bold text-white disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)' }}
+            >
+              {t('expenses.saveExpense', 'Save')}
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 }
