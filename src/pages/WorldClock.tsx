@@ -13,6 +13,8 @@ import { WORLD_TIMEZONES, POPULAR_IANA, TimezoneInfo } from '../data/timezones';
 /**
  * Convert an ISO 3166-1 alpha-2 country code to its flag emoji.
  * Uses Unicode Regional Indicator Symbols — works offline, no network call.
+ * Note: Windows desktop browsers do NOT render flag emojis natively, so we
+ * use FlagImage below (with this emoji as fallback) for cross-platform display.
  */
 const countryCodeToFlag = (code: string): string => {
     if (!code || code.length !== 2) return '🏳️';
@@ -23,6 +25,41 @@ const countryCodeToFlag = (code: string): string => {
         A + code.toUpperCase().charCodeAt(1) - offset,
     );
 };
+
+/**
+ * FlagImage — renders a country flag as an image (works on Windows web,
+ * macOS, iOS, Android). Falls back to emoji if image fails (offline or blocked).
+ * Source: flagcdn.com — free public CDN, ~1KB per flag, aggressively cached.
+ */
+const FlagImage = memo(function FlagImage({ code, size = 'sm', className = '' }: { code: string; size?: 'sm' | 'md' | 'lg'; className?: string }) {
+    const [errored, setErrored] = useState(false);
+    if (!code || code.length !== 2) {
+        return <Globe size={14} className="text-slate-400" />;
+    }
+    if (errored) {
+        // Network/CDN failure → fall back to emoji (renders on Android, macOS, iOS)
+        return (
+            <span className={`leading-none ${size === 'lg' ? 'text-3xl' : size === 'md' ? 'text-xl' : 'text-lg'}`} aria-label={code}>
+                {countryCodeToFlag(code)}
+            </span>
+        );
+    }
+    // flagcdn.com 2x retina sizes for crisp rendering
+    const dimensions = size === 'lg' ? { w: 64, h: 48, src: '64x48' } : size === 'md' ? { w: 36, h: 27, src: '40x30' } : { w: 32, h: 24, src: '32x24' };
+    return (
+        <img
+            src={`https://flagcdn.com/${dimensions.src}/${code.toLowerCase()}.png`}
+            srcSet={`https://flagcdn.com/${dimensions.w * 2}x${dimensions.h * 2}/${code.toLowerCase()}.png 2x`}
+            width={dimensions.w}
+            height={dimensions.h}
+            alt={code}
+            loading="lazy"
+            decoding="async"
+            onError={() => setErrored(true)}
+            className={`object-cover ${className}`}
+        />
+    );
+});
 
 // --- Shared Live Time Hook ---
 class TimeTicker {
@@ -908,10 +945,8 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
                     <p className="text-[10px] font-bold text-primary uppercase tracking-wider mb-2">{t('worldClock.geography')}</p>
                     <div className="rounded-2xl bg-card p-4 flex items-center gap-4 shadow-lg border border-border">
                         <div className="flex-shrink-0">
-                            <div className="w-16 h-16 rounded-xl bg-muted flex flex-col items-center justify-center gap-2">
-                                <span className="text-3xl leading-none" aria-label={meta.countryCode}>
-                                    {countryCodeToFlag(meta.countryCode)}
-                                </span>
+                            <div className="w-16 h-16 rounded-xl bg-muted flex flex-col items-center justify-center gap-1.5 overflow-hidden">
+                                <FlagImage code={meta.countryCode} size="lg" className="rounded-sm shadow-sm" />
                                 <MapPin size={10} className="text-muted-foreground" />
                             </div>
                         </div>
@@ -1005,9 +1040,9 @@ const LiveClockCard = memo(function LiveClockCard({ clock, index, onDetail, onRe
 
             <div className="relative p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-[36px] h-[24px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-[2px] overflow-hidden text-xl leading-none">
+                    <div className="w-[36px] h-[24px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-[2px] overflow-hidden">
                         {meta.countryCode ? (
-                            <span aria-label={meta.countryCode}>{countryCodeToFlag(meta.countryCode)}</span>
+                            <FlagImage code={meta.countryCode} size="md" />
                         ) : (
                             <Globe size={16} className="text-slate-400" />
                         )}
@@ -1083,9 +1118,9 @@ const LiveAddZoneItem = memo(function LiveAddZoneItem({ tz, onAdd }: { tz: Timez
         <button onClick={onAdd}
             className="w-full flex items-center justify-between p-3 rounded-xl bg-background border border-border hover:border-primary/50 transition-colors text-left group">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-[32px] h-[22px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden text-lg leading-none">
+                <div className="w-[32px] h-[22px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden">
                     {meta.countryCode ? (
-                        <span aria-label={meta.countryCode}>{countryCodeToFlag(meta.countryCode)}</span>
+                        <FlagImage code={meta.countryCode} size="sm" />
                     ) : (
                         <Globe size={14} className="text-slate-400" />
                     )}
