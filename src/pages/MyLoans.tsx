@@ -63,6 +63,22 @@ function fmtDate(ts: number | string): string {
     return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+/**
+ * Extract the actual start date of a saved profile, regardless of which
+ * calculator saved it. Different calculators store the start date under
+ * different field names — this normalises across all of them.
+ *
+ * Returns an ISO YYYY-MM-DD string, or '' if no start date was saved.
+ */
+function getProfileStartDate(d: any): string {
+    if (!d) return '';
+    return d.disbursementDate    // Loan calculators (EMI, Mortgage, TwoWheeler, GoldLoan, Overdraft)
+        || d.startDate             // SIP, FD, RD, POMIS, SCSS, snapshot trackers
+        || d.purchaseDate          // NSC, KVP
+        || d.openingDate           // PPF, SSY
+        || '';
+}
+
 interface LiveMetrics {
     label1: string; value1: string;
     label2: string; value2: string;
@@ -341,7 +357,14 @@ export default function MyLoans() {
 
                 {/* Footer */}
                 <div className="flex items-center justify-between">
-                    <p className="text-[9px]" style={{ color: c.textSecondary }}>{t('liveStatus.savedOn', { date: fmtDate(p.createdAt) })}</p>
+                    <p className="text-[9px]" style={{ color: c.textSecondary }}>
+                        {(() => {
+                            const startDate = getProfileStartDate(p.profileData);
+                            return startDate
+                                ? t('myLoans.startedOn', { date: fmtDate(startDate) })
+                                : t('liveStatus.savedOn', { date: fmtDate(p.createdAt) });
+                        })()}
+                    </p>
                     <div className="flex items-center gap-2">
                         <button onClick={() => navigate(`/my-loans/${p.id}`)}
                             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold text-white"

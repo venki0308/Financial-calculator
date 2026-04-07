@@ -104,6 +104,7 @@ const WorldClock                 = lr(() => import('./pages/WorldClock'));
 const InsuranceCalculator        = lr(() => import('./pages/InsuranceCalculator'));
 const InsuranceCompare           = lr(() => import('./pages/InsuranceCompare'));
 const TwoWheelerLoanCalculator   = lr(() => import('./pages/TwoWheelerLoanCalculator'));
+const GoldLoanCalculator         = lr(() => import('./pages/GoldLoanCalculator'));
 const CibilScoreCalculator       = lr(() => import('./pages/CibilScoreCalculator'));
 const CibilProfileSetup          = lr(() => import('./pages/CibilProfileSetup'));
 
@@ -411,6 +412,7 @@ function AppContent() {
                         <Route path="/my-loans/:loanId" element={<LoanDetail />} />
                         <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
                         <Route path="/two-wheeler-loan" element={<TwoWheelerLoanCalculator />} />
+                        <Route path="/gold-loan" element={<GoldLoanCalculator />} />
                         <Route path="/cibil-score" element={<CibilScoreCalculator />} />
                         <Route path="/cibil-profile" element={<CibilProfileSetup />} />
                         <Route path="/dev/validator" element={<ValidatorPage />} />

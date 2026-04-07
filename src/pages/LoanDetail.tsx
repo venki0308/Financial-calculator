@@ -27,6 +27,46 @@ function fmtDate(d: string | number): string {
     return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+/**
+ * Extract the start date of a saved profile, regardless of which calculator
+ * saved it. Different calculators store the start date under different field
+ * names — this normalises across all of them. Returns '' if none found.
+ */
+function getProfileStartDate(d: any): string {
+    if (!d) return '';
+    return d.disbursementDate
+        || d.startDate
+        || d.purchaseDate
+        || d.openingDate
+        || '';
+}
+
+// Map LoanType (loanStorage) → calculatorType string used by isAnyLoanType
+const LOAN_TYPE_TO_CALC_TYPE: Record<string, string> = {
+    home_loan: 'Home Loan',
+    car_loan: 'Car Loan',
+    personal_loan: 'Personal Loan',
+    education_loan: 'Education Loan',
+    gold_loan: 'Gold Loan',
+    business_loan: 'Business Loan',
+    two_wheeler_loan: 'Two Wheeler Loan',
+    other: 'Loan EMI',
+};
+
+// Recognise any loan-type calculator (matches MyLoans.isAnyLoanType)
+function isAnyLoanCalcType(type: string): boolean {
+    const t = type.toLowerCase().replace(/\s+calculator$/i, '').trim();
+    return t === 'loan emi'
+        || t === 'mortgage'
+        || t === 'home loan'
+        || t === 'car loan'
+        || t === 'personal loan'
+        || t === 'education loan'
+        || t === 'gold loan'
+        || t === 'business loan'
+        || t === 'two wheeler loan';
+}
+
 function fmtYM(months: number, t?: (key: string) => string): string {
     const y = Math.floor(months / 12);
     const m = months % 12;
@@ -57,7 +97,10 @@ export default function LoanDetail() {
             return {
                 id: fromLoanStorage.id,
                 name: fromLoanStorage.nickName,
-                calculatorType: 'Loan EMI',
+                // Preserve the loan subtype so the loan branch fires for
+                // Home/Car/Personal/Education/Gold/Two-Wheeler/Business loans,
+                // not just generic 'Loan EMI'
+                calculatorType: LOAN_TYPE_TO_CALC_TYPE[fromLoanStorage.loanType] || 'Loan EMI',
                 profileData: {
                     loanAmount: fromLoanStorage.loanAmount,
                     annualRate: fromLoanStorage.interestRate,
@@ -93,7 +136,10 @@ export default function LoanDetail() {
 
     const d = profile.profileData;
     const typeLC = profile.calculatorType.toLowerCase().replace(/\s+calculator$/i, '').trim();
-    const isLoan = typeLC === 'loan emi' || typeLC === 'mortgage';
+    // Recognise all loan subtypes (Home, Car, Personal, Education, Gold,
+    // Two Wheeler, Business) — not just generic 'Loan EMI' / 'Mortgage'.
+    // Overdraft is a snapshot type and goes through a separate branch below.
+    const isLoan = isAnyLoanCalcType(typeLC);
 
     const handleDelete = () => {
         removeProfile(profile.id);
@@ -290,6 +336,40 @@ export default function LoanDetail() {
                             </div>
                         </div>
                     )}
+
+                    {/* Loan Info Card — always visible (shows disbursement / start date) */}
+                    <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                        <div className="flex items-center gap-2 mb-3">
+                            <Info className="w-4 h-4 text-blue-500" />
+                            <h3 className="text-sm font-bold" style={{ color: c.text }}>{t('myLoans.loanInfo')}</h3>
+                        </div>
+                        <div className="space-y-0">
+                            <div className="flex justify-between py-2.5 border-b text-xs" style={{ borderColor: `${c.border}50` }}>
+                                <span style={{ color: c.textSecondary }}>{t('myLoans.disbursementDate')}</span>
+                                <span className="font-bold" style={{ color: c.text }}>{fmtDate(d.disbursementDate)}</span>
+                            </div>
+                            <div className="flex justify-between py-2.5 border-b text-xs" style={{ borderColor: `${c.border}50` }}>
+                                <span style={{ color: c.textSecondary }}>{t('myLoans.maturityDateLabel')}</span>
+                                <span className="font-bold" style={{ color: c.text }}>{maturityDate}</span>
+                            </div>
+                            <div className="flex justify-between py-2.5 border-b text-xs" style={{ borderColor: `${c.border}50` }}>
+                                <span style={{ color: c.textSecondary }}>{t('myLoans.loanAmountLabel')}</span>
+                                <span className="font-bold" style={{ color: c.text }}>{formatINR(d.loanAmount)}</span>
+                            </div>
+                            <div className="flex justify-between py-2.5 border-b text-xs" style={{ borderColor: `${c.border}50` }}>
+                                <span style={{ color: c.textSecondary }}>{t('myLoans.interestRateLabel')}</span>
+                                <span className="font-bold" style={{ color: c.text }}>{d.annualRate}% {t('myLoans.pdfPa')}</span>
+                            </div>
+                            <div className="flex justify-between py-2.5 border-b text-xs" style={{ borderColor: `${c.border}50` }}>
+                                <span style={{ color: c.textSecondary }}>{t('myLoans.tenureLabel')}</span>
+                                <span className="font-bold" style={{ color: c.text }}>{d.tenureMonths} {t('myLoans.pdfMonths')}</span>
+                            </div>
+                            <div className="flex justify-between py-2.5 text-xs">
+                                <span style={{ color: c.textSecondary }}>{t('myLoans.emiDueDayLabel')}</span>
+                                <span className="font-bold" style={{ color: c.text }}>{d.emiDueDay || 5}</span>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Progress */}
                     {!status.loanNotStarted && (
@@ -574,9 +654,130 @@ export default function LoanDetail() {
                 const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate, targetAmount: d.targetAmount });
                 return { cards: [{ label: 'Invested', value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: 'Value', value: formatINR(s.currentValue), color: '#10B981' }, { label: 'Goal', value: `${s.progressToGoal.toFixed(0)}%`, color: '#8B5CF6' }], rows: [['Wealth Gained', formatINR(s.wealthGained)], ['Target Amount', d.targetAmount ? formatINR(d.targetAmount) : '—'], ['Goal Progress', `${s.progressToGoal.toFixed(1)}%`]], progress: s.progressToGoal, statusText: `${s.progressToGoal.toFixed(0)}% to goal`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
             }
+
+            // ── SNAPSHOT TRACKERS (no time-based engine) ──
+            // For these, we display the values that were saved by the calculator
+            // exactly as-is, plus the start date the user recorded.
+            if (mt('compound interest', 'ci')) {
+                const principal = d.principal || 0;
+                const maturity = d.maturity || 0;
+                const interest = d.interest ?? (maturity - principal);
+                return {
+                    cards: [
+                        { label: 'Principal', value: formatINR(principal), color: '#3B82F6' },
+                        { label: 'Maturity', value: formatINR(maturity), color: '#10B981' },
+                        { label: 'Interest', value: formatINR(interest), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        ['Years', String(d.years || 0)],
+                        ['Rate', `${d.rate || 0}% p.a.`],
+                        ['Compounding', d.freq === 1 ? 'Yearly' : d.freq === 2 ? 'Half-yearly' : d.freq === 4 ? 'Quarterly' : d.freq === 12 ? 'Monthly' : `${d.freq || 1}x/year`],
+                    ],
+                    progress: 100,
+                    statusText: `${d.years || 0}Y @ ${d.rate || 0}%`,
+                    headline: formatINR(maturity),
+                    headlineLabel: 'Maturity Value',
+                };
+            }
+            if (mt('simple interest', 'si')) {
+                const principal = d.principal || 0;
+                const interest = d.interest || 0;
+                const totalPayable = d.totalPayable ?? (principal + interest);
+                return {
+                    cards: [
+                        { label: 'Principal', value: formatINR(principal), color: '#3B82F6' },
+                        { label: 'Interest', value: formatINR(interest), color: '#F59E0B' },
+                        { label: 'Total', value: formatINR(totalPayable), color: '#10B981' },
+                    ],
+                    rows: [
+                        ['Tenure', `${d.tenureMonths || d.months || 0} months`],
+                        ['Rate', `${d.rate || 0}% p.a.`],
+                        ['Mode', d.mode || 'Simple Interest'],
+                    ],
+                    progress: 100,
+                    statusText: `${d.tenureMonths || d.months || 0}M @ ${d.rate || 0}%`,
+                    headline: formatINR(totalPayable),
+                    headlineLabel: 'Total Payable',
+                };
+            }
+            if (mt('property')) {
+                const totalCost = d.totalCost || d.propertyValue || 0;
+                return {
+                    cards: [
+                        { label: 'Total Cost', value: formatINR(totalCost), color: '#F97316' },
+                        { label: 'Type', value: d.mode || '—', color: '#3B82F6' },
+                        { label: 'Area', value: d.area ? `${d.area} sqft` : '—', color: '#10B981' },
+                    ],
+                    rows: [
+                        ['Property Type', d.mode || '—'],
+                        ['Total Value', formatINR(totalCost)],
+                        ...(d.area ? [['Built-up Area', `${d.area} sqft`]] : []),
+                    ],
+                    progress: 100,
+                    statusText: d.mode || 'Property',
+                    headline: formatINR(totalCost),
+                    headlineLabel: 'Property Value',
+                };
+            }
+            if (mt('insurance')) {
+                const sumInsured = d.sumInsured || 0;
+                const premiumMin = d.premiumMin || 0;
+                const premiumMax = d.premiumMax || premiumMin;
+                const isLife = d.tab === 'life';
+                return {
+                    cards: [
+                        { label: isLife ? 'Cover' : 'Sum Insured', value: formatINR(sumInsured), color: '#10B981' },
+                        { label: 'Premium (min)', value: formatINR(premiumMin), color: '#3B82F6' },
+                        { label: 'Premium (max)', value: formatINR(premiumMax), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        ['Type', isLife ? 'Term Life Insurance' : 'Health Insurance'],
+                        ...(isLife && d.age ? [['Age at Purchase', `${d.age} years`]] : []),
+                        ...(d.tenure ? [['Term', `${d.tenure} years`]] : []),
+                    ],
+                    progress: 100,
+                    statusText: isLife ? 'Life Cover' : 'Health Cover',
+                    headline: formatINR(sumInsured),
+                    headlineLabel: isLife ? 'Life Cover' : 'Sum Insured',
+                };
+            }
+            if (mt('overdraft', 'od')) {
+                const utilized = d.utilized || d.loanAmount || 0;
+                const totalInterest = d.totalInterest || 0;
+                const totalPayable = d.totalPayable ?? (utilized + totalInterest);
+                return {
+                    cards: [
+                        { label: 'Utilized', value: formatINR(utilized), color: '#EF4444' },
+                        { label: 'Interest', value: formatINR(totalInterest), color: '#F59E0B' },
+                        { label: 'Total Payable', value: formatINR(totalPayable), color: '#10B981' },
+                    ],
+                    rows: [
+                        ['Days Utilized', String(d.days || 0)],
+                        ['Rate', `${d.rate || 0}% p.a.`],
+                        ['Mode', d.odType === 'business' ? 'Business OD' : 'Personal OD'],
+                    ],
+                    progress: 100,
+                    statusText: `${d.days || 0}d @ ${d.rate || 0}%`,
+                    headline: formatINR(totalPayable),
+                    headlineLabel: 'Total Payable',
+                };
+            }
         } catch { /* skip */ }
         return empty;
     }, [profile, d, typeLC]);
+
+    // Inject a "Start Date" row at the top of the rows array if a start date
+    // exists in the saved profile data — works across every calculator type.
+    const investmentMetricsWithStartDate = useMemo(() => {
+        const startDate = getProfileStartDate(d);
+        if (!startDate) return investmentMetrics;
+        // Avoid double-injecting if a row labelled 'Start Date' already exists
+        if (investmentMetrics.rows.some(r => r[0] === 'Start Date')) return investmentMetrics;
+        return {
+            ...investmentMetrics,
+            rows: [['Start Date', fmtDate(startDate)], ...investmentMetrics.rows],
+        };
+    }, [investmentMetrics, d]);
 
     const [showYearTable, setShowYearTable] = useState(false);
 
@@ -590,7 +791,7 @@ export default function LoanDetail() {
             results: [
                 { label: investmentMetrics.headlineLabel, value: investmentMetrics.headline },
                 { label: 'Progress', value: investmentMetrics.statusText },
-                ...investmentMetrics.rows.map(([label, value]) => ({ label, value: String(value) })),
+                ...investmentMetricsWithStartDate.rows.map(([label, value]) => ({ label, value: String(value) })),
             ],
             ...(yearWiseTable.rows.length > 0 ? {
                 projectionTitle: 'Year-wise Breakdown',
@@ -676,7 +877,7 @@ export default function LoanDetail() {
                         <h3 className="text-sm font-bold" style={{ color: c.text }}>Complete Details</h3>
                     </div>
                     <div className="space-y-0">
-                        {investmentMetrics.rows.map(([label, value], i) => (
+                        {investmentMetricsWithStartDate.rows.map(([label, value], i) => (
                             <div key={i} className="flex justify-between py-2.5 border-b text-xs" style={{ borderColor: `${c.border}50` }}>
                                 <span style={{ color: c.textSecondary }}>{label}</span>
                                 <span className="font-bold" style={{ color: c.text }}>{value}</span>

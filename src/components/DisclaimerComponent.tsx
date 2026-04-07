@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronUp, Lightbulb, BarChart2, ClipboardList, TrendingUp, Landmark, ShieldCheck, Target, CreditCard, AlertCircle, Scale, Building2, Briefcase, Home as HomeIcon } from 'lucide-react';
+import { ChevronDown, ChevronUp, Lightbulb, BarChart2, ClipboardList, TrendingUp, Landmark, ShieldCheck, Target, CreditCard, AlertCircle, Scale, Building2, Briefcase, Home as HomeIcon, Gem } from 'lucide-react';
 
-export type ModuleName = 'advisor' | 'emi' | 'tax' | 'sip' | 'fd' | 'rd' | 'ppf' | 'hra' | 'gratuity' | 'gst' | 'goal' | 'expense' | 'overdraft' | 'schemes' | 'compare' | 'general' | 'time' | 'scientific' | 'swp' | 'cagr' | 'lumpsum' | 'epf' | 'nps' | 'ssy' | 'nsc' | 'kvp' | 'pomis' | 'potd' | 'scss' | 'budget' | 'insurance' | 'mortgage' | 'property';
+export type ModuleName = 'advisor' | 'emi' | 'tax' | 'sip' | 'fd' | 'rd' | 'ppf' | 'hra' | 'gratuity' | 'gst' | 'goal' | 'expense' | 'overdraft' | 'schemes' | 'compare' | 'general' | 'time' | 'scientific' | 'swp' | 'cagr' | 'lumpsum' | 'epf' | 'nps' | 'ssy' | 'nsc' | 'kvp' | 'pomis' | 'potd' | 'scss' | 'budget' | 'insurance' | 'mortgage' | 'property' | 'goldLoan';
 
 const MODULE_ICONS: Record<ModuleName, React.ElementType> = {
     emi: Lightbulb, overdraft: Building2, tax: ClipboardList, sip: TrendingUp,
@@ -13,7 +13,7 @@ const MODULE_ICONS: Record<ModuleName, React.ElementType> = {
     lumpsum: TrendingUp, epf: ShieldCheck, nps: ShieldCheck, ssy: ShieldCheck,
     nsc: Landmark, kvp: Landmark, pomis: Landmark, potd: Landmark,
     scss: ShieldCheck, budget: CreditCard, insurance: ShieldCheck,
-    mortgage: HomeIcon, property: Building2,
+    mortgage: HomeIcon, property: Building2, goldLoan: Gem,
 };
 
 const colorClass = "bg-blue-50 text-blue-800 border-blue-100 dark:bg-blue-950/40 dark:text-blue-200 dark:border-blue-900";
