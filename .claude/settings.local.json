@@ -13,7 +13,10 @@
       "Bash(node -e \"['en','hi','te','ta','kn','ml'].forEach\\(l => { try { JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/'+l+'.json','utf8'\\)\\); console.log\\(l+': OK'\\); } catch\\(e\\) { console.log\\(l+': FAIL '+e.message\\); process.exit\\(1\\); } }\\);\")",
       "Bash(node -e ':*)",
       "Bash(node -e \"for\\(const f of ['hi','te','ta','kn','ml']\\){try{JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/'+f+'.json','utf8'\\)\\);console.log\\(f+': OK'\\)}catch\\(e\\){console.log\\(f+': '+e.message\\)}}\")",
-      "Bash(node -e \"for\\(const f of ['hi','te','ta','kn','ml']\\){try{const data=JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/'+f+'.json','utf8'\\)\\);console.log\\(f+': OK'\\)}catch\\(e\\){console.log\\(f+': '+e.message\\)}}\")"
+      "Bash(node -e \"for\\(const f of ['hi','te','ta','kn','ml']\\){try{const data=JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/'+f+'.json','utf8'\\)\\);console.log\\(f+': OK'\\)}catch\\(e\\){console.log\\(f+': '+e.message\\)}}\")",
+      "Bash(node -e \"['hi','te','ta','kn','ml'].forEach\\(l => { const j = JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/'+l+'.json','utf8'\\)\\); const sh = j.sh; console.log\\(l+': '+\\(sh ? Object.keys\\(sh\\).length+' sh keys' : 'NO sh block'\\)\\); }\\);\")",
+      "Bash(wc -c src/locales/*.json)",
+      "Bash(ls -la dist/assets/locale-*.js)"
     ]
   }
 }
