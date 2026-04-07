@@ -424,15 +424,16 @@ function AppContent() {
 }
 
 export default function App() {
-    // Dev-only escape hatch: ?dev=true unlocks the in-browser web app shell.
-    // Disabled in production builds so end-users can't flip the flag.
-    const isDevBuild = import.meta.env.DEV;
+    // Web preview escape hatch: ?dev=true unlocks the in-browser web app shell
+    // (same UI as the native app). Persisted to localStorage so it survives
+    // reloads. Visitors land on the marketing site by default.
     const urlParams = new URLSearchParams(window.location.search);
-    const isDevUrl = isDevBuild && urlParams.get('dev') === 'true';
-    if (isDevUrl) {
+    if (urlParams.get('dev') === 'true') {
         localStorage.setItem('fincalix_dev_access', 'true');
+    } else if (urlParams.get('dev') === 'false') {
+        localStorage.removeItem('fincalix_dev_access');
     }
-    const isDevMode = isDevBuild && localStorage.getItem('fincalix_dev_access') === 'true';
+    const isDevMode = localStorage.getItem('fincalix_dev_access') === 'true';
 
     // CASE 1: Native Android/iOS → always show full app
     // CASE 2: Browser with dev mode → show full app for testing
