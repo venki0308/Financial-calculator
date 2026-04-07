@@ -346,7 +346,7 @@ export default function PrivacyPolicy() {
 
             {/* 11 */}
             <Section icon="📊" color="#EC4899" title={t.s.reporting}>
-                <p style={{ marginBottom: '14px' }}>We use analytics tools to understand app usage and improve performance. These tools may change over time, but we ensure no personal or financial data is collected.</p>
+                <p style={{ marginBottom: '14px' }}>We use Google Firebase Analytics (Google LLC, USA) to understand anonymous app usage and improve performance. This constitutes a cross-border transfer of anonymous, non-identifiable data to the United States. No personal or financial data is collected. You can disable analytics at any time by clearing app data or uninstalling the app.</p>
                 <GreenBox>
                     <div style={{ color: '#10B981', fontWeight: 600, marginBottom: '10px' }}>✅ Data Safety</div>
                     <Bullets items={[
@@ -371,6 +371,50 @@ export default function PrivacyPolicy() {
                     >
                         🛡️ View Data & Privacy (Play Store Data Safety)
                     </a>
+                </div>
+            </Section>
+
+            {/* 12 — DPDP Act 2023 & Grievance */}
+            <Section icon="⚖️" color="#8B5CF6" title="DPDP Act 2023 & Grievance">
+                <p style={{ marginBottom: '14px' }}>
+                    FinCalix complies with the Digital Personal Data Protection Act, 2023. Because we collect zero personal data and store all financial inputs only on your device, FinCalix is exempt from appointing a Data Protection Officer under the DPDP Act. For any privacy concerns, grievances, or questions about how this app handles your data, please email us. We aim to respond within 30 days.
+                </p>
+
+                <div style={{
+                    background: c.isDark ? 'rgba(139,92,246,0.08)' : 'rgba(139,92,246,0.06)',
+                    border: `1px solid rgba(139,92,246,${c.isDark ? '0.3' : '0.2'})`,
+                    borderRadius: '12px', padding: '14px', marginBottom: '14px',
+                }}>
+                    <div style={{ color: '#8B5CF6', fontWeight: 600, marginBottom: '8px' }}>Your Rights as a Data Principal</div>
+                    <Bullets items={[
+                        'Right to access — all your data is visible inside the app at any time',
+                        'Right to correction — edit any saved entry inside the app',
+                        'Right to erasure — clear app data from device settings or uninstall the app',
+                        'Right to grievance redressal — email support@fincalix.com',
+                        'Right to withdraw consent — disable analytics by clearing app data',
+                    ]} />
+                </div>
+
+                <div style={{
+                    background: c.isDark ? 'rgba(16,185,129,0.08)' : 'rgba(16,185,129,0.06)',
+                    border: `1px solid rgba(16,185,129,${c.isDark ? '0.3' : '0.2'})`,
+                    borderRadius: '12px', padding: '14px', marginBottom: '14px',
+                }}>
+                    <div style={{ color: '#10B981', fontWeight: 600, marginBottom: '6px' }}>Grievance Contact</div>
+                    <a href="mailto:support@fincalix.com" style={{ color: '#10B981', fontWeight: 600, textDecoration: 'underline' }}>
+                        support@fincalix.com
+                    </a>
+                </div>
+
+                <div style={{
+                    background: c.isDark ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.06)',
+                    border: `1px solid rgba(245,158,11,${c.isDark ? '0.3' : '0.2'})`,
+                    borderRadius: '12px', padding: '14px',
+                }}>
+                    <div style={{ color: '#F59E0B', fontWeight: 600, marginBottom: '6px' }}>Third-Party Trademarks</div>
+                    <p style={{ fontSize: '13px', lineHeight: 1.6, margin: 0 }}>
+                        CIBIL® is a registered trademark of TransUnion CIBIL Limited. FinCalix is not affiliated with, endorsed by, or partnered with TransUnion CIBIL or any credit bureau. All other trademarks (RBI, SEBI, IRDAI, AMFI, IT Department, India Post, etc.) are the property of their respective owners and are referenced for educational purposes only.
+                    </p>
                 </div>
             </Section>
 

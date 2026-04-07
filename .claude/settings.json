@@ -3,7 +3,16 @@
     "allow": [
       "Bash(node scripts/qa-expense-tracker.mjs)",
       "Bash(node -e 'const d = require\\('\\\\''./src/locales/__TRACKED_VAR__.json'\\\\''\\); console.log\\('\\\\''customRange:'\\\\'', d.expenses?.customRange ? '\\\\''OK'\\\\'' : '\\\\''MISSING'\\\\''\\);')",
-      "Bash(node -e ':*)"
+      "Bash(node -e ':*)",
+      "Bash(grep -r \"noUnusedLocals\\\\|noUnusedParameters\" tsconfig*.json)",
+      "Bash(find /d/Skills/Financial-calculator/src -name \"*.tsx\" -type f -exec grep -l \"\\\\\\\\.png\\\\|\\\\\\\\.jpg\\\\|\\\\\\\\.svg\\\\|\\\\\\\\.webp\" {} \\\\;)",
+      "Bash(grep -rn \"you.{0,50}approved\\\\|you.{0,50}eligible\\\\|you.{0,50}qualify\\\\|guaranteed.*approval\\\\|will be approved\\\\|will approve\" /d/Skills/Financial-calculator/src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(grep -l \"approvalGreen\\\\|approvalYellow\" /d/Skills/Financial-calculator/src/components/*.tsx)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/hi.json','utf8'\\)\\); console.log\\('hi.json OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/te.json','utf8'\\)\\); console.log\\('te.json OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/ta.json','utf8'\\)\\); console.log\\('ta.json OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/kn.json','utf8'\\)\\); console.log\\('kn.json OK'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/ml.json','utf8'\\)\\); console.log\\('ml.json OK'\\)\")"
     ]
   }
 }

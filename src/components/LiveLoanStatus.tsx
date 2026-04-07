@@ -415,7 +415,7 @@ export default function LiveLoanStatus({ profile }: Props) {
                 </AnimatePresence>
             </div>
 
-            {/* 8. SMART ADVISOR INSIGHT */}
+            {/* 8. SMART INSIGHT */}
             <div className="p-4 rounded-2xl" style={{ backgroundColor: '#10B98110', border: '1px solid #10B98125' }}>
                 <div className="flex items-start gap-2">
                     <Lightbulb className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
@@ -427,6 +427,10 @@ export default function LiveLoanStatus({ profile }: Props) {
                                 : t('liveStatus.goodProgressAdvice', { percent: principalPct.toFixed(0) })
                             }
                             {status.interestSavedIfCloseToday > 100000 && ` ${t('liveStatus.closeTodaySaveAdvice', { amount: formatINR(status.interestSavedIfCloseToday) })}`}
+                        </p>
+                        {/* Not-advice footnote (legal compliance) */}
+                        <p className="mt-1.5 text-[9px] italic" style={{ color: c.textSecondary }}>
+                            {t('liveStatus.notFinancialAdvice')}
                         </p>
                     </div>
                 </div>

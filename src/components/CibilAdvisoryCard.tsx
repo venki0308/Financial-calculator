@@ -124,6 +124,10 @@ export default function CibilAdvisoryCard({ score, loanType, loanAmount, tenureM
                         </p>
                     </div>
                 )}
+                {/* Indicative-rate footnote (legal compliance) */}
+                <p className="mt-3 text-[9px] leading-snug italic" style={{ color: c.textSecondary }}>
+                    {t('cibil.ratesIndicative')}
+                </p>
             </div>
 
             {/* Cost Comparison Table */}
@@ -143,6 +147,10 @@ export default function CibilAdvisoryCard({ score, loanType, loanAmount, tenureM
                             ))}
                         </tbody>
                     </table>
+                    {/* Indicative-rate footnote (legal compliance) */}
+                    <p className="mt-2 text-[9px] leading-snug italic" style={{ color: c.textSecondary }}>
+                        {t('cibil.ratesIndicative')}
+                    </p>
                 </div>
             )}
 

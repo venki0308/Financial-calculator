@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Check, Trash2, Plus, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Check, Trash2, Plus, TrendingUp, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import NumberInput from '../components/NumberInput';
@@ -36,6 +36,12 @@ export default function CibilProfileSetup() {
     const [gender, setGender] = useState<string | null>(profile?.gender || null);
     const [history, setHistory] = useState<CibilProfile['history']>(profile?.history || []);
     const [saved, setSaved] = useState(false);
+    const [showExitModal, setShowExitModal] = useState(false);
+
+    const openCibilWebsite = () => {
+        window.open('https://www.cibil.com', '_blank', 'noopener,noreferrer');
+        setShowExitModal(false);
+    };
 
     // Impact calculator
     const [homeValue, setHomeValue] = useState(5000000);
@@ -148,6 +154,18 @@ export default function CibilProfileSetup() {
                             <NumberInput label={t('cibil.enterScore')} value={score} onChange={setScore} min={300} max={900} />
                             <input type="range" min={300} max={900} value={score} onChange={e => setScore(Number(e.target.value))} className="w-full mt-2 accent-violet-600" />
 
+                            {/* User-entered disclaimer (legal compliance) */}
+                            <p className="mt-2 text-[10px] leading-snug italic" style={{ color: c.textSecondary }}>
+                                ⓘ {t('cibil.userEnteredDisclaimer')}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => setShowExitModal(true)}
+                                className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-violet-600 dark:text-violet-400 underline underline-offset-2"
+                            >
+                                {t('cibil.checkOnCibilWebsite')} <ExternalLink size={10} />
+                            </button>
+
                             {/* Live score feedback */}
                             <div className="mt-3 p-3 rounded-xl" style={{ backgroundColor: `${tierColor}15`, border: `1px solid ${tierColor}30` }}>
                                 <div className="flex items-center gap-3 mb-2">
@@ -165,6 +183,10 @@ export default function CibilProfileSetup() {
                                         </div>
                                     ))}
                                 </div>
+                                {/* Indicative-rate footnote (legal compliance) */}
+                                <p className="mt-2 text-[9px] leading-snug italic" style={{ color: c.textSecondary }}>
+                                    {t('cibil.ratesIndicative')}
+                                </p>
                             </div>
 
                             {/* Score bar */}
@@ -264,6 +286,47 @@ export default function CibilProfileSetup() {
 
                 <p className="text-[9px] text-center" style={{ color: c.textSecondary }}>{t('cp.updateNote')}</p>
             </div>
+
+            {/* Exit confirmation modal — leaving FinCalix for cibil.com */}
+            {showExitModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50"
+                    onClick={() => setShowExitModal(false)}
+                >
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="w-full sm:max-w-md p-5 rounded-t-3xl sm:rounded-3xl border shadow-xl"
+                        style={{ backgroundColor: c.card, borderColor: c.border }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="flex items-center gap-2 mb-3">
+                            <ExternalLink size={18} className="text-violet-500" />
+                            <h3 className="text-base font-bold" style={{ color: c.text }}>{t('cibil.exitModalTitle')}</h3>
+                        </div>
+                        <p className="text-[12px] leading-relaxed mb-5" style={{ color: c.textSecondary }}>
+                            {t('cibil.exitModalBody')}
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setShowExitModal(false)}
+                                className="flex-1 py-2.5 rounded-xl text-xs font-bold border"
+                                style={{ borderColor: c.border, color: c.textSecondary }}
+                            >
+                                {t('cibil.exitModalCancel')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={openCibilWebsite}
+                                className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-violet-600"
+                            >
+                                {t('cibil.exitModalContinue')}
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </div>
     );
 }

@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Read(//^function buildMonthlyConfig/**)",
-      "Bash(node -e \"console.log\\(require\\('./package.json'\\).dependencies['@capacitor/keyboard']\\)\")"
+      "Bash(node -e \"console.log\\(require\\('./package.json'\\).dependencies['@capacitor/keyboard']\\)\")",
+      "Bash(grep -n \"\\\\\"knowScore\\\\\"\\\\|\\\\\"financialAdvisor\" src/locales/*.json)"
     ]
   }
 }

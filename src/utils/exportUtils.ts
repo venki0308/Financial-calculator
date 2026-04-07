@@ -643,7 +643,7 @@ export const exportSIPComparisonPDF = async (params: SIPComparisonParams): Promi
         y += 5;
         doc.setFontSize(9); doc.setTextColor(13, 59, 46); doc.setFont('helvetica', 'bold');
         doc.text('SIP Tips', 14, y); y += 6;
-        ['Start SIP early — even small amounts compound significantly.', 'Increase SIP by 10% annually (Step-Up SIP) for better wealth creation.', 'SIP in equity funds with 7+ year horizon typically outperforms FDs.', 'Use STP if investing lumpsum — reduces market timing risk.'].forEach((rec, i) => {
+        ['Start SIP early — even small amounts compound significantly.', 'Increase SIP by 10% annually (Step-Up SIP) for potentially better long-term wealth creation.', 'Equity SIPs with a 7+ year horizon have historically delivered strong returns vs. FDs in India, but past performance is not indicative of future returns and equity carries market risk.', 'Use STP if investing lumpsum — may reduce market timing risk.'].forEach((rec, i) => {
             doc.setFontSize(7.5); doc.setTextColor(80); doc.setFont('helvetica', 'normal');
             doc.text(`${i + 1}. ${rec}`, 18, y); y += 5;
         });

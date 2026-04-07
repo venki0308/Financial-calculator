@@ -134,6 +134,22 @@ export default function About() {
                     </div>
                 </motion.div>
 
+                {/* ─── Trademarks & Disclaimers ─── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.55 }}
+                    className="p-5 rounded-2xl bg-card border border-border"
+                >
+                    <h3 className="text-foreground font-bold text-sm mb-3">{t('about.trademarksTitle')}</h3>
+                    <p className="text-muted-foreground text-[11px] leading-relaxed mb-3">
+                        {t('about.cibilTrademark')}
+                    </p>
+                    <p className="text-muted-foreground text-[11px] leading-relaxed">
+                        {t('about.notAdvisorNote')}
+                    </p>
+                </motion.div>
+
                 {/* ─── Footer ─── */}
                 <div className="text-center pt-8 pb-4 text-[10px] text-slate-600 space-y-1">
                     <p>© {new Date().getFullYear()} FinCalix</p>

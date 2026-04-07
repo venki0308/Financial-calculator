@@ -245,7 +245,7 @@
             "name": "Goal Planner"
         },
         "financialAdvisor": {
-            "name": "Financial Advisor"
+            "name": "Smart Planner"
         },
         "worldClock": {
             "name": "World Clock"
@@ -582,7 +582,7 @@
         "overLimit": "over limit",
         "addFixedExpense": "Add Fixed Expense",
         "expenseName": "Expense Name",
-        "accountNamePlaceholder": "e.g. HDFC Savings",
+        "accountNamePlaceholder": "e.g. My Savings Account",
         "actual": "Actual",
         "addNewEntry": "Add Entry",
         "allEntriesThisWeek": "All Entries This Week",
@@ -592,7 +592,7 @@
         "annualSavingsRate": "Annual Savings Rate",
         "asOfDate": "As of Date",
         "balance": "Balance",
-        "bankNamePlaceholder": "e.g. HDFC Bank",
+        "bankNamePlaceholder": "e.g. My Bank",
         "budgetAllocation": "How you're allocating",
         "greeting": "Good morning!",
         "budgetSet": "Budget",
@@ -968,7 +968,7 @@
         "incomeSpent": "Income: ₹{{income}} | Spent: ₹{{spent}}"
     },
     "advisor": {
-        "title": "Financial Advisor",
+        "title": "Smart Planner",
         "subtitle": "Smart Financial Planning",
         "step1": "Your Income",
         "step2": "Select Goals",
@@ -1106,7 +1106,7 @@
             "maxEMIAllowed": "Max EMI Allowed",
             "emiToIncomeRatio": "EMI-to-Income Ratio",
             "reportTitle": "Financial Plan Report",
-            "reportSubtitle": "AI-Powered Financial Advisor",
+            "reportSubtitle": "AI-Powered Smart Planner",
             "projectionTitle": "Goal-wise Investment Plan",
             "colGoal": "Goal",
             "colMonthlySIP": "Monthly SIP",
@@ -1221,7 +1221,10 @@
         "officialSourcesTitle": "Official Sources",
         "officialSourcesDesc": "All calculations and scheme details are based on publicly available data from official portals like india.gov.in, npsc.gov.in, etc.",
         "keyResources": "Key Resources",
-        "madeWithLove": "Made with ❤️ in India"
+        "madeWithLove": "Made with ❤️ in India",
+        "trademarksTitle": "Trademarks & Disclaimers",
+        "cibilTrademark": "CIBIL is a registered trademark of TransUnion CIBIL Limited. FinCalix is not affiliated with, endorsed by, or partnered with TransUnion CIBIL or any credit bureau. All CIBIL scores entered in this app are manually self-declared by the user and are never fetched from any bureau or uploaded to any server.",
+        "notAdvisorNote": "FinCalix provides educational calculators and reference information only. We are not a SEBI-registered investment advisor, lender, or financial advisor. All outputs are automated calculations, not financial advice. Consult a licensed professional for personal advice."
     },
     "termsOfService": {
         "title": "Terms of Service",
@@ -1352,11 +1355,23 @@
         "footerMade": "Made with ❤️ in India",
         "footerCopyright": "© 2026 FinCalix. All rights reserved.",
         "sec11Title": "Analytics & Crash Reporting",
-        "sec11Desc": "We use analytics tools to understand app usage and improve performance. These tools may change over time, but we ensure no personal or financial data is collected.",
+        "sec11Desc": "We use Google Firebase Analytics (Google LLC, USA) to understand anonymous app usage and improve performance. Constituting a cross-border transfer of anonymous, non-identifiable data to the United States. No personal or financial data is collected. You can disable analytics anytime by clearing app data or uninstalling the app.",
         "sec11BoxTitle": "Data Safety",
         "sec11BoxLi1": "All calculations are performed locally on your device.",
         "sec11BoxLi2": "No financial data is stored on our servers.",
-        "sec11BoxLi3": "No third-party data selling."
+        "sec11BoxLi3": "No third-party data selling.",
+        "sec12Title": "DPDP Act 2023 & Grievance",
+        "sec12Desc": "FinCalix complies with the Digital Personal Data Protection Act, 2023. Because we collect zero personal data and store all financial inputs only on your device, FinCalix is exempt from appointing a Data Protection Officer under the DPDP Act. For any privacy concerns, grievances, or questions about how this app handles your data, please contact us at the email below. We aim to respond within 30 days.",
+        "sec12GrievanceTitle": "Grievance Contact",
+        "sec12GrievanceEmail": "support@fincalix.com",
+        "sec12RightsTitle": "Your Rights as a Data Principal",
+        "sec12RightsLi1": "Right to access — all your data is visible inside the app at any time",
+        "sec12RightsLi2": "Right to correction — edit any saved entry inside the app",
+        "sec12RightsLi3": "Right to erasure — clear app data from device settings or uninstall the app",
+        "sec12RightsLi4": "Right to grievance redressal — email support@fincalix.com",
+        "sec12RightsLi5": "Right to withdraw consent — disable analytics by clearing app data",
+        "sec12TrademarkTitle": "Third-Party Trademarks",
+        "sec12TrademarkBody": "CIBIL® is a registered trademark of TransUnion CIBIL Limited. FinCalix is not affiliated with, endorsed by, or partnered with TransUnion CIBIL or any credit bureau. All other trademarks (RBI, SEBI, IRDAI, AMFI, IT Department, India Post, etc.) are the property of their respective owners and are referenced for educational purposes only."
     },
     "globalDisclaimer": {
         "title": "Important Disclaimer",
@@ -2554,7 +2569,7 @@
     },
     "tax": {
         "title": "Income Tax Calculator",
-        "fyLabel": "FY 2026-27",
+        "fyLabel": "FY {{fy}} • AY {{ay}}",
         "fy": "FY",
         "budgetUpdate": "Budget 2026-27 Update",
         "budgetUpdateDesc": "New tax slabs & revised Section 87A rebate",
@@ -3285,7 +3300,7 @@
     "disclaimer": {
         "emi": {
             "title": "EMI Calculation Basis",
-            "text": "EMI amounts are calculated using the standard reducing balance method. Your final schedule may vary slightly depending on your bank's specific rounding rules. Please check with your lender for the exact figures before finalizing."
+            "text": "EMI shown is indicative only, calculated using the standard reducing balance method on the inputs you provided. Actual EMI depends on your lender's terms, processing fees, insurance, and credit profile. RBI guidelines (May 2014) prohibit foreclosure / prepayment charges on floating-rate non-home loans for individuals. Verify all figures with your lender before signing any agreement. FinCalix is not a bank, NBFC, or lender."
         },
         "overdraft": {
             "title": "OD Interest",
@@ -3293,19 +3308,19 @@
         },
         "tax": {
             "title": "Tax Estimation",
-            "text": "These tax estimates are based on the latest Union Budget tax slabs for both regimes. The calculation assumes standard circumstances. For complex scenarios like capital gains, please consult a Chartered Accountant."
+            "text": "Tax estimates are based on the values you self-declared and current known Income Tax slabs (FY 2026-27 / AY 2027-28 by default; FY 2025-26 selectable). All deductions (HRA, 80C, 80D, home-loan interest, etc.) are subject to actual proof submission and verification by your employer / IT Department. Tax laws change every Budget — figures here may not reflect the latest amendments. FinCalix is not a tax advisor. Please consult a Chartered Accountant for actual tax filing."
         },
         "sip": {
             "title": "Projected Returns",
-            "text": "Returns shown are mathematical projections based on your expected rate. Mutual fund investments are subject to market risks. Actual returns will fluctuate."
+            "text": "Returns shown are mathematical projections based on the assumed rate of return you entered. Mutual Fund investments are subject to market risks — read all scheme related documents carefully. Past performance is not indicative of future returns. FinCalix is not a SEBI-registered investment advisor and does not recommend any specific scheme or fund house."
         },
         "fd": {
             "title": "FD Maturity",
-            "text": "Maturity amounts are estimated based on the rates entered. Current interest rates vary by bank, tenure, and deposit amount. Check your bank's website for today's exact rates."
+            "text": "Maturity amounts are illustrative only, calculated using the rate you entered. Actual FD rates vary by bank, tenure, and depositor category. Senior citizens typically receive an additional 0.25%–0.50% — verify with your bank. TDS is deducted at source if interest exceeds ₹40,000 p.a. (₹50,000 for senior citizens) under current Income Tax Act provisions. FinCalix is not affiliated with any bank."
         },
         "rd": {
             "title": "RD Maturity",
-            "text": "Maturity amounts are estimated based on entered rates and compounding frequency. Actual returns may differ slightly based on your bank's specific compounding rules."
+            "text": "Maturity amounts are estimated based on the rate and compounding frequency you entered. Actual returns may differ based on your bank's specific compounding rules. RD interest is taxable as per current Income Tax Act provisions. FinCalix is not affiliated with any bank."
         },
         "ppf": {
             "title": "PPF Rules",
@@ -3324,8 +3339,8 @@
             "text": "GST calculations are based on standard slab rates for general goods and services. Rates for specific items can vary based on their HSN/SAC codes. Confirm the exact rate on gst.gov.in."
         },
         "advisor": {
-            "title": "Financial Advice",
-            "text": "Recommendations are algorithmically generated based on your inputs. Use this as a starting point for your financial roadmap. For crucial decisions, please consult a certified financial planner."
+            "title": "Not Financial Advice",
+            "text": "Recommendations are algorithmically generated based on your inputs. Use this as a starting point for your financial roadmap, not as personal advice. FinCalix is not a SEBI-registered investment advisor. For crucial decisions, please consult a certified financial planner."
         },
         "goal": {
             "title": "Goal Projections",
@@ -3357,7 +3372,7 @@
         },
         "swp": {
             "title": "SWP Projections",
-            "text": "Systematic Withdrawal Plan projections assume a constant rate of return. Actual mutual fund returns fluctuate with market conditions. Your corpus may deplete faster or slower than projected."
+            "text": "Systematic Withdrawal Plan projections assume a constant rate of return. Actual Mutual Fund returns fluctuate with market conditions, so your corpus may deplete faster or slower than projected. Mutual Fund investments are subject to market risks — read all scheme related documents carefully. Sustainable withdrawal rates shown are mathematical estimates, not guaranteed outcomes."
         },
         "cagr": {
             "title": "CAGR Note",
@@ -3365,7 +3380,7 @@
         },
         "lumpsum": {
             "title": "Lumpsum Investment",
-            "text": "Lumpsum projections are based on assumed constant returns. Actual market returns vary significantly. Mutual fund investments are subject to market risks."
+            "text": "Lumpsum projections are based on the assumed constant rate you entered. Actual market returns vary significantly. Mutual Fund investments are subject to market risks — read all scheme related documents carefully. Past performance is not indicative of future returns. FinCalix is not a SEBI-registered investment advisor."
         },
         "epf": {
             "title": "EPF Rates",
@@ -3405,11 +3420,11 @@
         },
         "insurance": {
             "title": "Insurance Estimates",
-            "text": "Premium estimates are indicative and based on general actuarial factors. Actual premiums vary by insurer, underwriting criteria, medical history, and policy terms. This tool is for comparison purposes only."
+            "text": "This is a pure actuarial simulation based on the inputs you provided. FinCalix is not an IRDAI-registered insurance broker, agent, or web aggregator. Actual premiums depend entirely on insurer underwriting, medical history, and policy terms. No insurer name, brand, or specific policy is endorsed or quoted. Consult a licensed insurance advisor or your insurer for an actual quote."
         },
         "mortgage": {
             "title": "Mortgage Calculator",
-            "text": "Home loan EMI, prepayment, and foreclosure calculations are based on standard reducing balance method. Actual EMI, charges, and tax benefits may vary by lender and RBI guidelines. Consult your bank for exact figures."
+            "text": "Home loan EMI, prepayment, and foreclosure calculations are based on the standard reducing balance method on the inputs you provided. Per RBI Circular 2014, banks cannot levy foreclosure / prepayment charges on floating-rate home loans for individual borrowers. Fixed-rate loans typically attract 2–4% as per loan agreement. Actual EMI, processing fees, and tax benefits vary by lender. FinCalix is not a bank or NBFC. Consult your lender for exact figures."
         },
         "property": {
             "title": "Property Valuation",
@@ -4874,7 +4889,8 @@
         "thOpening": "Opening",
         "thClosing": "Closing",
         "showingNext5Years": "Showing next 5 years. Full schedule available in amortization table above.",
-        "financialAdvisorInsight": "Financial Advisor Insight",
+        "financialAdvisorInsight": "Smart Insight",
+        "notFinancialAdvice": "Automated calculation, not financial advice.",
         "highInterestAdvice": "Your next EMI is {{percent}}% interest — most of your payment goes to the bank. Consider making a lump-sum prepayment to reduce principal faster and shift more of each EMI towards building your equity.",
         "goodProgressAdvice": "Good progress! {{percent}}% of your EMI now goes towards principal. You've crossed the interest-heavy early phase of the loan.",
         "closeTodaySaveAdvice": "By closing today, you could save {{amount}} in future interest.",
@@ -5013,9 +5029,16 @@
         "update": "Update",
         "subtitle": "Understand your score & loan impact",
         "yourScore": "Your CIBIL Score",
-        "knowScore": "Know my score",
+        "knowScore": "I know my score",
         "noHistory": "No History",
         "enterScore": "Enter CIBIL Score (300-900)",
+        "userEnteredDisclaimer": "Score manually entered by you. FinCalix does not fetch or verify your score from TransUnion CIBIL or any credit bureau.",
+        "checkOnCibilWebsite": "Check your official score on CIBIL website",
+        "exitModalTitle": "Leaving FinCalix",
+        "exitModalBody": "You are leaving FinCalix. We are not affiliated with TransUnion CIBIL or any credit bureau. Continue to cibil.com?",
+        "exitModalContinue": "Continue",
+        "exitModalCancel": "Cancel",
+        "ratesIndicative": "Indicative rates based on typical market ranges. Actual rates depend on lender policies, income & other factors. FinCalix is not a financial advisor or lender.",
         "nhDesc": "First-time borrower — no credit history",
         "nhNote": "RBI says banks cannot reject first-time borrowers solely for having no credit history",
         "nhExplain": "First-time borrower? RBI rules say banks cannot reject you for having no CIBIL. Your income and employment stability will be assessed.",
@@ -5028,9 +5051,9 @@
         "goodDesc": "Low-moderate risk — decent credit history",
         "goodNote": "Most banks approve. Rates are reasonable. A 50-point improvement could save significantly.",
         "vgDesc": "Low risk — responsible credit behaviour",
-        "vgNote": "Best standard rates from all banks. Fast approval. Eligible for most loan products.",
+        "vgNote": "Standard market rates typically available. Lenders generally process applications faster for this score range. May be eligible for most loan products subject to lender underwriting.",
         "exDesc": "Very low risk — excellent credit discipline",
-        "exNote": "Best possible rates. Fastest approvals. Higher loan amounts. Negotiating power.",
+        "exNote": "Lowest market rates typically offered for this score range. Higher loan amounts and stronger negotiating position. Final approval still depends on lender's internal assessment.",
         "veryLow": "Very Low",
         "low": "Low",
         "moderate": "Moderate",
@@ -5050,7 +5073,7 @@
         "improveTips": "How to Improve Your Score",
         "rbiRights": "Your RBI-Protected Rights",
         "rbiSource": "Source: RBI Master Direction on Credit Information, Jan 2025",
-        "approvalGreen": "Banks & NBFCs will approve at competitive rates",
+        "approvalGreen": "Lenders typically offer competitive rates for this score range. Final approval depends on lender's underwriting.",
         "approvalYellow": "NBFCs likely to approve, banks may be selective",
         "approvalRed": "Limited options — consider secured loans (gold, FD-backed)",
         "approvalNH": "Income-based assessment — first-time borrowers welcome",
@@ -5301,7 +5324,7 @@
         "deleteLoan": "Delete Loan",
         "cancel": "Cancel",
         "loanNickname": "Loan Nickname",
-        "nicknamePlaceholder": "e.g. PNB Home Loan, ICICI Car Loan",
+        "nicknamePlaceholder": "e.g. My Home Loan, My Car Loan",
         "loanType": "Loan Type",
         "typeHome": "Home Loan",
         "typeCar": "Car Loan",
@@ -5312,7 +5335,7 @@
         "typeTwoWheeler": "Two Wheeler",
         "typeOther": "Other",
         "lenderName": "Lender Name",
-        "lenderPlaceholder": "e.g. PNB Housing Finance, HDFC Bank",
+        "lenderPlaceholder": "e.g. My Housing Finance, My Bank",
         "accountNumber": "Account Number",
         "accountPlaceholder": "Loan account number (optional)",
         "loanAmount": "Loan Amount",
@@ -5672,10 +5695,10 @@
         "propertyYieldDesc": "The Property Yield Calculator computes gross and net rental yield on your real estate investment. Compare yield against other investment options.",
         "hraDesc": "The HRA Calculator computes your House Rent Allowance exemption under Section 10(13A). Compare with the Section 80GG deduction for those without HRA.",
         "incomeTaxDesc": "The Income Tax Calculator computes your tax liability under both Old and New regimes for FY 2026-27. Compare regimes and find deductions to minimise your tax.",
-        "pomisDesc": "The POMIS Calculator estimates monthly income from Post Office Monthly Income Scheme deposits. POMIS offers guaranteed returns backed by the Government of India.",
+        "pomisDesc": "The POMIS Calculator estimates monthly income from Post Office Monthly Income Scheme deposits. As a sovereign-backed scheme, POMIS offers fixed returns at the rate notified by Government of India (subject to quarterly revision).",
         "scssDesc": "The SCSS Calculator computes quarterly interest income from Senior Citizens Savings Scheme. SCSS offers one of the highest government-backed interest rates for senior citizens.",
         "ssyDesc": "The SSY Calculator projects the maturity value of Sukanya Samriddhi Yojana deposits. SSY offers tax-free returns and is designed for the girl child's education and marriage.",
-        "kvpDesc": "The KVP Calculator shows when your Kisan Vikas Patra investment will double. KVP is a post office scheme offering guaranteed returns with flexible tenure.",
+        "kvpDesc": "The KVP Calculator shows when your Kisan Vikas Patra investment will double, based on the current Government-notified rate. As a sovereign-backed post office scheme, KVP offers fixed returns subject to quarterly rate revision by Government of India.",
         "nscDesc": "The NSC Calculator computes the maturity value of National Savings Certificate investments. NSC has a 5-year lock-in and qualifies for Section 80C deduction.",
         "potdDesc": "The POTD Calculator computes interest earned on Post Office Time Deposits across 1, 2, 3, and 5-year tenures. Government-backed with quarterly compounding."
     },
@@ -5696,8 +5719,8 @@
         "emiBestMove": "Best move: Negotiate rate down or make annual prepayments. Potential savings: {{amount}} in interest.",
         "sipIncrease": "Increasing your SIP by just ₹2,000/mo could add {{amount}} to your corpus over {{years}} years.",
         "sipEarlierStart": "If you had started 3 years earlier, your corpus would be {{amount}} more — the power of compounding!",
-        "sipMultiplier": "Your money will grow {{multiplier}}x — compounding turns discipline into wealth.",
-        "sipLongTerm": "15+ year SIPs historically beat every other asset class in India. Stay invested!",
+        "sipMultiplier": "At the assumed rate, your money is projected to grow ~{{multiplier}}x. Actual returns vary with market conditions.",
+        "sipLongTerm": "Equity SIPs with 15+ year horizons have historically delivered strong long-term returns in India. Past performance does not guarantee future results — equity investments carry market risk.",
         "sipBestStepUp": "Best option: A 10% annual step-up SIP could generate {{amount}} more wealth than a flat SIP.",
         "fdLowReal": "After inflation, your real return is only {{realReturn}}%. Consider diversifying into higher-return instruments.",
         "fdRealReturn": "Your real return after inflation is {{realReturn}}% — a positive real yield.",
@@ -5730,7 +5753,7 @@
         "gratuityTaxFree": "Invest your gratuity wisely — consider PPF, ELSS, or NPS for continued tax-efficient growth.",
         "hraExemption": "HRA exemption is the minimum of: actual HRA, rent paid minus 10% of salary, or 50%/40% of salary for metro/non-metro.",
         "hraNoHra": "If you don't receive HRA, you can still claim up to ₹60,000/year under Section 80GG.",
-        "scssRoom": "You can invest up to ₹30L more in SCSS. The remaining room of {{remaining}} earns government-backed guaranteed returns.",
+        "scssRoom": "You can invest up to ₹30L more in SCSS. The remaining room of {{remaining}} earns the Government-notified SCSS rate (revised quarterly).",
         "scssTds": "Your annual interest exceeds ₹50,000 — TDS of 10% will be deducted. Submit Form 15G/15H if applicable.",
         "scssNoTds": "Your annual interest is under ₹50,000 — no TDS deduction. Enjoy full interest payout.",
         "scss80c": "SCSS investment qualifies for Section 80C deduction up to ₹1.5 lakh per financial year.",

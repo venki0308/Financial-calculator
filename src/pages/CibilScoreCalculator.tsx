@@ -105,6 +105,10 @@ export default function CibilScoreCalculator() {
                         <>
                             <NumberInput label={t('cibil.enterScore')} value={score} onChange={setScore} min={300} max={900} />
                             <input type="range" min={300} max={900} value={score} onChange={e => setScore(Number(e.target.value))} className="w-full mt-2 accent-violet-600" />
+                            {/* User-entered disclaimer (legal compliance) */}
+                            <p className="mt-2 text-[10px] leading-snug italic" style={{ color: c.textSecondary }}>
+                                ⓘ {t('cibil.userEnteredDisclaimer')}
+                            </p>
                             <div className="flex items-center gap-3 mt-3">
                                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black text-white" style={{ backgroundColor: tier.color }}>{score}</div>
                                 <div>
@@ -183,6 +187,10 @@ export default function CibilScoreCalculator() {
                             </table>
                         </div>
                     )}
+                    {/* Indicative-rate footnote (legal compliance) */}
+                    <p className="mt-3 text-[9px] leading-snug italic" style={{ color: c.textSecondary }}>
+                        {t('cibil.ratesIndicative')}
+                    </p>
                 </div>
 
                 {/* Improvement Tips */}

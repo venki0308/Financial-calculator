@@ -64,7 +64,7 @@ const FEATURES = [
   { icon:'⚖️', name:'Insurance Compare',    desc:'Side-by-side plan comparison',      cat:'all'         },
   { icon:'📉', name:'Break-even Analysis',   desc:'Profit threshold calculator',       cat:'business'    },
   { icon:'🏗️', name:'Property Calculator',  desc:'Stamp duty, EMI & flat cost',      cat:'investments' },
-  { icon:'🤖', name:'AI Financial Advisor',  desc:'Personalized goal-based plan',     cat:'all'         },
+  { icon:'🤖', name:'AI Smart Planner',      desc:'Personalized goal-based plan',     cat:'all'         },
   { icon:'🎯', name:'Goal Planner',          desc:'Plan & achieve financial targets', cat:'all'         },
   { icon:'📊', name:'Compare Scenarios',     desc:'Loan vs SIP vs FD side-by-side',   cat:'all'         },
   { icon:'🌍', name:'World Clock',           desc:'Track time across timezones',       cat:'all'         },
@@ -87,7 +87,7 @@ const FAQS = [
   { q:'Is my financial data safe?',
     a:'Completely safe. We collect zero personal data. All your calculations and expense data stays only on your device.' },
   { q:'How many calculators does it have?',
-    a:'FinCalix has 34+ financial tools — SIP, EMI, FD, PPF, HRA, GST, Income Tax, NPS, Insurance Simulator, Advanced Mortgage, Compare Scenarios, AI Financial Advisor, Goal Planner, Expense Tracker, Budget Tracker, World Clock and more.' },
+    a:'FinCalix has 34+ financial tools — SIP, EMI, FD, PPF, HRA, GST, Income Tax, NPS, Insurance Simulator, Advanced Mortgage, Compare Scenarios, AI Smart Planner, Goal Planner, Expense Tracker, Budget Tracker, World Clock and more.' },
 ];
 
 // ── Global CSS ────────────────────────────────────────────────────────────────

@@ -234,6 +234,34 @@ export default function PrivacyPolicy() {
                     </div>
                 </Section>
 
+                {/* Section 12 — DPDP Act 2023 & Grievance */}
+                <Section number={12} title={t('privacyPolicy.sec12Title')} icon={Shield}>
+                    <p>{t('privacyPolicy.sec12Desc')}</p>
+
+                    <div className="p-3 rounded-xl border mt-3" style={{ backgroundColor: 'rgba(139, 92, 246, 0.08)', borderColor: 'rgba(139, 92, 246, 0.2)' }}>
+                        <p className="text-violet-500 text-[11px] font-bold mb-1">{t('privacyPolicy.sec12RightsTitle')}</p>
+                        <ul className="list-disc pl-4 text-[11px] space-y-0.5 font-medium" style={{ color: c.textSecondary }}>
+                            <li>{t('privacyPolicy.sec12RightsLi1')}</li>
+                            <li>{t('privacyPolicy.sec12RightsLi2')}</li>
+                            <li>{t('privacyPolicy.sec12RightsLi3')}</li>
+                            <li>{t('privacyPolicy.sec12RightsLi4')}</li>
+                            <li>{t('privacyPolicy.sec12RightsLi5')}</li>
+                        </ul>
+                    </div>
+
+                    <div className="p-3 rounded-xl border mt-3" style={{ backgroundColor: 'rgba(16, 185, 129, 0.08)', borderColor: 'rgba(16, 185, 129, 0.2)' }}>
+                        <p className="text-emerald-500 text-[11px] font-bold mb-1">{t('privacyPolicy.sec12GrievanceTitle')}</p>
+                        <a href="mailto:support@fincalix.com" className="text-emerald-500 text-[11px] font-semibold underline">
+                            {t('privacyPolicy.sec12GrievanceEmail')}
+                        </a>
+                    </div>
+
+                    <div className="p-3 rounded-xl border mt-3" style={{ backgroundColor: 'rgba(245, 158, 11, 0.08)', borderColor: 'rgba(245, 158, 11, 0.2)' }}>
+                        <p className="text-amber-500 text-[11px] font-bold mb-1">{t('privacyPolicy.sec12TrademarkTitle')}</p>
+                        <p className="text-[11px] leading-relaxed" style={{ color: c.textSecondary }}>{t('privacyPolicy.sec12TrademarkBody')}</p>
+                    </div>
+                </Section>
+
                 {/* Data & Privacy Link */}
 
                 <div className="pt-2">

@@ -17,6 +17,7 @@ import {
     calculateKvpStatus, calculatePomisStatus, calculateScssStatus,
 } from '../utils/investmentStatusEngine';
 import NumberInput from '../components/NumberInput';
+import DisclaimerComponent from '../components/DisclaimerComponent';
 import { exportToPDF, type ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { toLocalDateStr, todayStr } from '../utils/dateUtils';
@@ -387,6 +388,9 @@ export default function LoanDetail() {
                         <button onClick={handleExportPDF} className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold border" style={{ borderColor: c.border, color: c.text }}><Download size={16} /> PDF</button>
                         <button onClick={handleDelete} className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-red-500/10 text-red-500 border border-red-500/20"><Trash2 size={16} /> {t('myLoans.deleteTracker')}</button>
                     </div>
+
+                    {/* Compliance disclaimer */}
+                    <DisclaimerComponent module="emi" />
                 </div>
             </div>
         );
@@ -733,6 +737,9 @@ export default function LoanDetail() {
                     <button onClick={handleInvestmentPDF} className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold border" style={{ borderColor: c.border, color: c.text }}><Download size={16} /> PDF</button>
                     <button onClick={handleDelete} className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-red-500/10 text-red-500 border border-red-500/20"><Trash2 size={16} /> {t('myLoans.deleteTracker')}</button>
                 </div>
+
+                {/* Compliance disclaimer */}
+                <DisclaimerComponent module="general" />
             </div>
         </div>
     );

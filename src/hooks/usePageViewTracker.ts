@@ -21,7 +21,7 @@ const ROUTE_NAMES: Record<string, string> = {
     '/about': 'About',
     '/budget-tracker': 'Budget Tracker',
     '/goal-planner': 'Goal Planner',
-    '/financial-advisor': 'Financial Advisor',
+    '/financial-advisor': 'Smart Planner',
     '/compare': 'Compare Calculators',
     '/world-clock': 'World Clock',
 
