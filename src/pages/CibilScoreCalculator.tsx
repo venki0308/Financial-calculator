@@ -272,6 +272,14 @@ export default function CibilScoreCalculator() {
                     ))}
                 </div>
 
+                {/* Cross-link to CIBIL Profile Setup (persistent storage) */}
+                <button
+                    onClick={() => navigate('/cibil-profile')}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold text-white bg-violet-600 shadow-lg shadow-violet-500/20"
+                >
+                    📊 {t('cibil.openMyProfile')}
+                </button>
+
                 {/* PDF */}
                 <button onClick={handlePDF} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border text-sm font-bold" style={{ borderColor: c.border, color: c.text }}>
                     <Download size={18} /> {t('cibil.downloadPdf')}

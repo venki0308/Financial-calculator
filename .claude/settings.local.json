@@ -3,7 +3,14 @@
     "allow": [
       "Read(//^function buildMonthlyConfig/**)",
       "Bash(node -e \"console.log\\(require\\('./package.json'\\).dependencies['@capacitor/keyboard']\\)\")",
-      "Bash(grep -n \"\\\\\"knowScore\\\\\"\\\\|\\\\\"financialAdvisor\" src/locales/*.json)"
+      "Bash(grep -n \"\\\\\"knowScore\\\\\"\\\\|\\\\\"financialAdvisor\" src/locales/*.json)",
+      "Bash(ls d:/Skills/Financial-calculator/src/pages/*Calculator.tsx)",
+      "Bash(grep -E \"^[A-Z].*\\\\.tsx$\")",
+      "Bash(grep -l \"LiveStatusCard\\\\|LiveLoanStatus\" d:/Skills/Financial-calculator/src/pages/*.tsx)",
+      "Bash(xargs -I {} basename {})",
+      "Bash(grep -h \"trackScreen\" d:/Skills/Financial-calculator/src/pages/*.tsx)",
+      "Bash(grep -l \"DateInput\" d:/Skills/Financial-calculator/src/pages/*Calculator.tsx)",
+      "Bash(node -e \"['en','hi','te','ta','kn','ml'].forEach\\(l => { try { JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/'+l+'.json','utf8'\\)\\); console.log\\(l+': OK'\\); } catch\\(e\\) { console.log\\(l+': FAIL '+e.message\\); process.exit\\(1\\); } }\\);\")"
     ]
   }
 }

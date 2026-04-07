@@ -6,11 +6,19 @@ import { useAppColors } from '../theme/useAppColors';
 import { formatINR } from '../utils/calculations';
 import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
-import { saveLoan as saveLoanToStorage, deleteLoan as deleteLoanFromStorage, getAllLoans, generateLoanId, type SavedLoan } from '../utils/loanStorage';
+import { saveLoan as saveLoanToStorage, deleteLoan as deleteLoanFromStorage, getAllLoans, generateLoanId, type SavedLoan, type LoanType } from '../utils/loanStorage';
 
 function fmtDate(dateStr: string, locale: string = 'en-IN'): string {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+const LOAN_CALC_TYPES = new Set([
+    'loan emi', 'mortgage', 'home loan', 'car loan', 'personal loan',
+    'education loan', 'gold loan', 'business loan', 'two wheeler loan',
+]);
+function isLoanCalcType(type: string): boolean {
+    return LOAN_CALC_TYPES.has(type.toLowerCase().replace(/\s+calculator$/i, '').trim());
 }
 
 function fmtYearsMonths(totalMonths: number, t: (key: string, opts?: any) => string): string {
@@ -23,9 +31,28 @@ function fmtYearsMonths(totalMonths: number, t: (key: string, opts?: any) => str
 
 interface Props {
     profile: LoanProfile;
+    /** Used as the persisted loanType when saving. Defaults to 'home_loan'. */
+    loanCategory?: LoanType;
+    /**
+     * calculatorType written to useLiveStatusStore. Should match a key in
+     * MyLoans TYPE_META so the icon + label render correctly. Defaults to 'Loan EMI'.
+     */
+    trackerLabel?: string;
 }
 
-export default function LiveLoanStatus({ profile }: Props) {
+const LOAN_CATEGORY_TO_TRACKER_LABEL: Record<LoanType, string> = {
+    home_loan: 'Home Loan',
+    car_loan: 'Car Loan',
+    personal_loan: 'Personal Loan',
+    education_loan: 'Education Loan',
+    gold_loan: 'Gold Loan',
+    business_loan: 'Business Loan',
+    two_wheeler_loan: 'Two Wheeler Loan',
+    other: 'Loan EMI',
+};
+
+export default function LiveLoanStatus({ profile, loanCategory = 'home_loan', trackerLabel }: Props) {
+    const effectiveTrackerLabel = trackerLabel || LOAN_CATEGORY_TO_TRACKER_LABEL[loanCategory] || 'Loan EMI';
     const { t } = useTranslation();
     const c = useAppColors();
     const [expandForeclosure, setExpandForeclosure] = useState(false);
@@ -45,7 +72,7 @@ export default function LiveLoanStatus({ profile }: Props) {
         const fromLiveStore = savedProfiles.find(p =>
             p.profileData?.disbursementDate === profile.disbursementDate &&
             p.profileData?.loanAmount === profile.loanAmount &&
-            p.calculatorType === 'Loan EMI'
+            isLoanCalcType(p.calculatorType)
         );
         if (fromLiveStore) return fromLiveStore;
         const fromLoanStorage = getAllLoans().find(l =>
@@ -490,20 +517,21 @@ export default function LiveLoanStatus({ profile }: Props) {
                                 onClick={() => {
                                     if (!profileName.trim()) return;
                                     const id = generateLoanId();
-                                    // Save to live status store
+                                    // Save to live status store with the correct calculatorType so
+                                    // MyLoans renders the right icon + label per loan subtype.
                                     addProfile({
                                         id,
                                         name: profileName.trim(),
-                                        calculatorType: 'Loan EMI',
+                                        calculatorType: effectiveTrackerLabel,
                                         profileData: { ...profile },
                                         createdAt: Date.now(),
                                         updatedAt: Date.now(),
                                     });
-                                    // Also save to loanStorage for My Loans page
+                                    // Also save to loanStorage for the legacy My Loans merge.
                                     const loanData: SavedLoan = {
                                         id,
                                         nickName: profileName.trim(),
-                                        loanType: 'home_loan',
+                                        loanType: loanCategory,
                                         lenderName: lenderName.trim(),
                                         loanAmount: profile.loanAmount,
                                         interestRate: profile.annualRate,

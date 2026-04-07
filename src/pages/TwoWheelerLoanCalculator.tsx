@@ -17,6 +17,7 @@ import { todayStr } from '../utils/dateUtils';
 import { VEHICLE_TYPES, VEHICLE_SEGMENTS, CIBIL_TIERS, EV_SUBSIDY, STATE_EV_BENEFITS, RUNNING_COSTS, ONROAD_DEFAULTS, type VehicleType } from '../data/twoWheelerData';
 import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import CibilBadge from '../components/CibilBadge';
+import { useCibil } from '../context/CibilContext';
 
 export default function TwoWheelerLoanCalculator() {
     const { t } = useTranslation();
@@ -24,6 +25,7 @@ export default function TwoWheelerLoanCalculator() {
     const c = useAppColors();
     useTrackCalculator();
     const { addHistory, addSaved, removeSaved, savedCalculations } = useCalculatorStore();
+    const { profile: cibilProfile } = useCibil();
 
     useEffect(() => { AnalyticsService.trackScreen('TwoWheeler_Loan'); }, []);
 
@@ -65,6 +67,17 @@ export default function TwoWheelerLoanCalculator() {
         const seg = VEHICLE_SEGMENTS[segmentIdx];
         setExShowroom(Math.round((seg.priceRange[0] + seg.priceRange[1]) / 2));
     }, [segmentIdx]);
+
+    // Seed cibilIdx from saved CIBIL profile on mount, so the picker reflects
+    // the user's actual saved score instead of always defaulting to "Excellent".
+    // The picker remains user-adjustable for what-if exploration.
+    useEffect(() => {
+        if (cibilProfile?.isNTC || !cibilProfile?.score) return;
+        const s = cibilProfile.score;
+        const idx = s >= 770 ? 0 : s >= 720 ? 1 : s >= 670 ? 2 : 3;
+        setCibilIdx(idx);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cibilProfile?.score, cibilProfile?.isNTC]);
 
     // Auto-set rate from cibil + vehicle type
     useEffect(() => {
@@ -554,8 +567,15 @@ export default function TwoWheelerLoanCalculator() {
                             </AnimatePresence>
                         </div>
 
-                        {/* CIBIL Advisory */}
-                        <CibilAdvisoryCard score={(() => { const ranges = isEV ? CIBIL_TIERS[cibilIdx].evRange : CIBIL_TIERS[cibilIdx].petrolRange; return cibilIdx === 0 ? 770 : cibilIdx === 1 ? 720 : cibilIdx === 2 ? 670 : 550; })()} loanType="two_wheeler_loan" loanAmount={loanAmount} tenureMonths={tenureMonths} />
+                        {/* CIBIL Advisory — prefers actual saved score, falls back to picker tier */}
+                        <CibilAdvisoryCard
+                            score={cibilProfile?.score && !cibilProfile.isNTC
+                                ? cibilProfile.score
+                                : (cibilIdx === 0 ? 770 : cibilIdx === 1 ? 720 : cibilIdx === 2 ? 670 : 550)}
+                            loanType="two_wheeler_loan"
+                            loanAmount={loanAmount}
+                            tenureMonths={tenureMonths}
+                        />
 
                         {/* Advisor Tips */}
                         <div className="p-4 rounded-2xl" style={{ backgroundColor: '#10B98110', border: '1px solid #10B98125' }}>

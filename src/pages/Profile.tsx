@@ -44,6 +44,12 @@ export default function Profile() {
         return liveProfiles.length + extraFromStorage;
     }, [liveProfiles]);
 
+    // Hoisted hooks (was previously called inside an IIFE in JSX —
+    // technical Rules-of-Hooks violation, even though it worked).
+    const cibil = useCibil();
+    const cibilColors = useAppColors();
+    const cibilTierData = cibil.profile ? getCibilTier(cibil.profile.score || 0) : null;
+
     const menuItems = [
         { icon: Landmark, label: t('myLoans.title'), color: '#8B5CF6', key: 'myloans', path: '/my-loans' },
         { icon: Bookmark, label: t('profile.saved'), color: '#10B981', key: 'saved', path: '/profile/saved' },
@@ -121,33 +127,25 @@ export default function Profile() {
             </div>
 
             {/* CIBIL Profile */}
-            {(() => {
-                const cb = useCibil();
-                const cc = useAppColors();
-                if (cb.hasProfile && cb.profile) {
-                    const td = getCibilTier(cb.profile.score || 0);
-                    return (
-                        <button onClick={() => navigate('/cibil-profile')} className="w-full p-4 rounded-2xl border flex items-center gap-3 mb-4" style={{ backgroundColor: `${cb.color}08`, borderColor: `${cb.color}30` }}>
-                            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black text-white" style={{ backgroundColor: cb.color }}>{cb.profile.isNTC ? 'NH' : cb.profile.score}</div>
-                            <div className="flex-1 text-left">
-                                <p className="text-sm font-bold" style={{ color: cb.color }}>{td.emoji} {td.label}</p>
-                                <p className="text-[9px]" style={{ color: cc.textSecondary }}>{t('cp.lastUpdated')}: {new Date(cb.profile.lastUpdated).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                            </div>
-                            <ChevronRight size={16} style={{ color: cc.textSecondary }} />
-                        </button>
-                    );
-                }
-                return (
-                    <button onClick={() => navigate('/cibil-profile')} className="w-full p-4 rounded-2xl border flex items-center gap-3 mb-4 bg-violet-500/5 border-violet-500/20">
-                        <span className="text-2xl">📊</span>
-                        <div className="flex-1 text-left">
-                            <p className="text-xs font-bold" style={{ color: cc.text }}>{t('cp.addCibilTitle')}</p>
-                            <p className="text-[9px]" style={{ color: cc.textSecondary }}>{t('cp.addCibilDesc')}</p>
-                        </div>
-                        <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-violet-600 text-white">{t('cibil.add')}</span>
-                    </button>
-                );
-            })()}
+            {cibil.hasProfile && cibil.profile && cibilTierData ? (
+                <button onClick={() => navigate('/cibil-profile')} className="w-full p-4 rounded-2xl border flex items-center gap-3 mb-4" style={{ backgroundColor: `${cibil.color}08`, borderColor: `${cibil.color}30` }}>
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black text-white" style={{ backgroundColor: cibil.color }}>{cibil.profile.isNTC ? 'NH' : cibil.profile.score}</div>
+                    <div className="flex-1 text-left">
+                        <p className="text-sm font-bold" style={{ color: cibil.color }}>{cibilTierData.emoji} {cibilTierData.label}</p>
+                        <p className="text-[9px]" style={{ color: cibilColors.textSecondary }}>{t('cp.lastUpdated')}: {new Date(cibil.profile.lastUpdated).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                    </div>
+                    <ChevronRight size={16} style={{ color: cibilColors.textSecondary }} />
+                </button>
+            ) : (
+                <button onClick={() => navigate('/cibil-profile')} className="w-full p-4 rounded-2xl border flex items-center gap-3 mb-4 bg-violet-500/5 border-violet-500/20">
+                    <span className="text-2xl">📊</span>
+                    <div className="flex-1 text-left">
+                        <p className="text-xs font-bold" style={{ color: cibilColors.text }}>{t('cp.addCibilTitle')}</p>
+                        <p className="text-[9px]" style={{ color: cibilColors.textSecondary }}>{t('cp.addCibilDesc')}</p>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-violet-600 text-white">{t('cibil.add')}</span>
+                </button>
+            )}
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3 mb-6">

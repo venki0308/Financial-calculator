@@ -284,6 +284,15 @@ export default function CibilProfileSetup() {
                     </button>
                 )}
 
+                {/* Cross-link to CIBIL Score Guide (educational) */}
+                <button
+                    onClick={() => navigate('/cibil-score')}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold border"
+                    style={{ borderColor: c.border, color: c.textSecondary }}
+                >
+                    📖 {t('cp.viewScoreGuide')}
+                </button>
+
                 <p className="text-[9px] text-center" style={{ color: c.textSecondary }}>{t('cp.updateNote')}</p>
             </div>
 

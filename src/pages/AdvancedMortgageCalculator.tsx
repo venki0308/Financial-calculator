@@ -16,6 +16,10 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import DateInput from '../components/DateInput';
 import LiveLoanStatus from '../components/LiveLoanStatus';
+import CibilBadge from '../components/CibilBadge';
+import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
+import { useCibil } from '../context/CibilContext';
+import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
 import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -31,6 +35,8 @@ export default function AdvancedMortgageCalculator() {
     const navigate = useNavigate();
     const c = useAppColors();
     const { addSaved, removeSaved } = useCalculatorStore();
+    const { profile: cibilProfile } = useCibil();
+    const cibilScore = cibilProfile?.isNTC ? 0 : (cibilProfile?.score ?? 750);
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
 
@@ -401,6 +407,7 @@ export default function AdvancedMortgageCalculator() {
     };
 
     const handleSave = () => {
+        // Save to calculator history (Profile > Saved Calculations)
         const newId = `AdvMortgage-Save-${Date.now()}`;
         addSaved({
             id: newId,
@@ -409,6 +416,30 @@ export default function AdvancedMortgageCalculator() {
             resultValues: { originalEmi: result.originalEmi, totalInterest: result.totalInterest, totalPayment: result.totalPayment },
             timestamp: Date.now(),
         });
+
+        // Also save to My Loans tracker so the user can find it under /my-loans.
+        // Use the disbursement date if entered, otherwise default to today so the
+        // entry appears in the loan tracker immediately.
+        const trackerId = generateLoanId();
+        const disbursement = loanStartDate || new Date().toISOString().split('T')[0];
+        const loanData: SavedLoan = {
+            id: trackerId,
+            nickName: `${t('mortgage.calculatorType')} — ${formatINRShort(loanAmount)}`,
+            loanType: 'home_loan',
+            lenderName: '',
+            loanAmount,
+            interestRate,
+            tenureMonths: months,
+            emiAmount: result.originalEmi,
+            rateType: loanRateType,
+            disbursementDate: disbursement,
+            emiDueDay,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isActive: true,
+        };
+        saveLoanToStorage(loanData);
+
         setLastSavedId(newId);
         setSaved(true);
     };
@@ -731,8 +762,11 @@ export default function AdvancedMortgageCalculator() {
                     </AnimatePresence>
                 </div>
 
+                {/* CIBIL Badge — links to profile, shows saved score & rate hint */}
+                <CibilBadge loanType="home_loan" />
+
                 {/* 4. RESULTS SECTION */}
-                <div className="p-5 rounded-2xl shadow-sm text-white relative overflow-hidden" 
+                <div className="p-5 rounded-2xl shadow-sm text-white relative overflow-hidden"
                      style={{ background: `linear-gradient(135deg, #10B981, #059669)` }}>
                     <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
                         <IndianRupee className="w-32 h-32" />
@@ -1292,6 +1326,11 @@ export default function AdvancedMortgageCalculator() {
                 </div>
 
                 {loanProfile && <LiveLoanStatus profile={loanProfile} />}
+
+                {/* CIBIL Score Advisory — rate band, approval status, savings potential */}
+                <div className="mt-2">
+                    <CibilAdvisoryCard score={cibilScore} loanType="home_loan" loanAmount={loanAmount} tenureMonths={months} />
+                </div>
 
                 <DisclaimerComponent module="mortgage" />
 

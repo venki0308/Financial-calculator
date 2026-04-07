@@ -1,25 +1,32 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Plus, Wallet, Trash2, TrendingUp, Banknote, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Wallet, Trash2, TrendingUp, Banknote, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import { formatINR } from '../utils/calculations';
 import { useLiveStatusStore, type SavedLiveProfile } from '../store/useLiveStatusStore';
-import { getAllLoans } from '../utils/loanStorage';
+import { getAllLoans, type LoanType } from '../utils/loanStorage';
 import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
 import {
     calculateSipStatus, calculateFdStatus, calculateRdStatus,
     calculatePpfStatus, calculateSsyStatus, calculateNscStatus,
     calculateKvpStatus, calculatePomisStatus, calculateScssStatus,
 } from '../utils/investmentStatusEngine';
-import AddLoanSheet from '../components/AddLoanSheet';
 import { AnalyticsService } from '../lib/analytics';
-import { useEffect } from 'react';
 
 const TYPE_META: Record<string, { icon: string; color: string; labelKey: string }> = {
     'Loan EMI': { icon: '🏠', color: '#8B5CF6', labelKey: 'myLoans.typeLabelLoanEmi' },
     'Mortgage': { icon: '🏗️', color: '#8B5CF6', labelKey: 'myLoans.typeLabelMortgage' },
+    // Loan subtypes — distinct icons for each so the user can scan their portfolio quickly
+    'Home Loan': { icon: '🏠', color: '#8B5CF6', labelKey: 'myLoans.typeLabelHomeLoan' },
+    'Car Loan': { icon: '🚗', color: '#3B82F6', labelKey: 'myLoans.typeLabelCarLoan' },
+    'Personal Loan': { icon: '💳', color: '#F59E0B', labelKey: 'myLoans.typeLabelPersonalLoan' },
+    'Education Loan': { icon: '🎓', color: '#06B6D4', labelKey: 'myLoans.typeLabelEducationLoan' },
+    'Gold Loan': { icon: '🥇', color: '#EAB308', labelKey: 'myLoans.typeLabelGoldLoan' },
+    'Business Loan': { icon: '💼', color: '#10B981', labelKey: 'myLoans.typeLabelBusinessLoan' },
+    'Two Wheeler Loan': { icon: '🛵', color: '#EC4899', labelKey: 'myLoans.typeLabelTwoWheelerLoan' },
+    // Investments
     'SIP Calculator': { icon: '📈', color: '#3B82F6', labelKey: 'myLoans.typeLabelSip' },
     'FD Calculator': { icon: '🏦', color: '#F59E0B', labelKey: 'myLoans.typeLabelFd' },
     'RD': { icon: '💰', color: '#F59E0B', labelKey: 'myLoans.typeLabelRd' },
@@ -31,6 +38,18 @@ const TYPE_META: Record<string, { icon: string; color: string; labelKey: string 
     'SCSS Calculator': { icon: '👴', color: '#EC4899', labelKey: 'myLoans.typeLabelScss' },
     'Post Office TD': { icon: '📮', color: '#F97316', labelKey: 'myLoans.typeLabelPotd' },
     'Goal Planner': { icon: '🎯', color: '#3B82F6', labelKey: 'myLoans.typeLabelGoal' },
+};
+
+// Map LoanType (loanStorage) → calculatorType string used by TYPE_META + computeMetrics
+const LOAN_TYPE_TO_CALC_TYPE: Record<LoanType, string> = {
+    home_loan: 'Home Loan',
+    car_loan: 'Car Loan',
+    personal_loan: 'Personal Loan',
+    education_loan: 'Education Loan',
+    gold_loan: 'Gold Loan',
+    business_loan: 'Business Loan',
+    two_wheeler_loan: 'Two Wheeler Loan',
+    other: 'Loan EMI',
 };
 
 function fmtDate(ts: number | string): string {
@@ -53,12 +72,26 @@ function matchType(type: string, ...names: string[]): boolean {
     return names.some(n => t === n.toLowerCase());
 }
 
+// Recognise any loan type — generic 'Loan EMI' / 'Mortgage' OR a specific subtype
+function isAnyLoanType(type: string): boolean {
+    const t = type.toLowerCase().replace(/\s+calculator$/i, '').trim();
+    return t === 'loan emi'
+        || t === 'mortgage'
+        || t === 'home loan'
+        || t === 'car loan'
+        || t === 'personal loan'
+        || t === 'education loan'
+        || t === 'gold loan'
+        || t === 'business loan'
+        || t === 'two wheeler loan';
+}
+
 function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => string): LiveMetrics | null {
     const d = p.profileData;
     if (!d) return null;
     try {
         const type = p.calculatorType;
-        if (matchType(type, 'loan emi', 'mortgage')) {
+        if (isAnyLoanType(type)) {
             const lp: LoanProfile = { loanAmount: d.loanAmount, annualRate: d.annualRate, tenureMonths: d.tenureMonths, emiAmount: d.emiAmount, disbursementDate: d.disbursementDate, emiDueDay: d.emiDueDay || 5, loanType: d.loanType || 'floating' };
             const s = calculateLiveLoanStatus(lp);
             if (s.loanFullyPaid) return { label1: t('myLoans.metricTotalPaid'), value1: formatINR(s.totalPaidSoFar), label2: t('myLoans.metricInterest'), value2: formatINR(s.interestPaidSoFar), label3: t('myLoans.metricStatus'), value3: t('myLoans.metricPaidOff'), progress: 100, statusText: t('myLoans.metricComplete') };
@@ -110,8 +143,7 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
 }
 
 function isLoanType(type: string): boolean {
-    const t = type.toLowerCase().replace(/\s+calculator$/i, '').trim();
-    return t === 'loan emi' || t === 'mortgage';
+    return isAnyLoanType(type);
 }
 
 export default function MyLoans() {
@@ -119,10 +151,16 @@ export default function MyLoans() {
     const navigate = useNavigate();
     const c = useAppColors();
     const { savedProfiles, removeProfile } = useLiveStatusStore();
-    const [showAddSheet, setShowAddSheet] = useState(false);
     const [menuProfile, setMenuProfile] = useState<SavedLiveProfile | null>(null);
+    // Tick used to refresh the merged storedLoans list when this screen mounts
+    // (useLiveStatusStore is reactive, but loanStorage is plain localStorage)
+    const [storageTick, setStorageTick] = useState(0);
 
-    useEffect(() => { AnalyticsService.trackScreen('My_Loans'); }, []);
+    useEffect(() => {
+        AnalyticsService.trackScreen('My_Loans');
+        // Refresh loanStorage merge whenever the screen comes back into focus.
+        setStorageTick(t => t + 1);
+    }, []);
 
     // Also merge any loans from loanStorage that aren't in useLiveStatusStore
     const allProfiles = useMemo(() => {
@@ -133,7 +171,9 @@ export default function MyLoans() {
             .map(l => ({
                 id: l.id,
                 name: l.nickName,
-                calculatorType: 'Loan EMI',
+                // Preserve the loan subtype so the icon, label & metrics match
+                // what the user saved (Home / Car / Personal / Two Wheeler / etc.)
+                calculatorType: LOAN_TYPE_TO_CALC_TYPE[l.loanType] || 'Loan EMI',
                 profileData: {
                     loanAmount: l.loanAmount,
                     annualRate: l.interestRate,
@@ -147,7 +187,9 @@ export default function MyLoans() {
                 updatedAt: new Date(l.updatedAt).getTime(),
             }));
         return [...savedProfiles, ...extraFromStorage];
-    }, [savedProfiles]);
+        // storageTick forces a re-merge after we delete a stored loan
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [savedProfiles, storageTick]);
 
     const loanProfiles = useMemo(() => allProfiles.filter(p => isLoanType(p.calculatorType)), [allProfiles]);
     const investmentProfiles = useMemo(() => allProfiles.filter(p => !isLoanType(p.calculatorType)), [allProfiles]);
@@ -173,10 +215,11 @@ export default function MyLoans() {
     const handleDelete = (p: SavedLiveProfile) => {
         removeProfile(p.id);
         // Also remove from loanStorage if it exists there
-        try {
-            const { deleteLoan } = require('../utils/loanStorage');
-            deleteLoan(p.id);
-        } catch { /* ignore */ }
+        import('../utils/loanStorage').then(({ deleteLoan }) => {
+            try { deleteLoan(p.id); } catch { /* ignore */ }
+            // Force re-merge so the row disappears immediately
+            setStorageTick(t => t + 1);
+        }).catch(() => { setStorageTick(t => t + 1); });
         setMenuProfile(null);
     };
 
@@ -253,22 +296,14 @@ export default function MyLoans() {
         <div className="min-h-dvh" style={{ backgroundColor: c.bg }}>
             {/* Header */}
             <div className="sticky top-0 z-10 px-4 pt-14 pb-3 border-b" style={{ backgroundColor: c.bg, borderColor: c.border }}>
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(-1)} className="p-2 rounded-xl border" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                            <ArrowLeft size={18} style={{ color: c.textSecondary }} />
-                        </button>
-                        <div>
-                            <h1 className="text-lg font-bold" style={{ color: c.text }}>{t('myLoans.title')}</h1>
-                            <p className="text-[10px]" style={{ color: c.textSecondary }}>{totalTrackers} {t('myLoans.trackersActive')}</p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => setShowAddSheet(true)}
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-500 shadow-lg shadow-emerald-500/20"
-                    >
-                        <Plus size={16} /> {t('myLoans.addLoan')}
+                <div className="flex items-center gap-3">
+                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl border" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                        <ArrowLeft size={18} style={{ color: c.textSecondary }} />
                     </button>
+                    <div>
+                        <h1 className="text-lg font-bold" style={{ color: c.text }}>{t('myLoans.title')}</h1>
+                        <p className="text-[10px]" style={{ color: c.textSecondary }}>{totalTrackers} {t('myLoans.trackersActive')}</p>
+                    </div>
                 </div>
             </div>
 
@@ -333,13 +368,6 @@ export default function MyLoans() {
                     </div>
                 )}
             </div>
-
-            {/* Add Loan Sheet */}
-            <AddLoanSheet
-                open={showAddSheet}
-                onClose={() => setShowAddSheet(false)}
-                onSaved={() => {/* loanStorage saved via sheet, will appear via allProfiles merge */}}
-            />
 
             {/* Delete Confirm */}
             <AnimatePresence>
