@@ -13,6 +13,7 @@ import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
 import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { toLocalDateStr, todayStr } from '../utils/dateUtils';
 
 import SmartInsight from '../components/SmartInsight';
 import ShareableCard from '../components/ShareableCard';
@@ -132,7 +133,7 @@ export default function FDCalculator() {
             metadata: {
                 amount: result.amount,
                 rate: rate,
-                date: new Date(Date.now() + years * 31536000000).toISOString().split('T')[0]
+                date: toLocalDateStr(new Date(Date.now() + years * 31536000000))
             }
         });
     };
@@ -297,7 +298,7 @@ export default function FDCalculator() {
                         <DateInput
                             value={fdStartDate}
                             onChange={setFdStartDate}
-                            max={new Date().toISOString().split('T')[0]}
+                            max={todayStr()}
                             className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50"
                         />
                     </div>

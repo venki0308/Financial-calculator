@@ -350,7 +350,7 @@
         "spendingByCategory": "ವರ್ಗವಾರು ಖರ್ಚು",
         "dailyTrend": "ದೈನಂದಿನ ಖರ್ಚು ಪ್ರವೃತ್ತಿ",
         "budgetVsActual": "ಬಜೆಟ್ ಮತ್ತು ವಾಸ್ತವ",
-        "topCategories": "ಉನ್ನತ ವೆಚ್ಚದ ವರ್ಗಗಳು",
+        "topCategories": "ಪ್ರಮುಖ ಖರ್ಚು ವರ್ಗಗಳು",
         "downloadReport": "PDF ವರದಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
         "periodMonth": "ತಿಂಗಳು",
         "periodYear": "ವರ್ಷ",
@@ -525,7 +525,6 @@
         "topTransactions": "ಪ್ರಮುಖ ವಹಿವಾಟುಗಳು",
         "annualSummary": "ವಾರ್ಷಿಕ ಸಾರಾಂಶ",
         "monthByMonth": "ತಿಂಗಳು ತಿಂಗಳು",
-        "topCategories": "ಪ್ರಮುಖ ಖರ್ಚು ವರ್ಗಗಳು",
         "savingsRateTrend": "ಉಳಿತಾಯ ದರ ಪ್ರವೃತ್ತಿ",
         "noDataYear": "ಈ ವರ್ಷಕ್ಕೆ ಡೇಟಾ ಇಲ್ಲ",
         "incomeLabel": "ಆದಾಯ",
@@ -636,7 +635,6 @@
         "totalInvestments": "ಒಟ್ಟು ಹೂಡಿಕೆಗಳು",
         "totalNetWorth": "ಒಟ್ಟು ಆಸ್ತಿ ಮೌಲ್ಯ",
         "totalSavings": "ಒಟ್ಟು ಉಳಿತಾಯ",
-        "totalSpent": "ಒಟ್ಟು ಖರ್ಚು",
         "weekByWeek": "ವಾರ ವಾರ",
         "weekN": "ವಾರ {{n}}",
         "weeklyReport": "ವಾರದ ವರದಿ",
@@ -680,7 +678,18 @@
         "insightTopCatSpike": "ವರ್ಗ ಖರ್ಚಿನ ಏರಿಕೆ",
         "insightTopCatSpikeDesc": "ನಿಮ್ಮ ಅಗ್ರ ಖರ್ಚಿನ ವರ್ಗ ಕಳೆದ ತಿಂಗಳಿಗೆ ಹೋಲಿಸಿದರೆ ಗಣನೀಯವಾಗಿ ಹೆಚ್ಚಾಗಿದೆ.",
         "insightLowInvestment": "ಹೂಡಿಕೆ ಹೆಚ್ಚಿಸಿ",
-        "insightLowInvestmentDesc": "ನೀವು ಆದಾಯದ 10%ಕ್ಕಿಂತ ಕಡಿಮೆ ಹೂಡಿಕೆ ಮಾಡುತ್ತಿದ್ದೀರಿ. SIP ಅಥವಾ RDಗಳನ್ನು ಪರಿಗಣಿಸಿ."
+        "insightLowInvestmentDesc": "ನೀವು ಆದಾಯದ 10%ಕ್ಕಿಂತ ಕಡಿಮೆ ಹೂಡಿಕೆ ಮಾಡುತ್ತಿದ್ದೀರಿ. SIP ಅಥವಾ RDಗಳನ್ನು ಪರಿಗಣಿಸಿ.",
+        "customRange": "ಕಸ್ಟಮ್ ದಿನಾಂಕ ಶ್ರೇಣಿ",
+        "customRangeDesc": "ಯಾವುದೇ ದಿನಾಂಕ ಶ್ರೇಣಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ ಮತ್ತು ಸಂಪೂರ್ಣ ವರದಿಯನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
+        "fromDate": "ಇಂದ",
+        "toDate": "ವರೆಗೆ",
+        "last7Days": "ಕಳೆದ 7 ದಿನಗಳು",
+        "last15Days": "ಕಳೆದ 15 ದಿನಗಳು",
+        "last30Days": "ಕಳೆದ 30 ದಿನಗಳು",
+        "last90Days": "ಕಳೆದ 90 ದಿನಗಳು",
+        "days": "ದಿನಗಳು",
+        "entriesLabel": "ನಮೂದುಗಳು",
+        "downloadCustomReport": "ಕಸ್ಟಮ್ ವರದಿ ಡೌನ್‌ಲೋಡ್"
     },
     "schemes": {
         "title": "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
@@ -5606,5 +5615,19 @@
         "share": "ಹಂಚಿಕೊಳ್ಳಿ",
         "copied": "ನಕಲಿಸಲಾಗಿದೆ!",
         "copy": "ನಕಲಿಸಿ"
+    },
+    "demo": {
+        "salary": "ಮಾಸಿಕ ವೇತನ",
+        "lunch": "ಕೆಫೆಯಲ್ಲಿ ಮಧ್ಯಾಹ್ನದ ಊಟ",
+        "grocery": "ಸಾಪ್ತಾಹಿಕ ದಿನಸಿ",
+        "transport": "ಸಾರಿಗೆ / ಕ್ಯಾಬ್",
+        "sip": "ಮ್ಯೂಚುಯಲ್ ಫಂಡ್ SIP",
+        "shopping": "ಆನ್‌ಲೈನ್ ಶಾಪಿಂಗ್",
+        "rent": "ಮಾಸಿಕ ಬಾಡಿಗೆ",
+        "electricity": "ವಿದ್ಯುತ್ ಬಿಲ್",
+        "ppf": "PPF ಠೇವಣಿ",
+        "lastSalary": "ಕಳೆದ ತಿಂಗಳ ವೇತನ",
+        "lastRent": "ಕಳೆದ ತಿಂಗಳ ಬಾಡಿಗೆ",
+        "lastSip": "ಕಳೆದ ತಿಂಗಳ SIP"
     }
 }

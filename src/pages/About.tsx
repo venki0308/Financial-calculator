@@ -78,7 +78,7 @@ export default function About() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
                         </span>
-                        <span className="text-xs text-slate-300 font-medium">v{APP_VERSION}</span>
+                        <span className="text-xs text-muted-foreground font-medium">v{APP_VERSION}</span>
                     </div>
                 </motion.div>
 
@@ -126,7 +126,7 @@ export default function About() {
                             >
                                 <div className="flex items-center gap-3">
                                     <span className="block w-2 h-2 rounded-full flex-shrink-0" style={{ background: res.dot }} />
-                                    <span className="text-xs text-slate-300 font-medium group-hover:text-foreground transition-colors">{res.label}</span>
+                                    <span className="text-xs text-muted-foreground font-medium group-hover:text-foreground transition-colors">{res.label}</span>
                                 </div>
                                 <ExternalLink size={14} className="text-slate-600 group-hover:text-brand-green transition-colors" />
                             </a>

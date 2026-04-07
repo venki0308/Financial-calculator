@@ -152,7 +152,7 @@ export default function ExpenseTracker() {
           </div>
         </div>
 
-        {/* ── Tab Bar ── */}
+        {/* ── Tab Bar (min 48px touch target per Material guidelines) ── */}
         <div className="px-3 pb-3">
           <div className="flex rounded-2xl p-1 gap-1" style={{ backgroundColor: theme.bgPrimary }}>
             {TABS.map((tab) => {
@@ -161,17 +161,20 @@ export default function ExpenseTracker() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl transition-all duration-200"
+                  className="flex-1 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-200"
                   style={{
+                    minHeight: 52,
+                    paddingTop: 8,
+                    paddingBottom: 8,
                     backgroundColor: isActive ? theme.accentPrimary : 'transparent',
                     boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
                   }}
                 >
-                  <span className="text-xs leading-none">{tab.emoji}</span>
+                  <span style={{ fontSize: 20, lineHeight: 1 }}>{tab.emoji}</span>
                   <span
                     className="tracking-wide leading-tight"
                     style={{
-                      fontSize: '9px',
+                      fontSize: '10px',
                       fontWeight: isActive ? 700 : 500,
                       color: isActive ? '#FFFFFF' : theme.textMuted,
                     }}

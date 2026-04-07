@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { switchLanguage } from '../i18n';
 import BottomSheet from '../components/BottomSheet';
 import { AnalyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
@@ -39,23 +40,53 @@ export default function Settings() {
 
     useEffect(() => { AnalyticsService.trackScreen('Settings'); }, []);
 
-    const changeLanguage = (code: string) => {
-        i18n.changeLanguage(code);
+    const changeLanguage = async (code: string) => {
+        await switchLanguage(code);
         localStorage.setItem('language', code);
         AnalyticsService.trackLanguageChanged(code);
         setShowLangPicker(false);
     };
 
     const handleClearData = () => {
-        // Wipe ALL persisted Zustand stores for a true fresh-install reset
+        // Wipe ALL persisted data for a true fresh-install reset.
+        // Covers Zustand stores, expense tracker, loans, CIBIL profile,
+        // settings, and one-time flags.
         const storeKeys = [
+            // Legacy Zustand stores
             'local-user-storage',
             'calculator-storage',
             'budget-tracker-storage',
             'fincalix-expenses',
             'scheme-storage',
             'settings-storage',
+            'fincalix-calculator-store',
             'language',
+            // New fincalix_* keys (expense tracker + loans + CIBIL)
+            'fincalix_entries',
+            'fincalix_accounts',
+            'fincalix_budgets',
+            'fincalix_categories',
+            'fincalix_my_loans',
+            'fincalix_cibil_profile',
+            'fincalix_property_data',
+            'fincalix_world_clocks',
+            'fincalix_recently_used',
+            'fincalix_comparev2',
+            'fincalix_notifications',
+            'fincalix_analytics_queue',
+            'fincalix_anon_id',
+            // Disclaimer / consent flags
+            'fincalix_disclaimer_accepted',
+            'fincalix_privacy_accepted',
+            'appDisclaimerAccepted',
+            'expenseTrackerDisclaimerAccepted',
+            'cibil_onboarding_shown',
+            'fincalix_last_quote_date',
+            'fincalix_last_update_notif_version',
+            'fincalix_scheduler_first_seed',
+            'fincalix_scheduler_last_run',
+            // Dev access (only meaningful in dev builds)
+            'fincalix_dev_access',
         ];
         storeKeys.forEach((key) => localStorage.removeItem(key));
         setShowClearConfirm(false);
@@ -195,7 +226,7 @@ export default function Settings() {
 
                 <div className="text-center pb-8 mt-2 animate-fade-in delay-500">
                     <p className="text-muted-foreground text-xs text-brand-purple/80 dark:text-cyan-400 font-bold mb-1">FinCalix v{APP_VERSION}</p>
-                    <p className="text-slate-400 text-[10px]">{t('settings.localDataNote')}</p>
+                    <p className="text-muted-foreground text-[10px]">{t('settings.localDataNote')}</p>
                 </div>
             </div>
 

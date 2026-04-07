@@ -1,8 +1,12 @@
 /**
  * loanStatusEngine.ts — Live Loan Status Engine
  * Calculates exact daily-level position of any loan.
- * Works for Home Loan, Personal Loan, Car Loan, Education Loan.
+ * Works for ALL loan types: Home Loan, Personal Loan, Car Loan,
+ * Education Loan, Gold Loan, Two-Wheeler Loan, Business Loan,
+ * and any custom loan type.
  */
+
+import { toLocalDateStr } from './dateUtils';
 
 export interface LoanProfile {
     loanAmount: number;
@@ -12,6 +16,9 @@ export interface LoanProfile {
     disbursementDate: string;       // YYYY-MM-DD
     emiDueDay: number;              // 1–31
     loanType: 'floating' | 'fixed';
+    /** Optional foreclosure charge % for fixed-rate loans (defaults to 3%).
+     *  Floating-rate loans always have 0% per RBI 2014 circular. */
+    foreclosureChargePercent?: number;
 }
 
 export interface LiveLoanStatus {
@@ -139,8 +146,11 @@ export function calculateLiveLoanStatus(profile: LoanProfile): LiveLoanStatus {
 
     // Exact payoff today
     const exactPayoffToday = principalOutstanding + interestAccruedToday;
+    // Foreclosure rate: floating = 0% (RBI 2014), fixed = user-configured or 3% default.
+    const foreclosureRatePercent = profile.foreclosureChargePercent ?? 3;
     const foreclosureCharge = profile.loanType === 'fixed'
-        ? principalOutstanding * 0.03 : 0;
+        ? principalOutstanding * (foreclosureRatePercent / 100)
+        : 0;
     const totalSettlementToday = exactPayoffToday + foreclosureCharge;
 
     // Interest saved if close today
@@ -187,5 +197,5 @@ export function calculateLiveLoanStatus(profile: LoanProfile): LiveLoanStatus {
 }
 
 function fmtISO(d: Date): string {
-    return d.toISOString().split('T')[0];
+    return toLocalDateStr(d);
 }

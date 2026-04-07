@@ -12,6 +12,7 @@ import DateInput from '../components/DateInput';
 import { useAppColors } from '../theme/useAppColors';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
+import { todayStr } from '../utils/dateUtils';
 
 // Helper to extract number
 const parseFormattedNumber = (value: string): number => {
@@ -65,7 +66,7 @@ export default function OverdraftCalculator() {
 
   const [durationMode, setDurationMode] = useState<'days'|'dates'>('days');
   const [daysUtilized, setDaysUtilized] = useState('30');
-  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(todayStr());
   const [endDate, setEndDate] = useState('');
 
   const [processingFee, setProcessingFee] = useState('');

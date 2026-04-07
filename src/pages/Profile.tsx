@@ -200,7 +200,7 @@ export default function Profile() {
             <div className="text-center mt-12 mb-8 animate-fade-in delay-400">
                 <p className="text-slate-500 dark:text-slate-400 font-medium">FinCalix</p>
                 <p className="text-slate-600 text-xs text-brand-blue/80 dark:text-cyan-400 font-bold mt-1">Version {APP_VERSION}</p>
-                <div className="flex items-center justify-center gap-1 mt-2 text-xs text-slate-400">
+                <div className="flex items-center justify-center gap-1 mt-2 text-xs text-muted-foreground">
                     {t('profile.madeWith')} <Heart size={10} className="text-red-500 fill-red-500" /> {t('profile.inIndia')}
                 </div>
             </div>

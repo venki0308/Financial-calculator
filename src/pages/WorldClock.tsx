@@ -10,6 +10,20 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import { getCountryMeta, getSunTimes } from '../data/countryData';
 import { WORLD_TIMEZONES, POPULAR_IANA, TimezoneInfo } from '../data/timezones';
 
+/**
+ * Convert an ISO 3166-1 alpha-2 country code to its flag emoji.
+ * Uses Unicode Regional Indicator Symbols — works offline, no network call.
+ */
+const countryCodeToFlag = (code: string): string => {
+    if (!code || code.length !== 2) return '🏳️';
+    const A = 0x1F1E6; // Regional Indicator A
+    const offset = 'A'.charCodeAt(0);
+    return String.fromCodePoint(
+        A + code.toUpperCase().charCodeAt(0) - offset,
+        A + code.toUpperCase().charCodeAt(1) - offset,
+    );
+};
+
 // --- Shared Live Time Hook ---
 class TimeTicker {
     listeners = new Set<(d: Date) => void>();
@@ -895,12 +909,9 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
                     <div className="rounded-2xl bg-card p-4 flex items-center gap-4 shadow-lg border border-border">
                         <div className="flex-shrink-0">
                             <div className="w-16 h-16 rounded-xl bg-muted flex flex-col items-center justify-center gap-2">
-                                <img 
-                                    src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
-                                    alt={meta.countryCode}
-                                    className="w-8 h-auto shadow-[0_0_10px_rgba(0,0,0,0.2)] rounded-sm"
-                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                />
+                                <span className="text-3xl leading-none" aria-label={meta.countryCode}>
+                                    {countryCodeToFlag(meta.countryCode)}
+                                </span>
                                 <MapPin size={10} className="text-muted-foreground" />
                             </div>
                         </div>
@@ -994,20 +1005,9 @@ const LiveClockCard = memo(function LiveClockCard({ clock, index, onDetail, onRe
 
             <div className="relative p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-[36px] h-[24px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-[2px] overflow-hidden">
+                    <div className="w-[36px] h-[24px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-[2px] overflow-hidden text-xl leading-none">
                         {meta.countryCode ? (
-                            <img 
-                                src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
-                                alt={meta.countryCode}
-                                className="w-full h-auto object-cover"
-                                onError={(e) => { 
-                                    e.currentTarget.style.display = 'none'; 
-                                    e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
-                                    if (e.currentTarget.parentElement) {
-                                        e.currentTarget.parentElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
-                                    }
-                                }}
-                            />
+                            <span aria-label={meta.countryCode}>{countryCodeToFlag(meta.countryCode)}</span>
                         ) : (
                             <Globe size={16} className="text-slate-400" />
                         )}
@@ -1083,20 +1083,9 @@ const LiveAddZoneItem = memo(function LiveAddZoneItem({ tz, onAdd }: { tz: Timez
         <button onClick={onAdd}
             className="w-full flex items-center justify-between p-3 rounded-xl bg-background border border-border hover:border-primary/50 transition-colors text-left group">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-[32px] h-[22px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden">
+                <div className="w-[32px] h-[22px] flex-shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-sm overflow-hidden text-lg leading-none">
                     {meta.countryCode ? (
-                        <img 
-                            src={`https://flagcdn.com/w40/${meta.countryCode.toLowerCase()}.png`} 
-                            alt={meta.countryCode}
-                            className="w-full h-auto object-cover"
-                            onError={(e) => { 
-                                e.currentTarget.style.display = 'none'; 
-                                e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
-                                if (e.currentTarget.parentElement) {
-                                    e.currentTarget.parentElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
-                                }
-                            }}
-                        />
+                        <span aria-label={meta.countryCode}>{countryCodeToFlag(meta.countryCode)}</span>
                     ) : (
                         <Globe size={14} className="text-slate-400" />
                     )}

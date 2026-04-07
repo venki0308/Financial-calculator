@@ -9,6 +9,7 @@ import { useBudgetTrackerStore, Subscription, EXPENSE_CATEGORIES } from '../../s
 import { getCategoryDisplayName } from '../../utils/categoryUtils';
 import BottomSheet from '../../components/BottomSheet';
 import DateInput from '../../components/DateInput';
+import { todayStr } from '../../utils/dateUtils';
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const COLOR_TAGS = [
@@ -45,7 +46,7 @@ const EMPTY_FORM: Partial<Subscription> = {
     name: '',
     amount: 0,
     billingCycle: 'monthly',
-    nextDueDate: new Date().toISOString().split('T')[0],
+    nextDueDate: todayStr(),
     category: 'entertainment',
     colorTag: COLOR_TAGS[5],
     isActive: true,
@@ -147,7 +148,7 @@ export default function SubscriptionsTab() {
             name: formData.name!.trim(),
             amount: Number(formData.amount),
             billingCycle: (formData.billingCycle || 'monthly') as BillingCycle,
-            nextDueDate: formData.nextDueDate || new Date().toISOString().split('T')[0],
+            nextDueDate: formData.nextDueDate || todayStr(),
             category: formData.category || 'entertainment',
             colorTag: formData.colorTag || COLOR_TAGS[5],
             isActive: formData.isActive ?? true,

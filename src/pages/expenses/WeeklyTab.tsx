@@ -12,6 +12,7 @@ import {
   formatFullDate, DAY_NAMES,
 } from '../../utils/expenseCalculations';
 import type { Entry } from '../../types/expense';
+import { toLocalDateStr, todayStr } from '../../utils/dateUtils';
 
 /* ── constants ── */
 
@@ -26,13 +27,13 @@ const SUB_TABS: { id: SubTab; labelKey: string; fallback: string }[] = [
 /* ── helpers ── */
 
 function isTodayStr(dateStr: string): boolean {
-  return dateStr === new Date().toISOString().split('T')[0];
+  return dateStr === todayStr();
 }
 
 function dateOfWeekday(startDate: string, dayIndex: number): string {
   const d = new Date(startDate + 'T00:00:00');
   d.setDate(d.getDate() + dayIndex);
-  return d.toISOString().split('T')[0];
+  return toLocalDateStr(d);
 }
 
 function typeColor(et: ReturnType<typeof useExpenseTheme>, type: SubTab): string {

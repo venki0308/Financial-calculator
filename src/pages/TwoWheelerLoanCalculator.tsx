@@ -13,6 +13,7 @@ import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { nativeShare } from '../utils/nativeShare';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
+import { todayStr } from '../utils/dateUtils';
 import { VEHICLE_TYPES, VEHICLE_SEGMENTS, CIBIL_TIERS, EV_SUBSIDY, STATE_EV_BENEFITS, RUNNING_COSTS, ONROAD_DEFAULTS, type VehicleType } from '../data/twoWheelerData';
 import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import CibilBadge from '../components/CibilBadge';
@@ -221,7 +222,7 @@ export default function TwoWheelerLoanCalculator() {
             tenureMonths,
             emiAmount: emi,
             rateType: 'fixed',
-            disbursementDate: new Date().toISOString().split('T')[0],
+            disbursementDate: todayStr(),
             emiDueDay: 5,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -232,7 +233,7 @@ export default function TwoWheelerLoanCalculator() {
     };
 
     const handlePDF = async () => {
-        const tag = new Date().toISOString().split('T')[0];
+        const tag = todayStr();
         const config: ExportConfig = {
             title: t('tw.title'),
             subtitle: `${isEV ? t('tw.electric') : t('tw.petrol')} — ${segment.label}`,

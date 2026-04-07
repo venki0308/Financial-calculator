@@ -1,0 +1,80 @@
+// ═══════════════════════════════════════════════════════════════
+// FINCALIX — OG Image Generator (1200×630)
+// Run: node scripts/generate-og-image.mjs
+// ═══════════════════════════════════════════════════════════════
+
+import sharp from 'sharp';
+import fs from 'fs';
+
+const svg = `<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F1923"/>
+      <stop offset="100%" stop-color="#1a2332"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00C896"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+
+  <!-- Top accent bar -->
+  <rect width="1200" height="6" fill="url(#accentGrad)"/>
+
+  <!-- Decorative circles (background) -->
+  <circle cx="1050" cy="120" r="180" fill="#00C896" opacity="0.06"/>
+  <circle cx="1100" cy="500" r="120" fill="#10b981" opacity="0.05"/>
+
+  <!-- Logo emoji circle -->
+  <circle cx="130" cy="180" r="50" fill="#00C896" opacity="0.15"/>
+  <text x="130" y="206" font-family="Arial, sans-serif" font-size="56" text-anchor="middle">₹</text>
+
+  <!-- App name -->
+  <text x="210" y="200" font-family="Arial, sans-serif" font-size="84" font-weight="900" fill="#FFFFFF">FinCalix</text>
+
+  <!-- Tagline -->
+  <text x="80" y="290" font-family="Arial, sans-serif" font-size="34" font-weight="600" fill="#00C896">India's Smartest Financial Calculator App</text>
+
+  <!-- Features row 1 -->
+  <text x="80" y="365" font-family="Arial, sans-serif" font-size="26" fill="#FFFFFF" opacity="0.75">30+ Calculators  ·  Expense Tracker  ·  Insurance Guide</text>
+
+  <!-- Features row 2 -->
+  <text x="80" y="408" font-family="Arial, sans-serif" font-size="22" fill="#FFFFFF" opacity="0.55">EMI · SIP · Tax · PPF · CIBIL · Budget · Goal Planner</text>
+
+  <!-- Free badge -->
+  <rect x="80" y="475" width="220" height="62" rx="14" fill="#00C896"/>
+  <text x="190" y="516" font-family="Arial, sans-serif" font-size="26" font-weight="900" fill="#0F1923" text-anchor="middle">100% FREE</text>
+
+  <!-- 6 Languages badge -->
+  <rect x="320" y="475" width="280" height="62" rx="14" fill="#FFFFFF" opacity="0.1" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="1.5"/>
+  <text x="460" y="516" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF" text-anchor="middle">6 INDIAN LANGUAGES</text>
+
+  <!-- Bottom URL -->
+  <text x="80" y="595" font-family="Arial, sans-serif" font-size="20" fill="#FFFFFF" opacity="0.4">fincalix.com  ·  Made for India  ·  No login required</text>
+</svg>`;
+
+// Save SVG as fallback
+fs.writeFileSync('public/og-image.svg', svg);
+console.log('SVG saved at public/og-image.svg');
+
+// Convert SVG → PNG
+try {
+  await sharp(Buffer.from(svg))
+    .resize(1200, 630)
+    .png({ compressionLevel: 9, quality: 90 })
+    .toFile('public/og-image.png');
+  const stats = fs.statSync('public/og-image.png');
+  console.log(`og-image.png generated: ${(stats.size / 1024).toFixed(1)} KB`);
+} catch (err) {
+  console.error('Sharp conversion failed:', err.message);
+  process.exit(1);
+}
+
+// Delete placeholder
+if (fs.existsSync('public/OG_IMAGE_NEEDED.txt')) {
+  fs.unlinkSync('public/OG_IMAGE_NEEDED.txt');
+  console.log('Deleted public/OG_IMAGE_NEEDED.txt');
+}

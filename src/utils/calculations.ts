@@ -38,12 +38,18 @@ export interface AmortizationRow {
  * EMI is rounded UP per Indian banking standard.
  */
 export function calculateReducingEMI(principal: number, annualRate: number, months: number) {
+    // Boundary validation — prevent NaN/Infinity from invalid inputs
+    if (!Number.isFinite(principal) || !Number.isFinite(annualRate) || !Number.isFinite(months)
+        || principal <= 0 || months <= 0 || annualRate < 0) {
+        return { emi: 0, totalInterest: 0, totalPayment: 0, schedule: [] as AmortizationRow[] };
+    }
+
     const r = annualRate / 12 / 100;
     if (r === 0) {
-        const emi = Math.ceil(principal / months);
+        const emi = Math.round(principal / months);
         return { emi, totalInterest: 0, totalPayment: principal, schedule: generateAmortization(principal, emi, r, months) };
     }
-    const emi = Math.ceil((principal * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1));
+    const emi = Math.round((principal * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1));
     const schedule = generateAmortization(principal, emi, r, months);
     const totalPayment = schedule.reduce((sum, row) => sum + row.emi, 0);
     const totalInterest = totalPayment - principal;
@@ -54,10 +60,16 @@ export function calculateReducingEMI(principal: number, annualRate: number, mont
  * Flat Rate EMI calculation.
  */
 export function calculateFlatEMI(principal: number, annualRate: number, months: number) {
+    // Boundary validation
+    if (!Number.isFinite(principal) || !Number.isFinite(annualRate) || !Number.isFinite(months)
+        || principal <= 0 || months <= 0 || annualRate < 0) {
+        return { emi: 0, totalInterest: 0, totalPayment: 0 };
+    }
+
     const years = months / 12;
     const totalInterest = (principal * annualRate * years) / 100;
     const totalPayment = principal + totalInterest;
-    const emi = Math.ceil(totalPayment / months);
+    const emi = Math.round(totalPayment / months);
     return { emi, totalInterest, totalPayment };
 }
 

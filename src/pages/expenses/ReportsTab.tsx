@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download, ChevronLeft, ChevronRight, TrendingUp, BarChart3, FileText, Calendar,
@@ -15,6 +15,7 @@ import {
   getAllEntries,
 } from '../../utils/expenseStorage';
 import { getAllLoans } from '../../utils/loanStorage';
+import { toLocalDateStr } from '../../utils/dateUtils';
 import {
   calculateSummary,
   getMonthRange,
@@ -62,15 +63,31 @@ export default function ReportsTab() {
   const [reportDate, setReportDate] = useState(getTodayStr());
   const [activeSection, setActiveSection] = useState<ReportSection>('overview');
 
+  // Custom date range
+  const [customStart, setCustomStart] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+  const [customEnd, setCustomEnd] = useState(getTodayStr());
+
   // Current month data
   const currentMonth = getMonthRange(0);
   const prevMonth = getMonthRange(-1);
 
-  const currentEntries = useMemo(() => getEntriesForMonth(currentMonth.year, currentMonth.month), [currentMonth.year, currentMonth.month]);
-  const prevEntries = useMemo(() => getEntriesForMonth(prevMonth.year, prevMonth.month), [prevMonth.year, prevMonth.month]);
-  const allEntries = useMemo(() => getAllEntries(), []);
-  const accounts = useMemo(() => getAllAccounts(), []);
-  const loans = useMemo(() => getAllLoans(), []);
+  // refreshKey forces re-fetch when the user returns to this tab or when an
+  // entry is added in another tab (the parent ExpenseTracker bumps it).
+  const [refreshKey, setRefreshKey] = useState(0);
+  useEffect(() => {
+    // Bump on mount so we always get fresh data when the tab becomes visible
+    setRefreshKey((k) => k + 1);
+  }, []);
+
+  const currentEntries = useMemo(() => getEntriesForMonth(currentMonth.year, currentMonth.month), [currentMonth.year, currentMonth.month, refreshKey]);
+  const prevEntries = useMemo(() => getEntriesForMonth(prevMonth.year, prevMonth.month), [prevMonth.year, prevMonth.month, refreshKey]);
+  const allEntries = useMemo(() => getAllEntries(), [refreshKey]);
+  const accounts = useMemo(() => getAllAccounts(), [refreshKey]);
+  const loans = useMemo(() => getAllLoans(), [refreshKey]);
 
   const budget = useMemo(() => getBudgetForMonth(currentMonth.monthStr), [currentMonth.monthStr]);
   const currentSummary = useMemo(() => calculateSummary(currentEntries, budget), [currentEntries, budget]);
@@ -123,8 +140,30 @@ export default function ReportsTab() {
   const selectedWeek = getWeekRange(reportWeekOffset);
   const selectedYear = getYearRange(reportYearOffset);
 
+  // Custom range data + summary
+  const customRangeEntries = useMemo(
+    () => getEntriesForDateRange(customStart, customEnd),
+    [customStart, customEnd],
+  );
+  const customRangeSummary = useMemo(
+    () => calculateSummary(customRangeEntries),
+    [customRangeEntries],
+  );
+  const customRangeDays = useMemo(() => {
+    const s = new Date(customStart + 'T00:00:00');
+    const e = new Date(customEnd + 'T00:00:00');
+    return Math.max(1, Math.round((e.getTime() - s.getTime()) / 86400000) + 1);
+  }, [customStart, customEnd]);
+
+  const formatRangeLabel = (start: string, end: string) => {
+    const s = new Date(start + 'T00:00:00');
+    const e = new Date(end + 'T00:00:00');
+    const fmt = (d: Date) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    return `${fmt(s)} → ${fmt(e)}`;
+  };
+
   // Report generators
-  const handleGenerate = async (type: 'daily' | 'weekly' | 'monthly' | 'annual') => {
+  const handleGenerate = async (type: 'daily' | 'weekly' | 'monthly' | 'annual' | 'custom') => {
     setGenerating(type);
     try {
       switch (type) {
@@ -151,6 +190,17 @@ export default function ReportsTab() {
         case 'annual': {
           const entries = getEntriesForYear(selectedYear.year);
           await generateExpenseReport('annual', entries, undefined, undefined, `Year ${selectedYear.year}`);
+          break;
+        }
+        case 'custom': {
+          if (customStart > customEnd) {
+            console.warn('Invalid range: start > end');
+            return;
+          }
+          const entries = getEntriesForDateRange(customStart, customEnd);
+          const label = formatRangeLabel(customStart, customEnd);
+          // Use 'monthly' template for custom range (richest layout)
+          await generateExpenseReport('monthly', entries, undefined, getAllAccounts(), label);
           break;
         }
       }
@@ -198,8 +248,8 @@ export default function ReportsTab() {
       subtitle: new Date(reportDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
       icon: Calendar,
       tint: { bg: isDark ? 'rgba(59,130,246,0.1)' : '#EFF6FF', border: isDark ? 'rgba(59,130,246,0.2)' : '#BFDBFE', accent: '#3b82f6' },
-      onPrev: () => { const d = new Date(reportDate); d.setDate(d.getDate() - 1); setReportDate(d.toISOString().split('T')[0]); },
-      onNext: () => { const d = new Date(reportDate); d.setDate(d.getDate() + 1); if (d <= new Date()) setReportDate(d.toISOString().split('T')[0]); },
+      onPrev: () => { const d = new Date(reportDate); d.setDate(d.getDate() - 1); setReportDate(toLocalDateStr(d)); },
+      onNext: () => { const d = new Date(reportDate); d.setDate(d.getDate() + 1); if (d <= new Date()) setReportDate(toLocalDateStr(d)); },
     },
     {
       type: 'weekly' as const,
@@ -876,6 +926,179 @@ export default function ReportsTab() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* ═══ CUSTOM DATE RANGE CARD ═══ */}
+            <div
+              className="rounded-2xl p-4"
+              style={{
+                backgroundColor: theme.bgCard,
+                boxShadow: theme.shadowSoft,
+                border: `1px solid ${theme.borderSubtle}`,
+              }}
+            >
+              <h3 className="text-sm font-bold mb-1 flex items-center gap-2" style={{ color: theme.textPrimary }}>
+                <Calendar size={16} style={{ color: theme.accentInvestment }} />
+                {t('expenses.customRange')}
+              </h3>
+              <p className="text-[11px] mb-4" style={{ color: theme.textSecondary }}>
+                {t('expenses.customRangeDesc')}
+              </p>
+
+              {/* Date inputs */}
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label className="text-[10px] font-bold block mb-1.5" style={{ color: theme.textMuted }}>
+                    {t('expenses.fromDate')}
+                  </label>
+                  <input
+                    type="date"
+                    value={customStart}
+                    max={customEnd}
+                    onChange={e => setCustomStart(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg text-xs font-semibold focus:outline-none"
+                    style={{
+                      backgroundColor: theme.bgPrimary,
+                      border: `1.5px solid ${theme.borderSubtle}`,
+                      color: theme.textPrimary,
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold block mb-1.5" style={{ color: theme.textMuted }}>
+                    {t('expenses.toDate')}
+                  </label>
+                  <input
+                    type="date"
+                    value={customEnd}
+                    min={customStart}
+                    max={getTodayStr()}
+                    onChange={e => setCustomEnd(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg text-xs font-semibold focus:outline-none"
+                    style={{
+                      backgroundColor: theme.bgPrimary,
+                      border: `1.5px solid ${theme.borderSubtle}`,
+                      color: theme.textPrimary,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Quick presets */}
+              <div className="flex gap-2 mb-4 flex-wrap">
+                {[
+                  { key: '7d', label: t('expenses.last7Days'), days: 7 },
+                  { key: '15d', label: t('expenses.last15Days'), days: 15 },
+                  { key: '30d', label: t('expenses.last30Days'), days: 30 },
+                  { key: '90d', label: t('expenses.last90Days'), days: 90 },
+                ].map(preset => (
+                  <button
+                    key={preset.key}
+                    onClick={() => {
+                      const end = new Date();
+                      const start = new Date();
+                      start.setDate(start.getDate() - (preset.days - 1));
+                      const fmt = (d: Date) =>
+                        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                      setCustomStart(fmt(start));
+                      setCustomEnd(fmt(end));
+                    }}
+                    className="px-3 py-1.5 rounded-full text-[10px] font-bold transition-colors"
+                    style={{
+                      backgroundColor: theme.accentInvestment + '15',
+                      color: theme.accentInvestment,
+                      border: `1px solid ${theme.accentInvestment}30`,
+                    }}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Range summary */}
+              <div
+                className="rounded-xl p-3 mb-3"
+                style={{
+                  backgroundColor: theme.bgPrimary,
+                  border: `1px solid ${theme.borderSubtle}`,
+                }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold" style={{ color: theme.textSecondary }}>
+                    {formatRangeLabel(customStart, customEnd)}
+                  </span>
+                  <span
+                    className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: theme.accentInvestment + '15',
+                      color: theme.accentInvestment,
+                    }}
+                  >
+                    {customRangeDays} {t('expenses.days')}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <span className="text-[9px] block" style={{ color: theme.textMuted }}>
+                      {t('expenses.incomeLabel')}
+                    </span>
+                    <span className="text-xs font-bold" style={{ color: theme.accentIncome }}>
+                      {fmtINRShort(customRangeSummary.totalIncome)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] block" style={{ color: theme.textMuted }}>
+                      {t('expenses.expensesLabel')}
+                    </span>
+                    <span className="text-xs font-bold" style={{ color: theme.accentExpense }}>
+                      {fmtINRShort(customRangeSummary.totalExpenses)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[9px] block" style={{ color: theme.textMuted }}>
+                      {t('expenses.netTotal')}
+                    </span>
+                    <span
+                      className="text-xs font-bold"
+                      style={{
+                        color:
+                          customRangeSummary.netSavings >= 0
+                            ? theme.accentIncome
+                            : theme.accentExpense,
+                      }}
+                    >
+                      {fmtINRShort(customRangeSummary.netSavings)}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-2 pt-2 flex items-center justify-between" style={{ borderTop: `1px dashed ${theme.borderSubtle}` }}>
+                  <span className="text-[9px]" style={{ color: theme.textMuted }}>
+                    {customRangeEntries.length} {t('expenses.entriesLabel')}
+                  </span>
+                  <span className="text-[9px]" style={{ color: theme.textMuted }}>
+                    {t('expenses.savingsRateLabel')}: {fmtPct(customRangeSummary.savingsRate)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Download button */}
+              <button
+                onClick={() => handleGenerate('custom')}
+                disabled={generating !== null || customStart > customEnd}
+                className="w-full py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                style={{ backgroundColor: theme.accentInvestment }}
+              >
+                {generating === 'custom' ? (
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                    <Download size={14} />
+                  </motion.div>
+                ) : (
+                  <>
+                    <Download size={14} />
+                    {t('expenses.downloadCustomReport')}
+                  </>
+                )}
+              </button>
             </div>
           </motion.div>
         )}

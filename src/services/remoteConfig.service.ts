@@ -45,22 +45,31 @@ const DEFAULT_CONFIG: FincalixRemoteConfig = {
     },
 };
 
-const CONFIG_URL =
-    'https://raw.githubusercontent.com/venki0308/fincalix-config/main/config.json';
+// Fetched from our own domain (Vercel-hosted) so it shares the cache
+// infrastructure and IP visibility is to fincalix.com only — disclosed in
+// the Privacy Policy under Section 3.
+const CONFIG_URL = 'https://fincalix.com/config.json';
 
 let cachedConfig: FincalixRemoteConfig | null = null;
 
 export const RemoteConfigService = {
-    /** Fetch config from GitHub; returns cached or default on failure */
+    /** Fetch config; returns cached or default on failure / timeout / offline */
     async getConfig(): Promise<FincalixRemoteConfig> {
         if (cachedConfig) return cachedConfig;
         try {
-            const res = await fetch(CONFIG_URL, { cache: 'no-cache' });
+            // 5s timeout — never block the app waiting for the config endpoint
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 5000);
+            const res = await fetch(CONFIG_URL, {
+                cache: 'no-cache',
+                signal: controller.signal,
+            });
+            clearTimeout(timeout);
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             cachedConfig = (await res.json()) as FincalixRemoteConfig;
             return cachedConfig;
         } catch {
-            // Network error or repo not yet created → use defaults
+            // Network error / timeout / offline → use defaults
             cachedConfig = DEFAULT_CONFIG;
             return DEFAULT_CONFIG;
         }

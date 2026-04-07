@@ -214,6 +214,8 @@ export const migrateFromOldStore = (): boolean => {
     }));
 
     localStorage.setItem(ENTRIES_KEY, JSON.stringify(migrated));
+    // Migration complete — drop the legacy key so it doesn't waste storage forever.
+    localStorage.removeItem('budget-tracker-storage');
     return true;
   } catch {
     return false;

@@ -350,7 +350,7 @@
         "spendingByCategory": "വിഭാഗം അനുസരിച്ചുള്ള ചെലവ്",
         "dailyTrend": "ദൈനംദിന ചെലവ് പ്രവണത",
         "budgetVsActual": "ബജറ്റ് Vs യഥാർത്ഥം",
-        "topCategories": "ഏറ്റവും ഉയർന്ന ചെലവ് വിഭാഗങ്ങൾ",
+        "topCategories": "മുൻനിര ചെലവ് വിഭാഗങ്ങൾ",
         "downloadReport": "PDF റിപ്പോർട്ട് ഡൗൺലോഡ് ചെയ്യുക",
         "periodMonth": "മാസം",
         "periodYear": "വർഷം",
@@ -525,7 +525,6 @@
         "topTransactions": "മുൻനിര ഇടപാടുകൾ",
         "annualSummary": "വാർഷിക സംഗ്രഹം",
         "monthByMonth": "മാസം തോറും",
-        "topCategories": "മുൻനിര ചെലവ് വിഭാഗങ്ങൾ",
         "savingsRateTrend": "സേവിംഗ്സ് നിരക്ക് ട്രെൻഡ്",
         "noDataYear": "ഈ വർഷത്തേക്ക് ഡാറ്റ ഇല്ല",
         "incomeLabel": "വരുമാനം",
@@ -636,7 +635,6 @@
         "totalInvestments": "ആകെ നിക്ഷേപങ്ങൾ",
         "totalNetWorth": "ആകെ ആസ്തി മൂല്യം",
         "totalSavings": "ആകെ സേവിംഗ്സ്",
-        "totalSpent": "ആകെ ചെലവ്",
         "weekByWeek": "ആഴ്ച ആഴ്ച",
         "weekN": "ആഴ്ച {{n}}",
         "weeklyReport": "ആഴ്ച റിപ്പോർട്ട്",
@@ -679,7 +677,18 @@
         "insightTopCatSpike": "വിഭാഗ ചെലവ് വർദ്ധനവ്",
         "insightTopCatSpikeDesc": "നിങ്ങളുടെ പ്രധാന ചെലവ് വിഭാഗം കഴിഞ്ഞ മാസത്തെ അപേക്ഷിച്ച് ഗണ്യമായി വർദ്ധിച്ചു.",
         "insightLowInvestment": "നിക്ഷേപങ്ങൾ വർദ്ധിപ്പിക്കുക",
-        "insightLowInvestmentDesc": "നിങ്ങൾ വരുമാനത്തിന്റെ 10%ൽ താഴെ നിക്ഷേപിക്കുന്നു. SIP അല്ലെങ്കിൽ RDകൾ പരിഗണിക്കുക."
+        "insightLowInvestmentDesc": "നിങ്ങൾ വരുമാനത്തിന്റെ 10%ൽ താഴെ നിക്ഷേപിക്കുന്നു. SIP അല്ലെങ്കിൽ RDകൾ പരിഗണിക്കുക.",
+        "customRange": "ഇഷ്ടാനുസൃത തീയതി ശ്രേണി",
+        "customRangeDesc": "ഏതെങ്കിലും തീയതി ശ്രേണി തിരഞ്ഞെടുത്ത് പൂർണ്ണ റിപ്പോർട്ട് ഡൗൺലോഡ് ചെയ്യുക",
+        "fromDate": "മുതൽ",
+        "toDate": "വരെ",
+        "last7Days": "കഴിഞ്ഞ 7 ദിവസം",
+        "last15Days": "കഴിഞ്ഞ 15 ദിവസം",
+        "last30Days": "കഴിഞ്ഞ 30 ദിവസം",
+        "last90Days": "കഴിഞ്ഞ 90 ദിവസം",
+        "days": "ദിവസങ്ങൾ",
+        "entriesLabel": "എൻട്രികൾ",
+        "downloadCustomReport": "ഇഷ്ടാനുസൃത റിപ്പോർട്ട് ഡൗൺലോഡ്"
     },
     "schemes": {
         "title": "സർക്കാർ പദ്ധതികൾ",
@@ -5605,5 +5614,19 @@
         "share": "പങ്കിടുക",
         "copied": "കോപ്പി ചെയ്തു!",
         "copy": "കോപ്പി"
+    },
+    "demo": {
+        "salary": "പ്രതിമാസ ശമ്പളം",
+        "lunch": "കഫെയിൽ ഉച്ചഭക്ഷണം",
+        "grocery": "പ്രതിവാര പലവ്യഞ്ജനം",
+        "transport": "ഗതാഗതം / ടാക്സി",
+        "sip": "മ്യൂച്വൽ ഫണ്ട് SIP",
+        "shopping": "ഓൺലൈൻ ഷോപ്പിംഗ്",
+        "rent": "പ്രതിമാസ വാടക",
+        "electricity": "വൈദ്യുതി ബിൽ",
+        "ppf": "PPF നിക്ഷേപം",
+        "lastSalary": "കഴിഞ്ഞ മാസ ശമ്പളം",
+        "lastRent": "കഴിഞ്ഞ മാസ വാടക",
+        "lastSip": "കഴിഞ്ഞ മാസ SIP"
     }
 }

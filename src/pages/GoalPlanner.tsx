@@ -13,6 +13,7 @@ import { calculateSipStatus, type SipStatusInput } from '../utils/investmentStat
 import { exportToPDF, type ExportConfig, dateTag } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useNotificationStore } from '../store/useNotificationStore';
+import { todayStr } from '../utils/dateUtils';
 
 interface GoalPreset {
     id: string;
@@ -256,7 +257,7 @@ export default function GoalPlanner() {
                                 <DateInput
                                     value={goalStartDate}
                                     onChange={setGoalStartDate}
-                                    max={new Date().toISOString().split('T')[0]}
+                                    max={todayStr()}
                                     className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50"
                                 />
                             </div>
@@ -275,6 +276,11 @@ export default function GoalPlanner() {
                                     {formatINR(result.monthlySIP)}
                                 </motion.p>
                                 <p className="text-muted-foreground text-xs mt-1">{t('goalPlanner.perMonth')}</p>
+                                {inflationRate > 0 && (
+                                    <p className="text-muted-foreground text-[10px] mt-1.5 italic">
+                                        Inflation-adjusted: target value at {inflationRate}% inflation = {formatINR(result.targetFV)}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 mb-4">

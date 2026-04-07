@@ -26,6 +26,17 @@ const CHART_COLORS = [
 
 // ─── PUBLIC API ──────────────────────────────────────────────
 
+/**
+ * Hard cap on entries shown in the projection table.
+ * autoTable handles pagination but rendering 5000+ rows can OOM low-end Android.
+ * If exceeded, the most recent entries are shown and a note is added.
+ */
+const MAX_PROJECTION_ROWS = 1000;
+
+/** Yield to the event loop so the UI can update (toast, spinner) before
+ *  blocking on heavy PDF rendering. */
+const yieldToUI = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
 export const generateExpenseReport = async (
   type: 'daily' | 'weekly' | 'monthly' | 'annual',
   entries: Entry[],
@@ -33,18 +44,33 @@ export const generateExpenseReport = async (
   accounts?: BankAccount[],
   periodLabel?: string,
 ): Promise<void> => {
+  // Cap entries with a safety limit (most recent first when truncating)
+  const cappedEntries = entries.length > MAX_PROJECTION_ROWS
+    ? [...entries].sort((a, b) => b.date.localeCompare(a.date)).slice(0, MAX_PROJECTION_ROWS)
+    : entries;
+  const truncated = entries.length > MAX_PROJECTION_ROWS;
+
+  // Yield once so the "Generating PDF..." toast renders before heavy work
+  await yieldToUI();
+
+  // calculateSummary always uses the full set so totals stay accurate
   const summary = calculateSummary(entries, budget);
+  await yieldToUI();
+
   const label = periodLabel || 'Report';
+  const truncationNote = truncated
+    ? `\nNote: Transaction table shows the most recent ${MAX_PROJECTION_ROWS} of ${entries.length} entries. All totals reflect the FULL data set.`
+    : undefined;
 
   switch (type) {
     case 'daily':
-      return exportToPDF(buildDailyConfig(entries, summary, label));
+      return exportToPDF(buildDailyConfig(cappedEntries, summary, label, truncationNote));
     case 'weekly':
-      return exportToPDF(buildWeeklyConfig(entries, summary, label));
+      return exportToPDF(buildWeeklyConfig(cappedEntries, summary, label, truncationNote));
     case 'monthly':
-      return exportToPDF(buildMonthlyConfig(entries, summary, budget, accounts, label));
+      return exportToPDF(buildMonthlyConfig(cappedEntries, summary, budget, accounts, label, truncationNote));
     case 'annual':
-      return exportToPDF(buildAnnualConfig(entries, summary, budget, label));
+      return exportToPDF(buildAnnualConfig(cappedEntries, summary, budget, label, truncationNote));
   }
 };
 
@@ -54,10 +80,12 @@ function buildDailyConfig(
   entries: Entry[],
   summary: ReturnType<typeof calculateSummary>,
   label: string,
+  notes?: string,
 ): ExportConfig {
   return {
     title: `Daily Financial Report`,
     subtitle: label,
+    notes,
     inputs: [
       { label: 'Date', value: label },
       { label: 'Total Entries', value: String(summary.entryCount) },
@@ -91,7 +119,9 @@ function buildWeeklyConfig(
   entries: Entry[],
   summary: ReturnType<typeof calculateSummary>,
   label: string,
+  notes?: string,
 ): ExportConfig {
+  void entries; // silence unused if any builder doesn't need raw entries
   const dailyRows = summary.dailyTotals.map(d => [
     formatFullDate(d.date),
     fmtINR(d.income),
@@ -103,6 +133,7 @@ function buildWeeklyConfig(
   return {
     title: `Weekly Financial Report`,
     subtitle: label,
+    notes,
     inputs: [
       { label: 'Period', value: label },
       { label: 'Total Entries', value: String(summary.entryCount) },
@@ -131,6 +162,7 @@ function buildMonthlyConfig(
   budget?: Budget,
   accounts?: BankAccount[],
   label?: string,
+  notes?: string,
 ): ExportConfig {
   // Extract year/month from first entry or label
   let year = new Date().getFullYear();
@@ -237,6 +269,7 @@ function buildMonthlyConfig(
   return {
     title: `Monthly Financial Report`,
     subtitle: label || `${MONTH_NAMES[month - 1]} ${year}`,
+    notes,
     inputs,
     results,
     chart: buildCategoryChart(summary),
@@ -255,6 +288,7 @@ function buildAnnualConfig(
   summary: ReturnType<typeof calculateSummary>,
   budget?: Budget,
   label?: string,
+  notes?: string,
 ): ExportConfig {
   // Build month-by-month breakdown
   const year = entries.length > 0
@@ -280,6 +314,7 @@ function buildAnnualConfig(
   return {
     title: `Annual Financial Report`,
     subtitle: label || `Year ${year}`,
+    notes,
     inputs: [
       { label: 'Year', value: String(year) },
       { label: 'Total Entries', value: String(summary.entryCount) },

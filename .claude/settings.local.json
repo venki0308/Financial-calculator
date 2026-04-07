@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//^function buildMonthlyConfig/**)",
+      "Bash(node -e \"console.log\\(require\\('./package.json'\\).dependencies['@capacitor/keyboard']\\)\")"
+    ]
+  }
+}

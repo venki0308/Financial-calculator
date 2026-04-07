@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppColors } from '../theme/useAppColors';
 import { Clock, AlertTriangle, Lightbulb, Save, Check, Trash2 } from 'lucide-react';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
+import { todayStr } from '../utils/dateUtils';
 
 interface MetricCardProps {
     label: string;
@@ -97,7 +98,7 @@ export default function LiveStatusCard({ title, subtitle, startDate, metrics, pr
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
                 <p className="text-xs font-bold uppercase tracking-wider" style={{ color: c.textSecondary }}>
-                    {t('liveStatus.liveAsOf', { date: fmtDate(new Date().toISOString().split('T')[0]) })}
+                    {t('liveStatus.liveAsOf', { date: fmtDate(todayStr()) })}
                 </p>
             </div>
 

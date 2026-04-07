@@ -26,6 +26,8 @@ export interface SavedLoan {
     disbursementDate: string;   // YYYY-MM-DD
     emiDueDay: number;          // 1–31
     notes?: string;
+    /** Foreclosure charge % for fixed-rate loans only (default 3%, varies 1-4% by bank). */
+    foreclosureChargePercent?: number;
     createdAt: string;
     updatedAt: string;
     isActive: boolean;

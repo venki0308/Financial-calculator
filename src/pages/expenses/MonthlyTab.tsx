@@ -35,6 +35,7 @@ import type { Entry } from '../../types/expense';
 import { ALL_DEFAULT_CATEGORIES } from '../../types/expense';
 import { getCustomCategories } from '../../utils/expenseStorage';
 import type { PeriodSummary, CategoryTotal, WeeklySummary } from '../../utils/expenseCalculations';
+import { todayStr } from '../../utils/dateUtils';
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -82,7 +83,7 @@ function getBarColor(pct: number): string {
 }
 
 function isCurrentWeek(startDate: string, endDate: string): boolean {
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayStr();
   return today >= startDate && today <= endDate;
 }
 

@@ -114,10 +114,14 @@ export const CrashlyticsService = {
         } catch { /* silent */ }
     },
 
-    /** Trigger a fatal crash for testing (native only) */
+    /** Trigger a fatal crash for testing (DEV builds only — guarded in production) */
     async crash() {
+        if (import.meta.env.PROD) {
+            console.warn('[FinCalix] crash() called in production — ignored for safety');
+            return;
+        }
         if (!isNative) {
-            console.error('[FinCalix] Crash attempted on non-native platform');
+            console.error('[FinCalix] Test crash (web — non-native, no-op)');
             return;
         }
         await FirebaseCrashlytics.crash({ message: 'Test Crash from FinCalix' });

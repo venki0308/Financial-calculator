@@ -11,6 +11,7 @@ import { getCibilColor, type CibilProfile, clearCibilProfile } from '../utils/ci
 import { formatINR, calculateReducingEMI } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
+import { todayStr } from '../utils/dateUtils';
 
 const EMPLOYMENT_TYPES = [
     { id: 'salaried_govt', icon: '🏛', labelKey: 'cp.govtSalaried' },
@@ -94,7 +95,7 @@ export default function CibilProfileSetup() {
             lastUpdated: new Date().toISOString(),
             employmentType: empType as any,
             gender: gender as any,
-            history: isNTC ? [] : [...history, ...(score ? [{ score, date: new Date().toISOString().split('T')[0] }] : [])],
+            history: isNTC ? [] : [...history, ...(score ? [{ score, date: todayStr() }] : [])],
             isSimulated: true,
         };
         save(p);

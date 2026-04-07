@@ -523,7 +523,6 @@
         "topTransactions": "शीर्ष लेनदेन",
         "annualSummary": "वार्षिक सारांश",
         "monthByMonth": "माह दर माह",
-        "topCategories": "शीर्ष खर्च श्रेणियां",
         "savingsRateTrend": "बचत दर प्रवृत्ति",
         "noDataYear": "इस वर्ष के लिए कोई डेटा नहीं",
         "incomeLabel": "आय",
@@ -634,7 +633,6 @@
         "totalInvestments": "कुल निवेश",
         "totalNetWorth": "कुल संपत्ति मूल्य",
         "totalSavings": "कुल बचत",
-        "totalSpent": "कुल खर्च",
         "weekByWeek": "सप्ताह दर सप्ताह",
         "weekN": "सप्ताह {{n}}",
         "weeklyReport": "साप्ताहिक रिपोर्ट",
@@ -678,7 +676,18 @@
         "insightTopCatSpike": "श्रेणी खर्च में उछाल",
         "insightTopCatSpikeDesc": "आपकी शीर्ष खर्च श्रेणी पिछले महीने की तुलना में काफ़ी बढ़ी है।",
         "insightLowInvestment": "निवेश बढ़ाएं",
-        "insightLowInvestmentDesc": "आप आय का 10% से कम निवेश कर रहे हैं। SIP या RD पर विचार करें।"
+        "insightLowInvestmentDesc": "आप आय का 10% से कम निवेश कर रहे हैं। SIP या RD पर विचार करें।",
+        "customRange": "कस्टम तिथि सीमा",
+        "customRangeDesc": "कोई भी तिथि सीमा चुनें और पूरी रिपोर्ट डाउनलोड करें",
+        "fromDate": "से",
+        "toDate": "तक",
+        "last7Days": "पिछले 7 दिन",
+        "last15Days": "पिछले 15 दिन",
+        "last30Days": "पिछले 30 दिन",
+        "last90Days": "पिछले 90 दिन",
+        "days": "दिन",
+        "entriesLabel": "प्रविष्टियां",
+        "downloadCustomReport": "कस्टम रिपोर्ट डाउनलोड करें"
     },
     "schemes": {
         "title": "सरकारी योजनाएं",
@@ -5649,5 +5658,19 @@
         "share": "साझा करें",
         "copied": "कॉपी किया!",
         "copy": "कॉपी"
+    },
+    "demo": {
+        "salary": "मासिक वेतन",
+        "lunch": "कैफ़े में दोपहर का भोजन",
+        "grocery": "साप्ताहिक किराना",
+        "transport": "परिवहन / कैब",
+        "sip": "म्यूचुअल फंड SIP",
+        "shopping": "ऑनलाइन खरीदारी",
+        "rent": "मासिक किराया",
+        "electricity": "बिजली का बिल",
+        "ppf": "PPF जमा",
+        "lastSalary": "पिछले महीने का वेतन",
+        "lastRent": "पिछले महीने का किराया",
+        "lastSip": "पिछले महीने का SIP"
     }
 }

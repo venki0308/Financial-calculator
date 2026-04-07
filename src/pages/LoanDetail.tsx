@@ -19,6 +19,7 @@ import {
 import NumberInput from '../components/NumberInput';
 import { exportToPDF, type ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
+import { toLocalDateStr, todayStr } from '../utils/dateUtils';
 
 function fmtDate(d: string | number): string {
     if (!d) return '—';
@@ -117,7 +118,7 @@ export default function LoanDetail() {
         const maturityDate = useMemo(() => {
             const dt = new Date(d.disbursementDate);
             dt.setMonth(dt.getMonth() + d.tenureMonths);
-            return fmtDate(dt.toISOString().split('T')[0]);
+            return fmtDate(toLocalDateStr(dt));
         }, [d]);
 
         // Amortization schedule
@@ -134,7 +135,7 @@ export default function LoanDetail() {
                 bal = Math.max(0, bal - prinPart);
                 const isPaid = emiDate <= now;
                 const isNext = !isPaid && (rows.length === 0 || rows[rows.length - 1].isPaid);
-                rows.push({ month: m, date: emiDate.toISOString().split('T')[0], emi: d.emiAmount, interest: intPart, principal: prinPart, balance: bal, isPaid, isNext });
+                rows.push({ month: m, date: toLocalDateStr(emiDate), emi: d.emiAmount, interest: intPart, principal: prinPart, balance: bal, isPaid, isNext });
             }
             return rows;
         }, [d]);
@@ -177,12 +178,12 @@ export default function LoanDetail() {
             const currentRemInt = (status.emisRemaining * d.emiAmount) - status.principalOutstanding;
             const closureDate = new Date();
             closureDate.setMonth(closureDate.getMonth() + newMonths);
-            return { interestSaved: Math.round(Math.max(0, currentRemInt - newInterest)), monthsReduced: Math.max(0, status.emisRemaining - newMonths), newClosureDate: fmtDate(closureDate.toISOString().split('T')[0]) };
+            return { interestSaved: Math.round(Math.max(0, currentRemInt - newInterest)), monthsReduced: Math.max(0, status.emisRemaining - newMonths), newClosureDate: fmtDate(toLocalDateStr(closureDate)) };
         }, [prepayAmount, status, d]);
 
         // PDF Export
         const handleExportPDF = async () => {
-            const tag = new Date().toISOString().split('T')[0];
+            const tag = todayStr();
             const config: ExportConfig = {
                 title: profile.name,
                 subtitle: `${t('myLoans.pdfLoanTrackerReport')} — ${fmtDate(status.today)}`,
@@ -577,10 +578,10 @@ export default function LoanDetail() {
 
     // PDF for investment
     const handleInvestmentPDF = async () => {
-        const tag = new Date().toISOString().split('T')[0];
+        const tag = todayStr();
         const config: ExportConfig = {
             title: profile.name,
-            subtitle: `${profile.calculatorType} — Live Status Report (${fmtDate(new Date().toISOString().split('T')[0])})`,
+            subtitle: `${profile.calculatorType} — Live Status Report (${fmtDate(todayStr())})`,
             inputs: investmentMetrics.cards.map(card => ({ label: card.label, value: card.value })),
             results: [
                 { label: investmentMetrics.headlineLabel, value: investmentMetrics.headline },
@@ -616,7 +617,7 @@ export default function LoanDetail() {
                 {/* Live Banner */}
                 <div className="flex items-center gap-2 px-1">
                     <span className="relative flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" /></span>
-                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: c.textSecondary }}>{t('liveStatus.liveAsOf', { date: fmtDate(new Date().toISOString().split('T')[0]) })}</p>
+                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: c.textSecondary }}>{t('liveStatus.liveAsOf', { date: fmtDate(todayStr()) })}</p>
                 </div>
 
                 {/* Hero Headline Card */}
@@ -626,7 +627,7 @@ export default function LoanDetail() {
                         <h3 className="text-sm font-bold" style={{ color: c.text }}>{investmentMetrics.headlineLabel}</h3>
                     </div>
                     <p className="text-3xl font-black text-emerald-500 mb-1">{investmentMetrics.headline}</p>
-                    <p className="text-[10px]" style={{ color: c.textSecondary }}>{t('liveStatus.liveAsOf', { date: fmtDate(new Date().toISOString().split('T')[0]) })}</p>
+                    <p className="text-[10px]" style={{ color: c.textSecondary }}>{t('liveStatus.liveAsOf', { date: fmtDate(todayStr()) })}</p>
                 </div>
 
                 {/* 3 Colored Metric Cards (like loan EMI status) */}

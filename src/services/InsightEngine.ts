@@ -1,4 +1,5 @@
 import { BudgetEntry, FixedExpenses, CategoryBudgets, Subscription, Insight, EXPENSE_CATEGORIES } from '../store/useBudgetTrackerStore';
+import { toLocalDateStr } from '../utils/dateUtils';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -199,7 +200,7 @@ export function generateInsights(
     }
 
     // ── 6. Daily Overspending Alert ───────────────────────────────────────────
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = toLocalDateStr(today);
     const todayEntries = currentEntries.filter(e => e.date.startsWith(todayStr));
     const todaySpent = todayEntries.reduce((s, e) => s + e.amount, 0);
     const avgDailyBudget = monthlyIncome > 0 ? (monthlyIncome - fixedTotal) / daysInMonth : 0;
@@ -271,7 +272,7 @@ export function getDailyNudges(
 ): string[] {
     const nudges: string[] = [];
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = toLocalDateStr(today);
     const fixedTotal = calcFixedTotal(fixedExpenses);
 
     const todayEntries = entries.filter(e => e.date.startsWith(todayStr));
@@ -283,7 +284,7 @@ export function getDailyNudges(
     // Yesterday's spend vs 7-day average
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const yesterdayStr = toLocalDateStr(yesterday);
     const yesterdaySpent = entries
         .filter(e => e.date.startsWith(yesterdayStr))
         .reduce((s, e) => s + e.amount, 0);
@@ -291,7 +292,7 @@ export function getDailyNudges(
     const last7 = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(today);
         d.setDate(d.getDate() - i - 1);
-        return d.toISOString().split('T')[0];
+        return toLocalDateStr(d);
     });
     const avg7daySpend = last7.reduce((sum, dateStr) => {
         return sum + entries.filter(e => e.date.startsWith(dateStr)).reduce((s, e) => s + e.amount, 0);

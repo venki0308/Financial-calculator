@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, Lock, Eye, CheckCircle, Server, Mail, Smartphone, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { switchLanguage } from '../i18n';
 
 const languages = [
     { code: 'en', name: 'English', nativeName: 'English' },
@@ -49,7 +50,7 @@ export default function DataSafety() {
                     <select
                         value={i18n.language.substring(0, 2)}
                         onChange={(e) => {
-                            i18n.changeLanguage(e.target.value);
+                            switchLanguage(e.target.value);
                             localStorage.setItem('language', e.target.value);
                         }}
                         className="bg-card border border-border text-foreground text-xs rounded-lg px-2 py-1.5 outline-none custom-select-arrow"
@@ -145,7 +146,7 @@ export default function DataSafety() {
                     <div className="pl-9">
                         <div className="rounded-2xl bg-card border border-border overflow-hidden">
                             {dataSafetyTable.map((row, i) => (
-                                <div key={i} className={`grid grid-cols-[110px_1fr] gap-2 p-3 text-[10px] ${i % 2 === 0 ? 'bg-card' : 'bg-slate-800/30'}`}>
+                                <div key={i} className={`grid grid-cols-[110px_1fr] gap-2 p-3 text-[10px] ${i % 2 === 0 ? 'bg-card' : 'bg-muted/40'}`}>
                                     <span className="text-muted-foreground font-bold uppercase">{row.label}</span>
                                     <span className="text-foreground font-medium">{row.value}</span>
                                 </div>

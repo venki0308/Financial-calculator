@@ -1,9 +1,52 @@
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 import { Capacitor } from '@capacitor/core';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { darkColors, lightColors } from '../theme/colors';
+
+// ─── Lazy loaders for heavy export libraries ─────────────────────────────────
+// jsPDF (~250KB) + jspdf-autotable (~80KB) + xlsx (~430KB) are loaded only when
+// the user actually triggers an export. This keeps the initial bundle small.
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _jsPDFCached: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _autoTableCached: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _XLSXCached: any = null;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getJsPDF(): Promise<{ jsPDF: any; autoTable: any }> {
+    if (_jsPDFCached) return { jsPDF: _jsPDFCached, autoTable: _autoTableCached };
+
+    const [jspdfMod, autoTableMod] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+    ]);
+    const jsPDF = jspdfMod.jsPDF;
+
+    // One-time monkey patch: sanitize all text to strip emoji jsPDF can't render
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const originalText = (jsPDF.prototype as any).text;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (jsPDF.prototype as any).text = function (text: any, x: number, y: number, options?: any) {
+        if (Array.isArray(text)) {
+            text = text.map((t) => sanitizeForPDF(String(t)));
+        } else {
+            text = sanitizeForPDF(String(text));
+        }
+        return originalText.call(this, text, x, y, options);
+    };
+
+    _jsPDFCached = jsPDF;
+    _autoTableCached = autoTableMod.default;
+    return { jsPDF: _jsPDFCached, autoTable: _autoTableCached };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getXLSX(): Promise<any> {
+    if (_XLSXCached) return _XLSXCached;
+    _XLSXCached = await import('xlsx');
+    return _XLSXCached;
+}
 
 // ─── Toast notification ────────────────────────────────────────────────────
 // ─── PDF text sanitizer (strips emoji that jsPDF can't render) ─────────────
@@ -23,16 +66,7 @@ export function sanitizeForPDF(text: string): string {
     return stripEmoji(text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, '')).trim();
 }
 
-// Monkey-patch jsPDF text method to always sanitize text globally
-const originalText = (jsPDF.prototype as any).text;
-(jsPDF.prototype as any).text = function(text: any, x: number, y: number, options?: any) {
-    if (Array.isArray(text)) {
-        text = text.map(t => sanitizeForPDF(String(t)));
-    } else {
-        text = sanitizeForPDF(String(text));
-    }
-    return originalText.call(this, text, x, y, options);
-};
+// jsPDF monkey-patch (sanitize text) is now applied inside getJsPDF() lazy loader.
 
 function showToast(message: string, isError = false) {
     const isDark = useSettingsStore.getState().darkMode;
@@ -56,7 +90,8 @@ function showToast(message: string, isError = false) {
 }
 
 // ─── Shared PDF Disclaimer ──────────────────────────────────────────────────
-function addPdfDisclaimer(doc: jsPDF) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function addPdfDisclaimer(doc: any) {
     const totalPages: number = (doc as any).internal.getNumberOfPages();
     const pw = doc.internal.pageSize.getWidth();
     const ph = doc.internal.pageSize.getHeight();
@@ -128,6 +163,7 @@ export const exportToPDF = async (
     chartSummary?: { label: string; value: string; color?: [number, number, number] }[]
 ): Promise<void> => {
     try {
+        const { jsPDF, autoTable } = await getJsPDF();
         const doc = new jsPDF();
 
         doc.setFontSize(18);
@@ -317,6 +353,7 @@ export const exportToExcel = async (
             ...data.map(row => row.map(parseCell)),
         ];
 
+        const XLSX = await getXLSX();
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(allRows);
 
@@ -391,6 +428,7 @@ export const exportComparisonPDF = async (params: ComparisonPDFParams): Promise<
     try {
         showToast('Generating comparison report...');
         const { scenarioA, scenarioB, insights, winner } = params;
+        const { jsPDF, autoTable } = await getJsPDF();
         const doc = new jsPDF();
         const pw = doc.internal.pageSize.getWidth();
 
@@ -535,6 +573,7 @@ export const exportSIPComparisonPDF = async (params: SIPComparisonParams): Promi
     try {
         showToast('Generating SIP comparison report...');
         const { scenarioA, scenarioB, insights, winner } = params;
+        const { jsPDF, autoTable } = await getJsPDF();
         const doc = new jsPDF();
         const pw = doc.internal.pageSize.getWidth();
 
@@ -631,6 +670,7 @@ export const exportFDComparisonPDF = async (params: FDComparisonParams): Promise
     try {
         showToast('Generating FD comparison report...');
         const { scenarioA, scenarioB, insights, winner } = params;
+        const { jsPDF, autoTable } = await getJsPDF();
         const doc = new jsPDF();
         const pw = doc.internal.pageSize.getWidth();
 
@@ -731,6 +771,7 @@ export interface ExpenseReportData {
 export const exportExpenseReportPDF = async (data: ExpenseReportData): Promise<void> => {
     try {
         showToast('Generating Expense Report…');
+        const { jsPDF, autoTable } = await getJsPDF();
         const doc = new jsPDF();
         const pw = doc.internal.pageSize.getWidth();
         doc.setFont('helvetica', 'normal');
@@ -923,6 +964,7 @@ export interface OverdraftReportData {
 export const exportOverdraftPDF = async (data: OverdraftReportData): Promise<void> => {
     try {
         showToast('⏳ Generating Overdraft Report…');
+        const { jsPDF, autoTable } = await getJsPDF();
         const doc = new jsPDF();
         
         const formatRs = (val: number) => {
@@ -1120,6 +1162,7 @@ export const exportOverdraftPDF = async (data: OverdraftReportData): Promise<voi
 
 export const exportOverdraftExcel = async (data: OverdraftReportData): Promise<void> => {
     try {
+        const XLSX = await getXLSX();
         const wb = XLSX.utils.book_new();
 
         // SHEET 1: Summary
@@ -1294,7 +1337,8 @@ function drawLoanPieChart(principal: number, totalInterest: number): string {
 }
 
 /** Add page footers with page numbers and disclaimer on every page */
-function addLoanPdfFooters(doc: jsPDF): void {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function addLoanPdfFooters(doc: any): void {
     const total: number = (doc as any).internal.getNumberOfPages();
     for (let i = 1; i <= total; i++) {
         doc.setPage(i);
@@ -1319,6 +1363,7 @@ export const exportLoanPDF = async (data: LoanReportData): Promise<void> => {
             emi, totalInterest, totalPayment, method, schedule, filename,
         } = data;
 
+        const { jsPDF, autoTable } = await getJsPDF();
         const doc = new jsPDF();
         const principalPct = ((principal / totalPayment) * 100).toFixed(1);
         const interestPct  = ((totalInterest / totalPayment) * 100).toFixed(1);
@@ -1547,6 +1592,7 @@ export const exportLoanExcel = async (data: LoanReportData): Promise<void> => {
         } = data;
 
         const round = (n: number) => Math.round(n);
+        const XLSX = await getXLSX();
         const wb = XLSX.utils.book_new();
 
         // ── Sheet 1: Summary ──────────────────────────────────────────

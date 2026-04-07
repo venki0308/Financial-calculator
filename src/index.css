@@ -529,4 +529,16 @@ textarea::selection {
 input::-moz-selection,
 textarea::-moz-selection {
     background: rgba(99, 102, 241, 0.15);
-}
+}
+
+/* ── Keyboard avoidance: when soft keyboard is visible, add scroll padding so
+      the focused input is never covered by the keyboard or by fixed bottom UI */
+body.keyboard-visible {
+    scroll-padding-bottom: 280px;
+}
+
+body.keyboard-visible input:focus,
+body.keyboard-visible textarea:focus,
+body.keyboard-visible select:focus {
+    scroll-margin-bottom: 280px;
+}

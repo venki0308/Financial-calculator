@@ -34,6 +34,7 @@ import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { nativeShare } from '../utils/nativeShare';
 import { triggerCalcNotification } from '../services/calcNotifications';
+import { todayStr } from '../utils/dateUtils';
 
 ChartJS.register(
     ArcElement,
@@ -410,7 +411,7 @@ export default function SIPCalculator() {
                         <DateInput
                             value={sipStartDate}
                             onChange={setSipStartDate}
-                            max={new Date().toISOString().split('T')[0]}
+                            max={todayStr()}
                             className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50"
                         />
                     </div>

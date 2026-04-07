@@ -20,6 +20,7 @@ import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport'
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAppColors } from '../theme/useAppColors';
+import { todayStr } from '../utils/dateUtils';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -261,7 +262,7 @@ export default function SCSSCalculator() {
                         <DateInput
                             value={scssStartDate}
                             onChange={setScssStartDate}
-                            max={new Date().toISOString().split('T')[0]}
+                            max={todayStr()}
                             className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground text-sm font-semibold focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/50"
                         />
                     </div>

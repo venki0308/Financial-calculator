@@ -11,6 +11,7 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { AnalyticsService } from '../lib/analytics';
 import { exportToPDF, type ExportConfig } from '../utils/exportReport';
 import { CIBIL_RANGES, getCibilTier, getTierId, LOAN_CIBIL_RATES, CIBIL_TIPS, CIBIL_MYTHS, RBI_NOTES } from '../data/cibilData';
+import { todayStr } from '../utils/dateUtils';
 
 const LOAN_TYPES_FOR_CALC = [
     { id: 'home_loan', label: 'cibil.homeLoan', icon: '🏠' },
@@ -78,7 +79,7 @@ export default function CibilScoreCalculator() {
             projectionTitle: t('cibil.rateImpact'),
             projectionColumns: [t('cibil.pdfScore'), t('cibil.rate'), t('cibil.pdfEmi'), t('cibil.totalInt'), t('cibil.extraCost')],
             projectionRows: rateComparison.map(r => [r.label, `${r.rate.toFixed(1)}%`, formatINR(r.emi), formatINR(r.totalInterest), r.extra > 0 ? `+${formatINR(r.extra)}` : '—']),
-            filename: `FinCalix_CIBIL_Guide_${new Date().toISOString().split('T')[0]}`,
+            filename: `FinCalix_CIBIL_Guide_${todayStr()}`,
         };
         await exportToPDF(config);
     };

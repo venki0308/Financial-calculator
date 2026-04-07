@@ -16,6 +16,7 @@ import {
   getAllAccounts, getAllCategories, getCategoryById, getAllEntries,
 } from '../../utils/expenseStorage';
 import { fmtINR, getTodayStr, formatFullDate } from '../../utils/expenseCalculations';
+import { loadDemoData, getDemoEntryCount } from '../../utils/demoDataLoader';
 
 /* ══════════════════════════════════════════════════════════════
    CONSTANTS
@@ -176,7 +177,7 @@ export default function DailyTab() {
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={goPrev}
-            className="w-8 h-8 rounded-full flex items-center justify-center"
+            className="w-11 h-11 rounded-full flex items-center justify-center"
             style={{ backgroundColor: et.bgPrimary }}
           >
             <ChevronLeft size={16} style={{ color: et.textSecondary }} />
@@ -198,15 +199,15 @@ export default function DailyTab() {
             whileTap={{ scale: 0.9 }}
             onClick={goNext}
             disabled={!canGoForward}
-            className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-30"
+            className="w-11 h-11 rounded-full flex items-center justify-center disabled:opacity-30"
             style={{ backgroundColor: et.bgPrimary }}
           >
             <ChevronRight size={16} style={{ color: et.textSecondary }} />
           </motion.button>
         </div>
 
-        {/* 7-day strip */}
-        <div className="flex gap-1.5 justify-between">
+        {/* 7-day strip — horizontally scrollable on very small screens */}
+        <div className="flex gap-1.5 justify-between overflow-x-auto hide-scrollbar">
           {weekStrip.map(day => {
             const isSelected = day.date === selectedDate;
             const isFuture = day.date > getTodayStr();
@@ -216,8 +217,12 @@ export default function DailyTab() {
                 whileTap={{ scale: 0.9 }}
                 onClick={() => !isFuture && setSelectedDate(day.date)}
                 disabled={isFuture}
-                className="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl transition-all"
+                className="flex-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all"
                 style={{
+                  minWidth: 44,
+                  minHeight: 48,
+                  paddingTop: 6,
+                  paddingBottom: 6,
                   backgroundColor: isSelected
                     ? et.accentPrimary
                     : day.isToday
@@ -465,6 +470,45 @@ export default function DailyTab() {
               </button>
             ))}
           </div>
+
+          {/* Demo data loader — only show when there are zero entries anywhere */}
+          {allEntries.length === 0 && (
+            <div className="mt-6 px-4">
+              <div
+                className="rounded-xl p-3 text-left"
+                style={{
+                  backgroundColor: et.accentInvestment + '10',
+                  border: `1px dashed ${et.accentInvestment}40`,
+                }}
+              >
+                <div className="flex items-start gap-2 mb-2">
+                  <span className="text-base">🎁</span>
+                  <div>
+                    <p className="text-[11px] font-bold" style={{ color: et.textPrimary }}>
+                      {t('expenses.tryDemoData', 'Try with sample data')}
+                    </p>
+                    <p className="text-[10px] mt-0.5" style={{ color: et.textSecondary }}>
+                      {t('expenses.tryDemoDataDesc', 'Loads {{count}} sample entries to explore all features.', { count: getDemoEntryCount() })}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    const result = loadDemoData();
+                    refresh();
+                    if (result.added > 0) {
+                      // Jump to today so user sees the new entries
+                      setSelectedDate(getTodayStr());
+                    }
+                  }}
+                  className="w-full py-2 rounded-lg text-[11px] font-bold text-white transition-all active:scale-95"
+                  style={{ backgroundColor: et.accentInvestment }}
+                >
+                  {t('expenses.loadDemoData', 'Load Demo Data')}
+                </button>
+              </div>
+            </div>
+          )}
         </motion.div>
       ) : (
         <div className="space-y-2">

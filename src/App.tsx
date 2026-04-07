@@ -124,6 +124,9 @@ const ValidatorPage              = lr(() => import('./pages/ValidatorPage'));
 
 // App-level modals — lazy loaded with retry (native app only)
 const GlobalDisclaimerModal      = lr(() => import('./components/GlobalDisclaimerModal'));
+// PdfActionSheet uses a named export (not default) so it needs the manual
+// .then(m => ({ default: m.PdfActionSheet })) wrapper. Still goes through
+// lazyRetry for chunk-load resilience.
 const PdfActionSheet             = lazy(() => lazyRetry(() => import('./components/PdfActionSheet').then(m => ({ default: m.PdfActionSheet }))));
 
 // Web legal pages — lazy loaded with retry
@@ -183,6 +186,15 @@ function AppContent() {
     }, [darkMode]);
 
     useEffect(() => {
+        // Run data integrity check FIRST so any corrupt entries are repaired
+        // before the rest of the app reads them.
+        import('./utils/dataIntegrity').then(({ runDataIntegrityCheck }) => {
+            const report = runDataIntegrityCheck();
+            if (report.issues.length > 0) {
+                CrashlyticsService.log(`Data integrity: ${report.issues.length} issue(s) repaired`);
+            }
+        });
+
         const initAnalytics = async () => {
             setupErrorHandling();
             await CrashlyticsService.initialize();
@@ -250,6 +262,47 @@ function AppContent() {
             document.removeEventListener('contextmenu', onContextMenu);
             document.removeEventListener('selectstart', onSelectStart);
             document.removeEventListener('touchmove', onTouchMove);
+        };
+    }, []);
+
+    // ── Keyboard avoidance (Android/iOS) ──────────────────────────
+    // Sets the WebView resize mode so the OS pushes content above the
+    // soft keyboard, and scrolls focused inputs into view. Prevents
+    // the keyboard from covering form fields on small phones.
+    useEffect(() => {
+        if (!Capacitor.isNativePlatform()) return;
+        let kbShowSub: { remove: () => void } | undefined;
+        let kbHideSub: { remove: () => void } | undefined;
+
+        (async () => {
+            try {
+                const { Keyboard, KeyboardResize } = await import('@capacitor/keyboard');
+                // 'native' mode: Android handles resize, content is pushed up
+                await Keyboard.setResizeMode({ mode: KeyboardResize.Native });
+                await Keyboard.setScroll({ isDisabled: false });
+
+                // When keyboard shows, scroll the focused input into view
+                kbShowSub = await Keyboard.addListener('keyboardWillShow', () => {
+                    const el = document.activeElement as HTMLElement | null;
+                    if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT')) {
+                        // Defer to next frame so layout has settled
+                        requestAnimationFrame(() => {
+                            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        });
+                    }
+                    document.body.classList.add('keyboard-visible');
+                });
+                kbHideSub = await Keyboard.addListener('keyboardWillHide', () => {
+                    document.body.classList.remove('keyboard-visible');
+                });
+            } catch (err) {
+                console.warn('[FinCalix] Keyboard plugin init failed', err);
+            }
+        })();
+
+        return () => {
+            kbShowSub?.remove();
+            kbHideSub?.remove();
         };
     }, []);
 
@@ -371,12 +424,15 @@ function AppContent() {
 }
 
 export default function App() {
+    // Dev-only escape hatch: ?dev=true unlocks the in-browser web app shell.
+    // Disabled in production builds so end-users can't flip the flag.
+    const isDevBuild = import.meta.env.DEV;
     const urlParams = new URLSearchParams(window.location.search);
-    const isDevUrl = urlParams.get('dev') === 'true';
+    const isDevUrl = isDevBuild && urlParams.get('dev') === 'true';
     if (isDevUrl) {
         localStorage.setItem('fincalix_dev_access', 'true');
     }
-    const isDevMode = localStorage.getItem('fincalix_dev_access') === 'true';
+    const isDevMode = isDevBuild && localStorage.getItem('fincalix_dev_access') === 'true';
 
     // CASE 1: Native Android/iOS → always show full app
     // CASE 2: Browser with dev mode → show full app for testing

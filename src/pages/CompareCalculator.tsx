@@ -287,7 +287,7 @@ export default function CompareCalculator() {
                                 insight.type === 'positive' ? 'text-brand-green' :
                                 insight.type === 'tip' ? 'text-amber-400' : 'text-blue-400'
                             } />
-                            <p className="text-xs font-medium text-slate-300 leading-relaxed">{insight.text}</p>
+                            <p className="text-xs font-medium text-muted-foreground leading-relaxed">{insight.text}</p>
                         </motion.div>
                     ))}
                 </div>
@@ -408,7 +408,7 @@ function ResultRow({ label, value, highlight, green }: { label: string; value: s
     return (
         <div>
             <p className="text-muted-foreground text-[10px] uppercase font-bold">{label}</p>
-            <p className={`font-bold ${highlight ? 'text-foreground text-sm' : green ? 'text-brand-green text-xs' : 'text-slate-300 text-xs'}`}>{value}</p>
+            <p className={`font-bold ${highlight ? 'text-foreground text-sm' : green ? 'text-brand-green text-xs' : 'text-muted-foreground text-xs'}`}>{value}</p>
         </div>
     );
 }

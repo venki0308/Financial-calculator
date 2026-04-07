@@ -492,9 +492,7 @@ export const calculateNetWorth = (
 
   // Outstanding loan amounts (simplified: original amount - estimated paid)
   const loanLiabilities = activeLoans.reduce((s, l) => {
-    const disbDate = new Date(l.disbursementDate);
-    const now = new Date();
-    const monthsPaid = Math.max(0, (now.getFullYear() - disbDate.getFullYear()) * 12 + (now.getMonth() - disbDate.getMonth()));
+    const monthsPaid = countEmisPaid(l.disbursementDate, l.emiDueDay, l.tenureMonths);
     const principalPaid = estimatePrincipalPaid(l.loanAmount, l.interestRate, l.tenureMonths, monthsPaid);
     return s + Math.max(0, l.loanAmount - principalPaid);
   }, 0);
@@ -514,9 +512,7 @@ export const calculateNetWorth = (
 
   activeLoans.forEach(l => {
     const meta = LOAN_TYPE_META[l.loanType];
-    const disbDate = new Date(l.disbursementDate);
-    const now = new Date();
-    const monthsPaid = Math.max(0, (now.getFullYear() - disbDate.getFullYear()) * 12 + (now.getMonth() - disbDate.getMonth()));
+    const monthsPaid = countEmisPaid(l.disbursementDate, l.emiDueDay, l.tenureMonths);
     const outstanding = Math.max(0, l.loanAmount - estimatePrincipalPaid(l.loanAmount, l.interestRate, l.tenureMonths, monthsPaid));
     if (outstanding > 0) {
       liabilityBreakdown.push({
@@ -534,6 +530,32 @@ export const calculateNetWorth = (
     netWorth, debtToAssetRatio,
     assetBreakdown, liabilityBreakdown,
   };
+};
+
+// Count EMIs whose due date has actually passed.
+// More accurate than a flat year/month difference: skips EMIs where the due
+// day this month hasn't come yet.
+const countEmisPaid = (disbursementDate: string, emiDueDay: number, tenureMonths: number): number => {
+  const disb = new Date(disbursementDate + 'T00:00:00');
+  const now = new Date();
+  if (now < disb) return 0;
+
+  let count = 0;
+  // First EMI is one month after disbursement, on emiDueDay (clamped to month length)
+  const cursor = new Date(disb.getFullYear(), disb.getMonth() + 1, 1);
+  for (let i = 0; i < tenureMonths; i++) {
+    const lastDay = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0).getDate();
+    cursor.setDate(Math.min(emiDueDay, lastDay));
+    if (cursor <= now) {
+      count++;
+    } else {
+      break;
+    }
+    // Advance to next month
+    cursor.setMonth(cursor.getMonth() + 1);
+    cursor.setDate(1);
+  }
+  return count;
 };
 
 // Estimate principal paid using reducing balance amortization

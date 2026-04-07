@@ -349,7 +349,7 @@ export default function SmartInsight({ calculatorType, inputs, results }: SmartI
                         style={{ backgroundColor: colors.bg, borderColor: colors.border }}
                     >
                         <Icon size={16} style={{ color: colors.text }} className="mt-0.5 flex-shrink-0" />
-                        <p className="text-xs font-medium text-slate-300 leading-relaxed">{insight.text}</p>
+                        <p className="text-xs font-medium text-foreground/80 leading-relaxed">{insight.text}</p>
                     </motion.div>
                 );
             })}

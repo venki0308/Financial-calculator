@@ -2,6 +2,8 @@
  * investmentStatusEngine.ts — Live status engines for SIP, FD, RD, PPF, SSY, NSC, KVP, POMIS, POTD, SCSS
  */
 
+import { toLocalDateStr } from './dateUtils';
+
 // ─── Helpers ───────────────────────────────────────────
 function daysBetween(a: Date, b: Date): number {
     return Math.max(0, Math.floor((b.getTime() - a.getTime()) / (86400000)));
@@ -14,7 +16,7 @@ function addMonths(d: Date, n: number): Date {
     r.setMonth(r.getMonth() + n);
     return r;
 }
-function fmtISO(d: Date): string { return d.toISOString().split('T')[0]; }
+function fmtISO(d: Date): string { return toLocalDateStr(d); }
 function today(): Date { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
 
 // ─── SIP STATUS ────────────────────────────────────────

@@ -15,6 +15,7 @@ import DateInput from '../components/DateInput';
 import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { calculateFdStatus, type FdStatusInput } from '../utils/investmentStatusEngine';
+import { todayStr } from '../utils/dateUtils';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -324,7 +325,7 @@ export default function POTDCalculator() {
                         <DateInput
                             value={potdStartDate}
                             onChange={setPotdStartDate}
-                            max={new Date().toISOString().split('T')[0]}
+                            max={todayStr()}
                             className={inputCls}
                         />
                     </div>

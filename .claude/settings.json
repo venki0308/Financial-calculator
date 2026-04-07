@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node scripts/qa-expense-tracker.mjs)",
+      "Bash(node -e 'const d = require\\('\\\\''./src/locales/__TRACKED_VAR__.json'\\\\''\\); console.log\\('\\\\''customRange:'\\\\'', d.expenses?.customRange ? '\\\\''OK'\\\\'' : '\\\\''MISSING'\\\\''\\);')",
+      "Bash(node -e ':*)"
+    ]
+  }
+}

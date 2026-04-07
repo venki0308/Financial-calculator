@@ -1,0 +1,16 @@
+{
+  "minRequiredVersion": "1.0.0",
+  "latestVersion": "1.0.14",
+  "features": {
+    "adMobEnabled": false,
+    "showBannerAds": false,
+    "maintenanceMode": false,
+    "pdfExport": true,
+    "expenseTracker": true
+  },
+  "updateMessage": {
+    "title": "Update Available",
+    "message": "A new version with improvements is available!",
+    "required": false
+  }
+}

@@ -14,6 +14,7 @@ import {
   getAllAccounts, saveAccount, deleteAccount, generateAccountId,
 } from '../utils/expenseStorage';
 import { fmtINR } from '../utils/expenseCalculations';
+import { todayStr } from '../utils/dateUtils';
 
 // ── account type chips ────────────────────────────────────────
 const ACCOUNT_TYPES: AccountType[] = [
@@ -26,8 +27,6 @@ const PRESET_COLORS = [
 ];
 
 // ── helpers ───────────────────────────────────────────────────
-const todayStr = () => new Date().toISOString().split('T')[0];
-
 const blankForm = (): Omit<BankAccount, 'id' | 'createdAt'> => ({
   name: '',
   accountType: 'savings',

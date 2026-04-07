@@ -7,7 +7,7 @@ const T = {
     en: {
         title: 'Privacy Policy',
         hero: 'Your Privacy Matters',
-        heroSub: 'FinCalix collects zero personal data. No backend, no database, no server-side storage. Everything stays on your device.',
+        heroSub: 'FinCalix stores zero personal or financial data on any server. All your financial data stays exclusively on your device. We use anonymous Firebase Analytics for app improvement — no names, no amounts, no PAN, no phone numbers. See Section 4 for details.',
         updated: 'Last Updated: March 2026',
         s: {
             collect: 'Information We Collect',

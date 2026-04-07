@@ -348,7 +348,6 @@
         "spendingByCategory": "Spending by Category",
         "dailyTrend": "Daily Spending Trend",
         "budgetVsActual": "Budget vs Actual",
-        "topCategories": "Top Expense Categories",
         "downloadReport": "Download PDF Report",
         "periodMonth": "Month",
         "periodYear": "Year",
@@ -458,7 +457,6 @@
         "nameRequired": "Name is required",
         "validAmount": "Enter a valid amount",
         "monthlyCommitment": "Monthly Commitment",
-        "yearly": "Yearly",
         "active": "Active",
         "pctIncome": "% Income",
         "noSubscriptions": "No subscriptions yet",
@@ -502,7 +500,6 @@
         "deleteConfirm": "Delete this entry?",
         "delete": "Delete",
         "cancel": "Cancel",
-        "totalSpent": "Total Spent",
         "totalEarned": "Total Earned",
         "netSaved": "Net Saved",
         "dailyAverage": "Daily Avg",
@@ -707,7 +704,21 @@
         "insightTopCatSpike": "Category Spending Spike",
         "insightTopCatSpikeDesc": "Your top spending category increased significantly vs last month.",
         "insightLowInvestment": "Increase Investments",
-        "insightLowInvestmentDesc": "You're investing less than 10% of income. Consider SIPs or recurring deposits."
+        "insightLowInvestmentDesc": "You're investing less than 10% of income. Consider SIPs or recurring deposits.",
+        "customRange": "Custom Date Range",
+        "customRangeDesc": "Pick any date range and download a complete report",
+        "fromDate": "From",
+        "toDate": "To",
+        "last7Days": "Last 7 days",
+        "last15Days": "Last 15 days",
+        "last30Days": "Last 30 days",
+        "last90Days": "Last 90 days",
+        "days": "days",
+        "entriesLabel": "entries",
+        "downloadCustomReport": "Download Custom Report",
+        "tryDemoData": "Try with sample data",
+        "tryDemoDataDesc": "Loads {{count}} sample entries to explore all features.",
+        "loadDemoData": "Load Demo Data"
     },
     "schemes": {
         "title": "Government Schemes",
@@ -999,7 +1010,7 @@
         "taxPerYear": "tax ~{{amount}}/yr",
         "goalWisePlan": "Goal-wise Financial Plan",
         "emergencyFund": "Emergency Fund",
-        "emergencyFundDetail": "{{target}} months of expenses \u2022 You have {{saved}} months saved",
+        "emergencyFundDetail": "{{target}} months of expenses • You have {{saved}} months saved",
         "score": {
             "excellent": "Excellent!",
             "good": "Good",
@@ -1014,7 +1025,7 @@
             "savingsLabel": "SAVINGS"
         },
         "loan": {
-            "title": "\ud83c\udfe6 Loan Eligibility",
+            "title": "🏦 Loan Eligibility",
             "netMonthlyIncome": "Net Monthly Income (post-tax)",
             "maxEMIAllowed": "Max EMI allowed (40% of NMI)",
             "currentEMI": "Current EMI",
@@ -1028,7 +1039,7 @@
             "downPaymentTarget": "Down Payment Target",
             "basedOn5xIncome": "Based on 5x annual income",
             "pctOfMonthlyIncome": "{{pct}}% of monthly income",
-            "pctOfPropertyValue": "{{pct}}% of property value \u2022 {{timeline}}",
+            "pctOfPropertyValue": "{{pct}}% of property value • {{timeline}}",
             "yearsToSaveDownPayment": "{{years}} years to save down payment",
             "downPaymentReady": "Down payment ready!",
             "educationCorpusTarget": "Education Corpus Target",
@@ -1068,15 +1079,15 @@
             "yearsToBuildFund": "{{years}} years to build fund"
         },
         "alert": {
-            "emiAboveLimit": "Your EMI is {{pct}}% of net income \u2014 above the safe limit of {{limit}}%. Lenders may reject new loans.",
+            "emiAboveLimit": "Your EMI is {{pct}}% of net income — above the safe limit of {{limit}}%. Lenders may reject new loans.",
             "emiWarning": "Your EMI is {{pct}}% of net income. Keep it under {{limit}}% for healthy finances.",
             "lowSavings": "You're saving only {{pct}}% of gross income. Target {{target}}%+ for financial security.",
-            "emergencyLow": "Emergency fund covers only {{months}} months of expenses. Build a 3\u20136 month buffer first.",
+            "emergencyLow": "Emergency fund covers only {{months}} months of expenses. Build a 3–6 month buffer first.",
             "emergencyBelow6": "Emergency fund covers {{months}} months. Aim for 6 months of expenses ({{target}}).",
             "sipExceedsSurplus": "Total SIP needed ({{sip}}/mo) exceeds 90% of your surplus. Consider prioritizing goals.",
             "greatSavings": "Great savings rate of {{pct}}%! You're building wealth faster than most.",
             "debtWellManaged": "Your debt is well-managed at {{pct}}% of net income. Keep it up!",
-            "solidEmergencyFund": "Solid emergency fund \u2014 {{months}} months of expenses covered. Well done!"
+            "solidEmergencyFund": "Solid emergency fund — {{months}} months of expenses covered. Well done!"
         },
         "export": {
             "monthlySalary": "Monthly Salary",
@@ -1089,9 +1100,9 @@
             "financialHealthScore": "Financial Health Score",
             "monthlySurplus": "Monthly Surplus",
             "totalMonthlySIP": "Total Monthly SIP Needed",
-            "needs50": "50/30/20 \u2014 Needs (50%)",
-            "wants30": "50/30/20 \u2014 Wants (30%)",
-            "savings20": "50/30/20 \u2014 Savings (20%)",
+            "needs50": "50/30/20 — Needs (50%)",
+            "wants30": "50/30/20 — Wants (30%)",
+            "savings20": "50/30/20 — Savings (20%)",
             "maxEMIAllowed": "Max EMI Allowed",
             "emiToIncomeRatio": "EMI-to-Income Ratio",
             "reportTitle": "Financial Plan Report",
@@ -5803,5 +5814,19 @@
         "older": "Older",
         "dismiss": "Dismiss",
         "justNow": "just now"
+    },
+    "demo": {
+        "salary": "Monthly salary",
+        "lunch": "Lunch at cafe",
+        "grocery": "Weekly groceries",
+        "transport": "Transport / Cab",
+        "sip": "Mutual fund SIP",
+        "shopping": "Online shopping",
+        "rent": "Monthly rent",
+        "electricity": "Electricity bill",
+        "ppf": "PPF deposit",
+        "lastSalary": "Last month salary",
+        "lastRent": "Last month rent",
+        "lastSip": "Last month SIP"
     }
 }

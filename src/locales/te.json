@@ -525,7 +525,6 @@
         "topTransactions": "టాప్ లావాదేవీలు",
         "annualSummary": "వార్షిక సారాంశం",
         "monthByMonth": "నెల నెలా",
-        "topCategories": "అగ్ర ఖర్చు వర్గాలు",
         "savingsRateTrend": "పొదుపు రేటు ట్రెండ్",
         "noDataYear": "ఈ సంవత్సరానికి డేటా లేదు",
         "incomeLabel": "ఆదాయం",
@@ -636,7 +635,6 @@
         "totalInvestments": "మొత్తం పెట్టుబడులు",
         "totalNetWorth": "మొత్తం సంపద విలువ",
         "totalSavings": "మొత్తం పొదుపు",
-        "totalSpent": "మొత్తం ఖర్చు",
         "weekByWeek": "వారం వారం",
         "weekN": "వారం {{n}}",
         "weeklyReport": "వారపు నివేదిక",
@@ -680,7 +678,18 @@
         "insightTopCatSpike": "వర్గ ఖర్చు పెరుగుదల",
         "insightTopCatSpikeDesc": "మీ అగ్ర ఖర్చు వర్గం గత నెలతో పోలిస్తే గణనీయంగా పెరిగింది.",
         "insightLowInvestment": "పెట్టుబడులు పెంచండి",
-        "insightLowInvestmentDesc": "మీరు ఆదాయంలో 10% కంటే తక్కువ పెట్టుబడి పెడుతున్నారు. SIPలు లేదా RDలు పరిగణించండి."
+        "insightLowInvestmentDesc": "మీరు ఆదాయంలో 10% కంటే తక్కువ పెట్టుబడి పెడుతున్నారు. SIPలు లేదా RDలు పరిగణించండి.",
+        "customRange": "కస్టమ్ తేదీ పరిధి",
+        "customRangeDesc": "ఏదైనా తేదీ పరిధిని ఎంచుకుని పూర్తి నివేదిక డౌన్‌లోడ్ చేయండి",
+        "fromDate": "నుండి",
+        "toDate": "వరకు",
+        "last7Days": "గత 7 రోజులు",
+        "last15Days": "గత 15 రోజులు",
+        "last30Days": "గత 30 రోజులు",
+        "last90Days": "గత 90 రోజులు",
+        "days": "రోజులు",
+        "entriesLabel": "నమోదులు",
+        "downloadCustomReport": "కస్టమ్ నివేదిక డౌన్‌లోడ్"
     },
     "schemes": {
         "title": "ప్రభుత్వ పథకాలు",
@@ -5640,5 +5649,19 @@
         "share": "పంచుకోండి",
         "copied": "కాపీ చేయబడింది!",
         "copy": "కాపీ"
+    },
+    "demo": {
+        "salary": "నెలవారీ జీతం",
+        "lunch": "కేఫ్‌లో మధ్యాహ్న భోజనం",
+        "grocery": "వారపు కిరాణా",
+        "transport": "రవాణా / క్యాబ్",
+        "sip": "మ్యూచువల్ ఫండ్ SIP",
+        "shopping": "ఆన్‌లైన్ షాపింగ్",
+        "rent": "నెలవారీ అద్దె",
+        "electricity": "విద్యుత్ బిల్లు",
+        "ppf": "PPF డిపాజిట్",
+        "lastSalary": "గత నెల జీతం",
+        "lastRent": "గత నెల అద్దె",
+        "lastSip": "గత నెల SIP"
     }
 }

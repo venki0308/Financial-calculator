@@ -17,7 +17,7 @@ const config: CapacitorConfig = {
     // preventing Android's native text selection layer from activating.
     captureInput: true,
     webContentsDebuggingEnabled: false,
-    loggingBehavior: 'none' as any,
+    loggingBehavior: 'none',
   },
 };
 

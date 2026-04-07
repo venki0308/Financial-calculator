@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, Lock, Eye, EyeOff, Server, Users, FileText, Mail, Globe, Smartphone } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { switchLanguage } from '../i18n';
 import { useAppColors } from '../theme/useAppColors';
 
 function Section({ number, title, icon: Icon, children }: { number: number; title: string; icon: any; children: React.ReactNode }) {
@@ -53,7 +54,7 @@ export default function PrivacyPolicy() {
                     <select
                         value={i18n.language.substring(0, 2)}
                         onChange={(e) => {
-                            i18n.changeLanguage(e.target.value);
+                            switchLanguage(e.target.value);
                             localStorage.setItem('language', e.target.value);
                         }}
                         className="bg-card border border-border text-foreground text-xs rounded-lg px-2 py-1.5 outline-none custom-select-arrow"

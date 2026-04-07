@@ -3,12 +3,27 @@
  * All calculators call exportToPDF(config) and exportToExcel(config).
  */
 
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 import { Capacitor } from '@capacitor/core';
 import { sanitizeForPDF } from './exportUtils';
 import { useSettingsStore } from '../store/useSettingsStore';
+
+// ─── Lazy loaders for heavy export libraries ─────────────────────────────────
+// jsPDF (~250KB) + jspdf-autotable (~80KB) + xlsx (~430KB) are loaded only when
+// the user actually triggers an export, not on app start.
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getJsPDF(): Promise<{ jsPDF: any; autoTable: any }> {
+    const [{ jsPDF }, autoTableMod] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+    ]);
+    return { jsPDF, autoTable: autoTableMod.default };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getXLSX(): Promise<any> {
+    return await import('xlsx');
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -159,7 +174,8 @@ function webDownload(blob: Blob, filename: string) {
 }
 
 /** Add branded footer + page numbers + disclaimer on every page */
-function addFooters(doc: jsPDF, title: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function addFooters(doc: any, _title: string) {
     const total = (doc as any).internal.getNumberOfPages();
     const pw = doc.internal.pageSize.getWidth();
     const ph = doc.internal.pageSize.getHeight();
@@ -201,6 +217,7 @@ export async function exportToPDF(config: ExportConfig): Promise<void> {
 
     try {
         showToast('Generating PDF...');
+        const { jsPDF, autoTable } = await getJsPDF();
         const doc = new jsPDF();
         const pw = doc.internal.pageSize.getWidth();
 
@@ -422,6 +439,7 @@ export async function exportToExcel(config: ExportConfig): Promise<void> {
 
     try {
         showToast('Generating Excel...');
+        const XLSX = await getXLSX();
         const wb = XLSX.utils.book_new();
 
         // ── Sheet 1: Summary ──────────────────────────────────────────────
