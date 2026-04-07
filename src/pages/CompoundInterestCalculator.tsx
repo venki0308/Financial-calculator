@@ -11,6 +11,7 @@ import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport'
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -20,6 +21,7 @@ export default function CompoundInterestCalculator() {
     useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved, removeSaved } = useCalculatorStore();
+    const addProfile = useLiveStatusStore(s => s.addProfile);
 
     // Base States
     const [principal, setPrincipal] = useState(100000);
@@ -96,13 +98,32 @@ export default function CompoundInterestCalculator() {
             resultValues: { primary: result.amount, label: t('ci.maturityValue'), invested: principal, returns: result.interest },
             timestamp: Date.now(),
         });
+        // Also save to live tracker store so it appears in My Loans
+        addProfile({
+            id: calcId,
+            name: `${formatINR(principal)} @ ${rate}% × ${years}Y`,
+            calculatorType: 'Compound Interest',
+            profileData: {
+                principal,
+                rate,
+                years,
+                freq,
+                maturity: Math.round(result.amount),
+                interest: Math.round(result.interest),
+                startDate: new Date().toISOString().slice(0, 10),
+            },
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
         setSaved(true);
         setLastSavedId(calcId);
     };
 
+    const removeProfile = useLiveStatusStore(s => s.removeProfile);
     const handleRemove = () => {
         if (lastSavedId) {
             removeSaved(lastSavedId);
+            removeProfile(lastSavedId);
             setLastSavedId(null);
             setSaved(false);
         }

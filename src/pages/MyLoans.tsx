@@ -38,6 +38,12 @@ const TYPE_META: Record<string, { icon: string; color: string; labelKey: string 
     'SCSS Calculator': { icon: '👴', color: '#EC4899', labelKey: 'myLoans.typeLabelScss' },
     'Post Office TD': { icon: '📮', color: '#F97316', labelKey: 'myLoans.typeLabelPotd' },
     'Goal Planner': { icon: '🎯', color: '#3B82F6', labelKey: 'myLoans.typeLabelGoal' },
+    // Snapshot trackers — saved values are displayed as-is (no live recompute)
+    'Compound Interest': { icon: '📊', color: '#8B5CF6', labelKey: 'myLoans.typeLabelCompoundInterest' },
+    'Simple Interest': { icon: '🧮', color: '#06B6D4', labelKey: 'myLoans.typeLabelSimpleInterest' },
+    'Property': { icon: '🏡', color: '#F59E0B', labelKey: 'myLoans.typeLabelProperty' },
+    'Insurance': { icon: '🛡️', color: '#10B981', labelKey: 'myLoans.typeLabelInsurance' },
+    'Overdraft': { icon: '💳', color: '#EF4444', labelKey: 'myLoans.typeLabelOverdraft' },
 };
 
 // Map LoanType (loanStorage) → calculatorType string used by TYPE_META + computeMetrics
@@ -83,7 +89,9 @@ function isAnyLoanType(type: string): boolean {
         || t === 'education loan'
         || t === 'gold loan'
         || t === 'business loan'
-        || t === 'two wheeler loan';
+        || t === 'two wheeler loan'
+        || t === 'overdraft'
+        || t === 'od';
 }
 
 function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => string): LiveMetrics | null {
@@ -91,6 +99,19 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
     if (!d) return null;
     try {
         const type = p.calculatorType;
+        // Overdraft is grouped with loans visually but uses snapshot data,
+        // not the amortising loan engine. Handle it before the loan branch.
+        if (matchType(type, 'overdraft', 'od')) {
+            const utilized = d.utilized || d.loanAmount || 0;
+            const totalInterest = d.totalInterest || 0;
+            const totalPayable = d.totalPayable ?? (utilized + totalInterest);
+            return {
+                label1: t('myLoans.metricAmount'), value1: formatINR(utilized),
+                label2: t('myLoans.metricInterest'), value2: formatINR(totalInterest),
+                label3: t('myLoans.metricValue'), value3: formatINR(totalPayable),
+                progress: 100, statusText: `${d.days || 0}d @ ${d.rate || 0}%`,
+            };
+        }
         if (isAnyLoanType(type)) {
             const lp: LoanProfile = { loanAmount: d.loanAmount, annualRate: d.annualRate, tenureMonths: d.tenureMonths, emiAmount: d.emiAmount, disbursementDate: d.disbursementDate, emiDueDay: d.emiDueDay || 5, loanType: d.loanType || 'floating' };
             const s = calculateLiveLoanStatus(lp);
@@ -137,6 +158,53 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
         if (matchType(type, 'goal planner', 'goal')) {
             const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate, targetAmount: d.targetAmount });
             return { label1: t('myLoans.metricInvested'), value1: formatINR(s.totalInvested), label2: t('myLoans.metricValue'), value2: formatINR(s.currentValue), label3: t('myLoans.metricGoal'), value3: `${s.progressToGoal.toFixed(0)}%`, progress: s.progressToGoal, statusText: t('myLoans.metricPctToGoal', { pct: s.progressToGoal.toFixed(0) }) };
+        }
+
+        // ── SNAPSHOT TRACKERS ──
+        // These calculators don't have live status engines (or aren't time-based),
+        // so we display the values exactly as they were saved.
+
+        if (matchType(type, 'compound interest', 'ci')) {
+            const principal = d.principal || 0;
+            const maturity = d.maturity || 0;
+            const interest = d.interest ?? (maturity - principal);
+            return {
+                label1: t('myLoans.metricInvested'), value1: formatINR(principal),
+                label2: t('myLoans.metricValue'), value2: formatINR(maturity),
+                label3: t('myLoans.metricInterest'), value3: formatINR(interest),
+                progress: 100, statusText: `${d.years || 0}Y @ ${d.rate || 0}%`,
+            };
+        }
+        if (matchType(type, 'simple interest', 'si')) {
+            const principal = d.principal || 0;
+            const interest = d.interest || 0;
+            const totalPayable = d.totalPayable ?? (principal + interest);
+            return {
+                label1: t('myLoans.metricInvested'), value1: formatINR(principal),
+                label2: t('myLoans.metricInterest'), value2: formatINR(interest),
+                label3: t('myLoans.metricValue'), value3: formatINR(totalPayable),
+                progress: 100, statusText: `${d.tenureMonths || 0}M @ ${d.rate || 0}%`,
+            };
+        }
+        if (matchType(type, 'property')) {
+            const value = d.totalCost || d.propertyValue || 0;
+            return {
+                label1: t('myLoans.metricValue'), value1: formatINR(value),
+                label2: t('myLoans.metricStatus'), value2: d.mode || '—',
+                label3: t('myLoans.metricEarned'), value3: d.area ? `${d.area} sqft` : '—',
+                progress: 100, statusText: d.mode || 'Property',
+            };
+        }
+        if (matchType(type, 'insurance')) {
+            const sumInsured = d.sumInsured || 0;
+            const premiumMin = d.premiumMin || 0;
+            const premiumMax = d.premiumMax || premiumMin;
+            return {
+                label1: t('myLoans.metricValue'), value1: formatINR(sumInsured),
+                label2: t('myLoans.metricMonthly'), value2: `${formatINR(premiumMin)} – ${formatINR(premiumMax)}`,
+                label3: t('myLoans.metricStatus'), value3: d.tab === 'life' ? 'Life' : 'Health',
+                progress: 100, statusText: d.tab === 'life' ? 'Life Cover' : 'Health Cover',
+            };
         }
     } catch { return null; }
     return null;

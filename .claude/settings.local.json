@@ -10,7 +10,10 @@
       "Bash(xargs -I {} basename {})",
       "Bash(grep -h \"trackScreen\" d:/Skills/Financial-calculator/src/pages/*.tsx)",
       "Bash(grep -l \"DateInput\" d:/Skills/Financial-calculator/src/pages/*Calculator.tsx)",
-      "Bash(node -e \"['en','hi','te','ta','kn','ml'].forEach\\(l => { try { JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/'+l+'.json','utf8'\\)\\); console.log\\(l+': OK'\\); } catch\\(e\\) { console.log\\(l+': FAIL '+e.message\\); process.exit\\(1\\); } }\\);\")"
+      "Bash(node -e \"['en','hi','te','ta','kn','ml'].forEach\\(l => { try { JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/'+l+'.json','utf8'\\)\\); console.log\\(l+': OK'\\); } catch\\(e\\) { console.log\\(l+': FAIL '+e.message\\); process.exit\\(1\\); } }\\);\")",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"for\\(const f of ['hi','te','ta','kn','ml']\\){try{JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/'+f+'.json','utf8'\\)\\);console.log\\(f+': OK'\\)}catch\\(e\\){console.log\\(f+': '+e.message\\)}}\")",
+      "Bash(node -e \"for\\(const f of ['hi','te','ta','kn','ml']\\){try{const data=JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/'+f+'.json','utf8'\\)\\);console.log\\(f+': OK'\\)}catch\\(e\\){console.log\\(f+': '+e.message\\)}}\")"
     ]
   }
 }

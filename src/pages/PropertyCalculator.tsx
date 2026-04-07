@@ -5,6 +5,7 @@ import { ArrowLeft, Building2, MapPin, ArrowRightLeft, Copy, Check, Home, FileTe
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import { AnalyticsService } from '../lib/analytics';
 import { exportToPDF } from '../utils/exportReport';
 import DisclaimerComponent from '../components/DisclaimerComponent';
@@ -26,12 +27,33 @@ export default function PropertyCalculator() {
     const navigate = useNavigate();
     const addSaved = useCalculatorStore((s) => s.addSaved);
     const removeSaved = useCalculatorStore((s) => s.removeSaved);
+    const addProfile = useLiveStatusStore((s) => s.addProfile);
+    const removeProfile = useLiveStatusStore((s) => s.removeProfile);
     const [propertySaved, setPropertySaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+
+    /** Save a property snapshot to the My Loans tracker */
+    const trackProperty = useCallback((id: string, name: string, mode: string, totalCost: number, area?: number) => {
+        addProfile({
+            id,
+            name,
+            calculatorType: 'Property',
+            profileData: {
+                mode,
+                totalCost: Math.round(totalCost),
+                propertyValue: Math.round(totalCost),
+                area: area || 0,
+                startDate: new Date().toISOString().slice(0, 10),
+            },
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
+    }, [addProfile]);
 
     const handlePropertyRemove = () => {
         if (lastSavedId) {
             removeSaved(lastSavedId);
+            removeProfile(lastSavedId);
             setLastSavedId(null);
             setPropertySaved(false);
         }
@@ -672,7 +694,7 @@ export default function PropertyCalculator() {
                                                 </div>
                                             ) : (
                                                 <button
-                                                    onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: t('property.landValue'), inputValues: { landArea, landUnit, landPrice }, resultValues: { primary: landResult.totalValue }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
+                                                    onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: t('property.landValue'), inputValues: { landArea, landUnit, landPrice }, resultValues: { primary: landResult.totalValue }, timestamp: Date.now() }); trackProperty(id, `${t('property.landValue')} • ${landArea} ${UNIT_SHORT[landUnit] || landUnit}`, 'Land', landResult.totalValue, Number(landArea) || 0); setPropertySaved(true); setLastSavedId(id); }}
                                                     className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold"
                                                 >
                                                     {t('property.save')}
@@ -807,7 +829,7 @@ export default function PropertyCalculator() {
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: t('property.flatPrice'), inputValues: { builtUp, carpet, ppsf, parking, amenities, maint, gstPct }, resultValues: { primary: flatResult.totalCost }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
+                                                <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: t('property.flatPrice'), inputValues: { builtUp, carpet, ppsf, parking, amenities, maint, gstPct }, resultValues: { primary: flatResult.totalCost }, timestamp: Date.now() }); trackProperty(id, `${t('property.flatPrice')} • ${builtUp} sqft`, 'Flat', flatResult.totalCost, Number(builtUp) || 0); setPropertySaved(true); setLastSavedId(id); }}
                                                     className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
                                             )}
                                             <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 {t('property.pdf')}</button>
@@ -944,7 +966,7 @@ export default function PropertyCalculator() {
                                                     </button>
                                                 </div>
                                             ) : (
-                                                <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: t('property.villaConstruction'), inputValues: { groundFloor, firstFloor, secondFloor, constRate }, resultValues: { primary: villaResult.totalCost }, timestamp: Date.now() }); setPropertySaved(true); setLastSavedId(id); }}
+                                                <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: t('property.villaConstruction'), inputValues: { groundFloor, firstFloor, secondFloor, constRate }, resultValues: { primary: villaResult.totalCost }, timestamp: Date.now() }); trackProperty(id, `${t('property.villaConstruction')} • ${(Number(groundFloor) || 0) + (Number(firstFloor) || 0) + (Number(secondFloor) || 0)} sqft`, 'Villa', villaResult.totalCost, (Number(groundFloor) || 0) + (Number(firstFloor) || 0) + (Number(secondFloor) || 0)); setPropertySaved(true); setLastSavedId(id); }}
                                                     className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
                                             )}
                                             <button onClick={handleVillaPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 {t('property.pdf')}</button>

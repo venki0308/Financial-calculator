@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { ArrowLeft, Info, Share2 } from 'lucide-react';
+import { ArrowLeft, Info, Share2, Save, Check, Trash2 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
@@ -10,6 +10,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
@@ -82,6 +83,12 @@ export default function SimpleInterestCalculator() {
     const [showInfo, setShowInfo] = useState(false);
     const [payFreq, setPayFreq] = useState<FrequencyMonths>(1); // payment frequency
 
+    // Save-to-MyLoans state
+    const addProfile = useLiveStatusStore(s => s.addProfile);
+    const removeProfile = useLiveStatusStore(s => s.removeProfile);
+    const [trackerSaved, setTrackerSaved] = useState(false);
+    const [trackerSavedId, setTrackerSavedId] = useState<string | null>(null);
+
     const result = useMemo(() => {
         if (mode === 'flat') {
             // Flat ₹ per ₹100 per month model
@@ -133,6 +140,50 @@ export default function SimpleInterestCalculator() {
             };
         }
     }, [mode, principal, flatRate, annualRate, tenure, compoundFreq]);
+
+    // Normalised values across the three modes for the tracker snapshot
+    const trackerSnapshot = useMemo(() => {
+        if (mode === 'flat') {
+            const r = result as { totalInterest: number; totalPayable: number };
+            return { interest: Math.round(r.totalInterest), totalPayable: Math.round(r.totalPayable), rateLabel: `₹${flatRate}/100/mo` };
+        }
+        if (mode === 'simple') {
+            const r = result as { totalInterest: number; totalAmount: number };
+            return { interest: Math.round(r.totalInterest), totalPayable: Math.round(r.totalAmount), rateLabel: `${annualRate}%` };
+        }
+        const r = result as { compoundInterest: number; totalPayable: number };
+        return { interest: Math.round(r.compoundInterest), totalPayable: Math.round(r.totalPayable), rateLabel: `${annualRate}% (cmpd)` };
+    }, [mode, result, flatRate, annualRate]);
+
+    const handleTrackerSave = () => {
+        const id = `si-${Date.now()}`;
+        addProfile({
+            id,
+            name: `${formatINR(principal)} • ${trackerSnapshot.rateLabel} × ${tenure}M`,
+            calculatorType: 'Simple Interest',
+            profileData: {
+                principal,
+                rate: mode === 'flat' ? flatRate : annualRate,
+                tenureMonths: tenure,
+                interest: trackerSnapshot.interest,
+                totalPayable: trackerSnapshot.totalPayable,
+                mode,
+                startDate: new Date().toISOString().slice(0, 10),
+            },
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
+        setTrackerSavedId(id);
+        setTrackerSaved(true);
+    };
+
+    const handleTrackerRemove = () => {
+        if (trackerSavedId) {
+            removeProfile(trackerSavedId);
+            setTrackerSavedId(null);
+            setTrackerSaved(false);
+        }
+    };
 
     // Compute period breakdown table for flat and simple modes
     const periodRows = useMemo((): PeriodRow[] => {
@@ -613,6 +664,26 @@ export default function SimpleInterestCalculator() {
                         </div>
                     </motion.div>
                 )}
+
+                {/* Save to My Loans */}
+                <div className="mb-3">
+                    {trackerSaved ? (
+                        <div className="flex gap-2">
+                            <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                <Check size={16} /> {t('common.saved')}
+                            </div>
+                            <button onClick={handleTrackerRemove}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20">
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button onClick={handleTrackerSave}
+                            className="w-full py-3.5 rounded-2xl bg-brand-purple text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/20">
+                            <Save size={18} /> {t('myLoans.saveToTracker')}
+                        </button>
+                    )}
+                </div>
 
                 {/* Download buttons */}
                 <div className="grid grid-cols-2 gap-3 mb-8">

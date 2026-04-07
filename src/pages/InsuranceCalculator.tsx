@@ -14,6 +14,7 @@ import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
 import { useAppColors } from '../theme/useAppColors';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
 
 type InsuranceTab = 'health' | 'life';
 
@@ -432,6 +433,12 @@ export default function InsuranceCalculator() {
   const [openChecklist, setOpenChecklist] = useState<Set<number>>(new Set());
   const [showPremiumBreakdown, setShowPremiumBreakdown] = useState(false);
 
+  // Save-to-MyLoans
+  const addProfile = useLiveStatusStore(s => s.addProfile);
+  const removeProfile = useLiveStatusStore(s => s.removeProfile);
+  const [trackerSaved, setTrackerSaved] = useState(false);
+  const [trackerSavedId, setTrackerSavedId] = useState<string | null>(null);
+
   // ── Life state ───────────────────────────────────────────────────────────────
   const [lifeAge, setLifeAge] = useState(30);
   const [lifeGender, setLifeGender] = useState<'male' | 'female'>('male');
@@ -585,6 +592,59 @@ export default function InsuranceCalculator() {
     const ded = Math.min(termRange.lo, 150000);
     return { ded, saved30: Math.round(ded * 0.30 * 1.04), saved20: Math.round(ded * 0.20 * 1.04) };
   }, [termRange.lo]);
+
+  // ── Save snapshot to My Loans tracker ────────────────────────────────────────
+  const handleHealthTrackerSave = () => {
+    const id = `ins-h-${Date.now()}`;
+    addProfile({
+      id,
+      name: `${t('ins.tabHealth')} • ${fmtCr(si)} • ${allAges.length} ${t('ins.health.members')}`,
+      calculatorType: 'Insurance',
+      profileData: {
+        tab: 'health',
+        sumInsured: si,
+        premiumMin: premiumData.lo,
+        premiumMax: premiumData.hi,
+        members: allAges.length,
+        city,
+        startDate: new Date().toISOString().slice(0, 10),
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    setTrackerSavedId(id);
+    setTrackerSaved(true);
+  };
+
+  const handleLifeTrackerSave = () => {
+    const id = `ins-l-${Date.now()}`;
+    addProfile({
+      id,
+      name: `${t('ins.tabLife')} • ${fmtCr(activeCover)}`,
+      calculatorType: 'Insurance',
+      profileData: {
+        tab: 'life',
+        sumInsured: activeCover,
+        premiumMin: termRange.lo,
+        premiumMax: termRange.hi,
+        age: lifeAge,
+        policyTerm,
+        startDate: new Date().toISOString().slice(0, 10),
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    setTrackerSavedId(id);
+    setTrackerSaved(true);
+  };
+
+  const handleTrackerRemove = () => {
+    if (trackerSavedId) {
+      removeProfile(trackerSavedId);
+      setTrackerSavedId(null);
+      setTrackerSaved(false);
+    }
+  };
 
   // ── Family helpers ───────────────────────────────────────────────────────────
   const addChild = () => { if (children.length < 4) setChildren(p => [...p, 5]); };
@@ -863,6 +923,24 @@ export default function InsuranceCalculator() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Save to My Loans */}
+                  {trackerSaved ? (
+                    <div className="flex gap-2">
+                      <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                        <CheckCircle size={16} /> {t('common.saved')}
+                      </div>
+                      <button onClick={handleTrackerRemove}
+                        className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20">
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={handleHealthTrackerSave}
+                      className="w-full py-3.5 rounded-2xl bg-brand-green text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-green/20">
+                      💾 {t('myLoans.saveToTracker')}
+                    </button>
+                  )}
 
                   {/* CARD C — Personalised Checklist */}
                   <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
@@ -1161,6 +1239,24 @@ export default function InsuranceCalculator() {
                 {t('ins.life.lifeDisclaimer')}
               </p>
             </div>
+
+            {/* Save to My Loans */}
+            {trackerSaved ? (
+              <div className="flex gap-2">
+                <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                  <CheckCircle size={16} /> {t('common.saved')}
+                </div>
+                <button onClick={handleTrackerRemove}
+                  className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20">
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <button onClick={handleLifeTrackerSave}
+                className="w-full py-3.5 rounded-2xl bg-brand-green text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-green/20">
+                💾 {t('myLoans.saveToTracker')}
+              </button>
+            )}
 
           </div>
         )}

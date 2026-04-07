@@ -38,10 +38,13 @@ export default function OverdraftCalculator() {
   const [loanSaved, setLoanSaved] = useState(false);
 
   const handleSaveToMyLoans = () => {
+    // Overdrafts behave as a business credit line, not an amortising loan,
+    // so we map them to the closest LoanType. The MyLoans page shows a
+    // dedicated Business Loan icon for these entries.
     const loan: SavedLoan = {
       id: generateLoanId(),
       nickName: `${odType === 'business' ? 'Business' : odType === 'personal' ? 'Personal' : odType === 'salary' ? 'Salary' : 'Secured'} OD`,
-      loanType: 'other',
+      loanType: odType === 'business' ? 'business_loan' : 'personal_loan',
       lenderName: '',
       loanAmount: utilizedNum,
       interestRate: rateNum,
