@@ -72,6 +72,24 @@ function fmtDate(ts: number | string): string {
 }
 
 /**
+ * Returns the elapsed years (decimal) since a YYYY-MM-DD date string,
+ * clamped to [0, cap]. Used by snapshot-tracker handlers to compute the
+ * "value as of today" rather than the projected value at maturity, so
+ * cards reflect real elapsed time after the user saves with a start date.
+ *
+ * Returns 0 if the date is missing/invalid or in the future.
+ */
+function yearsSince(dateStr: string | undefined, capYears: number = 100): number {
+    if (!dateStr) return 0;
+    const start = new Date(dateStr).getTime();
+    if (isNaN(start)) return 0;
+    const diffMs = Date.now() - start;
+    if (diffMs <= 0) return 0;
+    const years = diffMs / (365.25 * 24 * 60 * 60 * 1000);
+    return Math.min(capYears, years);
+}
+
+/**
  * Extract the actual start date of a saved profile, regardless of which
  * calculator saved it. Different calculators store the start date under
  * different field names — this normalises across all of them.
@@ -214,25 +232,61 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
         // so we display the values exactly as they were saved.
 
         if (matchType(type, 'compound interest', 'ci')) {
+            // Compute LIVE current value using elapsed time from startDate.
+            // Falls back to the saved snapshot if no startDate (older entries).
             const principal = d.principal || 0;
-            const maturity = d.maturity || 0;
-            const interest = d.interest ?? (maturity - principal);
+            const rate = d.rate || 0;
+            const freq = d.freq || 12;
+            const totalYears = d.years || 0;
+            const elapsed = yearsSince(d.startDate, totalYears);
+            let valueToday: number;
+            let progress: number;
+            let statusText: string;
+            if (elapsed > 0 && rate > 0) {
+                // Standard compound interest: P × (1 + r/n)^(n×t)
+                valueToday = principal * Math.pow(1 + (rate / 100) / freq, freq * elapsed);
+                progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
+                statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
+            } else {
+                // Snapshot fallback (no start date or future date)
+                valueToday = d.maturity || 0;
+                progress = 100;
+                statusText = `${totalYears}Y @ ${rate}%`;
+            }
+            const interest = valueToday - principal;
             return {
                 label1: t('myLoans.metricInvested'), value1: formatINR(principal),
-                label2: t('myLoans.metricValue'), value2: formatINR(maturity),
+                label2: t('myLoans.metricValue'), value2: formatINR(valueToday),
                 label3: t('myLoans.metricInterest'), value3: formatINR(interest),
-                progress: 100, statusText: `${d.years || 0}Y @ ${d.rate || 0}%`,
+                progress, statusText,
             };
         }
         if (matchType(type, 'simple interest', 'si')) {
+            // Live: interest accrues linearly month-by-month from startDate.
             const principal = d.principal || 0;
-            const interest = d.interest || 0;
-            const totalPayable = d.totalPayable ?? (principal + interest);
+            const rate = d.rate || 0;
+            const totalMonths = d.tenureMonths || 0;
+            const elapsedY = yearsSince(d.startDate, totalMonths / 12);
+            const elapsedMonths = Math.floor(elapsedY * 12);
+            let interestSoFar: number;
+            let progress: number;
+            let statusText: string;
+            if (elapsedMonths > 0 && rate > 0) {
+                // Simple interest: P × R × T (monthly)
+                interestSoFar = (principal * rate * elapsedMonths) / (12 * 100);
+                progress = totalMonths > 0 ? Math.min(100, (elapsedMonths / totalMonths) * 100) : 100;
+                statusText = `${elapsedMonths}M of ${totalMonths}M`;
+            } else {
+                interestSoFar = d.interest || 0;
+                progress = 100;
+                statusText = `${totalMonths}M @ ${rate}%`;
+            }
+            const totalPayable = principal + interestSoFar;
             return {
                 label1: t('myLoans.metricInvested'), value1: formatINR(principal),
-                label2: t('myLoans.metricInterest'), value2: formatINR(interest),
+                label2: t('myLoans.metricInterest'), value2: formatINR(interestSoFar),
                 label3: t('myLoans.metricValue'), value3: formatINR(totalPayable),
-                progress: 100, statusText: `${d.tenureMonths || 0}M @ ${d.rate || 0}%`,
+                progress, statusText,
             };
         }
         if (matchType(type, 'property')) {
@@ -255,28 +309,67 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 progress: 100, statusText: d.tab === 'life' ? 'Life Cover' : 'Health Cover',
             };
         }
-        // ── LUMPSUM (one-time investment, snapshot of projection) ──
+        // ── LUMPSUM (one-time investment, live tracker) ──
         if (matchType(type, 'lumpsum')) {
             const principal = d.principal || 0;
-            const maturity = d.maturity || d.fv || 0;
-            const gain = d.gain ?? (maturity - principal);
+            const rate = d.rate || 0;
+            const totalYears = d.years || 0;
+            const elapsed = yearsSince(d.startDate, totalYears);
+            let valueToday: number;
+            let progress: number;
+            let statusText: string;
+            if (elapsed > 0 && rate > 0) {
+                // FV = P × (1 + r)^t (annual compounding)
+                valueToday = principal * Math.pow(1 + rate / 100, elapsed);
+                progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
+                statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
+            } else {
+                valueToday = d.maturity || d.fv || 0;
+                progress = 100;
+                statusText = `${totalYears}Y @ ${rate}%`;
+            }
+            const gain = valueToday - principal;
             return {
                 label1: t('myLoans.metricInvested'), value1: formatINR(principal),
-                label2: t('myLoans.metricValue'), value2: formatINR(maturity),
+                label2: t('myLoans.metricValue'), value2: formatINR(valueToday),
                 label3: t('myLoans.metricGain'), value3: formatINR(gain),
-                progress: 100, statusText: `${d.years || 0}Y @ ${d.rate || 0}%`,
+                progress, statusText,
             };
         }
-        // ── SWP (systematic withdrawal — snapshot of plan) ──
+        // ── SWP (systematic withdrawal — live tracker) ──
         if (matchType(type, 'swp')) {
-            const totalInvestment = d.totalInvestment || d.principal || 0;
+            const corpus = d.totalInvestment || d.principal || 0;
             const monthlyWithdrawal = d.monthlyWithdrawal || 0;
-            const totalWithdrawn = d.totalWithdrawn || 0;
+            const rate = d.rate || 0;
+            const totalYears = d.years || 0;
+            const elapsedY = yearsSince(d.startDate, totalYears);
+            let withdrawnSoFar: number;
+            let progress: number;
+            let statusText: string;
+            if (elapsedY > 0 && rate > 0 && monthlyWithdrawal > 0) {
+                // Simulate month-by-month: balance × (1 + r/12) − withdrawal
+                const elapsedMonths = Math.floor(elapsedY * 12);
+                const r = rate / 12 / 100;
+                let bal = corpus;
+                let withdrawn = 0;
+                for (let i = 0; i < elapsedMonths && bal > 0; i++) {
+                    bal = bal * (1 + r);
+                    if (bal >= monthlyWithdrawal) { bal -= monthlyWithdrawal; withdrawn += monthlyWithdrawal; }
+                    else { withdrawn += bal; bal = 0; }
+                }
+                withdrawnSoFar = withdrawn;
+                progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
+                statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+            } else {
+                withdrawnSoFar = d.totalWithdrawn || 0;
+                progress = 100;
+                statusText = `${totalYears}Y @ ${rate}%`;
+            }
             return {
-                label1: t('myLoans.metricInvested'), value1: formatINR(totalInvestment),
+                label1: t('myLoans.metricInvested'), value1: formatINR(corpus),
                 label2: t('myLoans.metricMonthly'), value2: formatINR(monthlyWithdrawal),
-                label3: t('myLoans.metricEarned'), value3: formatINR(totalWithdrawn),
-                progress: 100, statusText: `${d.years || 0}Y @ ${d.rate || 0}%`,
+                label3: t('myLoans.metricEarned'), value3: formatINR(withdrawnSoFar),
+                progress, statusText,
             };
         }
         // ── CAGR (compound annual growth — snapshot) ──
@@ -291,28 +384,77 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 progress: 100, statusText: `${d.years || 0}Y CAGR`,
             };
         }
-        // ── EPF (employee provident fund — snapshot of projection) ──
+        // ── EPF (employee provident fund — live tracker) ──
         if (matchType(type, 'epf')) {
-            const totalInvested = d.totalInvested || 0;
-            const corpus = d.corpus || d.maturity || 0;
-            const interest = d.interest ?? (corpus - totalInvested);
+            const basic = d.basic || 0;
+            const empPct = d.empPct || 12;
+            const rate = d.rate || 8.25;
+            const totalYears = d.years || 0;
+            const elapsedY = yearsSince(d.startDate, totalYears);
+            let investedSoFar: number;
+            let corpusToday: number;
+            let progress: number;
+            let statusText: string;
+            if (elapsedY > 0 && basic > 0) {
+                // Both employee and employer contribute (each 12% of basic by default)
+                const monthlyContrib = basic * (empPct / 100) * 2;
+                const elapsedMonths = Math.floor(elapsedY * 12);
+                const r = rate / 12 / 100;
+                let bal = 0;
+                for (let i = 0; i < elapsedMonths; i++) {
+                    bal = bal * (1 + r) + monthlyContrib;
+                }
+                investedSoFar = monthlyContrib * elapsedMonths;
+                corpusToday = bal;
+                progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
+                statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+            } else {
+                investedSoFar = d.totalInvested || 0;
+                corpusToday = d.corpus || d.maturity || 0;
+                progress = 100;
+                statusText = `${totalYears}Y @ ${rate}%`;
+            }
+            const interest = corpusToday - investedSoFar;
             return {
-                label1: t('myLoans.metricInvested'), value1: formatINR(totalInvested),
-                label2: t('myLoans.metricBalance'), value2: formatINR(corpus),
+                label1: t('myLoans.metricInvested'), value1: formatINR(investedSoFar),
+                label2: t('myLoans.metricBalance'), value2: formatINR(corpusToday),
                 label3: t('myLoans.metricInterest'), value3: formatINR(interest),
-                progress: 100, statusText: `${d.years || 0}Y @ ${d.rate || 8.25}%`,
+                progress, statusText,
             };
         }
-        // ── NPS (national pension system — snapshot of projection) ──
+        // ── NPS (national pension system — live tracker) ──
         if (matchType(type, 'nps')) {
-            const totalInvested = d.totalInvested || 0;
-            const corpus = d.corpus || d.maturity || 0;
+            const monthly = d.monthly || 0;
+            const rate = d.rate || 10;
+            const totalYears = d.years || 0;
+            const elapsedY = yearsSince(d.startDate, totalYears);
+            let investedSoFar: number;
+            let corpusToday: number;
+            let progress: number;
+            let statusText: string;
+            if (elapsedY > 0 && monthly > 0) {
+                const elapsedMonths = Math.floor(elapsedY * 12);
+                const r = rate / 12 / 100;
+                let bal = 0;
+                for (let i = 0; i < elapsedMonths; i++) {
+                    bal = bal * (1 + r) + monthly;
+                }
+                investedSoFar = monthly * elapsedMonths;
+                corpusToday = bal;
+                progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
+                statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+            } else {
+                investedSoFar = d.totalInvested || 0;
+                corpusToday = d.corpus || d.maturity || 0;
+                progress = 100;
+                statusText = `${totalYears}Y @ ${rate}%`;
+            }
             const monthlyPension = d.monthlyPension || 0;
             return {
-                label1: t('myLoans.metricInvested'), value1: formatINR(totalInvested),
-                label2: t('myLoans.metricBalance'), value2: formatINR(corpus),
+                label1: t('myLoans.metricInvested'), value1: formatINR(investedSoFar),
+                label2: t('myLoans.metricBalance'), value2: formatINR(corpusToday),
                 label3: t('myLoans.metricMonthly'), value3: formatINR(monthlyPension),
-                progress: 100, statusText: `${d.years || 0}Y @ ${d.rate || 10}%`,
+                progress, statusText,
             };
         }
         // ── GRATUITY (one-time payout — snapshot) ──
@@ -442,7 +584,18 @@ export default function MyLoans() {
                     </div>
                     <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-sm truncate" style={{ color: c.text }}>{p.name}</h3>
-                        <p className="text-[10px]" style={{ color: c.textSecondary }}>{meta.labelKey ? t(meta.labelKey) : p.calculatorType}</p>
+                        <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                            <p className="text-[10px]" style={{ color: c.textSecondary }}>{meta.labelKey ? t(meta.labelKey) : p.calculatorType}</p>
+                            {(() => {
+                                const startDate = getProfileStartDate(p.profileData);
+                                if (!startDate) return null;
+                                return (
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded-md font-bold" style={{ backgroundColor: c.bg, color: c.textSecondary, border: `1px solid ${c.border}` }}>
+                                        📅 {fmtDate(startDate)}
+                                    </span>
+                                );
+                            })()}
+                        </div>
                     </div>
                     {metrics && (
                         <span className="text-[9px] px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: `${meta.color}15`, color: meta.color }}>
