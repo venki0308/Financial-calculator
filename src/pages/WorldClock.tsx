@@ -1371,15 +1371,17 @@ export default function WorldClock() {
             </AnimatePresence>
 
             {/* Add Zone Bottom Sheet */}
+            {/* z-[10000] sits ABOVE the global bottom nav (z-[9999] in Layout.tsx)
+                so the bottom of the search list isn't covered by the nav bar. */}
             <AnimatePresence>
                 {showAddPanel && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 bg-black/50 "
+                        className="fixed inset-0 z-[10000] bg-black/50 "
                         onClick={(e) => { if (e.target === e.currentTarget) { setShowAddPanel(false); setSearchQuery(''); } }}
                     >
                         <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
                             transition={{ type: 'spring', damping: 26, stiffness: 200 }}
-                            className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl flex flex-col border-t border-border"
+                            className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl flex flex-col border-t border-border z-[10000]"
                             style={{ maxHeight: '85vh' }}
                         >
                             <div className="flex items-center justify-between p-6 pb-3 flex-shrink-0">
@@ -1422,7 +1424,12 @@ export default function WorldClock() {
                                 </p>
                             )}
 
-                            <div className="overflow-y-auto flex-1 px-6 pb-6 space-y-2">
+                            {/* Bottom padding accounts for Android gesture-nav inset so
+                                the LAST result is always tappable, never clipped by safe-area. */}
+                            <div
+                                className="overflow-y-auto flex-1 px-6 space-y-2"
+                                style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
+                            >
                                 {availableZones.map(tz => (
                                     <LiveAddZoneItem key={tz.iana} tz={tz} onAdd={() => addZone(tz)} />
                                 ))}
