@@ -946,6 +946,23 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
             keepTogether: txBody.length <= 10,
             columnStyles: { 5: { halign: 'right' } },
         });
+        // Truncation warning so the user is told when not all transactions
+        // made it into the PDF. Aggregate totals (cash flow / category /
+        // budget) are computed from the FULL dataset and remain accurate.
+        if (sorted.length > MAX_TX_ROWS) {
+            yPos = (doc as PDFDoc).lastAutoTable.finalY + 4;
+            doc.setFontSize(8);
+            doc.setTextColor(202, 138, 4);
+            doc.setFont('helvetica', 'italic');
+            doc.text(
+                `Note: showing ${MAX_TX_ROWS} of ${sorted.length} entries. All totals reflect the FULL dataset.`,
+                15,
+                yPos,
+            );
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(...TEXT);
+        }
     }
     yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
 

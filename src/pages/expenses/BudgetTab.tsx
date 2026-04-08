@@ -146,15 +146,26 @@ export default function BudgetTab() {
   // ── is budget configured? ─────────────────────────────────
   const isBudgetSet = budget.monthlyIncome > 0;
 
+  // ── sanitisation helper ───────────────────────────────────
+  // All money inputs go through this to enforce: positive only, capped
+  // at ₹100 Cr per line, and rounded to 2 decimals so floating-point
+  // mush like 0.00001 or NaN never enters the budget store.
+  const MAX_BUDGET_LINE = 1000000000; // ₹100 Cr
+  const sanitiseAmount = (raw: number): number => {
+    if (!Number.isFinite(raw) || raw < 0) return 0;
+    if (raw > MAX_BUDGET_LINE) return MAX_BUDGET_LINE;
+    return Math.round(raw * 100) / 100;
+  };
+
   // ── updaters ──────────────────────────────────────────────
   const setIncome = (v: number) =>
-    setBudget(prev => ({ ...prev, monthlyIncome: v }));
+    setBudget(prev => ({ ...prev, monthlyIncome: sanitiseAmount(v) }));
 
   const setFixedAmount = (id: string, amount: number) =>
     setBudget(prev => ({
       ...prev,
       fixedExpenses: prev.fixedExpenses.map(f =>
-        f.id === id ? { ...f, amount } : f,
+        f.id === id ? { ...f, amount: sanitiseAmount(amount) } : f,
       ),
     }));
 
@@ -165,11 +176,12 @@ export default function BudgetTab() {
     }));
 
   const addCustomFixed = () => {
-    if (!newFixedName.trim() || !newFixedAmount) return;
+    const cleanAmount = sanitiseAmount(Number(newFixedAmount));
+    if (!newFixedName.trim() || cleanAmount <= 0) return;
     const fe: FixedExpense = {
       id: `custom_${Date.now()}`,
       name: newFixedName.trim(),
-      amount: Number(newFixedAmount),
+      amount: cleanAmount,
       category: 'other_expense',
       dueDay: 1,
     };
@@ -183,8 +195,8 @@ export default function BudgetTab() {
   };
 
   const addIncomeSource = () => {
-    if (!newIncomeLabel.trim() || !newIncomeAmount) return;
-    const amt = Number(newIncomeAmount);
+    const amt = sanitiseAmount(Number(newIncomeAmount));
+    if (!newIncomeLabel.trim() || amt <= 0) return;
     setIncomeSources(prev => [...prev, { id: `src_${Date.now()}`, label: newIncomeLabel.trim(), amount: amt }]);
     setIncome(budget.monthlyIncome + amt);
     setNewIncomeLabel('');
@@ -204,7 +216,7 @@ export default function BudgetTab() {
     setBudget(prev => ({
       ...prev,
       categoryLimits: prev.categoryLimits.map(cl =>
-        cl.categoryId === categoryId ? { ...cl, monthlyLimit } : cl,
+        cl.categoryId === categoryId ? { ...cl, monthlyLimit: sanitiseAmount(monthlyLimit) } : cl,
       ),
     }));
 
@@ -212,7 +224,7 @@ export default function BudgetTab() {
     setBudget(prev => ({
       ...prev,
       investmentTargets: prev.investmentTargets.map(it =>
-        it.categoryId === categoryId ? { ...it, monthlyTarget } : it,
+        it.categoryId === categoryId ? { ...it, monthlyTarget: sanitiseAmount(monthlyTarget) } : it,
       ),
     }));
 
@@ -234,9 +246,13 @@ export default function BudgetTab() {
   const handleCopyPrevious = () => {
     const prevRange = getMonthRange(monthOffset - 1);
     const prev = getBudgetForMonth(prevRange.monthStr);
-    if (!prev) {
+    if (!prev || (prev.monthlyIncome === 0 && prev.fixedExpenses.length === 0 && prev.categoryLimits.length === 0)) {
+      // Treat an empty placeholder budget as "no previous budget" — older
+      // versions saved an empty Budget row on first visit, so the existence
+      // check alone wasn't enough to detect a fresh user.
       setCopyState('empty');
-      setTimeout(() => setCopyState('idle'), 2400);
+      // Long enough that the flash can't be missed even on quick taps.
+      setTimeout(() => setCopyState('idle'), 4000);
       return;
     }
     const copied: Budget = {
@@ -249,7 +265,7 @@ export default function BudgetTab() {
     setBudget(copied);
     saveBudget(copied);  // <-- THE PERSISTENCE FIX
     setCopyState('copied');
-    setTimeout(() => setCopyState('idle'), 2400);
+    setTimeout(() => setCopyState('idle'), 4000);
   };
 
   // ── category lookup helper ────────────────────────────────
@@ -333,6 +349,31 @@ export default function BudgetTab() {
         </div>
       </motion.div>
 
+      {/* First-run hint — only shown when the user has not yet set any
+          income for this month. The Budget tab is otherwise visually
+          complete (empty cards) and that confused first-time users. */}
+      {!isBudgetSet && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border p-4 flex items-start gap-3"
+          style={{
+            backgroundColor: theme.isDark ? '#451a03' : '#FFF7ED',
+            borderColor: theme.isDark ? '#7c2d12' : '#FED7AA',
+          }}
+        >
+          <AlertCircle size={18} style={{ color: '#D97706', flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <p className="text-xs font-bold mb-0.5" style={{ color: '#D97706' }}>
+              {t('expenses.budgetEmptyTitle', 'Set your monthly income to begin')}
+            </p>
+            <p className="text-[11px] leading-relaxed" style={{ color: '#9A3412' }}>
+              {t('expenses.budgetEmptyBody', 'Enter your monthly income below, then add fixed expenses (rent, EMIs, bills) and category limits. Reports and budget vs. actual numbers stay empty until you set income.')}
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {/* ======================================================
           2. MONTHLY INCOME
           ====================================================== */}
@@ -371,8 +412,14 @@ export default function BudgetTab() {
             <input
               type="number"
               inputMode="numeric"
+              min={0}
+              max={MAX_BUDGET_LINE}
+              step="0.01"
               value={budget.monthlyIncome || ''}
-              onChange={e => setIncome(Number(e.target.value))}
+              onChange={e => {
+                if (e.target.value.startsWith('-')) return;
+                setIncome(Number(e.target.value));
+              }}
               onFocus={() => setIncomeFocused(true)}
               onBlur={() => setIncomeFocused(false)}
               placeholder="0"
@@ -423,8 +470,14 @@ export default function BudgetTab() {
                   <input
                     type="number"
                     inputMode="numeric"
+                    min={0}
+                    max={MAX_BUDGET_LINE}
+                    step="0.01"
                     value={newIncomeAmount}
-                    onChange={e => setNewIncomeAmount(e.target.value)}
+                    onChange={e => {
+                      if (e.target.value.startsWith('-')) return;
+                      setNewIncomeAmount(e.target.value);
+                    }}
                     placeholder={t('expenses.amount')}
                     className="w-full px-3 py-2.5 rounded-xl text-sm outline-none border"
                     style={{ backgroundColor: theme.bgPrimary, borderColor: theme.borderSubtle, color: theme.textPrimary }}
@@ -604,8 +657,14 @@ export default function BudgetTab() {
                           <input
                             type="number"
                             inputMode="numeric"
+                            min={0}
+                            max={MAX_BUDGET_LINE}
+                            step="0.01"
                             value={fe.amount || ''}
-                            onChange={e => setFixedAmount(fe.id, Number(e.target.value))}
+                            onChange={e => {
+                              if (e.target.value.startsWith('-')) return;
+                              setFixedAmount(fe.id, Number(e.target.value));
+                            }}
                             placeholder="0"
                             className="flex-1 bg-transparent text-sm font-bold outline-none min-w-0"
                             style={{ color: theme.textPrimary }}
@@ -647,8 +706,14 @@ export default function BudgetTab() {
                         <input
                           type="number"
                           inputMode="numeric"
+                          min={0}
+                          max={MAX_BUDGET_LINE}
+                          step="0.01"
                           value={newFixedAmount}
-                          onChange={e => setNewFixedAmount(e.target.value)}
+                          onChange={e => {
+                            if (e.target.value.startsWith('-')) return;
+                            setNewFixedAmount(e.target.value);
+                          }}
                           placeholder={t('expenses.amount')}
                           className="w-full px-3 py-2.5 rounded-xl text-sm outline-none border"
                           style={{ backgroundColor: theme.bgPrimary, borderColor: theme.borderSubtle, color: theme.textPrimary }}
@@ -761,8 +826,14 @@ export default function BudgetTab() {
                           <input
                             type="number"
                             inputMode="numeric"
+                            min={0}
+                            max={MAX_BUDGET_LINE}
+                            step="0.01"
                             value={cl.monthlyLimit || ''}
-                            onChange={e => setCategoryLimit(cl.categoryId, Number(e.target.value))}
+                            onChange={e => {
+                              if (e.target.value.startsWith('-')) return;
+                              setCategoryLimit(cl.categoryId, Number(e.target.value));
+                            }}
                             placeholder="0"
                             className="w-full bg-transparent text-xs font-bold outline-none text-right ml-1"
                             style={{ color: theme.textPrimary }}
@@ -911,7 +982,13 @@ export default function BudgetTab() {
                   {activeProgress.map((cp, idx) => {
                     const info = catInfo(cp.categoryId);
                     const pctClamped = Math.min(cp.pct, 100);
+                    const isOver = cp.pct > 100;
                     const status = getBudgetStatus(cp.pct);
+                    // When the user has overspent, "left" should show the
+                    // overshoot in red rather than collapsing to zero — that
+                    // way the user can see e.g. "Over: ₹500" instead of just
+                    // "Left: ₹0" which hides the problem.
+                    const overshoot = Math.max(cp.spent - cp.budgeted, 0);
                     const left = Math.max(cp.budgeted - cp.spent, 0);
                     return (
                       <motion.div
@@ -932,22 +1009,35 @@ export default function BudgetTab() {
                               {info.name}
                             </span>
                           </div>
+                          {/* Pill: shows real % even when over-budget. Adds
+                              the word "Over" when > 100% so the user can't
+                              miss it (was previously the same green pill at
+                              250% as at 50%, just with a different color). */}
                           <span
                             className="text-[10px] font-bold px-2 py-0.5 rounded-full"
                             style={{ backgroundColor: status.bgColor, color: status.color }}
                           >
-                            {Math.round(cp.pct)}%
+                            {isOver
+                                ? t('expenses.overByPct', '{{pct}}% · Over', { pct: Math.round(cp.pct) })
+                                : `${Math.round(cp.pct)}%`}
                           </span>
                         </div>
 
-                        {/* Labels row */}
+                        {/* Labels row — when overspent, replace "left ₹0"
+                            with a red "Over: ₹X" so the magnitude is visible. */}
                         <div className="flex justify-between text-[10px] mb-1.5" style={{ color: theme.textMuted }}>
                           <span>{t('expenses.budget')}: {fmtINR(cp.budgeted)}</span>
                           <span>{t('expenses.spent')}: {fmtINR(cp.spent)}</span>
-                          <span>{t('expenses.left')}: {fmtINR(left)}</span>
+                          {isOver
+                            ? <span style={{ color: theme.accentExpense, fontWeight: 700 }}>
+                                {t('expenses.overBy', 'Over')}: {fmtINR(overshoot)}
+                              </span>
+                            : <span>{t('expenses.left')}: {fmtINR(left)}</span>}
                         </div>
 
-                        {/* Progress bar */}
+                        {/* Progress bar — clamped to 100% width since we
+                            can't render >100%, but coloured red on overrun
+                            so the visual matches the pill. */}
                         <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: theme.bgPrimary }}>
                           <motion.div
                             className="h-full rounded-full"

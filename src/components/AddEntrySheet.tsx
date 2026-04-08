@@ -48,7 +48,12 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
   const [entryType, setEntryType] = useState<EntryType>(editEntry?.type ?? 'expense');
   const [amount, setAmount] = useState(editEntry ? String(editEntry.amount) : '');
   const [date, setDate] = useState(editEntry?.date ?? defaultDate ?? getTodayStr());
-  const [categoryId, setCategoryId] = useState(editEntry?.category ?? 'food_dining');
+  // Default to 'other_expense' (neutral) instead of 'food_dining'. The old
+  // default biased every untouched entry into a single category, skewing
+  // category reports. The migration code in expenseStorage.ts already uses
+  // 'other_expense' as the unknown-category fallback — this aligns the UI
+  // default with the storage default.
+  const [categoryId, setCategoryId] = useState(editEntry?.category ?? 'other_expense');
   const [description, setDescription] = useState(editEntry?.description ?? '');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(editEntry?.paymentMethod ?? 'upi');
 
@@ -63,15 +68,22 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
   const handleTypeChange = (newType: EntryType) => {
     setEntryType(newType);
     const firstCat = categories.find(cat => cat.type === newType && cat.isActive);
+    // Neutral defaults — use the "other" bucket for each type so we don't
+    // bias category reports toward Food / Salary / MF / Other Expense.
     const defaults: Record<EntryType, string> = {
-      expense: 'food_dining', income: 'salary',
-      investment: 'inv_mutual_fund', transfer: 'other_expense',
+      expense: 'other_expense', income: 'other_income',
+      investment: 'inv_other', transfer: 'other_expense',
     };
     setCategoryId(firstCat?.id ?? defaults[newType]);
   };
 
   const currentTypeColor = typeColor(entryType, et);
-  const isValid = parseFloat(amount) > 0;
+  // Round to 2 decimals on save and reject anything ≤ 0 OR > ₹100 Cr.
+  // Previously sub-rupee values like 0.00001 would slip through and corrupt
+  // category totals. Cap at 100 Cr so a typo doesn't blow up reports either.
+  const parsedAmount = Math.round((parseFloat(amount) || 0) * 100) / 100;
+  const MAX_ENTRY = 1000000000; // ₹100 Cr per entry
+  const isValid = parsedAmount > 0 && parsedAmount <= MAX_ENTRY;
 
   const handleSave = () => {
     if (!isValid) return;
@@ -84,7 +96,7 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
       const updated: Entry = {
         ...editEntry,
         type: entryType,
-        amount: parseFloat(amount),
+        amount: parsedAmount,
         date,
         category: categoryId,
         description: finalDescription,
@@ -96,7 +108,7 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
       // CREATE: fresh entry with new id
       const entry = createEntry({
         type: entryType,
-        amount: parseFloat(amount),
+        amount: parsedAmount,
         date,
         category: categoryId,
         description: finalDescription,
@@ -213,8 +225,17 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
                 <input
                   type="number"
                   inputMode="decimal"
+                  min={0}
+                  max={MAX_ENTRY}
+                  step="0.01"
                   value={amount}
-                  onChange={e => setAmount(e.target.value)}
+                  onChange={e => {
+                    const v = e.target.value;
+                    // Strip leading minus and reject negatives outright. Keeps the
+                    // input feeling responsive even when the user mis-types '-'.
+                    if (v.startsWith('-')) return;
+                    setAmount(v);
+                  }}
                   placeholder="0"
                   autoFocus
                   className="bg-transparent text-center font-extrabold focus:outline-none"
@@ -289,8 +310,20 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
               <input
                 type="date"
                 value={date}
+                /* min: 2020-01-01 — earliest plausible date for an Indian
+                   personal-finance entry on this app (launched 2024). Without
+                   a min, some browsers happily accept years like 1900 or
+                   even 0001, polluting historical aggregations. */
+                min="2020-01-01"
                 max={getTodayStr()}
-                onChange={e => setDate(e.target.value)}
+                onChange={e => {
+                    const v = e.target.value;
+                    // Defensive double-check: even if HTML min/max is bypassed
+                    // (some date pickers on older Android), reject anything
+                    // outside the allowed window before it lands in state.
+                    if (v && (v < '2020-01-01' || v > getTodayStr())) return;
+                    setDate(v);
+                }}
                 className="w-full px-4 py-2.5 rounded-xl text-sm font-semibold focus:outline-none"
                 style={{ backgroundColor: et.bgCard, border: `1.5px solid ${et.borderSubtle}`, color: et.textPrimary }}
               />
