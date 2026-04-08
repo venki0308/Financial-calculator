@@ -1069,21 +1069,22 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     doc.setTextColor(...TEXT);
     doc.setFont('helvetica', 'normal');
 
-    // ── SECTION 1: CASH FLOW OVERVIEW ───────────────────────────────────
-    yPos = drawSectionHeader(doc, `${data.monthLabel} Cash Flow`, yPos);
+    // ── SECTION 1: CASH FLOW (ACTUAL — what was logged) ─────────────────
+    // Pure actual-data table so the math is internally consistent. Earlier
+    // versions mixed budget-sourced "Fixed Expenses" with actual totals which
+    // produced contradictory rows (e.g. Fixed 72k + Variable 0 ≠ Total 1k).
+    // Budget-side numbers now live in their own "Budget Plan vs Actual"
+    // section below so the user sees both, clearly labelled.
+    yPos = drawSectionHeader(doc, `${data.monthLabel} Cash Flow (Actual)`, yPos);
 
-    const fixedExp = data.budget?.fixedExpenses.reduce((s, f) => s + f.amount, 0) ?? 0;
-    const variableExp = Math.max(0, summary.totalExpenses - fixedExp);
     const investPct = summary.totalIncome > 0 ? (summary.totalInvestments / summary.totalIncome) * 100 : 0;
 
     table(doc, autoTable, {
         head: [['Metric', 'Amount', 'Notes']],
         body: [
             ['Total Income', formatINR(summary.totalIncome), entriesLabel(summary.incomeCount)],
-            ['Fixed Expenses', formatINR(fixedExp), data.budget ? 'Rent, bills, EMIs (from budget)' : 'No budget set'],
-            ['Variable Expenses', formatINR(variableExp), 'Category spending'],
             ['Total Expenses', formatINR(summary.totalExpenses), entriesLabel(summary.expenseCount)],
-            ['Investments', formatINR(summary.totalInvestments), `${investPct.toFixed(1)}% of income`],
+            ['Investments', formatINR(summary.totalInvestments), summary.totalIncome > 0 ? `${investPct.toFixed(1)}% of income` : entriesLabel(summary.investmentCount)],
             ['Net Savings', formatINR(summary.netSavings), summary.netSavings >= 0 ? 'Positive' : 'Negative'],
             ['Savings Rate', `${summary.savingsRate.toFixed(1)}%`, 'Target: 20%'],
         ],
@@ -1092,6 +1093,60 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         columnStyles: { 1: { halign: 'right', cellWidth: 40 } },
     });
     yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+
+    // ── SECTION 1B: BUDGET PLAN vs ACTUAL ───────────────────────────────
+    // Only rendered when the user has actually set up a budget for this
+    // month. Shows planned income / fixed expenses / category limits / est
+    // savings side-by-side with what was logged, plus a per-row variance
+    // and a green-or-red status. This is what users expect when their
+    // monthly budget says "₹1.32L income, ₹12k est savings" but they
+    // haven't yet logged any income transactions for the month.
+    if (data.budget) {
+        const plannedIncome = data.budget.monthlyIncome ?? 0;
+        const plannedFixed = data.budget.fixedExpenses.reduce((s, f) => s + f.amount, 0);
+        const plannedCategoryLimits = data.budget.categoryLimits.reduce((s, c) => s + c.monthlyLimit, 0);
+        const plannedInvestments = data.budget.investmentTargets?.reduce((s, t) => s + t.monthlyTarget, 0) ?? 0;
+        // Estimated savings = income − fixed − category limits − investment targets.
+        // This matches the "Est. Savings" line shown in the in-app Budget
+        // sheet, so the PDF stays consistent with what the user already saw.
+        const estSavings = plannedIncome - plannedFixed - plannedCategoryLimits - plannedInvestments;
+
+        // Only render if there's at least one non-zero planned figure — an
+        // empty budget object adds no information.
+        if (plannedIncome > 0 || plannedFixed > 0 || plannedCategoryLimits > 0 || plannedInvestments > 0) {
+            yPos = drawSectionHeader(doc, `${data.monthLabel} Budget Plan vs Actual`, yPos);
+
+            // Variance helper: positive = good (more income / less expense
+            // than planned), negative = bad. We swap the sign for income
+            // because for income, "actual > planned" is good.
+            const varianceLabel = (planned: number, actual: number, isIncome: boolean): string => {
+                const diff = actual - planned;
+                if (diff === 0) return 'On plan';
+                const good = isIncome ? diff > 0 : diff < 0;
+                const sign = diff > 0 ? '+' : '';
+                return `${sign}${formatINR(diff)} ${good ? '✓' : '⚠'}`;
+            };
+
+            table(doc, autoTable, {
+                head: [['Metric', 'Planned', 'Actual', 'Variance']],
+                body: [
+                    ['Income', formatINR(plannedIncome), formatINR(summary.totalIncome), varianceLabel(plannedIncome, summary.totalIncome, true)],
+                    ['Fixed Expenses', formatINR(plannedFixed), '—', 'Logged under categories below'],
+                    ['Category Limits', formatINR(plannedCategoryLimits), formatINR(summary.totalExpenses), varianceLabel(plannedCategoryLimits, summary.totalExpenses, false)],
+                    ['Investments', formatINR(plannedInvestments), formatINR(summary.totalInvestments), varianceLabel(plannedInvestments, summary.totalInvestments, true)],
+                    ['Est. / Net Savings', formatINR(estSavings), formatINR(summary.netSavings), varianceLabel(estSavings, summary.netSavings, true)],
+                ],
+                startY: yPos,
+                headerHook,
+                columnStyles: {
+                    1: { halign: 'right', cellWidth: 35 },
+                    2: { halign: 'right', cellWidth: 35 },
+                    3: { halign: 'right', cellWidth: 45 },
+                },
+            });
+            yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+        }
+    }
 
     // ── SECTION 2: WEEK-BY-WEEK (only completed/in-progress weeks) ──────
     const allWeeks = buildWeeklyBreakdown(data.entries, data.year, data.month);
