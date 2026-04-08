@@ -56,16 +56,38 @@ const PURITY_OPTIONS: { id: Purity; label: string; factorText: string }[] = [
     { id: '18K', label: '18K', factorText: '75.0%' },
 ];
 
-// Default 24K rate ~April 2026 (user-editable; no live API)
-const DEFAULT_GOLD_RATE_24K = 9200;
+// Default 24K rate (₹/g) — April 2026 IBJA reference (~₹14,983/g on Apr 8 2026).
+// User-editable, no live API. Update this constant periodically as the floor
+// drifts; users can override per-calculation in the input field.
+const DEFAULT_GOLD_RATE_24K = 14983;
 
-// RBI 2026 tier thresholds (in ₹)
-const TIER_85_MAX = 250000;   // ≤ ₹2.5L → 85% LTV, no credit check
+// RBI 2026 tier thresholds (in ₹) — effective April 1, 2026
+const TIER_85_MAX = 250000;   // ≤ ₹2.5L → 85% LTV, no credit check required
 const TIER_80_MAX = 500000;   // ₹2.5L–₹5L → 80% LTV
 // > ₹5L → 75% LTV
 
-// Bullet repayment max tenure per RBI 2026
+// Bullet repayment max tenure per RBI Master Directions 2026
 const BULLET_MAX_MONTHS = 12;
+// EMI repayment max tenure (industry standard, no RBI cap for EMI loans)
+const EMI_MAX_MONTHS = 36;
+
+// ─── Real-world market limits (verified from public sources, April 2026) ──
+// Sources: Muthoot, IIFL, ICICI, SBI public schedules + RBI Master Directions.
+// Min: Muthoot floors at ₹1,500. Max: ICICI/HDFC/Axis cap at ₹1Cr–₹1.5Cr;
+// large NBFCs effectively have no cap subject to LTV. We use ₹1.5Cr as the
+// slider ceiling — beyond that the user can still type a custom amount.
+const MIN_LOAN_AMOUNT = 1500;
+const MAX_LOAN_AMOUNT = 15000000;       // ₹1.5 Cr
+
+// Per RBI 2026: max 1 kg jewellery + 50g coins per borrower
+const MIN_GOLD_WEIGHT = 1;
+const MAX_GOLD_WEIGHT = 1000;            // 1 kg jewellery cap
+
+// Interest rate floor: lowest market rate (Kotak ~8% / SBI ~8.25%) — set
+// floor at 8% so the slider doesn't promise impossible rates.
+// Ceiling 26% reflects highest mainstream NBFC rates.
+const MIN_INTEREST_RATE = 8;
+const MAX_INTEREST_RATE = 26;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -135,12 +157,16 @@ export default function GoldLoanCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Gold_Loan'); }, []);
 
     // ── State ──
+    // Defaults chosen to (a) reflect typical Indian household pledges (~50g 22K
+    // jewellery → ₹6L gold value → ~₹4.8L loan at 80% LTV) and (b) land in the
+    // > ₹2.5L tier so first-time users see the CIBIL badge + tiered LTV in
+    // action. ₹3L loan-amount default in Mode B does the same.
     const [mode, setMode] = useState<Mode>('byWeight');
     const [goldWeight, setGoldWeight] = useState(50);
     const [purity, setPurity] = useState<Purity>('22K');
     const [goldRate24K, setGoldRate24K] = useState(DEFAULT_GOLD_RATE_24K);
-    const [loanAmountNeeded, setLoanAmountNeeded] = useState(200000);
-    const [interestRate, setInterestRate] = useState(12);
+    const [loanAmountNeeded, setLoanAmountNeeded] = useState(300000);
+    const [interestRate, setInterestRate] = useState(11);
     const [tenureMonths, setTenureMonths] = useState(12);
     const [repaymentMode, setRepaymentMode] = useState<RepaymentMode>('emi');
 
@@ -160,16 +186,18 @@ export default function GoldLoanCalculator() {
     const chartRef = useRef<any>(null);
 
     // ── Auto-suggest rate from CIBIL when score is present ──
-    // For loans > ₹2.5L only — small loans don't need credit check.
+    // Gold loans are secured by collateral, so CIBIL impact on rate is small
+    // (~1-3 percentage points across the score band, vs ~10pp for personal
+    // loans). Bands below reflect actual market practice in April 2026 — Kotak
+    // and SBI floor near 8.25%, NBFCs price up to ~22% for low scores.
     useEffect(() => {
         if (!cibilProfile?.score || cibilProfile.isNTC) return;
         const s = cibilProfile.score;
-        // Score-band rate suggestion (gold loan tends to be lower than personal loan)
-        let suggested = 12;
-        if (s >= 750) suggested = 9;        // 8-10% midpoint
-        else if (s >= 700) suggested = 11.5; // 10-13%
-        else if (s >= 650) suggested = 15;   // 13-17%
-        else suggested = 20;                 // 17-24%
+        let suggested = 11;
+        if (s >= 750) suggested = 8.75;      // PSU bank rate range 8.25–9.5
+        else if (s >= 700) suggested = 10;    // Private bank range 9.5–11
+        else if (s >= 650) suggested = 13;    // NBFC range 11–15
+        else suggested = 18;                  // High-risk NBFC range 15–22
         setInterestRate(suggested);
     }, [cibilProfile?.score, cibilProfile?.isNTC]);
 
@@ -466,8 +494,24 @@ export default function GoldLoanCalculator() {
             </div>
 
             <div className="px-4 pb-28 pt-4 space-y-4">
-                {/* ── CIBIL badge (only meaningful if loan > ₹2.5L) ── */}
-                {loanAmount > TIER_85_MAX && <CibilBadge loanType="gold_loan" />}
+                {/* ── CIBIL badge / no-credit-check banner ──
+                    Per RBI 2026, gold loans ≤ ₹2.5L don't need credit checks,
+                    so the CIBIL badge is hidden for small loans. We show a
+                    short banner instead so users in either mode (especially
+                    Mode B "By Loan Amount") understand WHY no CIBIL UI appears.
+                    Above ₹2.5L the full CIBIL badge renders with rate
+                    suggestions tied to the user's saved score. */}
+                {loanAmount > TIER_85_MAX ? (
+                    <CibilBadge loanType="gold_loan" />
+                ) : loanAmount > 0 ? (
+                    <div className="p-3 rounded-2xl border flex items-center gap-3" style={{ backgroundColor: '#10B98110', borderColor: '#10B98140' }}>
+                        <ShieldCheck size={18} className="text-emerald-500 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{t('goldLoan.cibilNotNeededTitle')}</p>
+                            <p className="text-[10px]" style={{ color: c.textSecondary }}>{t('goldLoan.cibilNotNeededDesc')}</p>
+                        </div>
+                    </div>
+                ) : null}
 
                 {/* ── Mode toggle ── */}
                 <div className="flex rounded-2xl border p-1" style={{ borderColor: c.border, backgroundColor: c.card }}>
@@ -492,9 +536,9 @@ export default function GoldLoanCalculator() {
                     </h3>
 
                     {mode === 'byWeight' ? (
-                        <NumberInput label={t('goldLoan.weight')} value={goldWeight} onChange={setGoldWeight} min={1} max={500} suffix=" g" helperText={t('goldLoan.weightHelper')} />
+                        <NumberInput label={t('goldLoan.weight')} value={goldWeight} onChange={setGoldWeight} min={MIN_GOLD_WEIGHT} max={MAX_GOLD_WEIGHT} suffix=" g" helperText={t('goldLoan.weightHelper')} />
                     ) : (
-                        <NumberInput label={t('goldLoan.loanNeeded')} value={loanAmountNeeded} onChange={setLoanAmountNeeded} min={5000} max={5000000} prefix="₹" helperText={t('goldLoan.loanNeededHelper')} />
+                        <NumberInput label={t('goldLoan.loanNeeded')} value={loanAmountNeeded} onChange={setLoanAmountNeeded} min={MIN_LOAN_AMOUNT} max={MAX_LOAN_AMOUNT} prefix="₹" helperText={t('goldLoan.loanNeededHelper')} />
                     )}
 
                     {/* Purity selector */}
@@ -559,7 +603,7 @@ export default function GoldLoanCalculator() {
                     </div>
 
                     {/* Interest rate */}
-                    <NumberInput label={t('goldLoan.rate')} value={interestRate} onChange={setInterestRate} min={7} max={30} suffix="%" step={0.25} helperText={cibilProfile?.score && !cibilProfile.isNTC ? t('goldLoan.cibilSuggestedRate') : undefined} />
+                    <NumberInput label={t('goldLoan.rate')} value={interestRate} onChange={setInterestRate} min={MIN_INTEREST_RATE} max={MAX_INTEREST_RATE} suffix="%" step={0.25} helperText={cibilProfile?.score && !cibilProfile.isNTC ? t('goldLoan.cibilSuggestedRate') : t('goldLoan.rateRangeHint')} />
 
                     {/* Tenure presets */}
                     <div>

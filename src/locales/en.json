@@ -5946,13 +5946,13 @@
         "mode": "Mode",
         "goldDetails": "Gold Details",
         "weight": "Gold Weight",
-        "weightHelper": "Enter weight of jewellery (1g – 500g)",
+        "weightHelper": "Enter weight of jewellery (max 1 kg per RBI 2026)",
         "loanNeeded": "Loan Amount Needed",
-        "loanNeededHelper": "Enter how much you need to borrow",
+        "loanNeededHelper": "Min ₹1,500 to max ₹1.5 Cr",
         "purity": "Gold Purity",
         "purityNote": "Most lenders accept 18K to 24K only. 22K is the most common Indian jewellery purity.",
         "goldRate24K": "Gold Rate (24K, ₹/g)",
-        "rateSourceHelper": "Enter today's rate from MCX or IBJA",
+        "rateSourceHelper": "Today's rate from MCX or IBJA (~₹15,000/g for 24K)",
         "requiredGold": "Required Gold to Pledge",
         "requiredGoldNote": "of {{purity}} jewellery needed at this rate",
         "youNeedToPledge": "You need to pledge approximately",
@@ -6033,6 +6033,9 @@
         "rbiAcceptedGold": "Accepted gold: 18K to 24K jewellery and ornaments only. Gold bars, bullion, ETFs, and mutual fund units are not eligible.",
         "rbiMaxPledge": "Maximum pledge: 1 kg gold jewellery and 50 grams gold coins per borrower.",
         "rbiValuationBasis": "Valuation basis: lower of (a) previous day's closing price or (b) 30-day average price as published by IBJA or a SEBI-regulated commodity exchange. Stones and gems are excluded from valuation.",
-        "rbiSource": "Source: RBI Master Directions on Gold Loans, June 2025 (effective April 1, 2026)"
+        "rbiSource": "Source: RBI Master Directions on Gold Loans, June 2025 (effective April 1, 2026)",
+        "rateRangeHint": "Market range 8% – 26% (banks cheaper than NBFCs)",
+        "cibilNotNeededTitle": "No credit check needed",
+        "cibilNotNeededDesc": "Per RBI 2026, gold loans up to ₹2.5 lakh do not require a CIBIL check."
     }
 }
