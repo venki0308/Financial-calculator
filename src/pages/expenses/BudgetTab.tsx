@@ -24,6 +24,13 @@ import {
   getBudgetTotalInvestments, getBudgetUnallocated,
   getCategorySpentVsBudget,
 } from '../../utils/expenseCalculations';
+// Subscriptions live in a separate Zustand store (useBudgetTrackerStore)
+// from the main expense entries (expenseStorage). Without bridging the
+// two, the Subscriptions row in Budget Progress always showed 0% even
+// after the user added subs in the Subscriptions tab — because BudgetTab
+// only ever queried expenseStorage. We pull active subs here so the
+// recurring monthly commitment counts toward the 'subscription' category.
+import { useBudgetTrackerStore } from '../../store/useBudgetTrackerStore';
 
 // ── pre-filled fixed expense templates ────────────────────────
 const FIXED_TEMPLATES: { name: string; nameKey: string; icon: string; category: string }[] = [
@@ -137,11 +144,45 @@ export default function BudgetTab() {
     () => getEntriesForMonth(range.year, range.month),
     [range.year, range.month],
   );
-  const categoryProgress = useMemo(
-    () => getCategorySpentVsBudget(entries, budget),
-    [entries, budget],
+
+  // ── subscriptions → recurring monthly commitment ──────────
+  // The Subscriptions tab stores items in a separate Zustand store, so
+  // their cost never lands in expenseStorage entries. We translate every
+  // active sub into its monthly equivalent (annual/3 for quarterly,
+  // annual/12 for yearly) and treat the total as "spent" against the
+  // 'subscription' category limit. This is the only sensible bridge —
+  // anything else would either double-count (if we also auto-created
+  // expense entries) or under-count (status quo: always 0%).
+  const subscriptions = useBudgetTrackerStore(s => s.subscriptions);
+  const subscriptionMonthlyTotal = useMemo(() => {
+    return subscriptions
+      .filter(s => s.isActive)
+      .reduce((sum, s) => {
+        if (s.billingCycle === 'quarterly') return sum + s.amount / 3;
+        if (s.billingCycle === 'yearly') return sum + s.amount / 12;
+        return sum + s.amount; // monthly (default)
+      }, 0);
+  }, [subscriptions]);
+
+  const categoryProgress = useMemo(() => {
+    const base = getCategorySpentVsBudget(entries, budget);
+    if (subscriptionMonthlyTotal <= 0) return base;
+    return base.map(cp => {
+      if (cp.categoryId !== 'subscription') return cp;
+      const newSpent = cp.spent + subscriptionMonthlyTotal;
+      return {
+        ...cp,
+        spent: newSpent,
+        pct: cp.budgeted > 0 ? (newSpent / cp.budgeted) * 100 : 0,
+      };
+    });
+  }, [entries, budget, subscriptionMonthlyTotal]);
+  // Show the Subscriptions row whenever the user has either set a limit
+  // OR added recurring subs — previously, a row with budgeted=0 would
+  // disappear even if the user had ₹2k/mo in active subs.
+  const activeProgress = categoryProgress.filter(
+    cp => cp.budgeted > 0 || (cp.categoryId === 'subscription' && subscriptionMonthlyTotal > 0),
   );
-  const activeProgress = categoryProgress.filter(cp => cp.budgeted > 0);
 
   // ── is budget configured? ─────────────────────────────────
   const isBudgetSet = budget.monthlyIncome > 0;
