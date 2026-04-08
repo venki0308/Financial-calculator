@@ -1,22 +1,25 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Trash2, ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
   Save, Copy, TrendingUp, Wallet, PiggyBank, ShieldCheck, BadgeCheck,
-  AlertCircle, Sparkles,
+  AlertCircle, Sparkles, Landmark, ChevronRight as ChevronRightArrow,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useExpenseTheme, getBudgetStatus } from '../../theme/expenseTheme';
 
-import type { Budget, FixedExpense, CategoryLimit, InvestmentTarget } from '../../types/expense';
+import type { Budget, BankAccount, FixedExpense, CategoryLimit, InvestmentTarget } from '../../types/expense';
 import {
   DEFAULT_EXPENSE_CATEGORIES,
   DEFAULT_INVESTMENT_CATEGORIES,
+  ACCOUNT_TYPE_LABELS,
 } from '../../types/expense';
 
 import {
   getBudgetForMonth, saveBudget, generateBudgetId,
   getEntriesForMonth,
+  getAllAccounts,
 } from '../../utils/expenseStorage';
 import {
   getMonthRange, fmtINR,
@@ -77,6 +80,7 @@ const ALLOC_COLORS = {
 export default function BudgetTab() {
   const { t } = useTranslation();
   const theme = useExpenseTheme();
+  const navigate = useNavigate();
 
   // ── month navigation ──────────────────────────────────────
   const [monthOffset, setMonthOffset] = useState(0);
@@ -86,6 +90,22 @@ export default function BudgetTab() {
   const [budget, setBudget] = useState<Budget>(() =>
     getBudgetForMonth(range.monthStr) ?? emptyBudget(range.monthStr),
   );
+
+  // ── bank accounts (re-read on mount + when window regains focus) ─
+  // The full Accounts UI lives at /expenses/accounts. From here we
+  // only show a compact summary card so the user discovers the feature
+  // and can see total cash + credit usage at a glance. Reload happens
+  // on focus so when the user navigates back from BankAccounts after
+  // adding/editing accounts, the new data appears immediately.
+  const [accounts, setAccounts] = useState<BankAccount[]>(() => getAllAccounts());
+  useEffect(() => {
+    const reload = () => setAccounts(getAllAccounts());
+    window.addEventListener('focus', reload);
+    return () => window.removeEventListener('focus', reload);
+  }, []);
+  // Also reload whenever the component re-mounts (BudgetTab is re-mounted
+  // when the user comes back from /expenses/accounts via the back button,
+  // because ExpenseTracker is unmounted while on the BankAccounts route).
 
   const switchMonth = useCallback((dir: number) => {
     const newOffset = monthOffset + dir;
@@ -127,6 +147,21 @@ export default function BudgetTab() {
   const totalInvestments = useMemo(() => getBudgetTotalInvestments(budget), [budget]);
   const unallocated = useMemo(() => getBudgetUnallocated(budget), [budget]);
   const available = budget.monthlyIncome - totalFixed - totalInvestments;
+
+  // ── account totals (cash on hand + credit usage) ─────────
+  // savingsTotal counts every non-credit-card account; creditUsed
+  // counts the outstanding balance on every credit card. Net cash
+  // is what the user actually has available across all accounts.
+  const accountTotals = useMemo(() => {
+    let savings = 0;
+    let creditUsed = 0;
+    for (const acc of accounts) {
+      if (!acc.isActive) continue;
+      if (acc.accountType === 'credit_card') creditUsed += acc.manualBalance;
+      else savings += acc.manualBalance;
+    }
+    return { savings, creditUsed, net: savings - creditUsed };
+  }, [accounts]);
 
   // ── allocation percentages ────────────────────────────────
   const allocPcts = useMemo(() => {
@@ -553,6 +588,170 @@ export default function BudgetTab() {
             )}
           </AnimatePresence>
         </div>
+      </motion.div>
+
+      {/* ======================================================
+          2.5 BANK ACCOUNTS — multi-account net cash on hand
+          ======================================================
+          The full add/edit/delete UI lives at /expenses/accounts
+          (BankAccounts.tsx). This card is the discoverable entry
+          point: total cash + credit usage + a compact list of the
+          top 3 accounts. Tapping anywhere on the card routes to
+          the manage screen. The user explicitly asked for
+          "multiple bank accounts and how much money in each",
+          driven by manual entry. */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+        className="rounded-2xl border overflow-hidden"
+        style={elevatedCard}
+      >
+        <button
+          type="button"
+          onClick={() => navigate('/expenses/accounts')}
+          className="w-full text-left p-5 transition-colors"
+          aria-label={t('expenses.manageBankAccounts', 'Manage bank accounts')}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+              style={{ backgroundColor: theme.bgInvestment }}
+            >
+              {'\u{1F3E6}'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-[10px] font-bold uppercase tracking-widest"
+                  style={{ color: theme.textSecondary }}
+                >
+                  {t('expenses.bankAccountsTitle', 'Bank Accounts')}
+                </span>
+                {accounts.length > 0 && (
+                  <span
+                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: theme.bgInvestment,
+                      color: theme.accentInvestment,
+                    }}
+                  >
+                    {accounts.filter(a => a.isActive).length}
+                  </span>
+                )}
+              </div>
+              {accounts.length === 0 ? (
+                <p className="text-xs font-medium mt-0.5" style={{ color: theme.textMuted }}>
+                  {t('expenses.bankAccountsEmpty', 'Tap to add your bank balances and credit cards')}
+                </p>
+              ) : (
+                <p
+                  className="font-extrabold text-xl mt-0.5"
+                  style={{ color: accountTotals.net >= 0 ? theme.accentIncome : theme.accentExpense }}
+                >
+                  {fmtINR(accountTotals.net)}
+                </p>
+              )}
+            </div>
+            <ChevronRightArrow size={18} style={{ color: theme.textMuted }} />
+          </div>
+
+          {/* Cash + credit breakdown — only when at least one account exists */}
+          {accounts.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t" style={{ borderColor: theme.borderSubtle }}>
+              <div>
+                <p className="text-[10px] font-semibold uppercase" style={{ color: theme.textMuted }}>
+                  {t('expenses.cashOnHand', 'Cash on hand')}
+                </p>
+                <p className="text-sm font-bold mt-0.5" style={{ color: theme.accentIncome }}>
+                  {fmtINR(accountTotals.savings)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold uppercase" style={{ color: theme.textMuted }}>
+                  {t('expenses.creditUsed', 'Credit used')}
+                </p>
+                <p
+                  className="text-sm font-bold mt-0.5"
+                  style={{ color: accountTotals.creditUsed > 0 ? theme.accentExpense : theme.textSecondary }}
+                >
+                  {fmtINR(accountTotals.creditUsed)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Compact list of the top 3 accounts (highest balance first) so the
+              user can see their main accounts without leaving the Budget tab.
+              Negative-balance credit cards are shown in red. */}
+          {accounts.length > 0 && (
+            <div className="mt-4 space-y-2">
+              {[...accounts]
+                .filter(a => a.isActive)
+                .sort((a, b) => b.manualBalance - a.manualBalance)
+                .slice(0, 3)
+                .map(acc => {
+                  const typeInfo = ACCOUNT_TYPE_LABELS[acc.accountType];
+                  const isCreditCard = acc.accountType === 'credit_card';
+                  return (
+                    <div
+                      key={acc.id}
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                      style={{ backgroundColor: theme.bgPrimary }}
+                    >
+                      <div
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0"
+                        style={{ backgroundColor: acc.color + '22', color: acc.color }}
+                      >
+                        {typeInfo.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="text-xs font-semibold truncate"
+                          style={{ color: theme.textPrimary }}
+                        >
+                          {acc.name}
+                        </p>
+                        <p className="text-[10px] truncate" style={{ color: theme.textMuted }}>
+                          {acc.bankName || typeInfo.label}
+                          {acc.lastFourDigits ? ` \u00B7 ****${acc.lastFourDigits}` : ''}
+                        </p>
+                      </div>
+                      <p
+                        className="text-xs font-bold"
+                        style={{
+                          color: isCreditCard
+                            ? theme.accentExpense
+                            : theme.textPrimary,
+                        }}
+                      >
+                        {isCreditCard ? '\u2212' : ''}{fmtINR(acc.manualBalance)}
+                      </p>
+                    </div>
+                  );
+                })}
+              {accounts.filter(a => a.isActive).length > 3 && (
+                <p className="text-[10px] text-center font-semibold" style={{ color: theme.accentInvestment }}>
+                  {t('expenses.viewAllAccounts', 'View all {{n}} accounts', {
+                    n: accounts.filter(a => a.isActive).length,
+                  })}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Manage CTA — visible regardless of state so the user always
+              has a clear way into the full management UI. */}
+          <div
+            className="flex items-center justify-center gap-1.5 mt-4 pt-3 border-t text-xs font-bold"
+            style={{ borderColor: theme.borderSubtle, color: theme.accentInvestment }}
+          >
+            <Landmark size={12} />
+            {accounts.length === 0
+              ? t('expenses.addFirstAccount', 'Add your first account')
+              : t('expenses.manageAccounts', 'Manage Accounts')}
+          </div>
+        </button>
       </motion.div>
 
       {/* ======================================================
