@@ -7,6 +7,7 @@ import { schemes } from '../data/schemes';
 import { useSchemeStore } from '../store/useSchemeStore';
 import { useTranslatedScheme } from '../hooks/useTranslatedScheme';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import APYContributionCalculator from '../components/APYContributionCalculator';
 import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
 
@@ -109,6 +110,11 @@ export default function SchemeDetail() {
                 <Section title={t('schemes.keyBenefits')}>
                     {scheme.benefits.map((b, i) => <CheckItem key={i} text={b} />)}
                 </Section>
+
+                {/* APY-specific contribution calculator. Only this scheme has
+                    a fixed-table contribution lookup, so the embedded calc is
+                    inlined here rather than building a generic plug system. */}
+                {scheme.id === 'c-apy' && <APYContributionCalculator />}
 
                 {/* Conditional sections based on application type */}
                 {noIndividualApp ? (

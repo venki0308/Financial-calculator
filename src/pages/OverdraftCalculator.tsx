@@ -37,14 +37,17 @@ export default function OverdraftCalculator() {
   const c = useAppColors();
   const { addSaved, removeSaved } = useCalculatorStore();
   const addProfile = useLiveStatusStore(s => s.addProfile);
+  const removeProfile = useLiveStatusStore(s => s.removeProfile);
   const [saved, setSaved] = useState(false);
   const [lastSavedId, setLastSavedId] = useState<string | null>(null);
   const [loanSaved, setLoanSaved] = useState(false);
+  const [savedLoanId, setSavedLoanId] = useState<string | null>(null);
   const [showNameDialog, setShowNameDialog] = useState(false);
 
   const handleSaveToMyLoans = (customName: string) => {
     const id = generateLoanId();
     const nick = customName;
+    setSavedLoanId(id);
 
     // Save the rich snapshot to live profile store first so MyLoans uses
     // the dedicated Overdraft handler in computeMetrics() — that handler
@@ -305,6 +308,22 @@ export default function OverdraftCalculator() {
       removeSaved(lastSavedId);
       setLastSavedId(null);
       setSaved(false);
+    }
+  };
+
+  // Clean up BOTH the live profile and the loanStorage row when the user
+  // un-saves an Overdraft from My Loans. Previously these two stores could
+  // drift — deleting from one left an orphan in the other and the
+  // portfolio aggregate showed phantom outstanding amounts.
+  const handleRemoveFromMyLoans = () => {
+    if (savedLoanId) {
+      removeProfile(savedLoanId);
+      // Lazy-load loanStorage to avoid a circular import on first paint.
+      import('../utils/loanStorage').then(({ deleteLoan }) => {
+        try { deleteLoan(savedLoanId); } catch { /* ignore */ }
+      }).catch(() => { /* ignore */ });
+      setSavedLoanId(null);
+      setLoanSaved(false);
     }
   };
 
@@ -784,6 +803,7 @@ export default function OverdraftCalculator() {
               <Check className="w-4 h-4 text-emerald-500" />
               <span className="text-sm font-bold text-emerald-500">{t('tw.savedToMyLoans')}</span>
               <button onClick={() => navigate('/my-loans')} className="ml-auto text-xs font-bold text-violet-500">{t('tw.viewInMyLoans')}</button>
+              <button onClick={handleRemoveFromMyLoans} className="text-xs font-bold text-red-500">{t('common.remove', 'Remove')}</button>
             </div>
           ) : (
             <button onClick={() => setShowNameDialog(true)} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 font-bold text-sm border border-emerald-500/20">

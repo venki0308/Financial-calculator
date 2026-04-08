@@ -38,7 +38,7 @@ export default function FDCalculator() {
     const [rate, setRate] = useState(7);
     const [years, setYears] = useState(5);
     const [compounding, setCompounding] = useState<number>(4);
-    const [inflation, setInflation] = useState(6);
+    const [inflation, setInflation] = useState(5); // RBI FY 2025-26 CPI ~4.8%
     const [isSeniorCitizen, setIsSeniorCitizen] = useState(false);
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);

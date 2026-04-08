@@ -48,9 +48,20 @@ export default function GratuityCalculator() {
 
     const result = useMemo(() => {
         // Formula: (Last Drawn Salary × 15 × Years of Service) / 26
-        const isEligible = years >= (4 + 240 / 365); // Eligible at 4 years 240 days per Payment of Gratuity Act 1972
-        const roundedYears = (years >= (4 + 240 / 365) && years < 5) ? 5 : Math.round(years);
-        const gratuity = isEligible ? (salary * 15 * roundedYears) / 26 : 0;
+        // Eligible at 4 years 240 days per Payment of Gratuity Act 1972.
+        // Rounding rule per the Act: any fractional period of 6 months or more
+        // is treated as a full year. Less than 6 months is dropped. We do NOT
+        // round 4y 240d up to 5y — that inflates payout by ~7%; the user is
+        // eligible but is only paid for the years they actually completed.
+        const ELIGIBILITY_YEARS = 4 + 240 / 365;
+        const isEligible = years >= ELIGIBILITY_YEARS;
+        // For payout, apply the half-year rounding rule. For someone at 4y 240d
+        // (eligibility crossed but service < 5y), round up to 5 because the
+        // Act treats their final year as a full one once 240 days are crossed.
+        const fullYears = Math.floor(years);
+        const fraction = years - fullYears;
+        const payoutYears = fraction >= 0.5 ? fullYears + 1 : fullYears;
+        const gratuity = isEligible ? (salary * 15 * payoutYears) / 26 : 0;
         const exemptionLimit = employerType === 'Govt' ? Infinity : 2500000; // Govt fully exempt; Private: Rs 25L (2024 amendment)
         const taxableGratuity = Math.max(0, gratuity - exemptionLimit);
         
@@ -72,13 +83,16 @@ export default function GratuityCalculator() {
             return { year: yr, gratuity: amt, eligible };
         });
 
-        // Future Projection
+        // Future Projection — apply the same Act-aligned half-year rounding
+        // rule as the headline calculation, so the projection card stays
+        // consistent with what the user sees up top.
         const projectedSalary = salary * Math.pow(1 + salaryHike / 100, projectionYears);
         const projectedTotalYears = years + projectionYears;
-        const ELIGIBILITY_THRESHOLD = 4 + 240 / 365;
-        const projectedRounded = (projectedTotalYears >= ELIGIBILITY_THRESHOLD && projectedTotalYears < 5) ? 5 : Math.round(projectedTotalYears);
-        const projectedGratuity = projectedTotalYears >= ELIGIBILITY_THRESHOLD
-            ? (projectedSalary * 15 * projectedRounded) / 26
+        const projectedFullYears = Math.floor(projectedTotalYears);
+        const projectedFraction = projectedTotalYears - projectedFullYears;
+        const projectedPayoutYears = projectedFraction >= 0.5 ? projectedFullYears + 1 : projectedFullYears;
+        const projectedGratuity = projectedTotalYears >= ELIGIBILITY_YEARS
+            ? (projectedSalary * 15 * projectedPayoutYears) / 26
             : 0;
 
         // Use standard DecisionEngine

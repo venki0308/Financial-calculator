@@ -285,6 +285,21 @@ export default function HRACalculator() {
                     </div>
                 </div>
 
+                {/* New-regime banner — HRA exemption is unavailable in the new
+                    regime per Section 115BAC. Show this prominently so users
+                    don't think the calc is broken when their exemption shows
+                    as ₹0. */}
+                {taxRegime === 'new' && (
+                    <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/15 mb-3">
+                        <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-0.5">
+                            ⚠ {t('hra.newRegimeDisabledTitle', 'HRA exemption disabled in New Regime')}
+                        </p>
+                        <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80 leading-snug">
+                            {t('hra.newRegimeDisabledBody', 'Section 115BAC removes most allowance exemptions including HRA. Switch to the OLD regime above to claim it.')}
+                        </p>
+                    </div>
+                )}
+
                 {/* --- 8. RESULTS DASHBOARD --- */}
                 <div className={`rounded-[24px] overflow-hidden border ${actualResult.exempt > 0 ? 'bg-gradient-to-br from-brand-green/20 to-emerald-500/10 border-brand-green/30' : 'bg-card border-border'}`}>
                     <div className="p-6">

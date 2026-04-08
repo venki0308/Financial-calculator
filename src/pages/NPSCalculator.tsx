@@ -46,6 +46,10 @@ export default function NPSCalculator() {
     const [retireAge, setRetireAge] = useState(60);
     const [annuityPct, setAnnuityPct] = useState(40);
     const [annuityRate, setAnnuityRate] = useState(6); // annuity provider return rate (IRDA-approved range: 5–7.5%)
+    // Equity allocation under PFRDA Active Choice: capped at 75% till age 50,
+    // then declining 2.5% per year of age until age 60, where it bottoms at 50%.
+    // Cap formula: max(50, 75 - max(0, age-50) * 2.5)
+    const [equityPct, setEquityPct] = useState(50);
     const [showTimeline, setShowTimeline] = useState(false);
     const [showTaxInfo, setShowTaxInfo] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -214,6 +218,57 @@ export default function NPSCalculator() {
                     <NumberInput label={t('nps.retirementAge')} value={retireAge} onChange={setRetireAge} min={55} max={70} suffix={` ${t('nps.years')}`} />
                     <NumberInput label={t('nps.annuityPurchase')} value={annuityPct} onChange={setAnnuityPct} min={40} max={100} suffix="%" helperText={t('nps.annuityPurchaseHelper')} />
                     <NumberInput label={t('nps.annuityReturnRate')} value={annuityRate} onChange={setAnnuityRate} min={4} max={9} step={0.25} suffix="%" helperText={t('nps.annuityReturnHelper')} />
+
+                    {/* PFRDA Active Choice — equity allocation cap.
+                        Cap: 75% till age 50, then declines 2.5% per year of age
+                        beyond 50, floored at 50% at age 60. We render the cap
+                        right next to the slider and clamp the user's input.
+                        Auto-Choice (default) follows the same age-based glide
+                        path automatically — Active Choice lets the user override
+                        within these limits. */}
+                    {(() => {
+                        const equityCap = Math.max(50, 75 - Math.max(0, age - 50) * 2.5);
+                        const clamped = Math.min(equityPct, equityCap);
+                        if (clamped !== equityPct) {
+                            // Clamp via microtask so React doesn't warn about
+                            // setState during render.
+                            queueMicrotask(() => setEquityPct(clamped));
+                        }
+                        const overCap = equityPct > equityCap;
+                        return (
+                            <div className="p-4 rounded-2xl border border-border bg-card">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
+                                        {t('nps.equityAllocation', 'Equity allocation (Active Choice)')}
+                                    </label>
+                                    <span className="text-[10px] font-bold text-violet-500">
+                                        {t('nps.pfrdaCapAt', 'PFRDA cap at age {{age}}: {{cap}}%', { age, cap: equityCap })}
+                                    </span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={equityCap}
+                                    step={5}
+                                    value={Math.min(equityPct, equityCap)}
+                                    onChange={e => setEquityPct(Number(e.target.value))}
+                                    className="w-full"
+                                />
+                                <div className="flex items-center justify-between mt-1">
+                                    <span className="text-xs font-semibold text-foreground">{Math.min(equityPct, equityCap)}% {t('nps.equity', 'Equity')}</span>
+                                    <span className="text-xs text-muted-foreground">{100 - Math.min(equityPct, equityCap)}% {t('nps.debt', 'Debt + Govt')}</span>
+                                </div>
+                                {overCap && (
+                                    <p className="text-[10px] text-amber-500 mt-1.5">
+                                        ⚠ {t('nps.cappedNotice', 'Capped at {{cap}}% per PFRDA glide path', { cap: equityCap })}
+                                    </p>
+                                )}
+                                <p className="text-[9px] text-muted-foreground mt-1.5 leading-snug">
+                                    {t('nps.pfrdaNote', 'PFRDA caps equity at 75% till age 50, then 2.5%/year decline to 50% at age 60. Auto-Choice (default) follows this glide automatically.')}
+                                </p>
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 {/* Result Card */}
@@ -355,6 +410,10 @@ export default function NPSCalculator() {
                                     { title: t('nps.taxSec80CCD1BTitle'), desc: t('nps.taxSec80CCD1BDesc') },
                                     { title: t('nps.taxSec80CCD2Title'), desc: t('nps.taxSec80CCD2Desc') },
                                     { title: t('nps.taxFreeLumpsumTitle'), desc: t('nps.taxFreeLumpsumDesc') },
+                                    {
+                                        title: t('nps.phasedLumpsumTitle', 'Phased withdrawal — heads up'),
+                                        desc: t('nps.phasedLumpsumDesc', 'The 60% lump-sum is tax-free only when taken at retirement (one-shot or via SLW until age 75). Pre-retirement partial withdrawals (Tier-1) are tax-free up to 25% of own contribution. Annuity payouts are fully taxable as income.'),
+                                    },
                                     { title: t('nps.totalPotentialSavingTitle'), desc: t('nps.totalPotentialSavingDesc', { amount: Math.min(monthly * 12, 200000).toLocaleString('en-IN') }) },
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-start gap-3">

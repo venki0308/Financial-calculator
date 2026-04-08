@@ -416,7 +416,9 @@ function AppContent() {
                         <Route path="/insurance-compare" element={<InsuranceCompare />} />
                         <Route path="/my-loans" element={<MyLoans />} />
                         <Route path="/my-loans/:loanId" element={<LoanDetail />} />
-                        <Route path="/calculator/ppf-advanced" element={<AdvancedPPFCalculator />} />
+                        {/* /calculator/ppf-advanced kept as redirect to canonical /calculator/ppf
+                            so any existing bookmarks / shared links don't 404. */}
+                        <Route path="/calculator/ppf-advanced" element={<Navigate to="/calculator/ppf" replace />} />
                         <Route path="/two-wheeler-loan" element={<TwoWheelerLoanCalculator />} />
                         <Route path="/gold-loan" element={<GoldLoanCalculator />} />
                         <Route path="/cibil-score" element={<CibilScoreCalculator />} />

@@ -21,6 +21,7 @@ import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
 import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import PostTaxBanner from '../components/PostTaxBanner';
 
 import { calculateSIP, formatINR } from '../utils/calculations';
 import { calculateSipStatus, type SipStatusInput } from '../utils/investmentStatusEngine';
@@ -449,6 +450,15 @@ export default function SIPCalculator() {
                             <p className="text-brand-green font-bold text-sm">{formatINR(displayValues.returns)}</p>
                         </div>
                     </div>
+
+                    {/* After-tax preview — collapsible. Hidden in goal-SIP mode
+                        because there the "primary" is the monthly contribution
+                        needed, not a corpus value. */}
+                    {activeTab !== 'goal' && (
+                        <div className="mb-4">
+                            <PostTaxBanner invested={displayValues.invested} grossMaturity={displayValues.primary} />
+                        </div>
+                    )}
 
                     {/* Goal SIP: extra row */}
                     {activeTab === 'goal' && (

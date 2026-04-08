@@ -29,16 +29,29 @@ export type SegmentId = typeof VEHICLE_SEGMENTS[number]['id'];
 //   - Tata Capital: starts ~12.5%
 //   - Bajaj Finance / NBFCs: up to 24%
 // EV bands run ~0.5–1% lower than petrol (most banks offer a green discount).
+//
+// Tier ids must align with cibilData.ts CIBIL_TIERS so that auto-selection by
+// score lands the user in the same bucket on every loan calculator. The
+// canonical brackets there are:
+//   excellent  → 780–900
+//   very_good  → 750–779
+//   good       → 700–749
+//   average    → 650–699
+//   poor       → 600–649
+//   very_poor  → 300–599
 export const CIBIL_TIERS = [
-    { id: 'excellent', label: '750+ (Excellent)', rateAdj: 0, petrolRange: [10.25, 12.5] as const, evRange: [9.75, 11.75] as const },
+    { id: 'excellent', label: '780+ (Excellent)', rateAdj: 0, petrolRange: [10.25, 12.0] as const, evRange: [9.75, 11.25] as const },
+    { id: 'very_good', label: '750-779 (Very Good)', rateAdj: 0.5, petrolRange: [11.5, 13.0] as const, evRange: [11.0, 12.25] as const },
     { id: 'good', label: '700-749 (Good)', rateAdj: 2, petrolRange: [12.5, 15] as const, evRange: [11.75, 13.75] as const },
     { id: 'average', label: '650-699 (Average)', rateAdj: 5, petrolRange: [15, 19] as const, evRange: [14, 17.5] as const },
-    { id: 'low', label: 'Below 650 (Low)', rateAdj: 10, petrolRange: [19, 28] as const, evRange: [17.5, 24] as const },
+    { id: 'poor', label: 'Below 650 (Poor)', rateAdj: 10, petrolRange: [19, 28] as const, evRange: [17.5, 24] as const },
 ] as const;
 
 export const EV_SUBSIDY = {
     schemeName: 'PM E-DRIVE Scheme',
     validUntil: 'July 31, 2026',
+    /** ISO date used for the "expires soon" / "expired" warning logic. */
+    validUntilDate: '2026-07-31',
     ratePerKwh: 2500,
     maxPerVehicle: 5000,
     priceCapExFactory: 150000,

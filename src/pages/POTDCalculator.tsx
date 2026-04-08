@@ -40,7 +40,7 @@ export default function POTDCalculator() {
     // Tax & Decision Engine states
     const [userIncome, setUserIncome] = useState(1200000);
     const [taxRegime, setTaxRegime] = useState<TaxRegime>('new');
-    const [inflation, setInflation] = useState(6.0);
+    const [inflation, setInflation] = useState(5.0); // RBI FY 2025-26 CPI ~4.8%
     const [fdRate, setFdRate] = useState(7.0);
 
     const [potdStartDate, setPotdStartDate] = useState('');

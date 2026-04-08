@@ -80,11 +80,14 @@ export default function TwoWheelerLoanCalculator() {
 
     // Seed cibilIdx from saved CIBIL profile on mount, so the picker reflects
     // the user's actual saved score instead of always defaulting to "Excellent".
-    // The picker remains user-adjustable for what-if exploration.
+    // Brackets must match cibilData.ts so a 760 score maps to "very_good"
+    // (idx 1) instead of "excellent" — user previously saw inconsistent rates
+    // across the EMI vs Two-Wheeler calculator for the same score.
     useEffect(() => {
         if (cibilProfile?.isNTC || !cibilProfile?.score) return;
         const s = cibilProfile.score;
-        const idx = s >= 770 ? 0 : s >= 720 ? 1 : s >= 670 ? 2 : 3;
+        // 0=excellent (780+), 1=very_good (750-779), 2=good (700-749), 3=average (650-699), 4=poor (<650)
+        const idx = s >= 780 ? 0 : s >= 750 ? 1 : s >= 700 ? 2 : s >= 650 ? 3 : 4;
         setCibilIdx(idx);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cibilProfile?.score, cibilProfile?.isNTC]);
@@ -390,6 +393,37 @@ export default function TwoWheelerLoanCalculator() {
                         <NumberInput label={t('tw.batteryKwh')} value={batteryKwh} onChange={setBatteryKwh} min={1} max={10} step={0.5} suffix=" kWh" />
                         <div className="flex justify-between text-xs"><span style={{ color: c.textSecondary }}>{t('tw.pmEdrive')}</span><span className="font-bold text-emerald-500">-{formatINR(centralSubsidy)}</span></div>
                         <p className="text-[9px]" style={{ color: c.textSecondary }}>₹{EV_SUBSIDY.ratePerKwh}/kWh, max ₹{EV_SUBSIDY.maxPerVehicle} · Valid till {EV_SUBSIDY.validUntil}</p>
+                        {/* Expiry banner — PM E-DRIVE runs only till 31 Jul 2026.
+                            Show an early-warning amber banner once we are within
+                            120 days of expiry, and a red "expired" banner once
+                            past it. The math uses the data file's validUntilDate
+                            so it auto-cleans-up after a future scheme refresh. */}
+                        {(() => {
+                            const today = new Date();
+                            const expiry = new Date(EV_SUBSIDY.validUntilDate);
+                            const daysLeft = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                            if (daysLeft < 0) {
+                                return (
+                                    <div className="flex items-start gap-2 p-2 rounded-lg" style={{ backgroundColor: '#EF444415', border: '1px solid #EF444430' }}>
+                                        <Info className="w-3 h-3 mt-0.5 text-red-500 flex-shrink-0" />
+                                        <p className="text-[10px] text-red-600 dark:text-red-400 leading-snug">
+                                            {t('tw.subsidyExpired', `PM E-DRIVE subsidy ended on ${EV_SUBSIDY.validUntil}. The amount above is shown for reference only — confirm latest scheme details with your dealer.`)}
+                                        </p>
+                                    </div>
+                                );
+                            }
+                            if (daysLeft <= 120) {
+                                return (
+                                    <div className="flex items-start gap-2 p-2 rounded-lg" style={{ backgroundColor: '#F59E0B15', border: '1px solid #F59E0B30' }}>
+                                        <Info className="w-3 h-3 mt-0.5 text-amber-500 flex-shrink-0" />
+                                        <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-snug">
+                                            {t('tw.subsidyExpiringSoon', `Heads up: PM E-DRIVE expires in ${daysLeft} days (${EV_SUBSIDY.validUntil}). If you plan to buy after that, the subsidy may no longer apply.`)}
+                                        </p>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
                         {/* Eligibility warning when bike exceeds the PM E-DRIVE ex-factory cap */}
                         {isEV && exShowroom > EV_SUBSIDY.priceCapExFactory && (
                             <div className="flex items-start gap-2 p-2 rounded-lg" style={{ backgroundColor: '#F59E0B15', border: '1px solid #F59E0B30' }}>
@@ -664,11 +698,13 @@ export default function TwoWheelerLoanCalculator() {
                             <LiveLoanStatus profile={loanProfile} loanCategory="two_wheeler_loan" />
                         )}
 
-                        {/* CIBIL Advisory — prefers actual saved score, falls back to picker tier */}
+                        {/* CIBIL Advisory — prefers actual saved score, falls back to picker tier.
+                            Score samples align with each tier's midpoint:
+                            0 excellent → 800, 1 very_good → 765, 2 good → 725, 3 average → 675, 4 poor → 600 */}
                         <CibilAdvisoryCard
                             score={cibilProfile?.score && !cibilProfile.isNTC
                                 ? cibilProfile.score
-                                : (cibilIdx === 0 ? 770 : cibilIdx === 1 ? 720 : cibilIdx === 2 ? 670 : 550)}
+                                : (cibilIdx === 0 ? 800 : cibilIdx === 1 ? 765 : cibilIdx === 2 ? 725 : cibilIdx === 3 ? 675 : 600)}
                             loanType="two_wheeler_loan"
                             loanAmount={loanAmount}
                             tenureMonths={tenureMonths}
@@ -679,7 +715,8 @@ export default function TwoWheelerLoanCalculator() {
                             <div className="flex items-center gap-2 mb-3"><Lightbulb className="w-4 h-4 text-emerald-500" /><h3 className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{t('tw.advisorTips')}</h3></div>
                             <div className="space-y-2 text-[11px] leading-relaxed" style={{ color: c.textSecondary }}>
                                 {isEV && <p><strong>⚡ {t('tw.tipEvRate')}:</strong> {t('tw.tipEvRateDesc')}</p>}
-                                {cibilIdx >= 2 && <p><strong>📊 {t('tw.tipCibilAlert')}:</strong> {t('tw.tipCibilAlertDesc')}</p>}
+                                {/* Was idx>=2 (Average); now idx>=3 since "Very Good" was inserted at idx 1 */}
+                                {cibilIdx >= 3 && <p><strong>📊 {t('tw.tipCibilAlert')}:</strong> {t('tw.tipCibilAlertDesc')}</p>}
                                 {downPaymentPct < 10 && <p><strong>💰 {t('tw.downPayment')}:</strong> {t('tw.tipDownPaymentDesc')}</p>}
                                 {tenureMonths >= 60 && <p><strong>⏰ {t('tw.tipTenureWarn')}:</strong> {t('tw.tipTenureWarnDesc')}</p>}
                                 {exShowroom > 200000 && <p><strong>🏍 {t('tw.tipPremium')}:</strong> {t('tw.tipPremiumDesc')}</p>}

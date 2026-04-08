@@ -18,6 +18,21 @@ const OLD_REGIME = [
     { min: 1000000, max: Infinity, rate: 30 },
 ];
 
+// Old regime — Senior Citizen (60-79). Higher basic exemption ₹3L.
+const OLD_REGIME_SENIOR = [
+    { min: 0, max: 300000, rate: 0 },
+    { min: 300000, max: 500000, rate: 5 },
+    { min: 500000, max: 1000000, rate: 20 },
+    { min: 1000000, max: Infinity, rate: 30 },
+];
+
+// Old regime — Super Senior (80+). Higher basic exemption ₹5L (no 5% slab).
+const OLD_REGIME_SUPER_SENIOR = [
+    { min: 0, max: 500000, rate: 0 },
+    { min: 500000, max: 1000000, rate: 20 },
+    { min: 1000000, max: Infinity, rate: 30 },
+];
+
 // Union Budget 2026-27 — New Regime Slabs (FY 2026-27)
 const NEW_REGIME_2026_27 = [
     { min: 0, max: 400000, rate: 0 },
@@ -169,6 +184,12 @@ export default function IncomeTaxCalculator() {
     const navigate = useNavigate();
     const [regime, setRegime] = useState<'old' | 'new'>('new');
     const [fy, setFy] = useState<'2026-27' | '2025-26'>('2026-27');
+    // Age category drives the OLD-regime basic exemption.
+    //  • below_60   : ₹2.5L exemption (default)
+    //  • senior     : 60+ → ₹3L exemption
+    //  • super_senior: 80+ → ₹5L exemption
+    // New regime ignores this since slabs are uniform across ages.
+    const [ageCategory, setAgeCategory] = useState<'below_60' | 'senior' | 'super_senior'>('below_60');
     const [inputMode, setInputMode] = useState<'monthly' | 'annual' | 'ctc' | 'payslip'>('monthly');
     const [inputs, setInputs] = useState<Inputs>({
         basicSalary: '',
@@ -282,6 +303,14 @@ export default function IncomeTaxCalculator() {
 
     // ─── Select correct slab table based on FY ─────────────────────────────────
     const NEW_REGIME = fy === '2026-27' ? NEW_REGIME_2026_27 : NEW_REGIME_2025_26;
+    // Old-regime slab table picks up the right age category. Senior citizens
+    // get a higher basic exemption (₹3L), super seniors get ₹5L. New regime
+    // ignores age — slabs are uniform.
+    const OLD_REGIME_ACTIVE = ageCategory === 'super_senior'
+        ? OLD_REGIME_SUPER_SENIOR
+        : ageCategory === 'senior'
+            ? OLD_REGIME_SENIOR
+            : OLD_REGIME;
     const newStdDed = 75000; // Same for both years
     const oldStdDed = 50000;
 
@@ -296,7 +325,7 @@ export default function IncomeTaxCalculator() {
     const newNoTax = newTaxableIncome <= 1200000; // Full rebate ≤ ₹12L applies for both FY 2025-26 and 2026-27
 
     const oldTaxableIncome = Math.max(0, grossSalary - oldDeductions);
-    const oldRawTax = computeSlabTax(oldTaxableIncome, OLD_REGIME);
+    const oldRawTax = computeSlabTax(oldTaxableIncome, OLD_REGIME_ACTIVE);
     const oldAfterRebate = applyRebate87A(oldRawTax, oldTaxableIncome, 'old', fy);
     const oldSurcharge = computeSurcharge(oldAfterRebate, oldTaxableIncome, 'old');
     const oldTaxAfterSurcharge = oldAfterRebate + oldSurcharge;
@@ -311,7 +340,7 @@ export default function IncomeTaxCalculator() {
     const activeSurcharge = regime === 'new' ? newSurcharge : oldSurcharge;
     const activeCess = regime === 'new' ? newCess : oldCess;
     const activeTotalTax = regime === 'new' ? newTotalTax : oldTotalTax;
-    const activeSlabs = regime === 'new' ? NEW_REGIME : OLD_REGIME;
+    const activeSlabs = regime === 'new' ? NEW_REGIME : OLD_REGIME_ACTIVE;
 
     const monthlyTax = activeTotalTax / 12;
     const netAnnual = grossSalary - activeTotalTax;
@@ -389,16 +418,16 @@ export default function IncomeTaxCalculator() {
         ];
 
         // Build slab breakdown comparing old vs new regime
-        const allSlabs = regime === 'new' ? NEW_REGIME : OLD_REGIME;
+        const allSlabs = regime === 'new' ? NEW_REGIME : OLD_REGIME_ACTIVE;
         const slabRows: Array<Array<string | number>> = [];
         const maxIncome = Math.max(oldTaxableIncome, newTaxableIncome);
-        const combinedSlabs = [...new Set([...OLD_REGIME.map(s => s.min), ...NEW_REGIME_2026_27.map(s => s.min)])].sort((a, b) => a - b);
+        const combinedSlabs = [...new Set([...OLD_REGIME_ACTIVE.map(s => s.min), ...NEW_REGIME_2026_27.map(s => s.min)])].sort((a, b) => a - b);
         for (let i = 0; i < combinedSlabs.length; i++) {
             const slabMin = combinedSlabs[i];
             const slabMax = i + 1 < combinedSlabs.length ? combinedSlabs[i + 1] : Infinity;
-            const oldSlab = OLD_REGIME.find(s => s.min === slabMin);
+            const oldSlab = OLD_REGIME_ACTIVE.find(s => s.min === slabMin);
             const newSlab = NEW_REGIME.find(s => s.min === slabMin);
-            const oldRate = oldSlab ? oldSlab.rate : OLD_REGIME.filter(s => s.min <= slabMin).pop()?.rate ?? 0;
+            const oldRate = oldSlab ? oldSlab.rate : OLD_REGIME_ACTIVE.filter(s => s.min <= slabMin).pop()?.rate ?? 0;
             const newRate = newSlab ? newSlab.rate : NEW_REGIME.filter(s => s.min <= slabMin).pop()?.rate ?? 0;
             const label = slabMax === Infinity ? `${t('tax.above')} ${fmt(slabMin)}` : `${fmt(slabMin)} – ${fmt(slabMax)}`;
 
@@ -491,6 +520,34 @@ export default function IncomeTaxCalculator() {
                         </motion.button>
                     ))}
                 </div>
+
+                {/* Age Category — only meaningful in OLD regime where the basic
+                    exemption changes for 60+ and 80+ taxpayers. New regime uses
+                    uniform slabs across all ages. */}
+                {regime === 'old' && (
+                    <div>
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                            {t('tax.ageCategory', 'Age category')}
+                        </label>
+                        <div className="flex gap-1 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-1">
+                            {([
+                                { id: 'below_60', label: t('tax.below60', 'Below 60'), exempt: '₹2.5L' },
+                                { id: 'senior', label: t('tax.senior', 'Senior 60–79'), exempt: '₹3L' },
+                                { id: 'super_senior', label: t('tax.superSenior', 'Super 80+'), exempt: '₹5L' },
+                            ] as const).map(opt => (
+                                <button
+                                    key={opt.id}
+                                    onClick={() => setAgeCategory(opt.id)}
+                                    className={`flex-1 py-2 px-1 text-[10px] font-bold rounded-lg transition-all ${ageCategory === opt.id ? 'bg-brand-purple text-white shadow-md' : 'text-muted-foreground'}`}
+                                >
+                                    {opt.label}
+                                    <br />
+                                    <span className="font-normal text-[8px] opacity-80">{t('tax.exempt', 'exempt')} {opt.exempt}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Salary Input Mode Toggle */}
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4">

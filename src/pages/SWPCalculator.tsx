@@ -29,7 +29,7 @@ export default function SWPCalculator() {
     const [withdrawal, setWithdrawal] = useState(10000);
     const [rate, setRate] = useState(8);
     const [years, setYears] = useState(10);
-    const [inflation, setInflation] = useState(6);
+    const [inflation, setInflation] = useState(5); // RBI FY 2025-26 CPI ~4.8%
 
     // Simulators
     const [simWithdrawal, setSimWithdrawal] = useState(withdrawal);
@@ -325,7 +325,26 @@ export default function SWPCalculator() {
                     <p className={`text-5xl font-black tracking-tighter mb-5 ${result.finalBalance === 0 ? 'text-red-500' : 'text-brand-blue'}`}>
                         {fmtINR(result.finalBalance)}
                     </p>
-                    
+
+                    {/* PROMINENT depletion warning — was previously buried in
+                        the smart-insight card below. SEBI best practice: any
+                        scenario where the corpus is exhausted before the
+                        intended tenure must be the FIRST thing the user sees,
+                        not a footnote. */}
+                    {result.depletionMonth && (
+                        <div className="mb-4 p-3 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-start gap-2">
+                            <AlertTriangle size={16} className="text-red-500 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-[11px] font-black text-red-500">
+                                    {t('swp.depletionHeadline', '⚠ Corpus runs out in Year {{year}}', { year: result.depletionYear })}
+                                </p>
+                                <p className="text-[10px] text-red-500/80 leading-snug mt-0.5">
+                                    {t('swp.depletionHelp', 'Reduce monthly withdrawal, lengthen the corpus by raising the rate, or shorten the plan to keep the corpus alive.')}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-3">
                         <div className="p-3.5 rounded-2xl bg-brand-green/10 border border-brand-green/20">
                             <p className="text-brand-green/80 text-[10px] uppercase font-bold mb-0.5">{t('swp.totalWithdrawn')}</p>

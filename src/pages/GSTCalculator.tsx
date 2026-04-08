@@ -42,6 +42,20 @@ const modes: { key: GSTMode; labelKey: string; icon: React.ElementType; descKey:
 
 const gstRates = [0, 5, 12, 18, 28];
 
+// Compensation cess presets — applies on top of 28% GST for "sin / luxury"
+// goods. Most users won't touch these but the cess can dwarf the base GST
+// (cigarettes 60-200% pre-2024, cars 1-22%). Source: GST Compensation Cess Act.
+const cessPresets: { label: string; cess: number }[] = [
+    { label: 'None', cess: 0 },
+    { label: 'Small car (≤4m, ≤1.2L petrol)', cess: 1 },
+    { label: 'Small car (≤4m, ≤1.5L diesel)', cess: 3 },
+    { label: 'Mid car (4m+, ≤1500cc)', cess: 17 },
+    { label: 'Large car / SUV (>1500cc)', cess: 22 },
+    { label: 'Aerated drinks', cess: 12 },
+    { label: 'Tobacco / pan masala', cess: 60 },
+    { label: 'Cigarettes', cess: 36 },
+];
+
 interface InvoiceItem {
     id: number;
     name: string;
@@ -68,6 +82,8 @@ export default function GSTCalculator() {
     const [stdAmount, setStdAmount] = useState(10000);
     const [stdRate, setStdRate] = useState(18);
     const [isIGST, setIsIGST] = useState(false);
+    /** Compensation cess (luxury / sin goods). Default 0 — additive on top of stdRate. */
+    const [cessRate, setCessRate] = useState(0);
 
     // Profit Margin mode
     const [costPrice, setCostPrice] = useState(1000);
@@ -88,18 +104,23 @@ export default function GSTCalculator() {
     const c = useAppColors();
 
     // ── Standard/Reverse calculation ──
+    // Cess is additive on top of GST and is computed on the SAME base as GST.
+    // For inclusive (reverse) mode the base is recovered by dividing by
+    // (1 + (gst+cess)/100).
     const stdResult = useMemo(() => {
         if (!stdAmount || !stdRate) return null;
         if (stdDirection === 'add') {
             const gst = stdAmount * (stdRate / 100);
-            const total = stdAmount + gst;
-            return { base: stdAmount, gst, cgst: isIGST ? 0 : gst / 2, sgst: isIGST ? 0 : gst / 2, igst: isIGST ? gst : 0, total };
+            const cess = stdAmount * (cessRate / 100);
+            const total = stdAmount + gst + cess;
+            return { base: stdAmount, gst, cess, cgst: isIGST ? 0 : gst / 2, sgst: isIGST ? 0 : gst / 2, igst: isIGST ? gst : 0, total };
         } else {
-            const base = stdAmount / (1 + stdRate / 100);
-            const gst = stdAmount - base;
-            return { base, gst, cgst: isIGST ? 0 : gst / 2, sgst: isIGST ? 0 : gst / 2, igst: isIGST ? gst : 0, total: stdAmount };
+            const base = stdAmount / (1 + (stdRate + cessRate) / 100);
+            const gst = base * (stdRate / 100);
+            const cess = base * (cessRate / 100);
+            return { base, gst, cess, cgst: isIGST ? 0 : gst / 2, sgst: isIGST ? 0 : gst / 2, igst: isIGST ? gst : 0, total: stdAmount };
         }
-    }, [stdAmount, stdRate, stdDirection, isIGST]);
+    }, [stdAmount, stdRate, stdDirection, isIGST, cessRate]);
 
 
 
@@ -468,6 +489,33 @@ export default function GSTCalculator() {
                                     ))}
                                 </div>
                             </div>
+                            {/* Compensation cess picker — relevant for cars,
+                                tobacco, aerated drinks. Sits collapsed unless
+                                stdRate is 28% (the only slab where cess
+                                practically applies). */}
+                            {stdRate === 28 && (
+                                <div>
+                                    <label className="text-xs text-muted-foreground mb-2 block">
+                                        {t('gst.compensationCess', 'Compensation cess (luxury / sin goods)')}
+                                    </label>
+                                    <select
+                                        value={cessRate}
+                                        onChange={e => setCessRate(Number(e.target.value))}
+                                        className="w-full bg-dark-bg border border-border rounded-xl px-3 py-2.5 text-xs text-foreground"
+                                    >
+                                        {cessPresets.map(p => (
+                                            <option key={p.label} value={p.cess}>
+                                                {p.label} {p.cess > 0 ? `— +${p.cess}%` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {cessRate > 0 && (
+                                        <p className="text-[10px] text-amber-500 mt-1.5">
+                                            ⚠ {t('gst.cessNote', 'Cess is over and above the 28% GST. Total tax = {{total}}%', { total: 28 + cessRate })}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                             <ToggleIGST value={isIGST} onChange={setIsIGST} />
                         </div>
 

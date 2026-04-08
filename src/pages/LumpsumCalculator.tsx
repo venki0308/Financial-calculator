@@ -12,6 +12,7 @@ import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import SaveNameDialog from '../components/SaveNameDialog';
+import PostTaxBanner from '../components/PostTaxBanner';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -28,7 +29,7 @@ export default function LumpsumCalculator() {
     const [principal, setPrincipal] = useState(100000);
     const [rate, setRate] = useState(12);
     const [years, setYears] = useState(10);
-    const [inflation, setInflation] = useState(6);
+    const [inflation, setInflation] = useState(5); // RBI FY 2025-26 CPI ~4.8%
 
     // Goal Matching
     const [targetAmount, setTargetAmount] = useState(500000);
@@ -281,6 +282,10 @@ export default function LumpsumCalculator() {
                         </div>
                     </div>
                 </motion.div>
+
+                {/* After-tax preview — collapsible. Shows equity LTCG @ 12.5%
+                    above ₹1.25L by default, with a debt-fund slab toggle. */}
+                <PostTaxBanner invested={principal} grossMaturity={result.fv} fmt={fmtINR} />
 
                 {/* SMART INSIGHT (Dynamic) */}
                 <div className={`p-4 rounded-2xl border flex items-start gap-3 ${insight.type === 'warn' ? 'bg-amber-500/10 border-amber-500/30' : insight.type === 'success' ? 'bg-brand-green/10 border-brand-green/30' : 'bg-brand-blue/10 border-brand-blue/30'}`}>

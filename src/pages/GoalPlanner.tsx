@@ -39,7 +39,7 @@ export default function GoalPlanner() {
     const { t } = useTranslation();
     const [selectedGoal, setSelectedGoal] = useState<GoalPreset | null>(null);
     const [currentCost, setCurrentCost] = useState(5000000);
-    const [inflationRate, setInflationRate] = useState(6);
+    const [inflationRate, setInflationRate] = useState(5); // RBI FY 2025-26 CPI ~4.8%
     const [targetYears, setTargetYears] = useState(10);
     const [expectedReturn, setExpectedReturn] = useState(12);
     const [currentSavings, setCurrentSavings] = useState(0);

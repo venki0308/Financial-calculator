@@ -35,7 +35,7 @@ export default function EPFCalculator() {
     const totalEmpPct = empPct + vpfPct;
 
     // Advanced Inputs
-    const [inflationRate, setInflationRate] = useState(6.0);
+    const [inflationRate, setInflationRate] = useState(5.0); // Updated FY 2025-26: RBI CPI projection ~4.8%
     const [whatIfHike, setWhatIfHike] = useState(10);
     const [whatIfRetire, setWhatIfRetire] = useState(60);
 
@@ -338,6 +338,12 @@ export default function EPFCalculator() {
                                 <input type="number" step="0.01" value={rate} onChange={e => setRate(Number(e.target.value)||0)} className={inputCls + " pr-7 bg-muted/30 focus:bg-card"} />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
                             </div>
+                            {/* EPFO declares the rate annually after the FY closes (typically Feb-Mar).
+                                8.25% is the most recently confirmed rate (FY 2024-25). Users planning
+                                long-term should treat this as indicative — actual yearly accrual may differ. */}
+                            <p className="text-[9px] text-muted-foreground mt-1 leading-tight">
+                                {t('epf.rateNote', '8.25% — FY 2024-25 declared rate. EPFO revises annually; verify at epfindia.gov.in')}
+                            </p>
                         </div>
                     </div>
                     {/* VPF Input */}

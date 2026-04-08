@@ -14,6 +14,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
+import { saveLoan as saveLoanToStorage, deleteLoan as deleteLoanFromStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
@@ -174,23 +175,52 @@ export default function SimpleInterestCalculator() {
     const suggestedName = `Simple Interest — ${formatINR(principal)} × ${tenure}M`;
 
     const handleTrackerSave = (customName: string) => {
-        const id = `si-${Date.now()}`;
+        const id = generateLoanId();
         addProfile({
             id,
             name: customName,
             calculatorType: 'Simple Interest',
             profileData: {
                 principal,
+                loanAmount: principal,
                 rate: mode === 'flat' ? flatRate : annualRate,
+                annualRate: mode === 'flat' ? flatRate * 12 : annualRate,
                 tenureMonths: tenure,
                 interest: trackerSnapshot.interest,
                 totalPayable: trackerSnapshot.totalPayable,
                 mode,
+                interestFree,
                 startDate: loanStartDate || new Date().toISOString().slice(0, 10),
             },
             createdAt: Date.now(),
             updatedAt: Date.now(),
         });
+        // Mirror to loanStorage so the SI loan also shows up in the loan
+        // portfolio summary at the top of MyLoans (total outstanding,
+        // monthly burden) — previously SI loans existed only in the tracker
+        // store and were invisible to the portfolio aggregate.
+        // For interest-free loans the EMI is just principal/tenure.
+        const monthlyEmi = interestFree
+            ? Math.round(principal / Math.max(1, tenure))
+            : Math.round(trackerSnapshot.totalPayable / Math.max(1, tenure));
+        const loan: SavedLoan = {
+            id,
+            nickName: customName,
+            loanType: 'personal_loan',
+            lenderName: '',
+            loanAmount: principal,
+            interestRate: interestFree ? 0 : (mode === 'flat' ? flatRate * 12 : annualRate),
+            tenureMonths: tenure,
+            emiAmount: monthlyEmi,
+            rateType: 'fixed',
+            disbursementDate: loanStartDate || new Date().toISOString().slice(0, 10),
+            emiDueDay: 5,
+            notes: interestFree ? 'Interest-free loan (rural / family borrowing)' : `${mode} interest mode`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isActive: true,
+        };
+        saveLoanToStorage(loan);
         setTrackerSavedId(id);
         setTrackerSaved(true);
     };
@@ -198,6 +228,8 @@ export default function SimpleInterestCalculator() {
     const handleTrackerRemove = () => {
         if (trackerSavedId) {
             removeProfile(trackerSavedId);
+            // Also remove from loanStorage so the portfolio aggregate clears.
+            try { deleteLoanFromStorage(trackerSavedId); } catch { /* ignore */ }
             setTrackerSavedId(null);
             setTrackerSaved(false);
         }

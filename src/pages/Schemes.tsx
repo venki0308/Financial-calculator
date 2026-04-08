@@ -56,6 +56,19 @@ export default function Schemes() {
             {/* Results count */}
             <p className="text-muted-foreground text-xs mb-3">{t('schemes.showing')} {filtered.length} {t('schemes.schemesCount')}</p>
 
+            {/* Quarterly rate disclaimer — small-savings interest rates are
+                revised by the Govt of India every quarter (Mar / Jun / Sep / Dec).
+                Surface this once at the top of the browse page so users don't
+                plan around stale numbers. */}
+            <div className="mb-4 p-3 rounded-2xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/15">
+                <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 mb-0.5">
+                    📅 {t('schemes.quarterlyNoteTitle', 'Rates revised every quarter')}
+                </p>
+                <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80 leading-snug">
+                    {t('schemes.quarterlyNoteBody', 'PPF, SSY, NSC, KVP, POMIS, SCSS rates are notified by the Govt of India each quarter (Mar / Jun / Sep / Dec). Verify the current rate at indiapost.gov.in or rbi.org.in before investing.')}
+                </p>
+            </div>
+
             {/* Scheme Cards */}
             <div className="space-y-3 mb-6">
                 {filtered.map((scheme) => {

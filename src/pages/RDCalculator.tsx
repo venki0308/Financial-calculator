@@ -43,7 +43,7 @@ export default function RDCalculator() {
     }, [rdStartDate, monthly, effectiveRate, months]);
 
     // Advanced Inputs
-    const [inflationRate, setInflationRate] = useState(6.0);
+    const [inflationRate, setInflationRate] = useState(5.0); // RBI FY 2025-26 CPI ~4.8%
     const [whatIfExtra, setWhatIfExtra] = useState(1000);
 
     // UI States

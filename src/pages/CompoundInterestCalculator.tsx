@@ -15,6 +15,7 @@ import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import SaveNameDialog from '../components/SaveNameDialog';
+import PostTaxBanner from '../components/PostTaxBanner';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -31,7 +32,7 @@ export default function CompoundInterestCalculator() {
     const [rate, setRate] = useState(12);
     const [years, setYears] = useState(10);
     const [freq, setFreq] = useState(12); 
-    const [inflation, setInflation] = useState(6);
+    const [inflation, setInflation] = useState(5); // Updated FY 2025-26: RBI CPI projection ~4.8%
 
     // What-If Simulator States
     const [simRate, setSimRate] = useState(rate);
@@ -301,6 +302,9 @@ export default function CompoundInterestCalculator() {
                         <span className="text-brand-green text-[9px] uppercase tracking-wider">{t('ci.returns')} • {interestPct.toFixed(0)}%</span>
                     </div>
                 </motion.div>
+
+                {/* After-tax preview — collapsible. */}
+                <PostTaxBanner invested={principal} grossMaturity={result.amount} fmt={fmtINR} />
 
                 {/* SMART INSIGHT (Dynamic) */}
                 <div className={`p-4 rounded-2xl border flex items-start gap-3 ${insight.type === 'warn' ? 'bg-amber-500/10 border-amber-500/30' : insight.type === 'success' ? 'bg-brand-green/10 border-brand-green/30' : 'bg-brand-purple/10 border-brand-purple/30'}`}>

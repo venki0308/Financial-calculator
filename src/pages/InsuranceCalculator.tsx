@@ -933,6 +933,75 @@ export default function InsuranceCalculator() {
                     </div>
                   </div>
 
+                  {/* SECTION 80D TAX BENEFIT — old regime only.
+                      Section 80D limits (FY 2025-26):
+                        • Self / spouse / kids (all <60): up to ₹25,000
+                        • Self / spouse / kids if any insured is 60+: up to ₹50,000
+                        • Parents (<60): additional up to ₹25,000
+                        • Parents (60+): additional up to ₹50,000
+                      Total max possible = ₹1,00,000 (senior self + senior parents).
+                      Health insurance premium GST EXEMPT since 22 Sep 2025 (per
+                      55th GST Council). We compute the *eligible cap*, not the
+                      actual premium paid, and let the user see how much of that
+                      cap they are fully utilising. */}
+                  {(() => {
+                    const adultsForSelf = [selfAge, ...(hasSpouse ? [spouseAge] : []), ...children];
+                    const selfFamilySeniorPresent = adultsForSelf.some(a => a >= 60);
+                    const selfFamilyCap = selfFamilySeniorPresent ? 50000 : 25000;
+                    const parentsSeniorPresent = parents.some(a => a >= 60);
+                    const parentsCap = parents.length > 0 ? (parentsSeniorPresent ? 50000 : 25000) : 0;
+                    const totalCap = selfFamilyCap + parentsCap;
+                    // Premium midpoint as a quick estimate of how much they will actually spend.
+                    const premiumMid = (premiumData.lo + premiumData.hi) / 2;
+                    const eligibleClaim = Math.min(premiumMid, totalCap);
+                    // Tax saved depends on the user's slab — show 30% (top slab) as the
+                    // best-case savings, and 20% as a more typical case.
+                    const savedAt30 = Math.round(eligibleClaim * 0.30);
+                    const savedAt20 = Math.round(eligibleClaim * 0.20);
+                    return (
+                      <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/5 to-indigo-500/5 border border-violet-500/20">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-base">💸</span>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                            {t('ins.health.section80dTitle', 'Section 80D Tax Benefit')}
+                          </p>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mb-3">
+                          {t('ins.health.section80dSubtitle', 'You can claim health-insurance premiums as a deduction in the OLD tax regime')}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800/40 border border-violet-500/10">
+                            <p className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">
+                              {t('ins.health.eligibleClaim', 'Eligible to claim')}
+                            </p>
+                            <p className="text-sm font-black text-violet-500">{fmt(eligibleClaim)}</p>
+                            <p className="text-[9px] text-muted-foreground mt-0.5">
+                              {t('ins.health.outOfCap', 'of {{cap}} cap', { cap: fmt(totalCap) })}
+                            </p>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800/40 border border-emerald-500/10">
+                            <p className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">
+                              {t('ins.health.taxSaved', 'Tax saved')}
+                            </p>
+                            <p className="text-sm font-black text-emerald-500">{fmt(savedAt30)}</p>
+                            <p className="text-[9px] text-muted-foreground mt-0.5">
+                              {t('ins.health.taxSavedAt', '30% slab · {{lower}} at 20%', { lower: fmt(savedAt20) })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="space-y-1 text-[10px] text-muted-foreground">
+                          <p>• {t('ins.health.section80dCap1', 'Self + family: {{cap}}', { cap: fmt(selfFamilyCap) })}{selfFamilySeniorPresent ? ` (${t('ins.health.seniorIncluded', 'senior member included')})` : ''}</p>
+                          {parents.length > 0 && (
+                            <p>• {t('ins.health.section80dCap2', 'Parents: {{cap}}', { cap: fmt(parentsCap) })}{parentsSeniorPresent ? ` (${t('ins.health.seniorParents', 'senior parents')})` : ''}</p>
+                          )}
+                          <p className="pt-1 italic">
+                            {t('ins.health.section80dNote', '⚠ Available only in OLD tax regime. Health insurance premiums are GST-exempt since 22 Sep 2025.')}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* POLICY START DATE — feeds the My Loans / Trackers card */}
                   {!trackerSaved && (
                     <div className="p-4 rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card">
@@ -1246,6 +1315,30 @@ export default function InsuranceCalculator() {
               <p className="text-[10px] text-muted-foreground leading-relaxed">
                 {t('ins.life.premiumNote')}
               </p>
+              {/* GST disclosure for life term insurance.
+                  IRDAI rule: 18% GST on first-year premium, 1.8% on renewals.
+                  Many users assume the quoted premium is final — make this
+                  explicit so they can budget for the year-1 vs renewal split. */}
+              <div className="mt-3 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/15">
+                <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 mb-0.5">
+                  💡 {t('ins.life.gstNoteTitle', 'GST is extra')}
+                </p>
+                <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80 leading-snug">
+                  {t('ins.life.gstNoteBody', 'Add 18% GST in year 1 and 1.8% on renewals. A ₹{{premium}} term premium is actually ₹{{withGst}} in year 1.', { premium: fmt(termRange.lo), withGst: fmt(Math.round(termRange.lo * 1.18)) })}
+                </p>
+              </div>
+              {/* Section 10(10D) — death benefit and (for term) any maturity benefit
+                  is tax-free for the nominee, irrespective of the 10%-of-SI premium
+                  rule. Term plans don't pay maturity, so this is mainly relevant
+                  to clarify the death-claim treatment. */}
+              <div className="mt-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/15">
+                <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 mb-0.5">
+                  ✅ {t('ins.life.section10dTitle', 'Section 10(10D) — death claim tax-free')}
+                </p>
+                <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 leading-snug">
+                  {t('ins.life.section10dBody', 'The full sum assured paid to your nominee is tax-free under Section 10(10D), with no upper cap. Endowment / TROP maturity is tax-free only if annual premium ≤ 10% of sum assured (post-Apr 2012 policies).')}
+                </p>
+              </div>
             </div>
 
             {/* R4 — 80C Tax Benefit */}
