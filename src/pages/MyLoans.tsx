@@ -730,27 +730,29 @@ export default function MyLoans() {
                 )}
             </div>
 
-            {/* Delete Confirm */}
+            {/* Delete Confirm — z-index must beat the bottom nav (z-[9999])
+                otherwise the nav overlays the bottom of the sheet and the
+                user ends up tapping Home/Calculate/etc. instead of Delete. */}
             <AnimatePresence>
                 {menuProfile && (
                     <>
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/40 z-50" onClick={() => setMenuProfile(null)} />
+                            className="fixed inset-0 bg-black/50 z-[10000]" onClick={() => setMenuProfile(null)} />
                         <motion.div
                             initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl p-5 space-y-2"
-                            style={{ backgroundColor: c.card }}
+                            className="fixed inset-x-0 bottom-0 z-[10001] rounded-t-3xl p-5 space-y-2 mx-auto w-full max-w-[428px]"
+                            style={{ backgroundColor: c.card, paddingBottom: 'calc(env(safe-area-inset-bottom, 16px) + 24px)' }}
                         >
                             <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600 mx-auto mb-3" />
                             <p className="text-sm font-bold mb-3" style={{ color: c.text }}>{menuProfile.name}</p>
                             <button onClick={() => handleDelete(menuProfile)}
-                                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-red-500/20 text-sm font-medium text-red-500"
+                                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-red-500/20 text-sm font-medium text-red-500 active:scale-95 transition-transform"
                             >
                                 <Trash2 size={16} /> {t('myLoans.deleteTracker')}
                             </button>
                             <button onClick={() => setMenuProfile(null)}
-                                className="w-full py-3 rounded-xl text-sm font-bold border mt-2"
+                                className="w-full py-3 rounded-xl text-sm font-bold border mt-2 active:scale-95 transition-transform"
                                 style={{ borderColor: c.border, color: c.textSecondary }}
                             >
                                 {t('myLoans.cancel')}
