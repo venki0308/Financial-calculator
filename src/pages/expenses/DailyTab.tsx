@@ -14,7 +14,6 @@ import {
   getAllCategories, getCategoryById, getAllEntries,
 } from '../../utils/expenseStorage';
 import { fmtINR, getTodayStr, formatFullDate } from '../../utils/expenseCalculations';
-import { loadDemoData, getDemoEntryCount } from '../../utils/demoDataLoader';
 import SharedAddEntrySheet from '../../components/AddEntrySheet';
 
 /* ══════════════════════════════════════════════════════════════
@@ -477,44 +476,6 @@ export default function DailyTab() {
             ))}
           </div>
 
-          {/* Demo data loader — only show when there are zero entries anywhere */}
-          {allEntries.length === 0 && (
-            <div className="mt-6 px-4">
-              <div
-                className="rounded-xl p-3 text-left"
-                style={{
-                  backgroundColor: et.accentInvestment + '10',
-                  border: `1px dashed ${et.accentInvestment}40`,
-                }}
-              >
-                <div className="flex items-start gap-2 mb-2">
-                  <span className="text-base">🎁</span>
-                  <div>
-                    <p className="text-[11px] font-bold" style={{ color: et.textPrimary }}>
-                      {t('expenses.tryDemoData', 'Try with sample data')}
-                    </p>
-                    <p className="text-[10px] mt-0.5" style={{ color: et.textSecondary }}>
-                      {t('expenses.tryDemoDataDesc', 'Loads {{count}} sample entries to explore all features.', { count: getDemoEntryCount() })}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    const result = loadDemoData();
-                    refresh();
-                    if (result.added > 0) {
-                      // Jump to today so user sees the new entries
-                      setSelectedDate(getTodayStr());
-                    }
-                  }}
-                  className="w-full py-2 rounded-lg text-[11px] font-bold text-white transition-all active:scale-95"
-                  style={{ backgroundColor: et.accentInvestment }}
-                >
-                  {t('expenses.loadDemoData', 'Load Demo Data')}
-                </button>
-              </div>
-            </div>
-          )}
         </motion.div>
       ) : (
         <div className="space-y-2">

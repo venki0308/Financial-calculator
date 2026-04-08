@@ -727,9 +727,6 @@
         "deleteEntry": "Delete",
         "confirmDelete": "Confirm?",
         "subscriptionsSubtitle": "Track recurring payments",
-        "tryDemoData": "Try with sample data",
-        "tryDemoDataDesc": "Loads {{count}} sample entries to explore all features.",
-        "loadDemoData": "Load Demo Data",
         "net": "Net"
     },
     "schemes": {
@@ -5936,20 +5933,6 @@
         "minsAgo": "{{count}} min ago",
         "hrsAgo": "{{count}} hr ago",
         "daysAgo": "{{count}} day ago"
-    },
-    "demo": {
-        "salary": "Monthly salary",
-        "lunch": "Lunch at cafe",
-        "grocery": "Weekly groceries",
-        "transport": "Transport / Cab",
-        "sip": "Mutual fund SIP",
-        "shopping": "Online shopping",
-        "rent": "Monthly rent",
-        "electricity": "Electricity bill",
-        "ppf": "PPF deposit",
-        "lastSalary": "Last month salary",
-        "lastRent": "Last month rent",
-        "lastSip": "Last month SIP"
     },
     "goldLoan": {
         "title": "Gold Loan Calculator",
