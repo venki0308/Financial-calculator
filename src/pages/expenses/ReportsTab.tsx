@@ -39,6 +39,12 @@ import {
   generateHealthReportPDF,
   generateExpenseCSV,
 } from '../../utils/expenseReportPDF';
+import type { PDFSubscription } from '../../utils/expenseReportPDF';
+// Subscriptions live in a separate Zustand store from the main expense
+// entries. They must be forwarded to every PDF generator so recurring
+// commitments are visible in reports. Without this the PDF silently
+// understated monthly outflow by however much the user had in active subs.
+import { useBudgetTrackerStore } from '../../store/useBudgetTrackerStore';
 import SVGPieChart from '../../components/charts/SVGPieChart';
 import HealthScoreGauge from '../../components/charts/HealthScoreGauge';
 
@@ -96,6 +102,23 @@ export default function ReportsTab() {
   const allEntries = useMemo(() => getAllEntries(), [refreshKey]);
   const accounts = useMemo(() => getAllAccounts(), [refreshKey]);
   const loans = useMemo(() => getAllLoans(), [refreshKey]);
+
+  // Subscriptions pulled from the Zustand store — forwarded to every PDF
+  // generator so recurring commitments are counted in the cash-flow view.
+  // We shape them into the PDFSubscription contract expected by the
+  // generators (name, amount, billingCycle, isActive, nextDueDate).
+  const storeSubscriptions = useBudgetTrackerStore(s => s.subscriptions);
+  const pdfSubscriptions = useMemo<PDFSubscription[]>(
+    () => storeSubscriptions.map(sub => ({
+      name: sub.name,
+      amount: sub.amount,
+      billingCycle: sub.billingCycle,
+      isActive: sub.isActive,
+      nextDueDate: sub.nextDueDate,
+      category: sub.category,
+    })),
+    [storeSubscriptions],
+  );
 
   const budget = useMemo(() => getBudgetForMonth(currentMonth.monthStr), [currentMonth.monthStr]);
   const currentSummary = useMemo(() => calculateSummary(currentEntries, budget), [currentEntries, budget]);
@@ -182,7 +205,12 @@ export default function ReportsTab() {
           // Pass that day's monthly budget so the Budget Check section can render
           const monthStr = reportDate.slice(0, 7); // YYYY-MM
           const dailyBudget = getBudgetForMonth(monthStr);
-          await generateDailyPDF({ date: reportDate, entries, budget: dailyBudget });
+          await generateDailyPDF({
+            date: reportDate,
+            entries,
+            budget: dailyBudget,
+            subscriptions: pdfSubscriptions,
+          });
           break;
         }
         case 'weekly': {
@@ -196,6 +224,7 @@ export default function ReportsTab() {
             rangeLabel: selectedWeek.label,
             entries,
             prevWeekEntries,
+            subscriptions: pdfSubscriptions,
           });
           break;
         }
@@ -210,12 +239,17 @@ export default function ReportsTab() {
             entries,
             budget: monthBudget,
             accounts: accs,
+            subscriptions: pdfSubscriptions,
           });
           break;
         }
         case 'annual': {
           const entries = getEntriesForYear(selectedYear.year);
-          await generateAnnualPDF({ year: selectedYear.year, entries });
+          await generateAnnualPDF({
+            year: selectedYear.year,
+            entries,
+            subscriptions: pdfSubscriptions,
+          });
           break;
         }
         case 'custom': {
@@ -231,6 +265,7 @@ export default function ReportsTab() {
             rangeLabel: label,
             entries,
             accounts: getAllAccounts(),
+            subscriptions: pdfSubscriptions,
           });
           break;
         }

@@ -10,6 +10,12 @@ import { getCategoryDisplayName } from '../../utils/categoryUtils';
 import BottomSheet from '../../components/BottomSheet';
 import DateInput from '../../components/DateInput';
 import { todayStr } from '../../utils/dateUtils';
+// Bridge to expenseStorage: the actual monthly income lives in the Budget
+// object saved per month by BudgetTab. useBudgetTrackerStore.monthlyIncome
+// is a legacy field that most users never populate, so the subscription
+// risk % was hard-coded to "over 100% of income" for everyone.
+import { getBudgetForMonth } from '../../utils/expenseStorage';
+import { getMonthRange } from '../../utils/expenseCalculations';
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const COLOR_TAGS = [
@@ -80,8 +86,21 @@ function getDaysIndicator(dateStr: string) {
 export default function SubscriptionsTab() {
     const { t } = useTranslation();
     const {
-        subscriptions, addSubscription, updateSubscription, deleteSubscription, monthlyIncome,
+        subscriptions, addSubscription, updateSubscription, deleteSubscription, monthlyIncome: legacyMonthlyIncome,
     } = useBudgetTrackerStore();
+
+    // Effective monthly income: prefer the current month's Budget in
+    // expenseStorage (which BudgetTab writes). Fall back to the legacy
+    // field in useBudgetTrackerStore only when no budget is set yet. This
+    // fixes the "100% of income" false alarm that appeared for every new
+    // user who hadn't populated the legacy store but had set up their
+    // BudgetTab monthly income.
+    const monthlyIncome = useMemo(() => {
+        const currentMonth = getMonthRange(0);
+        const budget = getBudgetForMonth(currentMonth.monthStr);
+        if (budget && budget.monthlyIncome > 0) return budget.monthlyIncome;
+        return legacyMonthlyIncome;
+    }, [legacyMonthlyIncome, subscriptions]);
 
     // ── UI State ─────────────────────────────────────────────────────────
     const [isFormOpen, setIsFormOpen] = useState(false);

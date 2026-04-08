@@ -2,13 +2,23 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, TrendingDown, Wallet, AlertTriangle, Plus, CheckCircle2, ZapOff, ChevronLeft, ChevronRight, Activity, ChevronDown, ChevronUp, Edit2, Repeat, Target, PiggyBank, Lightbulb } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useBudgetTrackerStore, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
+import { useBudgetTrackerStore, EXPENSE_CATEGORIES, BudgetEntry, FixedExpenses, CategoryBudgets } from '../../store/useBudgetTrackerStore';
 import { getCategoryDisplayName } from '../../utils/categoryUtils';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { generateInsights, getDailyNudges } from '../../services/InsightEngine';
 import { calculateHealthScore } from '../../services/HealthScoreService';
 import BottomSheet from '../../components/BottomSheet';
+// ── Bridge to expenseStorage (single source of truth) ────────────
+// DashboardTab previously read monthlyIncome / fixedExpenses /
+// categoryBudgets / entries from useBudgetTrackerStore, which is a
+// different store from the one BudgetTab / DailyTab / ReportsTab write
+// to. Any expense added in DailyTab was therefore invisible in the
+// Dashboard. We now pull all of those fields from expenseStorage Budget
+// for the selected month and convert Entry → BudgetEntry shape for the
+// legacy insight / health-score engines that still expect BudgetEntry.
+import { getBudgetForMonth, getEntriesForMonth } from '../../utils/expenseStorage';
+import type { Entry } from '../../types/expense';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -33,9 +43,57 @@ const COLORS = [
     '#3b82f6', '#ec4899', '#84cc16', '#f97316',
 ];
 
+// ── Category ID bridge ───────────────────────────────────────────
+// expenseStorage uses DEFAULT_EXPENSE_CATEGORIES with ids like 'food_dining',
+// 'transport', 'health' etc. useBudgetTrackerStore uses older ids like
+// 'food', 'transportation', 'healthcare'. DashboardTab historically reads
+// the legacy ids, so we translate expenseStorage Entry categories into the
+// Dashboard's category bucket before the health / insight engines see them.
+// Keep this 1-1 with EXPENSE_CATEGORIES so any category added to
+// types/expense.ts also needs a row here.
+const STORAGE_TO_DASHBOARD_CAT: Record<string, string> = {
+    food_dining: 'food',
+    groceries: 'groceries',
+    transport: 'transportation',
+    shopping: 'shopping',
+    health: 'healthcare',
+    education: 'education',
+    entertainment: 'entertainment',
+    utilities: 'others',        // no exact match → bucket into others
+    rent_housing: 'others',
+    emi_loan: 'others',
+    insurance: 'others',
+    personal_care: 'personalCare',
+    travel: 'others',
+    subscription: 'others',     // surfaced via Subscriptions tab
+    other_expense: 'others',
+};
+
+/** Convert an expenseStorage Entry into the legacy BudgetEntry shape that
+ *  InsightEngine + HealthScoreService still expect. The two stores used
+ *  different entry models; this adapter is cheaper than rewriting both
+ *  services. */
+function entryToBudgetEntry(e: Entry): BudgetEntry {
+    return {
+        id: e.id,
+        category: STORAGE_TO_DASHBOARD_CAT[e.category] ?? e.category,
+        amount: e.amount,
+        description: e.description || '',
+        date: e.date,
+        paymentMethod: undefined,
+        entryType: e.type === 'transfer' ? 'expense' : e.type,
+    };
+}
+
 export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { onAddExpense: () => void, onViewAll: () => void, onViewSubs?: () => void }) {
     const { t } = useTranslation();
-    const { monthlyIncome, entries, getTotalFixed, getEntriesByMonth, categoryBudgets, fixedExpenses, subscriptions, netWorthHistory, healthScore, setHealthScore, setInsights, insights, savingsGoal, monthlyBalances, setMonthlyBalance } = useBudgetTrackerStore();
+    // We still pull "tracker-only" data from useBudgetTrackerStore:
+    // subscriptions, netWorthHistory, healthScore, insights, savingsGoal,
+    // monthlyBalances. These have no equivalent in expenseStorage. But
+    // income / fixed expenses / category budgets / entries now come from
+    // expenseStorage (the canonical source that BudgetTab and DailyTab
+    // already use).
+    const { subscriptions, netWorthHistory, healthScore, setHealthScore, setInsights, insights, savingsGoal, monthlyBalances, setMonthlyBalance } = useBudgetTrackerStore();
 
     const [selectedDate, setSelectedDate] = useState(new Date());
     const currentYear = selectedDate.getFullYear();
@@ -51,17 +109,78 @@ export default function DashboardTab({ onAddExpense, onViewAll, onViewSubs }: { 
     const [isEditSavingsOpen, setIsEditSavingsOpen] = useState(false);
     const [manualSavingsInput, setManualSavingsInput] = useState('');
 
-    const monthEntries = useMemo(
-        () => getEntriesByMonth(currentYear, currentMonthNum),
-        [entries, currentYear, currentMonthNum, getEntriesByMonth]
+    // refreshTick bumps when the selected month changes, forcing the
+    // expenseStorage-backed useMemo blocks below to re-read localStorage.
+    const refreshTick = `${currentYear}-${currentMonthNum}`;
+
+    // ── Pull Budget + Entries from expenseStorage (canonical) ──────
+    const storageBudget = useMemo(
+        () => getBudgetForMonth(currentMonthKey),
+        [currentMonthKey, refreshTick],
     );
+    const storageEntries = useMemo(
+        () => getEntriesForMonth(currentYear, currentMonthNum),
+        [currentYear, currentMonthNum, refreshTick],
+    );
+
+    // Legacy insight / health-score engines expect BudgetEntry[] —
+    // translate on read.
+    const monthEntries = useMemo(
+        () => storageEntries.map(entryToBudgetEntry),
+        [storageEntries],
+    );
+    // The health score + insight engines walk *all* entries for
+    // multi-month history. We only have entries for the selected month
+    // here. Accept that for now — history metrics will be scoped to the
+    // current month until a wider refactor lands.
+    const entries = monthEntries;
+
+    // Monthly income from Budget.monthlyIncome
+    const monthlyIncome = storageBudget?.monthlyIncome ?? 0;
+
+    // Fixed expenses shape required by the legacy services. We flatten
+    // the Budget.fixedExpenses array into the legacy record shape.
+    const fixedExpenses: FixedExpenses = useMemo(() => {
+        const base: FixedExpenses = { rent: 0, utilities: 0, mobile: 0, insurance: 0, emi: 0, others: [] };
+        if (!storageBudget) return base;
+        storageBudget.fixedExpenses.forEach(fe => {
+            const cat = fe.category;
+            if (cat === 'rent_housing') base.rent += fe.amount;
+            else if (cat === 'utilities') base.utilities += fe.amount;
+            else if (cat === 'subscription') base.mobile += fe.amount;
+            else if (cat === 'insurance') base.insurance += fe.amount;
+            else if (cat === 'emi_loan') base.emi += fe.amount;
+            else base.others.push({ id: fe.id, label: fe.name, amount: fe.amount });
+        });
+        return base;
+    }, [storageBudget]);
+
+    const getTotalFixed = () => {
+        const base = fixedExpenses.rent + fixedExpenses.utilities + fixedExpenses.mobile + fixedExpenses.insurance + fixedExpenses.emi;
+        const custom = fixedExpenses.others.reduce((s, o) => s + o.amount, 0);
+        return base + custom;
+    };
+
+    // Category budgets — translate expenseStorage category limit IDs into
+    // the Dashboard's category keys. Multiple storage categories may map
+    // to the same dashboard bucket (e.g. utilities / rent_housing →
+    // 'others'); their limits are summed so nothing is lost.
+    const categoryBudgets: CategoryBudgets = useMemo(() => {
+        const base: CategoryBudgets = { food: 0, transportation: 0, shopping: 0, entertainment: 0, healthcare: 0, education: 0, groceries: 0, personalCare: 0, others: 0 };
+        if (!storageBudget) return base;
+        storageBudget.categoryLimits.forEach(cl => {
+            const dashboardKey = (STORAGE_TO_DASHBOARD_CAT[cl.categoryId] ?? 'others') as keyof CategoryBudgets;
+            base[dashboardKey] += cl.monthlyLimit;
+        });
+        return base;
+    }, [storageBudget]);
 
     useEffect(() => {
         // Generate insights and health score dynamically
         const newInsights = generateInsights(entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, subscriptions);
         setInsights(newInsights);
 
-        const newScore = calculateHealthScore(entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, netWorthHistory, savingsGoal > 0 ? savingsGoal : undefined, monthlyBalances);
+        const newScore = calculateHealthScore(entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, netWorthHistory, savingsGoal > 0 ? savingsGoal : undefined, monthlyBalances, subscriptions);
         setHealthScore(newScore);
     }, [entries, monthlyIncome, fixedExpenses, categoryBudgets, currentMonthNum, currentYear, subscriptions, netWorthHistory, savingsGoal, monthlyBalances, setInsights, setHealthScore]);
 

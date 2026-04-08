@@ -1,4 +1,5 @@
-import { BudgetEntry, CategoryBudgets, FixedExpenses, HealthScore, NetWorthEntry } from '../store/useBudgetTrackerStore';
+import { BudgetEntry, CategoryBudgets, FixedExpenses, HealthScore, NetWorthEntry, Subscription } from '../store/useBudgetTrackerStore';
+import { getSubscriptionMonthlyTotal } from '../utils/expenseCalculations';
 
 function calcFixedTotal(fixedExpenses: FixedExpenses): number {
     return Object.values(fixedExpenses).reduce((a, b) => {
@@ -17,7 +18,12 @@ export function calculateHealthScore(
     currentYear: number,
     netWorthHistory: NetWorthEntry[],
     savingsGoal?: number,
-    monthlyBalances?: Record<string, { manual?: number; auto?: number }>
+    monthlyBalances?: Record<string, { manual?: number; auto?: number }>,
+    // Subscriptions are counted as recurring monthly outflow on top of
+    // fixedExpenses + logged entries. Without this, every active sub
+    // inflates the savings score (it doesn't show up as an expense
+    // anywhere in the store used by the score engine).
+    subscriptions?: Subscription[],
 ): HealthScore {
     const nowStr = new Date().toISOString();
 
@@ -71,8 +77,13 @@ export function calculateHealthScore(
     const fixedTotal = calcFixedTotal(fixedExpenses);
     const emiAmount = typeof fixedExpenses.emi === 'number' ? fixedExpenses.emi : 0;
 
+    // Recurring subs count as monthly outflow on top of logged entries +
+    // fixedExpenses. Otherwise the savings rate is artificially inflated
+    // by however much the user has in Netflix / Spotify / gym / etc.
+    const subsMonthlyTotal = getSubscriptionMonthlyTotal(subscriptions ?? []);
+
     const totalSpent = currentEntries.reduce((sum, e) => sum + e.amount, 0);
-    const savings = monthlyIncome - (fixedTotal + totalSpent);
+    const savings = monthlyIncome - (fixedTotal + totalSpent + subsMonthlyTotal);
     const savingsRate = savings / monthlyIncome;
 
     // ── Score 1: Savings Rate (0–40 pts) ─────────────────────────────────────
@@ -146,7 +157,9 @@ export function calculateHealthScore(
             return d.getFullYear() === y && d.getMonth() + 1 === m;
         });
         const monthSpent = monthEntries.reduce((s, e) => s + e.amount, 0);
-        totalAutoSavings += monthlyIncome - fixedTotal - monthSpent;
+        // Subtract subs here too — subs are recurring every month, so
+        // they should be counted against every month's savings estimate.
+        totalAutoSavings += monthlyIncome - fixedTotal - monthSpent - subsMonthlyTotal;
     });
 
     // 12-month forward projection

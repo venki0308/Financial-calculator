@@ -285,6 +285,49 @@ export const formatFullDate = (dateStr: string): string => {
 export const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 export const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+// ─── SUBSCRIPTION HELPERS ─────────────────────────────────────
+// Subscriptions live in useBudgetTrackerStore (a different store from
+// expenseStorage). To avoid circular imports between this calc engine and
+// the Zustand store, we accept duck-typed subscription objects here.
+// Anything matching this shape (the SubscriptionsTab Subscription type
+// satisfies it) can be passed in.
+export interface SubscriptionInput {
+  amount: number;
+  billingCycle: 'monthly' | 'quarterly' | 'yearly';
+  isActive: boolean;
+}
+
+/** Sum the monthly equivalent of all ACTIVE subscriptions.
+ *  quarterly = amount/3, yearly = amount/12, monthly = amount as-is. */
+export const getSubscriptionMonthlyTotal = (subs: SubscriptionInput[]): number => {
+  if (!subs || subs.length === 0) return 0;
+  return subs
+    .filter(s => s.isActive)
+    .reduce((sum, s) => {
+      if (s.billingCycle === 'quarterly') return sum + s.amount / 3;
+      if (s.billingCycle === 'yearly') return sum + s.amount / 12;
+      return sum + s.amount;
+    }, 0);
+};
+
+/** True if a date string (YYYY-MM-DD) falls in the given year/month. */
+const isInMonth = (dateStr: string, year: number, month: number): boolean => {
+  const monthStr = `${year}-${String(month).padStart(2, '0')}`;
+  return dateStr.startsWith(monthStr);
+};
+
+/** Sum the monthly equivalent of subscriptions whose nextDueDate falls in
+ *  the given year/month. Used by daily/weekly views to flag the renewal
+ *  hitting that period. Falls back to monthly equivalent for safety. */
+export const getSubscriptionsDueInMonth = <T extends SubscriptionInput & { nextDueDate?: string }>(
+  subs: T[],
+  year: number,
+  month: number,
+): T[] => {
+  if (!subs || subs.length === 0) return [];
+  return subs.filter(s => s.isActive && s.nextDueDate && isInMonth(s.nextDueDate, year, month));
+};
+
 // ─── BUDGET HELPERS ───────────────────────────────────────────
 
 export const getBudgetTotalFixed = (budget: Budget): number => {
