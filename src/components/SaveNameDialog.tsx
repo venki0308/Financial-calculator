@@ -60,14 +60,21 @@ export default function SaveNameDialog({ open, onClose, onConfirm, defaultName =
                         className="fixed inset-0 bg-black/60 z-[10001]"
                         onClick={onClose}
                     />
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.92, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.92, y: 20 }}
-                        transition={{ type: 'spring', damping: 24, stiffness: 320 }}
-                        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[10002] w-[88vw] max-w-sm rounded-2xl shadow-2xl"
-                        style={{ backgroundColor: c.card, border: `1px solid ${c.border}` }}
-                    >
+                    {/* Flex centering wrapper — using `inset-0 + flex` instead of
+                        `left-1/2 -translate-x-1/2` because framer-motion's
+                        animated transforms on ancestors (and the centered
+                        max-w-[428px] app shell) reparent fixed-position
+                        coordinates, causing the modal to clip off-screen
+                        on the right. A flex parent dodges that entirely. */}
+                    <div className="fixed inset-0 z-[10002] flex items-center justify-center px-5 pointer-events-none">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.92, y: 20 }}
+                            transition={{ type: 'spring', damping: 24, stiffness: 320 }}
+                            className="w-full max-w-sm rounded-2xl shadow-2xl pointer-events-auto"
+                            style={{ backgroundColor: c.card, border: `1px solid ${c.border}` }}
+                        >
                         <div className="flex items-start justify-between px-5 pt-4 pb-2">
                             <div className="flex-1">
                                 <h2 className="text-base font-bold" style={{ color: c.text }}>
@@ -117,7 +124,8 @@ export default function SaveNameDialog({ open, onClose, onConfirm, defaultName =
                                 <Save size={14} /> {t('common.save', 'Save')}
                             </button>
                         </div>
-                    </motion.div>
+                        </motion.div>
+                    </div>
                 </>
             )}
         </AnimatePresence>
