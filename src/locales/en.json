@@ -5373,7 +5373,12 @@
         "petrolInsBundle": "Insurance Bundling",
         "petrolInsBundleDesc": "You have the RIGHT to buy insurance separately — often 30-40% cheaper from standalone insurers.",
         "petrolAccessories": "Accessories on Loan",
-        "petrolAccessoriesDesc": "Adding ₹20,000 accessories at 14% for 3 years costs ₹24,800. Better to pay cash."
+        "petrolAccessoriesDesc": "Adding ₹20,000 accessories at 14% for 3 years costs ₹24,800. Better to pay cash.",
+        "liveTracker": "Live Loan Tracker",
+        "liveTrackerDesc": "Enter your loan disbursement date to see exact position",
+        "disbursementDate": "Loan Disbursement Date",
+        "emiDueDay": "EMI Due Day",
+        "emiDueDayHint": "Day of month your EMI is debited"
     },
     "myLoans": {
         "title": "My Loans",
@@ -6036,6 +6041,11 @@
         "rbiSource": "Source: RBI Master Directions on Gold Loans, June 2025 (effective April 1, 2026)",
         "rateRangeHint": "Market range 8% – 26% (banks cheaper than NBFCs)",
         "cibilNotNeededTitle": "No credit check needed",
-        "cibilNotNeededDesc": "Per RBI 2026, gold loans up to ₹2.5 lakh do not require a CIBIL check."
+        "cibilNotNeededDesc": "Per RBI 2026, gold loans up to ₹2.5 lakh do not require a CIBIL check.",
+        "liveTracker": "Live Loan Tracker",
+        "liveTrackerDesc": "Enter your loan disbursement date to see exact position",
+        "disbursementDate": "Loan Disbursement Date",
+        "emiDueDay": "EMI Due Day",
+        "emiDueDayHint": "Day of month your EMI is debited"
     }
 }

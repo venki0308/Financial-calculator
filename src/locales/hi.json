@@ -5593,7 +5593,12 @@
         "saveToMyLoans": "मेरे ऋण ट्रैकर में सहेजें",
         "savedToMyLoans": "मेरे ऋणों में सहेजा",
         "viewInMyLoans": "मेरे ऋणों में देखें →",
-        "downloadPdf": "PDF रिपोर्ट डाउनलोड करें"
+        "downloadPdf": "PDF रिपोर्ट डाउनलोड करें",
+        "liveTracker": "लाइव लोन ट्रैकर",
+        "liveTrackerDesc": "सटीक स्थिति देखने के लिए लोन वितरण तिथि दर्ज करें",
+        "disbursementDate": "लोन वितरण तिथि",
+        "emiDueDay": "EMI देय दिन",
+        "emiDueDayHint": "महीने का दिन जब आपकी EMI डेबिट होती है"
     },
     "myLoans": {
         "title": "मेरे ऋण",
@@ -6188,6 +6193,11 @@
         "rbiSource": "स्रोत: गोल्ड लोन पर RBI मास्टर निर्देश, जून 2025 (1 अप्रैल 2026 से प्रभावी)",
         "rateRangeHint": "बाज़ार सीमा 8% – 26% (बैंक NBFC से सस्ते)",
         "cibilNotNeededTitle": "क्रेडिट जाँच की ज़रूरत नहीं",
-        "cibilNotNeededDesc": "RBI 2026 के अनुसार ₹2.5 लाख तक के गोल्ड लोन में CIBIL जाँच नहीं चाहिए।"
+        "cibilNotNeededDesc": "RBI 2026 के अनुसार ₹2.5 लाख तक के गोल्ड लोन में CIBIL जाँच नहीं चाहिए।",
+        "liveTracker": "लाइव लोन ट्रैकर",
+        "liveTrackerDesc": "सटीक स्थिति देखने के लिए लोन वितरण तिथि दर्ज करें",
+        "disbursementDate": "लोन वितरण तिथि",
+        "emiDueDay": "EMI देय दिन",
+        "emiDueDayHint": "महीने का दिन जब आपकी EMI डेबिट होती है"
     }
 }

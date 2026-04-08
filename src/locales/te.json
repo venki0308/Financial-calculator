@@ -5587,7 +5587,12 @@
         "saveToMyLoans": "నా రుణ ట్రాకర్లో సేవ్ చేయి",
         "savedToMyLoans": "నా రుణాలలో సేవ్ చేయబడింది",
         "viewInMyLoans": "నా రుణాలలో చూడండి →",
-        "downloadPdf": "PDF రిపోర్ట్ డౌన్‌లోడ్"
+        "downloadPdf": "PDF రిపోర్ట్ డౌన్‌లోడ్",
+        "liveTracker": "లైవ్ లోన్ ట్రాకర్",
+        "liveTrackerDesc": "ఖచ్చితమైన స్థితిని చూడటానికి లోన్ పంపిణీ తేదీని నమోదు చేయండి",
+        "disbursementDate": "లోన్ పంపిణీ తేదీ",
+        "emiDueDay": "EMI బకాయి తేదీ",
+        "emiDueDayHint": "మీ EMI డెబిట్ అయ్యే నెల తేదీ"
     },
     "myLoans": {
         "title": "నా రుణాలు",
@@ -6182,6 +6187,11 @@
         "rbiSource": "మూలం: గోల్డ్ లోన్‌లపై RBI మాస్టర్ డైరెక్షన్స్, జూన్ 2025 (ఏప్రిల్ 1, 2026 నుండి అమలు)",
         "rateRangeHint": "మార్కెట్ పరిధి 8% – 26% (బ్యాంకులు NBFC కంటే చౌక)",
         "cibilNotNeededTitle": "క్రెడిట్ చెక్ అవసరం లేదు",
-        "cibilNotNeededDesc": "RBI 2026 ప్రకారం ₹2.5 లక్షల వరకు గోల్డ్ లోన్‌కు CIBIL చెక్ అవసరం లేదు."
+        "cibilNotNeededDesc": "RBI 2026 ప్రకారం ₹2.5 లక్షల వరకు గోల్డ్ లోన్‌కు CIBIL చెక్ అవసరం లేదు.",
+        "liveTracker": "లైవ్ లోన్ ట్రాకర్",
+        "liveTrackerDesc": "ఖచ్చితమైన స్థితిని చూడటానికి లోన్ పంపిణీ తేదీని నమోదు చేయండి",
+        "disbursementDate": "లోన్ పంపిణీ తేదీ",
+        "emiDueDay": "EMI బకాయి తేదీ",
+        "emiDueDayHint": "మీ EMI డెబిట్ అయ్యే నెల తేదీ"
     }
 }

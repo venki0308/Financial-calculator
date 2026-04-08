@@ -18,6 +18,9 @@ import { VEHICLE_TYPES, VEHICLE_SEGMENTS, CIBIL_TIERS, EV_SUBSIDY, STATE_EV_BENE
 import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import CibilBadge from '../components/CibilBadge';
 import { useCibil } from '../context/CibilContext';
+import DateInput from '../components/DateInput';
+import LiveLoanStatus from '../components/LiveLoanStatus';
+import type { LoanProfile } from '../utils/loanStatusEngine';
 
 export default function TwoWheelerLoanCalculator() {
     const { t } = useTranslation();
@@ -57,6 +60,11 @@ export default function TwoWheelerLoanCalculator() {
     const [isSaved, setIsSaved] = useState(false);
     const [savedId, setSavedId] = useState<string | null>(null);
     const [loanSaved, setLoanSaved] = useState(false);
+
+    // Live loan tracker state — empty by default so the widget stays hidden
+    // until the user picks an actual disbursement date.
+    const [loanStartDate, setLoanStartDate] = useState('');
+    const [emiDueDay, setEmiDueDay] = useState(5);
 
     const segment = VEHICLE_SEGMENTS[segmentIdx];
     const cibil = CIBIL_TIERS[cibilIdx];
@@ -113,6 +121,25 @@ export default function TwoWheelerLoanCalculator() {
     const totalInterest = result?.totalInterest || 0;
     const totalPayment = result?.totalPayment || 0;
     const ltv = effectivePrice > 0 ? ((loanAmount / effectivePrice) * 100) : 0;
+
+    /**
+     * LiveLoanStatus profile — built only when the user has supplied a real
+     * disbursement date. Hides the widget by default so first-time users
+     * see the calculator results immediately, and reveals the live tracker
+     * the moment they pick a date.
+     */
+    const loanProfile = useMemo<LoanProfile | null>(() => {
+        if (!loanStartDate || loanAmount <= 0 || emi <= 0) return null;
+        return {
+            loanAmount,
+            annualRate: rate,
+            tenureMonths,
+            emiAmount: emi,
+            disbursementDate: loanStartDate,
+            emiDueDay,
+            loanType: 'fixed',
+        };
+    }, [loanStartDate, emiDueDay, loanAmount, rate, tenureMonths, emi]);
 
     // True cost of ownership
     const tenureYears = tenureMonths / 12;
@@ -235,8 +262,8 @@ export default function TwoWheelerLoanCalculator() {
             tenureMonths,
             emiAmount: emi,
             rateType: 'fixed',
-            disbursementDate: todayStr(),
-            emiDueDay: 5,
+            disbursementDate: loanStartDate || todayStr(),
+            emiDueDay,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             isActive: true,
@@ -566,6 +593,42 @@ export default function TwoWheelerLoanCalculator() {
                                 )}
                             </AnimatePresence>
                         </div>
+
+                        {/* Live Loan Tracker — same pattern as EMI/Mortgage/Gold.
+                            Empty start date by default; the moment user picks a date,
+                            the EMI due-day picker reveals and the LiveLoanStatus
+                            widget appears below with real-time tracking. */}
+                        <div className="p-4 rounded-2xl border shadow-sm space-y-3" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                            <div className="flex items-center gap-2">
+                                <Info size={16} className="text-violet-500" />
+                                <div>
+                                    <h3 className="text-sm font-bold" style={{ color: c.text }}>{t('tw.liveTracker')}</h3>
+                                    <p className="text-[10px]" style={{ color: c.textSecondary }}>{t('tw.liveTrackerDesc')}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-xs font-semibold mb-1.5 block" style={{ color: c.textSecondary }}>{t('tw.disbursementDate')}</label>
+                                <DateInput value={loanStartDate} onChange={setLoanStartDate} />
+                            </div>
+                            {loanStartDate && (
+                                <div>
+                                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: c.textSecondary }}>{t('tw.emiDueDay')}</label>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {[1, 5, 7, 10, 15].map(d => (
+                                            <button key={d} onClick={() => setEmiDueDay(d)}
+                                                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${emiDueDay === d ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-sm' : 'border'}`}
+                                                style={emiDueDay !== d ? { borderColor: c.border, color: c.textSecondary, backgroundColor: c.bg } : {}}
+                                            >{d}</button>
+                                        ))}
+                                    </div>
+                                    <p className="text-[9px] mt-1" style={{ color: c.textSecondary }}>{t('tw.emiDueDayHint')}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {loanProfile && (
+                            <LiveLoanStatus profile={loanProfile} loanCategory="two_wheeler_loan" />
+                        )}
 
                         {/* CIBIL Advisory — prefers actual saved score, falls back to picker tier */}
                         <CibilAdvisoryCard

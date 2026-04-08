@@ -16,14 +16,18 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Download, ChevronDown, ChevronUp, Lightbulb, Info, Save, Check, Share2, Gem, Coins, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Download, ChevronDown, ChevronUp, Lightbulb, Info, Save, Check, Share2, Gem, Coins, ShieldCheck, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { useAppColors } from '../theme/useAppColors';
 import NumberInput from '../components/NumberInput';
+import DateInput from '../components/DateInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import CibilBadge from '../components/CibilBadge';
+import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
+import LiveLoanStatus from '../components/LiveLoanStatus';
+import type { LoanProfile } from '../utils/loanStatusEngine';
 import { calculateReducingEMI, formatINR, formatINRShort } from '../utils/calculations';
 import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -172,6 +176,13 @@ export default function GoldLoanCalculator() {
     const [tenureMonths, setTenureMonths] = useState(12);
     const [repaymentMode, setRepaymentMode] = useState<RepaymentMode>('emi');
 
+    // Live loan tracker (EMI mode only — bullet/interest-only have no
+    // amortising schedule for the live engine to track).
+    // Empty by default so the LiveLoanStatus widget stays hidden until the
+    // user actually has a disbursement date in mind.
+    const [loanStartDate, setLoanStartDate] = useState('');
+    const [emiDueDay, setEmiDueDay] = useState(5);
+
     // Charges (collapsible)
     const [showCharges, setShowCharges] = useState(false);
     const [processingFeePct, setProcessingFeePct] = useState(0.5);
@@ -272,6 +283,26 @@ export default function GoldLoanCalculator() {
             schedule: bulletResult.schedule,
         };
     }, [repaymentMode, emiResult, bulletResult]);
+
+    /**
+     * LiveLoanStatus profile (EMI mode only). Bullet/Interest-Only loans
+     * have no amortising schedule, so the live engine cannot track them —
+     * for those modes the snapshot in the results card is the source of
+     * truth and we hide the LiveLoanStatus widget.
+     */
+    const loanProfile = useMemo<LoanProfile | null>(() => {
+        if (repaymentMode !== 'emi') return null;
+        if (!loanStartDate || !emiResult || emiResult.emi <= 0) return null;
+        return {
+            loanAmount,
+            annualRate: interestRate,
+            tenureMonths,
+            emiAmount: emiResult.emi,
+            disbursementDate: loanStartDate,
+            emiDueDay,
+            loanType: 'fixed',
+        };
+    }, [repaymentMode, loanStartDate, emiDueDay, loanAmount, interestRate, tenureMonths, emiResult]);
 
     /** Gold rate sensitivity table */
     const sensitivity = useMemo(() => {
@@ -396,8 +427,8 @@ export default function GoldLoanCalculator() {
             annualRate: interestRate,
             tenureMonths,
             emiAmount: activeResult.monthly,
-            disbursementDate: todayStr(),
-            emiDueDay: 5,
+            disbursementDate: loanStartDate || todayStr(),
+            emiDueDay,
             loanType: 'fixed',
             // Gold-specific fields used by MyLoans' gold branch
             isGoldLoan: true,
@@ -412,7 +443,7 @@ export default function GoldLoanCalculator() {
             totalInterest: activeResult.totalInterest,
             totalPayment: activeResult.totalPayment,
             monthlyPayment: activeResult.monthly,
-            startDate: todayStr(),
+            startDate: loanStartDate || todayStr(),
         };
         addLiveProfile({
             id,
@@ -910,6 +941,58 @@ export default function GoldLoanCalculator() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* ── Live Loan Tracker (EMI mode only) ──
+                                Mirrors the EMI/Mortgage calculator pattern: lets the user
+                                pick a real disbursement date + EMI due day so the
+                                LiveLoanStatus widget can show outstanding principal,
+                                EMIs paid, next EMI date and progress in real time. */}
+                            {repaymentMode === 'emi' && (
+                                <div className="p-4 rounded-2xl border shadow-sm space-y-3" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                                    <div className="flex items-center gap-2">
+                                        <MapPin size={16} className="text-amber-500" />
+                                        <div>
+                                            <h3 className="text-sm font-bold" style={{ color: c.text }}>{t('goldLoan.liveTracker')}</h3>
+                                            <p className="text-[10px]" style={{ color: c.textSecondary }}>{t('goldLoan.liveTrackerDesc')}</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-semibold mb-1.5 block" style={{ color: c.textSecondary }}>{t('goldLoan.disbursementDate')}</label>
+                                        <DateInput value={loanStartDate} onChange={setLoanStartDate} />
+                                    </div>
+                                    {loanStartDate && (
+                                        <div>
+                                            <label className="text-xs font-semibold mb-1.5 block" style={{ color: c.textSecondary }}>{t('goldLoan.emiDueDay')}</label>
+                                            <div className="flex gap-2 flex-wrap">
+                                                {[1, 5, 7, 10, 15].map(d => (
+                                                    <button key={d} onClick={() => setEmiDueDay(d)}
+                                                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${emiDueDay === d ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm' : 'border'}`}
+                                                        style={emiDueDay !== d ? { borderColor: c.border, color: c.textSecondary, backgroundColor: c.bg } : {}}
+                                                    >{d}</button>
+                                                ))}
+                                            </div>
+                                            <p className="text-[9px] mt-1" style={{ color: c.textSecondary }}>{t('goldLoan.emiDueDayHint')}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* LiveLoanStatus widget — shows outstanding/paid/progress/etc.
+                                Renders only when the user has supplied a disbursement date
+                                in EMI mode. The component itself handles save-to-MyLoans. */}
+                            {loanProfile && (
+                                <LiveLoanStatus profile={loanProfile} loanCategory="gold_loan" />
+                            )}
+
+                            {/* CIBIL Score Advisory — full rate-impact analysis tied to
+                                the user's saved CIBIL score (or NTC fallback). Renders for
+                                every gold-loan calculation regardless of mode. */}
+                            <CibilAdvisoryCard
+                                score={cibilProfile?.score && !cibilProfile.isNTC ? cibilProfile.score : 0}
+                                loanType="gold_loan"
+                                loanAmount={loanAmount}
+                                tenureMonths={tenureMonths}
+                            />
 
                             {/* ── Save / Export buttons ── */}
                             <div className="grid grid-cols-2 gap-2">
