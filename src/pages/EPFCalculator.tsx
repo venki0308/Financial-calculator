@@ -9,6 +9,7 @@ import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport'
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
+import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
@@ -409,6 +410,19 @@ export default function EPFCalculator() {
                             {t('common.investmentDateHint', 'Used for tracking in My Loans')}
                         </p>
                     </div>
+                )}
+
+                {/* LIVE EPF TRACKER — appears the moment user picks a date */}
+                {joiningDate && (
+                    <LiveInvestmentTracker
+                        mode="recurring"
+                        startDate={joiningDate}
+                        totalYears={result.years}
+                        rate={rate}
+                        monthlyContribution={basic * (totalEmpPct / 100) * 2}
+                        projectedMaturity={result.corpus}
+                        label={t('epf.liveTracker', 'Live EPF Tracker')}
+                    />
                 )}
 
                 {/* SAVE BUTTON */}

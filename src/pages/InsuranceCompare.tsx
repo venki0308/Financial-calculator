@@ -12,6 +12,7 @@ import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
+import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
@@ -776,6 +777,26 @@ export default function InsuranceCompare() {
                       {t('common.investmentDateHint', 'Used for tracking in My Loans')}
                     </p>
                   </div>
+                )}
+                {/* COMPARE SNAPSHOT — appears the moment user picks a date */}
+                {policyStartDate && (
+                  <SnapshotPreviewCard
+                    anchorDate={policyStartDate}
+                    headline={fmtL(sumInsured)}
+                    headlineLabel={t('insCompare.cover', 'Compared Cover')}
+                    subtitle={t('insCompare.snapshotSubtitle', 'IRDAI-based premium range for {{members}} members', { members: allAges.length })}
+                    metrics={[
+                      { label: t('insCompare.premiumLow', 'Min Premium'), value: fmt(premiumData.lo), tone: 'investment' },
+                      { label: t('insCompare.premiumHigh', 'Max Premium'), value: fmt(premiumData.hi), tone: 'expense' },
+                      { label: t('insCompare.members', 'Members'), value: String(allAges.length), tone: 'neutral' },
+                    ]}
+                    notes={[
+                      { label: t('insCompare.city', 'City tier'), value: cityType === 'metro' ? 'Metro' : cityType === 'tier2' ? 'Tier 2' : 'Tier 3' },
+                      { label: t('insCompare.preExisting', 'Pre-existing conditions'), value: hasPreExisting ? 'Yes' : 'No' },
+                      { label: t('insCompare.adequacy', 'Adequacy'), value: `${adequacyScore}%` },
+                    ]}
+                    label={t('insCompare.snapshotTitle', 'Insurance Compare Snapshot')}
+                  />
                 )}
                 {saved ? (
                   <div className="flex gap-2">

@@ -12,6 +12,7 @@ import DateInput from '../components/DateInput';
 import { useAppColors } from '../theme/useAppColors';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
+import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { todayStr } from '../utils/dateUtils';
 
@@ -748,6 +749,30 @@ export default function OverdraftCalculator() {
               <p className="text-[10px] text-purple-600/80 dark:text-purple-200/70">{t('od.tipRenegotiateDesc')}</p>
           </div>
       </div>
+
+      {/* OVERDRAFT SNAPSHOT — appears the moment the user has a utilized amount */}
+      {utilizedNum > 0 && startDate && (
+        <div className="mb-4">
+          <SnapshotPreviewCard
+            anchorDate={startDate}
+            headline={formatINR(totalPayableAmount)}
+            headlineLabel={t('od.snapshotHeadline', 'Total Payable')}
+            subtitle={t('od.snapshotSubtitle', '{{days}} days at {{rate}}% per annum', { days: daysNum, rate: rateNum })}
+            metrics={[
+              { label: t('od.utilized', 'Utilized'), value: formatINR(utilizedNum), tone: 'investment' },
+              { label: t('od.interest', 'Interest'), value: formatINR(totalInterest), tone: 'expense' },
+              { label: t('od.fees', 'Fees'), value: formatINR(totalFees), tone: 'neutral' },
+            ]}
+            notes={[
+              { label: t('od.limit', 'OD limit'), value: formatINR(limitNum) },
+              { label: t('od.available', 'Available'), value: formatINR(availableLimit) },
+              { label: t('od.effectiveCost', 'Effective annual cost'), value: `${effectiveCost.toFixed(2)}%` },
+              { label: t('od.type', 'Type'), value: odType === 'business' ? 'Business OD' : odType === 'personal' ? 'Personal OD' : odType === 'salary' ? 'Salary OD' : 'Secured OD' },
+            ]}
+            label={t('od.snapshotTitle', 'Overdraft Snapshot')}
+          />
+        </div>
+      )}
 
       {/* Save to My Loans */}
       {utilizedNum > 0 && (

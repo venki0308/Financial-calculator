@@ -10,6 +10,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
+import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
@@ -944,6 +945,27 @@ export default function InsuranceCalculator() {
                     </div>
                   )}
 
+                  {/* HEALTH POLICY SNAPSHOT — appears the moment user picks a date */}
+                  {policyStartDate && (
+                    <SnapshotPreviewCard
+                      anchorDate={policyStartDate}
+                      headline={fmt(si)}
+                      headlineLabel={t('ins.health.cover', 'Sum Insured')}
+                      subtitle={t('ins.health.snapshotSubtitle', '{{members}} members, IRDAI-based premium estimate', { members: allAges.length })}
+                      metrics={[
+                        { label: t('ins.health.premiumMin', 'Premium (min)'), value: fmt(premiumData.lo), tone: 'investment' },
+                        { label: t('ins.health.premiumMax', 'Premium (max)'), value: fmt(premiumData.hi), tone: 'expense' },
+                        { label: t('ins.health.members', 'Members'), value: String(allAges.length), tone: 'neutral' },
+                      ]}
+                      notes={[
+                        { label: t('ins.health.city', 'City'), value: city === 'metro' ? 'Metro' : city === 'tier2' ? 'Tier 2' : 'Tier 3' },
+                        { label: t('ins.health.adequacy', 'Adequacy score'), value: `${adequacyScore}%` },
+                        { label: t('ins.health.preExisting', 'Pre-existing'), value: preExisting ? 'Yes' : 'No' },
+                      ]}
+                      label={t('ins.health.snapshotTitle', 'Health Insurance Snapshot')}
+                    />
+                  )}
+
                   {/* Save to My Loans */}
                   {trackerSaved ? (
                     <div className="flex gap-2">
@@ -1280,6 +1302,27 @@ export default function InsuranceCalculator() {
                   {t('common.investmentDateHint', 'Used for tracking in My Loans')}
                 </p>
               </div>
+            )}
+
+            {/* LIFE POLICY SNAPSHOT — appears the moment user picks a date */}
+            {policyStartDate && (
+              <SnapshotPreviewCard
+                anchorDate={policyStartDate}
+                headline={fmtCr(activeCover)}
+                headlineLabel={t('ins.life.cover', 'Life Cover')}
+                subtitle={t('ins.life.snapshotSubtitle', 'Term insurance estimate at age {{age}} for {{term}} years', { age: lifeAge, term: policyTerm })}
+                metrics={[
+                  { label: t('ins.life.premiumMin', 'Premium (min)'), value: fmt(termRange.lo), tone: 'investment' },
+                  { label: t('ins.life.premiumMax', 'Premium (max)'), value: fmt(termRange.hi), tone: 'expense' },
+                  { label: t('ins.life.term', 'Term'), value: `${policyTerm}y`, tone: 'neutral' },
+                ]}
+                notes={[
+                  { label: t('ins.life.age', 'Age at purchase'), value: `${lifeAge} years` },
+                  { label: t('ins.life.gender', 'Gender'), value: lifeGender === 'male' ? 'Male' : 'Female' },
+                  { label: t('ins.life.smoker', 'Smoker'), value: lifeSmoker ? 'Yes' : 'No' },
+                ]}
+                label={t('ins.life.snapshotTitle', 'Life Insurance Snapshot')}
+              />
             )}
 
             {/* Save to My Loans */}

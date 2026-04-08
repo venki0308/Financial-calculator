@@ -7,6 +7,7 @@ import { nativeShare } from '../utils/nativeShare';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
+import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { formatINR } from '../utils/calculations';
@@ -683,6 +684,20 @@ export default function SimpleInterestCalculator() {
                             <p className="text-[10px] text-muted-foreground mt-1.5">
                                 {t('common.investmentDateHint', 'Used for tracking in My Loans')}
                             </p>
+                        </div>
+                    )}
+                    {/* LIVE INVESTMENT TRACKER — appears the moment user picks a date */}
+                    {loanStartDate && (
+                        <div className="mb-3">
+                            <LiveInvestmentTracker
+                                mode="simple"
+                                startDate={loanStartDate}
+                                totalYears={tenure / 12}
+                                rate={mode === 'flat' ? flatRate * 12 : annualRate}
+                                principal={principal}
+                                projectedMaturity={trackerSnapshot.totalPayable}
+                                label={t('si.liveTracker', 'Live Simple Interest Tracker')}
+                            />
                         </div>
                     )}
                     {trackerSaved ? (

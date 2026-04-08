@@ -21,6 +21,7 @@ import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
+import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import { useAppColors } from '../theme/useAppColors';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement);
@@ -235,6 +236,20 @@ export default function NPSCalculator() {
                             <p className="text-[10px] text-muted-foreground mt-1.5">
                                 {t('common.investmentDateHint', 'Used for tracking in My Loans')}
                             </p>
+                        </div>
+                    )}
+                    {/* LIVE NPS TRACKER — appears the moment user picks a date */}
+                    {accountStartDate && (
+                        <div className="mt-4">
+                            <LiveInvestmentTracker
+                                mode="recurring"
+                                startDate={accountStartDate}
+                                totalYears={result.years}
+                                rate={rate}
+                                monthlyContribution={monthly}
+                                projectedMaturity={result.corpus}
+                                label={t('nps.liveTracker', 'Live NPS Tracker')}
+                            />
                         </div>
                     )}
                     {saved ? (

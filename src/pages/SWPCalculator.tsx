@@ -9,6 +9,7 @@ import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportRe
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
+import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
@@ -358,6 +359,20 @@ export default function SWPCalculator() {
                             {t('common.investmentDateHint', 'Used for tracking in My Loans')}
                         </p>
                     </div>
+                )}
+
+                {/* LIVE SWP TRACKER — appears the moment user picks a date */}
+                {planStartDate && (
+                    <LiveInvestmentTracker
+                        mode="swp"
+                        startDate={planStartDate}
+                        totalYears={years}
+                        rate={rate}
+                        principal={principal}
+                        monthlyWithdrawal={withdrawal}
+                        projectedMaturity={result.finalBalance}
+                        label={t('swp.liveTracker', 'Live SWP Tracker')}
+                    />
                 )}
 
                 {/* SAVE BUTTON */}

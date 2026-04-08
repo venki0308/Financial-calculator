@@ -13,6 +13,7 @@ import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
+import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -322,6 +323,20 @@ export default function CompoundInterestCalculator() {
                             {t('common.investmentDateHint', 'Used for tracking in My Loans')}
                         </p>
                     </div>
+                )}
+
+                {/* LIVE INVESTMENT TRACKER — appears the moment user picks a date */}
+                {investmentDate && (
+                    <LiveInvestmentTracker
+                        mode="compound"
+                        startDate={investmentDate}
+                        totalYears={years}
+                        rate={rate}
+                        principal={principal}
+                        freq={freq}
+                        projectedMaturity={result.amount}
+                        label={t('ci.liveTracker', 'Live Compound Interest Tracker')}
+                    />
                 )}
 
                 {/* SAVE BUTTON */}

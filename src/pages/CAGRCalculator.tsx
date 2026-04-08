@@ -9,6 +9,7 @@ import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportRe
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
+import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
@@ -304,6 +305,26 @@ export default function CAGRCalculator() {
                             {t('common.investmentDateHint', 'Used for tracking in My Loans')}
                         </p>
                     </div>
+                )}
+
+                {/* CAGR SNAPSHOT — appears the moment user picks a date */}
+                {investmentDate && (
+                    <SnapshotPreviewCard
+                        anchorDate={investmentDate}
+                        headline={`${result.cagr.toFixed(2)}%`}
+                        headlineLabel={t('cagr.cagrPercent', 'CAGR')}
+                        subtitle={t('cagr.snapshotSubtitle', 'Compounded annual growth rate over {{years}} years', { years })}
+                        metrics={[
+                            { label: t('cagr.initial', 'Initial'), value: fmtINR(initial), tone: 'investment' },
+                            { label: t('cagr.final', 'Final'), value: fmtINR(final), tone: 'income' },
+                            { label: t('cagr.absReturn', 'Total Return'), value: `${result.absReturn.toFixed(1)}%`, tone: 'neutral' },
+                        ]}
+                        notes={[
+                            { label: t('cagr.wealthMultiplier', 'Multiplier'), value: `${(final / Math.max(1, initial)).toFixed(2)}x` },
+                            { label: t('cagr.doublingTime', 'Doubling Time'), value: result.doubleTime > 0 ? `${result.doubleTime.toFixed(1)} yrs` : 'N/A' },
+                        ]}
+                        label={t('cagr.snapshotTitle', 'CAGR Snapshot')}
+                    />
                 )}
 
                 {/* SAVE BUTTON */}

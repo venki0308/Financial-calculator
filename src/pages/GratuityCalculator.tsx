@@ -9,6 +9,7 @@ import { exportToPDF, exportToExcel } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
+import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
 import { calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
 import RiskCategoryTags from '../components/RiskCategoryTags';
@@ -300,6 +301,27 @@ export default function GratuityCalculator() {
                         </p>
                     </div>
                 </div>
+
+                {/* GRATUITY SNAPSHOT — appears the moment user picks a date */}
+                {joiningDate && result.isEligible && (
+                    <SnapshotPreviewCard
+                        anchorDate={joiningDate}
+                        headline={fmtINR(result.gratuity)}
+                        headlineLabel={t('gratuity.estimatedGratuity', 'Estimated Gratuity')}
+                        subtitle={t('gratuity.snapshotSubtitle', 'Tax-free up to ₹25L for private employees')}
+                        metrics={[
+                            { label: t('gratuity.lastSalary', 'Last Salary'), value: fmtINR(salary), tone: 'investment' },
+                            { label: t('gratuity.servicePeriod', 'Service'), value: `${years}y`, tone: 'neutral' },
+                            { label: t('gratuity.netPayout', 'Net Payout'), value: fmtINR(result.netGratuity), tone: 'income' },
+                        ]}
+                        notes={[
+                            { label: t('gratuity.taxableAmount', 'Taxable amount'), value: fmtINR(result.taxableGratuity) },
+                            { label: t('gratuity.estimatedTax', 'Estimated tax'), value: fmtINR(result.estimatedTax) },
+                            { label: t('gratuity.employerType', 'Employer type'), value: employerType },
+                        ]}
+                        label={t('gratuity.snapshotTitle', 'Gratuity Snapshot')}
+                    />
+                )}
 
                 {/* Saved confirmation + view in My Loans */}
                 {saved && (

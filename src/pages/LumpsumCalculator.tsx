@@ -9,6 +9,7 @@ import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportRe
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
+import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
@@ -302,6 +303,19 @@ export default function LumpsumCalculator() {
                             {t('common.investmentDateHint', 'Used for tracking in My Loans')}
                         </p>
                     </div>
+                )}
+
+                {/* LIVE INVESTMENT TRACKER — appears the moment user picks a date */}
+                {investmentDate && (
+                    <LiveInvestmentTracker
+                        mode="lumpsum"
+                        startDate={investmentDate}
+                        totalYears={years}
+                        rate={rate}
+                        principal={principal}
+                        projectedMaturity={result.fv}
+                        label={t('lumpsum.liveTracker', 'Live Lumpsum Tracker')}
+                    />
                 )}
 
                 {/* SAVE BUTTON */}
