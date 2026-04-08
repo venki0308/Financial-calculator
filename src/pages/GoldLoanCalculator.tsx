@@ -942,40 +942,45 @@ export default function GoldLoanCalculator() {
                                 )}
                             </div>
 
-                            {/* ── Live Loan Tracker (EMI mode only) ──
+                            {/* ── Live Loan Tracker ──
                                 Mirrors the EMI/Mortgage calculator pattern: lets the user
                                 pick a real disbursement date + EMI due day so the
                                 LiveLoanStatus widget can show outstanding principal,
-                                EMIs paid, next EMI date and progress in real time. */}
-                            {repaymentMode === 'emi' && (
-                                <div className="p-4 rounded-2xl border shadow-sm space-y-3" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                                    <div className="flex items-center gap-2">
-                                        <MapPin size={16} className="text-amber-500" />
-                                        <div>
-                                            <h3 className="text-sm font-bold" style={{ color: c.text }}>{t('goldLoan.liveTracker')}</h3>
-                                            <p className="text-[10px]" style={{ color: c.textSecondary }}>{t('goldLoan.liveTrackerDesc')}</p>
-                                        </div>
-                                    </div>
+                                EMIs paid, next EMI date and progress in real time.
+                                Date input is shown for ALL repayment modes (EMI, bullet,
+                                interest-only) so the saved tracker always has the
+                                user's real start date — previously the entire block was
+                                gated by repaymentMode === 'emi', so bullet & interest-
+                                only users had no way to record their actual start date.
+                                The EMI-Due-Day picker stays gated since it only applies
+                                to amortising loans. */}
+                            <div className="p-4 rounded-2xl border shadow-sm space-y-3" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                                <div className="flex items-center gap-2">
+                                    <MapPin size={16} className="text-amber-500" />
                                     <div>
-                                        <label className="text-xs font-semibold mb-1.5 block" style={{ color: c.textSecondary }}>{t('goldLoan.disbursementDate')}</label>
-                                        <DateInput value={loanStartDate} onChange={setLoanStartDate} />
+                                        <h3 className="text-sm font-bold" style={{ color: c.text }}>{t('goldLoan.liveTracker')}</h3>
+                                        <p className="text-[10px]" style={{ color: c.textSecondary }}>{t('goldLoan.liveTrackerDesc')}</p>
                                     </div>
-                                    {loanStartDate && (
-                                        <div>
-                                            <label className="text-xs font-semibold mb-1.5 block" style={{ color: c.textSecondary }}>{t('goldLoan.emiDueDay')}</label>
-                                            <div className="flex gap-2 flex-wrap">
-                                                {[1, 5, 7, 10, 15].map(d => (
-                                                    <button key={d} onClick={() => setEmiDueDay(d)}
-                                                        className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${emiDueDay === d ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm' : 'border'}`}
-                                                        style={emiDueDay !== d ? { borderColor: c.border, color: c.textSecondary, backgroundColor: c.bg } : {}}
-                                                    >{d}</button>
-                                                ))}
-                                            </div>
-                                            <p className="text-[9px] mt-1" style={{ color: c.textSecondary }}>{t('goldLoan.emiDueDayHint')}</p>
-                                        </div>
-                                    )}
                                 </div>
-                            )}
+                                <div>
+                                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: c.textSecondary }}>{t('goldLoan.disbursementDate')}</label>
+                                    <DateInput value={loanStartDate} onChange={setLoanStartDate} />
+                                </div>
+                                {loanStartDate && repaymentMode === 'emi' && (
+                                    <div>
+                                        <label className="text-xs font-semibold mb-1.5 block" style={{ color: c.textSecondary }}>{t('goldLoan.emiDueDay')}</label>
+                                        <div className="flex gap-2 flex-wrap">
+                                            {[1, 5, 7, 10, 15].map(d => (
+                                                <button key={d} onClick={() => setEmiDueDay(d)}
+                                                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${emiDueDay === d ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm' : 'border'}`}
+                                                    style={emiDueDay !== d ? { borderColor: c.border, color: c.textSecondary, backgroundColor: c.bg } : {}}
+                                                >{d}</button>
+                                            ))}
+                                        </div>
+                                        <p className="text-[9px] mt-1" style={{ color: c.textSecondary }}>{t('goldLoan.emiDueDayHint')}</p>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* LiveLoanStatus widget — shows outstanding/paid/progress/etc.
                                 Renders only when the user has supplied a disbursement date

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
+import DateInput from '../components/DateInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
@@ -438,6 +439,7 @@ export default function InsuranceCalculator() {
   const removeProfile = useLiveStatusStore(s => s.removeProfile);
   const [trackerSaved, setTrackerSaved] = useState(false);
   const [trackerSavedId, setTrackerSavedId] = useState<string | null>(null);
+  const [policyStartDate, setPolicyStartDate] = useState('');
 
   // ── Life state ───────────────────────────────────────────────────────────────
   const [lifeAge, setLifeAge] = useState(30);
@@ -607,7 +609,7 @@ export default function InsuranceCalculator() {
         premiumMax: premiumData.hi,
         members: allAges.length,
         city,
-        startDate: new Date().toISOString().slice(0, 10),
+        startDate: policyStartDate || new Date().toISOString().slice(0, 10),
       },
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -629,7 +631,7 @@ export default function InsuranceCalculator() {
         premiumMax: termRange.hi,
         age: lifeAge,
         policyTerm,
-        startDate: new Date().toISOString().slice(0, 10),
+        startDate: policyStartDate || new Date().toISOString().slice(0, 10),
       },
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -924,12 +926,34 @@ export default function InsuranceCalculator() {
                     </div>
                   </div>
 
+                  {/* POLICY START DATE — feeds the My Loans / Trackers card */}
+                  {!trackerSaved && (
+                    <div className="p-4 rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card">
+                      <label className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 block">
+                        {t('common.investmentDate', 'Investment Date (optional)')}
+                      </label>
+                      <DateInput
+                        value={policyStartDate}
+                        onChange={setPolicyStartDate}
+                        max={new Date().toISOString().slice(0, 10)}
+                        className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground text-left"
+                      />
+                      <p className="text-[10px] text-muted-foreground mt-1.5">
+                        {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Save to My Loans */}
                   {trackerSaved ? (
                     <div className="flex gap-2">
                       <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                         <CheckCircle size={16} /> {t('common.saved')}
                       </div>
+                      <button onClick={() => navigate('/my-loans')}
+                        className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-brand-green/10 text-brand-green border border-brand-green/20">
+                        {t('common.viewInMyLoans', 'View')}
+                      </button>
                       <button onClick={handleTrackerRemove}
                         className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20">
                         <X size={16} />
@@ -1240,12 +1264,34 @@ export default function InsuranceCalculator() {
               </p>
             </div>
 
+            {/* POLICY START DATE — feeds the My Loans / Trackers card */}
+            {!trackerSaved && (
+              <div className="p-4 rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 block">
+                  {t('common.investmentDate', 'Investment Date (optional)')}
+                </label>
+                <DateInput
+                  value={policyStartDate}
+                  onChange={setPolicyStartDate}
+                  max={new Date().toISOString().slice(0, 10)}
+                  className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground text-left"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                </p>
+              </div>
+            )}
+
             {/* Save to My Loans */}
             {trackerSaved ? (
               <div className="flex gap-2">
                 <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                   <CheckCircle size={16} /> {t('common.saved')}
                 </div>
+                <button onClick={() => navigate('/my-loans')}
+                  className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-brand-green/10 text-brand-green border border-brand-green/20">
+                  {t('common.viewInMyLoans', 'View')}
+                </button>
                 <button onClick={handleTrackerRemove}
                   className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20">
                   <X size={16} />

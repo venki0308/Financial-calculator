@@ -6,6 +6,7 @@ import { ArrowLeft, Info, Share2, Save, Check, Trash2 } from 'lucide-react';
 import { nativeShare } from '../utils/nativeShare';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
+import DateInput from '../components/DateInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { formatINR } from '../utils/calculations';
@@ -88,6 +89,7 @@ export default function SimpleInterestCalculator() {
     const removeProfile = useLiveStatusStore(s => s.removeProfile);
     const [trackerSaved, setTrackerSaved] = useState(false);
     const [trackerSavedId, setTrackerSavedId] = useState<string | null>(null);
+    const [loanStartDate, setLoanStartDate] = useState('');
 
     const result = useMemo(() => {
         if (mode === 'flat') {
@@ -168,7 +170,7 @@ export default function SimpleInterestCalculator() {
                 interest: trackerSnapshot.interest,
                 totalPayable: trackerSnapshot.totalPayable,
                 mode,
-                startDate: new Date().toISOString().slice(0, 10),
+                startDate: loanStartDate || new Date().toISOString().slice(0, 10),
             },
             createdAt: Date.now(),
             updatedAt: Date.now(),
@@ -667,11 +669,31 @@ export default function SimpleInterestCalculator() {
 
                 {/* Save to My Loans */}
                 <div className="mb-3">
+                    {!trackerSaved && (
+                        <div className="p-4 rounded-2xl border border-border bg-card mb-3">
+                            <label className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 block">
+                                {t('common.investmentDate', 'Investment Date (optional)')}
+                            </label>
+                            <DateInput
+                                value={loanStartDate}
+                                onChange={setLoanStartDate}
+                                max={new Date().toISOString().slice(0, 10)}
+                                className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground text-left"
+                            />
+                            <p className="text-[10px] text-muted-foreground mt-1.5">
+                                {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                            </p>
+                        </div>
+                    )}
                     {trackerSaved ? (
                         <div className="flex gap-2">
                             <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                                 <Check size={16} /> {t('common.saved')}
                             </div>
+                            <button onClick={() => navigate('/my-loans')}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-brand-purple/10 text-brand-purple border border-brand-purple/20">
+                                {t('common.viewInMyLoans', 'View')}
+                            </button>
                             <button onClick={handleTrackerRemove}
                                 className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20">
                                 <Trash2 size={16} />

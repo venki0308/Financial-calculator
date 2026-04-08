@@ -12,6 +12,7 @@ import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
+import DateInput from '../components/DateInput';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -42,6 +43,7 @@ export default function CompoundInterestCalculator() {
     const [showTable, setShowTable] = useState(false);
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+    const [investmentDate, setInvestmentDate] = useState('');
     const [page, setPage] = useState(1);
 
     // Core Calculation (Actual)
@@ -110,7 +112,7 @@ export default function CompoundInterestCalculator() {
                 freq,
                 maturity: Math.round(result.amount),
                 interest: Math.round(result.interest),
-                startDate: new Date().toISOString().slice(0, 10),
+                startDate: investmentDate || new Date().toISOString().slice(0, 10),
             },
             createdAt: Date.now(),
             updatedAt: Date.now(),
@@ -304,12 +306,34 @@ export default function CompoundInterestCalculator() {
                     </div>
                 </div>
 
+                {/* INVESTMENT START DATE — feeds the My Loans / Trackers card */}
+                {!saved && (
+                    <div className="p-4 rounded-2xl border border-border bg-card">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 block">
+                            {t('common.investmentDate', 'Investment Date (optional)')}
+                        </label>
+                        <DateInput
+                            value={investmentDate}
+                            onChange={setInvestmentDate}
+                            max={new Date().toISOString().slice(0, 10)}
+                            className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground text-left"
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-1.5">
+                            {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                        </p>
+                    </div>
+                )}
+
                 {/* SAVE BUTTON */}
                 {saved ? (
                     <div className="flex gap-2">
                         <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                             <Check size={16} /> {t('common.saved')}
                         </div>
+                        <button onClick={() => navigate('/my-loans')}
+                            className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-brand-purple/10 text-brand-purple border border-brand-purple/20 transition-all active:scale-95">
+                            {t('common.viewInMyLoans', 'View')}
+                        </button>
                         <button onClick={handleRemove}
                             className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
                             <Trash2 size={16} />
