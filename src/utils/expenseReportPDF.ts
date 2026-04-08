@@ -155,6 +155,14 @@ function typeLabel(t: EntryType): string {
 }
 
 /**
+ * Pluralizes the "entries" count cell so we don't render "1 entries".
+ * Used in Cash Flow Overview tables across all report types.
+ */
+function entriesLabel(n: number): string {
+    return n === 1 ? '1 entry' : `${n} entries`;
+}
+
+/**
  * Returns a clean description for an entry. When the user didn't enter a
  * custom description, the storage layer defaults it to the category name —
  * which makes the PDF look like "Food & Dining / Food & Dining" with the
@@ -344,9 +352,15 @@ function makeHeaderHook(doc: PDFDoc, reportType: string, periodLabel: string): C
 /**
  * Draws "▌ Section Title" with a purple left-bar accent. Returns the new yPos.
  * Auto-paginates if there's not enough room before the next section.
+ *
+ * IMPORTANT: We reserve ~28mm so a section title is only drawn if the page
+ * also has room for the autoTable that follows it (head row ~9mm + at least
+ * 2 data rows ~16mm). Reserving only 12mm caused orphan titles, where the
+ * title fit at the bottom of a page but autoTable then jumped to the next
+ * page on its own — leaving the section header stranded above empty space.
  */
 export function drawSectionHeader(doc: PDFDoc, title: string, yPos: number): number {
-    let y = ensureRoom(doc, yPos, 12);
+    let y = ensureRoom(doc, yPos, 28);
 
     // Purple accent bar
     doc.setFillColor(...BRAND);
@@ -886,7 +900,11 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
     dayBody.push(['TOTAL', '', formatINR(totalI), formatINR(totalE), formatINR(totalIn), formatINR(totalI - totalE)]);
 
     table(doc, autoTable, {
-        head: [['Day', 'Date', 'Income', 'Expenses', 'Investments', 'Net']],
+        // "Net Saved" = Income - Expenses (NOT minus investments). Investments
+        // are still your money parked in a different bucket, so the savings
+        // formula treats them as savings, not as outflows. The TOTAL row at
+        // the bottom matches the headline "Net Saved" stat box for consistency.
+        head: [['Day', 'Date', 'Income', 'Expenses', 'Investments', 'Net Saved']],
         body: dayBody,
         startY: yPos,
         headerHook,
@@ -1061,10 +1079,10 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     table(doc, autoTable, {
         head: [['Metric', 'Amount', 'Notes']],
         body: [
-            ['Total Income', formatINR(summary.totalIncome), `${summary.incomeCount} entries`],
+            ['Total Income', formatINR(summary.totalIncome), entriesLabel(summary.incomeCount)],
             ['Fixed Expenses', formatINR(fixedExp), data.budget ? 'Rent, bills, EMIs (from budget)' : 'No budget set'],
             ['Variable Expenses', formatINR(variableExp), 'Category spending'],
-            ['Total Expenses', formatINR(summary.totalExpenses), `${summary.expenseCount} entries`],
+            ['Total Expenses', formatINR(summary.totalExpenses), entriesLabel(summary.expenseCount)],
             ['Investments', formatINR(summary.totalInvestments), `${investPct.toFixed(1)}% of income`],
             ['Net Savings', formatINR(summary.netSavings), summary.netSavings >= 0 ? 'Positive' : 'Negative'],
             ['Savings Rate', `${summary.savingsRate.toFixed(1)}%`, 'Target: 20%'],
@@ -1168,16 +1186,16 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         yPos = drawSectionHeader(doc, 'Income Sources', yPos);
         const incBody = incomeEntries
             .sort((a, b) => a.date.localeCompare(b.date))
-            .map((e) => [shortDate(e.date), categoryName(e.category), formatINR(e.amount)]);
+            .map((e) => [shortDate(e.date), categoryName(e.category), descriptionFor(e), formatINR(e.amount)]);
         table(doc, autoTable, {
-            head: [['Date', 'Source', 'Amount']],
+            head: [['Date', 'Source', 'Description', 'Amount']],
             body: incBody,
             startY: yPos,
             headerHook,
-            amountColIdx: 2,
+            amountColIdx: 3,
             amountTone: 'income',
             keepTogether: incBody.length <= 8,
-            columnStyles: { 2: { halign: 'right' } },
+            columnStyles: { 3: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
     }
@@ -1555,9 +1573,9 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
     table(doc, autoTable, {
         head: [['Metric', 'Amount', 'Notes']],
         body: [
-            ['Total Income', formatINR(summary.totalIncome), `${summary.incomeCount} entries`],
-            ['Total Expenses', formatINR(summary.totalExpenses), `${summary.expenseCount} entries`],
-            ['Investments', formatINR(summary.totalInvestments), `${summary.investmentCount} entries`],
+            ['Total Income', formatINR(summary.totalIncome), entriesLabel(summary.incomeCount)],
+            ['Total Expenses', formatINR(summary.totalExpenses), entriesLabel(summary.expenseCount)],
+            ['Investments', formatINR(summary.totalInvestments), entriesLabel(summary.investmentCount)],
             ['Net Savings', formatINR(summary.netSavings), summary.netSavings >= 0 ? 'Positive' : 'Negative'],
             ['Savings Rate', `${summary.savingsRate.toFixed(1)}%`, 'Target: 20%'],
         ],
@@ -1583,7 +1601,11 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
         });
         dayBody.push(['TOTAL', formatINR(dI), formatINR(dE), formatINR(dIn), formatINR(dI - dE)]);
         table(doc, autoTable, {
-            head: [['Date', 'Income', 'Expenses', 'Investments', 'Net']],
+            // "Net Saved" = Income - Expenses. Investments are still your
+            // money parked in a different bucket and intentionally excluded
+            // from this column so the row totals tie back to the headline
+            // "Net Savings" stat at the top of the report.
+            head: [['Date', 'Income', 'Expenses', 'Investments', 'Net Saved']],
             body: dayBody,
             startY: yPos,
             headerHook,
@@ -1645,16 +1667,16 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
         yPos = drawSectionHeader(doc, 'Income Sources', yPos);
         const incBody = incomeEntries
             .sort((a, b) => a.date.localeCompare(b.date))
-            .map((e) => [shortDate(e.date), categoryName(e.category), formatINR(e.amount)]);
+            .map((e) => [shortDate(e.date), categoryName(e.category), descriptionFor(e), formatINR(e.amount)]);
         table(doc, autoTable, {
-            head: [['Date', 'Source', 'Amount']],
+            head: [['Date', 'Source', 'Description', 'Amount']],
             body: incBody,
             startY: yPos,
             headerHook,
-            amountColIdx: 2,
+            amountColIdx: 3,
             amountTone: 'income',
             keepTogether: incBody.length <= 8,
-            columnStyles: { 2: { halign: 'right' } },
+            columnStyles: { 3: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
     }
