@@ -7,6 +7,8 @@ import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
+import DateInput from '../components/DateInput';
 import { calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
 import RiskCategoryTags from '../components/RiskCategoryTags';
@@ -21,6 +23,8 @@ export default function GratuityCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved, removeSaved } = useCalculatorStore();
+    const addProfile = useLiveStatusStore(s => s.addProfile);
+    const removeProfile = useLiveStatusStore(s => s.removeProfile);
 
     useEffect(() => { AnalyticsService.trackScreen('Gratuity'); }, []);
 
@@ -36,6 +40,7 @@ export default function GratuityCalculator() {
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+    const [joiningDate, setJoiningDate] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
 
     const result = useMemo(() => {
@@ -101,6 +106,22 @@ export default function GratuityCalculator() {
             resultValues: result,
             timestamp: Date.now()
         });
+        // Mirror into live tracker store so it appears in My Loans
+        addProfile({
+            id: calcId,
+            name: `Gratuity ${formatINR(salary)} × ${years}Y`,
+            calculatorType: 'Gratuity',
+            profileData: {
+                lastSalary: salary,
+                yearsOfService: years,
+                gratuity: Math.round(result.gratuity),
+                netGratuity: Math.round(result.netGratuity),
+                employerType,
+                startDate: joiningDate || new Date().toISOString().slice(0, 10),
+            },
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
         setSaved(true);
         setLastSavedId(calcId);
     };
@@ -108,6 +129,7 @@ export default function GratuityCalculator() {
     const handleRemove = () => {
         if (lastSavedId) {
             removeSaved(lastSavedId);
+            removeProfile(lastSavedId);
             setLastSavedId(null);
             setSaved(false);
         }
@@ -262,7 +284,35 @@ export default function GratuityCalculator() {
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{t('gratuity.years')}</span>
                         </div>
                     </div>
+                    {/* Joining Date — feeds the My Loans / Trackers card */}
+                    <div>
+                        <label className="text-muted-foreground text-xs font-medium mb-1 block">
+                            {t('common.investmentDate', 'Investment Date (optional)')}
+                        </label>
+                        <DateInput
+                            value={joiningDate}
+                            onChange={setJoiningDate}
+                            max={new Date().toISOString().slice(0, 10)}
+                            className={inputCls + " text-left"}
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                            {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                        </p>
+                    </div>
                 </div>
+
+                {/* Saved confirmation + view in My Loans */}
+                {saved && (
+                    <div className="flex gap-2">
+                        <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                            <Check size={16} /> {t('common.saved')}
+                        </div>
+                        <button onClick={() => navigate('/my-loans')}
+                            className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-brand-blue/10 text-brand-blue border border-brand-blue/20 transition-all active:scale-95">
+                            {t('common.viewInMyLoans', 'View')}
+                        </button>
+                    </div>
+                )}
 
                 {/* Primary Result Widget */}
                 <div className={`rounded-2xl border p-5 transition-colors ${!result.isEligible ? 'bg-red-500/10 border-red-500/30' : 'bg-gradient-to-br from-brand-blue/20 to-blue-500/10 border-brand-blue/30'}`}>

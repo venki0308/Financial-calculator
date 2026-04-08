@@ -22,6 +22,18 @@ const LOAN_TYPES_FOR_CALC = [
     { id: 'gold_loan', label: 'cibil.goldLoan', icon: '🥇' },
 ];
 
+// Maps the rate-impact loan type → the actual calculator route. Lets the user
+// jump straight from "here's what your CIBIL costs you" → the calculator that
+// applies, rather than having to leave CIBIL and search for it.
+const LOAN_TYPE_ROUTE: Record<string, string> = {
+    home_loan: '/calculator/mortgage-calculator',
+    car_loan: '/calculator/car-loan',
+    personal_loan: '/calculator/personal-loan',
+    two_wheeler_loan: '/two-wheeler-loan',
+    education_loan: '/calculator/education-loan',
+    gold_loan: '/gold-loan',
+};
+
 export default function CibilScoreCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -191,7 +203,25 @@ export default function CibilScoreCalculator() {
                     <p className="mt-3 text-[9px] leading-snug italic" style={{ color: c.textSecondary }}>
                         {t('cibil.ratesIndicative')}
                     </p>
+                    {/* CTA — jump to the matching loan calculator */}
+                    {LOAN_TYPE_ROUTE[calcLoanType] && (
+                        <button
+                            onClick={() => navigate(LOAN_TYPE_ROUTE[calcLoanType])}
+                            className="mt-3 w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-violet-600 text-white transition-all active:scale-95"
+                        >
+                            {t('cibil.openCalculator', 'Open this calculator →')}
+                        </button>
+                    )}
                 </div>
+
+                {/* My Loans shortcut */}
+                <button
+                    onClick={() => navigate('/my-loans')}
+                    className="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 border transition-all active:scale-95"
+                    style={{ backgroundColor: c.card, borderColor: c.border, color: c.text }}
+                >
+                    📂 {t('cibil.viewMyLoans', 'View my saved loans')}
+                </button>
 
                 {/* Improvement Tips */}
                 <div className="rounded-2xl border shadow-sm overflow-hidden" style={{ backgroundColor: c.card, borderColor: c.border }}>

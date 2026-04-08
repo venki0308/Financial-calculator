@@ -4,12 +4,14 @@ import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft, Shield, Minus, AlertTriangle,
   ChevronDown, ChevronUp, Users, Baby, UserPlus,
-  Heart, CheckCircle, Info,
+  Heart, CheckCircle, Info, Save, Check, Trash2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
+import DateInput from '../components/DateInput';
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
@@ -260,6 +262,13 @@ export default function InsuranceCompare() {
   const [openChecklist, setOpenChecklist] = useState<Set<number>>(new Set());
   const [showBreakdown, setShowBreakdown] = useState(false);
 
+  // ── Save to My Loans state ────────────────────────────────────────────────────
+  const addProfile = useLiveStatusStore(s => s.addProfile);
+  const removeProfile = useLiveStatusStore(s => s.removeProfile);
+  const [saved, setSaved] = useState(false);
+  const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+  const [policyStartDate, setPolicyStartDate] = useState('');
+
   // ── Translated constants ─────────────────────────────────────────────────────
   const CHECKLIST_KEYS = ['roomRent','restoration','ncb','ped','renew','csr','tpa'] as const;
   const tChecklist = useMemo(() => CHECKLIST_KEYS.map(k => ({
@@ -378,6 +387,39 @@ export default function InsuranceCompare() {
       items.push({ title: t('ins.checklist.floaterTitle'), body: t('ins.checklist.floaterBody') });
     return items;
   }, [children, parents, seniorParents.length, elderlyParents.length, hasPreExisting, sumInsured, cityType, allAges.length]);
+
+  // ── Save / Remove handlers ────────────────────────────────────────────────────
+  const handleSaveCompare = () => {
+    const calcId = `inscmp-${Date.now()}`;
+    addProfile({
+      id: calcId,
+      name: `${allAges.length} members · ${fmtL(sumInsured)} cover`,
+      calculatorType: 'Insurance Compare',
+      profileData: {
+        sumInsured: sumInsured * 100000,
+        members: allAges.length,
+        cityType,
+        hasPreExisting,
+        premiumA: premiumData.lo,
+        premiumB: premiumData.hi,
+        winner: hasPreExisting ? 'PED Plan' : 'Standard',
+        tab: 'health',
+        startDate: policyStartDate || new Date().toISOString().slice(0, 10),
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    setSaved(true);
+    setLastSavedId(calcId);
+  };
+
+  const handleRemoveCompare = () => {
+    if (lastSavedId) {
+      removeProfile(lastSavedId);
+      setLastSavedId(null);
+      setSaved(false);
+    }
+  };
 
   // ─────────────────────────────────────────────────────────────────────────────
   return (
@@ -715,6 +757,46 @@ export default function InsuranceCompare() {
                     {t('ins.compare.premiumDisclaimer')}
                   </p>
                 </div>
+              </div>
+
+              {/* Save to My Loans / Trackers */}
+              <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
+                {!saved && (
+                  <div>
+                    <label className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 block">
+                      {t('common.investmentDate', 'Investment Date (optional)')}
+                    </label>
+                    <DateInput
+                      value={policyStartDate}
+                      onChange={setPolicyStartDate}
+                      max={new Date().toISOString().slice(0, 10)}
+                      className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground text-left"
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1.5">
+                      {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                    </p>
+                  </div>
+                )}
+                {saved ? (
+                  <div className="flex gap-2">
+                    <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                      <Check size={16} /> {t('common.saved')}
+                    </div>
+                    <button onClick={() => navigate('/my-loans')}
+                      className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 transition-all active:scale-95">
+                      {t('common.viewInMyLoans', 'View')}
+                    </button>
+                    <button onClick={handleRemoveCompare}
+                      className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={handleSaveCompare}
+                    className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95">
+                    <Save size={16} /> {t('common.saveCalculation', 'Save Calculation')}
+                  </button>
+                )}
               </div>
 
               {/* Priority guidance — shown if user selected priorities */}

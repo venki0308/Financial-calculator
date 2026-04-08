@@ -19,6 +19,8 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
+import DateInput from '../components/DateInput';
 import { useAppColors } from '../theme/useAppColors';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement);
@@ -31,6 +33,8 @@ export default function NPSCalculator() {
     useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved, removeSaved } = useCalculatorStore();
+    const addProfile = useLiveStatusStore(s => s.addProfile);
+    const removeProfile = useLiveStatusStore(s => s.removeProfile);
     const chartRef = useRef<any>(null);
     const c = useAppColors();
 
@@ -44,6 +48,7 @@ export default function NPSCalculator() {
     const [showTaxInfo, setShowTaxInfo] = useState(false);
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+    const [accountStartDate, setAccountStartDate] = useState('');
 
     const result = useMemo(() => {
         const years = Math.max(retireAge - age, 1);
@@ -83,6 +88,27 @@ export default function NPSCalculator() {
     const handleSave = () => {
         const calcId = `nps-${Date.now()}`;
         addSaved({ id: calcId, calculatorType: t('nps.calculatorType'), inputValues: { monthly, rate, age, retireAge, annuityPct }, resultValues: { primary: result.corpus }, timestamp: Date.now() });
+        // Mirror into live tracker store so it appears in My Loans
+        addProfile({
+            id: calcId,
+            name: `NPS ${formatINR(monthly)}/mo × ${result.years}Y`,
+            calculatorType: 'NPS',
+            profileData: {
+                monthly,
+                rate,
+                age,
+                retireAge,
+                annuityPct,
+                annuityRate,
+                years: result.years,
+                totalInvested: result.invested,
+                corpus: result.corpus,
+                monthlyPension: result.monthlyPension,
+                startDate: accountStartDate || new Date().toISOString().slice(0, 10),
+            },
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
         setSaved(true);
         setLastSavedId(calcId);
     };
@@ -90,6 +116,7 @@ export default function NPSCalculator() {
     const handleRemove = () => {
         if (lastSavedId) {
             removeSaved(lastSavedId);
+            removeProfile(lastSavedId);
             setLastSavedId(null);
             setSaved(false);
         }
@@ -194,11 +221,31 @@ export default function NPSCalculator() {
                         <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('nps.lumpsumAt60')}</p><p className="text-blue-400 font-bold text-sm">{formatINR(result.lumpsum)}</p></div>
                         <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('nps.monthlyPension')}</p><p className="text-amber-400 font-bold text-sm">{formatINR(result.monthlyPension)}</p></div>
                     </div>
+                    {!saved && (
+                        <div className="mt-4 p-4 rounded-2xl border border-border bg-card">
+                            <label className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 block">
+                                {t('common.investmentDate', 'Investment Date (optional)')}
+                            </label>
+                            <DateInput
+                                value={accountStartDate}
+                                onChange={setAccountStartDate}
+                                max={new Date().toISOString().slice(0, 10)}
+                                className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground"
+                            />
+                            <p className="text-[10px] text-muted-foreground mt-1.5">
+                                {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                            </p>
+                        </div>
+                    )}
                     {saved ? (
                         <div className="flex gap-2 mt-4">
                             <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                                 <Check size={16} /> {t('common.saved')}
                             </div>
+                            <button onClick={() => navigate('/my-loans')}
+                                className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 transition-all active:scale-95">
+                                {t('common.viewInMyLoans', 'View')}
+                            </button>
                             <button onClick={handleRemove}
                                 className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
                                 <Trash2 size={16} />

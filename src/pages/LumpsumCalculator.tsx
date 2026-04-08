@@ -7,6 +7,8 @@ import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
+import DateInput from '../components/DateInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
@@ -15,6 +17,8 @@ export default function LumpsumCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { addSaved, removeSaved } = useCalculatorStore();
+    const addProfile = useLiveStatusStore(s => s.addProfile);
+    const removeProfile = useLiveStatusStore(s => s.removeProfile);
 
     useEffect(() => { AnalyticsService.trackScreen('Lumpsum_Advanced'); }, []);
 
@@ -40,6 +44,7 @@ export default function LumpsumCalculator() {
     const [showTable, setShowTable] = useState(false);
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+    const [investmentDate, setInvestmentDate] = useState('');
     const [page, setPage] = useState(1);
 
     // 1. CORE CALCULATION
@@ -117,6 +122,23 @@ export default function LumpsumCalculator() {
             resultValues: { primary: result.fv, label: t('lumpsum.wealthGenerated'), invested: principal, returns: result.fv - principal },
             timestamp: Date.now(),
         });
+        // Also save to live tracker store so it appears in My Loans / Trackers
+        addProfile({
+            id: calcId,
+            name: `${formatINR(principal)} @ ${rate}% × ${years}Y`,
+            calculatorType: 'Lumpsum',
+            profileData: {
+                principal,
+                rate,
+                years,
+                inflation,
+                maturity: Math.round(result.fv),
+                gain: Math.round(result.fv - principal),
+                startDate: investmentDate || new Date().toISOString().slice(0, 10),
+            },
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
         setSaved(true);
         setLastSavedId(calcId);
     };
@@ -124,6 +146,7 @@ export default function LumpsumCalculator() {
     const handleRemove = () => {
         if (lastSavedId) {
             removeSaved(lastSavedId);
+            removeProfile(lastSavedId);
             setLastSavedId(null);
             setSaved(false);
         }
@@ -263,12 +286,34 @@ export default function LumpsumCalculator() {
                     </div>
                 </div>
 
+                {/* INVESTMENT START DATE — feeds the My Loans / Trackers card */}
+                {!saved && (
+                    <div className="p-4 rounded-2xl border border-border bg-card">
+                        <label className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-2 block">
+                            {t('common.investmentDate', 'Investment Date (optional)')}
+                        </label>
+                        <DateInput
+                            value={investmentDate}
+                            onChange={setInvestmentDate}
+                            max={new Date().toISOString().slice(0, 10)}
+                            className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground"
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-1.5">
+                            {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                        </p>
+                    </div>
+                )}
+
                 {/* SAVE BUTTON */}
                 {saved ? (
                     <div className="flex gap-2">
                         <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                             <Check size={16} /> {t('common.saved')}
                         </div>
+                        <button onClick={() => navigate('/my-loans')}
+                            className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-brand-blue/10 text-brand-blue border border-brand-blue/20 transition-all active:scale-95">
+                            {t('common.viewInMyLoans', 'View')}
+                        </button>
                         <button onClick={handleRemove}
                             className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 bg-red-500/10 text-red-500 border border-red-500/20 transition-all active:scale-95">
                             <Trash2 size={16} />

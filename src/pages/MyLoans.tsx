@@ -44,6 +44,14 @@ const TYPE_META: Record<string, { icon: string; color: string; labelKey: string 
     'Property': { icon: '🏡', color: '#F59E0B', labelKey: 'myLoans.typeLabelProperty' },
     'Insurance': { icon: '🛡️', color: '#10B981', labelKey: 'myLoans.typeLabelInsurance' },
     'Overdraft': { icon: '💳', color: '#EF4444', labelKey: 'myLoans.typeLabelOverdraft' },
+    // Investment / projection trackers — also snapshot mode
+    'Lumpsum': { icon: '💎', color: '#3B82F6', labelKey: 'myLoans.typeLabelLumpsum' },
+    'SWP': { icon: '💸', color: '#F59E0B', labelKey: 'myLoans.typeLabelSwp' },
+    'CAGR': { icon: '📈', color: '#10B981', labelKey: 'myLoans.typeLabelCagr' },
+    'EPF': { icon: '🏢', color: '#8B5CF6', labelKey: 'myLoans.typeLabelEpf' },
+    'NPS': { icon: '🏛️', color: '#06B6D4', labelKey: 'myLoans.typeLabelNps' },
+    'Gratuity': { icon: '🎁', color: '#EC4899', labelKey: 'myLoans.typeLabelGratuity' },
+    'Insurance Compare': { icon: '⚖️', color: '#14B8A6', labelKey: 'myLoans.typeLabelInsuranceCompare' },
 };
 
 // Map LoanType (loanStorage) → calculatorType string used by TYPE_META + computeMetrics
@@ -245,6 +253,90 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 label2: t('myLoans.metricMonthly'), value2: `${formatINR(premiumMin)} – ${formatINR(premiumMax)}`,
                 label3: t('myLoans.metricStatus'), value3: d.tab === 'life' ? 'Life' : 'Health',
                 progress: 100, statusText: d.tab === 'life' ? 'Life Cover' : 'Health Cover',
+            };
+        }
+        // ── LUMPSUM (one-time investment, snapshot of projection) ──
+        if (matchType(type, 'lumpsum')) {
+            const principal = d.principal || 0;
+            const maturity = d.maturity || d.fv || 0;
+            const gain = d.gain ?? (maturity - principal);
+            return {
+                label1: t('myLoans.metricInvested'), value1: formatINR(principal),
+                label2: t('myLoans.metricValue'), value2: formatINR(maturity),
+                label3: t('myLoans.metricGain'), value3: formatINR(gain),
+                progress: 100, statusText: `${d.years || 0}Y @ ${d.rate || 0}%`,
+            };
+        }
+        // ── SWP (systematic withdrawal — snapshot of plan) ──
+        if (matchType(type, 'swp')) {
+            const totalInvestment = d.totalInvestment || d.principal || 0;
+            const monthlyWithdrawal = d.monthlyWithdrawal || 0;
+            const totalWithdrawn = d.totalWithdrawn || 0;
+            return {
+                label1: t('myLoans.metricInvested'), value1: formatINR(totalInvestment),
+                label2: t('myLoans.metricMonthly'), value2: formatINR(monthlyWithdrawal),
+                label3: t('myLoans.metricEarned'), value3: formatINR(totalWithdrawn),
+                progress: 100, statusText: `${d.years || 0}Y @ ${d.rate || 0}%`,
+            };
+        }
+        // ── CAGR (compound annual growth — snapshot) ──
+        if (matchType(type, 'cagr')) {
+            const initial = d.initialValue || d.principal || 0;
+            const final = d.finalValue || d.maturity || 0;
+            const cagr = d.cagr ?? 0;
+            return {
+                label1: t('myLoans.metricInvested'), value1: formatINR(initial),
+                label2: t('myLoans.metricValue'), value2: formatINR(final),
+                label3: t('myLoans.metricGain'), value3: `${cagr.toFixed(2)}%`,
+                progress: 100, statusText: `${d.years || 0}Y CAGR`,
+            };
+        }
+        // ── EPF (employee provident fund — snapshot of projection) ──
+        if (matchType(type, 'epf')) {
+            const totalInvested = d.totalInvested || 0;
+            const corpus = d.corpus || d.maturity || 0;
+            const interest = d.interest ?? (corpus - totalInvested);
+            return {
+                label1: t('myLoans.metricInvested'), value1: formatINR(totalInvested),
+                label2: t('myLoans.metricBalance'), value2: formatINR(corpus),
+                label3: t('myLoans.metricInterest'), value3: formatINR(interest),
+                progress: 100, statusText: `${d.years || 0}Y @ ${d.rate || 8.25}%`,
+            };
+        }
+        // ── NPS (national pension system — snapshot of projection) ──
+        if (matchType(type, 'nps')) {
+            const totalInvested = d.totalInvested || 0;
+            const corpus = d.corpus || d.maturity || 0;
+            const monthlyPension = d.monthlyPension || 0;
+            return {
+                label1: t('myLoans.metricInvested'), value1: formatINR(totalInvested),
+                label2: t('myLoans.metricBalance'), value2: formatINR(corpus),
+                label3: t('myLoans.metricMonthly'), value3: formatINR(monthlyPension),
+                progress: 100, statusText: `${d.years || 0}Y @ ${d.rate || 10}%`,
+            };
+        }
+        // ── GRATUITY (one-time payout — snapshot) ──
+        if (matchType(type, 'gratuity')) {
+            const lastSalary = d.lastSalary || 0;
+            const gratuity = d.gratuity || 0;
+            const yearsOfService = d.yearsOfService || 0;
+            return {
+                label1: t('myLoans.metricMonthly'), value1: formatINR(lastSalary),
+                label2: t('myLoans.metricValue'), value2: formatINR(gratuity),
+                label3: t('myLoans.metricStatus'), value3: `${yearsOfService}Y`,
+                progress: 100, statusText: `${yearsOfService}Y service`,
+            };
+        }
+        // ── INSURANCE COMPARE (saved comparison snapshot) ──
+        if (matchType(type, 'insurance compare', 'insurance comparison')) {
+            const sumInsured = d.sumInsured || 0;
+            const premiumA = d.premiumA || 0;
+            const premiumB = d.premiumB || 0;
+            return {
+                label1: t('myLoans.metricValue'), value1: formatINR(sumInsured),
+                label2: t('myLoans.metricMonthly'), value2: `${formatINR(premiumA)} vs ${formatINR(premiumB)}`,
+                label3: t('myLoans.metricStatus'), value3: d.winner || '—',
+                progress: 100, statusText: d.tab === 'life' ? 'Life Compare' : 'Health Compare',
             };
         }
     } catch { return null; }
