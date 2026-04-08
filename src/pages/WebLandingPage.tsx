@@ -8,7 +8,7 @@ const PLAY_BADGE_URL = 'https://play.google.com/intl/en_us/badges/static/images/
 // ── Data ──────────────────────────────────────────────────────────────────────
 const SCREENSHOTS = [
   { src: '/screenshots/screen1-home.webp',        caption: 'Home Dashboard'     },
-  { src: '/screenshots/screen2-calculators.webp', caption: '34+ Calculators'     },
+  { src: '/screenshots/screen2-calculators.webp', caption: '37+ Calculators'    },
   { src: '/screenshots/screen3-tax.webp',         caption: 'Income Tax 2026-27' },
   { src: '/screenshots/screen4-schemes.webp',     caption: 'Govt Schemes'       },
   { src: '/screenshots/screen5-expense.webp',     caption: 'Expense Tracker'    },
@@ -46,8 +46,11 @@ const FEATURES = [
   { icon:'📈', name:'SIP Calculator',       desc:'Mutual fund growth planner',        cat:'investments' },
   { icon:'🏠', name:'Home Loan EMI',         desc:'Monthly instalment planner',        cat:'loans'       },
   { icon:'🚗', name:'Car Loan EMI',          desc:'Vehicle finance calculator',        cat:'loans'       },
+  { icon:'🏍️', name:'Two-Wheeler Loan',     desc:'Bike & EV with PM E-Drive subsidy', cat:'loans'       },
+  { icon:'💎', name:'Gold Loan',             desc:'RBI LTV-based gold loan calculator',cat:'loans'       },
   { icon:'👤', name:'Personal Loan',         desc:'Interest & repayment schedule',     cat:'loans'       },
   { icon:'🏦', name:'Advanced Mortgage',     desc:'Prepayment, LTV, tax benefits',    cat:'loans'       },
+  { icon:'📊', name:'CIBIL Score',           desc:'Credit score & loan eligibility',   cat:'loans'       },
   { icon:'💼', name:'Income Tax',            desc:'Old vs New Regime 2026-27',         cat:'tax'         },
   { icon:'💰', name:'Salary Hike',           desc:'CTC breakdown & take-home',        cat:'tax'         },
   { icon:'🧾', name:'HRA Calculator',        desc:'House Rent Allowance exemption',    cat:'tax'         },
@@ -77,17 +80,19 @@ const FAQS = [
   { q:'Is FinCalix really free?',
     a:'Yes, 100% free. No subscription, no premium plan, no login, no hidden charges. Download and start calculating immediately.' },
   { q:'Does it work without internet?',
-    a:'All 34+ calculators, expense tracker, and budget planner work completely offline after download. No internet needed.' },
+    a:'All 37+ calculators, expense tracker, and budget planner work completely offline after download. No internet needed.' },
   { q:'Is Income Tax updated for Budget 2026-27?',
     a:'Yes. Income Tax Calculator is updated with Budget 2026-27 — zero tax up to ₹12L under New Regime after standard deduction.' },
   { q:'Which languages are supported?',
     a:'English, हिंदी, తెలుగు, தமிழ், ಕನ್ನಡ and Malayalam — 6 Indian languages.' },
   { q:'Does FinCalix have insurance & mortgage tools?',
     a:'Yes! IRDAI-based Insurance Simulator for health & life cover, side-by-side plan comparison, Advanced Mortgage Calculator with prepayment, RBI LTV analysis, and tax benefit calculations.' },
+  { q:'Does it support EV / Two-Wheeler & Gold loans?',
+    a:'Yes. Two-Wheeler Loan Calculator includes the PM E-Drive EV subsidy (₹2,500/kWh, capped at ₹5,000) with petrol vs EV running-cost comparison. Gold Loan Calculator uses RBI LTV norms with bullet, EMI and overdraft repayment options.' },
   { q:'Is my financial data safe?',
     a:'Completely safe. We collect zero personal data. All your calculations and expense data stays only on your device.' },
   { q:'How many calculators does it have?',
-    a:'FinCalix has 34+ financial tools — SIP, EMI, FD, PPF, HRA, GST, Income Tax, NPS, Insurance Simulator, Advanced Mortgage, Compare Scenarios, AI Smart Planner, Goal Planner, Expense Tracker, Budget Tracker, World Clock and more.' },
+    a:'FinCalix has 37+ financial tools — SIP, EMI, FD, PPF, HRA, GST, Income Tax, NPS, Two-Wheeler Loan, Gold Loan, CIBIL Score, Insurance Simulator, Advanced Mortgage, Compare Scenarios, AI Smart Planner, Goal Planner, Expense Tracker, Budget Tracker, World Clock and more.' },
 ];
 
 // ── Global CSS ────────────────────────────────────────────────────────────────
@@ -345,7 +350,7 @@ function HeroSection() {
             fontSize: isMobile ? '16px' : '18px', color: '#6B7280', lineHeight: 1.6,
             maxWidth: isMobile ? '100%' : '480px', marginBottom: '24px',
           }}>
-            India's most complete financial calculator — SIP, EMI, Tax, PPF, Insurance, Mortgage and 34+ tools. Free forever. Works offline. No login.
+            India's most complete financial calculator — SIP, EMI, Tax, PPF, Insurance, Mortgage, Two-Wheeler & Gold Loan, CIBIL and 37+ tools. Free forever. Works offline. No login.
           </p>
 
           {/* CTA */}
@@ -458,7 +463,7 @@ function HeroSection() {
             {/* Card 4 — right center (desktop only — would overflow on mobile) */}
             {!isMobile && (
               <div style={{ position: 'absolute', right: '-10px', top: '50%', transform: 'translateY(-50%)', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)', animation: 'float4 4.5s ease-in-out 1.5s infinite', minWidth: '120px', zIndex: 3 }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F1F18' }}>📊 34+ Tools</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F1F18' }}>📊 37+ Tools</div>
                 <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>All Free</div>
               </div>
             )}
@@ -473,7 +478,7 @@ function HeroSection() {
 // ── 03 STATS BAR ──────────────────────────────────────────────────────────────
 function StatsBar() {
   const stats = [
-    { num: 34, suffix: '+', label: 'Smart Calculators' },
+    { num: 37, suffix: '+', label: 'Smart Calculators' },
     { num: 45, suffix: '+', label: 'Govt Schemes'      },
     { num: 6,  suffix: '',  label: 'Indian Languages'  },
     { num: 0,  suffix: '∞', label: 'Free Forever', special: true },
@@ -631,7 +636,7 @@ function FeaturesGrid() {
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <p style={{ color: '#2D6A4F', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '12px' }}>FEATURES</p>
             <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, color: '#0F1F18', letterSpacing: '-0.02em' }}>Everything You Need, Nothing You Don't</h2>
-            <p style={{ color: '#6B7280', fontSize: '16px', marginTop: '12px' }}>34+ tools built for Indian financial planning</p>
+            <p style={{ color: '#6B7280', fontSize: '16px', marginTop: '12px' }}>37+ tools built for Indian financial planning</p>
           </div>
         </Reveal>
 
@@ -718,7 +723,7 @@ function ExpenseTrackerSection() {
     { name: 'Utilities',      pct: 60, color: '#F59E0B' },
     { name: 'Entertainment',  pct: 28, color: '#10B981' },
   ];
-  const points = ['Category-wise expense tracking','Monthly & yearly financial reports','Financial Health Score','PDF & Excel export'];
+  const points = ['Daily, weekly, monthly & yearly views','Edit entries from any tab + recurring subscriptions','Financial Health Score with smart insights','6 PDF report types + CSV export'];
   return (
     <section className="fcl-section" style={{ background: '#F7F9FC', padding: '100px 0' }}>
       <div className="fcl-container">
@@ -768,7 +773,7 @@ function ExpenseTrackerSection() {
                 Track Every Rupee.<br /><span style={{ color: '#2D6A4F' }}>Stay Ahead.</span>
               </h2>
               <p style={{ fontSize: '16px', color: '#6B7280', lineHeight: 1.6, marginBottom: '28px' }}>
-                FinCalix's built-in expense tracker gives you a clear picture of where your money goes — with smart category breakdowns and a financial health score.
+                FinCalix's built-in expense tracker gives you a complete picture of where your money goes — daily, weekly, monthly & yearly views, recurring subscriptions, edit-from-any-tab, and downloadable PDF / CSV reports.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
                 {points.map(p => (
@@ -828,7 +833,7 @@ function TrustSection() {
 function HowItWorks() {
   const steps = [
     { num: '01', title: 'Download Free', body: 'Get FinCalix from Play Store. No signup, no account. Takes 30 seconds.' },
-    { num: '02', title: 'Choose a Calculator', body: 'Pick from 34+ calculators or search any calculator instantly.' },
+    { num: '02', title: 'Choose a Calculator', body: 'Pick from 37+ calculators or search any calculator instantly.' },
     { num: '03', title: 'Get Instant Results', body: 'Accurate results with charts, comparisons and smart insights. Instantly.' },
   ];
   return (
@@ -978,7 +983,7 @@ function Footer() {
             <p style={headStyle}>ABOUT</p>
             <p style={{ color: 'rgba(255,255,255,.65)', fontSize: '14px' }}>Made with ❤️ in India</p>
             <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '13px', marginTop: '4px' }}>Hyderabad, Telangana, India</p>
-            <div style={{ display: 'inline-flex', marginTop: '16px', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.15)', borderRadius: '100px', padding: '4px 12px', color: 'rgba(255,255,255,.6)', fontSize: '12px' }}>✦ v1.0.10</div>
+            <div style={{ display: 'inline-flex', marginTop: '16px', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.15)', borderRadius: '100px', padding: '4px 12px', color: 'rgba(255,255,255,.6)', fontSize: '12px' }}>✦ v1.0.14</div>
           </div>
         </div>
 
