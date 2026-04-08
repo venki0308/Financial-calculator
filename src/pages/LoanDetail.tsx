@@ -77,6 +77,22 @@ function fmtYM(months: number, t?: (key: string) => string): string {
     return `${y}${yLabel} ${m}${mLabel}`;
 }
 
+/**
+ * Returns elapsed decimal years since a YYYY-MM-DD date string, clamped
+ * to [0, capYears]. Used by snapshot-tracker handlers to compute the
+ * value as of today rather than the saved value at maturity.
+ * Returns 0 if the date is missing/invalid or in the future.
+ */
+function yearsSince(dateStr: string | undefined, capYears: number = 100): number {
+    if (!dateStr) return 0;
+    const start = new Date(dateStr).getTime();
+    if (isNaN(start)) return 0;
+    const diffMs = Date.now() - start;
+    if (diffMs <= 0) return 0;
+    const years = diffMs / (365.25 * 24 * 60 * 60 * 1000);
+    return Math.min(capYears, years);
+}
+
 export default function LoanDetail() {
     const { loanId } = useParams();
     const navigate = useNavigate();
@@ -655,49 +671,328 @@ export default function LoanDetail() {
                 return { cards: [{ label: 'Invested', value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: 'Value', value: formatINR(s.currentValue), color: '#10B981' }, { label: 'Goal', value: `${s.progressToGoal.toFixed(0)}%`, color: '#8B5CF6' }], rows: [['Wealth Gained', formatINR(s.wealthGained)], ['Target Amount', d.targetAmount ? formatINR(d.targetAmount) : '—'], ['Goal Progress', `${s.progressToGoal.toFixed(1)}%`]], progress: s.progressToGoal, statusText: `${s.progressToGoal.toFixed(0)}% to goal`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
             }
 
-            // ── SNAPSHOT TRACKERS (no time-based engine) ──
-            // For these, we display the values that were saved by the calculator
-            // exactly as-is, plus the start date the user recorded.
+            // ── LIVE SNAPSHOT TRACKERS ──
+            // These calculators don't have a dedicated investment engine in
+            // investmentStatusEngine.ts, so we recompute "as of today" inline
+            // using elapsed time from the saved start date. Falls back to the
+            // saved snapshot when no start date exists (backwards compat).
             if (mt('compound interest', 'ci')) {
                 const principal = d.principal || 0;
-                const maturity = d.maturity || 0;
-                const interest = d.interest ?? (maturity - principal);
+                const rate = d.rate || 0;
+                const freq = d.freq || 12;
+                const totalYears = d.years || 0;
+                const elapsed = yearsSince(d.startDate, totalYears);
+                let valueToday: number;
+                let progress: number;
+                let statusText: string;
+                if (elapsed > 0 && rate > 0) {
+                    valueToday = principal * Math.pow(1 + (rate / 100) / freq, freq * elapsed);
+                    progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
+                    statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
+                } else {
+                    valueToday = d.maturity || 0;
+                    progress = 100;
+                    statusText = `${totalYears}Y @ ${rate}%`;
+                }
+                const interest = valueToday - principal;
+                const maturityAtEnd = principal * Math.pow(1 + (rate / 100) / freq, freq * totalYears);
                 return {
                     cards: [
                         { label: 'Principal', value: formatINR(principal), color: '#3B82F6' },
-                        { label: 'Maturity', value: formatINR(maturity), color: '#10B981' },
+                        { label: 'Value Today', value: formatINR(valueToday), color: '#10B981' },
                         { label: 'Interest', value: formatINR(interest), color: '#F59E0B' },
                     ],
                     rows: [
-                        ['Years', String(d.years || 0)],
-                        ['Rate', `${d.rate || 0}% p.a.`],
-                        ['Compounding', d.freq === 1 ? 'Yearly' : d.freq === 2 ? 'Half-yearly' : d.freq === 4 ? 'Quarterly' : d.freq === 12 ? 'Monthly' : `${d.freq || 1}x/year`],
+                        ['Years Elapsed', `${elapsed.toFixed(1)} of ${totalYears}`],
+                        ['Rate', `${rate}% p.a.`],
+                        ['Compounding', freq === 1 ? 'Yearly' : freq === 2 ? 'Half-yearly' : freq === 4 ? 'Quarterly' : freq === 12 ? 'Monthly' : `${freq}x/year`],
+                        ['Maturity Value', formatINR(maturityAtEnd)],
                     ],
-                    progress: 100,
-                    statusText: `${d.years || 0}Y @ ${d.rate || 0}%`,
-                    headline: formatINR(maturity),
-                    headlineLabel: 'Maturity Value',
+                    progress, statusText,
+                    headline: formatINR(valueToday),
+                    headlineLabel: 'Value Today',
                 };
             }
             if (mt('simple interest', 'si')) {
                 const principal = d.principal || 0;
-                const interest = d.interest || 0;
-                const totalPayable = d.totalPayable ?? (principal + interest);
+                const rate = d.rate || 0;
+                const totalMonths = d.tenureMonths || d.months || 0;
+                const elapsedY = yearsSince(d.startDate, totalMonths / 12);
+                const elapsedMonths = Math.floor(elapsedY * 12);
+                let interestSoFar: number;
+                let progress: number;
+                let statusText: string;
+                if (elapsedMonths > 0 && rate > 0) {
+                    interestSoFar = (principal * rate * elapsedMonths) / (12 * 100);
+                    progress = totalMonths > 0 ? Math.min(100, (elapsedMonths / totalMonths) * 100) : 100;
+                    statusText = `${elapsedMonths}M of ${totalMonths}M`;
+                } else {
+                    interestSoFar = d.interest || 0;
+                    progress = 100;
+                    statusText = `${totalMonths}M @ ${rate}%`;
+                }
+                const valueToday = principal + interestSoFar;
+                const totalAtEnd = principal + (principal * rate * totalMonths) / (12 * 100);
                 return {
                     cards: [
                         { label: 'Principal', value: formatINR(principal), color: '#3B82F6' },
-                        { label: 'Interest', value: formatINR(interest), color: '#F59E0B' },
-                        { label: 'Total', value: formatINR(totalPayable), color: '#10B981' },
+                        { label: 'Interest', value: formatINR(interestSoFar), color: '#F59E0B' },
+                        { label: 'Value Today', value: formatINR(valueToday), color: '#10B981' },
                     ],
                     rows: [
-                        ['Tenure', `${d.tenureMonths || d.months || 0} months`],
-                        ['Rate', `${d.rate || 0}% p.a.`],
+                        ['Months Elapsed', `${elapsedMonths} of ${totalMonths}`],
+                        ['Rate', `${rate}% p.a.`],
                         ['Mode', d.mode || 'Simple Interest'],
+                        ['Total at Maturity', formatINR(totalAtEnd)],
+                    ],
+                    progress, statusText,
+                    headline: formatINR(valueToday),
+                    headlineLabel: 'Value Today',
+                };
+            }
+            // ── LUMPSUM (one-time investment, live tracker) ──
+            if (mt('lumpsum')) {
+                const principal = d.principal || 0;
+                const rate = d.rate || 0;
+                const totalYears = d.years || 0;
+                const elapsed = yearsSince(d.startDate, totalYears);
+                let valueToday: number;
+                let progress: number;
+                let statusText: string;
+                if (elapsed > 0 && rate > 0) {
+                    valueToday = principal * Math.pow(1 + rate / 100, elapsed);
+                    progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
+                    statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
+                } else {
+                    valueToday = d.maturity || d.fv || 0;
+                    progress = 100;
+                    statusText = `${totalYears}Y @ ${rate}%`;
+                }
+                const gain = valueToday - principal;
+                const maturityAtEnd = principal * Math.pow(1 + rate / 100, totalYears);
+                return {
+                    cards: [
+                        { label: 'Invested', value: formatINR(principal), color: '#3B82F6' },
+                        { label: 'Value Today', value: formatINR(valueToday), color: '#10B981' },
+                        { label: 'Gain', value: formatINR(gain), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        ['Years Elapsed', `${elapsed.toFixed(1)} of ${totalYears}`],
+                        ['Rate', `${rate}% p.a.`],
+                        ['Maturity Value', formatINR(maturityAtEnd)],
+                        ...(d.inflation ? [['Inflation', `${d.inflation}% p.a.`]] : []),
+                    ],
+                    progress, statusText,
+                    headline: formatINR(valueToday),
+                    headlineLabel: 'Value Today',
+                };
+            }
+            // ── SWP (live month-by-month withdrawal sim) ──
+            if (mt('swp')) {
+                const corpus = d.totalInvestment || d.principal || 0;
+                const monthlyWithdrawal = d.monthlyWithdrawal || 0;
+                const rate = d.rate || 0;
+                const totalYears = d.years || 0;
+                const elapsedY = yearsSince(d.startDate, totalYears);
+                let withdrawnSoFar = 0;
+                let balanceToday = corpus;
+                let progress: number;
+                let statusText: string;
+                if (elapsedY > 0 && rate > 0 && monthlyWithdrawal > 0) {
+                    const elapsedMonths = Math.floor(elapsedY * 12);
+                    const r = rate / 12 / 100;
+                    let bal = corpus;
+                    let withdrawn = 0;
+                    for (let i = 0; i < elapsedMonths && bal > 0; i++) {
+                        bal = bal * (1 + r);
+                        if (bal >= monthlyWithdrawal) { bal -= monthlyWithdrawal; withdrawn += monthlyWithdrawal; }
+                        else { withdrawn += bal; bal = 0; }
+                    }
+                    withdrawnSoFar = withdrawn;
+                    balanceToday = bal;
+                    progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
+                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                } else {
+                    withdrawnSoFar = d.totalWithdrawn || 0;
+                    balanceToday = d.finalBalance || corpus;
+                    progress = 100;
+                    statusText = `${totalYears}Y @ ${rate}%`;
+                }
+                return {
+                    cards: [
+                        { label: 'Corpus', value: formatINR(corpus), color: '#3B82F6' },
+                        { label: 'Balance Today', value: formatINR(balanceToday), color: '#10B981' },
+                        { label: 'Withdrawn', value: formatINR(withdrawnSoFar), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        ['Years Elapsed', `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        ['Monthly Withdrawal', formatINR(monthlyWithdrawal)],
+                        ['Expected Return', `${rate}% p.a.`],
+                    ],
+                    progress, statusText,
+                    headline: formatINR(balanceToday),
+                    headlineLabel: 'Balance Today',
+                };
+            }
+            // ── CAGR (snapshot — growth-rate calculation, no time elapsed math) ──
+            if (mt('cagr')) {
+                const initial = d.initialValue || d.principal || 0;
+                const final = d.finalValue || d.maturity || 0;
+                const cagr = d.cagr ?? 0;
+                const years = d.years || 0;
+                return {
+                    cards: [
+                        { label: 'Initial', value: formatINR(initial), color: '#3B82F6' },
+                        { label: 'Final', value: formatINR(final), color: '#10B981' },
+                        { label: 'CAGR', value: `${cagr.toFixed(2)}%`, color: '#F59E0B' },
+                    ],
+                    rows: [
+                        ['Period', `${years} years`],
+                        ['Total Return', `${(((final / Math.max(1, initial)) - 1) * 100).toFixed(2)}%`],
+                        ['Wealth Multiplier', `${(final / Math.max(1, initial)).toFixed(2)}x`],
                     ],
                     progress: 100,
-                    statusText: `${d.tenureMonths || d.months || 0}M @ ${d.rate || 0}%`,
-                    headline: formatINR(totalPayable),
-                    headlineLabel: 'Total Payable',
+                    statusText: `${years}Y @ ${cagr.toFixed(1)}%`,
+                    headline: `${cagr.toFixed(2)}%`,
+                    headlineLabel: 'CAGR',
+                };
+            }
+            // ── EPF (live month-by-month accumulation) ──
+            if (mt('epf')) {
+                const basic = d.basic || 0;
+                const empPct = d.empPct || 12;
+                const rate = d.rate || 8.25;
+                const totalYears = d.years || 0;
+                const elapsedY = yearsSince(d.startDate, totalYears);
+                let investedSoFar: number;
+                let corpusToday: number;
+                let progress: number;
+                let statusText: string;
+                if (elapsedY > 0 && basic > 0) {
+                    const monthlyContrib = basic * (empPct / 100) * 2;
+                    const elapsedMonths = Math.floor(elapsedY * 12);
+                    const r = rate / 12 / 100;
+                    let bal = 0;
+                    for (let i = 0; i < elapsedMonths; i++) {
+                        bal = bal * (1 + r) + monthlyContrib;
+                    }
+                    investedSoFar = monthlyContrib * elapsedMonths;
+                    corpusToday = bal;
+                    progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
+                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                } else {
+                    investedSoFar = d.totalInvested || 0;
+                    corpusToday = d.corpus || d.maturity || 0;
+                    progress = 100;
+                    statusText = `${totalYears}Y @ ${rate}%`;
+                }
+                const interestEarned = corpusToday - investedSoFar;
+                return {
+                    cards: [
+                        { label: 'Invested', value: formatINR(investedSoFar), color: '#3B82F6' },
+                        { label: 'Corpus Today', value: formatINR(corpusToday), color: '#10B981' },
+                        { label: 'Interest', value: formatINR(interestEarned), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        ['Years Elapsed', `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        ['Basic Salary', formatINR(basic)],
+                        ['Contribution', `${empPct}% (emp + employer)`],
+                        ['EPF Rate', `${rate}% p.a.`],
+                        ...(d.corpus ? [['Projected Corpus', formatINR(d.corpus)]] : []),
+                    ],
+                    progress, statusText,
+                    headline: formatINR(corpusToday),
+                    headlineLabel: 'Corpus Today',
+                };
+            }
+            // ── NPS (live month-by-month accumulation) ──
+            if (mt('nps')) {
+                const monthly = d.monthly || 0;
+                const rate = d.rate || 10;
+                const totalYears = d.years || 0;
+                const elapsedY = yearsSince(d.startDate, totalYears);
+                let investedSoFar: number;
+                let corpusToday: number;
+                let progress: number;
+                let statusText: string;
+                if (elapsedY > 0 && monthly > 0) {
+                    const elapsedMonths = Math.floor(elapsedY * 12);
+                    const r = rate / 12 / 100;
+                    let bal = 0;
+                    for (let i = 0; i < elapsedMonths; i++) {
+                        bal = bal * (1 + r) + monthly;
+                    }
+                    investedSoFar = monthly * elapsedMonths;
+                    corpusToday = bal;
+                    progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
+                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                } else {
+                    investedSoFar = d.totalInvested || 0;
+                    corpusToday = d.corpus || d.maturity || 0;
+                    progress = 100;
+                    statusText = `${totalYears}Y @ ${rate}%`;
+                }
+                return {
+                    cards: [
+                        { label: 'Invested', value: formatINR(investedSoFar), color: '#3B82F6' },
+                        { label: 'Corpus Today', value: formatINR(corpusToday), color: '#10B981' },
+                        { label: 'Pension', value: formatINR(d.monthlyPension || 0), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        ['Years Elapsed', `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        ['Monthly Contribution', formatINR(monthly)],
+                        ['Expected Return', `${rate}% p.a.`],
+                        ['Annuity %', `${d.annuityPct || 40}%`],
+                        ...(d.monthlyPension ? [['Projected Pension', formatINR(d.monthlyPension)]] : []),
+                    ],
+                    progress, statusText,
+                    headline: formatINR(corpusToday),
+                    headlineLabel: 'Corpus Today',
+                };
+            }
+            // ── GRATUITY (snapshot — payout is one-time at retirement) ──
+            if (mt('gratuity')) {
+                const lastSalary = d.lastSalary || 0;
+                const gratuity = d.gratuity || 0;
+                const yearsOfService = d.yearsOfService || 0;
+                return {
+                    cards: [
+                        { label: 'Last Salary', value: formatINR(lastSalary), color: '#3B82F6' },
+                        { label: 'Gratuity', value: formatINR(gratuity), color: '#10B981' },
+                        { label: 'Net Payout', value: formatINR(d.netGratuity || gratuity), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        ['Service Period', `${yearsOfService} years`],
+                        ['Employer Type', d.employerType || 'Private'],
+                        ['Tax Exemption', d.employerType === 'Govt' ? 'Fully exempt' : 'Up to ₹25L'],
+                    ],
+                    progress: 100,
+                    statusText: `${yearsOfService}Y service`,
+                    headline: formatINR(gratuity),
+                    headlineLabel: 'Gratuity Payout',
+                };
+            }
+            // ── INSURANCE COMPARE (snapshot — comparison sample) ──
+            if (mt('insurance compare', 'insurance comparison')) {
+                const sumInsured = d.sumInsured || 0;
+                const premiumA = d.premiumA || 0;
+                const premiumB = d.premiumB || 0;
+                return {
+                    cards: [
+                        { label: 'Cover', value: formatINR(sumInsured), color: '#10B981' },
+                        { label: 'Premium (min)', value: formatINR(premiumA), color: '#3B82F6' },
+                        { label: 'Premium (max)', value: formatINR(premiumB), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        ['Type', d.tab === 'life' ? 'Life Insurance' : 'Health Insurance'],
+                        ...(d.members ? [['Members', String(d.members)]] : []),
+                        ...(d.cityType ? [['City', String(d.cityType)]] : []),
+                        ['Has PED', d.hasPreExisting ? 'Yes' : 'No'],
+                    ],
+                    progress: 100,
+                    statusText: d.tab === 'life' ? 'Life Compare' : 'Health Compare',
+                    headline: formatINR(sumInsured),
+                    headlineLabel: 'Sum Insured',
                 };
             }
             if (mt('property')) {
