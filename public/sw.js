@@ -4,7 +4,14 @@
 //  • Hashed JS/CSS chunks → cache-first (immutable filenames, safe forever)
 //  • Other static assets (icons, og-image, manifest) → cache-first
 //  • Everything else → network-first with cache fallback
-const CACHE_NAME = 'fincalix-v5';
+//
+// IMPORTANT: bump CACHE_NAME on any release that fixes bugs users have
+// already reported. The activate step deletes any cache whose name does
+// NOT match the current value, forcing a clean re-fetch of every asset
+// across every device. Without this, hashed chunks pinned by the SW
+// could keep an old buggy build alive on a user's device for days even
+// after a successful deploy.
+const CACHE_NAME = 'fincalix-v6';
 const APP_SHELL = [
     '/',
     '/index.html',
