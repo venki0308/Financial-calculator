@@ -8,20 +8,28 @@ export default function GlobalDisclaimerModal() {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        // Canonical key
-        const CANONICAL = 'fincalix_disclaimer_accepted';
-        // Legacy keys (read for backward compatibility, then deleted)
-        const LEGACY = ['appDisclaimerAccepted', 'expenseTrackerDisclaimerAccepted'];
+        // Versioned acceptance: bump the suffix whenever the legal text
+        // materially changes so existing users see the new disclosures and
+        // re-accept. v2 = April 2026 expansion (CIBIL, tax, investment risk,
+        // insurance, post-tax preview, gold loan, NPS PFRDA caps).
+        const CANONICAL = 'fincalix_disclaimer_accepted_v2';
+        // Legacy keys (read once, then cleared so we don't keep stale state)
+        const LEGACY = [
+            'fincalix_disclaimer_accepted', // v1 — pre-audit pass
+            'appDisclaimerAccepted',
+            'expenseTrackerDisclaimerAccepted',
+        ];
 
-        const alreadyAccepted =
-            localStorage.getItem(CANONICAL) === 'true' ||
-            LEGACY.some((k) => localStorage.getItem(k) === 'true');
+        const alreadyAccepted = localStorage.getItem(CANONICAL) === 'true';
 
         if (alreadyAccepted) {
-            // Migrate any legacy key value to the canonical key, then drop the legacy ones.
-            localStorage.setItem(CANONICAL, 'true');
+            // Already accepted v2 — drop any stale legacy keys.
             LEGACY.forEach((k) => localStorage.removeItem(k));
         } else {
+            // Either a brand-new install, or an existing user from v1. Either
+            // way, show the new disclaimer. Clean up legacy keys regardless,
+            // so we don't accumulate them across versions.
+            LEGACY.forEach((k) => localStorage.removeItem(k));
             setVisible(true);
         }
     }, []);
@@ -36,7 +44,7 @@ export default function GlobalDisclaimerModal() {
 
     const handleAccept = () => {
         if (!canAccept) return;
-        localStorage.setItem('fincalix_disclaimer_accepted', 'true');
+        localStorage.setItem('fincalix_disclaimer_accepted_v2', 'true');
         setVisible(false);
     };
 
@@ -63,46 +71,34 @@ export default function GlobalDisclaimerModal() {
                         {t('disclaimer.readTerms')}
                     </p>
 
+                    {/* Sections render in order. Anything that touches money
+                        comes first (Estimates → Loans → Tax → Investment →
+                        Insurance → Schemes), followed by privacy / data,
+                        then advisor / acknowledgment. Driven by an array so
+                        future additions don't churn JSX layout. */}
                     <div className="space-y-5">
-                        <section>
-                            <h3 className="text-emerald-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.estimatesTitle')}</h3>
-                            <p className="text-sm text-foreground/80 leading-relaxed">{t('disclaimer.estimatesBody')}</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-emerald-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.expensePrivacyTitle')}</h3>
-                            <p className="text-sm text-foreground/80 leading-relaxed">{t('disclaimer.expensePrivacyBody')}</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-emerald-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.govSchemesTitle')}</h3>
-                            <p className="text-sm text-foreground/80 leading-relaxed">{t('disclaimer.govSchemesBody')}</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-emerald-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.advisorTitle')}</h3>
-                            <p className="text-sm text-foreground/80 leading-relaxed">{t('disclaimer.advisorBody')}</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-emerald-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.loanToolsTitle')}</h3>
-                            <p className="text-sm text-foreground/80 leading-relaxed">{t('disclaimer.loanToolsBody')}</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-emerald-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.utilityTitle')}</h3>
-                            <p className="text-sm text-foreground/80 leading-relaxed">{t('disclaimer.utilityBody')}</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-emerald-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.dataPrivacyTitle')}</h3>
-                            <p className="text-sm text-foreground/80 leading-relaxed">{t('disclaimer.dataPrivacyBody')}</p>
-                        </section>
-
-                        <section>
-                            <h3 className="text-emerald-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">{t('disclaimer.generalNoteTitle')}</h3>
-                            <p className="text-sm text-foreground/80 leading-relaxed">{t('disclaimer.generalNoteBody')}</p>
-                        </section>
+                        {([
+                            ['estimatesTitle', 'estimatesBody'],
+                            ['loanToolsTitle', 'loanToolsBody'],
+                            ['taxToolsTitle', 'taxToolsBody'],
+                            ['investmentRiskTitle', 'investmentRiskBody'],
+                            ['insuranceToolsTitle', 'insuranceToolsBody'],
+                            ['govSchemesTitle', 'govSchemesBody'],
+                            ['expensePrivacyTitle', 'expensePrivacyBody'],
+                            ['dataPrivacyTitle', 'dataPrivacyBody'],
+                            ['utilityTitle', 'utilityBody'],
+                            ['advisorTitle', 'advisorBody'],
+                            ['generalNoteTitle', 'generalNoteBody'],
+                        ] as const).map(([titleKey, bodyKey]) => (
+                            <section key={titleKey}>
+                                <h3 className="text-emerald-600 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider mb-2">
+                                    {t(`disclaimer.${titleKey}`)}
+                                </h3>
+                                <p className="text-sm text-foreground/80 leading-relaxed">
+                                    {t(`disclaimer.${bodyKey}`)}
+                                </p>
+                            </section>
+                        ))}
                     </div>
                 </div>
 
