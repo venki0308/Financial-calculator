@@ -457,7 +457,10 @@ export default function GoldLoanCalculator() {
         // Additionally for EMI mode, also save to loanStorage so it's part
         // of the EMI portfolio summary at the top of MyLoans (total
         // outstanding, monthly burden) and can use the full amortising
-        // engine on the LoanDetail page.
+        // engine on the LoanDetail page. Use the user-supplied start date
+        // and EMI due day so the live tracker math is accurate — these
+        // were previously hardcoded to today/5, which broke "EMIs paid"
+        // and "Next EMI date" for any loan that didn't start today.
         if (repaymentMode === 'emi') {
             const loan: SavedLoan = {
                 id,
@@ -469,8 +472,8 @@ export default function GoldLoanCalculator() {
                 tenureMonths,
                 emiAmount: activeResult.monthly,
                 rateType: 'fixed',
-                disbursementDate: todayStr(),
-                emiDueDay: 5,
+                disbursementDate: loanStartDate || todayStr(),
+                emiDueDay,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 isActive: true,
@@ -1001,12 +1004,20 @@ export default function GoldLoanCalculator() {
 
                             {/* ── Save / Export buttons ── */}
                             <div className="grid grid-cols-2 gap-2">
-                                <button onClick={handleSaveToMyLoans} disabled={loanSaved}
-                                    className={`flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-xs ${loanSaved ? 'bg-emerald-500 text-white' : 'border'}`}
-                                    style={!loanSaved ? { borderColor: c.border, color: c.text, backgroundColor: c.card } : {}}
-                                >
-                                    {loanSaved ? <><Check size={14} /> {t('goldLoan.savedToMyLoans')}</> : <><Save size={14} /> {t('goldLoan.saveToMyLoans')}</>}
-                                </button>
+                                {loanSaved ? (
+                                    <button onClick={() => navigate('/my-loans')}
+                                        className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-xs bg-emerald-500 text-white"
+                                    >
+                                        <Check size={14} /> {t('common.viewInMyLoans', 'View')}
+                                    </button>
+                                ) : (
+                                    <button onClick={handleSaveToMyLoans}
+                                        className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-xs border"
+                                        style={{ borderColor: c.border, color: c.text, backgroundColor: c.card }}
+                                    >
+                                        <Save size={14} /> {t('goldLoan.saveToMyLoans')}
+                                    </button>
+                                )}
                                 <button onClick={handlePDF}
                                     className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-xs border"
                                     style={{ borderColor: c.border, color: c.text, backgroundColor: c.card }}

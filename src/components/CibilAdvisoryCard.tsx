@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronUp, Shield, TrendingUp, Lightbulb, Info } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronDown, ChevronUp, Shield, TrendingUp, Lightbulb, Info, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import { formatINR, calculateReducingEMI } from '../utils/calculations';
@@ -15,6 +16,7 @@ interface Props {
 
 export default function CibilAdvisoryCard({ score, loanType, loanAmount, tenureMonths }: Props) {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const c = useAppColors();
     const [showTips, setShowTips] = useState(false);
     const [showRbi, setShowRbi] = useState(false);
@@ -202,6 +204,19 @@ export default function CibilAdvisoryCard({ score, loanType, loanAmount, tenureM
                     )}
                 </AnimatePresence>
             </div>
+
+            {/* Open full CIBIL Score guide — gives the user a way to jump
+                from any loan calculator into the dedicated CIBIL page,
+                where they can change their score and see rate impact
+                across ALL loan types side by side. */}
+            <button
+                onClick={() => navigate('/cibil-score')}
+                className="w-full py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
+                style={{ backgroundColor: tier.color, color: '#fff' }}
+            >
+                <ExternalLink size={14} />
+                {t('cibil.openFullGuide', 'Open Full CIBIL Guide')}
+            </button>
         </div>
     );
 }

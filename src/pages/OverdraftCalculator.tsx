@@ -11,6 +11,7 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import DateInput from '../components/DateInput';
 import { useAppColors } from '../theme/useAppColors';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { todayStr } from '../utils/dateUtils';
 
@@ -33,17 +34,45 @@ export default function OverdraftCalculator() {
   const navigate = useNavigate();
   const c = useAppColors();
   const { addSaved, removeSaved } = useCalculatorStore();
+  const addProfile = useLiveStatusStore(s => s.addProfile);
   const [saved, setSaved] = useState(false);
   const [lastSavedId, setLastSavedId] = useState<string | null>(null);
   const [loanSaved, setLoanSaved] = useState(false);
 
   const handleSaveToMyLoans = () => {
-    // Overdrafts behave as a business credit line, not an amortising loan,
-    // so we map them to the closest LoanType. The MyLoans page shows a
-    // dedicated Business Loan icon for these entries.
+    const id = generateLoanId();
+    const nick = `${odType === 'business' ? 'Business' : odType === 'personal' ? 'Personal' : odType === 'salary' ? 'Salary' : 'Secured'} OD`;
+
+    // Save the rich snapshot to live profile store first so MyLoans uses
+    // the dedicated Overdraft handler in computeMetrics() — that handler
+    // shows utilized / interest / total payable correctly. Without this,
+    // the loanStorage row was being mapped to a Business/Personal Loan
+    // and run through the EMI engine, which produced wrong metrics for
+    // a non-amortising credit line.
+    addProfile({
+      id,
+      name: nick,
+      calculatorType: 'Overdraft',
+      profileData: {
+        utilized: utilizedNum,
+        loanAmount: utilizedNum,
+        limit: limitNum,
+        rate: rateNum,
+        days: daysNum,
+        totalInterest: Math.round(totalInterest),
+        totalPayable: Math.round(totalPayableAmount),
+        odType,
+        startDate: startDate || todayStr(),
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    // Also keep the loanStorage copy so it appears in the loan portfolio
+    // summary at the top of MyLoans (total outstanding, monthly burden).
     const loan: SavedLoan = {
-      id: generateLoanId(),
-      nickName: `${odType === 'business' ? 'Business' : odType === 'personal' ? 'Personal' : odType === 'salary' ? 'Salary' : 'Secured'} OD`,
+      id,
+      nickName: nick,
       loanType: odType === 'business' ? 'business_loan' : 'personal_loan',
       lenderName: '',
       loanAmount: utilizedNum,
@@ -51,7 +80,7 @@ export default function OverdraftCalculator() {
       tenureMonths: Math.max(1, Math.round(daysNum / 30)),
       emiAmount: Math.round(totalInterest / Math.max(1, Math.round(daysNum / 30))),
       rateType: 'floating',
-      disbursementDate: startDate,
+      disbursementDate: startDate || todayStr(),
       emiDueDay: 1,
       notes: `OD Limit: ${formatINR(limitNum)} | Utilized: ${formatINR(utilizedNum)} | ${daysNum} days`,
       createdAt: new Date().toISOString(),
@@ -736,6 +765,17 @@ export default function OverdraftCalculator() {
           )}
         </div>
       )}
+
+      {/* Open CIBIL guide — Overdraft doesn't render CibilAdvisoryCard
+          (rates aren't credit-score driven for ODs), but the user may
+          still want to check how their score affects renewal terms. */}
+      <button
+        onClick={() => navigate('/cibil-score')}
+        className="w-full mb-6 py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 border transition-all active:scale-95"
+        style={{ borderColor: c.border, color: c.text, backgroundColor: c.card }}
+      >
+        📊 {t('cibil.openFullGuide', 'Open Full CIBIL Guide')}
+      </button>
 
       <DisclaimerComponent module="overdraft" />
 
