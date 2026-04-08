@@ -5,6 +5,7 @@ import { useSettingsStore } from './store/useSettingsStore';
 import { CrashlyticsService } from './lib/analytics';
 import { useCrashContext } from './hooks/useCrashContext';
 import { usePageViewTracker } from './hooks/usePageViewTracker';
+import { useTrackCalculator } from './hooks/useTrackCalculator';
 import { AnalyticsService } from './services/analyticsService';
 import { setupErrorHandling } from './utils/errorHandler';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -163,6 +164,11 @@ function AppContent() {
 
     useCrashContext();
     usePageViewTracker();
+    // Global "recently used" tracker — runs on EVERY navigation. The hook
+    // filters to only paths that exist in the canonical `allCalcs` list, so
+    // it covers all 37 calculators automatically (including ones whose paths
+    // don't start with /calculator/, like /two-wheeler-loan and /gold-loan).
+    useTrackCalculator();
     const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {

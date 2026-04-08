@@ -22,11 +22,18 @@ export const VEHICLE_SEGMENTS = [
 
 export type SegmentId = typeof VEHICLE_SEGMENTS[number]['id'];
 
+// CIBIL score → rate bands. Updated April 2026 to match published lender rates:
+//   - ICICI Bank: 10.25% – 26.10% (widest range, depends heavily on score)
+//   - HDFC Bank: starts ~14.5%
+//   - SBI: 11.70% – 15.70%, with 0.50% green discount on EV
+//   - Tata Capital: starts ~12.5%
+//   - Bajaj Finance / NBFCs: up to 24%
+// EV bands run ~0.5–1% lower than petrol (most banks offer a green discount).
 export const CIBIL_TIERS = [
-    { id: 'excellent', label: '750+ (Excellent)', rateAdj: 0, petrolRange: [8.75, 11] as const, evRange: [8, 10] as const },
-    { id: 'good', label: '700-749 (Good)', rateAdj: 2, petrolRange: [11, 15] as const, evRange: [10, 14] as const },
-    { id: 'average', label: '650-699 (Average)', rateAdj: 5, petrolRange: [15, 22] as const, evRange: [14, 20] as const },
-    { id: 'low', label: 'Below 650 (Low)', rateAdj: 10, petrolRange: [22, 36] as const, evRange: [20, 30] as const },
+    { id: 'excellent', label: '750+ (Excellent)', rateAdj: 0, petrolRange: [10.25, 12.5] as const, evRange: [9.75, 11.75] as const },
+    { id: 'good', label: '700-749 (Good)', rateAdj: 2, petrolRange: [12.5, 15] as const, evRange: [11.75, 13.75] as const },
+    { id: 'average', label: '650-699 (Average)', rateAdj: 5, petrolRange: [15, 19] as const, evRange: [14, 17.5] as const },
+    { id: 'low', label: 'Below 650 (Low)', rateAdj: 10, petrolRange: [19, 28] as const, evRange: [17.5, 24] as const },
 ] as const;
 
 export const EV_SUBSIDY = {
@@ -53,10 +60,23 @@ export const STATE_EV_BENEFITS: Record<string, string> = {
     'Madhya Pradesh': 'State EV policy incentives',
 };
 
+// Running costs — updated April 2026 to match real-world Indian numbers.
+//
+// evKmPerUnit was previously 12 km/kWh, which is 3-4x lower than reality and
+// made every EV running-cost projection look 3x worse than it really is.
+// Real-world 2025-26 published efficiencies for top sellers:
+//   - TVS iQube: ~40-43 km/kWh
+//   - Ola S1 / S1 Pro: ~50-60 km/kWh
+//   - Ather 450X: ~35-40 km/kWh
+//   - Bajaj Chetak: ~30-35 km/kWh
+// 35 km/kWh is a conservative city+highway mix — captures real-world drag,
+// AC use, and hills, while still being honest to typical owner experience.
+//
+// petrolPerLitre is the current April 2026 metro average for India.
 export const RUNNING_COSTS = {
-    petrolPerLitre: 105,
+    petrolPerLitre: 107,
     electricityPerUnit: 8,
-    evKmPerUnit: 12,
+    evKmPerUnit: 35,
     avgMileage: { entry_commuter: 68, mid_commuter: 52, sport_performance: 40, premium_cruiser: 33, adventure_touring: 35 } as Record<string, number>,
     servicePerYear: { petrol: { entry_commuter: 3500, mid_commuter: 4500, sport_performance: 6000, premium_cruiser: 8000, adventure_touring: 7000 } as Record<string, number>, electric: { electric_budget: 1500, electric_premium: 2500 } as Record<string, number> },
     insurancePerYear: { petrol: { entry_commuter: 3000, mid_commuter: 4000, sport_performance: 5500, premium_cruiser: 7000, adventure_touring: 6000 } as Record<string, number>, electric: { electric_budget: 2500, electric_premium: 4000 } as Record<string, number> },

@@ -80,10 +80,33 @@ export function formatINR(n: number | undefined | null): string {
     return (n < 0 ? '-Rs. ' : 'Rs. ') + formatted;
 }
 
-/** Strip emoji + non-Latin glyphs from any user-supplied string before drawing. */
+/**
+ * Strip emoji + non-Latin glyphs from any user-supplied string before drawing.
+ * Also replaces a small set of common Unicode characters that jsPDF Helvetica
+ * cannot render (arrows, en/em dashes, smart quotes) with ASCII equivalents.
+ *
+ * Without this, "9 Mar 2026 → 8 Apr 2026" was rendering as "9 Mar 2026 !' 8 Apr 2026"
+ * because U+2192 RIGHTWARDS ARROW falls outside Helvetica's WinAnsi encoding.
+ */
 function s(text: string | number | undefined | null): string {
     if (text === undefined || text === null) return '';
-    return sanitizeForPDF(String(text));
+    const cleaned = String(text)
+        // Arrows → "to" / "-"
+        .replace(/[\u2192\u2794\u27A1\u279C]/g, ' to ')   // → ➔ ➡ ➜
+        .replace(/[\u2190\u2B05]/g, ' to ')               // ← ⬅
+        .replace(/[\u2194\u21C4]/g, ' - ')                // ↔ ⇄
+        // En/em dash → ASCII hyphen (Helvetica handles them but they look odd next to plain hyphens)
+        .replace(/[\u2013\u2014]/g, '-')                  // – —
+        // Smart quotes → ASCII
+        .replace(/[\u2018\u2019\u201A\u201B]/g, "'")      // ' ' ‚ ‛
+        .replace(/[\u201C\u201D\u201E\u201F]/g, '"')      // " " „ ‟
+        // Bullet → asterisk
+        .replace(/[\u2022\u2023]/g, '*')                  // • ‣
+        // Ellipsis → three dots
+        .replace(/\u2026/g, '...')
+        // Collapse double spaces left over from " to " replacement
+        .replace(/  +/g, ' ');
+    return sanitizeForPDF(cleaned);
 }
 
 /** Date tag for filenames: "08042026" */
@@ -129,6 +152,19 @@ function typeLabel(t: EntryType): string {
     if (t === 'income') return 'Income';
     if (t === 'investment') return 'Investment';
     return 'Transfer';
+}
+
+/**
+ * Returns a clean description for an entry. When the user didn't enter a
+ * custom description, the storage layer defaults it to the category name —
+ * which makes the PDF look like "Food & Dining / Food & Dining" with the
+ * same string twice. We collapse those to "—" so the table reads cleanly.
+ */
+function descriptionFor(entry: Entry): string {
+    const desc = entry.description?.trim() || '';
+    const cat = categoryName(entry.category);
+    if (!desc || desc === cat) return '—';
+    return desc;
 }
 
 /** Maps a type label back to its display color tuple. */
@@ -211,6 +247,10 @@ type CellHook = (data: any) => void;
  * Draws the brand header banner + meta line on the CURRENT page.
  * Banner = purple bar (0..22mm). Meta = small muted line at y=28mm.
  * Body content starts at y=35mm.
+ *
+ * The right-side text (report type + period) is auto-shrunk to fit the
+ * available width. Without this, long custom range labels like
+ * "Custom Report - 9 Mar 2026 to 8 Apr 2026" got clipped at the right edge.
  */
 function drawHeader(doc: PDFDoc, reportType: string, periodLabel: string): void {
     const pw = doc.internal.pageSize.getWidth();
@@ -223,13 +263,25 @@ function drawHeader(doc: PDFDoc, reportType: string, periodLabel: string): void 
     doc.setTextColor(...HEADER_TEXT);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
-    doc.text('FinCalix - Expense Tracker', 15, 12);
+    const leftText = 'FinCalix - Expense Tracker';
+    doc.text(leftText, 15, 12);
+    const leftWidth = doc.getTextWidth(leftText);
 
-    // Report type + period (right)
+    // Right-side text — auto-shrink to fit the gap between left brand and right margin.
+    // Reserve a 6mm safety gap so the two texts never collide.
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    const right = `${reportType} - ${periodLabel}`;
-    doc.text(s(right), pw - 15, 12, { align: 'right' });
+    const rightText = s(`${reportType} - ${periodLabel}`);
+    const maxRightWidth = pw - 15 - (15 + leftWidth + 6); // pageWidth - rightMargin - (leftStart + leftWidth + gap)
+
+    let fontSize = 9;
+    doc.setFontSize(fontSize);
+    let textWidth = doc.getTextWidth(rightText);
+    while (textWidth > maxRightWidth && fontSize > 6) {
+        fontSize -= 0.5;
+        doc.setFontSize(fontSize);
+        textWidth = doc.getTextWidth(rightText);
+    }
+    doc.text(rightText, pw - 15, 12, { align: 'right' });
 
     // Meta line just below the banner
     doc.setTextColor(...MUTED);
@@ -379,6 +431,73 @@ function ensureRoom(doc: PDFDoc, yPos: number, needed: number): number {
 }
 
 /**
+ * Draws the full disclaimer block at the end of a report.
+ * Renders as a bordered box with purple-tinted background, bold title,
+ * and wrapped body text. Auto-paginates if the block doesn't fit.
+ *
+ * Combines the expense module's privacy disclaimer with a general "estimates
+ * only / not financial advice" notice for full legal coverage. This is the
+ * SAME message used by the in-app DisclaimerComponent so the PDF stays
+ * consistent with what the user sees in the UI.
+ */
+function drawDisclaimerBlock(doc: PDFDoc, yPos: number): number {
+    const pw = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const boxWidth = pw - margin * 2;
+    const padding = 5;
+
+    const title = 'Disclaimer';
+    const body =
+        'All expense data is stored completely locally on your device. FinCalix does not '
+        + 'transmit, collect, or store your financial habits. The calculations and reports '
+        + 'provided are estimates for informational and planning purposes only and should '
+        + 'not be considered formal financial advice. Please verify specific figures with '
+        + 'your financial institution and consult a certified financial advisor before '
+        + 'making major financial decisions.';
+
+    // Compute the wrapped text height first so we know the box height
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    const textWidth = boxWidth - padding * 2;
+    const wrapped: string[] = doc.splitTextToSize(s(body), textWidth);
+    const lineHeight = 3.6;
+    const titleHeight = 6;
+    const bodyHeight = wrapped.length * lineHeight;
+    const boxHeight = padding + titleHeight + bodyHeight + padding;
+
+    // Make sure the whole block fits — push to a new page otherwise
+    let y = ensureRoom(doc, yPos, boxHeight + 6);
+
+    // Outer box with soft tinted background and border accent
+    doc.setFillColor(248, 250, 252);             // slate-50
+    doc.setDrawColor(...BORDER);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(margin, y, boxWidth, boxHeight, 2, 2, 'FD');
+
+    // Purple left accent bar (3mm wide, full height)
+    doc.setFillColor(...BRAND);
+    doc.rect(margin, y, 1.5, boxHeight, 'F');
+
+    // Title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...BRAND);
+    doc.text(title, margin + padding, y + padding + 4);
+
+    // Body text
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...MUTED);
+    doc.text(wrapped, margin + padding, y + padding + titleHeight + 2);
+
+    // Reset
+    doc.setTextColor(...TEXT);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    return y + boxHeight + 6;
+}
+
+/**
  * Tracks "current report context" on the doc itself so ensureRoom() can
  * draw the header on manually-added pages without re-passing args everywhere.
  */
@@ -393,8 +512,14 @@ function setReportContext(doc: PDFDoc, reportType: string, periodLabel: string):
  * Thin wrapper around autoTable that:
  *  - applies our standard theme/colors
  *  - hooks the header onto every new page via makeHeaderHook
- *  - color-codes the Amount column based on the row's Type cell, when an
- *    `amountColIdx` and `typeColIdx` are passed
+ *  - color-codes the Amount column based on the row's Type cell when an
+ *    `amountColIdx` AND `typeColIdx` are passed (mixed-type tables)
+ *  - or applies a UNIFORM color to the Amount column when `amountColIdx`
+ *    AND `amountTone` are passed (single-type tables like Top Expenses)
+ *  - rowPageBreak: 'avoid' keeps individual rows intact
+ *  - When `keepTogether: true` is passed, the entire table will move to
+ *    a new page if it can't fit on the current one (good for short tables
+ *    that we don't want to orphan)
  */
 function table(
     doc: PDFDoc,
@@ -406,14 +531,25 @@ function table(
         headerHook: CellHook;
         amountColIdx?: number;
         typeColIdx?: number;
+        amountTone?: 'expense' | 'income' | 'investment';
+        keepTogether?: boolean;
         columnStyles?: Record<number, { halign?: 'left' | 'center' | 'right'; cellWidth?: number | 'auto' | 'wrap'; fontStyle?: string }>;
     },
 ): void {
+    const TONE_MAP: Record<NonNullable<typeof cfg.amountTone>, [number, number, number]> = {
+        expense: EXPENSE,
+        income: INCOME,
+        investment: INVESTMENT,
+    };
+    const uniformAmountColor = cfg.amountTone ? TONE_MAP[cfg.amountTone] : undefined;
+
     autoTable(doc, {
         head: cfg.head,
         body: cfg.body,
         startY: cfg.startY,
         theme: 'grid',
+        pageBreak: cfg.keepTogether ? 'avoid' : 'auto',
+        rowPageBreak: 'avoid',
         styles: {
             font: 'helvetica',
             fontSize: 8.5,
@@ -434,7 +570,8 @@ function table(
         columnStyles: cfg.columnStyles,
         margin: { top: 35, left: 15, right: 15, bottom: 22 },
         didDrawPage: cfg.headerHook,
-        // Color-code the amount column based on the type cell
+        // Color-code the amount column based on the type cell, OR uniformly
+        // by amountTone, plus highlight TOTAL rows.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         didParseCell: (data: any) => {
             if (data.section !== 'body') return;
@@ -444,12 +581,25 @@ function table(
                 data.cell.styles.fontStyle = 'bold';
                 data.cell.styles.fillColor = [240, 237, 252]; // soft purple
             }
-            if (cfg.amountColIdx === undefined || cfg.typeColIdx === undefined) return;
+            if (cfg.amountColIdx === undefined) return;
             if (data.column.index !== cfg.amountColIdx) return;
-            const type = String(data.row.raw?.[cfg.typeColIdx] || '');
-            const c = typeColor(type);
-            data.cell.styles.textColor = c;
-            data.cell.styles.fontStyle = 'bold';
+
+            // Mixed-type table: color amount by per-row type
+            if (cfg.typeColIdx !== undefined) {
+                const type = String(data.row.raw?.[cfg.typeColIdx] || '');
+                const c = typeColor(type);
+                data.cell.styles.textColor = c;
+                data.cell.styles.fontStyle = 'bold';
+                return;
+            }
+
+            // Single-type table: color uniformly via amountTone
+            if (uniformAmountColor) {
+                // Don't recolor TOTAL rows — they already have their own bold styling
+                if (typeof firstCell === 'string' && firstCell.toUpperCase().startsWith('TOTAL')) return;
+                data.cell.styles.textColor = uniformAmountColor;
+                data.cell.styles.fontStyle = 'bold';
+            }
         },
     });
 }
@@ -569,7 +719,7 @@ export async function generateDailyPDF(data: DailyReportData): Promise<void> {
             timeOf(e.createdAt),
             categoryName(e.category),
             typeLabel(e.type),
-            e.description || '—',
+            descriptionFor(e),
             formatINR(e.amount),
         ]);
         table(doc, autoTable, {
@@ -579,6 +729,7 @@ export async function generateDailyPDF(data: DailyReportData): Promise<void> {
             headerHook,
             amountColIdx: 4,
             typeColIdx: 2,
+            keepTogether: txBody.length <= 10,
             columnStyles: {
                 0: { cellWidth: 18 },
                 4: { halign: 'right', cellWidth: 28 },
@@ -641,6 +792,9 @@ export async function generateDailyPDF(data: DailyReportData): Promise<void> {
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
     }
+
+    // Disclaimer block at the end of every report
+    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
 
     drawFooters(doc);
     await savePDF(doc, `FinCalix_Daily_${dateTagFromStr(data.date)}.pdf`);
@@ -761,7 +915,7 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
             new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short' }),
             categoryName(e.category),
             typeLabel(e.type),
-            e.description || '—',
+            descriptionFor(e),
             formatINR(e.amount),
         ]);
         table(doc, autoTable, {
@@ -771,6 +925,7 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
             headerHook,
             amountColIdx: 5,
             typeColIdx: 3,
+            keepTogether: txBody.length <= 10,
             columnStyles: { 5: { halign: 'right' } },
         });
     }
@@ -802,12 +957,15 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
         yPos = drawSectionHeader(doc, 'Income Sources This Week', yPos);
         const incBody = incomeEntries
             .sort((a, b) => a.date.localeCompare(b.date))
-            .map((e) => [shortDate(e.date), categoryName(e.category), e.description || '—', formatINR(e.amount)]);
+            .map((e) => [shortDate(e.date), categoryName(e.category), descriptionFor(e), formatINR(e.amount)]);
         table(doc, autoTable, {
             head: [['Date', 'Source', 'Description', 'Amount']],
             body: incBody,
             startY: yPos,
             headerHook,
+            amountColIdx: 3,
+            amountTone: 'income',
+            keepTogether: incBody.length <= 8,
             columnStyles: { 3: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
@@ -819,16 +977,20 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
         yPos = drawSectionHeader(doc, 'Investments This Week', yPos);
         const invBody = investmentEntries
             .sort((a, b) => a.date.localeCompare(b.date))
-            .map((e) => [shortDate(e.date), categoryName(e.category), formatINR(e.amount), e.description || '—']);
+            .map((e) => [shortDate(e.date), categoryName(e.category), formatINR(e.amount), descriptionFor(e)]);
         table(doc, autoTable, {
             head: [['Date', 'Category', 'Amount', 'Note']],
             body: invBody,
             startY: yPos,
             headerHook,
+            amountColIdx: 2,
+            amountTone: 'investment',
+            keepTogether: invBody.length <= 8,
             columnStyles: { 2: { halign: 'right' } },
         });
     }
 
+    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
     drawFooters(doc);
 
     const fileSafe = (s: string) => s.replace(/[^\w]/g, '');
@@ -984,7 +1146,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         const topBody = topExpenses.map((e) => [
             shortDate(e.date),
             categoryName(e.category),
-            e.description || '—',
+            descriptionFor(e),
             formatINR(e.amount),
         ]);
         table(doc, autoTable, {
@@ -992,6 +1154,9 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             body: topBody,
             startY: yPos,
             headerHook,
+            amountColIdx: 3,
+            amountTone: 'expense',
+            keepTogether: topBody.length <= 8,
             columnStyles: { 3: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
@@ -1009,6 +1174,9 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             body: incBody,
             startY: yPos,
             headerHook,
+            amountColIdx: 2,
+            amountTone: 'income',
+            keepTogether: incBody.length <= 8,
             columnStyles: { 2: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
@@ -1020,12 +1188,15 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         yPos = drawSectionHeader(doc, 'Investments This Month', yPos);
         const invBody = investmentEntries
             .sort((a, b) => a.date.localeCompare(b.date))
-            .map((e) => [shortDate(e.date), categoryName(e.category), formatINR(e.amount), e.description || '—']);
+            .map((e) => [shortDate(e.date), categoryName(e.category), formatINR(e.amount), descriptionFor(e)]);
         table(doc, autoTable, {
             head: [['Date', 'Category', 'Amount', 'Note']],
             body: invBody,
             startY: yPos,
             headerHook,
+            amountColIdx: 2,
+            amountTone: 'investment',
+            keepTogether: invBody.length <= 8,
             columnStyles: { 2: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
@@ -1088,7 +1259,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             shortDate(e.date),
             categoryName(e.category),
             typeLabel(e.type),
-            e.description || '—',
+            descriptionFor(e),
             formatINR(e.amount),
         ]);
         table(doc, autoTable, {
@@ -1098,6 +1269,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             headerHook,
             amountColIdx: 4,
             typeColIdx: 2,
+            keepTogether: txBody.length <= 10,
             columnStyles: { 4: { halign: 'right' } },
         });
 
@@ -1129,6 +1301,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         });
     }
 
+    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
     drawFooters(doc);
     await savePDF(doc, `FinCalix_Monthly_${monShortYear(data.year, data.month)}_${dateTag()}.pdf`);
 }
@@ -1292,7 +1465,7 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
         const topBody = topExpenses.map((e) => [
             new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
             categoryName(e.category),
-            e.description || '—',
+            descriptionFor(e),
             formatINR(e.amount),
         ]);
         table(doc, autoTable, {
@@ -1300,6 +1473,9 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
             body: topBody,
             startY: yPos,
             headerHook,
+            amountColIdx: 3,
+            amountTone: 'expense',
+            keepTogether: topBody.length <= 8,
             columnStyles: { 3: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
@@ -1331,6 +1507,7 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
         });
     }
 
+    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
     drawFooters(doc);
     await savePDF(doc, `FinCalix_Annual_${data.year}.pdf`);
 }
@@ -1446,7 +1623,7 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
         const topBody = topExpenses.map((e) => [
             shortDate(e.date),
             categoryName(e.category),
-            e.description || '—',
+            descriptionFor(e),
             formatINR(e.amount),
         ]);
         table(doc, autoTable, {
@@ -1454,6 +1631,9 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
             body: topBody,
             startY: yPos,
             headerHook,
+            amountColIdx: 3,
+            amountTone: 'expense',
+            keepTogether: topBody.length <= 8,
             columnStyles: { 3: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
@@ -1471,6 +1651,9 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
             body: incBody,
             startY: yPos,
             headerHook,
+            amountColIdx: 2,
+            amountTone: 'income',
+            keepTogether: incBody.length <= 8,
             columnStyles: { 2: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
@@ -1482,12 +1665,15 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
         yPos = drawSectionHeader(doc, 'Investments in Range', yPos);
         const invBody = investmentEntries
             .sort((a, b) => a.date.localeCompare(b.date))
-            .map((e) => [shortDate(e.date), categoryName(e.category), formatINR(e.amount), e.description || '—']);
+            .map((e) => [shortDate(e.date), categoryName(e.category), formatINR(e.amount), descriptionFor(e)]);
         table(doc, autoTable, {
             head: [['Date', 'Category', 'Amount', 'Note']],
             body: invBody,
             startY: yPos,
             headerHook,
+            amountColIdx: 2,
+            amountTone: 'investment',
+            keepTogether: invBody.length <= 8,
             columnStyles: { 2: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
@@ -1505,9 +1691,11 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
             shortDate(e.date),
             categoryName(e.category),
             typeLabel(e.type),
-            e.description || '—',
+            descriptionFor(e),
             formatINR(e.amount),
         ]);
+        // Short transaction logs (≤10 rows) keepTogether to avoid the 5/1 orphan
+        // we saw with 6 entries breaking awkwardly across page 2/3.
         table(doc, autoTable, {
             head: [['Date', 'Category', 'Type', 'Description', 'Amount']],
             body: txBody,
@@ -1515,6 +1703,7 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
             headerHook,
             amountColIdx: 4,
             typeColIdx: 2,
+            keepTogether: txBody.length <= 10,
             columnStyles: { 4: { halign: 'right' } },
         });
         if (sorted.length > MAX_TX_ROWS) {
@@ -1526,6 +1715,7 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
         }
     }
 
+    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
     drawFooters(doc);
     const fname = `FinCalix_Custom_${dateTagFromStr(data.startDate)}_to_${dateTagFromStr(data.endDate)}.pdf`;
     await savePDF(doc, fname);
@@ -1649,6 +1839,7 @@ export async function generateHealthReportPDF(data: HealthReportData): Promise<v
         });
     }
 
+    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
     drawFooters(doc);
     await savePDF(doc, `FinCalix_Health_${data.monthLabel.replace(/\s+/g, '')}_${dateTag()}.pdf`);
 }

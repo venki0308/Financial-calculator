@@ -101,7 +101,15 @@ export default function TwoWheelerLoanCalculator() {
     const effectiveRto = rtoCharges || autoRto;
     const effectiveInsurance = insuranceAmt || autoInsurance;
 
-    const centralSubsidy = isEV ? Math.min(batteryKwh * EV_SUBSIDY.ratePerKwh, EV_SUBSIDY.maxPerVehicle) : 0;
+    // PM E-DRIVE central subsidy — only applies to EVs whose ex-factory price
+    // is at or below ₹1.5 lakh (the scheme's eligibility cap, valid till
+    // July 31, 2026). Premium EVs above the cap get NO central subsidy.
+    // Without this guard the calculator was silently granting subsidy on
+    // bikes that don't actually qualify, overstating the savings.
+    const isEvSubsidyEligible = isEV && exShowroom > 0 && exShowroom <= EV_SUBSIDY.priceCapExFactory;
+    const centralSubsidy = isEvSubsidyEligible
+        ? Math.min(batteryKwh * EV_SUBSIDY.ratePerKwh, EV_SUBSIDY.maxPerVehicle)
+        : 0;
     const stateSubsidy = isEV && selectedState && STATE_EV_BENEFITS[selectedState] ? 5000 : 0;
     const totalSubsidy = centralSubsidy + stateSubsidy;
 
@@ -150,7 +158,9 @@ export default function TwoWheelerLoanCalculator() {
             fuelCost = (yearlyKm / RUNNING_COSTS.evKmPerUnit) * RUNNING_COSTS.electricityPerUnit * tenureYears;
             serviceCost = (RUNNING_COSTS.servicePerYear.electric[segId] || 2000) * tenureYears;
             insuranceCost = (RUNNING_COSTS.insurancePerYear.electric[segId] || 3000) * tenureYears;
-            if (tenureYears > RUNNING_COSTS.batteryLifeYears) fuelCost += RUNNING_COSTS.batteryReplaceCost;
+            // >= so an exact 6-year tenure also triggers one battery replacement
+            // (battery typically degrades to <80% capacity by year 6).
+            if (tenureYears >= RUNNING_COSTS.batteryLifeYears) fuelCost += RUNNING_COSTS.batteryReplaceCost;
         } else {
             const mileage = RUNNING_COSTS.avgMileage[segId] || 50;
             fuelCost = (yearlyKm / mileage) * RUNNING_COSTS.petrolPerLitre * tenureYears;
@@ -160,20 +170,25 @@ export default function TwoWheelerLoanCalculator() {
         return { fuelCost: Math.round(fuelCost), serviceCost: Math.round(serviceCost), insuranceCost: Math.round(insuranceCost), total: Math.round(totalPayment + processingFee + fuelCost + serviceCost + insuranceCost) };
     }, [isEV, segment, yearlyKm, tenureYears, totalPayment, processingFee]);
 
-    // Petrol vs EV comparison (5 years)
+    // Petrol vs EV comparison — uses the user's actual loan tenure (was hardcoded
+    // to 5 years before, which made the comparison meaningless on 2/3/4/5-year
+    // loans). EV service & insurance are now segment-aware (using a budget-EV
+    // baseline) so a premium electric doesn't get artificially flat costs.
     const comparison = useMemo(() => {
-        const yrs = 5;
+        const yrs = Math.max(1, tenureYears);
         const mileage = RUNNING_COSTS.avgMileage[segment.id] || 50;
+        // For petrol-segment users, fall back to mid-commuter for the EV comparison row
+        const evSegmentForCompare = (segment.id.startsWith('electric_') ? segment.id : 'electric_budget');
         const petrolFuel = Math.round((yearlyKm / mileage) * RUNNING_COSTS.petrolPerLitre * yrs);
         const evFuel = Math.round((yearlyKm / RUNNING_COSTS.evKmPerUnit) * RUNNING_COSTS.electricityPerUnit * yrs);
         const petrolService = Math.round((RUNNING_COSTS.servicePerYear.petrol[segment.id] || 4500) * yrs);
-        const evService = Math.round(2000 * yrs);
+        const evService = Math.round((RUNNING_COSTS.servicePerYear.electric[evSegmentForCompare] || 2000) * yrs);
         const petrolIns = Math.round((RUNNING_COSTS.insurancePerYear.petrol[segment.id] || 4000) * yrs);
-        const evIns = Math.round(3000 * yrs);
+        const evIns = Math.round((RUNNING_COSTS.insurancePerYear.electric[evSegmentForCompare] || 3000) * yrs);
         const petrolTotal = petrolFuel + petrolService + petrolIns;
         const evTotal = evFuel + evService + evIns;
-        return { petrolFuel, evFuel, petrolService, evService, petrolIns, evIns, petrolTotal, evTotal, saving: petrolTotal - evTotal };
-    }, [segment, yearlyKm]);
+        return { years: yrs, petrolFuel, evFuel, petrolService, evService, petrolIns, evIns, petrolTotal, evTotal, saving: petrolTotal - evTotal };
+    }, [segment, yearlyKm, tenureYears]);
 
     // Prepayment
     const prepayResult = useMemo(() => {
@@ -188,7 +203,12 @@ export default function TwoWheelerLoanCalculator() {
             totalInt += intPart;
             months++;
         }
-        return { interestSaved: Math.round(totalInterest - totalInt), monthsSaved: tenureMonths - months };
+        // Math.max(0, ...) guards against negative savings if floating-point math
+        // ever produces totalInt > totalInterest (shouldn't, but defensive).
+        return {
+            interestSaved: Math.max(0, Math.round(totalInterest - totalInt)),
+            monthsSaved: Math.max(0, tenureMonths - months),
+        };
     }, [extraEmi, loanAmount, rate, tenureMonths, emi, totalInterest, result]);
 
     // Rate sensitivity
@@ -368,6 +388,15 @@ export default function TwoWheelerLoanCalculator() {
                         <NumberInput label={t('tw.batteryKwh')} value={batteryKwh} onChange={setBatteryKwh} min={1} max={10} step={0.5} suffix=" kWh" />
                         <div className="flex justify-between text-xs"><span style={{ color: c.textSecondary }}>{t('tw.pmEdrive')}</span><span className="font-bold text-emerald-500">-{formatINR(centralSubsidy)}</span></div>
                         <p className="text-[9px]" style={{ color: c.textSecondary }}>₹{EV_SUBSIDY.ratePerKwh}/kWh, max ₹{EV_SUBSIDY.maxPerVehicle} · Valid till {EV_SUBSIDY.validUntil}</p>
+                        {/* Eligibility warning when bike exceeds the PM E-DRIVE ex-factory cap */}
+                        {isEV && exShowroom > EV_SUBSIDY.priceCapExFactory && (
+                            <div className="flex items-start gap-2 p-2 rounded-lg" style={{ backgroundColor: '#F59E0B15', border: '1px solid #F59E0B30' }}>
+                                <Info className="w-3 h-3 mt-0.5 text-amber-500 flex-shrink-0" />
+                                <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-snug">
+                                    {t('tw.subsidyCapExceeded', `PM E-DRIVE subsidy is only available on EVs priced at or below ₹${(EV_SUBSIDY.priceCapExFactory / 100000).toFixed(1)}L ex-factory. Your bike exceeds this cap, so no central subsidy applies.`)}
+                                </p>
+                            </div>
+                        )}
                         <div>
                             <label className="text-[10px] font-bold mb-1 block" style={{ color: c.textSecondary }}>{t('tw.yourState')}</label>
                             <select value={selectedState} onChange={e => setSelectedState(e.target.value)}
@@ -484,9 +513,11 @@ export default function TwoWheelerLoanCalculator() {
                             </div>
                         </div>
 
-                        {/* Petrol vs EV Comparison */}
+                        {/* Petrol vs EV Comparison — uses the user's actual loan tenure */}
                         <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                            <h3 className="text-sm font-bold mb-3" style={{ color: c.text }}>⛽ {t('tw.petrol')} vs ⚡ {t('tw.electric')} — {t('tw.petrolVsEv')}</h3>
+                            <h3 className="text-sm font-bold mb-3" style={{ color: c.text }}>
+                                ⛽ {t('tw.petrol')} vs ⚡ {t('tw.electric')} — {comparison.years.toFixed(comparison.years % 1 ? 1 : 0)} {t('tw.years', 'year')}{comparison.years === 1 ? '' : 's'}
+                            </h3>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-[10px]">
                                     <thead><tr style={{ color: c.textSecondary, borderBottom: `1px solid ${c.border}` }}><th className="py-1.5 text-left font-bold">{t('tw.cost')}</th><th className="py-1.5 text-right font-bold">{t('tw.petrol')}</th><th className="py-1.5 text-right font-bold">{t('tw.electric')}</th><th className="py-1.5 text-right font-bold text-emerald-500">{t('tw.save')}</th></tr></thead>
@@ -497,7 +528,8 @@ export default function TwoWheelerLoanCalculator() {
                                             </tr>
                                         ))}
                                         <tr style={{ borderTop: `2px solid ${c.border}`, color: c.text }} className="font-bold">
-                                            <td className="py-1.5">{t('tw.total5yr')}</td><td className="py-1.5 text-right">{formatINR(comparison.petrolTotal)}</td><td className="py-1.5 text-right">{formatINR(comparison.evTotal)}</td><td className="py-1.5 text-right text-emerald-500">{formatINR(comparison.saving)}</td>
+                                            <td className="py-1.5">{`${t('tw.total', 'Total')} (${comparison.years.toFixed(comparison.years % 1 ? 1 : 0)} ${comparison.years === 1 ? 'yr' : 'yrs'})`}</td>
+                                            <td className="py-1.5 text-right">{formatINR(comparison.petrolTotal)}</td><td className="py-1.5 text-right">{formatINR(comparison.evTotal)}</td><td className="py-1.5 text-right text-emerald-500">{formatINR(comparison.saving)}</td>
                                         </tr>
                                     </tbody>
                                 </table>
