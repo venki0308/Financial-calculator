@@ -76,9 +76,24 @@ export const LOAN_CIBIL_RATES: Record<string, LoanCibilConfig> = {
         ltv: { nh: 100, very_poor: 80, poor: 80, average: 90, good: 100, very_good: 100, excellent: 100 },
         notes: ['cibil.eduTip1'],
     },
+    // Gold loan rates updated April 2026 to reflect actual market floors:
+    // PSU banks (Kotak/SBI/PNB) start ~8.25%, private banks ~9-11%, NBFCs
+    // ~11-22% (Muthoot/IIFL/Manappuram). CIBIL impact is small because the
+    // gold itself is collateral, but it still affects rate ~1-3 pp across
+    // the score band. RBI 2026 LTV is tier-based (85/80/75) on loan amount,
+    // not score, so the score-keyed LTV map below is purely informational
+    // and gets overridden by GoldLoanCalculator's tiered logic at runtime.
     gold_loan: {
         loanType: 'Gold Loan', minBank: 0, minNBFC: 0, ideal: 0,
-        rates: { nh: { min: 9, max: 13 }, very_poor: { min: 9, max: 14 }, poor: { min: 9, max: 14 }, average: { min: 8.5, max: 12 }, good: { min: 8, max: 11 }, very_good: { min: 7.5, max: 10 }, excellent: { min: 7, max: 9.5 } },
+        rates: {
+            nh:        { min: 10,    max: 14 },
+            very_poor: { min: 14,    max: 22 },
+            poor:      { min: 13,    max: 18 },
+            average:   { min: 11,    max: 15 },
+            good:      { min: 9.5,   max: 12 },
+            very_good: { min: 8.75,  max: 10.5 },
+            excellent: { min: 8.25,  max: 9.5 },
+        },
         ltv: { nh: 75, very_poor: 75, poor: 75, average: 75, good: 80, very_good: 85, excellent: 85 },
         notes: ['cibil.goldTip1'],
     },

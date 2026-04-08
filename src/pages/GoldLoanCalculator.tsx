@@ -33,6 +33,7 @@ import { nativeShare } from '../utils/nativeShare';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { todayStr } from '../utils/dateUtils';
 import { useCibil } from '../context/CibilContext';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -152,7 +153,8 @@ export default function GoldLoanCalculator() {
     const c = useAppColors();
     useTrackCalculator();
     const { addHistory } = useCalculatorStore();
-    const { profile: cibilProfile } = useCibil();
+    const { profile: cibilProfile, rateFor } = useCibil();
+    const addLiveProfile = useLiveStatusStore(s => s.addProfile);
 
     useEffect(() => { AnalyticsService.trackScreen('Gold_Loan'); }, []);
 
@@ -186,20 +188,16 @@ export default function GoldLoanCalculator() {
     const chartRef = useRef<any>(null);
 
     // ── Auto-suggest rate from CIBIL when score is present ──
-    // Gold loans are secured by collateral, so CIBIL impact on rate is small
-    // (~1-3 percentage points across the score band, vs ~10pp for personal
-    // loans). Bands below reflect actual market practice in April 2026 — Kotak
-    // and SBI floor near 8.25%, NBFCs price up to ~22% for low scores.
+    // Single source of truth: pull suggested rate from the central CIBIL
+    // context (which reads LOAN_CIBIL_RATES['gold_loan']). This guarantees
+    // the input field's auto-filled rate matches what the CibilBadge above
+    // displays — previously they used two different hard-coded tables and
+    // disagreed by 1-3 pp.
     useEffect(() => {
         if (!cibilProfile?.score || cibilProfile.isNTC) return;
-        const s = cibilProfile.score;
-        let suggested = 11;
-        if (s >= 750) suggested = 8.75;      // PSU bank rate range 8.25–9.5
-        else if (s >= 700) suggested = 10;    // Private bank range 9.5–11
-        else if (s >= 650) suggested = 13;    // NBFC range 11–15
-        else suggested = 18;                  // High-risk NBFC range 15–22
-        setInterestRate(suggested);
-    }, [cibilProfile?.score, cibilProfile?.isNTC]);
+        const r = rateFor('gold_loan');
+        if (r && r.suggested > 0) setInterestRate(r.suggested);
+    }, [cibilProfile?.score, cibilProfile?.isNTC, rateFor]);
 
     // ── Cap bullet/interest-only tenure at 12 months ──
     useEffect(() => {
@@ -364,24 +362,90 @@ export default function GoldLoanCalculator() {
         await nativeShare(`${t('goldLoan.title')} — FinCalix`, lines.join('\n'));
     };
 
+    /**
+     * Save the calculation to My Loans tracker.
+     *
+     * Two save paths depending on repayment mode:
+     *
+     * - **EMI mode** → save to BOTH loanStorage (so it gets the full
+     *   amortising live engine: principal outstanding, EMIs paid, next
+     *   EMI date, foreclosure simulator) AND useLiveStatusStore (so the
+     *   MyLoans page can render gold-specific metrics like weight, purity,
+     *   tier LTV via the new gold-loan branch).
+     *
+     * - **Bullet / Interest-Only mode** → save ONLY to useLiveStatusStore
+     *   as a snapshot tracker. The amortising live engine assumes
+     *   `emiAmount = principal+interest` style payments and produces
+     *   garbage outstanding/EMIs-paid for bullet loans. The MyLoans gold-loan
+     *   branch handles bullet snapshots correctly.
+     *
+     * The nickName drops the gram count for Mode B (where the user entered
+     * loan amount, not weight) and uses the loan amount instead.
+     */
     const handleSaveToMyLoans = () => {
-        const loan: SavedLoan = {
-            id: generateLoanId(),
-            nickName: `${goldWeight}g ${purity} ${t('goldLoan.gold')}`,
-            loanType: 'gold_loan',
-            lenderName: '',
+        const id = generateLoanId();
+        const nick = mode === 'byWeight'
+            ? `${goldWeight}g ${purity} ${t('goldLoan.gold')}`
+            : `${formatINR(loanAmount)} ${purity} ${t('goldLoan.gold')}`;
+
+        // Always save the rich gold-specific snapshot to the live profile
+        // store so MyLoans can show purity, weight, gold value and tier LTV.
+        const profileData = {
+            // Standard loan fields (for the live engine in EMI mode)
             loanAmount,
-            interestRate,
+            annualRate: interestRate,
             tenureMonths,
             emiAmount: activeResult.monthly,
-            rateType: 'fixed',
             disbursementDate: todayStr(),
             emiDueDay: 5,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            isActive: true,
+            loanType: 'fixed',
+            // Gold-specific fields used by MyLoans' gold branch
+            isGoldLoan: true,
+            repaymentMode,                 // 'emi' | 'bullet' | 'interestOnly'
+            goldWeight: mode === 'byWeight' ? goldWeight : requiredGoldGrams,
+            purity,
+            goldValue,
+            tierLtv: tierResult.ltv,
+            goldRate24K,
+            // Pre-computed totals (so the snapshot path doesn't need to
+            // re-run any engine for bullet mode)
+            totalInterest: activeResult.totalInterest,
+            totalPayment: activeResult.totalPayment,
+            monthlyPayment: activeResult.monthly,
+            startDate: todayStr(),
         };
-        saveLoanToStorage(loan);
+        addLiveProfile({
+            id,
+            name: nick,
+            calculatorType: 'Gold Loan',
+            profileData,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
+
+        // Additionally for EMI mode, also save to loanStorage so it's part
+        // of the EMI portfolio summary at the top of MyLoans (total
+        // outstanding, monthly burden) and can use the full amortising
+        // engine on the LoanDetail page.
+        if (repaymentMode === 'emi') {
+            const loan: SavedLoan = {
+                id,
+                nickName: nick,
+                loanType: 'gold_loan',
+                lenderName: '',
+                loanAmount,
+                interestRate,
+                tenureMonths,
+                emiAmount: activeResult.monthly,
+                rateType: 'fixed',
+                disbursementDate: todayStr(),
+                emiDueDay: 5,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                isActive: true,
+            };
+            saveLoanToStorage(loan);
+        }
         setLoanSaved(true);
     };
 

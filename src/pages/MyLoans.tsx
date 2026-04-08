@@ -115,6 +115,31 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
     if (!d) return null;
     try {
         const type = p.calculatorType;
+
+        // ── GOLD LOAN ──
+        // Gold Loan has two repayment modes: EMI (uses the amortising engine
+        // like a normal loan) and Bullet/Interest-Only (snapshot — only the
+        // pre-computed totals are valid). Handle bullet first; for EMI fall
+        // through to the standard loan branch below.
+        if (matchType(type, 'gold loan') && d.isGoldLoan) {
+            if (d.repaymentMode === 'bullet' || d.repaymentMode === 'interestOnly') {
+                const principal = d.loanAmount || 0;
+                const monthlyInt = d.monthlyPayment || 0;
+                const totalInt = d.totalInterest || (monthlyInt * (d.tenureMonths || 0));
+                return {
+                    label1: t('myLoans.metricAmount'),
+                    value1: formatINR(principal),
+                    label2: t('myLoans.metricEmi'),
+                    value2: formatINR(monthlyInt),
+                    label3: t('myLoans.metricInterest'),
+                    value3: formatINR(totalInt),
+                    progress: 100,
+                    statusText: `${d.goldWeight || 0}g ${d.purity || ''} · ${d.tierLtv || 75}% LTV`,
+                };
+            }
+            // EMI mode falls through to the standard loan branch below.
+        }
+
         // Overdraft is grouped with loans visually but uses snapshot data,
         // not the amortising loan engine. Handle it before the loan branch.
         if (matchType(type, 'overdraft', 'od')) {
