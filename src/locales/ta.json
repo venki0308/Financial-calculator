@@ -694,6 +694,13 @@
         "days": "நாட்கள்",
         "entriesLabel": "உள்ளீடுகள்",
         "downloadCustomReport": "தனிப்பயன் அறிக்கை பதிவிறக்கம்",
+        "downloadHealthReport": "ஆரோக்கிய அறிக்கை பதிவிறக்கம்",
+        "copiedFromPreviousMonth": "நகலெடுத்து சேமிக்கப்பட்டது",
+        "noPreviousMonthBudget": "முந்தைய மாத பட்ஜெட் இல்லை",
+        "updateEntry": "புதுப்பி",
+        "deleteEntry": "நீக்கு",
+        "confirmDelete": "உறுதிப்படுத்து?",
+        "subscriptionsSubtitle": "தொடர் கட்டணங்களைக் கண்காணி",
         "net": "நிகர"
     },
     "schemes": {

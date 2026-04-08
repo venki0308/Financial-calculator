@@ -2,13 +2,14 @@ import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from 'react
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus, Repeat } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExpenseTheme } from '../theme/expenseTheme';
 import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { migrateFromOldStore, getAllCategories, getAllAccounts } from '../utils/expenseStorage';
 import { getTodayStr } from '../utils/expenseCalculations';
+import type { Entry } from '../types/expense';
 
 // ─── LAZY-LOADED TAB COMPONENTS ─────────────────────────────
 const DailyTab = lazy(() => import('./expenses/DailyTab'));
@@ -17,27 +18,30 @@ const MonthlyTab = lazy(() => import('./expenses/MonthlyTab'));
 const YearlyTab = lazy(() => import('./expenses/YearlyTab'));
 const ReportsTab = lazy(() => import('./expenses/ReportsTab'));
 const BudgetTab = lazy(() => import('./expenses/BudgetTab'));
+const SubscriptionsTab = lazy(() => import('./expenses/SubscriptionsTab'));
 const AddEntrySheet = lazy(() => import('../components/AddEntrySheet'));
 
 // ─── TAB DEFINITIONS ─────────────────────────────────────────
 const TABS = [
-  { id: 'budget',  labelKey: 'expenses.budget',  icon: Target,       emoji: '\u{1F3AF}' },
-  { id: 'daily',   labelKey: 'expenses.daily',   icon: CalendarDays, emoji: '\u{1F4C5}' },
-  { id: 'weekly',  labelKey: 'expenses.weekly',  icon: Calendar,     emoji: '\u{1F4C6}' },
-  { id: 'monthly', labelKey: 'expenses.monthly', icon: BarChart3,    emoji: '\u{1F4CA}' },
-  { id: 'yearly',  labelKey: 'expenses.yearly',  icon: TrendingUp,   emoji: '\u{1F4C8}' },
-  { id: 'reports', labelKey: 'expenses.reports', icon: FileText,     emoji: '\u{1F4CB}' },
+  { id: 'budget',        labelKey: 'expenses.budget',        icon: Target,       emoji: '\u{1F3AF}' },
+  { id: 'daily',         labelKey: 'expenses.daily',         icon: CalendarDays, emoji: '\u{1F4C5}' },
+  { id: 'weekly',        labelKey: 'expenses.weekly',        icon: Calendar,     emoji: '\u{1F4C6}' },
+  { id: 'monthly',       labelKey: 'expenses.monthly',       icon: BarChart3,    emoji: '\u{1F4CA}' },
+  { id: 'yearly',        labelKey: 'expenses.yearly',        icon: TrendingUp,   emoji: '\u{1F4C8}' },
+  { id: 'subscriptions', labelKey: 'expenses.subscriptions', icon: Repeat,       emoji: '\u{1F501}' },
+  { id: 'reports',       labelKey: 'expenses.reports',       icon: FileText,     emoji: '\u{1F4CB}' },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
 
 const TAB_SUBTITLES: Record<TabId, string> = {
-  daily:   'expenses.dailySubtitle',
-  weekly:  'expenses.weeklySubtitle',
-  monthly: 'expenses.monthlySubtitle',
-  yearly:  'expenses.yearlySubtitle',
-  reports: 'expenses.reportsSubtitle',
-  budget:  'expenses.budgetSubtitle',
+  daily:         'expenses.dailySubtitle',
+  weekly:        'expenses.weeklySubtitle',
+  monthly:       'expenses.monthlySubtitle',
+  yearly:        'expenses.yearlySubtitle',
+  subscriptions: 'expenses.subscriptionsSubtitle',
+  reports:       'expenses.reportsSubtitle',
+  budget:        'expenses.budgetSubtitle',
 };
 
 // ─── LOADING FALLBACK ────────────────────────────────────────
@@ -66,6 +70,25 @@ export default function ExpenseTracker() {
   const [activeTab, setActiveTab] = useState<TabId>('budget');
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  // Edit state — when set, the AddEntrySheet opens in edit mode pre-filled
+  // with this entry. Tabs (Weekly/Monthly) call requestEdit(entry) to trigger.
+  const [editingEntry, setEditingEntry] = useState<Entry | null>(null);
+
+  const requestEdit = useCallback((entry: Entry) => {
+    setEditingEntry(entry);
+    setShowAddSheet(true);
+  }, []);
+
+  const handleSheetClose = useCallback(() => {
+    setShowAddSheet(false);
+    setEditingEntry(null);
+  }, []);
+
+  const handleSheetSave = useCallback(() => {
+    setShowAddSheet(false);
+    setEditingEntry(null);
+    setRefreshKey((k) => k + 1);
+  }, []);
 
   // Tabs that show the global FAB (Daily has its own)
   const showFab = ['weekly', 'monthly', 'yearly'].includes(activeTab);
@@ -199,10 +222,16 @@ export default function ExpenseTracker() {
             transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
           >
             <Suspense fallback={<TabLoader theme={theme} />}>
+              {/* refreshKey is bumped after the global FAB saves an entry, so
+                  Weekly/Monthly/Yearly re-fetch from storage immediately
+                  instead of waiting for a tab switch.
+                  onEditEntry lets the tabs request edit mode for an entry —
+                  parent then opens the shared AddEntrySheet pre-filled. */}
               {activeTab === 'daily' && <DailyTab />}
-              {activeTab === 'weekly' && <WeeklyTab />}
-              {activeTab === 'monthly' && <MonthlyTab />}
-              {activeTab === 'yearly' && <YearlyTab />}
+              {activeTab === 'weekly' && <WeeklyTab refreshKey={refreshKey} onEditEntry={requestEdit} />}
+              {activeTab === 'monthly' && <MonthlyTab refreshKey={refreshKey} onEditEntry={requestEdit} />}
+              {activeTab === 'yearly' && <YearlyTab refreshKey={refreshKey} />}
+              {activeTab === 'subscriptions' && <SubscriptionsTab />}
               {activeTab === 'reports' && <ReportsTab />}
               {activeTab === 'budget' && <BudgetTab />}
             </Suspense>
@@ -232,14 +261,18 @@ export default function ExpenseTracker() {
         </motion.button>
       )}
 
-      {/* ── Global Add Entry Sheet ── */}
+      {/* ── Global Add / Edit Entry Sheet ──
+           Opens for two reasons:
+             1. User taps the global FAB → showAddSheet = true (create mode)
+             2. A child tab calls requestEdit(entry) → editingEntry set + sheet opens (edit mode) */}
       {createPortal(
         <AnimatePresence>
           {showAddSheet && (
             <Suspense fallback={null}>
               <AddEntrySheet
-                onSave={() => { setShowAddSheet(false); setRefreshKey(k => k + 1); }}
-                onClose={() => setShowAddSheet(false)}
+                editEntry={editingEntry}
+                onSave={handleSheetSave}
+                onClose={handleSheetClose}
               />
             </Suspense>
           )}

@@ -694,6 +694,13 @@
         "days": "ದಿನಗಳು",
         "entriesLabel": "ನಮೂದುಗಳು",
         "downloadCustomReport": "ಕಸ್ಟಮ್ ವರದಿ ಡೌನ್‌ಲೋಡ್",
+        "downloadHealthReport": "ಆರೋಗ್ಯ ವರದಿ ಡೌನ್‌ಲೋಡ್",
+        "copiedFromPreviousMonth": "ನಕಲಿಸಿ ಉಳಿಸಲಾಗಿದೆ",
+        "noPreviousMonthBudget": "ಹಿಂದಿನ ತಿಂಗಳ ಬಜೆಟ್ ಇಲ್ಲ",
+        "updateEntry": "ನವೀಕರಿಸಿ",
+        "deleteEntry": "ಅಳಿಸಿ",
+        "confirmDelete": "ದೃಢೀಕರಿಸಿ?",
+        "subscriptionsSubtitle": "ಪುನರಾವರ್ತಿತ ಪಾವತಿಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ",
         "net": "ನಿವ್ವಳ"
     },
     "schemes": {

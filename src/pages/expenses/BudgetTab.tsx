@@ -110,6 +110,9 @@ export default function BudgetTab() {
 
   // ── saved feedback ────────────────────────────────────────
   const [saved, setSaved] = useState(false);
+  // ── copy-previous-month feedback ──────────────────────────
+  // 'idle' = default, 'copied' = success flash, 'empty' = no prev budget flash
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'empty'>('idle');
 
   // ── computed totals ───────────────────────────────────────
   const totalFixed = useMemo(() => getBudgetTotalFixed(budget), [budget]);
@@ -221,17 +224,32 @@ export default function BudgetTab() {
   };
 
   // ── copy previous month ───────────────────────────────────
+  // Two failure modes that needed fixing:
+  //   1. The previous version updated React state with setBudget() but
+  //      NEVER called saveBudget() — values were lost on tab switch.
+  //   2. When the previous month had no budget, it returned silently —
+  //      the user had no idea why nothing happened (matches the screenshot).
+  // Now: persists to storage AND surfaces a flash on the Copy button so
+  // both success and "no previous budget" cases are visible to the user.
   const handleCopyPrevious = () => {
     const prevRange = getMonthRange(monthOffset - 1);
     const prev = getBudgetForMonth(prevRange.monthStr);
-    if (!prev) return;
-    setBudget({
+    if (!prev) {
+      setCopyState('empty');
+      setTimeout(() => setCopyState('idle'), 2400);
+      return;
+    }
+    const copied: Budget = {
       ...prev,
       id: budget.id,
       month: range.monthStr,
       createdAt: budget.createdAt,
       updatedAt: new Date().toISOString(),
-    });
+    };
+    setBudget(copied);
+    saveBudget(copied);  // <-- THE PERSISTENCE FIX
+    setCopyState('copied');
+    setTimeout(() => setCopyState('idle'), 2400);
   };
 
   // ── category lookup helper ────────────────────────────────
@@ -1058,14 +1076,18 @@ export default function BudgetTab() {
           onClick={handleCopyPrevious}
           className="flex-1 py-3.5 rounded-2xl font-semibold text-xs border flex items-center justify-center gap-2"
           style={{
-            borderColor: theme.borderSubtle,
-            color: theme.textSecondary,
+            borderColor: copyState === 'empty' ? theme.accentExpense : copyState === 'copied' ? theme.accentIncome : theme.borderSubtle,
+            color: copyState === 'empty' ? theme.accentExpense : copyState === 'copied' ? theme.accentIncome : theme.textSecondary,
             backgroundColor: theme.bgCard,
             boxShadow: theme.shadowSoft,
           }}
         >
           <Copy size={14} />
-          {t('expenses.copyPreviousMonth')}
+          {copyState === 'copied'
+            ? `\u2713 ${t('expenses.copiedFromPreviousMonth')}`
+            : copyState === 'empty'
+              ? t('expenses.noPreviousMonthBudget')
+              : t('expenses.copyPreviousMonth')}
         </motion.button>
 
         <motion.button

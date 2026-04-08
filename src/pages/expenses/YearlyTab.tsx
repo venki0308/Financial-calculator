@@ -24,7 +24,13 @@ type TFn = (key: string, options?: any) => string;
 // YEARLY TAB — "Warm Wealth" Premium Design
 // ═══════════════════════════════════════════════════════════════
 
-export default function YearlyTab() {
+// `refreshKey` is bumped by ExpenseTracker when the global FAB saves an entry,
+// forcing useMemo deps to invalidate and re-fetch from storage.
+interface YearlyTabProps {
+  refreshKey?: number;
+}
+
+export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
   const { t } = useTranslation();
   const theme = useExpenseTheme();
 
@@ -38,7 +44,7 @@ export default function YearlyTab() {
   // ── All entries for the year ──
   const yearEntries = useMemo(
     () => getEntriesForYear(yearRange.year),
-    [yearRange.year],
+    [yearRange.year, refreshKey],
   );
 
   const yearSummary = useMemo(
@@ -55,7 +61,7 @@ export default function YearlyTab() {
       const isFuture = isCurrentYear && month > currentMonth;
       return { month, summary, hasData: entries.length > 0, isFuture };
     });
-  }, [yearRange.year, isCurrentYear, currentMonth]);
+  }, [yearRange.year, isCurrentYear, currentMonth, refreshKey]);
 
   // ── Top 10 spending categories ──
   const topCategories = useMemo(() => {

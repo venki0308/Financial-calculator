@@ -694,6 +694,13 @@
         "days": "రోజులు",
         "entriesLabel": "నమోదులు",
         "downloadCustomReport": "కస్టమ్ నివేదిక డౌన్‌లోడ్",
+        "downloadHealthReport": "ఆరోగ్య నివేదిక డౌన్‌లోడ్",
+        "copiedFromPreviousMonth": "కాపీ చేసి సేవ్ చేసారు",
+        "noPreviousMonthBudget": "మునుపటి నెల బడ్జెట్ లేదు",
+        "updateEntry": "నవీకరించండి",
+        "deleteEntry": "తొలగించు",
+        "confirmDelete": "నిర్ధారించండి?",
+        "subscriptionsSubtitle": "పునరావృత చెల్లింపులను ట్రాక్ చేయండి",
         "net": "నికర"
     },
     "schemes": {

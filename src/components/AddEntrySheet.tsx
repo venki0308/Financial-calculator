@@ -4,12 +4,12 @@
 
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useExpenseTheme } from '../theme/expenseTheme';
-import type { EntryType, PaymentMethod, Category } from '../types/expense';
+import type { Entry, EntryType, PaymentMethod } from '../types/expense';
 import { PAYMENT_METHOD_LABELS } from '../types/expense';
-import { saveEntry, createEntry, getAllCategories, getAllAccounts } from '../utils/expenseStorage';
+import { saveEntry, createEntry, deleteEntry, getAllCategories } from '../utils/expenseStorage';
 import { getTodayStr } from '../utils/expenseCalculations';
 
 const ENTRY_TYPES: { id: EntryType; emoji: string }[] = [
@@ -29,21 +29,31 @@ function typeColor(type: EntryType, et: ReturnType<typeof useExpenseTheme>): str
 
 interface Props {
   defaultDate?: string;
+  /** When set, the sheet opens in EDIT mode and pre-fills all fields from this entry.
+   *  Save calls saveEntry() with the SAME id, which storage treats as an update. */
+  editEntry?: Entry | null;
   onSave: () => void;
   onClose: () => void;
 }
 
-export default function AddEntrySheet({ defaultDate, onSave, onClose }: Props) {
+export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose }: Props) {
   const { t } = useTranslation();
   const et = useExpenseTheme();
   const categories = useMemo(() => getAllCategories(), []);
+  const isEditMode = !!editEntry;
 
-  const [entryType, setEntryType] = useState<EntryType>('expense');
-  const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(defaultDate || getTodayStr());
-  const [categoryId, setCategoryId] = useState('food_dining');
-  const [description, setDescription] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('upi');
+  // State is initialized ONCE from editEntry — passing a new editEntry while
+  // the sheet is already open will not re-prefill (consistent with how the
+  // sheet is mounted-on-open via AnimatePresence in the parent).
+  const [entryType, setEntryType] = useState<EntryType>(editEntry?.type ?? 'expense');
+  const [amount, setAmount] = useState(editEntry ? String(editEntry.amount) : '');
+  const [date, setDate] = useState(editEntry?.date ?? defaultDate ?? getTodayStr());
+  const [categoryId, setCategoryId] = useState(editEntry?.category ?? 'food_dining');
+  const [description, setDescription] = useState(editEntry?.description ?? '');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(editEntry?.paymentMethod ?? 'upi');
+
+  // Inline confirmation state for the in-sheet delete button
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const typeCats = useMemo(
     () => categories.filter(cat => cat.type === entryType && cat.isActive),
@@ -66,18 +76,49 @@ export default function AddEntrySheet({ defaultDate, onSave, onClose }: Props) {
   const handleSave = () => {
     if (!isValid) return;
     const cat = categories.find(c => c.id === categoryId);
-    const entry = createEntry({
-      type: entryType,
-      amount: parseFloat(amount),
-      date,
-      category: categoryId,
-      description: description || cat?.name || '',
-      paymentMethod,
-      accountId: undefined,
-      recurrence: 'none',
-    });
-    saveEntry(entry);
+    const finalDescription = description || cat?.name || '';
+
+    if (isEditMode && editEntry) {
+      // EDIT: rebuild the entry preserving id + createdAt, bump updatedAt.
+      // saveEntry() detects the existing id and overwrites in place.
+      const updated: Entry = {
+        ...editEntry,
+        type: entryType,
+        amount: parseFloat(amount),
+        date,
+        category: categoryId,
+        description: finalDescription,
+        paymentMethod,
+        updatedAt: new Date().toISOString(),
+      };
+      saveEntry(updated);
+    } else {
+      // CREATE: fresh entry with new id
+      const entry = createEntry({
+        type: entryType,
+        amount: parseFloat(amount),
+        date,
+        category: categoryId,
+        description: finalDescription,
+        paymentMethod,
+        accountId: undefined,
+        recurrence: 'none',
+      });
+      saveEntry(entry);
+    }
     onSave();
+  };
+
+  const handleDelete = () => {
+    if (!editEntry) return;
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      // Auto-reset after 3s if user doesn't confirm
+      setTimeout(() => setConfirmDelete(false), 3000);
+      return;
+    }
+    deleteEntry(editEntry.id);
+    onSave(); // closes sheet + triggers parent refresh
   };
 
   const handleQuickAmount = (val: number) => {
@@ -116,7 +157,9 @@ export default function AddEntrySheet({ defaultDate, onSave, onClose }: Props) {
           <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ backgroundColor: et.borderSubtle }} />
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-extrabold text-lg" style={{ color: et.textPrimary }}>
-              {t('expenses.addNewEntry', 'Add Entry')}
+              {isEditMode
+                ? t('expenses.editEntry', 'Edit Entry')
+                : t('expenses.addNewEntry', 'Add Entry')}
             </h3>
             <motion.button
               whileTap={{ scale: 0.85 }}
@@ -285,7 +328,7 @@ export default function AddEntrySheet({ defaultDate, onSave, onClose }: Props) {
           </div>
         </div>
 
-        {/* Save button */}
+        {/* Save / Update + (edit-only) Delete buttons */}
         <div
           className="flex-shrink-0 px-6 pt-3"
           style={{
@@ -294,15 +337,35 @@ export default function AddEntrySheet({ defaultDate, onSave, onClose }: Props) {
             backgroundColor: et.bgPrimary,
           }}
         >
-          <motion.button
-            whileTap={isValid ? { scale: 0.97 } : {}}
-            onClick={handleSave}
-            disabled={!isValid}
-            className="w-full py-3.5 rounded-2xl text-sm font-extrabold text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-            style={{ backgroundColor: currentTypeColor }}
-          >
-            {t('expenses.saveExpense', 'Save Entry')}
-          </motion.button>
+          <div className="flex gap-2">
+            {isEditMode && (
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={handleDelete}
+                className="px-4 py-3.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                style={{
+                  backgroundColor: confirmDelete ? et.accentExpense : et.accentExpense + '15',
+                  color: confirmDelete ? '#fff' : et.accentExpense,
+                  border: `1.5px solid ${et.accentExpense}${confirmDelete ? '' : '40'}`,
+                }}
+                aria-label={t('expenses.deleteEntry', 'Delete')}
+              >
+                <Trash2 size={14} />
+                {confirmDelete ? t('expenses.confirmDelete', 'Confirm?') : t('expenses.deleteEntry', 'Delete')}
+              </motion.button>
+            )}
+            <motion.button
+              whileTap={isValid ? { scale: 0.97 } : {}}
+              onClick={handleSave}
+              disabled={!isValid}
+              className="flex-1 py-3.5 rounded-2xl text-sm font-extrabold text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              style={{ backgroundColor: currentTypeColor }}
+            >
+              {isEditMode
+                ? t('expenses.updateEntry', 'Update Entry')
+                : t('expenses.saveExpense', 'Save Entry')}
+            </motion.button>
+          </div>
         </div>
       </motion.div>
     </motion.div>

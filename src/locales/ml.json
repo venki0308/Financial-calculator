@@ -693,6 +693,13 @@
         "days": "ദിവസങ്ങൾ",
         "entriesLabel": "എൻട്രികൾ",
         "downloadCustomReport": "ഇഷ്ടാനുസൃത റിപ്പോർട്ട് ഡൗൺലോഡ്",
+        "downloadHealthReport": "ആരോഗ്യ റിപ്പോർട്ട് ഡൗൺലോഡ്",
+        "copiedFromPreviousMonth": "പകർത്തി സംരക്ഷിച്ചു",
+        "noPreviousMonthBudget": "മുൻ മാസത്തെ ബജറ്റ് ഇല്ല",
+        "updateEntry": "അപ്ഡേറ്റ്",
+        "deleteEntry": "ഇല്ലാതാക്കുക",
+        "confirmDelete": "സ്ഥിരീകരിക്കണോ?",
+        "subscriptionsSubtitle": "ആവർത്തന പേയ്മെന്റുകൾ ട്രാക്ക് ചെയ്യുക",
         "net": "അറ്റം"
     },
     "schemes": {

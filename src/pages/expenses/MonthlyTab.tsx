@@ -89,7 +89,17 @@ function isCurrentWeek(startDate: string, endDate: string): boolean {
 
 // ─── Component ───────────────────────────────────────────────
 
-export default function MonthlyTab() {
+// `refreshKey` is bumped by ExpenseTracker when the global FAB saves an entry,
+// forcing useMemo deps to invalidate and re-fetch from storage.
+//
+// `onEditEntry` is the parent's edit handler — tapping a top-transaction row
+// calls it with the full Entry, opening the shared AddEntrySheet in edit mode.
+interface MonthlyTabProps {
+  refreshKey?: number;
+  onEditEntry?: (entry: Entry) => void;
+}
+
+export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabProps) {
   const { t } = useTranslation();
   const theme = useExpenseTheme();
   const isDark = theme.isDark;
@@ -104,18 +114,18 @@ export default function MonthlyTab() {
 
   const entries = useMemo(
     () => getEntriesForMonth(monthRange.year, monthRange.month),
-    [monthRange.year, monthRange.month],
+    [monthRange.year, monthRange.month, refreshKey],
   );
 
   const prevMonthRange = useMemo(() => getMonthRange(monthOffset - 1), [monthOffset]);
   const prevEntries = useMemo(
     () => getEntriesForMonth(prevMonthRange.year, prevMonthRange.month),
-    [prevMonthRange.year, prevMonthRange.month],
+    [prevMonthRange.year, prevMonthRange.month, refreshKey],
   );
 
   const budget = useMemo(
     () => getBudgetForMonth(monthRange.monthStr),
-    [monthRange.monthStr],
+    [monthRange.monthStr, refreshKey],
   );
 
   const summary = useMemo(
@@ -562,6 +572,7 @@ export default function MonthlyTab() {
               total={summary.totalExpenses}
               type="expense"
               topTransactions={topTransactions}
+              onEditEntry={onEditEntry}
               getCatInfo={getCatInfo}
               theme={theme}
               isDark={isDark}
@@ -574,6 +585,7 @@ export default function MonthlyTab() {
               total={summary.totalIncome}
               type="income"
               topTransactions={topTransactions}
+              onEditEntry={onEditEntry}
               getCatInfo={getCatInfo}
               theme={theme}
               isDark={isDark}
@@ -586,6 +598,7 @@ export default function MonthlyTab() {
               total={summary.totalInvestments}
               type="investment"
               topTransactions={topTransactions}
+              onEditEntry={onEditEntry}
               getCatInfo={getCatInfo}
               summary={summary}
               theme={theme}
@@ -893,6 +906,7 @@ interface CategoryBreakdownProps {
   total: number;
   type: 'expense' | 'income' | 'investment';
   topTransactions: Entry[];
+  onEditEntry?: (entry: Entry) => void;
   getCatInfo: (id: string) => { name: string; icon: string; color: string };
   summary?: PeriodSummary;
   theme: ReturnType<typeof useExpenseTheme>;
@@ -901,7 +915,7 @@ interface CategoryBreakdownProps {
 }
 
 function CategoryBreakdown({
-  categories, total, type, topTransactions, getCatInfo, summary, theme, isDark, t,
+  categories, total, type, topTransactions, onEditEntry, getCatInfo, summary, theme, isDark, t,
 }: CategoryBreakdownProps) {
   const accentColor = type === 'expense'
     ? theme.accentExpense
@@ -1048,8 +1062,12 @@ function CategoryBreakdown({
                   key={entry.id}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
+                  whileTap={onEditEntry ? { scale: 0.98 } : {}}
+                  onClick={() => onEditEntry?.(entry)}
+                  role={onEditEntry ? 'button' : undefined}
+                  tabIndex={onEditEntry ? 0 : undefined}
                   transition={{ duration: 0.2, delay: idx * 0.05 }}
-                  className="flex items-center gap-3 py-2 rounded-xl px-2 transition-colors"
+                  className="flex items-center gap-3 py-2 rounded-xl px-2 transition-colors cursor-pointer"
                   style={{
                     backgroundColor: isDark ? 'rgba(255,255,255,0.01)' : 'transparent',
                   }}

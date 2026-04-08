@@ -30,7 +30,15 @@ import {
   calculateNetWorth,
   generateInsights,
 } from '../../utils/expenseCalculations';
-import { generateExpenseReport } from '../../utils/pdfReportGenerator';
+import {
+  generateDailyPDF,
+  generateWeeklyPDF,
+  generateMonthlyPDF,
+  generateAnnualPDF,
+  generateCustomPDF,
+  generateHealthReportPDF,
+  generateExpenseCSV,
+} from '../../utils/expenseReportPDF';
 import SVGPieChart from '../../components/charts/SVGPieChart';
 import HealthScoreGauge from '../../components/charts/HealthScoreGauge';
 
@@ -162,34 +170,52 @@ export default function ReportsTab() {
     return `${fmt(s)} → ${fmt(e)}`;
   };
 
-  // Report generators
+  // Report generators — each calls the dedicated builder in expenseReportPDF.ts
+  // and passes the FULL data set (entries + budget + accounts where needed) so
+  // every report renders all sections from the spec.
   const handleGenerate = async (type: 'daily' | 'weekly' | 'monthly' | 'annual' | 'custom') => {
     setGenerating(type);
     try {
       switch (type) {
         case 'daily': {
           const entries = getEntriesForDateRange(reportDate, reportDate);
-          const dateLabel = new Date(reportDate + 'T00:00:00').toLocaleDateString('en-IN', {
-            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-          });
-          await generateExpenseReport('daily', entries, undefined, undefined, dateLabel);
+          // Pass that day's monthly budget so the Budget Check section can render
+          const monthStr = reportDate.slice(0, 7); // YYYY-MM
+          const dailyBudget = getBudgetForMonth(monthStr);
+          await generateDailyPDF({ date: reportDate, entries, budget: dailyBudget });
           break;
         }
         case 'weekly': {
           const entries = getEntriesForDateRange(selectedWeek.start, selectedWeek.end);
-          await generateExpenseReport('weekly', entries, undefined, undefined, selectedWeek.label);
+          // Previous week for the "vs Last Week" comparison
+          const prevWeek = getWeekRange(reportWeekOffset - 1);
+          const prevWeekEntries = getEntriesForDateRange(prevWeek.start, prevWeek.end);
+          await generateWeeklyPDF({
+            startDate: selectedWeek.start,
+            endDate: selectedWeek.end,
+            rangeLabel: selectedWeek.label,
+            entries,
+            prevWeekEntries,
+          });
           break;
         }
         case 'monthly': {
           const entries = getEntriesForMonth(selectedMonth.year, selectedMonth.month);
           const monthBudget = getBudgetForMonth(selectedMonth.monthStr);
           const accs = getAllAccounts();
-          await generateExpenseReport('monthly', entries, monthBudget, accs, selectedMonth.label);
+          await generateMonthlyPDF({
+            year: selectedMonth.year,
+            month: selectedMonth.month,
+            monthLabel: selectedMonth.label,
+            entries,
+            budget: monthBudget,
+            accounts: accs,
+          });
           break;
         }
         case 'annual': {
           const entries = getEntriesForYear(selectedYear.year);
-          await generateExpenseReport('annual', entries, undefined, undefined, `Year ${selectedYear.year}`);
+          await generateAnnualPDF({ year: selectedYear.year, entries });
           break;
         }
         case 'custom': {
@@ -199,13 +225,70 @@ export default function ReportsTab() {
           }
           const entries = getEntriesForDateRange(customStart, customEnd);
           const label = formatRangeLabel(customStart, customEnd);
-          // Use 'monthly' template for custom range (richest layout)
-          await generateExpenseReport('monthly', entries, undefined, getAllAccounts(), label);
+          await generateCustomPDF({
+            startDate: customStart,
+            endDate: customEnd,
+            rangeLabel: label,
+            entries,
+            accounts: getAllAccounts(),
+          });
           break;
         }
       }
     } catch (err) {
       console.error('Report generation failed:', err);
+      // Toast lives in expenseReportPDF.ts (it shows the user-facing message);
+      // here we only need to clear the spinner state.
+    } finally {
+      setGenerating(null);
+    }
+  };
+
+  // CSV export — accountant-friendly raw data dump for the custom date range.
+  // Always uses the currently-selected custom range, since CSV is most useful
+  // for "give me everything between these dates" workflows.
+  const handleGenerateCSV = async () => {
+    setGenerating('csv');
+    try {
+      if (customStart > customEnd) {
+        console.warn('Invalid range: start > end');
+        return;
+      }
+      const entries = getEntriesForDateRange(customStart, customEnd);
+      const label = formatRangeLabel(customStart, customEnd);
+      await generateExpenseCSV({
+        startDate: customStart,
+        endDate: customEnd,
+        rangeLabel: label,
+        entries,
+      });
+    } catch (err) {
+      console.error('CSV generation failed:', err);
+    } finally {
+      setGenerating(null);
+    }
+  };
+
+  // Health report generator — translates i18n insight keys before passing to
+  // the PDF builder (the PDF module is i18n-agnostic by design).
+  const handleGenerateHealth = async () => {
+    setGenerating('health');
+    try {
+      const translatedInsights = insights.map((i) => ({
+        title: t(i.titleKey),
+        description: t(i.descKey),
+        value: i.value,
+        tone: i.type,
+      }));
+      await generateHealthReportPDF({
+        monthLabel: currentMonth.label,
+        summary: currentSummary,
+        health: healthScore,
+        netWorth,
+        insights: translatedInsights,
+      });
+    } catch (err) {
+      console.error('Health report generation failed:', err);
     } finally {
       setGenerating(null);
     }
@@ -338,6 +421,23 @@ export default function ReportsTab() {
                   style={{ backgroundColor: `${gradeColor}15`, color: gradeColor }}>
                   {currentMonth.label}
                 </span>
+                {/* Download Health Report button */}
+                <button
+                  onClick={handleGenerateHealth}
+                  disabled={generating !== null}
+                  title={t('expenses.downloadHealthReport')}
+                  aria-label={t('expenses.downloadHealthReport')}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center transition-all active:scale-95 disabled:opacity-50"
+                  style={{ backgroundColor: `${gradeColor}15`, color: gradeColor }}
+                >
+                  {generating === 'health' ? (
+                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                      <Download size={12} />
+                    </motion.div>
+                  ) : (
+                    <Download size={12} />
+                  )}
+                </button>
               </div>
 
               {/* Gauge */}
@@ -1081,24 +1181,48 @@ export default function ReportsTab() {
                 </div>
               </div>
 
-              {/* Download button */}
-              <button
-                onClick={() => handleGenerate('custom')}
-                disabled={generating !== null || customStart > customEnd}
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-1.5"
-                style={{ backgroundColor: theme.accentInvestment }}
-              >
-                {generating === 'custom' ? (
-                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
-                    <Download size={14} />
-                  </motion.div>
-                ) : (
-                  <>
-                    <Download size={14} />
-                    {t('expenses.downloadCustomReport')}
-                  </>
-                )}
-              </button>
+              {/* Download buttons — PDF (rich report) + CSV (raw data for accountants) */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleGenerate('custom')}
+                  disabled={generating !== null || customStart > customEnd}
+                  className="flex-[1.6] py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                  style={{ backgroundColor: theme.accentInvestment }}
+                >
+                  {generating === 'custom' ? (
+                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                      <Download size={14} />
+                    </motion.div>
+                  ) : (
+                    <>
+                      <Download size={14} />
+                      {t('expenses.downloadCustomReport')}
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleGenerateCSV}
+                  disabled={generating !== null || customStart > customEnd}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                  style={{
+                    backgroundColor: theme.bgCard,
+                    color: theme.accentInvestment,
+                    border: `1.5px solid ${theme.accentInvestment}50`,
+                  }}
+                  title={t('expenses.downloadCSV', 'Download CSV')}
+                >
+                  {generating === 'csv' ? (
+                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                      <Download size={14} />
+                    </motion.div>
+                  ) : (
+                    <>
+                      <Download size={14} />
+                      CSV
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

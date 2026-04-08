@@ -57,7 +57,19 @@ function entryTypeColor(et: ReturnType<typeof useExpenseTheme>, type: string): s
 
 /* ── component ── */
 
-export default function WeeklyTab() {
+// `refreshKey` is bumped by ExpenseTracker after the global FAB saves an entry.
+// Including it in the entries useMemo deps forces a re-fetch from storage so the
+// freshly added entry shows up immediately without a tab switch.
+//
+// `onEditEntry` is a parent callback. When the user taps a transaction row, the
+// tab calls this with the full Entry, and the parent opens the shared
+// AddEntrySheet pre-filled in edit mode.
+interface WeeklyTabProps {
+  refreshKey?: number;
+  onEditEntry?: (entry: Entry) => void;
+}
+
+export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProps) {
   const { t } = useTranslation();
   const et = useExpenseTheme();
 
@@ -79,14 +91,14 @@ export default function WeeklyTab() {
   const week = useMemo(() => getWeekRange(weekOffset), [weekOffset]);
   const prevWeek = useMemo(() => getWeekRange(weekOffset - 1), [weekOffset]);
 
-  /* ── entries ── */
+  /* ── entries (refreshKey is in deps so global-FAB saves trigger refetch) ── */
   const weekEntries = useMemo(
     () => getEntriesForDateRange(week.start, week.end),
-    [week],
+    [week, refreshKey],
   );
   const prevWeekEntries = useMemo(
     () => getEntriesForDateRange(prevWeek.start, prevWeek.end),
-    [prevWeek],
+    [prevWeek, refreshKey],
   );
 
   /* ── summaries ── */
@@ -438,7 +450,10 @@ export default function WeeklyTab() {
                             return (
                               <div
                                 key={entry.id}
-                                className="flex items-center gap-2.5 py-1"
+                                onClick={() => onEditEntry?.(entry)}
+                                role={onEditEntry ? 'button' : undefined}
+                                tabIndex={onEditEntry ? 0 : undefined}
+                                className="flex items-center gap-2.5 py-1 cursor-pointer"
                               >
                                 <span
                                   className="w-6 h-6 rounded-md flex items-center justify-center text-xs flex-shrink-0"
@@ -645,7 +660,11 @@ export default function WeeklyTab() {
                         key={entry.id}
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-3 py-2"
+                        whileTap={onEditEntry ? { scale: 0.98 } : {}}
+                        onClick={() => onEditEntry?.(entry)}
+                        role={onEditEntry ? 'button' : undefined}
+                        tabIndex={onEditEntry ? 0 : undefined}
+                        className="flex items-center gap-3 py-2 cursor-pointer"
                       >
                         {/* Icon card */}
                         <div

@@ -692,6 +692,13 @@
         "days": "दिन",
         "entriesLabel": "प्रविष्टियां",
         "downloadCustomReport": "कस्टम रिपोर्ट डाउनलोड करें",
+        "downloadHealthReport": "हेल्थ रिपोर्ट डाउनलोड करें",
+        "copiedFromPreviousMonth": "कॉपी और सेव हो गया",
+        "noPreviousMonthBudget": "पिछले महीने का बजट नहीं",
+        "updateEntry": "अपडेट करें",
+        "deleteEntry": "हटाएं",
+        "confirmDelete": "पुष्टि करें?",
+        "subscriptionsSubtitle": "आवर्ती भुगतान ट्रैक करें",
         "net": "शुद्ध"
     },
     "schemes": {
