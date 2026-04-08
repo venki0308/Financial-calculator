@@ -3301,7 +3301,8 @@
         "popularCities": "Popular Cities",
         "noMatchingCities": "No matching cities found",
         "searchHint": "Try \"India\", \"Japan\", \"UTC+5\"",
-        "cityAdded": "{{city}} added to World Clock"
+        "cityAdded": "{{city}} added to World Clock",
+        "matchesFound": "{{count}} matches found"
     },
     "age": {
         "title": "Age Calculator",

@@ -2837,7 +2837,8 @@
         "twentyFourHr": "24-மணி",
         "upcomingClockChange": "வரவிருக்கும் கடிகார மாற்றம்",
         "utcOffset": "UTC ஆஃப்செட்",
-        "whatIfScheduler": "என்னவாகும்? திட்டமிடல்"
+        "whatIfScheduler": "என்னவாகும்? திட்டமிடல்",
+        "matchesFound": "{{count}} முடிவுகள் கண்டறியப்பட்டன"
     },
     "age": {
         "title": "வயது கால்குலேட்டர்",

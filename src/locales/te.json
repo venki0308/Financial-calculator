@@ -2837,7 +2837,8 @@
         "popularCities": "ప్రముఖ నగరాలు",
         "noMatchingCities": "సరిపోలే నగరాలు కనుగొనబడలేదు",
         "searchHint": "\"India\", \"Japan\", \"UTC+5\" ప్రయత్నించండి",
-        "cityAdded": "{{city}} వరల్డ్ క్లాక్‌కు జోడించబడింది"
+        "cityAdded": "{{city}} వరల్డ్ క్లాక్‌కు జోడించబడింది",
+        "matchesFound": "{{count}} ఫలితాలు దొరికాయి"
     },
     "age": {
         "title": "వయసు కాలిక్యులేటర్",

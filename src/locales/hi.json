@@ -2835,7 +2835,8 @@
         "popularCities": "लोकप्रिय शहर",
         "noMatchingCities": "कोई मिलते-जुलते शहर नहीं मिले",
         "searchHint": "\"India\", \"Japan\", \"UTC+5\" खोजें",
-        "cityAdded": "{{city}} विश्व घड़ी में जोड़ा गया"
+        "cityAdded": "{{city}} विश्व घड़ी में जोड़ा गया",
+        "matchesFound": "{{count}} परिणाम मिले"
     },
     "age": {
         "title": "आयु कैलकुलेटर",

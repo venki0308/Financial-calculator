@@ -2685,7 +2685,8 @@
         "popularCities": "ಜನಪ್ರಿಯ ನಗರಗಳು",
         "noMatchingCities": "ಹೊಂದಿಕೆಯಾಗುವ ನಗರಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
         "searchHint": "\"India\", \"Japan\", \"UTC+5\" ಪ್ರಯತ್ನಿಸಿ",
-        "cityAdded": "{{city}} ವಿಶ್ವ ಗಡಿಯಾರಕ್ಕೆ ಸೇರಿಸಲಾಗಿದೆ"
+        "cityAdded": "{{city}} ವಿಶ್ವ ಗಡಿಯಾರಕ್ಕೆ ಸೇರಿಸಲಾಗಿದೆ",
+        "matchesFound": "{{count}} ಫಲಿತಾಂಶಗಳು ಸಿಕ್ಕಿವೆ"
     },
     "mortgage": {
         "add": "ಸೇರಿಸಿ",

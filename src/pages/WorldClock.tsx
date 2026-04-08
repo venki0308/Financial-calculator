@@ -100,18 +100,49 @@ function useSharedTime() {
 // ────────────────────────────────────────────────────────────────────────────
 // TZ Picker BottomSheet
 // ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Normalise a string for case- and accent-insensitive search.
+ *
+ *   "São Paulo" → "sao paulo"
+ *   "Brasília"  → "brasilia"
+ *   "ZIMBABWE"  → "zimbabwe"
+ *
+ * Uses Unicode NFD decomposition to strip combining marks (diacritics),
+ * then lowercases and trims. This is critical for matching cities with
+ * accented characters (São Paulo, Brasília, Zürich, México) when users
+ * type plain ASCII queries on a regular keyboard.
+ */
+function normalizeForSearch(s: string): string {
+    return (s || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
+
+/**
+ * Test if a TimezoneInfo entry matches a (normalised) query string.
+ * Single source of truth for both the Compare picker and the main Add panel.
+ */
+function tzMatches(tz: TimezoneInfo, normalisedQuery: string): boolean {
+    if (!normalisedQuery) return true;
+    return (
+        normalizeForSearch(tz.city).includes(normalisedQuery) ||
+        normalizeForSearch(tz.country).includes(normalisedQuery) ||
+        normalizeForSearch(tz.iana).includes(normalisedQuery) ||
+        normalizeForSearch(tz.searchTerms || '').includes(normalisedQuery)
+    );
+}
+
 function filterZones(q: string) {
-    const lq = q.toLowerCase().trim();
-    if (!lq || lq.length < 1) {
+    const nq = normalizeForSearch(q);
+    if (!nq) {
         const pop = POPULAR_IANA.map(i => WORLD_TIMEZONES.find(t => t.iana === i)).filter(Boolean) as TimezoneInfo[];
         const rest = WORLD_TIMEZONES.filter(t => !POPULAR_IANA.includes(t.iana));
         return [...pop, ...rest];
     }
-    return WORLD_TIMEZONES.filter(t =>
-        t.city.toLowerCase().includes(lq) ||
-        t.country.toLowerCase().includes(lq) ||
-        t.iana.toLowerCase().includes(lq)
-    );
+    return WORLD_TIMEZONES.filter(t => tzMatches(t, nq));
 }
 
 function getZoneLabel(iana: string) {
@@ -1194,43 +1225,46 @@ export default function WorldClock() {
         return sorted;
     }, [clocks]);
 
-    // Enhanced Search logic
+    // Enhanced search — uses the shared `normalizeForSearch` + `tzMatches`
+    // helpers (defined at the top of this file) so the Add panel and the
+    // Compare picker behave identically. Diacritic-stripping means a query
+    // like "sao paulo" matches "São Paulo / Brasília" and "zimba" matches
+    // both "Zimbabwe" and the searchTerms field "zimbabwe harare zw".
+    //
+    // Search activates as soon as the user types ANY character (was 2 before),
+    // so single-letter and partial matches surface immediately.
     const availableZones = useMemo(() => {
-        const q = searchQuery.toLowerCase().trim();
+        const nq = normalizeForSearch(searchQuery);
         const excludeIanas = clocks.map(c => c.timezone);
         const notSelected = WORLD_TIMEZONES.filter(t => !excludeIanas.includes(t.iana));
 
-        if (!q || q.length < 2) {
-            // Show popular first, keeping the order of POPULAR_IANA to ensure Karachi is at the bottom
+        if (!nq) {
+            // No query — show popular first, then everything else
             const popular = POPULAR_IANA.map(iana => notSelected.find(t => t.iana === iana)).filter(Boolean) as TimezoneInfo[];
             const popularIanas = popular.map(t => t.iana);
             const rest = notSelected.filter(t => !popularIanas.includes(t.iana));
             return [...popular, ...rest];
         }
 
+        // Active query — match across city, country, iana, searchTerms,
+        // AND the live UTC offset string (so "+5" or "GMT+5" finds India).
         const searchDate = new Date();
-        // Calculate offsets on the fly for search strings
-        const filtered = notSelected.filter(t => {
-            let offsetStr = 'UTC';
+        return notSelected.filter(t => {
+            if (tzMatches(t, nq)) return true;
+            // Offset fallback
             try {
-                offsetStr = new Intl.DateTimeFormat('en-US', {
+                const offsetStr = new Intl.DateTimeFormat('en-US', {
                     timeZone: t.iana, timeZoneName: 'shortOffset',
-                }).formatToParts(searchDate).find(p => p.type === 'timeZoneName')?.value || 'UTC';
-            } catch (e) {
-                // Ignore invalid timezones
+                }).formatToParts(searchDate).find(p => p.type === 'timeZoneName')?.value || '';
+                return offsetStr.toLowerCase().includes(nq);
+            } catch {
+                return false;
             }
-            
-            return (
-                t.searchTerms.includes(q) ||
-                t.city.toLowerCase().includes(q) ||
-                t.country.toLowerCase().includes(q) ||
-                t.iana.toLowerCase().includes(q) ||
-                offsetStr.toLowerCase().includes(q)
-            );
         });
-
-        return filtered;
     }, [clocks, searchQuery]);
+
+    /** True when the user has typed something in the Add panel search box. */
+    const isSearchingZones = searchQuery.trim().length > 0;
 
     const showToast = (msg: string) => {
         setToastMessage(msg);
@@ -1351,7 +1385,11 @@ export default function WorldClock() {
                             <div className="flex items-center justify-between p-6 pb-3 flex-shrink-0">
                                 <div>
                                     <h3 className="text-lg font-bold text-foreground">{t('worldClock.addTimezone')}</h3>
-                                    <p className="text-muted-foreground text-xs">{t('worldClock.countriesAvailable', { count: WORLD_TIMEZONES.length })}</p>
+                                    <p className="text-muted-foreground text-xs">
+                                        {isSearchingZones
+                                            ? t('worldClock.matchesFound', { count: availableZones.length })
+                                            : t('worldClock.countriesAvailable', { count: WORLD_TIMEZONES.length })}
+                                    </p>
                                 </div>
                                 <button onClick={() => { setShowAddPanel(false); setSearchQuery(''); }}
                                     className="p-2 rounded-xl bg-muted text-muted-foreground">
