@@ -14,6 +14,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
+import SaveNameDialog from '../components/SaveNameDialog';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -45,6 +46,7 @@ export default function CompoundInterestCalculator() {
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [investmentDate, setInvestmentDate] = useState('');
+    const [showNameDialog, setShowNameDialog] = useState(false);
     const [page, setPage] = useState(1);
 
     // Core Calculation (Actual)
@@ -92,19 +94,21 @@ export default function CompoundInterestCalculator() {
         return { msg: t('ci.insightDefault'), type: 'info' };
     }, [rate, inflation, years, result.amount, principal, t]);
 
-    const handleSave = () => {
+    const suggestedName = `Compound Interest — ${formatINR(principal)} × ${years}Y`;
+
+    const handleSave = (customName: string) => {
         const calcId = `ci-${Date.now()}`;
         addSaved({
             id: calcId,
             calculatorType: 'ci',
-            inputValues: { principal, rate, years, freq },
+            inputValues: { principal, rate, years, freq, name: customName },
             resultValues: { primary: result.amount, label: t('ci.maturityValue'), invested: principal, returns: result.interest },
             timestamp: Date.now(),
         });
         // Also save to live tracker store so it appears in My Loans
         addProfile({
             id: calcId,
-            name: `${formatINR(principal)} @ ${rate}% × ${years}Y`,
+            name: customName,
             calculatorType: 'Compound Interest',
             profileData: {
                 principal,
@@ -355,10 +359,18 @@ export default function CompoundInterestCalculator() {
                         </button>
                     </div>
                 ) : (
-                    <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-purple text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-purple/20">
+                    <button onClick={() => setShowNameDialog(true)} className="w-full py-3.5 rounded-2xl bg-brand-purple text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-purple/20">
                         <Save size={18} /> {t('ci.saveCalculation')}
                     </button>
                 )}
+
+                <SaveNameDialog
+                    open={showNameDialog}
+                    onClose={() => setShowNameDialog(false)}
+                    onConfirm={(name) => handleSave(name)}
+                    defaultName={suggestedName}
+                />
+
 
                 {/* 3. ADVANCED DETAILS (Collapsible) */}
                 <div className="rounded-3xl border border-border bg-card overflow-hidden">

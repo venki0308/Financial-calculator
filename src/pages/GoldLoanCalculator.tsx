@@ -27,6 +27,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import CibilBadge from '../components/CibilBadge';
 import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import LiveLoanStatus from '../components/LiveLoanStatus';
+import SaveNameDialog from '../components/SaveNameDialog';
 import type { LoanProfile } from '../utils/loanStatusEngine';
 import { calculateReducingEMI, formatINR, formatINRShort } from '../utils/calculations';
 import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
@@ -195,6 +196,7 @@ export default function GoldLoanCalculator() {
     const [showSensitivity, setShowSensitivity] = useState(true);
     const [calculated, setCalculated] = useState(false);
     const [loanSaved, setLoanSaved] = useState(false);
+    const [showNameDialog, setShowNameDialog] = useState(false);
 
     const chartRef = useRef<any>(null);
 
@@ -413,11 +415,9 @@ export default function GoldLoanCalculator() {
      * The nickName drops the gram count for Mode B (where the user entered
      * loan amount, not weight) and uses the loan amount instead.
      */
-    const handleSaveToMyLoans = () => {
+    const handleSaveToMyLoans = (customName: string) => {
         const id = generateLoanId();
-        const nick = mode === 'byWeight'
-            ? `${goldWeight}g ${purity} ${t('goldLoan.gold')}`
-            : `${formatINR(loanAmount)} ${purity} ${t('goldLoan.gold')}`;
+        const nick = customName;
 
         // Always save the rich gold-specific snapshot to the live profile
         // store so MyLoans can show purity, weight, gold value and tier LTV.
@@ -1011,13 +1011,23 @@ export default function GoldLoanCalculator() {
                                         <Check size={14} /> {t('common.viewInMyLoans', 'View')}
                                     </button>
                                 ) : (
-                                    <button onClick={handleSaveToMyLoans}
+                                    <button onClick={() => setShowNameDialog(true)}
                                         className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-xs border"
                                         style={{ borderColor: c.border, color: c.text, backgroundColor: c.card }}
                                     >
                                         <Save size={14} /> {t('goldLoan.saveToMyLoans')}
                                     </button>
                                 )}
+
+                                <SaveNameDialog
+                                    open={showNameDialog}
+                                    onClose={() => setShowNameDialog(false)}
+                                    onConfirm={(name) => handleSaveToMyLoans(name)}
+                                    defaultName={mode === 'byWeight'
+                                        ? `${goldWeight}g ${purity} Gold Loan`
+                                        : `${formatINR(loanAmount)} ${purity} Gold Loan`}
+                                />
+
                                 <button onClick={handlePDF}
                                     className="flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-xs border"
                                     style={{ borderColor: c.border, color: c.text, backgroundColor: c.card }}

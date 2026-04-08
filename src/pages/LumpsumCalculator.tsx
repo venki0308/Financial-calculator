@@ -11,6 +11,7 @@ import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import SaveNameDialog from '../components/SaveNameDialog';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -46,6 +47,7 @@ export default function LumpsumCalculator() {
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [investmentDate, setInvestmentDate] = useState('');
+    const [showNameDialog, setShowNameDialog] = useState(false);
     const [page, setPage] = useState(1);
 
     // 1. CORE CALCULATION
@@ -114,19 +116,21 @@ export default function LumpsumCalculator() {
     }, [rate, result.realRate, inflation, years, result.wealthErosion, goalData, showGoal, targetAmount, t]);
 
 
-    const handleSave = () => {
+    const suggestedName = `Lumpsum — ${formatINR(principal)} × ${years}Y`;
+
+    const handleSave = (customName: string) => {
         const calcId = `lump-${Date.now()}`;
         addSaved({
             id: calcId,
             calculatorType: 'lumpsum',
-            inputValues: { principal, rate, years },
+            inputValues: { principal, rate, years, name: customName },
             resultValues: { primary: result.fv, label: t('lumpsum.wealthGenerated'), invested: principal, returns: result.fv - principal },
             timestamp: Date.now(),
         });
         // Also save to live tracker store so it appears in My Loans / Trackers
         addProfile({
             id: calcId,
-            name: `${formatINR(principal)} @ ${rate}% × ${years}Y`,
+            name: customName,
             calculatorType: 'Lumpsum',
             profileData: {
                 principal,
@@ -334,10 +338,18 @@ export default function LumpsumCalculator() {
                         </button>
                     </div>
                 ) : (
-                    <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-blue text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
+                    <button onClick={() => setShowNameDialog(true)} className="w-full py-3.5 rounded-2xl bg-brand-blue text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
                         <Save size={18} /> {t('lumpsum.saveCalculation')}
                     </button>
                 )}
+
+                <SaveNameDialog
+                    open={showNameDialog}
+                    onClose={() => setShowNameDialog(false)}
+                    onConfirm={(name) => handleSave(name)}
+                    defaultName={suggestedName}
+                />
+
 
 
                 {/* 3. ADVANCED DETAILS */}

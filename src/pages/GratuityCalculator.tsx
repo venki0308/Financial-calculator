@@ -10,6 +10,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
 import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
+import SaveNameDialog from '../components/SaveNameDialog';
 import { calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
 import RiskCategoryTags from '../components/RiskCategoryTags';
@@ -42,6 +43,7 @@ export default function GratuityCalculator() {
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [joiningDate, setJoiningDate] = useState('');
+    const [showNameDialog, setShowNameDialog] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
 
     const result = useMemo(() => {
@@ -98,19 +100,21 @@ export default function GratuityCalculator() {
         };
     }, [salary, years, annualIncome, taxRegime, salaryHike, projectionYears]);
 
-    const handleSave = () => {
+    const suggestedName = `Gratuity — ${formatINR(salary)} × ${years}Y`;
+
+    const handleSave = (customName: string) => {
         const calcId = crypto.randomUUID();
         addSaved({
             id: calcId,
             calculatorType: t('gratuity.calculatorType'),
-            inputValues: { salary, years },
+            inputValues: { salary, years, name: customName },
             resultValues: result,
             timestamp: Date.now()
         });
         // Mirror into live tracker store so it appears in My Loans
         addProfile({
             id: calcId,
-            name: `Gratuity ${formatINR(salary)} × ${years}Y`,
+            name: customName,
             calculatorType: 'Gratuity',
             profileData: {
                 lastSalary: salary,
@@ -227,12 +231,20 @@ export default function GratuityCalculator() {
                             </button>
                         </div>
                     ) : (
-                        <button onClick={handleSave} className="p-2 rounded-xl bg-card border border-border text-brand-blue">
+                        <button onClick={() => setShowNameDialog(true)} className="p-2 rounded-xl bg-card border border-border text-brand-blue">
                             <Save size={18} />
                         </button>
                     )}
                 </div>
             </div>
+
+            <SaveNameDialog
+                open={showNameDialog}
+                onClose={() => setShowNameDialog(false)}
+                onConfirm={(name) => handleSave(name)}
+                defaultName={suggestedName}
+            />
+
 
             <div className="px-4 pt-5 pb-28 space-y-4">
                 {/* Inputs */}

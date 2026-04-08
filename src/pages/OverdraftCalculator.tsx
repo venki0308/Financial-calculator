@@ -13,6 +13,7 @@ import { useAppColors } from '../theme/useAppColors';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
+import SaveNameDialog from '../components/SaveNameDialog';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { todayStr } from '../utils/dateUtils';
 
@@ -39,10 +40,11 @@ export default function OverdraftCalculator() {
   const [saved, setSaved] = useState(false);
   const [lastSavedId, setLastSavedId] = useState<string | null>(null);
   const [loanSaved, setLoanSaved] = useState(false);
+  const [showNameDialog, setShowNameDialog] = useState(false);
 
-  const handleSaveToMyLoans = () => {
+  const handleSaveToMyLoans = (customName: string) => {
     const id = generateLoanId();
-    const nick = `${odType === 'business' ? 'Business' : odType === 'personal' ? 'Personal' : odType === 'salary' ? 'Salary' : 'Secured'} OD`;
+    const nick = customName;
 
     // Save the rich snapshot to live profile store first so MyLoans uses
     // the dedicated Overdraft handler in computeMetrics() — that handler
@@ -784,10 +786,17 @@ export default function OverdraftCalculator() {
               <button onClick={() => navigate('/my-loans')} className="ml-auto text-xs font-bold text-violet-500">{t('tw.viewInMyLoans')}</button>
             </div>
           ) : (
-            <button onClick={handleSaveToMyLoans} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 font-bold text-sm border border-emerald-500/20">
+            <button onClick={() => setShowNameDialog(true)} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 font-bold text-sm border border-emerald-500/20">
               <Save size={16} /> {t('tw.saveToMyLoans')}
             </button>
           )}
+
+          <SaveNameDialog
+            open={showNameDialog}
+            onClose={() => setShowNameDialog(false)}
+            onConfirm={(name) => handleSaveToMyLoans(name)}
+            defaultName={`${odType === 'business' ? 'Business' : odType === 'personal' ? 'Personal' : odType === 'salary' ? 'Salary' : 'Secured'} OD — ${formatINR(utilizedNum)}`}
+          />
         </div>
       )}
 

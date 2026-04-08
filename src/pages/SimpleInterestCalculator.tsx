@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
+import SaveNameDialog from '../components/SaveNameDialog';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { formatINR } from '../utils/calculations';
@@ -91,6 +92,7 @@ export default function SimpleInterestCalculator() {
     const [trackerSaved, setTrackerSaved] = useState(false);
     const [trackerSavedId, setTrackerSavedId] = useState<string | null>(null);
     const [loanStartDate, setLoanStartDate] = useState('');
+    const [showNameDialog, setShowNameDialog] = useState(false);
 
     const result = useMemo(() => {
         if (mode === 'flat') {
@@ -158,11 +160,13 @@ export default function SimpleInterestCalculator() {
         return { interest: Math.round(r.compoundInterest), totalPayable: Math.round(r.totalPayable), rateLabel: `${annualRate}% (cmpd)` };
     }, [mode, result, flatRate, annualRate]);
 
-    const handleTrackerSave = () => {
+    const suggestedName = `Simple Interest — ${formatINR(principal)} × ${tenure}M`;
+
+    const handleTrackerSave = (customName: string) => {
         const id = `si-${Date.now()}`;
         addProfile({
             id,
-            name: `${formatINR(principal)} • ${trackerSnapshot.rateLabel} × ${tenure}M`,
+            name: customName,
             calculatorType: 'Simple Interest',
             profileData: {
                 principal,
@@ -715,11 +719,18 @@ export default function SimpleInterestCalculator() {
                             </button>
                         </div>
                     ) : (
-                        <button onClick={handleTrackerSave}
+                        <button onClick={() => setShowNameDialog(true)}
                             className="w-full py-3.5 rounded-2xl bg-brand-purple text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/20">
                             <Save size={18} /> {t('myLoans.saveToTracker')}
                         </button>
                     )}
+
+                    <SaveNameDialog
+                        open={showNameDialog}
+                        onClose={() => setShowNameDialog(false)}
+                        onConfirm={(name) => handleTrackerSave(name)}
+                        defaultName={suggestedName}
+                    />
                 </div>
 
                 {/* Download buttons */}

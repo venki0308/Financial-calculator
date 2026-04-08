@@ -11,6 +11,7 @@ import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import SaveNameDialog from '../components/SaveNameDialog';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -45,6 +46,7 @@ export default function EPFCalculator() {
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [joiningDate, setJoiningDate] = useState('');
+    const [showNameDialog, setShowNameDialog] = useState(false);
     const [page, setPage] = useState(1);
 
     // 1. CORE CALCULATION
@@ -167,19 +169,21 @@ export default function EPFCalculator() {
         return { msg: t('epf.insightEmployerBoost', { pct: result.employerPctOfCorpus.toFixed(1) }), type: 'success' };
     }, [result, inflationRate, t]);
 
-    const handleSave = () => {
+    const suggestedName = `EPF — ${formatINR(basic)}/mo basic`;
+
+    const handleSave = (customName: string) => {
         const calcId = `epf-${Date.now()}`;
         addSaved({
             id: calcId,
             calculatorType: 'epf',
-            inputValues: { basic, empPct, rate, age, retireAge, hike },
+            inputValues: { basic, empPct, rate, age, retireAge, hike, name: customName },
             resultValues: { primary: result.corpus, label: t('epf.retirementCorpus'), invested: result.totalEmp + result.totalEmployer, returns: result.totalInterest },
             timestamp: Date.now(),
         });
         // Mirror into live tracker store so it appears in My Loans
         addProfile({
             id: calcId,
-            name: `EPF ${formatINR(basic)}/mo basic`,
+            name: customName,
             calculatorType: 'EPF',
             profileData: {
                 basic,
@@ -441,10 +445,18 @@ export default function EPFCalculator() {
                         </button>
                     </div>
                 ) : (
-                    <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-foreground/10">
+                    <button onClick={() => setShowNameDialog(true)} className="w-full py-3.5 rounded-2xl bg-foreground text-background font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-foreground/10">
                         <Save size={18} /> {t('epf.saveCalculation')}
                     </button>
                 )}
+
+                <SaveNameDialog
+                    open={showNameDialog}
+                    onClose={() => setShowNameDialog(false)}
+                    onConfirm={(name) => handleSave(name)}
+                    defaultName={suggestedName}
+                />
+
 
 
                 {/* 3. ADVANCED DETAILS */}

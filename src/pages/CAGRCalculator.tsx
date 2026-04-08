@@ -11,6 +11,7 @@ import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
 import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import SaveNameDialog from '../components/SaveNameDialog';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -38,6 +39,7 @@ export default function CAGRCalculator() {
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [investmentDate, setInvestmentDate] = useState('');
+    const [showNameDialog, setShowNameDialog] = useState(false);
     const [page, setPage] = useState(1);
 
     // 1. CORE CALCULATION
@@ -109,19 +111,21 @@ export default function CAGRCalculator() {
         return { msg: t('cagr.insightSteadyGrowth', { cagr: result.cagr.toFixed(1) }), type: 'info' };
     }, [result, t]);
 
-    const handleSave = () => {
+    const suggestedName = `CAGR — ${formatINR(initial)} → ${formatINR(final)}`;
+
+    const handleSave = (customName: string) => {
         const calcId = `cagr-${Date.now()}`;
         addSaved({
             id: calcId,
             calculatorType: 'cagr',
-            inputValues: { initial, final, years },
+            inputValues: { initial, final, years, name: customName },
             resultValues: { primary: result.cagr, label: t('cagr.cagrPercent'), invested: initial, returns: final - initial },
             timestamp: Date.now(),
         });
         // Mirror into live tracker store so it appears in My Loans
         addProfile({
             id: calcId,
-            name: `CAGR ${formatINR(initial)} → ${formatINR(final)}`,
+            name: customName,
             calculatorType: 'CAGR',
             profileData: {
                 initialValue: initial,
@@ -343,10 +347,18 @@ export default function CAGRCalculator() {
                         </button>
                     </div>
                 ) : (
-                    <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-purple text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-purple/20">
+                    <button onClick={() => setShowNameDialog(true)} className="w-full py-3.5 rounded-2xl bg-brand-purple text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-purple/20">
                         <Save size={18} /> {t('cagr.saveCalculation')}
                     </button>
                 )}
+
+                <SaveNameDialog
+                    open={showNameDialog}
+                    onClose={() => setShowNameDialog(false)}
+                    onConfirm={(name) => handleSave(name)}
+                    defaultName={suggestedName}
+                />
+
 
 
                 {/* 3. ADVANCED DETAILS */}

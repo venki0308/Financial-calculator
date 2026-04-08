@@ -22,6 +22,7 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
+import SaveNameDialog from '../components/SaveNameDialog';
 import { useAppColors } from '../theme/useAppColors';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement);
@@ -50,6 +51,7 @@ export default function NPSCalculator() {
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [accountStartDate, setAccountStartDate] = useState('');
+    const [showNameDialog, setShowNameDialog] = useState(false);
 
     const result = useMemo(() => {
         const years = Math.max(retireAge - age, 1);
@@ -86,13 +88,15 @@ export default function NPSCalculator() {
         ]
     }), [result.timeline, t]);
 
-    const handleSave = () => {
+    const suggestedName = `NPS — ${formatINR(monthly)}/mo × ${result.years}Y`;
+
+    const handleSave = (customName: string) => {
         const calcId = `nps-${Date.now()}`;
-        addSaved({ id: calcId, calculatorType: t('nps.calculatorType'), inputValues: { monthly, rate, age, retireAge, annuityPct }, resultValues: { primary: result.corpus }, timestamp: Date.now() });
+        addSaved({ id: calcId, calculatorType: t('nps.calculatorType'), inputValues: { monthly, rate, age, retireAge, annuityPct, name: customName }, resultValues: { primary: result.corpus }, timestamp: Date.now() });
         // Mirror into live tracker store so it appears in My Loans
         addProfile({
             id: calcId,
-            name: `NPS ${formatINR(monthly)}/mo × ${result.years}Y`,
+            name: customName,
             calculatorType: 'NPS',
             profileData: {
                 monthly,
@@ -267,10 +271,17 @@ export default function NPSCalculator() {
                             </button>
                         </div>
                     ) : (
-                        <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
+                        <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowNameDialog(true)} className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-foreground font-bold text-sm">
                             <Save size={16} /> {t('nps.saveCalculation')}
                         </motion.button>
                     )}
+
+                    <SaveNameDialog
+                        open={showNameDialog}
+                        onClose={() => setShowNameDialog(false)}
+                        onConfirm={(name) => handleSave(name)}
+                        defaultName={suggestedName}
+                    />
                 </motion.div>
 
                 {/* Pension Visualization */}

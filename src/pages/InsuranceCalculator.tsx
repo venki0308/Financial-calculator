@@ -12,6 +12,7 @@ import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
 import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import SaveNameDialog from '../components/SaveNameDialog';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
@@ -440,6 +441,8 @@ export default function InsuranceCalculator() {
   const removeProfile = useLiveStatusStore(s => s.removeProfile);
   const [trackerSaved, setTrackerSaved] = useState(false);
   const [trackerSavedId, setTrackerSavedId] = useState<string | null>(null);
+  const [showHealthNameDialog, setShowHealthNameDialog] = useState(false);
+  const [showLifeNameDialog, setShowLifeNameDialog] = useState(false);
   const [policyStartDate, setPolicyStartDate] = useState('');
 
   // ── Life state ───────────────────────────────────────────────────────────────
@@ -596,12 +599,15 @@ export default function InsuranceCalculator() {
     return { ded, saved30: Math.round(ded * 0.30 * 1.04), saved20: Math.round(ded * 0.20 * 1.04) };
   }, [termRange.lo]);
 
+  const suggestedHealthName = `Health Cover — ${fmtCr(si)} • ${allAges.length} members`;
+  const suggestedLifeName = `Life Term — ${fmtCr(activeCover)}`;
+
   // ── Save snapshot to My Loans tracker ────────────────────────────────────────
-  const handleHealthTrackerSave = () => {
+  const handleHealthTrackerSave = (customName: string) => {
     const id = `ins-h-${Date.now()}`;
     addProfile({
       id,
-      name: `${t('ins.tabHealth')} • ${fmtCr(si)} • ${allAges.length} ${t('ins.health.members')}`,
+      name: customName,
       calculatorType: 'Insurance',
       profileData: {
         tab: 'health',
@@ -619,11 +625,11 @@ export default function InsuranceCalculator() {
     setTrackerSaved(true);
   };
 
-  const handleLifeTrackerSave = () => {
+  const handleLifeTrackerSave = (customName: string) => {
     const id = `ins-l-${Date.now()}`;
     addProfile({
       id,
-      name: `${t('ins.tabLife')} • ${fmtCr(activeCover)}`,
+      name: customName,
       calculatorType: 'Insurance',
       profileData: {
         tab: 'life',
@@ -982,11 +988,18 @@ export default function InsuranceCalculator() {
                       </button>
                     </div>
                   ) : (
-                    <button onClick={handleHealthTrackerSave}
+                    <button onClick={() => setShowHealthNameDialog(true)}
                       className="w-full py-3.5 rounded-2xl bg-brand-green text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-green/20">
                       💾 {t('myLoans.saveToTracker')}
                     </button>
                   )}
+
+                  <SaveNameDialog
+                    open={showHealthNameDialog}
+                    onClose={() => setShowHealthNameDialog(false)}
+                    onConfirm={(name) => handleHealthTrackerSave(name)}
+                    defaultName={suggestedHealthName}
+                  />
 
                   {/* CARD C — Personalised Checklist */}
                   <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
@@ -1341,11 +1354,18 @@ export default function InsuranceCalculator() {
                 </button>
               </div>
             ) : (
-              <button onClick={handleLifeTrackerSave}
+              <button onClick={() => setShowLifeNameDialog(true)}
                 className="w-full py-3.5 rounded-2xl bg-brand-green text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-green/20">
                 💾 {t('myLoans.saveToTracker')}
               </button>
             )}
+
+            <SaveNameDialog
+              open={showLifeNameDialog}
+              onClose={() => setShowLifeNameDialog(false)}
+              onConfirm={(name) => handleLifeTrackerSave(name)}
+              defaultName={suggestedLifeName}
+            />
 
           </div>
         )}

@@ -21,6 +21,7 @@ import { useCibil } from '../context/CibilContext';
 import DateInput from '../components/DateInput';
 import LiveLoanStatus from '../components/LiveLoanStatus';
 import type { LoanProfile } from '../utils/loanStatusEngine';
+import SaveNameDialog from '../components/SaveNameDialog';
 
 export default function TwoWheelerLoanCalculator() {
     const { t } = useTranslation();
@@ -60,6 +61,7 @@ export default function TwoWheelerLoanCalculator() {
     const [isSaved, setIsSaved] = useState(false);
     const [savedId, setSavedId] = useState<string | null>(null);
     const [loanSaved, setLoanSaved] = useState(false);
+    const [showNameDialog, setShowNameDialog] = useState(false);
 
     // Live loan tracker state — empty by default so the widget stays hidden
     // until the user picks an actual disbursement date.
@@ -271,10 +273,10 @@ export default function TwoWheelerLoanCalculator() {
         await nativeShare(`${t('tw.title')} — FinCalix`, text);
     };
 
-    const handleSaveToMyLoans = () => {
+    const handleSaveToMyLoans = (customName: string) => {
         const loan: SavedLoan = {
             id: generateLoanId(),
-            nickName: `${isEV ? t('tw.ev') : ''} ${segment.label}`,
+            nickName: customName,
             loanType: 'two_wheeler_loan',
             lenderName: '',
             loanAmount,
@@ -782,9 +784,16 @@ export default function TwoWheelerLoanCalculator() {
                                     <button onClick={() => navigate('/my-loans')} className="ml-auto text-xs font-bold text-violet-500">{t('tw.viewInMyLoans')}</button>
                                 </div>
                             ) : (
-                                <button onClick={handleSaveToMyLoans} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 font-bold text-sm border border-emerald-500/20"><Save size={16} /> {t('tw.saveToMyLoans')}</button>
+                                <button onClick={() => setShowNameDialog(true)} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 font-bold text-sm border border-emerald-500/20"><Save size={16} /> {t('tw.saveToMyLoans')}</button>
                             )}
                         </div>
+
+                        <SaveNameDialog
+                            open={showNameDialog}
+                            onClose={() => setShowNameDialog(false)}
+                            onConfirm={(name) => handleSaveToMyLoans(name)}
+                            defaultName={`${isEV ? t('tw.ev') + ' ' : ''}${segment.label} — ${formatINR(loanAmount)}`}
+                        />
                     </motion.div>
                 )}
 

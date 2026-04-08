@@ -11,6 +11,7 @@ import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import SaveNameDialog from '../components/SaveNameDialog';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -44,6 +45,7 @@ export default function SWPCalculator() {
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [planStartDate, setPlanStartDate] = useState('');
+    const [showNameDialog, setShowNameDialog] = useState(false);
     const [page, setPage] = useState(1);
 
     // 1. CORE CALCULATION
@@ -149,19 +151,21 @@ export default function SWPCalculator() {
     }, [result, rate, principal, withdrawal, t]);
 
 
-    const handleSave = () => {
+    const suggestedName = `SWP — ${formatINR(withdrawal)}/mo × ${years}Y`;
+
+    const handleSave = (customName: string) => {
         const calcId = `swp-${Date.now()}`;
         addSaved({
             id: calcId,
             calculatorType: 'swp',
-            inputValues: { principal, withdrawal, rate, years },
+            inputValues: { principal, withdrawal, rate, years, name: customName },
             resultValues: { primary: result.finalBalance, label: t('swp.finalBalance'), invested: principal, returns: result.totalWithdrawn },
             timestamp: Date.now(),
         });
         // Mirror into live tracker store so it appears in My Loans
         addProfile({
             id: calcId,
-            name: `SWP ${formatINR(withdrawal)}/mo × ${years}Y`,
+            name: customName,
             calculatorType: 'SWP',
             profileData: {
                 totalInvestment: principal,
@@ -391,10 +395,18 @@ export default function SWPCalculator() {
                         </button>
                     </div>
                 ) : (
-                    <button onClick={handleSave} className="w-full py-3.5 rounded-2xl bg-brand-blue text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
+                    <button onClick={() => setShowNameDialog(true)} className="w-full py-3.5 rounded-2xl bg-brand-blue text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-blue/20">
                         <Save size={18} /> {t('swp.saveCalculation')}
                     </button>
                 )}
+
+                <SaveNameDialog
+                    open={showNameDialog}
+                    onClose={() => setShowNameDialog(false)}
+                    onConfirm={(name) => handleSave(name)}
+                    defaultName={suggestedName}
+                />
+
 
 
                 {/* 3. ADVANCED DETAILS */}

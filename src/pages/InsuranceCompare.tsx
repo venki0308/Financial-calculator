@@ -13,6 +13,7 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
 import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
+import SaveNameDialog from '../components/SaveNameDialog';
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
@@ -269,6 +270,7 @@ export default function InsuranceCompare() {
   const [saved, setSaved] = useState(false);
   const [lastSavedId, setLastSavedId] = useState<string | null>(null);
   const [policyStartDate, setPolicyStartDate] = useState('');
+  const [showNameDialog, setShowNameDialog] = useState(false);
 
   // ── Translated constants ─────────────────────────────────────────────────────
   const CHECKLIST_KEYS = ['roomRent','restoration','ncb','ped','renew','csr','tpa'] as const;
@@ -390,11 +392,13 @@ export default function InsuranceCompare() {
   }, [children, parents, seniorParents.length, elderlyParents.length, hasPreExisting, sumInsured, cityType, allAges.length]);
 
   // ── Save / Remove handlers ────────────────────────────────────────────────────
-  const handleSaveCompare = () => {
+  const suggestedName = `Health Compare — ${allAges.length} members · ${fmtL(sumInsured)} cover`;
+
+  const handleSaveCompare = (customName: string) => {
     const calcId = `inscmp-${Date.now()}`;
     addProfile({
       id: calcId,
-      name: `${allAges.length} members · ${fmtL(sumInsured)} cover`,
+      name: customName,
       calculatorType: 'Insurance Compare',
       profileData: {
         sumInsured: sumInsured * 100000,
@@ -813,11 +817,18 @@ export default function InsuranceCompare() {
                     </button>
                   </div>
                 ) : (
-                  <button onClick={handleSaveCompare}
+                  <button onClick={() => setShowNameDialog(true)}
                     className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-95">
                     <Save size={16} /> {t('common.saveCalculation', 'Save Calculation')}
                   </button>
                 )}
+
+                <SaveNameDialog
+                  open={showNameDialog}
+                  onClose={() => setShowNameDialog(false)}
+                  onConfirm={(name) => handleSaveCompare(name)}
+                  defaultName={suggestedName}
+                />
               </div>
 
               {/* Priority guidance — shown if user selected priorities */}
