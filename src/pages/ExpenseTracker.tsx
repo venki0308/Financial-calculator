@@ -99,6 +99,20 @@ export default function ExpenseTracker() {
     AnalyticsService.trackScreen('Expense_Tracker');
   }, []);
 
+  // Cross-tab routing: BudgetTab dispatches a custom event from its
+  // "Manage Subscriptions" button so we can switch tabs without a
+  // route change. Add other emitters here if needed.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (typeof detail === 'string' && TABS.some(t => t.id === detail)) {
+        setActiveTab(detail as TabId);
+      }
+    };
+    window.addEventListener('fincalix:switch-expense-tab', handler);
+    return () => window.removeEventListener('fincalix:switch-expense-tab', handler);
+  }, []);
+
   // Period subtitle that changes per tab
   const periodSubtitle = useMemo(() => {
     const now = new Date();

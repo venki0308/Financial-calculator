@@ -30,7 +30,13 @@ import {
   getHighestSpendingDay,
   getActiveDaysCount,
   calculatePercentChange,
+  getTotalActualBilledSubsInRange,
+  calcPeriodChange,
+  getTodayStr,
 } from '../../utils/expenseCalculations';
+// Bridge subscription store so the cash flow / budget vs actual / week
+// breakdown can include recurring sub billings (BUG 2.1, 2.2, 2.4 fix).
+import { useBudgetTrackerStore } from '../../store/useBudgetTrackerStore';
 import type { Entry } from '../../types/expense';
 import { ALL_DEFAULT_CATEGORIES } from '../../types/expense';
 import { getCustomCategories } from '../../utils/expenseStorage';
@@ -143,6 +149,14 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
     [entries, monthRange.year, monthRange.month],
   );
 
+  // BUG 2.3 fix: filter out weeks whose start date is after today.
+  // Past weeks always show; the current week shows with a "Current"
+  // indicator (the card already handles that via isCurrentWeek).
+  const visibleWeeks = useMemo(
+    () => weeklyBreakdown.filter(w => w.startDate <= getTodayStr()),
+    [weeklyBreakdown],
+  );
+
   const budgetComparison = useMemo(
     () => (budget ? getCategorySpentVsBudget(entries, budget) : []),
     [entries, budget],
@@ -173,7 +187,9 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
     };
   };
 
-  const maxWeekExpense = Math.max(...weeklyBreakdown.map(w => w.expenses), 1);
+  // Use visibleWeeks for the bar scaling so a hidden future week (with
+  // 0 expenses) can't accidentally inflate the denominator.
+  const maxWeekExpense = Math.max(...visibleWeeks.map(w => w.expenses), 1);
 
   // ── Budget totals ──
 
@@ -182,15 +198,66 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
       + budget.fixedExpenses.reduce((s, f) => s + f.amount, 0)
     : 0;
 
+  // ── BUG 2.1, 2.2, 2.4: Subscription-aware totals ─────────
+  // The CANONICAL "Total Expenses" for any month is logged expenses
+  // PLUS subscription billings whose date already passed in the
+  // selected month. This makes the Cash Flow card, Budget vs Actual
+  // card, and the vs-last-month change all consistent with the PDF.
+  const subscriptions = useBudgetTrackerStore(s => s.subscriptions);
+  const todayISO = getTodayStr();
+
+  const monthSubsBilled = useMemo(
+    () => getTotalActualBilledSubsInRange(
+      subscriptions,
+      monthRange.start,
+      monthRange.end,
+      todayISO,
+    ),
+    [subscriptions, monthRange.start, monthRange.end, todayISO],
+  );
+  const monthSubsCount = useMemo(
+    () => subscriptions.filter(s => s.isActive).length,
+    [subscriptions],
+  );
+
+  const prevMonthSubsBilled = useMemo(
+    () => getTotalActualBilledSubsInRange(
+      subscriptions,
+      prevMonthRange.start,
+      prevMonthRange.end,
+      todayISO,
+    ),
+    [subscriptions, prevMonthRange.start, prevMonthRange.end, todayISO],
+  );
+
+  // Canonical totals — these REPLACE summary.totalExpenses /
+  // summary.netSavings everywhere in the rest of the component.
+  const canonicalExpenses = summary.totalExpenses + monthSubsBilled;
+  const prevCanonicalExpenses = prevSummary.totalExpenses + prevMonthSubsBilled;
+  const canonicalNetSavings = summary.totalIncome - canonicalExpenses;
+
   // ── Savings & change calculations ──
 
-  const netSavings = summary.totalIncome - summary.totalExpenses;
+  const netSavings = canonicalNetSavings;
   const savingsRate = summary.totalIncome > 0 ? (netSavings / summary.totalIncome) * 100 : 0;
   const savingsRating = getSavingsRating(savingsRate);
   const isPositiveSavings = netSavings >= 0;
 
   const incomeChange = formatChange(summary.totalIncome, prevSummary.totalIncome);
-  const expenseChange = formatChange(summary.totalExpenses, prevSummary.totalExpenses);
+  // BUG 2.4 fix: use the canonical (subs-included) totals for both
+  // halves of the % change so the comparison label matches what the
+  // user sees in the Total Expenses row.
+  const expenseChangeDetail = useMemo(
+    () => calcPeriodChange(canonicalExpenses, prevCanonicalExpenses),
+    [canonicalExpenses, prevCanonicalExpenses],
+  );
+  const expenseChange = {
+    display: expenseChangeDetail.display,
+    isNew: expenseChangeDetail.tone === 'new',
+    color: expenseChangeDetail.tone === 'down' ? theme.accentIncome
+      : expenseChangeDetail.tone === 'up' ? theme.accentExpense
+      : theme.textMuted,
+  };
 
   // Card/text colors
   const textPrimary = theme.textPrimary;
@@ -346,35 +413,44 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
           </div>
         </div>
 
-        {/* Expenses row */}
-        <div className="flex items-center justify-between mb-2.5">
-          <div className="flex items-center gap-2.5">
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: isDark ? 'rgba(248,113,113,0.1)' : 'rgba(220,38,38,0.08)' }}
-            >
-              <ArrowUpCircle size={14} style={{ color: accentExpense }} />
-            </div>
-            <span className="text-xs font-semibold" style={{ color: textSecondary }}>
-              {t('expenses.totalExpenses')}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold" style={{ color: accentExpense }}>
-              -{fmtINR(summary.totalExpenses)}
-            </span>
-            {!expenseChange.isNew && (
-              <span
-                className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
-                style={{
-                  backgroundColor: isDark ? 'rgba(248,113,113,0.1)' : 'rgba(220,38,38,0.08)',
-                  color: expenseChange.color,
-                }}
+        {/* Expenses row — BUG 2.1 fix: includes recurring subscriptions */}
+        <div className="mb-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div
+                className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: isDark ? 'rgba(248,113,113,0.1)' : 'rgba(220,38,38,0.08)' }}
               >
-                {expenseChange.display}
+                <ArrowUpCircle size={14} style={{ color: accentExpense }} />
+              </div>
+              <span className="text-xs font-semibold" style={{ color: textSecondary }}>
+                {t('expenses.totalExpenses')}
               </span>
-            )}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold" style={{ color: accentExpense }}>
+                -{fmtINR(canonicalExpenses)}
+              </span>
+              {!expenseChange.isNew && (
+                <span
+                  className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                  style={{
+                    backgroundColor: isDark ? 'rgba(248,113,113,0.1)' : 'rgba(220,38,38,0.08)',
+                    color: expenseChange.color,
+                  }}
+                >
+                  {expenseChange.display}
+                </span>
+              )}
+            </div>
           </div>
+          {monthSubsBilled > 0 && (
+            <p className="text-[10px] mt-1 ml-9" style={{ color: textMuted }}>
+              {fmtINR(summary.totalExpenses)} {t('expenses.logged', 'logged')}
+              {' + '}
+              {fmtINR(monthSubsBilled)} {t('expenses.recurringSubsLabel', 'recurring subscriptions')}
+            </p>
+          )}
         </div>
 
         {/* Divider */}
@@ -465,7 +541,10 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
           </div>
         </div>
 
-        {/* Investments info line */}
+        {/* Investments info line — BUG 10.3 fix: when income is 0,
+            "0% of income" is misleading. Show "(income not logged)"
+            instead so the user knows the percentage is undefined,
+            not zero. */}
         {summary.totalInvestments > 0 && (
           <div
             className="flex items-center gap-2 mt-3 px-3 py-2 rounded-xl"
@@ -476,10 +555,12 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
           >
             <Info size={12} style={{ color: accentInvestment }} />
             <span className="text-[11px] font-medium" style={{ color: isDark ? '#c4b5fd' : '#6d28d9' }}>
-              {t('expenses.investedAmount', {
-                amount: fmtINR(summary.totalInvestments),
-                pct: summary.totalIncome > 0 ? fmtPct((summary.totalInvestments / summary.totalIncome) * 100) : '0%',
-              })}
+              {summary.totalIncome > 0
+                ? t('expenses.investedAmount', {
+                    amount: fmtINR(summary.totalInvestments),
+                    pct: fmtPct((summary.totalInvestments / summary.totalIncome) * 100),
+                  })
+                : `${t('expenses.invested', 'Invested')} ${fmtINR(summary.totalInvestments)} (${t('expenses.incomeNotLogged', 'income not logged')})`}
             </span>
           </div>
         )}
@@ -488,10 +569,14 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
       {/* ════════════════════════════════════════════════════════════ */}
       {/* 3. BUDGET VS ACTUAL                                        */}
       {/* ════════════════════════════════════════════════════════════ */}
+      {/* BUG 2.2 fix: actualTotal now includes recurring subscriptions
+          so the variance ties out with the Cash Flow card above. */}
       {budget && budgetTotal > 0 && (
         <BudgetVsActualCard
           budgetTotal={budgetTotal}
-          actualTotal={summary.totalExpenses}
+          actualTotal={canonicalExpenses}
+          loggedActual={summary.totalExpenses}
+          subsActual={monthSubsBilled}
           budgetComparison={budgetComparison}
           allCategories={allCategories}
           expanded={budgetExpanded}
@@ -505,9 +590,13 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
       {/* ════════════════════════════════════════════════════════════ */}
       {/* 4. WEEK-BY-WEEK BREAKDOWN                                  */}
       {/* ════════════════════════════════════════════════════════════ */}
-      {weeklyBreakdown.length > 0 && (
+      {/* BUG 2.3 fix: hide future weeks (whose start date is past
+          today) so the user doesn't see "Week 4 ---" rows for weeks
+          that haven't begun yet. The current week stays visible with
+          a "Current" indicator (already handled inside the card). */}
+      {visibleWeeks.length > 0 && (
         <WeeklyBreakdownCard
-          weeks={weeklyBreakdown}
+          weeks={visibleWeeks}
           maxExpense={maxWeekExpense}
           theme={theme}
           isDark={isDark}
@@ -621,6 +710,11 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
 interface BudgetVsActualCardProps {
   budgetTotal: number;
   actualTotal: number;
+  /** Logged-only portion of `actualTotal` — used to render the breakdown
+   *  sub-line "₹250 logged + ₹499 recurring subs". Optional for back-compat. */
+  loggedActual?: number;
+  /** Subscription portion of `actualTotal` — same purpose as above. */
+  subsActual?: number;
   budgetComparison: Array<{ categoryId: string; budgeted: number; spent: number; pct: number }>;
   allCategories: { id: string; name: string; icon: string; color: string }[];
   expanded: boolean;
@@ -631,7 +725,8 @@ interface BudgetVsActualCardProps {
 }
 
 function BudgetVsActualCard({
-  budgetTotal, actualTotal, budgetComparison, allCategories,
+  budgetTotal, actualTotal, loggedActual, subsActual,
+  budgetComparison, allCategories,
   expanded, onToggle, theme, isDark, t,
 }: BudgetVsActualCardProps) {
   const overallPct = budgetTotal > 0 ? (actualTotal / budgetTotal) * 100 : 0;
@@ -697,6 +792,13 @@ function BudgetVsActualCard({
           <p className="text-sm font-bold" style={{ color: theme.textPrimary }}>
             {fmtINR(actualTotal)}
           </p>
+          {/* BUG 2.2 fix: breakdown sub-line so the user sees that the
+              "Actual" figure already includes recurring sub commitments. */}
+          {subsActual !== undefined && subsActual > 0 && loggedActual !== undefined && (
+            <p className="text-[9px] mt-0.5" style={{ color: theme.textMuted }}>
+              {fmtINR(loggedActual)} {t('expenses.logged', 'logged')} + {fmtINR(subsActual)} {t('expenses.subscriptions', 'subscriptions')}
+            </p>
+          )}
         </div>
       </div>
 

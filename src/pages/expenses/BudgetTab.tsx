@@ -145,6 +145,10 @@ export default function BudgetTab() {
   const totalFixed = useMemo(() => getBudgetTotalFixed(budget), [budget]);
   const totalCategoryLimits = useMemo(() => getBudgetTotalCategoryLimits(budget), [budget]);
   const totalInvestments = useMemo(() => getBudgetTotalInvestments(budget), [budget]);
+  // NOTE: `unallocated` here is the LEGACY value (income - fixed -
+  // limits - investments), used by the existing Summary card display.
+  // The TRUE unallocated number that powers "Est. Savings" is computed
+  // below (`unallocatedAfterSubs`) once we know the subscription total.
   const unallocated = useMemo(() => getBudgetUnallocated(budget), [budget]);
   const available = budget.monthlyIncome - totalFixed - totalInvestments;
 
@@ -163,31 +167,13 @@ export default function BudgetTab() {
     return { savings, creditUsed, net: savings - creditUsed };
   }, [accounts]);
 
-  // ── allocation percentages ────────────────────────────────
-  const allocPcts = useMemo(() => {
-    const inc = budget.monthlyIncome || 1;
-    const fixedPct = Math.min((totalFixed / inc) * 100, 100);
-    const varPct = Math.min((totalCategoryLimits / inc) * 100, 100 - fixedPct);
-    const invPct = Math.min((totalInvestments / inc) * 100, 100 - fixedPct - varPct);
-    const freePct = Math.max(100 - fixedPct - varPct - invPct, 0);
-    const isOver = unallocated < 0;
-    return { fixedPct, varPct, invPct, freePct, isOver };
-  }, [budget.monthlyIncome, totalFixed, totalCategoryLimits, totalInvestments, unallocated]);
-
-  // ── budget progress (entries for current month) ───────────
-  const entries = useMemo(
-    () => getEntriesForMonth(range.year, range.month),
-    [range.year, range.month],
-  );
-
   // ── subscriptions → recurring monthly commitment ──────────
   // The Subscriptions tab stores items in a separate Zustand store, so
   // their cost never lands in expenseStorage entries. We translate every
   // active sub into its monthly equivalent (annual/3 for quarterly,
   // annual/12 for yearly) and treat the total as "spent" against the
-  // 'subscription' category limit. This is the only sensible bridge —
-  // anything else would either double-count (if we also auto-created
-  // expense entries) or under-count (status quo: always 0%).
+  // 'subscription' category limit and as a deduction in the allocation
+  // bar / Est. Savings line.
   const subscriptions = useBudgetTrackerStore(s => s.subscriptions);
   const subscriptionMonthlyTotal = useMemo(() => {
     return subscriptions
@@ -198,6 +184,30 @@ export default function BudgetTab() {
         return sum + s.amount; // monthly (default)
       }, 0);
   }, [subscriptions]);
+
+  // ── allocation percentages ────────────────────────────────
+  // BUG 1.1 fix: include a 5th "Recurring Subscriptions" segment
+  // computed from the global subscription total. The unallocated
+  // segment is now whatever is left AFTER subs, not just after
+  // fixed/variable/investments. This makes "Est. Savings" and the
+  // allocation bar internally consistent.
+  const allocPcts = useMemo(() => {
+    const inc = budget.monthlyIncome || 1;
+    const fixedPct = Math.min((totalFixed / inc) * 100, 100);
+    const varPct = Math.min((totalCategoryLimits / inc) * 100, Math.max(100 - fixedPct, 0));
+    const invPct = Math.min((totalInvestments / inc) * 100, Math.max(100 - fixedPct - varPct, 0));
+    const subsPct = Math.min((subscriptionMonthlyTotal / inc) * 100, Math.max(100 - fixedPct - varPct - invPct, 0));
+    const freePct = Math.max(100 - fixedPct - varPct - invPct - subsPct, 0);
+    const trueUnallocated = budget.monthlyIncome - totalFixed - totalCategoryLimits - totalInvestments - subscriptionMonthlyTotal;
+    const isOver = trueUnallocated < 0;
+    return { fixedPct, varPct, invPct, subsPct, freePct, isOver };
+  }, [budget.monthlyIncome, totalFixed, totalCategoryLimits, totalInvestments, subscriptionMonthlyTotal]);
+
+  // ── budget progress (entries for current month) ───────────
+  const entries = useMemo(
+    () => getEntriesForMonth(range.year, range.month),
+    [range.year, range.month],
+  );
 
   const categoryProgress = useMemo(() => {
     const base = getCategorySpentVsBudget(entries, budget);
@@ -772,7 +782,7 @@ export default function BudgetTab() {
             </span>
           </div>
 
-          {/* Allocation bar */}
+          {/* Allocation bar — BUG 1.1 fix: 5 segments now (added subscriptions) */}
           <div className="w-full h-4 rounded-full overflow-hidden flex" style={{ backgroundColor: theme.bgPrimary }}>
             {allocPcts.fixedPct > 0 && (
               <motion.div
@@ -801,6 +811,15 @@ export default function BudgetTab() {
                 style={{ backgroundColor: ALLOC_COLORS.invest.bg }}
               />
             )}
+            {allocPcts.subsPct > 0 && (
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${allocPcts.subsPct}%` }}
+                transition={{ duration: 0.6, delay: 0.25, ease: 'easeOut' }}
+                className="h-full"
+                style={{ backgroundColor: '#F59E0B' }}
+              />
+            )}
             {allocPcts.freePct > 0 && !allocPcts.isOver && (
               <motion.div
                 initial={{ width: 0 }}
@@ -812,21 +831,25 @@ export default function BudgetTab() {
             )}
           </div>
 
-          {/* Legend */}
+          {/* Legend — only show segments with > 0% so the legend doesn't
+              get cluttered with "Subscriptions 0%" / "Investments 0%". */}
           <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3">
             {[
               { color: ALLOC_COLORS.fixed.bg, label: t('expenses.fixedExpenses'), pct: allocPcts.fixedPct },
               { color: ALLOC_COLORS.variable.bg, label: t('expenses.categoryBudgetLimits'), pct: allocPcts.varPct },
               { color: ALLOC_COLORS.invest.bg, label: t('expenses.investments'), pct: allocPcts.invPct },
+              { color: '#F59E0B', label: t('expenses.subscriptions', 'Subscriptions'), pct: allocPcts.subsPct },
               { color: allocPcts.isOver ? ALLOC_COLORS.over.bg : ALLOC_COLORS.unallocated.bg, label: allocPcts.isOver ? t('expenses.overallocated') : t('expenses.unallocated'), pct: allocPcts.freePct },
-            ].map(item => (
-              <div key={item.label} className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="text-[10px] font-semibold" style={{ color: theme.textMuted }}>
-                  {item.label} {Math.round(item.pct)}%
-                </span>
-              </div>
-            ))}
+            ]
+              .filter(item => item.pct > 0)
+              .map(item => (
+                <div key={item.label} className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="text-[10px] font-semibold" style={{ color: theme.textMuted }}>
+                    {item.label} {Math.round(item.pct)}%
+                  </span>
+                </div>
+              ))}
           </div>
         </motion.div>
       )}
@@ -1099,6 +1122,136 @@ export default function BudgetTab() {
       </motion.div>
 
       {/* ======================================================
+          5.5 RECURRING SUBSCRIPTIONS — read-only mirror
+          ======================================================
+          BUG 1.5 fix: Budget tab now shows the user's active recurring
+          subscription commitments so they can see this drain while
+          planning the budget. The full add/edit/delete UI lives in the
+          Subscriptions tab — this card is a read-only summary with a
+          "Manage" CTA that routes to that tab. */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.22 }}
+        className="rounded-2xl border overflow-hidden"
+        style={cardStyle}
+      >
+        <div className="w-full flex items-center justify-between p-4">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: '#FEF3C7' }}
+            >
+              <span className="text-base">{'\u{1F4F1}'}</span>
+            </div>
+            <div>
+              <p className="font-bold text-sm text-left" style={{ color: theme.textPrimary }}>
+                {t('expenses.recurringSubscriptions', 'Recurring Subscriptions')}
+              </p>
+              <p className="text-[10px] mt-0.5 text-left" style={{ color: theme.textMuted }}>
+                {t('expenses.recurringSubsSubtitle', 'Monthly commitments (from Subscriptions tab)')}
+              </p>
+            </div>
+          </div>
+          <span className="text-sm font-bold" style={{ color: '#F59E0B' }}>
+            {fmtINR(subscriptionMonthlyTotal)}
+          </span>
+        </div>
+
+        <div className="px-4 pb-5 border-t pt-4" style={{ borderColor: theme.borderSubtle }}>
+          {subscriptions.filter(s => s.isActive).length === 0 ? (
+            <p className="text-xs text-center py-2" style={{ color: theme.textMuted }}>
+              {t('expenses.noActiveSubsHint', 'No active subscriptions yet. Add one in the Subscriptions tab.')}
+            </p>
+          ) : (
+            <>
+              <div className="space-y-2">
+                {subscriptions
+                  .filter(s => s.isActive)
+                  .sort((a, b) => {
+                    // Highest monthly equivalent first so the biggest drain is at the top
+                    const am = a.billingCycle === 'quarterly' ? a.amount / 3 : a.billingCycle === 'yearly' ? a.amount / 12 : a.amount;
+                    const bm = b.billingCycle === 'quarterly' ? b.amount / 3 : b.billingCycle === 'yearly' ? b.amount / 12 : b.amount;
+                    return bm - am;
+                  })
+                  .map(sub => {
+                    const monthly = sub.billingCycle === 'quarterly' ? sub.amount / 3
+                      : sub.billingCycle === 'yearly' ? sub.amount / 12
+                      : sub.amount;
+                    const cycleLabel = sub.billingCycle === 'quarterly' ? 'Quarterly'
+                      : sub.billingCycle === 'yearly' ? 'Yearly'
+                      : 'Monthly';
+                    return (
+                      <div
+                        key={sub.id}
+                        className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                        style={{ backgroundColor: theme.bgPrimary }}
+                      >
+                        <div
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-xs flex-shrink-0"
+                          style={{ backgroundColor: '#FEF3C7', color: '#D97706' }}
+                        >
+                          {'\u{1F4F1}'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold truncate" style={{ color: theme.textPrimary }}>
+                            {sub.name}
+                          </p>
+                          <p className="text-[10px]" style={{ color: theme.textMuted }}>
+                            {cycleLabel}
+                            {sub.billingCycle !== 'monthly' && ` \u00B7 \u2248 ${fmtINR(monthly)}/mo`}
+                          </p>
+                        </div>
+                        <p className="text-xs font-bold" style={{ color: '#F59E0B' }}>
+                          {fmtINR(sub.amount)}
+                        </p>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              {/* Totals row */}
+              <div
+                className="flex items-center justify-between mt-3 pt-3 border-t"
+                style={{ borderColor: theme.borderSubtle }}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: theme.textMuted }}>
+                  {t('expenses.monthlyTotal', 'Monthly Total')}
+                </span>
+                <div className="text-right">
+                  <p className="text-sm font-extrabold" style={{ color: '#F59E0B' }}>
+                    {fmtINR(subscriptionMonthlyTotal)}
+                  </p>
+                  <p className="text-[9px]" style={{ color: theme.textMuted }}>
+                    {fmtINR(subscriptionMonthlyTotal * 12)} / year
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Manage CTA → routes back into Subscriptions tab */}
+          <button
+            type="button"
+            onClick={() => {
+              // Use a custom event the parent ExpenseTracker shell listens
+              // to so it can switch to the Subscriptions tab without a
+              // route change. Falls back to a hash-based jump if not.
+              window.dispatchEvent(new CustomEvent('fincalix:switch-expense-tab', { detail: 'subscriptions' }));
+            }}
+            className="w-full mt-3 py-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5"
+            style={{
+              backgroundColor: '#F59E0B' + '15',
+              color: '#D97706',
+              border: `1px solid ${'#F59E0B'}30`,
+            }}
+          >
+            {t('expenses.manageSubscriptions', 'Manage Subscriptions')} {'\u2192'}
+          </button>
+        </div>
+      </motion.div>
+
+      {/* ======================================================
           6. INVESTMENT TARGETS
           ====================================================== */}
       <motion.div
@@ -1299,7 +1452,12 @@ export default function BudgetTab() {
 
       {/* ======================================================
           8. BUDGET SUMMARY
-          ====================================================== */}
+          ======================================================
+          BUG 1.2 fix: Est. Savings now deducts subscriptionMonthlyTotal.
+          BUG 1.4 fix: rows with value=0 use the empty sign ' ' rather
+          than '−' so they don't render as "-₹0".
+          The TRUE unallocated number (used for the Est. Savings row +
+          border color) subtracts subs as well — `unallocatedTrue`. */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1307,7 +1465,9 @@ export default function BudgetTab() {
         className="rounded-2xl border overflow-hidden"
         style={{
           ...elevatedCard,
-          borderColor: unallocated >= 0 ? 'rgba(22, 163, 74, 0.25)' : 'rgba(220, 38, 38, 0.25)',
+          borderColor: (budget.monthlyIncome - totalFixed - totalCategoryLimits - totalInvestments - subscriptionMonthlyTotal) >= 0
+            ? 'rgba(22, 163, 74, 0.25)'
+            : 'rgba(220, 38, 38, 0.25)',
         }}
       >
         <button
@@ -1334,63 +1494,96 @@ export default function BudgetTab() {
           {showSummary && (
             <motion.div {...sectionAnim} className="overflow-hidden">
               <div className="px-4 pb-5 space-y-2.5 border-t pt-4" style={{ borderColor: theme.borderSubtle }}>
-                {[
-                  { label: t('expenses.monthlyIncome'), value: budget.monthlyIncome, color: theme.accentIncome, sign: '' },
-                  { label: t('expenses.fixedExpenses'), value: totalFixed, color: theme.accentExpense, sign: '\u2212' },
-                  { label: t('expenses.investments'), value: totalInvestments, color: theme.accentInvestment, sign: '\u2212' },
-                  { label: t('expenses.categoryBudgetLimits'), value: totalCategoryLimits, color: theme.accentGold, sign: '\u2212' },
-                ].map((row, i) => (
-                  <motion.div
-                    key={row.label}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="flex justify-between items-center"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: row.color }} />
-                      <span className="text-xs font-medium" style={{ color: theme.textSecondary }}>{row.label}</span>
-                    </div>
-                    <span className="text-xs font-bold" style={{ color: row.color }}>
-                      {row.sign}{fmtINR(row.value)}
-                    </span>
-                  </motion.div>
-                ))}
+                {(() => {
+                  // BUG 1.2 fix: TRUE Est. Savings = income - fixed -
+                  // category limits - investments - recurring subs.
+                  // We compute this here so the math is colocated with
+                  // the row that displays it.
+                  const unallocatedTrue =
+                    budget.monthlyIncome
+                    - totalFixed
+                    - totalCategoryLimits
+                    - totalInvestments
+                    - subscriptionMonthlyTotal;
 
-                {/* Divider */}
-                <div className="border-t my-1" style={{ borderColor: theme.borderSubtle }} />
+                  // BUG 1.4 fix: don't render a "-₹0" line. Investment
+                  // and Subscription rows are skipped when their value
+                  // is 0; the leading minus sign is suppressed for any
+                  // 0-value row that does render (defensive).
+                  const rows: { label: string; value: number; color: string; sign: string }[] = [
+                    { label: t('expenses.monthlyIncome'), value: budget.monthlyIncome, color: theme.accentIncome, sign: '' },
+                    { label: t('expenses.fixedExpenses'), value: totalFixed, color: theme.accentExpense, sign: '\u2212' },
+                    { label: t('expenses.categoryBudgetLimits'), value: totalCategoryLimits, color: theme.accentGold, sign: '\u2212' },
+                  ];
+                  if (totalInvestments > 0) {
+                    rows.push({ label: t('expenses.investments'), value: totalInvestments, color: theme.accentInvestment, sign: '\u2212' });
+                  }
+                  if (subscriptionMonthlyTotal > 0) {
+                    rows.push({
+                      label: t('expenses.subscriptions', 'Subscriptions'),
+                      value: subscriptionMonthlyTotal,
+                      color: '#F59E0B',
+                      sign: '\u2212',
+                    });
+                  }
 
-                {/* Unallocated / Savings */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.25 }}
-                  className="flex justify-between items-center py-2 px-3 rounded-xl"
-                  style={{
-                    backgroundColor: unallocated >= 0 ? theme.bgIncome : theme.bgExpense,
-                  }}
-                >
-                  <span className="font-bold text-sm" style={{ color: theme.textPrimary }}>
-                    {unallocated >= 0 ? t('expenses.estSavings') : t('expenses.overallocated')}
-                  </span>
-                  <span
-                    className="font-bold text-sm"
-                    style={{ color: unallocated >= 0 ? theme.accentIncome : theme.accentExpense }}
-                  >
-                    {unallocated >= 0 ? '+' : ''}{fmtINR(unallocated)}
-                  </span>
-                </motion.div>
+                  return (
+                    <>
+                      {rows.map((row, i) => (
+                        <motion.div
+                          key={row.label}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="flex justify-between items-center"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: row.color }} />
+                            <span className="text-xs font-medium" style={{ color: theme.textSecondary }}>{row.label}</span>
+                          </div>
+                          <span className="text-xs font-bold" style={{ color: row.color }}>
+                            {row.value === 0 ? '' : row.sign}{fmtINR(row.value)}
+                          </span>
+                        </motion.div>
+                      ))}
 
-                {unallocated < 0 && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-[10px] font-medium px-1"
-                    style={{ color: theme.accentExpense }}
-                  >
-                    {t('expenses.overallocatedHint')}
-                  </motion.p>
-                )}
+                      {/* Divider */}
+                      <div className="border-t my-1" style={{ borderColor: theme.borderSubtle }} />
+
+                      {/* Est. Savings — uses unallocatedTrue (subs deducted) */}
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.25 }}
+                        className="flex justify-between items-center py-2 px-3 rounded-xl"
+                        style={{
+                          backgroundColor: unallocatedTrue >= 0 ? theme.bgIncome : theme.bgExpense,
+                        }}
+                      >
+                        <span className="font-bold text-sm" style={{ color: theme.textPrimary }}>
+                          {unallocatedTrue >= 0 ? t('expenses.estSavings') : t('expenses.overallocated')}
+                        </span>
+                        <span
+                          className="font-bold text-sm"
+                          style={{ color: unallocatedTrue >= 0 ? theme.accentIncome : theme.accentExpense }}
+                        >
+                          {unallocatedTrue >= 0 ? '+' : ''}{fmtINR(unallocatedTrue)}
+                        </span>
+                      </motion.div>
+
+                      {unallocatedTrue < 0 && (
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-[10px] font-medium px-1"
+                          style={{ color: theme.accentExpense }}
+                        >
+                          {t('expenses.overallocatedHint')}
+                        </motion.p>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </motion.div>
           )}

@@ -28,6 +28,10 @@ import {
     MONTH_NAMES,
     getTodayStr,
     getSubscriptionMonthlyTotal,
+    getTotalActualBilledSubsInRange,
+    buildSubscriptionEntriesForRange,
+    getActiveDaysInRange,
+    formatPeriodChange,
 } from './expenseCalculations';
 import { getCategoryById } from './expenseStorage';
 
@@ -717,8 +721,35 @@ export async function generateDailyPDF(data: DailyReportData): Promise<void> {
 
     let yPos = 36;
 
-    // Sort by createdAt (closest thing we have to entry time)
-    const dayEntries = [...data.entries].sort((a, b) =>
+    // BUG 6.6 fix (daily variant): merge subscription billings whose
+    // date is exactly this day so they appear in the transaction log
+    // and totals. The "Recurring Subscriptions (for reference)"
+    // section below still lists every active sub regardless of
+    // billing date, so the user has both views.
+    const dailySubBillings = buildSubscriptionEntriesForRange(
+        data.subscriptions ?? [],
+        data.date,
+        data.date,
+        getTodayStr(),
+    );
+    const dailySubEntries: Entry[] = dailySubBillings.map(s => ({
+        id: s.id,
+        type: 'expense',
+        amount: s.amount,
+        date: s.date,
+        category: s.category,
+        description: s.description,
+        paymentMethod: 'auto_debit',
+        recurrence: 'none',
+        isDeleted: false,
+        createdAt: '',
+        updatedAt: '',
+    }));
+
+    // Sort by createdAt (closest thing we have to entry time).
+    // Sub rows have empty createdAt so they sort first; that's fine
+    // because they represent automatic morning billings.
+    const dayEntries = [...data.entries, ...dailySubEntries].sort((a, b) =>
         (a.createdAt || '').localeCompare(b.createdAt || ''),
     );
 
@@ -819,37 +850,85 @@ export async function generateDailyPDF(data: DailyReportData): Promise<void> {
     }
 
     // ── SECTION 3: BUDGET CHECK (if budget set) ─────────────────────────
+    // BUG 6.2 fix: exclude the 'subscription' category and any
+    // category whose monthly limit is 0. The Budget Check table is
+    // intended for VARIABLE daily-spend categories. Subscriptions
+    // are recurring monthly bills, not daily targets — showing
+    // "Subscriptions | Daily Limit Rs. 767" is nonsensical and led
+    // to user confusion.
     if (data.budget && data.budget.categoryLimits.length > 0) {
-        yPos = drawSectionHeader(doc, 'Budget Check', yPos);
+        const checkableCategories = data.budget.categoryLimits.filter(cl =>
+            cl.monthlyLimit > 0 && cl.categoryId !== 'subscription',
+        );
+        if (checkableCategories.length > 0) {
+            yPos = drawSectionHeader(doc, 'Budget Check', yPos);
 
-        // For a daily view, budget limits are monthly — show daily share of monthly limit
-        const daysInMonth = new Date(
-            new Date(data.date).getFullYear(),
-            new Date(data.date).getMonth() + 1,
-            0,
-        ).getDate();
+            // For a daily view, budget limits are monthly — show daily share of monthly limit
+            const daysInMonth = new Date(
+                new Date(data.date).getFullYear(),
+                new Date(data.date).getMonth() + 1,
+                0,
+            ).getDate();
 
-        const budgetBody = data.budget.categoryLimits.map((cl) => {
-            const cat = summary.expenseByCategory.find((c) => c.categoryId === cl.categoryId);
-            const spent = cat?.amount ?? 0;
-            const dailyShare = cl.monthlyLimit / daysInMonth;
-            const remaining = dailyShare - spent;
-            const status = spent === 0 ? 'No Activity' : spent > dailyShare ? 'Over Budget' : 'Within Budget';
-            return [
-                getCategoryById(cl.categoryId)?.name ?? cl.categoryId,
-                formatINR(dailyShare),
-                formatINR(spent),
-                formatINR(remaining),
-                status,
-            ];
+            const budgetBody = checkableCategories.map((cl) => {
+                const cat = summary.expenseByCategory.find((c) => c.categoryId === cl.categoryId);
+                const spent = cat?.amount ?? 0;
+                const dailyShare = cl.monthlyLimit / daysInMonth;
+                const remaining = dailyShare - spent;
+                const status = spent === 0 ? 'No Activity' : spent > dailyShare ? 'Over Budget' : 'Within Budget';
+                return [
+                    getCategoryById(cl.categoryId)?.name ?? cl.categoryId,
+                    formatINR(dailyShare),
+                    formatINR(spent),
+                    formatINR(remaining),
+                    status,
+                ];
+            });
+
+            table(doc, autoTable, {
+                head: [['Category', 'Daily Limit', 'Spent', 'Remaining', 'Status']],
+                body: budgetBody,
+                startY: yPos,
+                headerHook,
+                columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
+            });
+            yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+        }
+    }
+
+    // ── SECTION 3.5: RECURRING SUBSCRIPTIONS (info section) ──────────────
+    // BUG 6.2 fix: replaces the misleading "Subscriptions | Daily Limit"
+    // row with a separate informational section listing every active
+    // recurring subscription with its cycle and monthly equivalent.
+    // This is a reference card, not a daily target.
+    const allActiveSubsForDay = (data.subscriptions ?? []).filter(s => s.isActive);
+    if (allActiveSubsForDay.length > 0) {
+        yPos = drawSectionHeader(doc, 'Recurring Subscriptions (for reference)', yPos);
+        const refBody: (string | number)[][] = allActiveSubsForDay.map(sub => {
+            const monthly = sub.billingCycle === 'quarterly' ? sub.amount / 3
+                : sub.billingCycle === 'yearly' ? sub.amount / 12
+                : sub.amount;
+            const cycleLabel = sub.billingCycle === 'quarterly' ? 'Quarterly'
+                : sub.billingCycle === 'yearly' ? 'Yearly'
+                : 'Monthly';
+            const billsOn = sub.nextDueDate
+                ? `Next: ${shortDate(sub.nextDueDate)}`
+                : '—';
+            return [sub.name, cycleLabel, formatINR(sub.amount), formatINR(monthly), billsOn];
         });
-
+        const monthlyTotal = allActiveSubsForDay.reduce((sum, s) => {
+            return sum + (s.billingCycle === 'quarterly' ? s.amount / 3
+                : s.billingCycle === 'yearly' ? s.amount / 12
+                : s.amount);
+        }, 0);
+        refBody.push(['TOTAL', '', '', formatINR(monthlyTotal), '/ month']);
         table(doc, autoTable, {
-            head: [['Category', 'Daily Limit', 'Spent', 'Remaining', 'Status']],
-            body: budgetBody,
+            head: [['Service', 'Cycle', 'Billed', 'Monthly Equiv.', 'Renewal']],
+            body: refBody,
             startY: yPos,
             headerHook,
-            columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
+            keepTogether: refBody.length <= 10,
+            columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
     }
@@ -882,6 +961,25 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
     const summary = calculateSummary(data.entries);
     const today = getTodayStr();
 
+    // ── Subscription billings inside this week (canonical totals) ──
+    const weeklySubsForCalc = data.subscriptions ?? [];
+    const weekSubsBilled = getTotalActualBilledSubsInRange(
+        weeklySubsForCalc, data.startDate, data.endDate, today,
+    );
+    const prevWeekSubsBilled = data.prevWeekEntries
+        ? getTotalActualBilledSubsInRange(
+            weeklySubsForCalc,
+            // Estimate prev week as 7 days before start (the caller
+            // doesn't pass prev range explicitly).
+            (() => { const d = new Date(data.startDate + 'T00:00:00'); d.setDate(d.getDate() - 7); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
+            (() => { const d = new Date(data.startDate + 'T00:00:00'); d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
+            today,
+          )
+        : 0;
+
+    const canonicalWeekExpenses = summary.totalExpenses + weekSubsBilled;
+    const canonicalWeekNet = summary.totalIncome - canonicalWeekExpenses;
+
     // Days in this week up to & including today (skip future days)
     const daysInWeek: { date: string; dayName: string; isToday: boolean }[] = [];
     const start = new Date(data.startDate + 'T00:00:00');
@@ -898,29 +996,43 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
 
     // Daily totals lookup
     const dailyMap = new Map(summary.dailyTotals.map((d) => [d.date, d]));
-    const activeDays = daysInWeek.length;
 
-    // Comparison vs last week (if data provided)
+    // BUG 6.3 fix: Active Days = unique transaction days, not
+    // "elapsed weekdays". Sub billing days count too. So when the
+    // user has nothing logged AND no sub billed this week, we
+    // correctly show 0 (not 4).
+    const txDayCount = getActiveDaysInRange(data.entries, data.startDate, data.endDate);
+    const subBillingDays = new Set(
+        buildSubscriptionEntriesForRange(weeklySubsForCalc, data.startDate, data.endDate, today)
+            .map(s => s.date),
+    );
+    const activeDays = new Set([
+        ...Array.from(subBillingDays),
+        ...data.entries
+            .filter(e => e.date >= data.startDate && e.date <= data.endDate)
+            .map(e => e.date),
+    ]).size;
+    void txDayCount; // kept for future telemetry / debugging
+
+    // Comparison vs last week — uses canonical (subs included) so the
+    // % matches the headline figure.
     let weekChange: string | null = null;
     if (data.prevWeekEntries) {
         const prev = calculateSummary(data.prevWeekEntries);
-        if (prev.totalExpenses > 0) {
-            const pct = ((summary.totalExpenses - prev.totalExpenses) / prev.totalExpenses) * 100;
-            const sign = pct >= 0 ? '+' : '';
-            weekChange = `${sign}${pct.toFixed(0)}%`;
-        }
+        const prevCanonical = prev.totalExpenses + prevWeekSubsBilled;
+        weekChange = formatPeriodChange(canonicalWeekExpenses, prevCanonical);
     }
 
     // ── SUMMARY BANNER (4 boxes + comparison) ───────────────────────────
     yPos = drawStatBoxes(doc, [
         { label: 'Total Income', value: formatINR(summary.totalIncome), tone: 'income' },
-        { label: 'Total Expenses', value: formatINR(summary.totalExpenses), tone: 'expense' },
+        { label: 'Total Expenses', value: formatINR(canonicalWeekExpenses), tone: 'expense' },
         { label: 'Total Invested', value: formatINR(summary.totalInvestments), tone: 'investment' },
-        { label: 'Net Saved', value: formatINR(summary.netSavings), tone: summary.netSavings >= 0 ? 'income' : 'expense' },
+        { label: 'Net Saved', value: formatINR(canonicalWeekNet), tone: canonicalWeekNet >= 0 ? 'income' : 'expense' },
     ], yPos);
 
     yPos = drawStatBoxes(doc, [
-        { label: 'Daily Average', value: formatINR(activeDays > 0 ? summary.totalExpenses / activeDays : 0), tone: 'neutral' },
+        { label: 'Daily Average', value: formatINR(activeDays > 0 ? canonicalWeekExpenses / activeDays : 0), tone: 'neutral' },
         { label: 'Active Days', value: String(activeDays), tone: 'neutral' },
         { label: weekChange ? 'vs Last Week' : 'Entries', value: weekChange || String(summary.entryCount), tone: 'neutral' },
     ], yPos);
@@ -1129,16 +1241,51 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
 
     let yPos = 36;
 
-    const summary = calculateSummary(data.entries, data.budget);
-
-    // ── SUBSCRIPTION TOTALS (from useBudgetTrackerStore via caller) ─────
-    // Treated as recurring monthly expenses ON TOP of the manually-logged
-    // expense entries. Without this, monthly PDFs silently understated the
-    // user's true monthly outflow by however much they had in active subs.
+    // ── SUBSCRIPTION TOTALS (canonical: actual billings in this month) ──
+    // The previous implementation used the monthly EQUIVALENT
+    // (annual/12 etc.) which doesn't tie out with the per-month
+    // figures used by Yearly tab / Annual PDF. Switch to the
+    // billing-date-aware rule so a yearly Netflix showing in March
+    // counts ₹4,999 in March and ₹0 in every other month.
     const subs = data.subscriptions ?? [];
+    const todayForMonth = getTodayStr();
+    const monthStartISO = `${data.year}-${String(data.month).padStart(2, '0')}-01`;
+    const monthLastDayNum = new Date(data.year, data.month, 0).getDate();
+    const monthEndISO = `${data.year}-${String(data.month).padStart(2, '0')}-${String(monthLastDayNum).padStart(2, '0')}`;
+    const subsMonthBilled = getTotalActualBilledSubsInRange(subs, monthStartISO, monthEndISO, todayForMonth);
+    // Also keep the forward-looking monthly equivalent for the
+    // "Subscription Commitments" reference table later in the report.
     const subsMonthlyTotal = getSubscriptionMonthlyTotal(subs);
     const activeSubs = subs.filter(s => s.isActive);
-    const effectiveExpenses = summary.totalExpenses + subsMonthlyTotal;
+
+    // Build synthetic Entry rows for the merged transaction log
+    const monthSubBillings = buildSubscriptionEntriesForRange(
+        subs, monthStartISO, monthEndISO, todayForMonth,
+    );
+    const monthSubEntries: Entry[] = monthSubBillings.map(s => ({
+        id: s.id,
+        type: 'expense',
+        amount: s.amount,
+        date: s.date,
+        category: s.category,
+        description: s.description,
+        paymentMethod: 'auto_debit',
+        recurrence: 'none',
+        isDeleted: false,
+        createdAt: '',
+        updatedAt: '',
+    }));
+    const mergedMonthEntries: Entry[] = [...data.entries, ...monthSubEntries];
+
+    // Summary computed from MERGED entries so spending-by-category,
+    // top expenses, dailyTotals etc. all reflect canonical figures.
+    const summary = calculateSummary(mergedMonthEntries, data.budget);
+
+    // Effective figures used in the executive summary banner +
+    // headline savings rate. We use subsMonthBilled (not the
+    // forward-looking monthly equivalent) so March/April totals match
+    // the Yearly tab.
+    const effectiveExpenses = summary.totalExpenses; // already includes subs via merge
     const effectiveNetSavings = summary.totalIncome - effectiveExpenses;
     const effectiveSavingsRate = summary.totalIncome > 0
         ? (effectiveNetSavings / summary.totalIncome) * 100
@@ -1187,17 +1334,25 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
 
     const investPct = summary.totalIncome > 0 ? (summary.totalInvestments / summary.totalIncome) * 100 : 0;
 
-    // Body rows: when subs are present, insert a Recurring Subscriptions row
-    // and a Total Outflow row so the user sees the full monthly drain.
+    // Body rows: separate the LOGGED-ONLY expense total from the
+    // sub-billed portion so the user can see both figures clearly.
+    // Note: `summary.totalExpenses` already includes the merged sub
+    // entries — we recompute the logged-only total from data.entries
+    // here for the breakdown row.
+    const loggedOnlyExpenses = data.entries
+        .filter(e => e.type === 'expense')
+        .reduce((s, e) => s + e.amount, 0);
+    const loggedOnlyExpenseCount = data.entries.filter(e => e.type === 'expense').length;
+
     const cashFlowBody: (string | number)[][] = [
         ['Total Income', formatINR(summary.totalIncome), entriesLabel(summary.incomeCount)],
-        ['Logged Expenses', formatINR(summary.totalExpenses), entriesLabel(summary.expenseCount)],
+        ['Logged Expenses', formatINR(loggedOnlyExpenses), entriesLabel(loggedOnlyExpenseCount)],
     ];
-    if (subsMonthlyTotal > 0) {
+    if (subsMonthBilled > 0) {
         cashFlowBody.push([
             'Recurring Subscriptions',
-            formatINR(subsMonthlyTotal),
-            `${activeSubs.length} active sub${activeSubs.length === 1 ? '' : 's'}`,
+            formatINR(subsMonthBilled),
+            `${monthSubBillings.length} billing${monthSubBillings.length === 1 ? '' : 's'} this month`,
         ]);
         cashFlowBody.push([
             'Total Outflow',
@@ -1244,14 +1399,16 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             // than planned), negative = bad. We swap the sign for income
             // because for income, "actual > planned" is good.
             //
-            // IMPORTANT: when the user has set a planned amount but hasn't
-            // logged ANY matching entries yet (actual=0), the raw diff
-            // shows something like "-Rs. 1,32,000 ⚠" — which misleads the
-            // user into thinking their budget is broken. Show a neutral
-            // "Not yet logged" label instead. This is the #1 user-reported
-            // PDF confusion.
+            // BUG 6.5 fix: when income is planned but no income entries
+            // exist, the old code rendered "—" + a confusing "Not yet
+            // logged" badge. Now: show "Rs. 0" in the Actual cell so
+            // the math is explicit, and label the variance with a
+            // crisp "No income logged" warning. Same pattern for the
+            // expenses / investments rows when they're empty.
             const varianceLabel = (planned: number, actual: number, isIncome: boolean): string => {
-                if (planned > 0 && actual === 0) return 'Not yet logged';
+                if (planned > 0 && actual === 0) {
+                    return isIncome ? 'No income logged' : 'No spending logged';
+                }
                 const diff = actual - planned;
                 if (diff === 0) return 'On plan';
                 const good = isIncome ? diff > 0 : diff < 0;
@@ -1259,21 +1416,19 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
                 return `${sign}${formatINR(diff)} ${good ? 'OK' : 'Over'}`;
             };
 
-            // Actual side of "Expenses" now INCLUDES recurring subscription
-            // commitments (which aren't expense entries). Without this the
-            // variance was under-reporting the user's real monthly drain.
-            const actualExpensesWithSubs = summary.totalExpenses + subsMonthlyTotal;
+            // Actual side of "Expenses": summary.totalExpenses ALREADY
+            // includes recurring sub billings (mergedMonthEntries pipeline).
+            // Don't double-count by adding subsMonthlyTotal again here.
+            const actualExpensesWithSubs = summary.totalExpenses;
             const plannedExpenses = plannedFixed + plannedCategoryLimits;
 
-            // If the user hasn't logged income entries but set a planned
-            // income, show "—" in the actual column rather than a confusing
-            // zero — the zero made the variance column shout misleading
-            // shortfalls (e.g. "-Rs 1,32,000 ⚠" while the user's budget
-            // was healthy in BudgetTab).
-            const actualIncomeCell = plannedIncome > 0 && summary.totalIncome === 0 ? '—' : formatINR(summary.totalIncome);
-            const actualExpensesCell = plannedExpenses > 0 && actualExpensesWithSubs === 0 ? '—' : formatINR(actualExpensesWithSubs);
-            const actualInvCell = plannedInvestments > 0 && summary.totalInvestments === 0 ? '—' : formatINR(summary.totalInvestments);
-            const actualSavingsCell = plannedIncome > 0 && summary.totalIncome === 0 ? '—' : formatINR(effectiveNetSavings);
+            // BUG 6.5 fix: Always show explicit Rs. 0 (not "—") in the
+            // Actual column when planned > 0 but actual = 0. The old
+            // "—" + "Not yet logged" combo made the column look broken.
+            const actualIncomeCell = formatINR(summary.totalIncome);
+            const actualExpensesCell = formatINR(actualExpensesWithSubs);
+            const actualInvCell = formatINR(summary.totalInvestments);
+            const actualSavingsCell = formatINR(effectiveNetSavings);
 
             table(doc, autoTable, {
                 head: [['Metric', 'Planned', 'Actual', 'Variance']],
@@ -1303,7 +1458,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             doc.setTextColor(...MUTED);
             doc.setFont('helvetica', 'italic');
             const noteLines = doc.splitTextToSize(
-                s('Note: "Planned" = amounts you entered in the Budget tab. "Actual" = amounts logged as income / expense / investment entries. "Not yet logged" means you set a plan but haven\'t recorded matching transactions for this month yet.'),
+                s('Note: "Planned" = amounts you entered in the Budget tab. "Actual" = amounts logged as income / expense / investment entries plus recurring subscription billings that have already occurred this month. A "No income logged" or "No spending logged" warning means you set a plan but haven\'t recorded matching transactions yet.'),
                 180,
             );
             noteLines.forEach((line: string) => {
@@ -1315,6 +1470,119 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             doc.setFontSize(10);
             doc.setTextColor(...TEXT);
             yPos += 6;
+        }
+
+        // ── SECTION 1C: BUDGET SNAPSHOT ────────────────────────
+        // BUG 6.7 fix: render the user's full budget setup so the
+        // PDF includes everything from BudgetTab — fixed expenses
+        // breakdown, category limits, investment targets, and the
+        // computed planned monthly savings. This lets the user (or
+        // their CA) see the complete plan in one document.
+        const fixedRows = data.budget.fixedExpenses.filter(f => f.amount > 0);
+        const limitRows = data.budget.categoryLimits.filter(c => c.monthlyLimit > 0);
+        const targetRows = (data.budget.investmentTargets ?? []).filter(t => t.monthlyTarget > 0);
+
+        if (fixedRows.length > 0 || limitRows.length > 0 || targetRows.length > 0 || activeSubs.length > 0) {
+            yPos = drawSectionHeader(doc, `Your Budget Setup - ${data.monthLabel}`, yPos);
+
+            // Fixed Monthly Expenses
+            if (fixedRows.length > 0) {
+                const fixBody: (string | number)[][] = fixedRows.map(f => [
+                    f.name || (getCategoryById(f.category)?.name ?? f.category),
+                    formatINR(f.amount),
+                ]);
+                const fixTotal = fixedRows.reduce((s, f) => s + f.amount, 0);
+                fixBody.push(['TOTAL Fixed', formatINR(fixTotal)]);
+                table(doc, autoTable, {
+                    head: [['Fixed Monthly Expenses', 'Amount']],
+                    body: fixBody,
+                    startY: yPos,
+                    headerHook,
+                    keepTogether: fixBody.length <= 12,
+                    columnStyles: { 1: { halign: 'right', cellWidth: 50 } },
+                });
+                yPos = (doc as PDFDoc).lastAutoTable.finalY + 6;
+            }
+
+            // Category Spending Limits
+            if (limitRows.length > 0) {
+                const limBody: (string | number)[][] = limitRows.map(cl => [
+                    getCategoryById(cl.categoryId)?.name ?? cl.categoryId,
+                    formatINR(cl.monthlyLimit),
+                ]);
+                const limTotal = limitRows.reduce((s, c) => s + c.monthlyLimit, 0);
+                limBody.push(['TOTAL', formatINR(limTotal)]);
+                table(doc, autoTable, {
+                    head: [['Category Spending Limit', 'Monthly Limit']],
+                    body: limBody,
+                    startY: yPos,
+                    headerHook,
+                    keepTogether: limBody.length <= 12,
+                    columnStyles: { 1: { halign: 'right', cellWidth: 50 } },
+                });
+                yPos = (doc as PDFDoc).lastAutoTable.finalY + 6;
+            }
+
+            // Recurring Subscriptions (re-stated here so the snapshot
+            // is self-contained even though there's a dedicated
+            // Subscription Commitments section later in the report)
+            if (activeSubs.length > 0) {
+                const subBody: (string | number)[][] = activeSubs.map(sub => {
+                    const monthly = sub.billingCycle === 'quarterly' ? sub.amount / 3
+                        : sub.billingCycle === 'yearly' ? sub.amount / 12
+                        : sub.amount;
+                    return [sub.name, sub.billingCycle, formatINR(monthly)];
+                });
+                subBody.push(['TOTAL', '', formatINR(subsMonthlyTotal)]);
+                table(doc, autoTable, {
+                    head: [['Recurring Subscription', 'Cycle', 'Monthly Cost']],
+                    body: subBody,
+                    startY: yPos,
+                    headerHook,
+                    keepTogether: subBody.length <= 12,
+                    columnStyles: { 2: { halign: 'right', cellWidth: 40 } },
+                });
+                yPos = (doc as PDFDoc).lastAutoTable.finalY + 6;
+            }
+
+            // Investment Targets
+            if (targetRows.length > 0) {
+                const tBody: (string | number)[][] = targetRows.map(it => [
+                    getCategoryById(it.categoryId)?.name ?? it.categoryId,
+                    formatINR(it.monthlyTarget),
+                ]);
+                const tTotal = targetRows.reduce((s, it) => s + it.monthlyTarget, 0);
+                tBody.push(['TOTAL Investments', formatINR(tTotal)]);
+                table(doc, autoTable, {
+                    head: [['Investment Target', 'Monthly Target']],
+                    body: tBody,
+                    startY: yPos,
+                    headerHook,
+                    keepTogether: tBody.length <= 12,
+                    columnStyles: { 1: { halign: 'right', cellWidth: 50 } },
+                });
+                yPos = (doc as PDFDoc).lastAutoTable.finalY + 6;
+            }
+
+            // Planned Monthly Savings line
+            const plannedSavings = (data.budget.monthlyIncome ?? 0)
+                - data.budget.fixedExpenses.reduce((s, f) => s + f.amount, 0)
+                - data.budget.categoryLimits.reduce((s, c) => s + c.monthlyLimit, 0)
+                - (data.budget.investmentTargets ?? []).reduce((s, t) => s + t.monthlyTarget, 0)
+                - subsMonthlyTotal;
+            yPos = ensureRoom(doc, yPos, 12);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...(plannedSavings >= 0 ? INCOME : EXPENSE));
+            doc.text(
+                `Planned Monthly Savings (after fixed + limits + subs + investments): ${formatINR(plannedSavings)}`,
+                15,
+                yPos,
+            );
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(...TEXT);
+            yPos += 10;
         }
     }
 
@@ -1510,12 +1778,10 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         let totalLimit = 0, totalSpent = 0;
         const budgetBody: (string | number)[][] = data.budget.categoryLimits.map((cl) => {
             const cat = summary.expenseByCategory.find((c) => c.categoryId === cl.categoryId);
-            let spent = cat?.amount ?? 0;
-            // Add the monthly subscription total to the 'subscription' row
-            // so this table mirrors what BudgetTab shows in the app.
-            if (cl.categoryId === 'subscription') {
-                spent += subsMonthlyTotal;
-            }
+            // summary.expenseByCategory is now built from mergedMonthEntries
+            // which already includes the synthetic 'subscription' rows,
+            // so no manual addition is needed any more.
+            const spent = cat?.amount ?? 0;
             const variance = cl.monthlyLimit - spent;
             const pct = cl.monthlyLimit > 0 ? (spent / cl.monthlyLimit) * 100 : 0;
             const status = spent === 0 ? 'On Track' : pct > 100 ? 'Over Budget' : pct > 80 ? 'On Track' : 'Under Budget';
@@ -1549,7 +1815,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     // ── SECTION 8: COMPLETE TRANSACTION LOG ─────────────────────────────
     yPos = drawSectionHeader(doc, `Complete Transaction Log - ${data.monthLabel}`, yPos);
 
-    if (data.entries.length === 0) {
+    if (mergedMonthEntries.length === 0) {
         table(doc, autoTable, {
             head: [['Date', 'Category', 'Type', 'Description', 'Amount']],
             body: [['—', '—', '—', 'No transactions recorded', '—']],
@@ -1557,7 +1823,9 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             headerHook,
         });
     } else {
-        const sorted = [...data.entries].sort((a, b) => {
+        // Includes synthetic sub rows from monthSubEntries so the
+        // user sees "Netflix (Recurring)" inline with manual entries.
+        const sorted = [...mergedMonthEntries].sort((a, b) => {
             if (a.date !== b.date) return a.date.localeCompare(b.date);
             return (a.createdAt || '').localeCompare(b.createdAt || '');
         });
@@ -1639,47 +1907,84 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
     // ── PAGE 1: ANNUAL SUMMARY ──────────────────────────────────────────
     yPos = drawSectionHeader(doc, `${data.year} Annual Financial Report`, yPos);
 
-    yPos = drawStatBoxes(doc, [
-        { label: 'Total Income', value: formatINR(summary.totalIncome), tone: 'income' },
-        { label: 'Total Expenses', value: formatINR(summary.totalExpenses), tone: 'expense' },
-    ], yPos);
-    yPos = drawStatBoxes(doc, [
-        { label: 'Total Investments', value: formatINR(summary.totalInvestments), tone: 'investment' },
-        { label: 'Total Savings', value: formatINR(summary.netSavings), tone: summary.netSavings >= 0 ? 'income' : 'expense' },
-    ], yPos);
-
-    // Annual savings rate label
-    yPos = ensureRoom(doc, yPos, 12);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...TEXT);
-    doc.text('Annual Savings Rate:', 15, yPos);
-    doc.setTextColor(...(summary.savingsRate >= 20 ? INCOME : summary.savingsRate >= 10 ? [202, 138, 4] as [number, number, number] : EXPENSE));
-    doc.text(`${summary.savingsRate.toFixed(1)}%   -   ${savingsGrade(summary.savingsRate)}`, 60, yPos);
-    yPos += 8;
-    doc.setTextColor(...TEXT);
-    doc.setFont('helvetica', 'normal');
+    // BUG 6.4 fix: per-month and annual totals must include the
+    // subscription billings that actually occurred in each month.
+    // We compute the per-month augmented totals first, then derive
+    // the annual figure from them so the "Total Expenses" stat box
+    // and the Month-by-Month TOTAL row tie out exactly.
+    const annualSubs = data.subscriptions ?? [];
 
     // ── SECTION 1: MONTH-BY-MONTH ───────────────────────────────────────
     const lastMonthToShow = data.year === currentYear ? currentMonth : 12;
 
     type MonthRow = { m: number; label: string; inc: number; exp: number; inv: number; net: number; rate: number; isCurrent: boolean };
     const monthRows: MonthRow[] = [];
+    let aISub = 0;
     for (let m = 1; m <= lastMonthToShow; m++) {
         const monthStr = `${data.year}-${String(m).padStart(2, '0')}`;
         const mEntries = data.entries.filter((e) => e.date.startsWith(monthStr));
         const mSum = calculateSummary(mEntries);
+        const startISO = `${monthStr}-01`;
+        const lastDayOfMonth = new Date(data.year, m, 0).getDate();
+        const endISO = `${monthStr}-${String(lastDayOfMonth).padStart(2, '0')}`;
+        const monthSubsBilled = getTotalActualBilledSubsInRange(annualSubs, startISO, endISO, today);
+        aISub += monthSubsBilled;
+        const augmentedExp = mSum.totalExpenses + monthSubsBilled;
+        const augmentedNet = mSum.totalIncome - augmentedExp;
+        const augmentedRate = mSum.totalIncome > 0 ? (augmentedNet / mSum.totalIncome) * 100 : 0;
         monthRows.push({
             m,
             label: MONTH_NAMES[m - 1],
             inc: mSum.totalIncome,
-            exp: mSum.totalExpenses,
+            exp: augmentedExp,
             inv: mSum.totalInvestments,
-            net: mSum.netSavings,
-            rate: mSum.savingsRate,
+            net: augmentedNet,
+            rate: augmentedRate,
             isCurrent: data.year === currentYear && m === currentMonth,
         });
     }
+
+    // Compute the canonical annual figures from the per-month rows so
+    // the headline matches the table totals exactly.
+    const annualCanonExpenses = monthRows.reduce((s, r) => s + r.exp, 0);
+    const annualCanonNet = summary.totalIncome - annualCanonExpenses;
+    const annualCanonRate = summary.totalIncome > 0
+        ? (annualCanonNet / summary.totalIncome) * 100
+        : 0;
+
+    yPos = drawStatBoxes(doc, [
+        { label: 'Total Income', value: formatINR(summary.totalIncome), tone: 'income' },
+        { label: 'Total Expenses', value: formatINR(annualCanonExpenses), tone: 'expense' },
+    ], yPos);
+    yPos = drawStatBoxes(doc, [
+        { label: 'Total Investments', value: formatINR(summary.totalInvestments), tone: 'investment' },
+        { label: 'Total Savings', value: formatINR(annualCanonNet), tone: annualCanonNet >= 0 ? 'income' : 'expense' },
+    ], yPos);
+
+    // Annual savings rate label — uses the canonical figures.
+    yPos = ensureRoom(doc, yPos, 12);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...TEXT);
+    doc.text('Annual Savings Rate:', 15, yPos);
+    doc.setTextColor(...(annualCanonRate >= 20 ? INCOME : annualCanonRate >= 10 ? [202, 138, 4] as [number, number, number] : EXPENSE));
+    doc.text(`${annualCanonRate.toFixed(1)}%   -   ${savingsGrade(annualCanonRate)}`, 60, yPos);
+    yPos += 8;
+    if (aISub > 0) {
+        doc.setFontSize(8);
+        doc.setTextColor(...MUTED);
+        doc.setFont('helvetica', 'italic');
+        doc.text(
+            `Includes ${formatINR(aISub)} of recurring subscription billings across the year.`,
+            15,
+            yPos,
+        );
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        yPos += 6;
+    }
+    doc.setTextColor(...TEXT);
+    doc.setFont('helvetica', 'normal');
 
     yPos = drawSectionHeader(doc, 'Month-by-Month Breakdown', yPos);
 
@@ -1838,7 +2143,36 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
 
     let yPos = 36;
 
-    const summary = calculateSummary(data.entries, data.budget);
+    // BUG 6.6 fix: build synthetic Entry rows from any subscription
+    // billings whose date falls inside [startDate, endDate] AND has
+    // already occurred. Merge them into the entries list so every
+    // downstream calculation (cash flow, day-by-day, top expenses,
+    // category breakdown, transaction log) sees subs as real expense
+    // entries with the correct date. Without this the user's custom
+    // PDF for a March-April range was understating March's total by
+    // however much Netflix billed on the 26th.
+    const customSubs = data.subscriptions ?? [];
+    const customSubEntryStubs = buildSubscriptionEntriesForRange(
+        customSubs,
+        data.startDate,
+        data.endDate,
+        getTodayStr(),
+    );
+    const customSubEntries: Entry[] = customSubEntryStubs.map(s => ({
+        id: s.id,
+        type: 'expense',
+        amount: s.amount,
+        date: s.date,
+        category: s.category,
+        description: s.description,
+        paymentMethod: 'auto_debit',
+        recurrence: 'none',
+        isDeleted: false,
+        createdAt: '',
+        updatedAt: '',
+    }));
+    const mergedEntries: Entry[] = [...data.entries, ...customSubEntries];
+    const summary = calculateSummary(mergedEntries, data.budget);
 
     // ── EXECUTIVE SUMMARY ───────────────────────────────────────────────
     yPos = drawSectionHeader(doc, `Custom Range Summary - ${data.rangeLabel}`, yPos);
@@ -1925,7 +2259,9 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
     }
 
     // ── TOP EXPENSES ────────────────────────────────────────────────────
-    const topExpenses = data.entries
+    // Uses mergedEntries so a high recurring sub bill (e.g. yearly
+    // ₹4,999) shows up alongside manually logged expenses.
+    const topExpenses = mergedEntries
         .filter((e) => e.type === 'expense')
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 10);
@@ -1951,6 +2287,7 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
     }
 
     // ── INCOME SOURCES ──────────────────────────────────────────────────
+    // Income entries are not synthesised from subs, so use data.entries.
     const incomeEntries = data.entries.filter((e) => e.type === 'income');
     if (incomeEntries.length > 0) {
         yPos = drawSectionHeader(doc, 'Income Sources', yPos);
@@ -1991,9 +2328,11 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
     }
 
     // ── TRANSACTION LOG ────────────────────────────────────────────────
-    if (data.entries.length > 0) {
+    // Uses mergedEntries so subscription billings render as
+    // "Netflix (Recurring) | expense | Rs. 499" inline with manual rows.
+    if (mergedEntries.length > 0) {
         yPos = drawSectionHeader(doc, 'Complete Transaction Log', yPos);
-        const sorted = [...data.entries].sort((a, b) => {
+        const sorted = [...mergedEntries].sort((a, b) => {
             if (a.date !== b.date) return a.date.localeCompare(b.date);
             return (a.createdAt || '').localeCompare(b.createdAt || '');
         });

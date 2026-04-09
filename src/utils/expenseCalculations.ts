@@ -297,8 +297,19 @@ export interface SubscriptionInput {
   isActive: boolean;
 }
 
+/** Richer shape for date-aware billing calculations. The
+ *  Subscriptions tab persists `nextDueDate` (YYYY-MM-DD) which we use as
+ *  the anchor for projecting billing dates backward and forward. */
+export interface BillingDateSubscription extends SubscriptionInput {
+  nextDueDate?: string;
+  name?: string;
+}
+
 /** Sum the monthly equivalent of all ACTIVE subscriptions.
- *  quarterly = amount/3, yearly = amount/12, monthly = amount as-is. */
+ *  quarterly = amount/3, yearly = amount/12, monthly = amount as-is.
+ *  Used for FORWARD-LOOKING projections (Budget tab Est. Savings) where
+ *  the question is "what's the monthly running cost?" rather than
+ *  "what actually billed in this period?". */
 export const getSubscriptionMonthlyTotal = (subs: SubscriptionInput[]): number => {
   if (!subs || subs.length === 0) return 0;
   return subs
@@ -318,7 +329,7 @@ const isInMonth = (dateStr: string, year: number, month: number): boolean => {
 
 /** Sum the monthly equivalent of subscriptions whose nextDueDate falls in
  *  the given year/month. Used by daily/weekly views to flag the renewal
- *  hitting that period. Falls back to monthly equivalent for safety. */
+ *  hitting that period. */
 export const getSubscriptionsDueInMonth = <T extends SubscriptionInput & { nextDueDate?: string }>(
   subs: T[],
   year: number,
@@ -326,6 +337,262 @@ export const getSubscriptionsDueInMonth = <T extends SubscriptionInput & { nextD
 ): T[] => {
   if (!subs || subs.length === 0) return [];
   return subs.filter(s => s.isActive && s.nextDueDate && isInMonth(s.nextDueDate, year, month));
+};
+
+// ─── DATE-AWARE BILLING DATE PROJECTION ──────────────────────
+// These helpers walk forward/backward from `nextDueDate` to find every
+// billing date that falls inside an arbitrary [startISO, endISO] range.
+// They're the foundation for "actual cash flow" calculations across
+// every tab and PDF — Monthly Cash Flow, Yearly per-month, Custom date
+// range PDFs, etc. all need to know "did this sub bill in this period
+// AND has the bill date already passed".
+
+/** Add N months to a YYYY-MM-DD string, clamping the day to the new
+ *  month's last day if needed (e.g. Jan 31 + 1 month → Feb 28/29). */
+const addMonthsISO = (iso: string, months: number): string => {
+  const [y, m, d] = iso.split('-').map(Number);
+  const newDate = new Date(y, m - 1 + months, 1);
+  const lastDay = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate();
+  newDate.setDate(Math.min(d, lastDay));
+  return `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`;
+};
+
+/** Add N days to a YYYY-MM-DD string. */
+const addDaysISO = (iso: string, days: number): string => {
+  const d = new Date(iso + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+/** Returns the cycle step in months. Quarterly = 3, yearly = 12,
+ *  monthly = 1. */
+const cycleMonths = (cycle: 'monthly' | 'quarterly' | 'yearly'): number => {
+  if (cycle === 'quarterly') return 3;
+  if (cycle === 'yearly') return 12;
+  return 1;
+};
+
+/** Returns every billing date for a single subscription that falls
+ *  inside [startISO, endISO]. Walks backward from nextDueDate (or any
+ *  later anchor) to find earlier billings, then forward for later ones.
+ *
+ *  If `nextDueDate` is missing, returns []. The Subscriptions tab
+ *  always sets nextDueDate, so this is defensive only. */
+export const getSubBillingDatesInRange = (
+  sub: BillingDateSubscription,
+  startISO: string,
+  endISO: string,
+): string[] => {
+  if (!sub.isActive || !sub.nextDueDate) return [];
+
+  const stepMonths = cycleMonths(sub.billingCycle);
+  const dates: string[] = [];
+
+  // Walk backward to the earliest possible billing on or after startISO
+  let cursor = sub.nextDueDate;
+  // Cap iterations to avoid runaway loops on bad data
+  let safetyBackward = 0;
+  while (cursor > endISO && safetyBackward < 240) {
+    cursor = addMonthsISO(cursor, -stepMonths);
+    safetyBackward++;
+  }
+  while (cursor >= startISO && safetyBackward < 240) {
+    if (cursor <= endISO) dates.push(cursor);
+    cursor = addMonthsISO(cursor, -stepMonths);
+    safetyBackward++;
+  }
+
+  // Walk forward from the original anchor to catch later billings inside the range
+  let forwardCursor = addMonthsISO(sub.nextDueDate, stepMonths);
+  let safetyForward = 0;
+  while (forwardCursor <= endISO && safetyForward < 240) {
+    if (forwardCursor >= startISO) dates.push(forwardCursor);
+    forwardCursor = addMonthsISO(forwardCursor, stepMonths);
+    safetyForward++;
+  }
+
+  return Array.from(new Set(dates)).sort();
+};
+
+/** Sum the cash actually billed (or projected to bill) for a single sub
+ *  in the given range, IGNORING today's date. Use this when you want
+ *  the full period's expected cost. */
+export const getSubAmountInRange = (
+  sub: BillingDateSubscription,
+  startISO: string,
+  endISO: string,
+): number => {
+  if (!sub.isActive) return 0;
+  return getSubBillingDatesInRange(sub, startISO, endISO).length * sub.amount;
+};
+
+/** Sum the cash actually billed for a single sub in the given range,
+ *  but only counting billings whose date is on-or-before `asOfISO`
+ *  (defaults to today). This is the canonical "actual cash flow" rule:
+ *  for past months, all billings count; for the current month, only
+ *  billings up to today count; for future months, none.
+ *
+ *  Example: Netflix nextDueDate=2026-04-26, today=2026-04-09.
+ *    March range → [2026-03-26] all <= today → ₹499 counted
+ *    April range → [2026-04-26] none <= today → ₹0 counted
+ *    May range → [2026-05-26] none <= today → ₹0 counted */
+export const getActualBilledSubAmountInRange = (
+  sub: BillingDateSubscription,
+  startISO: string,
+  endISO: string,
+  asOfISO: string = getTodayStr(),
+): number => {
+  if (!sub.isActive) return 0;
+  const dates = getSubBillingDatesInRange(sub, startISO, endISO);
+  return dates.filter(d => d <= asOfISO).length * sub.amount;
+};
+
+/** Total of all subs' actual billings in the given range. The single
+ *  source of truth for "subscription contribution to expenses" in
+ *  every tab and PDF except the Budget projection. */
+export const getTotalActualBilledSubsInRange = (
+  subs: BillingDateSubscription[],
+  startISO: string,
+  endISO: string,
+  asOfISO: string = getTodayStr(),
+): number => {
+  if (!subs || subs.length === 0) return 0;
+  return subs.reduce(
+    (sum, sub) => sum + getActualBilledSubAmountInRange(sub, startISO, endISO, asOfISO),
+    0,
+  );
+};
+
+/** Build a synthetic Entry-like object for each subscription billing
+ *  in the range. Used by the Daily/Weekly/Custom PDF transaction logs
+ *  so users see "Netflix (Recurring) | ₹499" inline with their other
+ *  expense rows. The synthetic ID prefix makes it easy to filter out. */
+export interface SyntheticSubscriptionEntry {
+  id: string;
+  date: string;
+  amount: number;
+  type: 'expense';
+  category: string;
+  description: string;
+  isRecurring: true;
+  subscriptionName: string;
+}
+
+export const buildSubscriptionEntriesForRange = (
+  subs: BillingDateSubscription[],
+  startISO: string,
+  endISO: string,
+  asOfISO: string = getTodayStr(),
+): SyntheticSubscriptionEntry[] => {
+  if (!subs || subs.length === 0) return [];
+  const result: SyntheticSubscriptionEntry[] = [];
+  subs.forEach(sub => {
+    if (!sub.isActive) return;
+    const dates = getSubBillingDatesInRange(sub, startISO, endISO);
+    dates.forEach(date => {
+      if (date > asOfISO) return; // upcoming, skip
+      result.push({
+        id: `sub_${sub.name ?? 'unknown'}_${date}`,
+        date,
+        amount: sub.amount,
+        type: 'expense',
+        category: 'subscription',
+        description: `${sub.name ?? 'Subscription'} (Recurring)`,
+        isRecurring: true,
+        subscriptionName: sub.name ?? 'Subscription',
+      });
+    });
+  });
+  return result.sort((a, b) => a.date.localeCompare(b.date));
+};
+
+// ─── CANONICAL EXPENSE / PERIOD CALCULATIONS ─────────────────
+// One source of truth for "total expenses for any period" used by
+// Monthly tab, Weekly tab, Yearly tab and every PDF report.
+
+/** Canonical total expenses for any date range:
+ *    logged expense entries in [startISO, endISO]
+ *    + subscription billings in [startISO, endISO] that have actually
+ *      occurred (date <= asOfISO).
+ *
+ *  This is the SINGLE source of truth — every "Total Expenses" number
+ *  the user sees should come from here. */
+export const getCanonicalExpensesForRange = (
+  entries: Entry[],
+  subscriptions: BillingDateSubscription[],
+  startISO: string,
+  endISO: string,
+  asOfISO: string = getTodayStr(),
+): number => {
+  const loggedTotal = entries
+    .filter(e => e.type === 'expense' && e.date >= startISO && e.date <= endISO)
+    .reduce((sum, e) => sum + e.amount, 0);
+  const subsTotal = getTotalActualBilledSubsInRange(subscriptions, startISO, endISO, asOfISO);
+  return loggedTotal + subsTotal;
+};
+
+/** Active days in a range — count of UNIQUE dates that have at least
+ *  one transaction. The previous implementation in some PDFs counted
+ *  "elapsed calendar days in the week" which gave 4 even when the
+ *  user had logged nothing. Now: 0 logged → 0 active. */
+export const getActiveDaysInRange = (
+  entries: Entry[],
+  startISO: string,
+  endISO: string,
+): number => {
+  const unique = new Set<string>();
+  for (const e of entries) {
+    if (e.date >= startISO && e.date <= endISO) unique.add(e.date);
+  }
+  return unique.size;
+};
+
+/** Safe % change between two periods. Handles every degenerate case
+ *  the old `formatChange` did not:
+ *    - both 0 → "Same"
+ *    - prev 0, curr > 0 → "New activity"
+ *    - prev > 0, curr 0 → "-100%"
+ *    - normal → "+X%" / "-X%" */
+export const formatPeriodChange = (current: number, previous: number): string => {
+  if (previous === 0 && current === 0) return 'Same';
+  if (previous === 0) return 'New activity';
+  if (current === 0) return '-100%';
+  const pct = ((current - previous) / previous) * 100;
+  return `${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%`;
+};
+
+/** Same data as `formatPeriodChange` but as a structured object so
+ *  callers can color-code positive vs negative changes without parsing
+ *  the formatted string. */
+export const calcPeriodChange = (
+  current: number,
+  previous: number,
+): { display: string; tone: 'same' | 'new' | 'down' | 'up'; pct: number | null } => {
+  if (previous === 0 && current === 0) return { display: 'Same', tone: 'same', pct: 0 };
+  if (previous === 0) return { display: 'New activity', tone: 'new', pct: null };
+  if (current === 0) return { display: '-100%', tone: 'down', pct: -100 };
+  const pct = ((current - previous) / previous) * 100;
+  return {
+    display: `${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%`,
+    tone: pct >= 0 ? 'up' : 'down',
+    pct,
+  };
+};
+
+/** Safe savings rate. Returns `null` when income is 0/missing so the
+ *  caller can show "N/A" instead of a misleading "0%". */
+export const calcSafeSavingsRate = (
+  totalIncome: number,
+  netSavings: number,
+): number | null => {
+  if (!Number.isFinite(totalIncome) || totalIncome <= 0) return null;
+  return (netSavings / totalIncome) * 100;
+};
+
+/** Format a possibly-null savings rate for display. */
+export const formatSafeSavingsRate = (rate: number | null): string => {
+  if (rate === null) return 'N/A';
+  return `${rate.toFixed(1)}%`;
 };
 
 // ─── BUDGET HELPERS ───────────────────────────────────────────

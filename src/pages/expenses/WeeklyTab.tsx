@@ -5,14 +5,21 @@ import {
   Wallet, PiggyBank, BarChart3, CalendarDays,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useExpenseTheme, formatChange, TYPE_COLORS } from '../../theme/expenseTheme';
+import { useExpenseTheme } from '../../theme/expenseTheme';
 import { getEntriesForDateRange, getCategoryById } from '../../utils/expenseStorage';
 import {
   calculateSummary, getWeekRange, fmtINR, fmtPct,
   formatFullDate, DAY_NAMES,
+  getTotalActualBilledSubsInRange,
+  buildSubscriptionEntriesForRange,
+  calcPeriodChange,
+  getTodayStr,
 } from '../../utils/expenseCalculations';
 import type { Entry } from '../../types/expense';
 import { toLocalDateStr, todayStr } from '../../utils/dateUtils';
+// Bridge subscription store so weekly totals can include billings
+// (BUG 3.2 fix).
+import { useBudgetTrackerStore } from '../../store/useBudgetTrackerStore';
 
 /* ── constants ── */
 
@@ -105,20 +112,88 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
   const summary = useMemo(() => calculateSummary(weekEntries), [weekEntries]);
   const prevSummary = useMemo(() => calculateSummary(prevWeekEntries), [prevWeekEntries]);
 
-  /* ── vs last week change ── */
-  const change = formatChange(summary.totalExpenses, prevSummary.totalExpenses);
+  /* ── BUG 3.2: subscription billings hitting this week ── */
+  const subscriptions = useBudgetTrackerStore(s => s.subscriptions);
+  const todayISO = getTodayStr();
 
-  /* ── day-by-day data ── */
+  /** Synthetic Entry-shaped objects for every sub billing in [week.start, week.end].
+   *  These are merged into the day-by-day chart and the "All Entries" log so the
+   *  user sees recurring subs inline with their manually logged entries. Only
+   *  billings on-or-before today are included (upcoming subs are skipped). */
+  const weekSubEntries = useMemo(
+    () => buildSubscriptionEntriesForRange(subscriptions, week.start, week.end, todayISO),
+    [subscriptions, week.start, week.end, todayISO],
+  );
+  const weekSubsBilled = useMemo(
+    () => getTotalActualBilledSubsInRange(subscriptions, week.start, week.end, todayISO),
+    [subscriptions, week.start, week.end, todayISO],
+  );
+  const prevWeekSubsBilled = useMemo(
+    () => getTotalActualBilledSubsInRange(subscriptions, prevWeek.start, prevWeek.end, todayISO),
+    [subscriptions, prevWeek.start, prevWeek.end, todayISO],
+  );
+
+  /* ── canonical totals (logged + subs) ── */
+  const canonicalExpenses = summary.totalExpenses + weekSubsBilled;
+  const prevCanonicalExpenses = prevSummary.totalExpenses + prevWeekSubsBilled;
+
+  /* ── vs last week change ── BUG 3.1 fix:
+       use calcPeriodChange so zero-base cases ("Same", "New activity",
+       "-100%") render correctly instead of as "NaN%" or "-100%" with
+       no context. Compare CANONICAL totals so the percentage matches
+       the headline figure (which now includes subs). */
+  const change = useMemo(() => {
+    const detail = calcPeriodChange(canonicalExpenses, prevCanonicalExpenses);
+    return {
+      display: detail.display,
+      isNew: detail.tone === 'new',
+      // Color: down is good (less spending), up is bad, same/new neutral
+      color: detail.tone === 'down' ? et.accentIncome
+        : detail.tone === 'up' ? et.accentExpense
+        : et.textMuted,
+      tone: detail.tone,
+    };
+  }, [canonicalExpenses, prevCanonicalExpenses, et]);
+
+  /* ── day-by-day data ──
+     BUG 3.2 fix: merge in subscription billings whose date falls on
+     this day. Subs are typed 'expense' so they only show up when the
+     active sub-tab is 'expense'.
+     BUG 3.3 fix: future days return total=0 (not "—"), past/today
+     days with no logged entries also show ₹0 — the "—" sentinel only
+     remains for future days, handled in the render below. */
   const dayData = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
       const dayDateStr = dateOfWeekday(week.start, i);
-      const dayEntries = weekEntries.filter(
+      const loggedDayEntries = weekEntries.filter(
         (e) => e.date === dayDateStr && e.type === activeSubTab,
       );
+      // Subscription entries for this day (only when viewing expenses)
+      const subDayEntries = activeSubTab === 'expense'
+        ? weekSubEntries
+            .filter(s => s.date === dayDateStr)
+            .map(s => ({
+              // Cast to Entry shape for downstream code that expects Entry
+              id: s.id,
+              type: 'expense' as const,
+              amount: s.amount,
+              date: s.date,
+              category: s.category,
+              description: s.description,
+              paymentMethod: 'auto_debit' as const,
+              recurrence: 'none' as const,
+              isDeleted: false,
+              createdAt: '',
+              updatedAt: '',
+              isRecurring: true as const,
+            }))
+        : [];
+      const dayEntries = [...loggedDayEntries, ...subDayEntries];
       const total = dayEntries.reduce((s, e) => s + e.amount, 0);
-      return { dayIndex: i, dateStr: dayDateStr, entries: dayEntries, total };
+      const isFuture = dayDateStr > todayISO;
+      return { dayIndex: i, dateStr: dayDateStr, entries: dayEntries, total, isFuture };
     });
-  }, [week.start, weekEntries, activeSubTab]);
+  }, [week.start, weekEntries, weekSubEntries, activeSubTab, todayISO]);
 
   const maxDayTotal = Math.max(...dayData.map((d) => d.total), 1);
   const highestDayIdx = dayData.reduce(
@@ -139,9 +214,28 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
 
   const breakdownTotal = breakdown.reduce((s, b) => s + b.amount, 0);
 
-  /* ── all entries grouped by day ── */
+  /* ── all entries grouped by day ──
+     BUG 3.2 fix: include synthetic sub entries so the user sees
+     "Netflix (Recurring) ₹499" in the daily group list. */
   const groupedEntries = useMemo(() => {
-    const sorted = [...weekEntries].sort(
+    const subAsEntries: Entry[] = weekSubEntries.map(s => ({
+      id: s.id,
+      type: 'expense',
+      amount: s.amount,
+      date: s.date,
+      category: s.category,
+      description: s.description,
+      paymentMethod: 'auto_debit',
+      recurrence: 'none',
+      isDeleted: false,
+      createdAt: '',
+      updatedAt: '',
+      // Custom marker so the row renderer can show a "Recurring" badge
+      // (cast away from the Entry type since this is a synthetic flag).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...({ isRecurring: true } as any),
+    }));
+    const sorted = [...weekEntries, ...subAsEntries].sort(
       (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
     );
     const groups: { date: string; entries: Entry[] }[] = [];
@@ -154,7 +248,7 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
       }
     });
     return groups;
-  }, [weekEntries]);
+  }, [weekEntries, weekSubEntries]);
 
   /* ── active sub-tab color ── */
   const activeColor = typeColor(et, activeSubTab);
@@ -231,7 +325,9 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
           boxShadow: et.shadowCard,
         }}
       >
-        {/* Total Spent + vs last week */}
+        {/* Total Spent + vs last week —
+            BUG 3.1 + 3.2 fix: uses canonical (logged + subs) and
+            shows a friendly message in degenerate zero cases. */}
         <div className="flex items-start justify-between mb-4">
           <div>
             <p className="text-xs font-medium mb-1" style={{ color: et.textSecondary }}>
@@ -241,8 +337,13 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
               className="font-extrabold leading-none"
               style={{ fontSize: 28, color: et.accentExpense }}
             >
-              {fmtINR(summary.totalExpenses)}
+              {fmtINR(canonicalExpenses)}
             </p>
+            {weekSubsBilled > 0 && (
+              <p className="text-[10px] mt-1" style={{ color: et.textMuted }}>
+                {fmtINR(summary.totalExpenses)} {t('expenses.logged', 'logged')} + {fmtINR(weekSubsBilled)} {t('expenses.recurringSubsLabel', 'recurring')}
+              </p>
+            )}
           </div>
           <span
             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold mt-1"
@@ -251,14 +352,21 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
               color: change.color,
             }}
           >
-            {change.isNew ? (
+            {change.tone === 'new' ? (
               <>
                 <TrendingUp size={12} />
                 {t('expenses.new')}
               </>
+            ) : change.tone === 'same' ? (
+              <>{t('expenses.vsLastWeek', 'vs last week')}: {t('expenses.same', 'Same')}</>
+            ) : change.tone === 'down' && canonicalExpenses === 0 ? (
+              <>
+                <TrendingDown size={12} />
+                {t('expenses.noSpendingThisWeek', 'No spending this week 🎉')}
+              </>
             ) : (
               <>
-                {change.display.startsWith('-')
+                {change.tone === 'down'
                   ? <TrendingDown size={12} />
                   : <TrendingUp size={12} />}
                 {t('expenses.vsLastWeek', 'vs last week')}: {change.display}
@@ -286,16 +394,16 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
             },
             {
               label: t('expenses.dailyAverage', 'Daily Avg'),
-              value: fmtINR(summary.totalExpenses / dailyAvgDivisor),
+              value: fmtINR(canonicalExpenses / dailyAvgDivisor),
               color: et.accentGold,
               bg: `${et.accentGold}12`,
               icon: <BarChart3 size={14} />,
             },
             {
               label: t('expenses.netSaved', 'Net Saved'),
-              value: fmtINR(summary.netSavings),
-              color: summary.netSavings >= 0 ? et.accentIncome : et.accentExpense,
-              bg: summary.netSavings >= 0 ? et.bgIncome : et.bgExpense,
+              value: fmtINR(summary.totalIncome - canonicalExpenses),
+              color: (summary.totalIncome - canonicalExpenses) >= 0 ? et.accentIncome : et.accentExpense,
+              bg: (summary.totalIncome - canonicalExpenses) >= 0 ? et.bgIncome : et.bgExpense,
               icon: <PiggyBank size={14} />,
             },
           ].map((stat) => (
@@ -415,7 +523,9 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
                     />
                   </div>
 
-                  {/* Amount */}
+                  {/* Amount — BUG 3.3 fix: only future days show "—".
+                      Past/today days with 0 logged AND 0 sub billings
+                      now show "₹0" (was "—" which looked like a bug). */}
                   <span
                     className="text-xs font-bold min-w-[60px] text-right"
                     style={{
@@ -426,7 +536,7 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
                           : et.textPrimary,
                     }}
                   >
-                    {day.total === 0 ? '\u2014' : fmtINR(day.total)}
+                    {day.isFuture ? '\u2014' : fmtINR(day.total)}
                   </span>
                 </button>
 
@@ -655,16 +765,21 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
                             ? t('expenses.transfer', 'Transfer')
                             : t('expenses.spent', 'Spent');
 
+                    // Synthetic sub rows are read-only (you can't edit
+                    // a recurring billing — manage it in the
+                    // Subscriptions tab instead). Detect via the id
+                    // prefix we set in buildSubscriptionEntriesForRange.
+                    const isSyntheticSub = entry.id.startsWith('sub_');
                     return (
                       <motion.div
                         key={entry.id}
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
-                        whileTap={onEditEntry ? { scale: 0.98 } : {}}
-                        onClick={() => onEditEntry?.(entry)}
-                        role={onEditEntry ? 'button' : undefined}
-                        tabIndex={onEditEntry ? 0 : undefined}
-                        className="flex items-center gap-3 py-2 cursor-pointer"
+                        whileTap={onEditEntry && !isSyntheticSub ? { scale: 0.98 } : {}}
+                        onClick={() => { if (!isSyntheticSub) onEditEntry?.(entry); }}
+                        role={onEditEntry && !isSyntheticSub ? 'button' : undefined}
+                        tabIndex={onEditEntry && !isSyntheticSub ? 0 : undefined}
+                        className={`flex items-center gap-3 py-2 ${isSyntheticSub ? '' : 'cursor-pointer'}`}
                       >
                         {/* Icon card */}
                         <div

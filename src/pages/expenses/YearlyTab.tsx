@@ -13,9 +13,15 @@ import {
   fmtPct,
   MONTH_NAMES,
   calculatePercentChange,
+  getTotalActualBilledSubsInRange,
+  getTodayStr,
+  calcSafeSavingsRate,
   type PeriodSummary,
   type CategoryTotal,
 } from '../../utils/expenseCalculations';
+// Subscription store bridge — BUG 5.1 fix: per-month expenses must
+// include actually-billed sub amounts.
+import { useBudgetTrackerStore } from '../../store/useBudgetTrackerStore';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TFn = (key: string, options?: any) => string;
@@ -52,18 +58,69 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
     [yearEntries],
   );
 
-  // ── Per-month summaries ──
+  // ── Subscription store + today anchor for actual-billing math ──
+  const subscriptions = useBudgetTrackerStore(s => s.subscriptions);
+  const todayISO = getTodayStr();
+
+  // ── Per-month summaries — BUG 5.1 fix: each month's totalExpenses
+  //    is augmented with the subscription billings that ACTUALLY
+  //    occurred (date <= today) inside that month's window.
+  //    Apr 9 example: March 26 Netflix → counted in March; April 26
+  //    Netflix → NOT counted in April (still future). ──
   const monthlySummaries = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
       const month = i + 1;
       const entries = getEntriesForMonth(yearRange.year, month);
       const summary = calculateSummary(entries);
       const isFuture = isCurrentYear && month > currentMonth;
-      return { month, summary, hasData: entries.length > 0, isFuture };
+      // Range for this month
+      const startISO = `${yearRange.year}-${String(month).padStart(2, '0')}-01`;
+      const lastDay = new Date(yearRange.year, month, 0).getDate();
+      const endISO = `${yearRange.year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+      const subsBilled = getTotalActualBilledSubsInRange(subscriptions, startISO, endISO, todayISO);
+      // Augment the summary so downstream renderers (bars, totals,
+      // savings rate) all see the canonical figure without further
+      // changes. Build a NEW summary object — never mutate the
+      // calculateSummary result.
+      const augmentedTotalExpenses = summary.totalExpenses + subsBilled;
+      const augmentedNetSavings = summary.totalIncome - augmentedTotalExpenses;
+      const augmentedSavingsRate = summary.totalIncome > 0
+        ? (augmentedNetSavings / summary.totalIncome) * 100
+        : 0;
+      const augmentedSummary: PeriodSummary = {
+        ...summary,
+        totalExpenses: augmentedTotalExpenses,
+        netSavings: augmentedNetSavings,
+        savingsRate: augmentedSavingsRate,
+      };
+      const hasData = entries.length > 0 || subsBilled > 0;
+      const hasIncome = summary.totalIncome > 0;
+      return { month, summary: augmentedSummary, hasData, hasIncome, isFuture };
     });
-  }, [yearRange.year, isCurrentYear, currentMonth, refreshKey]);
+  }, [yearRange.year, isCurrentYear, currentMonth, refreshKey, subscriptions, todayISO]);
 
-  // ── Top 10 spending categories ──
+  // ── Augmented YEAR-LEVEL summary using the per-month canonicals.
+  // We can't just call calculateSummary(yearEntries) any more because
+  // it ignores subs. Sum the per-month augmented totals instead. ──
+  const augmentedYearSummary = useMemo<PeriodSummary>(() => {
+    const totalExpenses = monthlySummaries.reduce((s, m) => s + m.summary.totalExpenses, 0);
+    const totalIncome = yearSummary.totalIncome;
+    const netSavings = totalIncome - totalExpenses;
+    const savingsRate = totalIncome > 0 ? (netSavings / totalIncome) * 100 : 0;
+    return {
+      ...yearSummary,
+      totalExpenses,
+      netSavings,
+      savingsRate,
+    };
+  }, [monthlySummaries, yearSummary]);
+
+  // ── Top 10 spending categories (resolved names/icons) ──
+  // Note: this still uses the LOGGED yearSummary categories — we
+  // intentionally don't synthesise per-category sub spend here because
+  // doing so would conflict with the existing Subscriptions row in
+  // categoryBreakdown elsewhere. The total at the top of the section
+  // uses the augmented year total.
   const topCategories = useMemo(() => {
     return yearSummary.expenseByCategory.slice(0, 10).map(cat => {
       const resolved = getCategoryById(cat.categoryId);
@@ -77,11 +134,16 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
   }, [yearSummary]);
 
   // ── Monthly savings rates for trend ──
+  // BUG 5.2 fix: include `hasIncome` flag so months with 0 income
+  // can render "N/A" rather than "0%". The rate field is still
+  // computed (= 0 when income is 0) but the chart now hides the
+  // label for those bars.
   const monthlySavingsRates = useMemo(() => {
     return monthlySummaries.map(m => ({
       month: m.month,
       rate: m.summary.savingsRate,
       hasData: m.hasData,
+      hasIncome: m.hasIncome,
       isFuture: m.isFuture,
     }));
   }, [monthlySummaries]);
@@ -98,13 +160,14 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
         t={t}
       />
 
-      {/* ── 2. Annual Summary Card ── */}
-      <AnnualSummaryCard summary={yearSummary} theme={theme} t={t} />
+      {/* ── 2. Annual Summary Card ── (uses augmented summary so totals
+              include all subs that actually billed this year) */}
+      <AnnualSummaryCard summary={augmentedYearSummary} theme={theme} t={t} />
 
       {/* ── 3. Month-by-Month ── */}
       <MonthByMonthSection
         monthlySummaries={monthlySummaries}
-        yearSummary={yearSummary}
+        yearSummary={augmentedYearSummary}
         currentMonth={isCurrentYear ? currentMonth : -1}
         theme={theme}
         t={t}
@@ -114,7 +177,7 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
       {topCategories.length > 0 && (
         <TopSpendingCategories
           categories={topCategories}
-          totalExpenses={yearSummary.totalExpenses}
+          totalExpenses={augmentedYearSummary.totalExpenses}
           theme={theme}
           t={t}
         />
@@ -604,19 +667,23 @@ function TopSpendingCategories({ categories, totalExpenses, theme, t }: TopSpend
 // ─── 5. Savings Rate Trend (12 bars) ────────────────────────
 
 interface SavingsRateTrendProps {
-  months: Array<{ month: number; rate: number; hasData: boolean; isFuture: boolean }>;
+  months: Array<{ month: number; rate: number; hasData: boolean; hasIncome: boolean; isFuture: boolean }>;
   theme: ReturnType<typeof useExpenseTheme>;
   t: TFn;
 }
 
 function SavingsRateTrendSection({ months, theme, t }: SavingsRateTrendProps) {
+  // BUG 5.2 fix: only months with actual income contribute to the
+  // bar scale and only those months get a numeric label. Months
+  // with hasData but no income render as a thin neutral bar with
+  // no label (or "N/A" tooltip).
   const maxAbsRate = Math.max(
-    ...months.filter(m => m.hasData).map(m => Math.abs(m.rate)),
+    ...months.filter(m => m.hasIncome).map(m => Math.abs(m.rate)),
     1,
   );
 
-  const getBarColor = (rate: number, hasData: boolean) => {
-    if (!hasData) return theme.textMuted;
+  const getBarColor = (rate: number, hasIncome: boolean) => {
+    if (!hasIncome) return theme.textMuted;
     if (rate >= 20) return theme.accentIncome;   // green
     if (rate >= 10) return theme.accentGold;      // amber
     return theme.accentExpense;                   // red
@@ -638,19 +705,24 @@ function SavingsRateTrendSection({ months, theme, t }: SavingsRateTrendProps) {
 
       <div className="grid grid-cols-12 gap-1 items-end" style={{ minHeight: 90 }}>
         {months.map(m => {
-          const barColor = getBarColor(m.rate, m.hasData);
-          const barHeight = m.hasData
+          const barColor = getBarColor(m.rate, m.hasIncome);
+          // Only months with actual income get a tall bar with a label.
+          // Months with expenses-only data render a thin neutral stub.
+          const barHeight = m.hasIncome
             ? Math.max((Math.abs(m.rate) / maxAbsRate) * 64, 6)
             : 4;
 
           return (
             <div key={m.month} className="flex flex-col items-center gap-1">
-              {/* Rate label */}
+              {/* Rate label — only when income exists; "N/A" when there's
+                  expense data but no income; blank for future months */}
               <span
                 className="text-[7px] font-bold"
-                style={{ color: m.hasData ? barColor : 'transparent' }}
+                style={{ color: m.hasIncome ? barColor : theme.textMuted }}
               >
-                {m.hasData ? `${Math.round(m.rate)}%` : ''}
+                {m.hasIncome
+                  ? `${Math.round(m.rate)}%`
+                  : (m.hasData ? 'N/A' : '')}
               </span>
 
               {/* Bar */}
@@ -661,7 +733,7 @@ function SavingsRateTrendSection({ months, theme, t }: SavingsRateTrendProps) {
                 className="w-full rounded-sm"
                 style={{
                   backgroundColor: barColor,
-                  opacity: m.hasData ? 1 : 0.2,
+                  opacity: m.hasIncome ? 1 : 0.2,
                 }}
               />
 
