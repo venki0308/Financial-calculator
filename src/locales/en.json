@@ -3324,7 +3324,9 @@
         "capital": "Capital",
         "language": "Language",
         "currencyUnavailable": "Currency data unavailable",
-        "tzAbbreviation": "Abbreviation"
+        "tzAbbreviation": "Abbreviation",
+        "compareMode": "Compare",
+        "exitCompare": "Exit Compare"
     },
     "age": {
         "title": "Age Calculator",

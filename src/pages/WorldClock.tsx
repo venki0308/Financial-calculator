@@ -1458,17 +1458,27 @@ export default function WorldClock() {
             <div className="sticky top-0 z-10 bg-background px-4 pt-14 pb-3 border-b border-border">
                 {/* Title row */}
                 <div className="flex items-center gap-3 mb-3">
-                    <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border text-muted-foreground">
+                    <button
+                        onClick={() => view === 'compare' ? setView('clocks') : navigate(-1)}
+                        className="p-2 rounded-xl bg-card border border-border text-muted-foreground"
+                    >
                         <ArrowLeft size={18} />
                     </button>
-                    <div>
-                        <h1 className="text-lg font-bold text-foreground">{t('worldClock.title')}</h1>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-lg font-bold text-foreground">{t('worldClock.title')}</h1>
+                            {view === 'compare' && (
+                                <span className="text-[9px] font-black uppercase tracking-wider bg-primary/15 text-primary px-2 py-0.5 rounded-full">
+                                    {t('worldClock.compareMode', 'Compare')}
+                                </span>
+                            )}
+                        </div>
                         <p className="text-muted-foreground text-xs">
                             {view === 'compare' ? t('worldClock.timezoneConverter') : t('worldClock.citiesCount', { count: activeClocks.length })}
                         </p>
                     </div>
                 </div>
-                {/* Full-width action row */}
+                {/* Action row */}
                 <div className="flex gap-2">
                     {view !== 'compare' && (
                         <button
@@ -1483,12 +1493,12 @@ export default function WorldClock() {
                         onClick={() => setView(v => v === 'compare' ? 'clocks' : 'compare')}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-colors active:scale-[0.98] ${
                             view === 'compare'
-                                ? 'bg-primary/80 text-primary-foreground border border-primary/80'
+                                ? 'bg-card border border-border text-foreground'
                                 : 'bg-primary text-primary-foreground border border-primary'
                         }`}
                     >
                         <ArrowRightLeft size={14} />
-                        {t('worldClock.compare')}
+                        {view === 'compare' ? t('worldClock.exitCompare', 'Exit Compare') : t('worldClock.compare')}
                     </button>
                 </div>
             </div>
