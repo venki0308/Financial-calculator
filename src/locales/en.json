@@ -3316,7 +3316,15 @@
         "noMatchingCities": "No matching cities found",
         "searchHint": "Try \"India\", \"Japan\", \"UTC+5\"",
         "cityAdded": "{{city}} added to World Clock",
-        "matchesFound": "{{count}} matches found"
+        "matchesFound": "{{count}} matches found",
+        "sameTime": "Same time",
+        "behindRef": "behind",
+        "aheadRef": "ahead of",
+        "standardTimeShort": "Standard",
+        "capital": "Capital",
+        "language": "Language",
+        "currencyUnavailable": "Currency data unavailable",
+        "tzAbbreviation": "Abbreviation"
     },
     "age": {
         "title": "Age Calculator",
