@@ -66,7 +66,7 @@ function BottomSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl max-h-[90dvh] overflow-y-auto"
+            className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] z-50 rounded-t-3xl max-h-[90dvh] overflow-y-auto"
             style={{ backgroundColor: c.card }}
           >
             {/* handle */}
