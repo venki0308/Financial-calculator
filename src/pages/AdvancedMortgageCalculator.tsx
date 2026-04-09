@@ -24,6 +24,7 @@ import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEn
 import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -97,6 +98,8 @@ export default function AdvancedMortgageCalculator() {
     }, [loanAmount, interestRate, months, enablePrepayment, monthlyExtraEMI, lumpSums, prepaymentMode]);
 
     // ─── True Cost of Loan ─────────────────────────────────────────────────
+    useHistoryTracker('Mortgage Calculator', { loanAmount, interestRate, months }, { totalInterest: result.totalInterest }, result.emi);
+
     const trueCost = useMemo(() => {
         const totalEmiInterest = result.totalInterest;
         const extras = processingFee + insurancePremium + preEmiInterest;

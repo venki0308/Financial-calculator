@@ -19,6 +19,7 @@ import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportRe
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAppColors } from '../theme/useAppColors';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
@@ -59,6 +60,8 @@ export default function BreakEvenCalculator() {
     }, [fixed, price, variable]);
 
     // Revenue timeline chart
+    useHistoryTracker('Break-Even Calculator', { fixed, price, variable }, { breakEvenUnits: result.breakEvenUnits, marginPct: result.marginPct }, result.breakEvenSales);
+
     const chartData = useMemo(() => ({
         labels: result.projection.map(p => `${p.units}`),
         datasets: [

@@ -8,6 +8,7 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { nativeShare } from '../utils/nativeShare';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -96,6 +97,8 @@ export default function HRACalculator() {
     const periodLabel = viewMode === 'annual' ? t('hra.annual') : t('hra.monthly');
 
     // 6. EXPORT PDF / EXCEL
+    useHistoryTracker('HRA Calculator', { basic, da, hra, rent, isMetro }, { taxable: actualResult.taxable }, actualResult.exempt);
+
     const handleDownloadPDF = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;

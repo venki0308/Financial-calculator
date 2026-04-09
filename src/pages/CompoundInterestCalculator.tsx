@@ -16,6 +16,7 @@ import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import SaveNameDialog from '../components/SaveNameDialog';
 import PostTaxBanner from '../components/PostTaxBanner';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -53,6 +54,8 @@ export default function CompoundInterestCalculator() {
     // Core Calculation (Actual)
     const result = useMemo(() => calculateCompoundInterest(principal, rate, years, freq), [principal, rate, years, freq]);
     const interestPct = result.amount > 0 ? (result.interest / result.amount) * 100 : 0;
+
+    useHistoryTracker('Compound Interest Calculator', { principal, rate, years, freq }, { interest: result.interest }, result.amount);
 
     // Advanced computations
     const advanced = useMemo(() => {

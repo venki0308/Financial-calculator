@@ -24,6 +24,7 @@ import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import SaveNameDialog from '../components/SaveNameDialog';
 import { useAppColors } from '../theme/useAppColors';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement);
 
@@ -83,6 +84,8 @@ export default function NPSCalculator() {
         labels: [t('nps.totalInvested'), t('nps.wealthGained')],
         datasets: [{ data: [result.invested, result.wealthGained], backgroundColor: ['#3B82F6', '#10B981'], borderColor: [c.card, c.card], borderWidth: 2 }]
     }), [result, c.card, t]);
+
+    useHistoryTracker('NPS Calculator', { monthly, rate, age, retireAge }, { pension: result.monthlyPension }, result.corpus);
 
     const corpusChart = useMemo(() => ({
         labels: result.timeline.map(row => `${t('nps.age')} ${row.age}`),

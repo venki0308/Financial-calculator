@@ -15,6 +15,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import LiveStatusCard from '../components/LiveStatusCard';
 import DateInput from '../components/DateInput';
 import { calculatePomisStatus, type PomisStatusInput } from '../utils/investmentStatusEngine';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 const LOCK_IN_YEARS = 5;
@@ -120,6 +121,8 @@ export default function POMISCalculator() {
             postTaxYield
         };
     }, [investment, rate, isJoint, maxLimit, userIncome, taxRegime, reinvestRate, inflation, fdRate]);
+
+    useHistoryTracker('POMIS Calculator', { investment, rate }, { totalInterest: result.totalInterest }, result.monthlyIncome);
 
     const pomisStatus = useMemo(() => {
         if (!pomisStartDate) return null;

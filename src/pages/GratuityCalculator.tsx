@@ -16,6 +16,7 @@ import { DecisionEngine } from '../services/DecisionEngine';
 import RiskCategoryTags from '../components/RiskCategoryTags';
 import TaxInputGroup from '../components/TaxInputGroup';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -115,6 +116,8 @@ export default function GratuityCalculator() {
     }, [salary, years, annualIncome, taxRegime, salaryHike, projectionYears]);
 
     const suggestedName = `Gratuity — ${formatINR(salary)} × ${years}Y`;
+
+    useHistoryTracker('Gratuity Calculator', { salary, years, employerType }, { netGratuity: result.netGratuity }, result.gratuity);
 
     const handleSave = (customName: string) => {
         const calcId = crypto.randomUUID();

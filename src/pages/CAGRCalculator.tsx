@@ -12,6 +12,7 @@ import DateInput from '../components/DateInput';
 import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import SaveNameDialog from '../components/SaveNameDialog';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -74,6 +75,8 @@ export default function CAGRCalculator() {
 
         return { cagr, absReturn, doubleTime, qualityTag, qualityColor, qualityBg, schedule, validInitial, validFinal, validYears };
     }, [initial, final, years, t]);
+
+    useHistoryTracker('CAGR Calculator', { initial, final, years }, { cagr: result.cagr, returns: result.validFinal - result.validInitial }, result.validFinal);
 
     // 2. GOAL MATCHING ENGINE
     const goalData = useMemo(() => {

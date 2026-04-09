@@ -15,6 +15,7 @@ import DateInput from '../components/DateInput';
 import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { calculateKvpStatus, type KvpStatusInput } from '../utils/investmentStatusEngine';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 const ITEMS_PER_PAGE = 5;
@@ -100,6 +101,8 @@ export default function KVPCalculator() {
             cagr, taxLiable, postTaxMaturity, postTaxCAGR, realMaturity, realReturn, totalInterest
         };
     }, [investment, rate, annualIncome, taxRegime, inflation]);
+
+    useHistoryTracker('KVP Calculator', { investment }, { totalInterest: result.totalInterest }, result.maturity);
 
     const kvpStatus = useMemo(() => {
         if (!kvpPurchaseDate) return null;

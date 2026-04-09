@@ -10,6 +10,7 @@ import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import SaveNameDialog from '../components/SaveNameDialog';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 import { formatINR } from '../utils/calculations';
 import { useAuthStore } from '../store/useAuthStore';
@@ -172,6 +173,8 @@ export default function SimpleInterestCalculator() {
         const r = result as { compoundInterest: number; totalPayable: number };
         return { interest: Math.round(r.compoundInterest), totalPayable: Math.round(r.totalPayable), rateLabel: interestFree ? t('si.interestFree', 'Interest-free') : `${annualRate}% (cmpd)` };
     }, [mode, result, flatRate, annualRate, interestFree, t]);
+
+    useHistoryTracker('Interest Calculator', { principal, mode, tenure }, { interest: trackerSnapshot.interest }, trackerSnapshot.totalPayable);
 
     const suggestedName = `Simple Interest — ${formatINR(principal)} × ${tenure}M`;
 

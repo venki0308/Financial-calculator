@@ -12,6 +12,7 @@ import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import SaveNameDialog from '../components/SaveNameDialog';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -124,6 +125,8 @@ export default function EPFCalculator() {
 
         return { corpus, totalEmp, totalEmployer, totalInterest, empPctOfCorpus, employerPctOfCorpus, interestPctOfCorpus, schedule, years, purchasingPower, realReturn, finalMonthlySalary, targetCorpus, readinessPct, annualEmpContrib, isInterestTaxable, taxableExcess };
     }, [basic, totalEmpPct, rate, age, retireAge, hike, inflationRate]);
+
+    useHistoryTracker('EPF Calculator', { basic, age, retireAge, rate }, { totalInterest: result.totalInterest }, result.corpus);
 
     // 2. WHAT-IF SIMULATOR
     const whatIf = useMemo(() => {

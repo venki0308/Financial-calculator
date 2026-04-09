@@ -21,6 +21,7 @@ import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAppColors } from '../theme/useAppColors';
 import { todayStr } from '../utils/dateUtils';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -94,6 +95,8 @@ export default function SCSSCalculator() {
             amtAfter2Yrs,
         };
     }, [investment, rate, tenure]);
+
+    useHistoryTracker('SCSS Calculator', { investment, rate, tenure }, { totalInterest: result.totalInterest }, result.maturityAmount);
 
     const pieData = useMemo(() => ({
         labels: [t('scss.principalLabel'), t('scss.totalInterestLabel')],

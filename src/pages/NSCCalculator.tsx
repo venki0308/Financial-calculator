@@ -15,6 +15,7 @@ import DateInput from '../components/DateInput';
 import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { calculateNscStatus, type NscStatusInput } from '../utils/investmentStatusEngine';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 const ITEMS_PER_PAGE = 5;
@@ -86,6 +87,8 @@ export default function NSCCalculator() {
             taxOnInterest: totalTaxOnInterest, postTaxMaturity, postTaxCAGR, realValue, realReturn, taxImpact
         };
     }, [investment, rate, annualIncome, taxRegime, inflation]);
+
+    useHistoryTracker('NSC Calculator', { investment, rate }, { totalInterest: result.totalInterest }, result.maturity);
 
     const nscStatus = useMemo(() => {
         if (!nscPurchaseDate) return null;

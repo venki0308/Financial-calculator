@@ -12,6 +12,7 @@ import DateInput from '../components/DateInput';
 import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import SaveNameDialog from '../components/SaveNameDialog';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -119,6 +120,8 @@ export default function SWPCalculator() {
         return { finalBalance, totalWithdrawn, yearlySchedule, depletionMonth, depletionYear, swr, swrRisk, swrColor, swrBg, realWithdrawalValueAtEnd };
     }, [principal, withdrawal, rate, years, inflation, t]);
 
+
+    useHistoryTracker('SWP Calculator', { principal, withdrawal, rate, years }, { totalWithdrawn: result.totalWithdrawn }, result.totalWithdrawn);
 
     // 3. SIMULATOR
     const simResult = useMemo(() => {

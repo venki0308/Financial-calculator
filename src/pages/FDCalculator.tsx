@@ -25,6 +25,7 @@ import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport'
 import { AnalyticsService } from '../lib/analytics';
 import { triggerCalcNotification } from '../services/calcNotifications';
 import { useAppColors } from '../theme/useAppColors';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
@@ -63,6 +64,7 @@ export default function FDCalculator() {
     }, [fdStartDate, principal, effectiveRate, years, compounding]);
 
     const result = useMemo(() => calculateFD(principal, effectiveRate, years, compounding), [principal, effectiveRate, years, compounding]);
+    useHistoryTracker('FD Calculator', { principal, rate, years, compounding }, { interest: result.interest }, result.amount);
 
     // TDS Calculation: 10% TDS if annual interest exceeds threshold
     const tdsInfo = useMemo(() => {

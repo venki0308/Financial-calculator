@@ -16,6 +16,7 @@ import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { calculateFdStatus, type FdStatusInput } from '../utils/investmentStatusEngine';
 import { todayStr } from '../utils/dateUtils';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -132,6 +133,8 @@ export default function POTDCalculator() {
             cagr
         };
     }, [investment, years, rate, userIncome, taxRegime, inflation, fdRate]);
+    useHistoryTracker('Post Office TD', { investment, years, rate }, { totalInterest: result.totalInterest }, result.maturity);
+
 
     const riskConfig = DecisionEngine.getRiskConfig('POTD');
     const recommendation = useMemo(() => DecisionEngine.getRecommendation({

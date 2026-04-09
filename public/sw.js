@@ -11,7 +11,7 @@
 // across every device. Without this, hashed chunks pinned by the SW
 // could keep an old buggy build alive on a user's device for days even
 // after a successful deploy.
-const CACHE_NAME = 'fincalix-v19';
+const CACHE_NAME = 'fincalix-v20';
 const APP_SHELL = [
     '/',
     '/index.html',

@@ -16,6 +16,7 @@ import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
 import SaveNameDialog from '../components/SaveNameDialog';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { todayStr } from '../utils/dateUtils';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 // Helper to extract number
 const parseFormattedNumber = (value: string): number => {
@@ -208,6 +209,8 @@ export default function OverdraftCalculator() {
     const tag = dateTag();
     const f = (v: number) => forExcel ? Math.round(v) : formatINR(v);
     const odTypeLabel = odType === 'business' ? 'Business OD' : odType === 'personal' ? 'Personal OD' : odType === 'salary' ? 'Salary OD' : 'Against FD/Property';
+
+    useHistoryTracker('Overdraft Calculator', { utilizedAmount, interestRate, daysUtilized }, { totalPayable: totalPayableAmount }, totalInterest);
 
     const scheduleRows: Array<Array<string | number>> = [];
     const maxDays = Math.min(daysNum, 365);

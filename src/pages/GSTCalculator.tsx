@@ -25,6 +25,7 @@ import {
 } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 import { AnalyticsService } from '../lib/analytics';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { triggerCalcNotification } from '../services/calcNotifications';
 import { useAppColors } from '../theme/useAppColors';
 
@@ -215,6 +216,8 @@ export default function GSTCalculator() {
         }
         return null;
     }, [mode, stdResult, reverseResult, invoiceTotals, itcResult, c.card, t]);
+
+    useHistoryTracker('GST Calculator', { stdAmount, stdRate }, { gst: stdResult?.gst ?? 0 }, stdResult?.total ?? 0);
 
     const handleSave = () => {
         let inputValues: any = {};

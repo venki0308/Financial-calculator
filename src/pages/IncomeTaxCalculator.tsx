@@ -8,6 +8,7 @@ import { exportToPDF, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { triggerCalcNotification } from '../services/calcNotifications';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 
 // ─── Tax Slab Tables ──────────────────────────────────────────────────────────
@@ -354,6 +355,8 @@ export default function IncomeTaxCalculator() {
     const bothZero = oldTotalTax === 0 && newTotalTax === 0;
 
     // ─── Regime Explanation ───────────────────────────────────────────────────
+    useHistoryTracker('Income Tax Calculator', { regime, fy }, { netAnnual: netAnnual }, activeTotalTax);
+
     const regimeExplanation = useMemo(() => {
         if (bothZero || grossSalary === 0) return '';
         if (betterRegime === 'Old') {

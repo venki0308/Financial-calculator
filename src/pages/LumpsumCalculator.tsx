@@ -13,6 +13,7 @@ import LiveInvestmentTracker from '../components/LiveInvestmentTracker';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import SaveNameDialog from '../components/SaveNameDialog';
 import PostTaxBanner from '../components/PostTaxBanner';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -80,6 +81,8 @@ export default function LumpsumCalculator() {
 
         return { fv, cagr, realRate, realValue, wealthRatio, table, wealthErosion, riskLevel, riskColor, riskBg };
     }, [principal, rate, years, inflation, t]);
+
+    useHistoryTracker('Lumpsum Calculator', { principal, rate, years }, { interest: result.fv - principal }, result.fv);
 
     // 2. GOAL MATCHING ENGINE
     const goalData = useMemo(() => {

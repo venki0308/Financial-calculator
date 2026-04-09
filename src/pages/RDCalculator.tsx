@@ -12,6 +12,7 @@ import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { calculateRdStatus, type RdStatusInput } from '../utils/investmentStatusEngine';
 import { todayStr } from '../utils/dateUtils';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -110,6 +111,8 @@ export default function RDCalculator() {
 
         return { maturity, invested, totalInterest, effectiveYield, realRate, purchasingPower, interestPct, principalPct, schedule, validMonths, validMonthly };
     }, [monthly, effectiveRate, months, inflationRate]);
+
+    useHistoryTracker('RD Calculator', { monthly, rate, months }, { invested: result.invested, interest: result.totalInterest }, result.maturity);
 
     // 2. WHAT-IF SIMULATOR
     const whatIf = useMemo(() => {
