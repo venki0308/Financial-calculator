@@ -116,6 +116,7 @@ export default function ReportsTab() {
       isActive: sub.isActive,
       nextDueDate: sub.nextDueDate,
       category: sub.category,
+      createdAt: sub.createdAt,
     })),
     [storeSubscriptions],
   );

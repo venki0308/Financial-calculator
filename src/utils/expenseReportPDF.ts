@@ -37,11 +37,15 @@ import { getCategoryById } from './expenseStorage';
 
 /** Loose subscription shape used for richer PDF rows (name, billing cycle,
  *  next renewal). The SubscriptionInput contract above is enough for
- *  totals; this extends it for display tables. */
+ *  totals; this extends it for display tables.
+ *
+ *  `createdAt` is critical for Bug 1: every billing-date helper gates
+ *  on it so we never project billings to months before the sub existed. */
 export interface PDFSubscription extends SubscriptionInput {
     name: string;
     nextDueDate?: string;
     category?: string;
+    createdAt?: string;
 }
 
 // ─── Lazy loader for jsPDF + autoTable ──────────────────────────────────────
@@ -1917,7 +1921,20 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
     // ── SECTION 1: MONTH-BY-MONTH ───────────────────────────────────────
     const lastMonthToShow = data.year === currentYear ? currentMonth : 12;
 
-    type MonthRow = { m: number; label: string; inc: number; exp: number; inv: number; net: number; rate: number; isCurrent: boolean };
+    // Bug 3 fix: rate is `number | null` — null means income was 0 so the
+    // savings rate is mathematically undefined (NOT 0%).
+    type MonthRow = {
+        m: number;
+        label: string;
+        inc: number;
+        exp: number;
+        inv: number;
+        net: number;
+        rate: number | null;
+        hasIncome: boolean;
+        hasAnyData: boolean;
+        isCurrent: boolean;
+    };
     const monthRows: MonthRow[] = [];
     let aISub = 0;
     for (let m = 1; m <= lastMonthToShow; m++) {
@@ -1927,11 +1944,17 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
         const startISO = `${monthStr}-01`;
         const lastDayOfMonth = new Date(data.year, m, 0).getDate();
         const endISO = `${monthStr}-${String(lastDayOfMonth).padStart(2, '0')}`;
+        // Bug 1 fix flows through here: getTotalActualBilledSubsInRange now
+        // gates each candidate billing on the sub's effective start date,
+        // so months before the sub existed return 0 instead of phantom
+        // backwards-projected billings.
         const monthSubsBilled = getTotalActualBilledSubsInRange(annualSubs, startISO, endISO, today);
         aISub += monthSubsBilled;
         const augmentedExp = mSum.totalExpenses + monthSubsBilled;
         const augmentedNet = mSum.totalIncome - augmentedExp;
-        const augmentedRate = mSum.totalIncome > 0 ? (augmentedNet / mSum.totalIncome) * 100 : 0;
+        const hasIncome = mSum.totalIncome > 0;
+        const augmentedRate = hasIncome ? (augmentedNet / mSum.totalIncome) * 100 : null;
+        const hasAnyData = hasIncome || augmentedExp > 0 || mSum.totalInvestments > 0;
         monthRows.push({
             m,
             label: MONTH_NAMES[m - 1],
@@ -1940,6 +1963,8 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
             inv: mSum.totalInvestments,
             net: augmentedNet,
             rate: augmentedRate,
+            hasIncome,
+            hasAnyData,
             isCurrent: data.year === currentYear && m === currentMonth,
         });
     }
@@ -1948,9 +1973,20 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
     // the headline matches the table totals exactly.
     const annualCanonExpenses = monthRows.reduce((s, r) => s + r.exp, 0);
     const annualCanonNet = summary.totalIncome - annualCanonExpenses;
-    const annualCanonRate = summary.totalIncome > 0
+    const annualCanonRate: number | null = summary.totalIncome > 0
         ? (annualCanonNet / summary.totalIncome) * 100
-        : 0;
+        : null;
+
+    // INVARIANT: sum(monthRows.exp) === annualCanonExpenses.
+    // This is the same number we'll show as the Categories table TOTAL
+    // after merging subscription rows in Bug 2 fix. If they ever drift,
+    // there's a subscription integration bug somewhere downstream.
+    if (typeof console !== 'undefined' && console.assert) {
+        console.assert(
+            Math.abs(monthRows.reduce((s, r) => s + r.exp, 0) - annualCanonExpenses) < 1,
+            '[FinCalix annual PDF] monthRows expense sum does not match annualCanonExpenses',
+        );
+    }
 
     yPos = drawStatBoxes(doc, [
         { label: 'Total Income', value: formatINR(summary.totalIncome), tone: 'income' },
@@ -1962,14 +1998,24 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
     ], yPos);
 
     // Annual savings rate label — uses the canonical figures.
+    // Bug 3 fix: when there's no income for the year, savings rate is
+    // mathematically undefined. Show "N/A — No income logged" instead
+    // of a misleading "0.0% Needs Improvement".
     yPos = ensureRoom(doc, yPos, 12);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...TEXT);
     doc.text('Annual Savings Rate:', 15, yPos);
-    doc.setTextColor(...(annualCanonRate >= 20 ? INCOME : annualCanonRate >= 10 ? [202, 138, 4] as [number, number, number] : EXPENSE));
-    doc.text(`${annualCanonRate.toFixed(1)}%   -   ${savingsGrade(annualCanonRate)}`, 60, yPos);
+    if (annualCanonRate === null) {
+        doc.setTextColor(...MUTED);
+        doc.text('N/A   -   No income logged', 60, yPos);
+    } else {
+        doc.setTextColor(...(annualCanonRate >= 20 ? INCOME : annualCanonRate >= 10 ? [202, 138, 4] as [number, number, number] : EXPENSE));
+        doc.text(`${annualCanonRate.toFixed(1)}%   -   ${savingsGrade(annualCanonRate)}`, 60, yPos);
+    }
     yPos += 8;
+    // Bug 6: only render the recurring-billings note if some subs
+    // actually billed in the year (after Bug 1's startDate gate).
     if (aISub > 0) {
         doc.setFontSize(8);
         doc.setTextColor(...MUTED);
@@ -1988,6 +2034,9 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
 
     yPos = drawSectionHeader(doc, 'Month-by-Month Breakdown', yPos);
 
+    // Bug 3 + Bug 5: render "—" for the savings-rate cell when income
+    // was 0 in that month (rate is null). The TOTAL row uses the same
+    // rule against the annual income — never coerce null → 0%.
     let aI = 0, aE = 0, aIn = 0;
     const monthBody: (string | number)[][] = monthRows.map((r) => {
         aI += r.inc; aE += r.exp; aIn += r.inv;
@@ -1997,17 +2046,18 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
             formatINR(r.exp),
             formatINR(r.inv),
             formatINR(r.net),
-            `${r.rate.toFixed(1)}%`,
+            r.rate === null ? '—' : `${r.rate.toFixed(1)}%`,
         ];
     });
     const completedMonths = monthRows.length;
+    const totalRate: number | null = aI > 0 ? ((aI - aE) / aI) * 100 : null;
     monthBody.push([
         'TOTAL',
         formatINR(aI),
         formatINR(aE),
         formatINR(aIn),
         formatINR(aI - aE),
-        `${(aI > 0 ? ((aI - aE) / aI) * 100 : 0).toFixed(1)}%`,
+        totalRate === null ? '—' : `${totalRate.toFixed(1)}%`,
     ]);
     monthBody.push([
         'AVERAGE / MONTH',
@@ -2027,17 +2077,79 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
     });
     yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
 
+    // Bug 2 + Bug 4: build the synthetic subscription billing rows ONCE
+    // for the whole year. Both the category breakdown and the Top 10
+    // expenses table consume this same list, so the two views are
+    // guaranteed to agree on what billed.
+    const annualStartISO = `${data.year}-01-01`;
+    const annualEndISO = `${data.year}-12-31`;
+    const subBillingEntries = buildSubscriptionEntriesForRange(
+        annualSubs,
+        annualStartISO,
+        annualEndISO,
+        today,
+    );
+
     // ── SECTION 2: TOP SPENDING CATEGORIES ──────────────────────────────
-    if (summary.expenseByCategory.length > 0) {
+    // Bug 2 fix: merge synthetic subscription billings into the category
+    // totals so the table TOTAL ties out to annualCanonExpenses (which
+    // is what the header stat box and Month-by-Month TOTAL row both
+    // show). All sub billings collapse into a single "Subscriptions"
+    // row regardless of the user's per-sub category choice — that
+    // matches the spec and avoids polluting Entertainment / Health /
+    // Education with recurring renewals.
+    type CatTotal = {
+        id: string;
+        name: string;
+        amount: number;
+    };
+    const catMap = new Map<string, CatTotal>();
+    for (const c of summary.expenseByCategory) {
+        catMap.set(c.categoryId, {
+            id: c.categoryId,
+            name: c.categoryName,
+            amount: c.amount,
+        });
+    }
+    if (subBillingEntries.length > 0) {
+        const SUBS_ID = 'subscription';
+        const subsRow: CatTotal = catMap.get(SUBS_ID) ?? {
+            id: SUBS_ID,
+            name: getCategoryById(SUBS_ID)?.name ?? 'Subscriptions',
+            amount: 0,
+        };
+        subsRow.amount += subBillingEntries.reduce((s, e) => s + e.amount, 0);
+        catMap.set(SUBS_ID, subsRow);
+    }
+    const mergedCats = Array.from(catMap.values()).sort((a, b) => b.amount - a.amount);
+
+    // INVARIANT: sum(mergedCats) === annualCanonExpenses. If this fails
+    // there's a subscription integration bug somewhere upstream.
+    if (typeof console !== 'undefined' && console.assert) {
+        const catSum = mergedCats.reduce((s, c) => s + c.amount, 0);
+        console.assert(
+            Math.abs(catSum - annualCanonExpenses) < 1,
+            `[FinCalix annual PDF] Category sum ${catSum} !== annualCanonExpenses ${annualCanonExpenses}`,
+        );
+    }
+
+    if (mergedCats.length > 0) {
         yPos = drawSectionHeader(doc, 'Annual Spending by Category', yPos);
-        const catBody: (string | number)[][] = summary.expenseByCategory.map((c, i) => [
+        const denom = annualCanonExpenses > 0 ? annualCanonExpenses : 1;
+        const catBody: (string | number)[][] = mergedCats.map((c, i) => [
             i + 1,
-            c.categoryName,
+            c.name,
             formatINR(c.amount),
             formatINR(c.amount / completedMonths),
-            `${c.percentage.toFixed(1)}%`,
+            `${((c.amount / denom) * 100).toFixed(1)}%`,
         ]);
-        catBody.push(['', 'TOTAL', formatINR(summary.totalExpenses), formatINR(summary.totalExpenses / completedMonths), '100.0%']);
+        catBody.push([
+            '',
+            'TOTAL',
+            formatINR(annualCanonExpenses),
+            formatINR(annualCanonExpenses / completedMonths),
+            '100.0%',
+        ]);
         table(doc, autoTable, {
             head: [['Rank', 'Category', 'Annual Total', 'Monthly Avg', '% of Expenses']],
             body: catBody,
@@ -2049,14 +2161,33 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
     }
 
     // ── SECTION 3: SAVINGS RATE TREND ───────────────────────────────────
+    // Bug 3 fix: use null-aware grade rules so months with 0 income
+    // don't render misleading "0.0% Needs Improvement". The "vs Previous"
+    // delta also has to handle either side being null.
     yPos = drawSectionHeader(doc, 'Monthly Savings Rate Trend', yPos);
     const trendBody: (string | number)[][] = monthRows.map((r, i) => {
         const prev = monthRows[i - 1];
-        const change = prev && i > 0
+        const change = (i > 0 && prev && r.rate !== null && prev.rate !== null)
             ? `${(r.rate - prev.rate >= 0 ? '+' : '')}${(r.rate - prev.rate).toFixed(1)} pts`
             : '—';
-        const grade = r.rate > 20 ? 'Excellent' : r.rate >= 10 ? 'Good' : r.inc === 0 && r.exp === 0 ? 'No data' : 'Needs Improvement';
-        return [r.label, `${r.rate.toFixed(1)}%`, grade, change];
+        let rateCell: string;
+        let grade: string;
+        if (r.rate === null) {
+            if (!r.hasAnyData) {
+                rateCell = '—';
+                grade = 'No data';
+            } else {
+                rateCell = 'N/A';
+                grade = 'No income logged';
+            }
+        } else {
+            rateCell = `${r.rate.toFixed(1)}%`;
+            grade = r.rate >= 20 ? 'Excellent'
+                : r.rate >= 10 ? 'Good'
+                : r.rate >= 0 ? 'Needs Improvement'
+                : 'Negative';
+        }
+        return [r.label, rateCell, grade, change];
     });
     table(doc, autoTable, {
         head: [['Month', 'Savings Rate', 'Grade', 'vs Previous Month']],
@@ -2068,17 +2199,35 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
     yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
 
     // ── SECTION 4: TOP 10 ANNUAL EXPENSES ──────────────────────────────
-    const topExpenses = data.entries
+    // Bug 4 fix: subscription billings must compete for Top 10 slots
+    // alongside manual expense entries. Build a unified list of
+    // {date, category, description, amount} from both sources, sort
+    // descending, take the top 10.
+    type TopRow = { date: string; category: string; description: string; amount: number };
+    const manualTopRows: TopRow[] = data.entries
         .filter((e) => e.type === 'expense')
+        .map((e) => ({
+            date: e.date,
+            category: categoryName(e.category),
+            description: descriptionFor(e),
+            amount: e.amount,
+        }));
+    const subTopRows: TopRow[] = subBillingEntries.map((e) => ({
+        date: e.date,
+        category: getCategoryById('subscription')?.name ?? 'Subscriptions',
+        description: e.description,
+        amount: e.amount,
+    }));
+    const allTopRows: TopRow[] = [...manualTopRows, ...subTopRows]
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 10);
-    if (topExpenses.length > 0) {
+    if (allTopRows.length > 0) {
         yPos = drawSectionHeader(doc, 'Top 10 Expenses of the Year', yPos);
-        const topBody = topExpenses.map((e) => [
-            new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-            categoryName(e.category),
-            descriptionFor(e),
-            formatINR(e.amount),
+        const topBody = allTopRows.map((r) => [
+            new Date(r.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+            r.category,
+            r.description,
+            formatINR(r.amount),
         ]);
         table(doc, autoTable, {
             head: [['Date', 'Category', 'Description', 'Amount']],

@@ -116,22 +116,60 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
   }, [monthlySummaries, yearSummary]);
 
   // ── Top 10 spending categories (resolved names/icons) ──
-  // Note: this still uses the LOGGED yearSummary categories — we
-  // intentionally don't synthesise per-category sub spend here because
-  // doing so would conflict with the existing Subscriptions row in
-  // categoryBreakdown elsewhere. The total at the top of the section
-  // uses the augmented year total.
+  // Bug 2 (UI parity): merge subscription billings into the category
+  // breakdown so the table TOTAL ties out to augmentedYearSummary.
+  // All sub billings collapse under the canonical "subscription"
+  // category, regardless of the user's per-sub category choice. This
+  // mirrors the Annual PDF generator and prevents the
+  // "category total ≠ headline total" mismatch.
   const topCategories = useMemo(() => {
-    return yearSummary.expenseByCategory.slice(0, 10).map(cat => {
-      const resolved = getCategoryById(cat.categoryId);
-      return {
-        ...cat,
-        categoryName: resolved?.name ?? cat.categoryName,
-        categoryIcon: resolved?.icon ?? cat.categoryIcon,
-        categoryColor: resolved?.color ?? cat.categoryColor,
-      };
-    });
-  }, [yearSummary]);
+    const startISO = `${yearRange.year}-01-01`;
+    const endISO = `${yearRange.year}-12-31`;
+    const annualSubsBilled = getTotalActualBilledSubsInRange(
+      subscriptions,
+      startISO,
+      endISO,
+      todayISO,
+    );
+
+    const merged: CategoryTotal[] = yearSummary.expenseByCategory.map(c => ({ ...c }));
+    if (annualSubsBilled > 0) {
+      const SUBS_ID = 'subscription';
+      const existing = merged.find(c => c.categoryId === SUBS_ID);
+      if (existing) {
+        existing.amount += annualSubsBilled;
+        existing.count += 0; // count of synthetic rows isn't tracked here
+      } else {
+        const def = getCategoryById(SUBS_ID);
+        merged.push({
+          categoryId: SUBS_ID,
+          categoryName: def?.name ?? 'Subscriptions',
+          categoryIcon: def?.icon ?? '📱',
+          categoryColor: def?.color ?? '#8b5cf6',
+          amount: annualSubsBilled,
+          percentage: 0, // recomputed below
+          count: 0,
+        });
+      }
+    }
+
+    // Recompute percentages against the augmented total so the section
+    // numbers tie out to the headline.
+    const denom = merged.reduce((s, c) => s + c.amount, 0) || 1;
+    return merged
+      .map(c => {
+        const resolved = getCategoryById(c.categoryId);
+        return {
+          ...c,
+          categoryName: resolved?.name ?? c.categoryName,
+          categoryIcon: resolved?.icon ?? c.categoryIcon,
+          categoryColor: resolved?.color ?? c.categoryColor,
+          percentage: (c.amount / denom) * 100,
+        };
+      })
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 10);
+  }, [yearSummary, yearRange.year, subscriptions, todayISO]);
 
   // ── Monthly savings rates for trend ──
   // BUG 5.2 fix: include `hasIncome` flag so months with 0 income

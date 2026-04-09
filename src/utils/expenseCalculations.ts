@@ -299,10 +299,19 @@ export interface SubscriptionInput {
 
 /** Richer shape for date-aware billing calculations. The
  *  Subscriptions tab persists `nextDueDate` (YYYY-MM-DD) which we use as
- *  the anchor for projecting billing dates backward and forward. */
+ *  the anchor for projecting billing dates backward and forward.
+ *
+ *  `createdAt` is the earliest YYYY-MM-DD on which a billing for this
+ *  subscription can have occurred. New subs stamp this at save time
+ *  (see addSubscription in useBudgetTrackerStore). For legacy subs
+ *  persisted before this field existed, the billing helpers fall back
+ *  to (nextDueDate − 1 cycle) so we never bill months before the sub
+ *  realistically existed. */
 export interface BillingDateSubscription extends SubscriptionInput {
   nextDueDate?: string;
+  createdAt?: string;
   name?: string;
+  category?: string;
 }
 
 /** Sum the monthly equivalent of all ACTIVE subscriptions.
@@ -372,9 +381,32 @@ const cycleMonths = (cycle: 'monthly' | 'quarterly' | 'yearly'): number => {
   return 1;
 };
 
+/** The earliest date a billing for this subscription can have occurred.
+ *  Uses the explicit `createdAt` field when present (new subs stamp it
+ *  on save). Falls back to (nextDueDate − 1 cycle) for legacy subs so
+ *  we conservatively assume the previous cycle was the first billing.
+ *
+ *  CRITICAL: every billing date helper MUST gate on this. Without it,
+ *  the backward walk from nextDueDate keeps going forever and projects
+ *  Netflix into January even though Netflix was added in March. */
+const getSubEffectiveStartISO = (sub: BillingDateSubscription): string | null => {
+  if (sub.createdAt) return sub.createdAt;
+  if (!sub.nextDueDate) return null;
+  // Legacy fallback: assume the cycle just before nextDueDate was the
+  // first billing the user paid. This matches the most common case
+  // (user added the sub right around their first billing date) and
+  // never produces billings older than nextDueDate − 1 cycle.
+  const stepMonths = cycleMonths(sub.billingCycle);
+  return addMonthsISO(sub.nextDueDate, -stepMonths);
+};
+
 /** Returns every billing date for a single subscription that falls
  *  inside [startISO, endISO]. Walks backward from nextDueDate (or any
  *  later anchor) to find earlier billings, then forward for later ones.
+ *
+ *  Bug 1 fix: every candidate billing date is gated against the sub's
+ *  effective start date — billings before the sub existed are NEVER
+ *  returned, even if the range extends earlier.
  *
  *  If `nextDueDate` is missing, returns []. The Subscriptions tab
  *  always sets nextDueDate, so this is defensive only. */
@@ -385,24 +417,33 @@ export const getSubBillingDatesInRange = (
 ): string[] => {
   if (!sub.isActive || !sub.nextDueDate) return [];
 
+  const effectiveStart = getSubEffectiveStartISO(sub);
+  if (!effectiveStart) return [];
+
+  // The effective lower bound is whichever is later: the requested
+  // range start, or the date the subscription first existed.
+  const lowerBound = effectiveStart > startISO ? effectiveStart : startISO;
+  if (lowerBound > endISO) return [];
+
   const stepMonths = cycleMonths(sub.billingCycle);
   const dates: string[] = [];
 
-  // Walk backward to the earliest possible billing on or after startISO
+  // Walk backward from nextDueDate to find every billing >= lowerBound
   let cursor = sub.nextDueDate;
-  // Cap iterations to avoid runaway loops on bad data
   let safetyBackward = 0;
   while (cursor > endISO && safetyBackward < 240) {
     cursor = addMonthsISO(cursor, -stepMonths);
     safetyBackward++;
   }
-  while (cursor >= startISO && safetyBackward < 240) {
+  while (cursor >= lowerBound && safetyBackward < 240) {
     if (cursor <= endISO) dates.push(cursor);
     cursor = addMonthsISO(cursor, -stepMonths);
     safetyBackward++;
   }
 
-  // Walk forward from the original anchor to catch later billings inside the range
+  // Walk forward from nextDueDate to catch later billings still in range.
+  // Forward dates are always >= nextDueDate which is always >= effectiveStart,
+  // so the lowerBound check is automatic here.
   let forwardCursor = addMonthsISO(sub.nextDueDate, stepMonths);
   let safetyForward = 0;
   while (forwardCursor <= endISO && safetyForward < 240) {

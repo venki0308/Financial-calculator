@@ -19,6 +19,13 @@ export interface Subscription {
     category: string;
     colorTag: string;
     isActive: boolean;
+    /** YYYY-MM-DD — earliest date a billing for this subscription can have
+     *  occurred. Set automatically when the user creates the subscription
+     *  via addSubscription(). For older subs persisted before this field
+     *  existed, the billing-date helpers fall back to (nextDueDate − 1
+     *  cycle) so we never project billings to months before the sub
+     *  realistically existed. */
+    createdAt?: string;
 }
 
 export interface NetWorthEntry {
@@ -359,9 +366,17 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
                     .reduce((sum, e) => sum + e.amount, 0);
             },
             
-            addSubscription: (sub) => set((s) => ({
-                subscriptions: [...s.subscriptions, { ...sub, id: Date.now().toString() }]
-            })),
+            addSubscription: (sub) => set((s) => {
+                // Stamp createdAt at save time so billing-date projection
+                // never walks backward into months before the sub existed.
+                const todayISO = new Date().toISOString().slice(0, 10);
+                return {
+                    subscriptions: [
+                        ...s.subscriptions,
+                        { createdAt: todayISO, ...sub, id: Date.now().toString() },
+                    ],
+                };
+            }),
             updateSubscription: (id, updates) => set((s) => ({
                 subscriptions: s.subscriptions.map(sub => sub.id === id ? { ...sub, ...updates } : sub)
             })),
