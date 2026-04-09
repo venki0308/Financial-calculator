@@ -87,9 +87,23 @@ export default function BudgetTab() {
   const range = useMemo(() => getMonthRange(monthOffset), [monthOffset]);
 
   // ── load / init budget ────────────────────────────────────
-  const [budget, setBudget] = useState<Budget>(() =>
-    getBudgetForMonth(range.monthStr) ?? emptyBudget(range.monthStr),
-  );
+  // If expenseStorage has no income set for this month, seed it from the
+  // old Zustand store (useBudgetTrackerStore). This bridges users who set
+  // their income/fixed-expenses via the older BudgetTracker page — without
+  // this, BudgetTab would show ₹0 even though Home shows their real income,
+  // and Reports/PDFs would have no budget data to render.
+  const [budget, setBudget] = useState<Budget>(() => {
+    const existing = getBudgetForMonth(range.monthStr);
+    if (existing && existing.monthlyIncome > 0) return existing;
+    const base = existing ?? emptyBudget(range.monthStr);
+    const oldIncome = useBudgetTrackerStore.getState().monthlyIncome;
+    if (oldIncome > 0) {
+      const seeded = { ...base, monthlyIncome: oldIncome };
+      saveBudget(seeded); // persist immediately so Reports/PDFs have data
+      return seeded;
+    }
+    return base;
+  });
 
   // ── bank accounts (re-read on mount + when window regains focus) ─
   // The full Accounts UI lives at /expenses/accounts. From here we
@@ -317,6 +331,8 @@ export default function BudgetTab() {
   // ── save ───────────────────────────────────────────────────
   const handleSave = () => {
     saveBudget({ ...budget, month: range.monthStr, updatedAt: new Date().toISOString() });
+    // Keep Zustand store in sync so the Home page MY BUDGET shows updated income
+    useBudgetTrackerStore.getState().setMonthlyIncome(budget.monthlyIncome);
     setSaved(true);
     setTimeout(() => setSaved(false), 2400);
   };

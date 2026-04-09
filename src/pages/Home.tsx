@@ -4,6 +4,7 @@ import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon,
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
+import { getBudgetForMonth } from '../utils/expenseStorage';
 import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
@@ -141,20 +142,33 @@ export default function Home() {
 
     const unreadCount = useNotificationStore(s => s.getUnreadCount());
 
-    // Compute effective current balance: if user hasn't set one, derive from income - expenses
+    // Compute effective current balance: if user hasn't set one, derive from income - expenses.
+    // Income is read from expenseStorage (the main tracker) first, with the old Zustand store
+    // as a fallback. This keeps Home in sync with whatever the user set in BudgetTab.
     const effectiveBalance = useMemo(() => {
         const now = new Date();
         const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
         const manualBal = monthlyBalances[key]?.manual || 0;
-        
+
         if (manualBal > 0) return manualBal;
-        if (monthlyIncome > 0) {
+        const expenseIncome = getBudgetForMonth(key)?.monthlyIncome ?? 0;
+        const effectiveIncome = expenseIncome > 0 ? expenseIncome : monthlyIncome;
+        if (effectiveIncome > 0) {
             const fixed = getTotalFixed();
             const spent = getTotalSpent();
-            return Math.max(0, monthlyIncome - fixed - spent);
+            return Math.max(0, effectiveIncome - fixed - spent);
         }
         return 0;
     }, [monthlyBalances, monthlyIncome, getTotalFixed, getTotalSpent]);
+
+    // Monthly income shown on the MY BUDGET card — expenseStorage is authoritative
+    // (BudgetTab saves there), old Zustand store is fallback for legacy users.
+    const displayMonthlyIncome = useMemo(() => {
+        const now = new Date();
+        const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const expenseIncome = getBudgetForMonth(key)?.monthlyIncome ?? 0;
+        return expenseIncome > 0 ? expenseIncome : monthlyIncome;
+    }, [monthlyIncome]);
 
     const quickCalcItems = useMemo(() => {
         if (recentPaths.length === 0) return defaultItems.map(item => {
@@ -358,7 +372,7 @@ export default function Home() {
                             <ChevronRight size={14} className="text-muted-foreground" />
                         </div>
                         <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">{t('home.monthlyIncome')}</p>
-                        <p className="text-lg font-bold text-slate-900 dark:text-foreground mt-0.5">{formatINR(monthlyIncome)}</p>
+                        <p className="text-lg font-bold text-slate-900 dark:text-foreground mt-0.5">{formatINR(displayMonthlyIncome)}</p>
                     </div>
                 </div>
             </section>
