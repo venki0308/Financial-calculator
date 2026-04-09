@@ -30,7 +30,6 @@ import {
     getSubscriptionMonthlyTotal,
     getTotalActualBilledSubsInRange,
     buildSubscriptionEntriesForRange,
-    getActiveDaysInRange,
     formatPeriodChange,
 } from './expenseCalculations';
 import { getCategoryById } from './expenseStorage';
@@ -962,14 +961,35 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
 
     let yPos = 36;
 
-    const summary = calculateSummary(data.entries);
     const today = getTodayStr();
 
     // ── Subscription billings inside this week (canonical totals) ──
+    // Parity fix: build synthetic Entry rows for every sub billing in
+    // [startDate, endDate] that has already occurred, then merge them
+    // into the week's entries BEFORE computing the summary. After this
+    // the day-by-day totals, category breakdown and transaction log
+    // all use the canonical figure — they no longer drift below the
+    // headline when a sub billing lands inside the week.
     const weeklySubsForCalc = data.subscriptions ?? [];
-    const weekSubsBilled = getTotalActualBilledSubsInRange(
+    const weekSubBillings = buildSubscriptionEntriesForRange(
         weeklySubsForCalc, data.startDate, data.endDate, today,
     );
+    const weekSubEntries: Entry[] = weekSubBillings.map(s => ({
+        id: s.id,
+        type: 'expense',
+        amount: s.amount,
+        date: s.date,
+        category: s.category,
+        description: s.description,
+        paymentMethod: 'auto_debit',
+        recurrence: 'none',
+        isDeleted: false,
+        createdAt: '',
+        updatedAt: '',
+    }));
+    const mergedWeekEntries: Entry[] = [...data.entries, ...weekSubEntries];
+    const summary = calculateSummary(mergedWeekEntries);
+    const weekSubsBilled = weekSubBillings.reduce((s, e) => s + e.amount, 0);
     const prevWeekSubsBilled = data.prevWeekEntries
         ? getTotalActualBilledSubsInRange(
             weeklySubsForCalc,
@@ -981,7 +1001,9 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
           )
         : 0;
 
-    const canonicalWeekExpenses = summary.totalExpenses + weekSubsBilled;
+    // summary.totalExpenses already includes the merged sub billings,
+    // so the canonical figures are just the summary fields directly.
+    const canonicalWeekExpenses = summary.totalExpenses;
     const canonicalWeekNet = summary.totalIncome - canonicalWeekExpenses;
 
     // Days in this week up to & including today (skip future days)
@@ -1002,21 +1024,14 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
     const dailyMap = new Map(summary.dailyTotals.map((d) => [d.date, d]));
 
     // BUG 6.3 fix: Active Days = unique transaction days, not
-    // "elapsed weekdays". Sub billing days count too. So when the
-    // user has nothing logged AND no sub billed this week, we
-    // correctly show 0 (not 4).
-    const txDayCount = getActiveDaysInRange(data.entries, data.startDate, data.endDate);
-    const subBillingDays = new Set(
-        buildSubscriptionEntriesForRange(weeklySubsForCalc, data.startDate, data.endDate, today)
-            .map(s => s.date),
-    );
-    const activeDays = new Set([
-        ...Array.from(subBillingDays),
-        ...data.entries
+    // "elapsed weekdays". Sub billing days count too — they're already
+    // in mergedWeekEntries, so a single Set over the merged dates gives
+    // the canonical count without re-running buildSubscriptionEntriesForRange.
+    const activeDays = new Set(
+        mergedWeekEntries
             .filter(e => e.date >= data.startDate && e.date <= data.endDate)
             .map(e => e.date),
-    ]).size;
-    void txDayCount; // kept for future telemetry / debugging
+    ).size;
 
     // Comparison vs last week — uses canonical (subs included) so the
     // % matches the headline figure.
@@ -1076,9 +1091,11 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
     yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
 
     // ── SECTION 2: TRANSACTION LOG ──────────────────────────────────────
+    // Uses mergedWeekEntries so subscription billings render inline as
+    // "Netflix (Recurring) | expense | Rs.499" alongside manual rows.
     yPos = drawSectionHeader(doc, 'Transaction Log', yPos);
 
-    if (data.entries.length === 0) {
+    if (mergedWeekEntries.length === 0) {
         table(doc, autoTable, {
             head: [['Date', 'Day', 'Category', 'Type', 'Description', 'Amount']],
             body: [['—', '—', '—', '—', 'No transactions recorded this week', '—']],
@@ -1086,7 +1103,7 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
             headerHook,
         });
     } else {
-        const sorted = [...data.entries].sort((a, b) => {
+        const sorted = [...mergedWeekEntries].sort((a, b) => {
             if (a.date !== b.date) return a.date.localeCompare(b.date);
             return (a.createdAt || '').localeCompare(b.createdAt || '');
         });
@@ -1651,7 +1668,12 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     }
 
     // ── SECTION 4: TOP EXPENSES ─────────────────────────────────────────
-    const topExpenses = data.entries
+    // Parity with Annual PDF Bug 4 fix: use the merged entries (logged
+    // + recurring sub billings) so a Netflix renewal can compete for a
+    // Top Expenses slot alongside manual entries. Without this the Top
+    // Expenses table for March was missing the Rs.499 Netflix row even
+    // though it was the highest single expense of the month.
+    const topExpenses = mergedMonthEntries
         .filter((e) => e.type === 'expense')
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 10);
