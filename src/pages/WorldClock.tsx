@@ -464,7 +464,7 @@ function CompareView() {
                         <p className="text-sm font-bold text-foreground truncate">{getZoneLabel(srcTZ)}</p>
                         {srcResult && (
                             <p className="text-[11px] text-muted-foreground font-medium">
-                                {srcResult.dst.offset}
+                                {formatUtcOffset(srcResult.dst.offset)}
                                 {srcResult.dst.currentlyDST && <span className="ml-1.5 text-amber-500 font-bold">· {t('worldClock.dstActive')}</span>}
                             </p>
                         )}
@@ -1323,7 +1323,7 @@ const LiveAddZoneItem = memo(function LiveAddZoneItem({ tz, onAdd }: { tz: Timez
             <div className="flex items-center gap-4 flex-shrink-0 text-right">
                 <div className="hidden sm:block">
                     <p className="text-foreground font-mono text-sm font-medium">{td.displayHour}:{td.displayMin} {td.ampm}</p>
-                    <p className="text-muted-foreground text-[10px]">{td.offsetStr}</p>
+                    <p className="text-muted-foreground text-[10px]">{formatUtcOffset(td.offsetStr)}</p>
                 </div>
                 <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
                     <Plus size={14} className="text-primary" />
@@ -1470,13 +1470,15 @@ export default function WorldClock() {
                 </div>
                 {/* Full-width action row */}
                 <div className="flex gap-2">
-                    <button
-                        onClick={() => { setView('clocks'); setShowAddPanel(true); }}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-card border border-border text-foreground text-xs font-semibold transition-colors active:scale-[0.98]"
-                    >
-                        <Plus size={14} />
-                        {t('worldClock.add')}
-                    </button>
+                    {view !== 'compare' && (
+                        <button
+                            onClick={() => setShowAddPanel(true)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-card border border-border text-foreground text-xs font-semibold transition-colors active:scale-[0.98]"
+                        >
+                            <Plus size={14} />
+                            {t('worldClock.add')}
+                        </button>
+                    )}
                     <button
                         onClick={() => setView(v => v === 'compare' ? 'clocks' : 'compare')}
                         className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-colors active:scale-[0.98] ${
