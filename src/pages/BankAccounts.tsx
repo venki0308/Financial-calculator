@@ -73,7 +73,14 @@ function BottomSheet({
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full" style={{ backgroundColor: c.border }} />
             </div>
-            <div className="px-5 pb-8 pt-2">{children}</div>
+            <div
+              className="px-5 pt-2"
+              style={{
+                paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6.5rem)',
+              }}
+            >
+              {children}
+            </div>
           </motion.div>
         </>
       )}
