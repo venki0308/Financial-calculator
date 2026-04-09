@@ -381,32 +381,34 @@ const cycleMonths = (cycle: 'monthly' | 'quarterly' | 'yearly'): number => {
   return 1;
 };
 
-/** The earliest date a billing for this subscription can have occurred.
- *  Uses the explicit `createdAt` field when present (new subs stamp it
- *  on save). Falls back to (nextDueDate − 1 cycle) for legacy subs so
- *  we conservatively assume the previous cycle was the first billing.
+/** The first billing date that ever counts for this subscription.
  *
- *  CRITICAL: every billing date helper MUST gate on this. Without it,
- *  the backward walk from nextDueDate keeps going forever and projects
- *  Netflix into January even though Netflix was added in March. */
-const getSubEffectiveStartISO = (sub: BillingDateSubscription): string | null => {
-  if (sub.createdAt) return sub.createdAt;
+ *  In FinCalix's data model, `nextDueDate` is set ONCE by the user in
+ *  the Subscriptions tab form and is never auto-advanced by the system.
+ *  Semantically it means "the first scheduled billing date" — there
+ *  are no prior billings. The user can always log past payments as
+ *  manual expense entries if they want them tracked.
+ *
+ *  Therefore the lower bound is simply `nextDueDate` itself. If a new
+ *  sub also has an explicit `createdAt` and that's somehow later than
+ *  `nextDueDate` (data-entry mistake), we use whichever is later — we
+ *  never bill before the sub existed.
+ *
+ *  This replaces the previous "nextDueDate − 1 cycle" legacy fallback,
+ *  which was incorrect: it manufactured a phantom prior billing one
+ *  full cycle before the user's first scheduled date. For Netflix with
+ *  `nextDueDate = 2026-03-26`, the bad fallback projected a fake
+ *  Feb 26 billing into the annual report. */
+const getSubFirstBillingISO = (sub: BillingDateSubscription): string | null => {
   if (!sub.nextDueDate) return null;
-  // Legacy fallback: assume the cycle just before nextDueDate was the
-  // first billing the user paid. This matches the most common case
-  // (user added the sub right around their first billing date) and
-  // never produces billings older than nextDueDate − 1 cycle.
-  const stepMonths = cycleMonths(sub.billingCycle);
-  return addMonthsISO(sub.nextDueDate, -stepMonths);
+  if (sub.createdAt && sub.createdAt > sub.nextDueDate) return sub.createdAt;
+  return sub.nextDueDate;
 };
 
 /** Returns every billing date for a single subscription that falls
- *  inside [startISO, endISO]. Walks backward from nextDueDate (or any
- *  later anchor) to find earlier billings, then forward for later ones.
- *
- *  Bug 1 fix: every candidate billing date is gated against the sub's
- *  effective start date — billings before the sub existed are NEVER
- *  returned, even if the range extends earlier.
+ *  inside [startISO, endISO]. Walks FORWARD only from the first
+ *  billing date — there are no prior billings because `nextDueDate`
+ *  is the first billing the user told us about.
  *
  *  If `nextDueDate` is missing, returns []. The Subscriptions tab
  *  always sets nextDueDate, so this is defensive only. */
@@ -417,42 +419,26 @@ export const getSubBillingDatesInRange = (
 ): string[] => {
   if (!sub.isActive || !sub.nextDueDate) return [];
 
-  const effectiveStart = getSubEffectiveStartISO(sub);
-  if (!effectiveStart) return [];
+  const firstBilling = getSubFirstBillingISO(sub);
+  if (!firstBilling) return [];
 
-  // The effective lower bound is whichever is later: the requested
-  // range start, or the date the subscription first existed.
-  const lowerBound = effectiveStart > startISO ? effectiveStart : startISO;
-  if (lowerBound > endISO) return [];
+  // Nothing before firstBilling can ever bill. Bail early.
+  if (endISO < firstBilling) return [];
 
   const stepMonths = cycleMonths(sub.billingCycle);
   const dates: string[] = [];
 
-  // Walk backward from nextDueDate to find every billing >= lowerBound
-  let cursor = sub.nextDueDate;
-  let safetyBackward = 0;
-  while (cursor > endISO && safetyBackward < 240) {
-    cursor = addMonthsISO(cursor, -stepMonths);
-    safetyBackward++;
-  }
-  while (cursor >= lowerBound && safetyBackward < 240) {
-    if (cursor <= endISO) dates.push(cursor);
-    cursor = addMonthsISO(cursor, -stepMonths);
-    safetyBackward++;
+  // Walk forward from firstBilling, one cycle at a time, collecting
+  // every date that lands inside the requested range.
+  let cursor = firstBilling;
+  let safety = 0;
+  while (cursor <= endISO && safety < 240) {
+    if (cursor >= startISO) dates.push(cursor);
+    cursor = addMonthsISO(cursor, stepMonths);
+    safety++;
   }
 
-  // Walk forward from nextDueDate to catch later billings still in range.
-  // Forward dates are always >= nextDueDate which is always >= effectiveStart,
-  // so the lowerBound check is automatic here.
-  let forwardCursor = addMonthsISO(sub.nextDueDate, stepMonths);
-  let safetyForward = 0;
-  while (forwardCursor <= endISO && safetyForward < 240) {
-    if (forwardCursor >= startISO) dates.push(forwardCursor);
-    forwardCursor = addMonthsISO(forwardCursor, stepMonths);
-    safetyForward++;
-  }
-
-  return Array.from(new Set(dates)).sort();
+  return dates;
 };
 
 /** Sum the cash actually billed (or projected to bill) for a single sub
