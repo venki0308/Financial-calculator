@@ -58,6 +58,15 @@ export default function NPSCalculator() {
     const [accountStartDate, setAccountStartDate] = useState('');
     const [showNameDialog, setShowNameDialog] = useState(false);
 
+    // When equity allocation changes, auto-update the expected return to blended rate
+    // Equity ~13%, Corporate Bonds ~9.5%, Govt Securities ~8.5%
+    useEffect(() => {
+        const eqW = equityPct / 100;
+        const debtW = 1 - eqW;
+        const blended = eqW * 13 + debtW * 0.6 * 9.5 + debtW * 0.4 * 8.5;
+        setRate(Math.round(blended * 10) / 10);
+    }, [equityPct]);
+
     const result = useMemo(() => {
         const years = Math.max(retireAge - age, 1);
         const r = rate / 12 / 100;

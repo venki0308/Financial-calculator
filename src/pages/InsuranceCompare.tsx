@@ -795,8 +795,8 @@ export default function InsuranceCompare() {
                       { label: t('insCompare.members', 'Members'), value: String(allAges.length), tone: 'neutral' },
                     ]}
                     notes={[
-                      { label: t('insCompare.city', 'City tier'), value: cityType === 'metro' ? 'Metro' : cityType === 'tier2' ? 'Tier 2' : 'Tier 3' },
-                      { label: t('insCompare.preExisting', 'Pre-existing conditions'), value: hasPreExisting ? 'Yes' : 'No' },
+                      { label: t('insCompare.city', 'City tier'), value: cityType === 'metro' ? t('insCompare.metro', 'Metro') : cityType === 'tier2' ? t('insCompare.tier2', 'Tier 2') : t('insCompare.tier3', 'Tier 3') },
+                      { label: t('insCompare.preExisting', 'Pre-existing conditions'), value: hasPreExisting ? t('liveStatus.yes', 'Yes') : t('liveStatus.no', 'No') },
                       { label: t('insCompare.adequacy', 'Adequacy'), value: `${adequacyScore}%` },
                     ]}
                     label={t('insCompare.snapshotTitle', 'Insurance Compare Snapshot')}

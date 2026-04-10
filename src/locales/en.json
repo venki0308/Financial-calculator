@@ -1787,6 +1787,10 @@
         "tabLife": "Life"
     },
     "emi": {
+        "loanTypeHome": "Home Loan",
+        "loanTypeCar": "Car Loan",
+        "loanTypePersonal": "Personal Loan",
+        "loanTypeEducation": "Education Loan",
         "loanAnalytics": "Loan Analytics",
         "bankingGradeEmiCalculator": "Banking-grade EMI calculator",
         "loanAmount": "Loan Amount",
@@ -4028,7 +4032,15 @@
         "pdfTotalGST": "Total GST",
         "pdfTotalLineItems": "Total Line Items",
         "pdfTotalWithGST": "Total with GST",
-        "pdfTransactionType": "Transaction Type"
+        "pdfTransactionType": "Transaction Type",
+        "cessNone": "None",
+        "cessSmallPetrol": "Small car (≤4m, ≤1.2L petrol)",
+        "cessSmallDiesel": "Small car (≤4m, ≤1.5L diesel)",
+        "cessMidCar": "Mid car (4m+, ≤1500cc)",
+        "cessLargeCar": "Large car / SUV (>1500cc)",
+        "cessAerated": "Aerated drinks",
+        "cessTobacco": "Tobacco / pan masala",
+        "cessCigarettes": "Cigarettes"
     },
     "hra": {
         "title": "HRA Calculator",

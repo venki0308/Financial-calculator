@@ -19,6 +19,7 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { useAppColors } from '../theme/useAppColors';
 import ShareableCard from '../components/ShareableCard';
 import { nativeShare } from '../utils/nativeShare';
@@ -114,6 +115,8 @@ export default function SSYCalculator() {
         if (!ssyOpenDate || !girlDob) return null;
         return calculateSsyStatus({ yearlyDeposit: effectiveAnnual, rate, openingDate: ssyOpenDate, girlDob });
     }, [effectiveAnnual, rate, ssyOpenDate, girlDob]);
+
+    useHistoryTracker('SSY Calculator', { annual: effectiveAnnual, rate, childAge }, { maturity: result.maturity }, result.maturity);
 
     // Pie chart
     const pieData = useMemo(() => ({

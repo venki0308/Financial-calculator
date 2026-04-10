@@ -12,11 +12,11 @@ export interface LoanTypeConfig {
     icon: string;
 }
 
-export const LOAN_TYPE_CONFIGS: Record<string, LoanTypeConfig> = {
-    'Home Loan': { label: 'Home Loan', defaultRate: 8.75, maxTenureYears: 30, minAmount: 100000, maxAmount: 100000000, icon: '🏠' },
-    'Car Loan': { label: 'Car Loan', defaultRate: 9.25, maxTenureYears: 7, minAmount: 50000, maxAmount: 50000000, icon: '🚗' },
-    'Personal Loan': { label: 'Personal Loan', defaultRate: 13, maxTenureYears: 7, minAmount: 10000, maxAmount: 5000000, icon: '💳' },
-    'Education Loan': { label: 'Education Loan', defaultRate: 10.5, maxTenureYears: 15, minAmount: 50000, maxAmount: 50000000, icon: '🎓' },
+export const LOAN_TYPE_CONFIGS: Record<string, LoanTypeConfig & { labelKey: string }> = {
+    'Home Loan': { label: 'Home Loan', labelKey: 'emi.loanTypeHome', defaultRate: 8.75, maxTenureYears: 30, minAmount: 100000, maxAmount: 100000000, icon: '🏠' },
+    'Car Loan': { label: 'Car Loan', labelKey: 'emi.loanTypeCar', defaultRate: 9.25, maxTenureYears: 7, minAmount: 50000, maxAmount: 50000000, icon: '🚗' },
+    'Personal Loan': { label: 'Personal Loan', labelKey: 'emi.loanTypePersonal', defaultRate: 13, maxTenureYears: 7, minAmount: 10000, maxAmount: 5000000, icon: '💳' },
+    'Education Loan': { label: 'Education Loan', labelKey: 'emi.loanTypeEducation', defaultRate: 10.5, maxTenureYears: 15, minAmount: 50000, maxAmount: 50000000, icon: '🎓' },
 };
 
 // ─── Amortization Schedule Row ─────────────────────────────────────────────

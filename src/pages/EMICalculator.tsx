@@ -460,7 +460,7 @@ export default function EMICalculator() {
                                 : 'bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-slate-600 dark:text-muted-foreground hover:border-slate-400 dark:hover:border-slate-600'
                             }`}>
                             <span>{LOAN_TYPE_CONFIGS[lt].icon}</span>
-                            {lt}
+                            {t(LOAN_TYPE_CONFIGS[lt].labelKey, lt)}
                         </button>
                     ))}
                 </div>

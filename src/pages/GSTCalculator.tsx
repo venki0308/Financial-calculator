@@ -46,15 +46,15 @@ const gstRates = [0, 5, 12, 18, 28];
 // Compensation cess presets — applies on top of 28% GST for "sin / luxury"
 // goods. Most users won't touch these but the cess can dwarf the base GST
 // (cigarettes 60-200% pre-2024, cars 1-22%). Source: GST Compensation Cess Act.
-const cessPresets: { label: string; cess: number }[] = [
-    { label: 'None', cess: 0 },
-    { label: 'Small car (≤4m, ≤1.2L petrol)', cess: 1 },
-    { label: 'Small car (≤4m, ≤1.5L diesel)', cess: 3 },
-    { label: 'Mid car (4m+, ≤1500cc)', cess: 17 },
-    { label: 'Large car / SUV (>1500cc)', cess: 22 },
-    { label: 'Aerated drinks', cess: 12 },
-    { label: 'Tobacco / pan masala', cess: 60 },
-    { label: 'Cigarettes', cess: 36 },
+const CESS_PRESETS: { labelKey: string; fallback: string; cess: number }[] = [
+    { labelKey: 'gst.cessNone', fallback: 'None', cess: 0 },
+    { labelKey: 'gst.cessSmallPetrol', fallback: 'Small car (≤4m, ≤1.2L petrol)', cess: 1 },
+    { labelKey: 'gst.cessSmallDiesel', fallback: 'Small car (≤4m, ≤1.5L diesel)', cess: 3 },
+    { labelKey: 'gst.cessMidCar', fallback: 'Mid car (4m+, ≤1500cc)', cess: 17 },
+    { labelKey: 'gst.cessLargeCar', fallback: 'Large car / SUV (>1500cc)', cess: 22 },
+    { labelKey: 'gst.cessAerated', fallback: 'Aerated drinks', cess: 12 },
+    { labelKey: 'gst.cessTobacco', fallback: 'Tobacco / pan masala', cess: 60 },
+    { labelKey: 'gst.cessCigarettes', fallback: 'Cigarettes', cess: 36 },
 ];
 
 interface InvoiceItem {
@@ -506,9 +506,9 @@ export default function GSTCalculator() {
                                         onChange={e => setCessRate(Number(e.target.value))}
                                         className="w-full bg-dark-bg border border-border rounded-xl px-3 py-2.5 text-xs text-foreground"
                                     >
-                                        {cessPresets.map(p => (
-                                            <option key={p.label} value={p.cess}>
-                                                {p.label} {p.cess > 0 ? `— +${p.cess}%` : ''}
+                                        {CESS_PRESETS.map(p => (
+                                            <option key={p.labelKey} value={p.cess}>
+                                                {t(p.labelKey, p.fallback)} {p.cess > 0 ? `— +${p.cess}%` : ''}
                                             </option>
                                         ))}
                                     </select>
