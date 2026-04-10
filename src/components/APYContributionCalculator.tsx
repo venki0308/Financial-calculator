@@ -12,7 +12,7 @@ import { Calculator } from 'lucide-react';
  * tier and instantly see what to deposit each month.
  *
  * Source: https://www.npscra.proteantech.in/scheme-details/apy/
- * Verified Q4 FY 2025-26.
+ * Verified Q1 FY 2026-27 (Apr-Jun 2026).
  */
 
 // CONTRIBUTION CHART — monthly amount in ₹ for each (entry-age, pension) pair.

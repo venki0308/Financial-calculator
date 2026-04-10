@@ -84,7 +84,7 @@ export const schemes: Scheme[] = [
         documents: ['Aadhaar Card (mandatory)', 'Bank account details', 'Land ownership records (verified by state government)'],
         howToApply: ['Visit pmkisan.gov.in', 'Click "New Farmer Registration"', 'Enter Aadhaar and land details', 'Verification done by state authorities'],
         notes: 'Income taxpayers and government pensioners are not eligible.',
-        launchYear: 2019, lastVerified: '2026-03-05',
+        launchYear: 2019, lastVerified: '2026-04-10',
         verifiedSource: 'pmkisan.gov.in', isActive: true,
     },
     {
@@ -99,7 +99,7 @@ export const schemes: Scheme[] = [
         benefits: ['Premium 2% for Kharif, 1.5% for Rabi crops', 'Government subsidizes remaining premium', 'Coverage for crop loss due to natural calamities', 'Post-harvest losses covered'],
         documents: ['Aadhaar Card', 'Land records', 'Bank account passbook', 'Crop sown certificate (if required by state)'],
         howToApply: ['Apply through bank, CSC center, PMFBY portal, or authorized insurance company', 'Register at pmfby.gov.in/farmerRegistrationForm', 'Submit crop and land information before cutoff date'],
-        launchYear: 2016, lastVerified: '2026-03-05',
+        launchYear: 2016, lastVerified: '2026-04-10',
         verifiedSource: 'pmfby.gov.in', isActive: true,
     },
     {
@@ -115,7 +115,7 @@ export const schemes: Scheme[] = [
         benefits: ['Credit up to ₹3 lakh for agriculture at concessional rates', 'Effective 4% p.a. for timely repayers (7% base minus 3% prompt repayment incentive; GoI provides 2% interest subvention to banks)', 'Flexible repayment after harvest', 'Personal accident insurance cover'],
         documents: ['Aadhaar Card', 'Land records or tenancy certificate', 'Bank account passbook', 'Passport photo'],
         howToApply: ['Apply at nearest bank, cooperative bank, or PACS', 'Submit land and identity documents', 'Bank assesses credit limit based on landholding'],
-        launchYear: 1998, lastVerified: '2026-03-05',
+        launchYear: 1998, lastVerified: '2026-04-10',
         verifiedSource: 'www.nabard.org', isActive: true,
     },
     {
@@ -131,7 +131,7 @@ export const schemes: Scheme[] = [
         benefits: ['Up to 60% government subsidy for solar pumps', 'Farmers can sell excess solar power to grid', 'Reduces diesel irrigation cost significantly', 'Decentralized renewable energy for agriculture'],
         documents: ['Aadhaar Card', 'Land ownership documents', 'Electricity connection details'],
         howToApply: ['Apply through state renewable energy department portals', 'States implement component-wise — contact DISCOM or state nodal agency'],
-        launchYear: 2019, lastVerified: '2026-03-05',
+        launchYear: 2019, lastVerified: '2026-04-10',
         verifiedSource: 'mnre.gov.in', isActive: true,
     },
     {
@@ -146,7 +146,7 @@ export const schemes: Scheme[] = [
         benefits: ['Micro irrigation support (drip and sprinkler)', 'Water management and conservation', 'Irrigation infrastructure development', 'District irrigation plans'],
         documents: [],
         howToApply: ['Apply through state agriculture or irrigation departments', 'Implemented via district and state authorities'],
-        launchYear: 2015, lastVerified: '2026-03-05',
+        launchYear: 2015, lastVerified: '2026-04-10',
         verifiedSource: 'pmksy.gov.in', isActive: true,
     },
     {
@@ -161,7 +161,7 @@ export const schemes: Scheme[] = [
         benefits: ['AI-based crop advisory services', 'Satellite-based crop monitoring', 'Farmer database (Agri Stack)', 'Digital crop surveys'],
         documents: [],
         howToApply: ['This is a government policy initiative. Visit agristack.gov.in or agricoop.gov.in for information.'],
-        launchYear: 2024, lastVerified: '2026-03-05',
+        launchYear: 2024, lastVerified: '2026-04-10',
         verifiedSource: 'agriwelfare.gov.in', isActive: true,
     },
 
@@ -179,7 +179,7 @@ export const schemes: Scheme[] = [
         benefits: ['Guaranteed pension ₹1,000–₹5,000/month after 60', 'Spouse gets pension on subscriber death', 'Nominee gets corpus on death of spouse', 'Tax benefit under Sec 80CCD / Sec 124 (ITA 2025)', 'Contribution depends on age and pension amount chosen'],
         documents: ['Aadhaar Card', 'Bank account passbook', 'Mobile number linked to Aadhaar'],
         howToApply: ['Visit any bank or post office', 'Fill APY form or apply via net banking', 'Choose monthly pension amount and contribution plan'],
-        launchYear: 2015, lastVerified: '2026-03-05',
+        launchYear: 2015, lastVerified: '2026-04-10',
         verifiedSource: 'www.npscra.proteantech.in', isActive: true,
     },
     {
@@ -195,7 +195,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹3,000 monthly pension after age 60', 'Equal government contribution to premium', 'Spouse entitled to 50% pension on death'],
         documents: ['Aadhaar Card', 'Savings bank account or Jan Dhan account', 'Mobile number'],
         howToApply: ['Register through Common Service Centres (CSC)', 'Apply online at maandhan.in', 'Enrollment available through CSC centers and Maandhan portal'],
-        launchYear: 2019, lastVerified: '2026-03-05',
+        launchYear: 2019, lastVerified: '2026-04-10',
         verifiedSource: 'maandhan.in', isActive: true,
     },
     {
@@ -212,7 +212,7 @@ export const schemes: Scheme[] = [
         documents: ['Aadhaar Card', 'PAN Card', 'Bank account details'],
         howToApply: ['Register at eNPS portal or through bank/post office', 'Choose pension fund manager and contribution amount'],
         notes: 'Includes Tier I (retirement) and Tier II (voluntary savings) accounts.',
-        launchYear: 2004, lastVerified: '2026-03-05',
+        launchYear: 2004, lastVerified: '2026-04-10',
         verifiedSource: 'www.npscra.proteantech.in', isActive: true,
     },
     {
@@ -227,7 +227,7 @@ export const schemes: Scheme[] = [
         benefits: ['Long-term retirement savings started in childhood', 'Account converts to regular NPS at age 18', 'Market-linked returns from early age', 'Minimum annual contribution: ₹1,000'],
         documents: ['Birth certificate of minor', 'Aadhaar of guardian', 'Bank account details'],
         howToApply: ['Open account through NPS portal or banks', 'Guardian manages account until minor turns 18'],
-        launchYear: 2024, lastVerified: '2026-03-05',
+        launchYear: 2024, lastVerified: '2026-04-10',
         verifiedSource: 'www.npscra.proteantech.in', isActive: true,
     },
 
@@ -246,7 +246,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹2 lakh life insurance cover', 'Premium ₹436 per year (auto-debited)', 'Coverage renewable every year', 'Nominee receives amount on death'],
         documents: ['Aadhaar Card', 'Bank account (auto-debit consent form)'],
         howToApply: ['Contact bank where savings account is held', 'Fill PMJJBY consent-cum-declaration form', 'Premium auto-debited on 31 May annually'],
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'jansuraksha.gov.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'jansuraksha.gov.in', isActive: true,
     },
     {
         id: 'c-pmsby', name: 'PM Suraksha Bima Yojana', governmentLevel: 'central',
@@ -261,7 +261,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹2 lakh accidental death/total disability cover', '₹1 lakh partial disability cover', 'Premium only ₹20 per year'],
         documents: ['Aadhaar Card', 'Bank account (auto-debit consent)'],
         howToApply: ['Contact bank where savings account is held', 'Fill PMSBY consent form', 'Premium ₹20 auto-debited annually'],
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'jansuraksha.gov.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'jansuraksha.gov.in', isActive: true,
     },
 
     // ── HOUSING ───────────────────────────────────────────────────────────────
@@ -277,7 +277,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹2.5 lakh capital assistance for EWS/LIG beneficiaries', 'Interest subsidy up to ₹1.80 lakh on home loans for MIG (CLSS revived under 2.0)', 'In-Situ Slum Redevelopment (ISSR) and Affordable Housing in Partnership (AHP)', 'Budget 2025-26 allocation: ₹30,170 crore'],
         documents: ['Aadhaar Card', 'Income certificate', 'Property documents', 'Bank account passbook'],
         howToApply: ['Apply at pmaymis.gov.in', 'Or visit CSC / Urban Local Body (ULB)', 'Submit documents for verification'],
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'pmaymis.gov.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'pmaymis.gov.in', isActive: true,
     },
     {
         id: 'c-pmay-g', name: 'PM Awas Yojana Gramin', governmentLevel: 'central',
@@ -292,7 +292,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹1.2 lakh (plain) / ₹1.3 lakh (hilly) for construction', '₹12,000 additional for toilet', 'MGNREGA wages for unskilled work'],
         documents: [],
         howToApply: ['Beneficiaries selected by Gram Sabha from SECC list', 'Contact Gram Panchayat for inclusion/grievance'],
-        launchYear: 2016, lastVerified: '2026-03-05', verifiedSource: 'pmayg.dord.gov.in', isActive: true,
+        launchYear: 2016, lastVerified: '2026-04-10', verifiedSource: 'pmayg.dord.gov.in', isActive: true,
     },
 
     // ── HEALTH ────────────────────────────────────────────────────────────────
@@ -309,7 +309,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹5 lakh cashless hospitalization per family per year', 'Coverage at 25,000+ empanelled hospitals', 'No premium for beneficiaries', 'All pre-existing conditions covered from day one'],
         documents: ['Aadhaar Card', 'Ration card or SECC identification'],
         howToApply: ['Check eligibility at pmjay.gov.in or call 14555', 'Visit empanelled hospital for cashless treatment', 'Generate Ayushman Health Card at CSC or hospital'],
-        launchYear: 2018, lastVerified: '2026-03-05', verifiedSource: 'pmjay.gov.in', isActive: true,
+        launchYear: 2018, lastVerified: '2026-04-10', verifiedSource: 'pmjay.gov.in', isActive: true,
     },
     {
         id: 'c-telemanas', name: 'Tele-MANAS Helpline', governmentLevel: 'central',
@@ -323,7 +323,7 @@ export const schemes: Scheme[] = [
         benefits: ['24/7 toll-free helpline (14416)', 'Multilingual mental health counselling', 'Referral to state mental health specialists', 'Free of cost'],
         documents: [],
         howToApply: ['Call toll-free helpline 14416', 'Or access via telemanas.mohfw.gov.in'],
-        launchYear: 2022, lastVerified: '2026-03-05', verifiedSource: 'mohfw.gov.in', isActive: true,
+        launchYear: 2022, lastVerified: '2026-04-10', verifiedSource: 'mohfw.gov.in', isActive: true,
     },
     {
         id: 'c-abdm', name: 'Ayushman Bharat Digital Mission', governmentLevel: 'central',
@@ -337,7 +337,7 @@ export const schemes: Scheme[] = [
         benefits: ['Unique 14-digit ABHA (Health ID)', 'Digital health records accessible anywhere', 'Consent-based sharing with doctors/hospitals'],
         documents: ['Aadhaar Card', 'Mobile number'],
         howToApply: ['Register at abdm.gov.in or ABHA app', 'Link Aadhaar for verification', 'Generate ABHA card'],
-        launchYear: 2021, lastVerified: '2026-03-05', verifiedSource: 'abdm.gov.in', isActive: true,
+        launchYear: 2021, lastVerified: '2026-04-10', verifiedSource: 'abdm.gov.in', isActive: true,
     },
 
     // ── ENERGY ────────────────────────────────────────────────────────────────
@@ -353,7 +353,7 @@ export const schemes: Scheme[] = [
         benefits: ['Free LPG connection with first cylinder (deposit-free; ₹1,600 financial assistance)', 'Stove (chulha) support EMI option', '₹300/cylinder subsidy for PMUY beneficiaries (reinstated September 2023, continued in 2025-26)', 'Clean cooking fuel reducing indoor air pollution'],
         documents: ['Aadhaar Card', 'BPL/SECC/PMAY-G identification', 'Bank account passbook'],
         howToApply: ['Apply at nearest LPG distributor (HP/Bharat/Indane Gas)', 'Apply online at pmuy.gov.in/ujjwala2.html', 'Submit Aadhaar and BPL/SECC proof', 'Connection issued after document verification'],
-        launchYear: 2016, lastVerified: '2026-03-05', verifiedSource: 'pmuy.gov.in', isActive: true,
+        launchYear: 2016, lastVerified: '2026-04-10', verifiedSource: 'pmuy.gov.in', isActive: true,
     },
     {
         id: 'c-pmsgmby', name: 'PM Surya Ghar Muft Bijli Yojana', governmentLevel: 'central',
@@ -368,7 +368,7 @@ export const schemes: Scheme[] = [
         benefits: ['Central subsidy up to ₹78,000 for rooftop solar', 'Up to 300 free units/month', 'Sell excess power to DISCOM', 'Long-term savings on electricity bills'],
         documents: ['Aadhaar Card', 'Recent electricity bill', 'Bank account passbook'],
         howToApply: ['Register at pmsuryaghar.gov.in', 'Apply through your DISCOM', 'Select approved vendor', 'Apply for subsidy post-installation'],
-        launchYear: 2024, lastVerified: '2026-03-05', verifiedSource: 'pmsuryaghar.gov.in', isActive: true,
+        launchYear: 2024, lastVerified: '2026-04-10', verifiedSource: 'pmsuryaghar.gov.in', isActive: true,
     },
 
     // ── BANKING / FINANCIAL INCLUSION ─────────────────────────────────────────
@@ -384,7 +384,7 @@ export const schemes: Scheme[] = [
         benefits: ['Zero balance savings account', 'RuPay Debit Card with ₹2 lakh accident insurance', 'Overdraft up to ₹10,000 after 6 months'],
         documents: ['Aadhaar Card (or any official ID)', 'Passport photo'],
         howToApply: ['Visit any scheduled bank or Business Correspondent', 'Fill Jan Dhan account opening form', 'Submit identity documents'],
-        launchYear: 2014, lastVerified: '2026-03-05', verifiedSource: 'pmjdy.gov.in', isActive: true,
+        launchYear: 2014, lastVerified: '2026-04-10', verifiedSource: 'pmjdy.gov.in', isActive: true,
     },
 
     // ── LOANS / MSME ──────────────────────────────────────────────────────────
@@ -402,7 +402,7 @@ export const schemes: Scheme[] = [
         documents: ['Aadhaar Card', 'PAN Card', 'Business plan', 'Address proof of business'],
         howToApply: ['Visit any scheduled bank, MFI, or NBFC', 'Submit application with business plan', 'Bank verifies and sanctions loan'],
         notes: 'Loans up to ₹20 lakh under Tarun Plus category (2024 update). Interest rates vary by lending institution.',
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'mudra.org.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'mudra.org.in', isActive: true,
     },
 
     {
@@ -418,7 +418,7 @@ export const schemes: Scheme[] = [
         benefits: ['PM Vishwakarma Certificate and ID card', 'Toolkit incentive ₹15,000', 'Skill training with ₹500/day stipend', 'Loan ₹1 lakh first tranche at 5% interest', 'Loan ₹2 lakh second tranche at 5% interest'],
         documents: ['Aadhaar Card', 'Bank account', 'Mobile number'],
         howToApply: ['Register at pmvishwakarma.gov.in', 'Gram Panchayat/ULB verifies', 'Attend skill training', 'Receive toolkit and loan'],
-        launchYear: 2023, lastVerified: '2026-03-05', verifiedSource: 'pmvishwakarma.gov.in', isActive: true,
+        launchYear: 2023, lastVerified: '2026-04-10', verifiedSource: 'pmvishwakarma.gov.in', isActive: true,
     },
     {
         id: 'c-pmsvanidhi', name: 'PM SVANidhi Scheme', governmentLevel: 'central',
@@ -433,7 +433,7 @@ export const schemes: Scheme[] = [
         documents: ['Aadhaar Card', 'Bank account', 'Vendor certificate / ULB letter'],
         howToApply: ['Apply at pmsvanidhi.mohua.gov.in', 'Or through banks, MFIs, or CSCs'],
         notes: 'Timely repayment qualifies for higher loan in next cycle.',
-        launchYear: 2020, lastVerified: '2026-03-05', verifiedSource: 'pmsvanidhi.mohua.gov.in', isActive: true,
+        launchYear: 2020, lastVerified: '2026-04-10', verifiedSource: 'pmsvanidhi.mohua.gov.in', isActive: true,
     },
 
     // ── GOVERNMENT MISSIONS ───────────────────────────────────────────────────
@@ -449,7 +449,7 @@ export const schemes: Scheme[] = [
         benefits: ['Awareness programs on gender equality', 'Girl child education promotion', 'Convergence with SSY and Ujjwala'],
         documents: [],
         howToApply: ['This is a national campaign implemented by government agencies. No individual application required.'],
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'wcd.gov.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'wcd.gov.in', isActive: true,
     },
     {
         id: 'c-jjm', name: 'Jal Jeevan Mission', governmentLevel: 'central',
@@ -463,7 +463,7 @@ export const schemes: Scheme[] = [
         benefits: ['Functional household tap water connection', 'Safe piped drinking water', 'Village water quality testing'],
         documents: [],
         howToApply: ['Implemented through state water departments and Gram Panchayats. No individual application required.'],
-        launchYear: 2019, lastVerified: '2026-03-05', verifiedSource: 'jaljeevanmission.gov.in', isActive: true,
+        launchYear: 2019, lastVerified: '2026-04-10', verifiedSource: 'jaljeevanmission.gov.in', isActive: true,
     },
     {
         id: 'c-digital-india', name: 'Digital India Programme', governmentLevel: 'central',
@@ -477,7 +477,7 @@ export const schemes: Scheme[] = [
         benefits: ['Digital infrastructure development', 'e-Governance and digital services', 'CSC network across India'],
         documents: [],
         howToApply: ['National mission implemented by government agencies. No individual application required.'],
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'digitalindia.gov.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'digitalindia.gov.in', isActive: true,
     },
 
     // ── EMPLOYMENT / SOCIAL SECURITY ─────────────────────────────────────────
@@ -494,7 +494,7 @@ export const schemes: Scheme[] = [
         benefits: ['100 days guaranteed wage employment per household per year', 'Unemployment allowance if work not provided within 15 days', 'Wages to bank account directly'],
         documents: ['Job Card', 'Aadhaar (recommended)', 'Bank account'],
         howToApply: ['Apply for Job Card at Gram Panchayat', 'Submit work application in writing', 'Work allocated within 15 days of application'],
-        launchYear: 2006, lastVerified: '2026-03-05', verifiedSource: 'nrega.nic.in', isActive: true,
+        launchYear: 2006, lastVerified: '2026-04-10', verifiedSource: 'nrega.nic.in', isActive: true,
     },
     {
         id: 'c-nsap', name: 'National Social Assistance Programme', governmentLevel: 'central',
@@ -508,7 +508,7 @@ export const schemes: Scheme[] = [
         benefits: ['Indira Gandhi National Old Age Pension Scheme (IGNOAPS) – ₹200–₹500/month', 'Indira Gandhi National Widow Pension Scheme (IGNWPS)', 'Indira Gandhi National Disability Pension Scheme (IGNDPS)', 'National Family Benefit Scheme – ₹20,000 on death of breadwinner'],
         documents: ['Aadhaar Card', 'BPL/SECC card', 'Age/disability/death proof', 'Bank account'],
         howToApply: ['Apply through Gram Panchayat, BDO, or district welfare office', 'State governments disburse pensions'],
-        launchYear: 1995, lastVerified: '2026-03-05', verifiedSource: 'nsap.dord.gov.in', isActive: true,
+        launchYear: 1995, lastVerified: '2026-04-10', verifiedSource: 'nsap.dord.gov.in', isActive: true,
     },
 
     // ── EDUCATION / SCHOLARSHIP ───────────────────────────────────────────────
@@ -525,7 +525,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹12,000 per year until Class XII (4 years total)', 'Direct bank transfer'],
         documents: ['Aadhaar Card', 'Income certificate', 'School enrollment proof', 'Bank account'],
         howToApply: ['Apply through scholarships.gov.in', 'Qualify NMMS state examination', 'Submit documents via school'],
-        launchYear: 2008, lastVerified: '2026-03-05', verifiedSource: 'scholarships.gov.in', isActive: true,
+        launchYear: 2008, lastVerified: '2026-04-10', verifiedSource: 'scholarships.gov.in', isActive: true,
     },
     {
         id: 'c-vidyalakshmi', name: 'PM Vidya Lakshmi Portal', governmentLevel: 'central',
@@ -539,7 +539,7 @@ export const schemes: Scheme[] = [
         benefits: ['Apply to multiple banks in one form', 'Compare loan offers', 'Track application status online'],
         documents: ['Aadhaar Card', 'Academic records', 'Admission letter', 'Income documents of co-applicant'],
         howToApply: ['Register at vidyalakshmi.co.in', 'Fill common education loan application', 'Apply to multiple banks simultaneously'],
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'pmvidyalaxmi.co.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'pmvidyalaxmi.co.in', isActive: true,
     },
 
     // ── SKILL DEVELOPMENT ─────────────────────────────────────────────────────
@@ -555,7 +555,7 @@ export const schemes: Scheme[] = [
         benefits: ['Free certified skill training (3–6 months)', 'Industry-recognized certification', 'Placement assistance'],
         documents: ['Aadhaar Card', 'Educational certificates'],
         howToApply: ['Register at skillindia.gov.in', 'Locate nearest PMKVY training partner centre', 'Enrol in preferred training'],
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'www.skillindiadigital.gov.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'www.skillindiadigital.gov.in', isActive: true,
     },
     {
         id: 'c-pmdaksh', name: 'PM-DAKSH Scheme', governmentLevel: 'central',
@@ -569,7 +569,7 @@ export const schemes: Scheme[] = [
         benefits: ['Free vocational training', 'Stipend during training', 'Placement support and certification'],
         documents: ['Aadhaar Card', 'Caste/community certificate', 'Bank account'],
         howToApply: ['Register at pmdaksh.dosje.gov.in', 'Select training program and centre'],
-        launchYear: 2021, lastVerified: '2026-03-05', verifiedSource: 'dosje.gov.in', isActive: true,
+        launchYear: 2021, lastVerified: '2026-04-10', verifiedSource: 'dosje.gov.in', isActive: true,
     },
     {
         id: 'c-naps', name: 'National Apprenticeship Promotion Scheme', governmentLevel: 'central',
@@ -583,7 +583,7 @@ export const schemes: Scheme[] = [
         benefits: ['Stipend during apprenticeship', 'Industry-recognized certification', 'Direct industry experience'],
         documents: ['Aadhaar Card', 'Educational/ITI certificates'],
         howToApply: ['Register at apprenticeshipindia.gov.in', 'Apply to available opportunities', 'Employer provides training'],
-        launchYear: 2016, lastVerified: '2026-03-05', verifiedSource: 'apprenticeshipindia.gov.in', isActive: true,
+        launchYear: 2016, lastVerified: '2026-04-10', verifiedSource: 'apprenticeshipindia.gov.in', isActive: true,
     },
     {
         id: 'c-ddugky', name: 'DDU Grameen Kaushalya Yojana', governmentLevel: 'central',
@@ -597,7 +597,7 @@ export const schemes: Scheme[] = [
         benefits: ['Free residential skill training', 'Placement minimum target: 75% of trained candidates', 'Post-placement support 12 months'],
         documents: ['Aadhaar Card', 'Age/education proof', 'BPL card'],
         howToApply: ['Contact nearest DDU-GKY implementing agency', 'Register via district rural development office'],
-        launchYear: 2014, lastVerified: '2026-03-05', verifiedSource: 'ddugky.info', isActive: true,
+        launchYear: 2014, lastVerified: '2026-04-10', verifiedSource: 'ddugky.info', isActive: true,
     },
     // ── WOMEN / CHILDREN ─────────────────────────────────────────────────────
     {
@@ -612,10 +612,10 @@ export const schemes: Scheme[] = [
         interestRate: '8.2% p.a.',
         taxBenefit: 'EEE – Fully exempt under Sec 80C / Sec 123 (ITA 2025)',
         eligibility: ['Girl child below age 10', 'Max 2 accounts per family', 'Indian resident'],
-        benefits: ['Interest rate notified quarterly by Government of India (current ~8.2% p.a.)', 'Full EEE tax exemption', 'Partial withdrawal at 18 for education', 'Full maturity at 21'],
+        benefits: ['Interest rate notified quarterly by Government of India (current ~8.2% p.a., Q1 2026-27)', 'Full EEE tax exemption', 'Partial withdrawal at 18 for education', 'Full maturity at 21'],
         documents: ['Birth certificate of girl', 'Aadhaar of parent/guardian', 'Address proof'],
         howToApply: ['Open account at post office or authorised bank', 'Fill SSY form', 'Min deposit ₹250/year'],
-        launchYear: 2015, lastVerified: '2026-03-05', verifiedSource: 'nsiindia.gov.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'nsiindia.gov.in', isActive: true,
     },
     {
         id: 'c-lakhpati', name: 'Lakhpati Didi Initiative', governmentLevel: 'central',
@@ -630,7 +630,7 @@ export const schemes: Scheme[] = [
         benefits: ['Skill training in agri/tech/handicrafts', 'Drone didi training', 'Bank credit access through SHGs', 'Market linkage support'],
         documents: [],
         howToApply: ['Join or form SHG under DAY-NRLM', 'Access training through DMMU of district'],
-        launchYear: 2023, lastVerified: '2026-03-05', verifiedSource: 'lakhpatididi.gov.in', isActive: true,
+        launchYear: 2023, lastVerified: '2026-04-10', verifiedSource: 'lakhpatididi.gov.in', isActive: true,
     },
     {
         id: 'c-saksham', name: 'Saksham Anganwadi & Poshan 2.0', governmentLevel: 'central',
@@ -644,7 +644,7 @@ export const schemes: Scheme[] = [
         benefits: ['Supplementary nutrition', 'Growth monitoring and health checkups', 'Pre-school education at Anganwadi'],
         documents: ['Aadhaar (optional)', 'Mother-child protection card'],
         howToApply: ['Access services through nearest Anganwadi centre', 'Register with Anganwadi worker in your area'],
-        launchYear: 2021, lastVerified: '2026-03-05', verifiedSource: 'wcd.gov.in', isActive: true,
+        launchYear: 2021, lastVerified: '2026-04-10', verifiedSource: 'wcd.gov.in', isActive: true,
     },
     {
         id: 'c-pmmvy', name: 'PM Matru Vandana Yojana', governmentLevel: 'central',
@@ -659,7 +659,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹5,000 cash in two installments', 'Additional ₹6,000 under JSSK for institutional delivery'],
         documents: ['Aadhaar Card', 'MCP (Mother-Child Protection) card', 'Bank account'],
         howToApply: ['Register at nearest Anganwadi centre', 'Benefits transferred directly to bank account'],
-        launchYear: 2017, lastVerified: '2026-03-05', verifiedSource: 'wcd.gov.in', isActive: true,
+        launchYear: 2017, lastVerified: '2026-04-10', verifiedSource: 'wcd.gov.in', isActive: true,
     },
 
     // ── SENIOR CITIZENS / SAVINGS ─────────────────────────────────────────────
@@ -675,10 +675,10 @@ export const schemes: Scheme[] = [
         maxAmount: '₹30 lakh',
         taxBenefit: 'Sec 80C / Sec 123 (ITA 2025); interest taxable',
         eligibility: ['Age 60+', 'VRS/Superannuation retirees aged 55+', 'NRIs not eligible'],
-        benefits: ['Interest rate notified quarterly by Government of India (current ~8.2% p.a.)', 'Maximum deposit ₹30 lakh', '5-year tenure extendable by 3 years'],
+        benefits: ['Interest rate notified quarterly by Government of India (current ~8.2% p.a., Q1 2026-27)', 'Maximum deposit ₹30 lakh', '5-year tenure extendable by 3 years'],
         documents: ['Aadhaar Card', 'Age proof', 'Bank account'],
         howToApply: ['Visit post office or authorised bank', 'Fill SCSS opening form', 'Submit age proof and initial deposit'],
-        launchYear: 2004, lastVerified: '2026-03-05', verifiedSource: 'nsiindia.gov.in', isActive: true,
+        launchYear: 2004, lastVerified: '2026-04-10', verifiedSource: 'nsiindia.gov.in', isActive: true,
     },
 
     // ── YOUTH / STARTUP ───────────────────────────────────────────────────────
@@ -695,7 +695,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹5,000 monthly government stipend', 'One-time ₹6,000 support', '12-month internship', 'Certificate on completion'],
         documents: ['Aadhaar Card', 'Educational certificates', 'Bank account'],
         howToApply: ['Apply at pminternship.mca.gov.in', 'Select preferred companies and roles', 'Companies approve shortlisted candidates'],
-        launchYear: 2024, lastVerified: '2026-03-05', verifiedSource: 'mca.gov.in', isActive: true,
+        launchYear: 2024, lastVerified: '2026-04-10', verifiedSource: 'mca.gov.in', isActive: true,
     },
     {
         id: 'c-startup-india', name: 'Startup India', governmentLevel: 'central',
@@ -710,7 +710,7 @@ export const schemes: Scheme[] = [
         documents: ['Certificate of incorporation', 'PAN', 'Brief about innovation/product'],
         howToApply: ['Register at startupindia.gov.in', 'Apply for DPIIT recognition', 'Apply separately for tax/seed fund benefits'],
         notes: 'Not a direct cash benefit. Benefits depend on DPIIT recognition status.',
-        launchYear: 2016, lastVerified: '2026-03-05', verifiedSource: 'startupindia.gov.in', isActive: true,
+        launchYear: 2016, lastVerified: '2026-04-10', verifiedSource: 'startupindia.gov.in', isActive: true,
     },
 
 
@@ -728,7 +728,7 @@ export const schemes: Scheme[] = [
         benefits: ['e-Shram Card with 12-digit UAN', '₹2 lakh accidental cover under PMSBY', 'Priority in government welfare schemes'],
         documents: ['Aadhaar Card', 'Mobile number'],
         howToApply: ['Register at eshram.gov.in or CSC', 'Enter Aadhaar and OTP verification', 'Download e-Shram card'],
-        launchYear: 2021, lastVerified: '2026-03-05', verifiedSource: 'eshram.gov.in', isActive: true,
+        launchYear: 2021, lastVerified: '2026-04-10', verifiedSource: 'eshram.gov.in', isActive: true,
     },
     {
         id: 'c-pmfme', name: 'PM Formalisation of Micro Food Processing Enterprises', governmentLevel: 'central',
@@ -743,7 +743,7 @@ export const schemes: Scheme[] = [
         benefits: ['35% credit-linked capital subsidy (max ₹10 lakh per unit)', 'Branding and marketing support for SHGs', 'FSSAI certification support'],
         documents: ['Aadhaar Card', 'Business/FSSAI details', 'Project report', 'Bank account'],
         howToApply: ['Apply at pmfme.mofpi.gov.in', 'State nodal agency verifies', 'Bank sanctions; subsidy released on asset creation'],
-        launchYear: 2020, lastVerified: '2026-03-05', verifiedSource: 'pmfme.mofpi.gov.in', isActive: true,
+        launchYear: 2020, lastVerified: '2026-04-10', verifiedSource: 'pmfme.mofpi.gov.in', isActive: true,
     },
     {
         id: 'c-pmegp', name: 'PMEGP — PM Employment Generation Programme', governmentLevel: 'central',
@@ -805,6 +805,6 @@ export const schemes: Scheme[] = [
         benefits: ['SHG formation and revolving fund', 'Bank credit linkage', 'Skill training and placement'],
         documents: [],
         howToApply: ['Implemented through SHGs — not individual online application', 'Join or form SHG in your village', 'Link with DAY-NRLM via Gram Panchayat or community mobilizer'],
-        launchYear: 2011, lastVerified: '2026-03-05', verifiedSource: 'nrlm.gov.in', isActive: true,
+        launchYear: 2011, lastVerified: '2026-04-10', verifiedSource: 'nrlm.gov.in', isActive: true,
     },
 ];

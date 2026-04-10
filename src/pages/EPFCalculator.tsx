@@ -342,10 +342,10 @@ export default function EPFCalculator() {
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
                             </div>
                             {/* EPFO declares the rate annually after the FY closes (typically Feb-Mar).
-                                8.25% is the most recently confirmed rate (FY 2024-25). Users planning
+                                8.25% is the most recently confirmed rate (FY 2025-26, declared Mar 2026). Users planning
                                 long-term should treat this as indicative — actual yearly accrual may differ. */}
                             <p className="text-[9px] text-muted-foreground mt-1 leading-tight">
-                                {t('epf.rateNote', '8.25% — FY 2024-25 declared rate. EPFO revises annually; verify at epfindia.gov.in')}
+                                {t('epf.rateNote', '8.25% — FY 2025-26 declared rate. EPFO revises annually; verify at epfindia.gov.in')}
                             </p>
                         </div>
                     </div>

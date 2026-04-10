@@ -46,27 +46,28 @@ export interface LoanCibilConfig {
 }
 
 export const LOAN_CIBIL_RATES: Record<string, LoanCibilConfig> = {
+    // Updated April 2026: RBI repo rate held at 5.25%, banks tightening MCLR
     home_loan: {
         loanType: 'Home Loan', minBank: 700, minNBFC: 650, ideal: 760,
-        rates: { nh: { min: 9.5, max: 11 }, very_poor: { min: 10.5, max: 13 }, poor: { min: 10.5, max: 13 }, average: { min: 9.5, max: 11 }, good: { min: 8.85, max: 9.85 }, very_good: { min: 8.5, max: 9.25 }, excellent: { min: 8, max: 8.75 } },
+        rates: { nh: { min: 14, max: 16 }, very_poor: { min: 14, max: 16 }, poor: { min: 12, max: 14 }, average: { min: 10.5, max: 12 }, good: { min: 9.75, max: 10.5 }, very_good: { min: 9, max: 9.75 }, excellent: { min: 8.5, max: 9 } },
         ltv: { nh: 75, very_poor: 65, poor: 65, average: 75, good: 80, very_good: 85, excellent: 90 },
         notes: ['cibil.homeTip1', 'cibil.homeTip2', 'cibil.homeTip3'],
     },
     personal_loan: {
         loanType: 'Personal Loan', minBank: 720, minNBFC: 600, ideal: 750,
-        rates: { nh: { min: 14, max: 18 }, very_poor: { min: 22, max: 36 }, poor: { min: 22, max: 36 }, average: { min: 16, max: 24 }, good: { min: 12, max: 16 }, very_good: { min: 10.5, max: 13 }, excellent: { min: 9.99, max: 11.5 } },
+        rates: { nh: { min: 28, max: 36 }, very_poor: { min: 22, max: 36 }, poor: { min: 22, max: 36 }, average: { min: 18, max: 24 }, good: { min: 14, max: 18 }, very_good: { min: 11.8, max: 14 }, excellent: { min: 10.5, max: 13 } },
         ltv: { nh: 50, very_poor: 30, poor: 30, average: 60, good: 75, very_good: 90, excellent: 100 },
         notes: ['cibil.personalTip1', 'cibil.personalTip2'],
     },
     car_loan: {
         loanType: 'Car Loan', minBank: 700, minNBFC: 650, ideal: 750,
-        rates: { nh: { min: 10, max: 12 }, very_poor: { min: 14, max: 20 }, poor: { min: 14, max: 20 }, average: { min: 11, max: 14 }, good: { min: 9.5, max: 11.5 }, very_good: { min: 8.75, max: 10 }, excellent: { min: 8, max: 9.5 } },
+        rates: { nh: { min: 14.5, max: 20 }, very_poor: { min: 14.5, max: 20 }, poor: { min: 14.5, max: 20 }, average: { min: 12, max: 14.5 }, good: { min: 10.5, max: 12 }, very_good: { min: 9.75, max: 10.5 }, excellent: { min: 9, max: 9.75 } },
         ltv: { nh: 70, very_poor: 60, poor: 60, average: 75, good: 80, very_good: 85, excellent: 90 },
         notes: ['cibil.carTip1', 'cibil.carTip2'],
     },
     two_wheeler_loan: {
         loanType: 'Two Wheeler', minBank: 680, minNBFC: 600, ideal: 720,
-        rates: { nh: { min: 13, max: 17 }, very_poor: { min: 20, max: 30 }, poor: { min: 20, max: 30 }, average: { min: 15, max: 22 }, good: { min: 11, max: 16 }, very_good: { min: 9.5, max: 12 }, excellent: { min: 8.75, max: 10.5 } },
+        rates: { nh: { min: 20, max: 30 }, very_poor: { min: 20, max: 30 }, poor: { min: 20, max: 30 }, average: { min: 16, max: 22 }, good: { min: 13, max: 16 }, very_good: { min: 11, max: 13 }, excellent: { min: 9.5, max: 11 } },
         ltv: { nh: 75, very_poor: 65, poor: 65, average: 75, good: 85, very_good: 90, excellent: 100 },
         notes: ['cibil.twTip1'],
     },
@@ -78,7 +79,7 @@ export const LOAN_CIBIL_RATES: Record<string, LoanCibilConfig> = {
     },
     mortgage: {
         loanType: 'Mortgage', minBank: 700, minNBFC: 650, ideal: 760,
-        rates: { nh: { min: 9.5, max: 11 }, very_poor: { min: 10.5, max: 13 }, poor: { min: 10.5, max: 13 }, average: { min: 9.5, max: 11 }, good: { min: 8.85, max: 9.85 }, very_good: { min: 8.5, max: 9.25 }, excellent: { min: 8, max: 8.75 } },
+        rates: { nh: { min: 14, max: 16 }, very_poor: { min: 14, max: 16 }, poor: { min: 12, max: 14 }, average: { min: 10.5, max: 12 }, good: { min: 9.75, max: 10.5 }, very_good: { min: 9, max: 9.75 }, excellent: { min: 8.5, max: 9 } },
         ltv: { nh: 75, very_poor: 65, poor: 65, average: 75, good: 80, very_good: 85, excellent: 90 },
         notes: ['cibil.homeTip1', 'cibil.homeTip2', 'cibil.homeTip3'],
     },
