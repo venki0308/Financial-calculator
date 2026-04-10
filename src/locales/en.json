@@ -1279,7 +1279,7 @@
         "sec4Title": "Liability",
         "sec4Body": "FinCalix shall not be liable for any financial losses or decisions made based on the data provided within this application.",
         "acceptance": "By using this app, you acknowledge and agree to the terms outlined above.",
-        "lastUpdated": "Last updated · March 2026"
+        "lastUpdated": "Last updated · April 2026"
     },
     "dataSafety": {
         "title": "Data & Privacy",
@@ -1324,7 +1324,7 @@
         "title": "Privacy Policy",
         "heroTitle": "Your Privacy Matters",
         "heroDesc": "FinCalix collects <span class='text-brand-green font-bold'>zero personal data</span>. No backend, no database, no server-side storage. Everything stays on your device.",
-        "lastUpdated": "Last Updated: March 2026",
+        "lastUpdated": "Last Updated: April 2026",
         "sec1Title": "Information We Collect",
         "sec1Desc": "FinCalix does <strong class='text-foreground'>NOT</strong> collect any personal information whatsoever.",
         "sec1Li1": "No name, email address, phone number, or postal address is collected",
@@ -3525,7 +3525,7 @@
         },
         "prag": {
             "title": "Asset Allocation Guide",
-            "text": "Asset allocation recommendations are generated algorithmically based on your age, risk profile, and investment goals. They do not constitute personal financial advice. Expected returns and volatility figures are historical averages and may not reflect future performance. Rebalancing involves buying and selling assets which may trigger capital gains tax. Consult a SEBI-registered investment advisor or certified financial planner before making investment decisions. FinCalix is not a SEBI-registered investment advisor."
+            "text": "Asset allocation illustrations are generated algorithmically based on your age, risk profile, and investment goals. They are for educational purposes only and do not constitute personal financial advice. Expected returns and volatility figures are historical averages and may not reflect future performance. Rebalancing involves buying and selling assets which may trigger capital gains tax. Consult a SEBI-registered investment advisor or certified financial planner before making investment decisions. FinCalix is not a SEBI-registered investment advisor."
         },
         "welcome": "Welcome to FinCalix",
         "subtitle": "Please read before continuing",

@@ -20,7 +20,7 @@ import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
-// Current Post Office TD Rates (FY 2025-26)
+// Current Post Office TD Rates (Q1 FY 2026-27, April-June 2026)
 const TD_RATES: Record<string, number> = {
     '1': 6.9,
     '2': 7.0,
