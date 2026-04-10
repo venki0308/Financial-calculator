@@ -173,7 +173,7 @@ export default function GoldLoanCalculator() {
     const [purity, setPurity] = useState<Purity>('22K');
     const [goldRate24K, setGoldRate24K] = useState(DEFAULT_GOLD_RATE_24K);
     const [loanAmountNeeded, setLoanAmountNeeded] = useState(300000);
-    const [interestRate, setInterestRate] = useState(11);
+    const [interestRate, setInterestRate] = useState(11.0);
     const [tenureMonths, setTenureMonths] = useState(12);
     const [repaymentMode, setRepaymentMode] = useState<RepaymentMode>('emi');
 

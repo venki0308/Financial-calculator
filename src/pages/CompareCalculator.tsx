@@ -63,7 +63,7 @@ export default function CompareCalculator() {
     const c = useAppColors();
 
     // EMI states
-    const [emiA, setEmiA] = useState({ principal: 2000000, rate: 8.5, years: 20 });
+    const [emiA, setEmiA] = useState({ principal: 2000000, rate: 8.75, years: 20 });
     const [emiB, setEmiB] = useState({ principal: 2000000, rate: 9.5, years: 20 });
 
     // SIP states

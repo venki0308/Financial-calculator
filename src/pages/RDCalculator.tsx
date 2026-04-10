@@ -25,7 +25,7 @@ export default function RDCalculator() {
 
     // Base Inputs
     const [monthly, setMonthly] = useState(5000);
-    const [rate, setRate] = useState(6.7);
+    const [rate, setRate] = useState(6.75);
     const [months, setMonths] = useState(12);
     const [isSeniorCitizen, setIsSeniorCitizen] = useState(false);
     const effectiveRate = isSeniorCitizen ? rate + 0.5 : rate;
@@ -293,6 +293,7 @@ export default function RDCalculator() {
                                 <input type="number" step="0.1" value={rate} onChange={e => setRate(Number(e.target.value)||0)} className={inputCls + " pr-7 bg-muted/30 focus:bg-card"} />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
                             </div>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">Typical range 6.5-7.0% (Apr 2026)</p>
                         </div>
                         <div>
                             <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('rd.timePeriod')}</label>

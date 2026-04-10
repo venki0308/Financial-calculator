@@ -36,7 +36,7 @@ export default function FDCalculator() {
     const navigate = useNavigate();
     const { addSaved, removeSaved, savedCalculations } = useCalculatorStore();
     const [principal, setPrincipal] = useState(100000);
-    const [rate, setRate] = useState(7);
+    const [rate, setRate] = useState(7.0);
     const [years, setYears] = useState(5);
     const [compounding, setCompounding] = useState<number>(4);
     const [inflation, setInflation] = useState(5); // RBI FY 2025-26 CPI ~4.8%
@@ -279,7 +279,7 @@ export default function FDCalculator() {
 
                 <div className="space-y-3">
                     <NumberInput label={t('fd.depositAmount')} value={principal} onChange={setPrincipal} min={1000} max={10000000} prefix="₹" />
-                    <NumberInput label={t('fd.interestRate')} value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} />
+                    <NumberInput label={t('fd.interestRate')} value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText="Typical range 6.5-7.5% (Apr 2026)" />
                     <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border">
                         <div>
                             <span className="text-xs font-medium text-foreground">{t('fd.seniorCitizen')}</span>

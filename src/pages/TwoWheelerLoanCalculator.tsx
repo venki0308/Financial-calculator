@@ -46,7 +46,7 @@ export default function TwoWheelerLoanCalculator() {
     const [downPaymentPct, setDownPaymentPct] = useState(10);
     const [cibilIdx, setCibilIdx] = useState(0);
     const [isFemale, setIsFemale] = useState(false);
-    const [rate, setRate] = useState(12);
+    const [rate, setRate] = useState(11.5);
     const [tenureMonths, setTenureMonths] = useState(36);
     const [processingFee, setProcessingFee] = useState(1500);
     const [monthlyIncome, setMonthlyIncome] = useState(0);
@@ -500,7 +500,7 @@ export default function TwoWheelerLoanCalculator() {
                     </div>
                     <div>
                         <p className="text-[9px] mb-1 font-medium" style={{ color: c.textSecondary }}>{t('tw.suggestedRate')}: {suggestedRange[0]}% — {suggestedRange[1]}% {isFemale ? `(${t('tw.womenDiscountApplied')})` : ''}</p>
-                        <NumberInput label={t('tw.rate')} value={rate} onChange={setRate} min={1} max={36} suffix="%" step={0.25} />
+                        <NumberInput label={t('tw.rate')} value={rate} onChange={setRate} min={1} max={36} suffix="%" step={0.25} helperText="Typical range 10-15% (Apr 2026)" />
                     </div>
                     <div>
                         <label className="text-xs font-bold mb-1.5 block" style={{ color: c.textSecondary }}>{t('tw.tenure')}</label>

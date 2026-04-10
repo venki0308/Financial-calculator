@@ -57,7 +57,7 @@ export default function EMICalculator() {
     });
     const [method, setMethod] = useState<'reducing' | 'flat'>('reducing');
     const [principal, setPrincipal] = useState(3000000);
-    const [rate, setRate] = useState(8.5);
+    const [rate, setRate] = useState(8.75);
     const [tenure, setTenure] = useState(20);
     const [tenureUnit, setTenureUnit] = useState<'months' | 'years'>('years');
     const [showAmortization, setShowAmortization] = useState(false);
@@ -495,7 +495,7 @@ export default function EMICalculator() {
                         helperText={`${formatINR(config.minAmount)} - ${formatINR(config.maxAmount)}`} />
 
                     <NumberInput label={t('emi.interestRate')} value={rate} onChange={setRate}
-                        min={1} max={30} suffix="%" step={0.05} helperText="1% - 30%" />
+                        min={1} max={30} suffix="%" step={0.05} helperText="Typical range 8-14% (Apr 2026)" />
 
                     <div>
                         <div className="flex rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border p-1 mb-2">

@@ -44,7 +44,7 @@ export default function AdvancedMortgageCalculator() {
     // ─── Input State ────────────────────────────────────────────────────────
     const [propertyValue, setPropertyValue] = useState(10000000);
     const [downPayment, setDownPayment] = useState(2000000);
-    const [interestRate, setInterestRate] = useState(8.5);
+    const [interestRate, setInterestRate] = useState(8.75);
     const [tenureYears, setTenureYears] = useState(20);
     const [monthlyIncome, setMonthlyIncome] = useState(150000);
     const [loanRateType, setLoanRateType] = useState<'floating' | 'fixed'>('floating');
@@ -524,6 +524,7 @@ export default function AdvancedMortgageCalculator() {
                             max={20}
                             step={0.1}
                             suffix="%"
+                            helperText="Typical range 8.5-9.5% (Apr 2026)"
                         />
                         <NumberInput
                             label={t('mortgage.tenureYears')}
