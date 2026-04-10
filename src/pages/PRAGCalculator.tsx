@@ -136,7 +136,7 @@ export default function PRAGCalculator() {
         { label: t('prag.rebalanceMode', 'Rebalance Mode'), value: rebalanceMode },
       ],
       results: [
-        { label: t('prag.healthScore', 'Health Score'), value: `${result.portfolioHealthScore}/100 (${result.healthGrade})` },
+        { label: t('prag.healthScore', 'Health Score'), value: `${result.portfolioHealthScore}/100 (${t(result.healthGrade, result.healthGrade.replace('prag.grade', ''))})` },
         { label: t('prag.currentReturn', 'Current Expected Return'), value: `${result.currentExpectedReturn}%` },
         { label: t('prag.targetReturn', 'Target Expected Return'), value: `${result.targetExpectedReturn}%` },
         { label: t('prag.currentVolatility', 'Current Volatility'), value: `${result.currentVolatility}%` },
@@ -174,7 +174,7 @@ export default function PRAGCalculator() {
         { label: t('prag.totalPortfolio', 'Total Portfolio'), value: fmtINR(totalPortfolio) },
         { label: t('prag.riskAppetite', 'Risk Appetite'), value: risk },
         { label: t('prag.investmentGoal', 'Investment Goal'), value: goal },
-        { label: t('prag.investmentHorizon', 'Horizon'), value: `${horizon} years` },
+        { label: t('prag.investmentHorizon', 'Horizon'), value: `${horizon} ${t('prag.years', 'years')}` },
       ],
       results: [
         { label: t('prag.healthScore', 'Health Score'), value: `${result.portfolioHealthScore}/100` },
@@ -182,7 +182,7 @@ export default function PRAGCalculator() {
         { label: t('prag.targetReturn', 'Target Return'), value: `${result.targetExpectedReturn}%` },
       ],
       projectionTitle: t('prag.projectionTitle', '10-Year Growth Projection'),
-      projectionColumns: ['Year', 'Current Path', 'Target Path'],
+      projectionColumns: [t('prag.year', 'Year'), t('prag.currentPath', 'Current Path'), t('prag.targetPath', 'Target Path')],
       projectionRows: result.projections.map(p => [p.year, Math.round(p.currentValue), Math.round(p.targetValue)]),
       filename: `FinCalix_PRAG_Report_${dateTag()}`,
     };
@@ -538,7 +538,7 @@ export default function PRAGCalculator() {
                     className="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold mb-2"
                     style={{ backgroundColor: healthColor + '20', color: healthColor }}
                   >
-                    {result.healthGrade}
+                    {t(result.healthGrade, result.healthGrade.replace('prag.grade', ''))}
                   </div>
                   <p className="text-[11px] leading-snug" style={{ color: c.textSecondary }}>
                     {result.portfolioHealthScore >= 80
@@ -593,7 +593,7 @@ export default function PRAGCalculator() {
                           className="w-2 h-2 rounded-full flex-shrink-0"
                           style={{ backgroundColor: act.color }}
                         />
-                        <span className="truncate">{act.asset}</span>
+                        <span className="truncate">{t(`prag.${act.key}`, act.asset)}</span>
                       </span>
                       <span className="text-right text-[11px] font-medium" style={{ color: c.textSecondary }}>
                         {act.currentPercent}%
@@ -606,7 +606,7 @@ export default function PRAGCalculator() {
                           className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold"
                           style={{ backgroundColor: actionColor + '20', color: actionColor }}
                         >
-                          {act.action}
+                          {act.action === 'BUY' ? t('prag.actionBuy', 'BUY') : act.action === 'SELL' ? t('prag.actionSell', 'SELL') : t('prag.actionHold', 'HOLD')}
                         </span>
                       </span>
                       <span className="text-right text-[11px] font-bold" style={{ color: actionColor }}>
@@ -643,7 +643,7 @@ export default function PRAGCalculator() {
                         </span>
                         <span className="font-bold" style={{ color: c.text }}>
                           {fmtINR(result.newInvestmentPlan!.allocationPerMonth[a.key])}
-                          <span className="font-normal" style={{ color: c.textMuted }}>/mo</span>
+                          <span className="font-normal" style={{ color: c.textMuted }}>/{t('prag.mo', 'mo')}</span>
                         </span>
                       </div>
                     ))}

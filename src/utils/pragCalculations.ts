@@ -127,7 +127,8 @@ export function calculatePRAG(inputs: PRAGInputs): PRAGResults {
 
     // Portfolio health score
     const healthScore = calculateHealthScore(currentAllocation, targetAllocation, holdings);
-    const healthGrade = healthScore >= 80 ? 'Excellent' : healthScore >= 60 ? 'Good' : healthScore >= 40 ? 'Fair' : 'Poor';
+    const healthGradeKey = healthScore >= 80 ? 'prag.gradeExcellent' : healthScore >= 60 ? 'prag.gradeGood' : healthScore >= 40 ? 'prag.gradeFair' : 'prag.gradePoor';
+    const healthGrade = healthGradeKey; // consumers should use t(healthGrade, fallback)
 
     // 10-year projections
     const projections = [];

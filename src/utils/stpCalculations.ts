@@ -106,9 +106,10 @@ export function calculateSTP(inputs: STPInputs): STPResults {
         } else if (stpType === 'flex') {
             const base = flexBaseAmount || transferAmount;
             const mult = flexMultiplier || 1.5;
-            // Simulate: if target NAV dropped, transfer more
-            const navChange = Math.sin(i * 0.5) * 0.1; // simulated volatility
-            transfer = navChange < 0 ? base * mult : base;
+            // Flex STP: alternate between base and boosted amount
+            // In real markets, fund houses increase STP when P/E drops
+            // We simulate: odd installments = normal, even = boosted (averaging effect)
+            transfer = i % 3 === 0 ? base * mult : base;
         } else {
             transfer = transferAmount;
         }
@@ -117,16 +118,18 @@ export function calculateSTP(inputs: STPInputs): STPResults {
         transfer = Math.min(transfer, sourceAfterInterest);
         if (transfer <= 0 && stpType !== 'capital') break;
 
-        // Exit load (applied only before exit load free period)
+        // Exit load (applied within the lock-in period)
         const monthFromStart = i * intervalMonths;
         let exitLoad = 0;
         if (exitLoadPercent > 0 && monthFromStart <= exitLoadFreeMonths) {
             exitLoad = transfer * exitLoadPercent / 100;
         }
 
-        // Tax on source fund gains (debt fund — slab rate on all gains)
-        const gainsRatio = totalSourceInterest / Math.max(sourceAfterInterest, 1);
-        const gainsInTransfer = transfer * gainsRatio;
+        // Tax on source fund gains (debt fund — slab rate on proportional gains)
+        // Each transfer contains a proportional share of cost + gains
+        const costBasis = initialAmount; // original investment
+        const gainFraction = Math.max(0, (sourceAfterInterest - costBasis) / sourceAfterInterest);
+        const gainsInTransfer = transfer * gainFraction;
         const tax = gainsInTransfer * taxSlabPercent / 100;
 
         const netTransfer = transfer - exitLoad - tax;
