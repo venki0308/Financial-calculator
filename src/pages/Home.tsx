@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe, Search, X, Shield } from 'lucide-react';
+import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe, Search, X, Shield, Bike, Gem } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
@@ -55,6 +55,11 @@ const calcCatalog: Record<string, { icon: React.ElementType; color: string; labe
     '/calculator/scientific': { icon: Calculator, color: '#3B82F6', label: 'Scientific Calculator' },
     '/calculator/insurance': { icon: Shield, color: '#10B981', label: 'Insurance Calculator' },
     '/insurance-compare': { icon: GitCompare, color: '#06B6D4', label: 'Health Insurance' },
+    '/calculator/stp': { icon: RefreshCcw, color: '#06B6D4', label: 'STP Calculator' },
+    '/calculator/prag': { icon: PiggyBank, color: '#8B5CF6', label: 'Asset Rebalancer' },
+    '/two-wheeler-loan': { icon: Bike, color: '#EC4899', label: 'Two Wheeler Loan' },
+    '/gold-loan': { icon: Gem, color: '#EAB308', label: 'Gold Loan' },
+    '/cibil-score': { icon: BarChart3, color: '#8B5CF6', label: 'CIBIL Score' },
 };
 
 // Default items if history is empty

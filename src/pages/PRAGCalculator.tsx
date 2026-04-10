@@ -143,9 +143,9 @@ export default function PRAGCalculator() {
         { label: t('prag.targetVolatility', 'Target Volatility'), value: `${result.targetVolatility}%` },
       ],
       chart: {
-        type: 'pie',
+        type: 'pie' as const,
         segments: ASSET_CLASSES.filter(a => targetAllocation[a.key] > 0).map(a => ({
-          label: a.fallbackLabel,
+          label: t(a.labelKey, a.fallbackLabel),
           value: targetAllocation[a.key],
           color: a.color,
         })),
