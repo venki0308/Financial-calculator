@@ -81,49 +81,43 @@ export default function STPCalculator() {
     const stpBetter = stpAdvantage >= 0;
 
     // Export handlers
+    // PDF uses English labels — jsPDF Helvetica doesn't support Indian scripts
     const handleDownloadPDF = async () => {
         const tag = dateTag();
         const config: ExportConfig = {
-            title: t('stp.reportTitle', 'STP Calculator Report'),
+            title: 'STP Calculator Report',
             inputs: [
-                { label: t('stp.initialInvestment', 'Initial Investment'), value: `₹${initialAmount.toLocaleString('en-IN')}` },
-                { label: t('stp.transferAmount', 'Transfer Amount'), value: `₹${transferAmount.toLocaleString('en-IN')}` },
-                { label: t('stp.sourceReturn', 'Source Fund Return'), value: `${sourceRate}% p.a.` },
-                { label: t('stp.targetReturn', 'Target Fund Return'), value: `${targetRate}% p.a.` },
-                { label: t('stp.duration', 'Duration'), value: `${durationMonths} ${t('stp.months', 'months')}` },
-                { label: t('stp.stpType', 'STP Type'), value: stpType.charAt(0).toUpperCase() + stpType.slice(1) },
+                { label: 'Initial Investment', value: `INR ${initialAmount.toLocaleString('en-IN')}` },
+                { label: 'Transfer Amount', value: `INR ${transferAmount.toLocaleString('en-IN')}` },
+                { label: 'Source Fund Return', value: `${sourceRate}% p.a.` },
+                { label: 'Target Fund Return', value: `${targetRate}% p.a.` },
+                { label: 'Duration', value: `${durationMonths} months` },
+                { label: 'STP Type', value: stpType.charAt(0).toUpperCase() + stpType.slice(1) },
             ],
             results: [
-                { label: t('stp.totalPortfolio', 'Total Portfolio Value'), value: `₹${result.totalPortfolioValue.toLocaleString('en-IN')}` },
-                { label: t('stp.targetValue', 'Target Fund Value'), value: `₹${result.finalTargetValue.toLocaleString('en-IN')}` },
-                { label: t('stp.sourceRemaining', 'Source Fund Remaining'), value: `₹${Math.round(result.finalSourceBalance).toLocaleString('en-IN')}` },
-                { label: t('stp.lumpsumComparison', 'Lumpsum Comparison'), value: `₹${result.lumpsumDirectComparison.toLocaleString('en-IN')}` },
-                { label: t('stp.avgPurchasePrice', 'Avg Purchase Price'), value: `₹${result.averagePurchasePrice}` },
-                { label: t('stp.totalInstallments', 'Total Installments'), value: `${result.numberOfInstallments}` },
+                { label: 'Total Portfolio Value', value: `INR ${result.totalPortfolioValue.toLocaleString('en-IN')}` },
+                { label: 'Target Fund Value', value: `INR ${result.finalTargetValue.toLocaleString('en-IN')}` },
+                { label: 'Source Fund Remaining', value: `INR ${Math.round(result.finalSourceBalance).toLocaleString('en-IN')}` },
+                { label: 'Lumpsum Comparison', value: `INR ${result.lumpsumDirectComparison.toLocaleString('en-IN')}` },
+                { label: 'Avg Purchase Price', value: `INR ${result.averagePurchasePrice}` },
+                { label: 'Total Installments', value: `${result.numberOfInstallments}` },
             ],
             chart: {
                 type: 'pie' as const,
                 segments: [
-                    { label: t('stp.sourceResidual', 'Source Residual'), value: Math.max(0, result.finalSourceBalance), color: '#3B82F6' },
-                    { label: t('stp.targetAccumulated', 'Target Accumulated'), value: result.finalTargetValue, color: '#10B981' },
+                    { label: 'Source Residual', value: Math.max(0, result.finalSourceBalance), color: '#3B82F6' },
+                    { label: 'Target Accumulated', value: result.finalTargetValue, color: '#10B981' },
                 ],
             },
-            projectionTitle: t('stp.monthlySchedule', 'Monthly Transfer Schedule'),
-            projectionColumns: [
-                t('stp.colMonth', 'Month'),
-                t('stp.colSourceOpen', 'Source Open'),
-                t('stp.colTransfer', 'Transfer'),
-                t('stp.colNetTransfer', 'Net Transfer'),
-                t('stp.colSourceClose', 'Source Close'),
-                t('stp.colTargetValue', 'Target Value'),
-            ],
+            projectionTitle: 'Monthly Transfer Schedule',
+            projectionColumns: ['Month', 'Source Open', 'Transfer', 'Net Transfer', 'Source Close', 'Target Value'],
             projectionRows: result.schedule.map((r) => [
-                `${t('stp.monthLabel', 'M')}${r.month}`,
-                `₹${Math.round(r.sourceOpening).toLocaleString('en-IN')}`,
-                `₹${Math.round(r.transferAmount).toLocaleString('en-IN')}`,
-                `₹${Math.round(r.netTransfer).toLocaleString('en-IN')}`,
-                `₹${Math.round(r.sourceClosing).toLocaleString('en-IN')}`,
-                `₹${Math.round(r.targetValueAccumulated).toLocaleString('en-IN')}`,
+                `M${r.month}`,
+                `INR ${Math.round(r.sourceOpening).toLocaleString('en-IN')}`,
+                `INR ${Math.round(r.transferAmount).toLocaleString('en-IN')}`,
+                `INR ${Math.round(r.netTransfer).toLocaleString('en-IN')}`,
+                `INR ${Math.round(r.sourceClosing).toLocaleString('en-IN')}`,
+                `INR ${Math.round(r.targetValueAccumulated).toLocaleString('en-IN')}`,
             ]),
             filename: `FinCalix_STP_Report_${tag}`,
         };
@@ -133,32 +127,21 @@ export default function STPCalculator() {
     const handleDownloadExcel = async () => {
         const tag = dateTag();
         const config: ExportConfig = {
-            title: t('stp.reportTitle', 'STP Calculator Report'),
+            title: 'STP Calculator Report',
             inputs: [
-                { label: t('stp.initialInvestment', 'Initial Investment'), value: `₹${initialAmount.toLocaleString('en-IN')}` },
-                { label: t('stp.transferAmount', 'Transfer Amount'), value: `₹${transferAmount.toLocaleString('en-IN')}` },
-                { label: t('stp.sourceReturn', 'Source Fund Return'), value: `${sourceRate}% p.a.` },
-                { label: t('stp.targetReturn', 'Target Fund Return'), value: `${targetRate}% p.a.` },
-                { label: t('stp.duration', 'Duration'), value: `${durationMonths} ${t('stp.months', 'months')}` },
+                { label: 'Initial Investment', value: `INR ${initialAmount.toLocaleString('en-IN')}` },
+                { label: 'Transfer Amount', value: `INR ${transferAmount.toLocaleString('en-IN')}` },
+                { label: 'Source Fund Return', value: `${sourceRate}% p.a.` },
+                { label: 'Target Fund Return', value: `${targetRate}% p.a.` },
+                { label: 'Duration', value: `${durationMonths} months` },
             ],
             results: [
-                { label: t('stp.totalPortfolio', 'Total Portfolio Value'), value: `₹${result.totalPortfolioValue.toLocaleString('en-IN')}` },
-                { label: t('stp.targetValue', 'Target Fund Value'), value: `₹${result.finalTargetValue.toLocaleString('en-IN')}` },
-                { label: t('stp.sourceRemaining', 'Source Fund Remaining'), value: `₹${Math.round(result.finalSourceBalance).toLocaleString('en-IN')}` },
+                { label: 'Total Portfolio Value', value: `INR ${result.totalPortfolioValue.toLocaleString('en-IN')}` },
+                { label: 'Target Fund Value', value: `INR ${result.finalTargetValue.toLocaleString('en-IN')}` },
+                { label: 'Source Fund Remaining', value: `INR ${Math.round(result.finalSourceBalance).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: t('stp.monthlySchedule', 'Monthly Transfer Schedule'),
-            projectionColumns: [
-                t('stp.colMonth', 'Month'),
-                t('stp.colSourceOpen', 'Source Open'),
-                t('stp.colInterest', 'Interest'),
-                t('stp.colTransfer', 'Transfer'),
-                t('stp.colExitLoad', 'Exit Load'),
-                t('stp.colTax', 'Tax'),
-                t('stp.colNetTransfer', 'Net Transfer'),
-                t('stp.colSourceClose', 'Source Close'),
-                t('stp.colNAV', 'NAV'),
-                t('stp.colTargetValue', 'Target Value'),
-            ],
+            projectionTitle: 'Monthly Transfer Schedule',
+            projectionColumns: ['Month', 'Source Open', 'Interest', 'Transfer', 'Exit Load', 'Tax', 'Net Transfer', 'Source Close', 'NAV', 'Target Value'],
             projectionRows: result.schedule.map((r) => [
                 r.month,
                 Math.round(r.sourceOpening),

@@ -124,40 +124,37 @@ export default function PRAGCalculator() {
         ? '#eab308'
         : '#ef4444';
 
-  // ---- Export PDF ----
+  // PDF/Excel use English labels — jsPDF Helvetica doesn't support Indian scripts
   const handleExportPDF = async () => {
+    const gradeMap: Record<string, string> = { 'prag.gradeExcellent': 'Excellent', 'prag.gradeGood': 'Good', 'prag.gradeFair': 'Fair', 'prag.gradePoor': 'Poor' };
     const config: ExportConfig = {
-      title: t('prag.reportTitle', 'Portfolio Rebalancing & Allocation Guide'),
+      title: 'Portfolio Rebalancing & Allocation Guide',
       inputs: [
-        { label: t('prag.totalPortfolio', 'Total Portfolio'), value: fmtINR(totalPortfolio) },
-        { label: t('prag.riskAppetite', 'Risk Appetite'), value: risk },
-        { label: t('prag.investmentGoal', 'Investment Goal'), value: goal },
-        { label: t('prag.investmentHorizon', 'Horizon'), value: `${horizon} ${t('prag.years', 'years')}` },
-        { label: t('prag.rebalanceMode', 'Rebalance Mode'), value: rebalanceMode },
+        { label: 'Total Portfolio', value: fmtINR(totalPortfolio) },
+        { label: 'Risk Appetite', value: risk },
+        { label: 'Investment Goal', value: goal },
+        { label: 'Horizon', value: `${horizon} years` },
+        { label: 'Rebalance Mode', value: rebalanceMode },
       ],
       results: [
-        { label: t('prag.healthScore', 'Health Score'), value: `${result.portfolioHealthScore}/100 (${t(result.healthGrade, result.healthGrade.replace('prag.grade', ''))})` },
-        { label: t('prag.currentReturn', 'Current Expected Return'), value: `${result.currentExpectedReturn}%` },
-        { label: t('prag.targetReturn', 'Target Expected Return'), value: `${result.targetExpectedReturn}%` },
-        { label: t('prag.currentVolatility', 'Current Volatility'), value: `${result.currentVolatility}%` },
-        { label: t('prag.targetVolatility', 'Target Volatility'), value: `${result.targetVolatility}%` },
+        { label: 'Health Score', value: `${result.portfolioHealthScore}/100 (${gradeMap[result.healthGrade] || result.healthGrade})` },
+        { label: 'Current Expected Return', value: `${result.currentExpectedReturn}%` },
+        { label: 'Target Expected Return', value: `${result.targetExpectedReturn}%` },
+        { label: 'Current Volatility', value: `${result.currentVolatility}%` },
+        { label: 'Target Volatility', value: `${result.targetVolatility}%` },
       ],
       chart: {
         type: 'pie' as const,
         segments: ASSET_CLASSES.filter(a => targetAllocation[a.key] > 0).map(a => ({
-          label: t(a.labelKey, a.fallbackLabel),
+          label: a.fallbackLabel,
           value: targetAllocation[a.key],
           color: a.color,
         })),
       },
-      projectionTitle: t('prag.projectionTitle', '10-Year Growth Projection'),
-      projectionColumns: [
-        t('prag.year', 'Year'),
-        t('prag.currentGrowth', 'Current Path'),
-        t('prag.targetGrowth', 'Target Path'),
-      ],
+      projectionTitle: '10-Year Growth Projection',
+      projectionColumns: ['Year', 'Current Path', 'Target Path'],
       projectionRows: result.projections.map(p => [
-        `${t('prag.year', 'Year')} ${p.year}`,
+        `Year ${p.year}`,
         fmtINR(p.currentValue),
         fmtINR(p.targetValue),
       ]),
@@ -169,20 +166,20 @@ export default function PRAGCalculator() {
   // ---- Export Excel ----
   const handleExportExcel = async () => {
     const config: ExportConfig = {
-      title: t('prag.reportTitle', 'Portfolio Rebalancing & Allocation Guide'),
+      title: 'Portfolio Rebalancing & Allocation Guide',
       inputs: [
-        { label: t('prag.totalPortfolio', 'Total Portfolio'), value: fmtINR(totalPortfolio) },
-        { label: t('prag.riskAppetite', 'Risk Appetite'), value: risk },
-        { label: t('prag.investmentGoal', 'Investment Goal'), value: goal },
-        { label: t('prag.investmentHorizon', 'Horizon'), value: `${horizon} ${t('prag.years', 'years')}` },
+        { label: 'Total Portfolio', value: fmtINR(totalPortfolio) },
+        { label: 'Risk Appetite', value: risk },
+        { label: 'Investment Goal', value: goal },
+        { label: 'Horizon', value: `${horizon} years` },
       ],
       results: [
-        { label: t('prag.healthScore', 'Health Score'), value: `${result.portfolioHealthScore}/100` },
-        { label: t('prag.currentReturn', 'Current Return'), value: `${result.currentExpectedReturn}%` },
-        { label: t('prag.targetReturn', 'Target Return'), value: `${result.targetExpectedReturn}%` },
+        { label: 'Health Score', value: `${result.portfolioHealthScore}/100` },
+        { label: 'Current Return', value: `${result.currentExpectedReturn}%` },
+        { label: 'Target Return', value: `${result.targetExpectedReturn}%` },
       ],
-      projectionTitle: t('prag.projectionTitle', '10-Year Growth Projection'),
-      projectionColumns: [t('prag.year', 'Year'), t('prag.currentPath', 'Current Path'), t('prag.targetPath', 'Target Path')],
+      projectionTitle: '10-Year Growth Projection',
+      projectionColumns: ['Year', 'Current Path', 'Target Path'],
       projectionRows: result.projections.map(p => [p.year, Math.round(p.currentValue), Math.round(p.targetValue)]),
       filename: `FinCalix_PRAG_Report_${dateTag()}`,
     };
