@@ -229,6 +229,135 @@ export interface WeeklyReportData {
     subscriptions?: PDFSubscription[];
 }
 
+/** Pre-translated labels for the monthly PDF (i18n owned by the caller). */
+export interface MonthlyReportLabels {
+    monthlyFinancialReport: string;
+    brandName: string;
+    localDataNote: string;
+    footerBrand: string;
+    footerDisclaimer: string;
+    pageOf: string;
+    disclaimerTitle: string;
+    disclaimerBody: string;
+    financialSummary: string;
+    totalIncome: string;
+    totalExpenses: string;
+    totalInvested: string;
+    netSavings: string;
+    savingsRateLabel: string;
+    cashFlowActual: string;
+    loggedExpenses: string;
+    recurringSubscriptions: string;
+    totalOutflow: string;
+    loggedPlusRecurring: string;
+    investments: string;
+    positive: string;
+    negative: string;
+    savingsRate: string;
+    target20: string;
+    metric: string;
+    amount: string;
+    notes: string;
+    budgetPlanVsActual: string;
+    noIncomeLogged: string;
+    noSpendingLogged: string;
+    onPlan: string;
+    ok: string;
+    over: string;
+    planned: string;
+    actual: string;
+    variance: string;
+    income: string;
+    fixedCategoryBudgets: string;
+    estNetSavings: string;
+    budgetPlanNote: string;
+    budgetSetup: string;
+    fixedMonthlyExpenses: string;
+    totalFixed: string;
+    categorySpendingLimit: string;
+    monthlyLimit: string;
+    total: string;
+    recurringSubscription: string;
+    cycle: string;
+    monthlyCost: string;
+    investmentTarget: string;
+    monthlyTarget: string;
+    totalInvestments: string;
+    plannedMonthlySavings: string;
+    weekByWeekSummary: string;
+    week: string;
+    period: string;
+    expenses: string;
+    net: string;
+    spendingByCategory: string;
+    rank: string;
+    category: string;
+    pctOfTotal: string;
+    dailyAvg: string;
+    topExpenses: string;
+    date: string;
+    description: string;
+    incomeSources: string;
+    source: string;
+    investmentsThisMonth: string;
+    note: string;
+    subscriptionCommitments: string;
+    quarterly: string;
+    yearly: string;
+    monthly: string;
+    subscription: string;
+    billed: string;
+    monthlyEquivalent: string;
+    nextAnnual: string;
+    perYear: string;
+    budgetVsActual: string;
+    onTrack: string;
+    overBudget: string;
+    underBudget: string;
+    noLimitSet: string;
+    budget: string;
+    status: string;
+    completeTransactionLog: string;
+    type: string;
+    noTransactions: string;
+    truncationNote: string;
+    accountBalances: string;
+    account: string;
+    bank: string;
+    balance: string;
+    billingThisMonth: string;
+    billingsThisMonth: string;
+    ofIncome: string;
+    entries_zero: string;
+    entries_one: string;
+    entries_other: string;
+    monthOverMonth: string;
+    thisMonth: string;
+    lastMonth: string;
+    change: string;
+    noData: string;
+    rule503020: string;
+    needs50: string;
+    wants30: string;
+    savingsInvest20: string;
+    recommended: string;
+    rule503020Note: string;
+    smartInsights: string;
+    impact: string;
+    insight: string;
+    detail: string;
+    value: string;
+    actionNeeded: string;
+    onTrackInsight: string;
+    noteInsight: string;
+    monthHighlights: string;
+    highestSpendDay: string;
+    activeDays: string;
+    daysOfMonth: string;
+    expenseVelocity: string;
+    basedOnDailyAvg: string;
+}
+
 export interface MonthlyReportData {
     year: number;
     month: number;            // 1-12
@@ -239,6 +368,17 @@ export interface MonthlyReportData {
     /** All active subscriptions — counted in the monthly cash flow + listed
      *  in a "Subscription Commitments" section at the end of the report. */
     subscriptions?: PDFSubscription[];
+    /** Pre-translated labels for i18n support (optional — falls back to English). */
+    labels?: MonthlyReportLabels;
+    /** Previous month entries for month-over-month comparison. */
+    prevMonthEntries?: Entry[];
+    /** Previous month subscriptions for MoM comparison. */
+    prevMonthSubscriptions?: PDFSubscription[];
+    /** Previous month year/month for MoM subscription billing calc. */
+    prevYear?: number;
+    prevMonth?: number;
+    /** Pre-translated insight rows (i18n is owned by the caller). */
+    insights?: { title: string; description: string; value?: string; tone: string }[];
 }
 
 export interface AnnualReportData {
@@ -1252,8 +1392,13 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     const { jsPDF, autoTable } = await getJsPDF();
     await yieldToUI();
 
+    // ── LABELS (i18n): fall back to English when caller doesn't provide ──
+    const L = data.labels ?? {} as Partial<MonthlyReportLabels>;
+    const l = (key: keyof MonthlyReportLabels, fallback: string): string =>
+        (L as Record<string, string | undefined>)[key] ?? fallback;
+
     const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-    const reportType = 'Monthly Financial Report';
+    const reportType = l('monthlyFinancialReport', 'Monthly Financial Report');
     const periodLabel = data.monthLabel;
 
     setReportContext(doc, reportType, periodLabel);
@@ -1313,15 +1458,15 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         : 0;
 
     // ── PAGE 1: EXECUTIVE SUMMARY ───────────────────────────────────────
-    yPos = drawSectionHeader(doc, `${data.monthLabel} Financial Summary`, yPos);
+    yPos = drawSectionHeader(doc, l('financialSummary', `${data.monthLabel} Financial Summary`).replace('{{month}}', data.monthLabel), yPos);
 
     yPos = drawStatBoxes(doc, [
-        { label: 'Total Income', value: formatINR(summary.totalIncome), tone: 'income' },
-        { label: 'Total Expenses', value: formatINR(effectiveExpenses), tone: 'expense' },
+        { label: l('totalIncome', 'Total Income'), value: formatINR(summary.totalIncome), tone: 'income' },
+        { label: l('totalExpenses', 'Total Expenses'), value: formatINR(effectiveExpenses), tone: 'expense' },
     ], yPos);
     yPos = drawStatBoxes(doc, [
-        { label: 'Total Invested', value: formatINR(summary.totalInvestments), tone: 'investment' },
-        { label: 'Net Savings', value: formatINR(effectiveNetSavings), tone: effectiveNetSavings >= 0 ? 'income' : 'expense' },
+        { label: l('totalInvested', 'Total Invested'), value: formatINR(summary.totalInvestments), tone: 'investment' },
+        { label: l('netSavings', 'Net Savings'), value: formatINR(effectiveNetSavings), tone: effectiveNetSavings >= 0 ? 'income' : 'expense' },
     ], yPos);
 
     // Savings Rate badge + progress bar
@@ -1329,7 +1474,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...TEXT);
-    doc.text('Savings Rate:', 15, yPos);
+    doc.text(l('savingsRateLabel', 'Savings Rate:'), 15, yPos);
     const rateText = `${effectiveSavingsRate.toFixed(1)}%   -   ${savingsGrade(effectiveSavingsRate)}`;
     doc.setTextColor(...(effectiveSavingsRate >= 20 ? INCOME : effectiveSavingsRate >= 10 ? [202, 138, 4] as [number, number, number] : EXPENSE));
     doc.text(rateText, 42, yPos);
@@ -1346,47 +1491,45 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     doc.setFont('helvetica', 'normal');
 
     // ── SECTION 1: CASH FLOW (ACTUAL — what was logged) ─────────────────
-    // Pure actual-data table so the math is internally consistent. Earlier
-    // versions mixed budget-sourced "Fixed Expenses" with actual totals which
-    // produced contradictory rows (e.g. Fixed 72k + Variable 0 ≠ Total 1k).
-    // Budget-side numbers now live in their own "Budget Plan vs Actual"
-    // section below so the user sees both, clearly labelled.
-    yPos = drawSectionHeader(doc, `${data.monthLabel} Cash Flow (Actual)`, yPos);
+    yPos = drawSectionHeader(doc, l('cashFlowActual', `${data.monthLabel} Cash Flow (Actual)`).replace('{{month}}', data.monthLabel), yPos);
 
     const investPct = summary.totalIncome > 0 ? (summary.totalInvestments / summary.totalIncome) * 100 : 0;
 
-    // Body rows: separate the LOGGED-ONLY expense total from the
-    // sub-billed portion so the user can see both figures clearly.
-    // Note: `summary.totalExpenses` already includes the merged sub
-    // entries — we recompute the logged-only total from data.entries
-    // here for the breakdown row.
     const loggedOnlyExpenses = data.entries
         .filter(e => e.type === 'expense')
         .reduce((s, e) => s + e.amount, 0);
     const loggedOnlyExpenseCount = data.entries.filter(e => e.type === 'expense').length;
 
+    const lEntries = (n: number): string =>
+        n === 0 ? l('entries_zero', '0 entries')
+        : n === 1 ? l('entries_one', '1 entry')
+        : l('entries_other', `${n} entries`).replace('{{count}}', String(n));
+
     const cashFlowBody: (string | number)[][] = [
-        ['Total Income', formatINR(summary.totalIncome), entriesLabel(summary.incomeCount)],
-        ['Logged Expenses', formatINR(loggedOnlyExpenses), entriesLabel(loggedOnlyExpenseCount)],
+        [l('totalIncome', 'Total Income'), formatINR(summary.totalIncome), lEntries(summary.incomeCount)],
+        [l('loggedExpenses', 'Logged Expenses'), formatINR(loggedOnlyExpenses), lEntries(loggedOnlyExpenseCount)],
     ];
     if (subsMonthBilled > 0) {
+        const billingLabel = monthSubBillings.length === 1
+            ? l('billingThisMonth', '1 billing this month').replace('{{count}}', '1')
+            : l('billingsThisMonth', `${monthSubBillings.length} billings this month`).replace('{{count}}', String(monthSubBillings.length));
         cashFlowBody.push([
-            'Recurring Subscriptions',
+            l('recurringSubscriptions', 'Recurring Subscriptions'),
             formatINR(subsMonthBilled),
-            `${monthSubBillings.length} billing${monthSubBillings.length === 1 ? '' : 's'} this month`,
+            billingLabel,
         ]);
         cashFlowBody.push([
-            'Total Outflow',
+            l('totalOutflow', 'Total Outflow'),
             formatINR(effectiveExpenses),
-            'Logged + recurring',
+            l('loggedPlusRecurring', 'Logged + recurring'),
         ]);
     }
-    cashFlowBody.push(['Investments', formatINR(summary.totalInvestments), summary.totalIncome > 0 ? `${investPct.toFixed(1)}% of income` : entriesLabel(summary.investmentCount)]);
-    cashFlowBody.push(['Net Savings', formatINR(effectiveNetSavings), effectiveNetSavings >= 0 ? 'Positive' : 'Negative']);
-    cashFlowBody.push(['Savings Rate', `${effectiveSavingsRate.toFixed(1)}%`, 'Target: 20%']);
+    cashFlowBody.push([l('investments', 'Investments'), formatINR(summary.totalInvestments), summary.totalIncome > 0 ? l('ofIncome', `${investPct.toFixed(1)}% of income`).replace('{{pct}}', investPct.toFixed(1)) : lEntries(summary.investmentCount)]);
+    cashFlowBody.push([l('netSavings', 'Net Savings'), formatINR(effectiveNetSavings), effectiveNetSavings >= 0 ? l('positive', 'Positive') : l('negative', 'Negative')]);
+    cashFlowBody.push([l('savingsRate', 'Savings Rate'), `${effectiveSavingsRate.toFixed(1)}%`, l('target20', 'Target: 20%')]);
 
     table(doc, autoTable, {
-        head: [['Metric', 'Amount', 'Notes']],
+        head: [[l('metric', 'Metric'), l('amount', 'Amount'), l('notes', 'Notes')]],
         body: cashFlowBody,
         startY: yPos,
         headerHook,
@@ -1395,69 +1538,37 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
 
     // ── SECTION 1B: BUDGET PLAN vs ACTUAL ───────────────────────────────
-    // Only rendered when the user has actually set up a budget for this
-    // month. Shows planned income / fixed expenses / category limits / est
-    // savings side-by-side with what was logged, plus a per-row variance
-    // and a green-or-red status. This is what users expect when their
-    // monthly budget says "₹1.32L income, ₹12k est savings" but they
-    // haven't yet logged any income transactions for the month.
     if (data.budget) {
         const plannedIncome = data.budget.monthlyIncome ?? 0;
         const plannedFixed = data.budget.fixedExpenses.reduce((s, f) => s + f.amount, 0);
         const plannedCategoryLimits = data.budget.categoryLimits.reduce((s, c) => s + c.monthlyLimit, 0);
         const plannedInvestments = data.budget.investmentTargets?.reduce((s, t) => s + t.monthlyTarget, 0) ?? 0;
-        // Estimated savings = income − fixed − category limits − investment targets.
-        // This matches the "Est. Savings" line shown in the in-app Budget
-        // sheet, so the PDF stays consistent with what the user already saw.
         const estSavings = plannedIncome - plannedFixed - plannedCategoryLimits - plannedInvestments;
 
-        // Only render if there's at least one non-zero planned figure — an
-        // empty budget object adds no information.
         if (plannedIncome > 0 || plannedFixed > 0 || plannedCategoryLimits > 0 || plannedInvestments > 0) {
-            yPos = drawSectionHeader(doc, `${data.monthLabel} Budget Plan vs Actual`, yPos);
+            yPos = drawSectionHeader(doc, l('budgetPlanVsActual', `${data.monthLabel} Budget Plan vs Actual`).replace('{{month}}', data.monthLabel), yPos);
 
-            // Variance helper: positive = good (more income / less expense
-            // than planned), negative = bad. We swap the sign for income
-            // because for income, "actual > planned" is good.
-            //
-            // BUG 6.5 fix: when income is planned but no income entries
-            // exist, the old code rendered "—" + a confusing "Not yet
-            // logged" badge. Now: show "Rs. 0" in the Actual cell so
-            // the math is explicit, and label the variance with a
-            // crisp "No income logged" warning. Same pattern for the
-            // expenses / investments rows when they're empty.
             const varianceLabel = (planned: number, actual: number, isIncome: boolean): string => {
                 if (planned > 0 && actual === 0) {
-                    return isIncome ? 'No income logged' : 'No spending logged';
+                    return isIncome ? l('noIncomeLogged', 'No income logged') : l('noSpendingLogged', 'No spending logged');
                 }
                 const diff = actual - planned;
-                if (diff === 0) return 'On plan';
+                if (diff === 0) return l('onPlan', 'On plan');
                 const good = isIncome ? diff > 0 : diff < 0;
                 const sign = diff > 0 ? '+' : '';
-                return `${sign}${formatINR(diff)} ${good ? 'OK' : 'Over'}`;
+                return `${sign}${formatINR(diff)} ${good ? l('ok', 'OK') : l('over', 'Over')}`;
             };
 
-            // Actual side of "Expenses": summary.totalExpenses ALREADY
-            // includes recurring sub billings (mergedMonthEntries pipeline).
-            // Don't double-count by adding subsMonthlyTotal again here.
             const actualExpensesWithSubs = summary.totalExpenses;
             const plannedExpenses = plannedFixed + plannedCategoryLimits;
 
-            // BUG 6.5 fix: Always show explicit Rs. 0 (not "—") in the
-            // Actual column when planned > 0 but actual = 0. The old
-            // "—" + "Not yet logged" combo made the column look broken.
-            const actualIncomeCell = formatINR(summary.totalIncome);
-            const actualExpensesCell = formatINR(actualExpensesWithSubs);
-            const actualInvCell = formatINR(summary.totalInvestments);
-            const actualSavingsCell = formatINR(effectiveNetSavings);
-
             table(doc, autoTable, {
-                head: [['Metric', 'Planned', 'Actual', 'Variance']],
+                head: [[l('metric', 'Metric'), l('planned', 'Planned'), l('actual', 'Actual'), l('variance', 'Variance')]],
                 body: [
-                    ['Income', formatINR(plannedIncome), actualIncomeCell, varianceLabel(plannedIncome, summary.totalIncome, true)],
-                    ['Fixed + Category Budgets', formatINR(plannedExpenses), actualExpensesCell, varianceLabel(plannedExpenses, actualExpensesWithSubs, false)],
-                    ['Investments', formatINR(plannedInvestments), actualInvCell, varianceLabel(plannedInvestments, summary.totalInvestments, true)],
-                    ['Est. / Net Savings', formatINR(estSavings), actualSavingsCell, varianceLabel(estSavings, effectiveNetSavings, true)],
+                    [l('income', 'Income'), formatINR(plannedIncome), formatINR(summary.totalIncome), varianceLabel(plannedIncome, summary.totalIncome, true)],
+                    [l('fixedCategoryBudgets', 'Fixed + Category Budgets'), formatINR(plannedExpenses), formatINR(actualExpensesWithSubs), varianceLabel(plannedExpenses, actualExpensesWithSubs, false)],
+                    [l('investments', 'Investments'), formatINR(plannedInvestments), formatINR(summary.totalInvestments), varianceLabel(plannedInvestments, summary.totalInvestments, true)],
+                    [l('estNetSavings', 'Est. / Net Savings'), formatINR(estSavings), formatINR(effectiveNetSavings), varianceLabel(estSavings, effectiveNetSavings, true)],
                 ],
                 startY: yPos,
                 headerHook,
@@ -1469,19 +1580,10 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             });
             yPos = (doc as PDFDoc).lastAutoTable.finalY + 4;
 
-            // Helper note so the user understands WHY "actual" can be blank
-            // or differ from the in-app BudgetTab numbers. This block was
-            // the source of "i gave all the details those showing pdf and
-            // not showing in reports" — the user entered BUDGET PLAN values
-            // in BudgetTab but the PDF's "actual" column reads from logged
-            // day-to-day entries, which is a different data set.
             doc.setFontSize(8);
             doc.setTextColor(...MUTED);
             doc.setFont('helvetica', 'italic');
-            const noteLines = doc.splitTextToSize(
-                s('Note: "Planned" = amounts you entered in the Budget tab. "Actual" = amounts logged as income / expense / investment entries plus recurring subscription billings that have already occurred this month. A "No income logged" or "No spending logged" warning means you set a plan but haven\'t recorded matching transactions yet.'),
-                180,
-            );
+            const noteLines = doc.splitTextToSize(s(l('budgetPlanNote', 'Note: "Planned" = amounts you entered in the Budget tab. "Actual" = amounts logged as income / expense / investment entries plus recurring subscription billings that have already occurred this month. A "No income logged" or "No spending logged" warning means you set a plan but haven\'t recorded matching transactions yet.')), 180);
             noteLines.forEach((line: string) => {
                 yPos = ensureRoom(doc, yPos, 5);
                 doc.text(line, 15, yPos);
@@ -1494,28 +1596,22 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         }
 
         // ── SECTION 1C: BUDGET SNAPSHOT ────────────────────────
-        // BUG 6.7 fix: render the user's full budget setup so the
-        // PDF includes everything from BudgetTab — fixed expenses
-        // breakdown, category limits, investment targets, and the
-        // computed planned monthly savings. This lets the user (or
-        // their CA) see the complete plan in one document.
         const fixedRows = data.budget.fixedExpenses.filter(f => f.amount > 0);
         const limitRows = data.budget.categoryLimits.filter(c => c.monthlyLimit > 0);
         const targetRows = (data.budget.investmentTargets ?? []).filter(t => t.monthlyTarget > 0);
 
         if (fixedRows.length > 0 || limitRows.length > 0 || targetRows.length > 0 || activeSubs.length > 0) {
-            yPos = drawSectionHeader(doc, `Your Budget Setup - ${data.monthLabel}`, yPos);
+            yPos = drawSectionHeader(doc, l('budgetSetup', `Your Budget Setup - ${data.monthLabel}`).replace('{{month}}', data.monthLabel), yPos);
 
-            // Fixed Monthly Expenses
             if (fixedRows.length > 0) {
                 const fixBody: (string | number)[][] = fixedRows.map(f => [
                     f.name || (getCategoryById(f.category)?.name ?? f.category),
                     formatINR(f.amount),
                 ]);
                 const fixTotal = fixedRows.reduce((s, f) => s + f.amount, 0);
-                fixBody.push(['TOTAL Fixed', formatINR(fixTotal)]);
+                fixBody.push([l('totalFixed', 'TOTAL Fixed'), formatINR(fixTotal)]);
                 table(doc, autoTable, {
-                    head: [['Fixed Monthly Expenses', 'Amount']],
+                    head: [[l('fixedMonthlyExpenses', 'Fixed Monthly Expenses'), l('amount', 'Amount')]],
                     body: fixBody,
                     startY: yPos,
                     headerHook,
@@ -1525,16 +1621,15 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
                 yPos = (doc as PDFDoc).lastAutoTable.finalY + 6;
             }
 
-            // Category Spending Limits
             if (limitRows.length > 0) {
                 const limBody: (string | number)[][] = limitRows.map(cl => [
                     getCategoryById(cl.categoryId)?.name ?? cl.categoryId,
                     formatINR(cl.monthlyLimit),
                 ]);
                 const limTotal = limitRows.reduce((s, c) => s + c.monthlyLimit, 0);
-                limBody.push(['TOTAL', formatINR(limTotal)]);
+                limBody.push([l('total', 'TOTAL'), formatINR(limTotal)]);
                 table(doc, autoTable, {
-                    head: [['Category Spending Limit', 'Monthly Limit']],
+                    head: [[l('categorySpendingLimit', 'Category Spending Limit'), l('monthlyLimit', 'Monthly Limit')]],
                     body: limBody,
                     startY: yPos,
                     headerHook,
@@ -1544,9 +1639,6 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
                 yPos = (doc as PDFDoc).lastAutoTable.finalY + 6;
             }
 
-            // Recurring Subscriptions (re-stated here so the snapshot
-            // is self-contained even though there's a dedicated
-            // Subscription Commitments section later in the report)
             if (activeSubs.length > 0) {
                 const subBody: (string | number)[][] = activeSubs.map(sub => {
                     const monthly = sub.billingCycle === 'quarterly' ? sub.amount / 3
@@ -1554,9 +1646,9 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
                         : sub.amount;
                     return [sub.name, sub.billingCycle, formatINR(monthly)];
                 });
-                subBody.push(['TOTAL', '', formatINR(subsMonthlyTotal)]);
+                subBody.push([l('total', 'TOTAL'), '', formatINR(subsMonthlyTotal)]);
                 table(doc, autoTable, {
-                    head: [['Recurring Subscription', 'Cycle', 'Monthly Cost']],
+                    head: [[l('recurringSubscription', 'Recurring Subscription'), l('cycle', 'Cycle'), l('monthlyCost', 'Monthly Cost')]],
                     body: subBody,
                     startY: yPos,
                     headerHook,
@@ -1566,16 +1658,15 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
                 yPos = (doc as PDFDoc).lastAutoTable.finalY + 6;
             }
 
-            // Investment Targets
             if (targetRows.length > 0) {
                 const tBody: (string | number)[][] = targetRows.map(it => [
                     getCategoryById(it.categoryId)?.name ?? it.categoryId,
                     formatINR(it.monthlyTarget),
                 ]);
                 const tTotal = targetRows.reduce((s, it) => s + it.monthlyTarget, 0);
-                tBody.push(['TOTAL Investments', formatINR(tTotal)]);
+                tBody.push([l('totalInvestments', 'TOTAL Investments'), formatINR(tTotal)]);
                 table(doc, autoTable, {
-                    head: [['Investment Target', 'Monthly Target']],
+                    head: [[l('investmentTarget', 'Investment Target'), l('monthlyTarget', 'Monthly Target')]],
                     body: tBody,
                     startY: yPos,
                     headerHook,
@@ -1585,7 +1676,6 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
                 yPos = (doc as PDFDoc).lastAutoTable.finalY + 6;
             }
 
-            // Planned Monthly Savings line
             const plannedSavings = (data.budget.monthlyIncome ?? 0)
                 - data.budget.fixedExpenses.reduce((s, f) => s + f.amount, 0)
                 - data.budget.categoryLimits.reduce((s, c) => s + c.monthlyLimit, 0)
@@ -1595,11 +1685,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             doc.setFontSize(9);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(...(plannedSavings >= 0 ? INCOME : EXPENSE));
-            doc.text(
-                `Planned Monthly Savings (after fixed + limits + subs + investments): ${formatINR(plannedSavings)}`,
-                15,
-                yPos,
-            );
+            doc.text(l('plannedMonthlySavings', `Planned Monthly Savings (after fixed + limits + subs + investments): ${formatINR(plannedSavings)}`).replace('{{amount}}', formatINR(plannedSavings)), 15, yPos);
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(10);
             doc.setTextColor(...TEXT);
@@ -1607,18 +1693,164 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         }
     }
 
-    // ── SECTION 2: WEEK-BY-WEEK (only completed/in-progress weeks) ──────
-    const allWeeks = buildWeeklyBreakdown(data.entries, data.year, data.month);
+    // ── NEW SECTION: MONTH-OVER-MONTH COMPARISON ───────────────────────
+    if (data.prevMonthEntries && data.prevMonthEntries.length > 0) {
+        const prevSubs = data.prevMonthSubscriptions ?? [];
+        const prevStartISO = data.prevYear && data.prevMonth
+            ? `${data.prevYear}-${String(data.prevMonth).padStart(2, '0')}-01` : '';
+        const prevLastDay = data.prevYear && data.prevMonth
+            ? new Date(data.prevYear, data.prevMonth, 0).getDate() : 28;
+        const prevEndISO = data.prevYear && data.prevMonth
+            ? `${data.prevYear}-${String(data.prevMonth).padStart(2, '0')}-${String(prevLastDay).padStart(2, '0')}` : '';
+        const prevSubBillings = prevStartISO ? buildSubscriptionEntriesForRange(prevSubs, prevStartISO, prevEndISO, todayForMonth) : [];
+        const prevSubEntries: Entry[] = prevSubBillings.map(sb => ({
+            id: sb.id, type: 'expense' as const, amount: sb.amount, date: sb.date,
+            category: sb.category, description: sb.description, paymentMethod: 'auto_debit',
+            recurrence: 'none' as const, isDeleted: false, createdAt: '', updatedAt: '',
+        }));
+        const prevMerged = [...data.prevMonthEntries, ...prevSubEntries];
+        const prevSummary = calculateSummary(prevMerged, data.budget);
+        const prevEffExp = prevSummary.totalExpenses;
+        const prevEffNet = prevSummary.totalIncome - prevEffExp;
+        const prevSR = prevSummary.totalIncome > 0 ? (prevEffNet / prevSummary.totalIncome) * 100 : 0;
+
+        const fmtChg = (cur: number, prev: number): string => {
+            if (prev === 0 && cur === 0) return '—';
+            if (prev === 0) return '+100%';
+            const pct = ((cur - prev) / Math.abs(prev)) * 100;
+            return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`;
+        };
+
+        yPos = drawSectionHeader(doc, l('monthOverMonth', 'Month-over-Month Comparison'), yPos);
+        table(doc, autoTable, {
+            head: [[l('metric', 'Metric'), l('thisMonth', 'This Month'), l('lastMonth', 'Last Month'), l('change', 'Change')]],
+            body: [
+                [l('income', 'Income'), formatINR(summary.totalIncome), formatINR(prevSummary.totalIncome), fmtChg(summary.totalIncome, prevSummary.totalIncome)],
+                [l('totalExpenses', 'Total Expenses'), formatINR(effectiveExpenses), formatINR(prevEffExp), fmtChg(effectiveExpenses, prevEffExp)],
+                [l('investments', 'Investments'), formatINR(summary.totalInvestments), formatINR(prevSummary.totalInvestments), fmtChg(summary.totalInvestments, prevSummary.totalInvestments)],
+                [l('netSavings', 'Net Savings'), formatINR(effectiveNetSavings), formatINR(prevEffNet), fmtChg(effectiveNetSavings, prevEffNet)],
+                [l('savingsRate', 'Savings Rate'), `${effectiveSavingsRate.toFixed(1)}%`, `${prevSR.toFixed(1)}%`, `${(effectiveSavingsRate - prevSR).toFixed(1)}pp`],
+            ],
+            startY: yPos,
+            headerHook,
+            columnStyles: {
+                1: { halign: 'right', cellWidth: 35 },
+                2: { halign: 'right', cellWidth: 35 },
+                3: { halign: 'right', cellWidth: 30 },
+            },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    }
+
+    // ── NEW SECTION: 50/30/20 RULE ANALYSIS ────────────────────────────
+    if (summary.totalIncome > 0 || effectiveExpenses > 0) {
+        const NEEDS_CATS = new Set(['rent_housing', 'emi_loan', 'utilities_bills', 'insurance', 'groceries', 'health_medical']);
+        const WANTS_CATS = new Set(['food_dining', 'shopping', 'entertainment', 'travel', 'personal_care', 'subscriptions']);
+        let needsActual = 0, wantsActual = 0;
+        summary.expenseByCategory.forEach(c => {
+            if (NEEDS_CATS.has(c.categoryId)) needsActual += c.amount;
+            else if (WANTS_CATS.has(c.categoryId)) wantsActual += c.amount;
+            else needsActual += c.amount; // default unmapped to needs
+        });
+        const savingsActual = Math.max(0, effectiveNetSavings) + summary.totalInvestments;
+        const baseIncome = Math.max(summary.totalIncome, effectiveExpenses + savingsActual);
+        const needs50 = baseIncome * 0.5;
+        const wants30 = baseIncome * 0.3;
+        const savings20 = baseIncome * 0.2;
+
+        const ruleStatus = (actual: number, recommended: number): string => {
+            if (actual <= recommended) return l('onTrack', 'On Track');
+            return l('overBudget', 'Over Budget');
+        };
+
+        yPos = drawSectionHeader(doc, l('rule503020', '50/30/20 Rule Analysis'), yPos);
+        table(doc, autoTable, {
+            head: [[l('category', 'Category'), l('recommended', 'Recommended'), l('actual', 'Actual'), l('status', 'Status')]],
+            body: [
+                [l('needs50', 'Needs (50%)'), formatINR(needs50), formatINR(needsActual), ruleStatus(needsActual, needs50)],
+                [l('wants30', 'Wants (30%)'), formatINR(wants30), formatINR(wantsActual), ruleStatus(wantsActual, wants30)],
+                [l('savingsInvest20', 'Savings & Invest (20%)'), formatINR(savings20), formatINR(savingsActual), savingsActual >= savings20 ? l('onTrack', 'On Track') : l('underBudget', 'Under Budget')],
+            ],
+            startY: yPos,
+            headerHook,
+            columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 2;
+        doc.setFontSize(7);
+        doc.setTextColor(...MUTED);
+        doc.setFont('helvetica', 'italic');
+        const ruleNote = doc.splitTextToSize(s(l('rule503020Note', 'Based on the 50/30/20 budgeting rule. Needs = Rent, EMI, Utilities, Insurance, Groceries, Health. Wants = Food & Dining, Shopping, Entertainment, Travel, Personal Care. Savings = Net savings + investments.')), 180);
+        ruleNote.forEach((line: string) => { yPos = ensureRoom(doc, yPos, 4); doc.text(line, 15, yPos); yPos += 3.5; });
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(...TEXT);
+        yPos += 6;
+    }
+
+    // ── NEW SECTION: MONTH HIGHLIGHTS ──────────────────────────────────
     const today = getTodayStr();
+    {
+        const monthLastDay = new Date(data.year, data.month, 0).getDate();
+        const isCurrentMonth = today.startsWith(`${data.year}-${String(data.month).padStart(2, '0')}`);
+        const daysSoFar = isCurrentMonth ? Math.max(1, parseInt(today.split('-')[2], 10)) : monthLastDay;
+        const highDay = summary.dailyTotals.length > 0
+            ? summary.dailyTotals.reduce((best, d) => d.expenses > best.expenses ? d : best, summary.dailyTotals[0])
+            : null;
+        const activeDaysCount = summary.dailyTotals.filter(d => d.expenses > 0 || d.income > 0).length;
+        const dailyAvgExp = effectiveExpenses / daysSoFar;
+        const projectedMonthEnd = isCurrentMonth ? dailyAvgExp * monthLastDay : effectiveExpenses;
+
+        if (highDay || activeDaysCount > 0) {
+            yPos = drawSectionHeader(doc, l('monthHighlights', 'Month Highlights'), yPos);
+            const hlBody: (string | number)[][] = [];
+            if (highDay && highDay.expenses > 0) {
+                hlBody.push([l('highestSpendDay', 'Highest Spending Day'), `${shortDate(highDay.date)} — ${formatINR(highDay.expenses)}`]);
+            }
+            hlBody.push([l('activeDays', 'Active Logging Days'), l('daysOfMonth', `${activeDaysCount} of ${daysSoFar} days`).replace('{{active}}', String(activeDaysCount)).replace('{{total}}', String(daysSoFar))]);
+            if (isCurrentMonth && effectiveExpenses > 0) {
+                hlBody.push([l('expenseVelocity', 'Projected Month-End Expenses'), `${formatINR(projectedMonthEnd)} (${l('basedOnDailyAvg', 'Based on daily average spending pace')})`]);
+            }
+            table(doc, autoTable, {
+                head: [[l('metric', 'Metric'), l('value', 'Value')]],
+                body: hlBody,
+                startY: yPos,
+                headerHook,
+                keepTogether: true,
+            });
+            yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+        }
+    }
+
+    // ── NEW SECTION: SMART INSIGHTS ────────────────────────────────────
+    if (data.insights && data.insights.length > 0) {
+        yPos = drawSectionHeader(doc, l('smartInsights', 'Smart Insights'), yPos);
+        const insBody = data.insights.slice(0, 5).map((i) => [
+            i.tone === 'warning' ? l('actionNeeded', 'Action Needed') : i.tone === 'positive' ? l('onTrackInsight', 'On Track') : l('noteInsight', 'Note'),
+            i.title,
+            i.description,
+            i.value || '—',
+        ]);
+        table(doc, autoTable, {
+            head: [[l('impact', 'Impact'), l('insight', 'Insight'), l('detail', 'Detail'), l('value', 'Value')]],
+            body: insBody,
+            startY: yPos,
+            headerHook,
+            columnStyles: { 0: { cellWidth: 28 }, 3: { halign: 'right', cellWidth: 24 } },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    }
+
+    // ── SECTION 2: WEEK-BY-WEEK ────────────────────────────────────────
+    const allWeeks = buildWeeklyBreakdown(data.entries, data.year, data.month);
     const visibleWeeks = allWeeks.filter((w) => w.startDate <= today);
 
     if (visibleWeeks.length > 0) {
-        yPos = drawSectionHeader(doc, 'Week-by-Week Summary', yPos);
+        yPos = drawSectionHeader(doc, l('weekByWeekSummary', 'Week-by-Week Summary'), yPos);
         let wI = 0, wE = 0, wIn = 0;
         const wBody: (string | number)[][] = visibleWeeks.map((w) => {
             wI += w.income; wE += w.expenses; wIn += w.investments;
             return [
-                `Week ${w.weekNumber}`,
+                `${l('week', 'Week')} ${w.weekNumber}`,
                 w.label,
                 formatINR(w.income),
                 formatINR(w.expenses),
@@ -1626,10 +1858,10 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
                 formatINR(w.net),
             ];
         });
-        wBody.push(['TOTAL', '', formatINR(wI), formatINR(wE), formatINR(wIn), formatINR(wI - wE)]);
+        wBody.push([l('total', 'TOTAL'), '', formatINR(wI), formatINR(wE), formatINR(wIn), formatINR(wI - wE)]);
 
         table(doc, autoTable, {
-            head: [['Week', 'Period', 'Income', 'Expenses', 'Investments', 'Net']],
+            head: [[l('week', 'Week'), l('period', 'Period'), l('income', 'Income'), l('expenses', 'Expenses'), l('investments', 'Investments'), l('net', 'Net')]],
             body: wBody,
             startY: yPos,
             headerHook,
@@ -1640,8 +1872,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
 
     // ── SECTION 3: SPENDING BY CATEGORY ─────────────────────────────────
     if (summary.expenseByCategory.length > 0) {
-        yPos = drawSectionHeader(doc, 'Spending by Category', yPos);
-        // Daily-average denominator: use day-of-month for current month, full month otherwise
+        yPos = drawSectionHeader(doc, l('spendingByCategory', 'Spending by Category'), yPos);
         const monthLastDay = new Date(data.year, data.month, 0).getDate();
         const isCurrentMonth = today.startsWith(`${data.year}-${String(data.month).padStart(2, '0')}`);
         const daysSoFar = isCurrentMonth
@@ -1655,10 +1886,10 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             `${c.percentage.toFixed(1)}%`,
             formatINR(c.amount / daysSoFar),
         ]);
-        catBody.push(['', 'TOTAL', formatINR(summary.totalExpenses), '100.0%', formatINR(summary.totalExpenses / daysSoFar)]);
+        catBody.push(['', l('total', 'TOTAL'), formatINR(summary.totalExpenses), '100.0%', formatINR(summary.totalExpenses / daysSoFar)]);
 
         table(doc, autoTable, {
-            head: [['Rank', 'Category', 'Amount', '% of Total', 'Daily Avg']],
+            head: [[l('rank', 'Rank'), l('category', 'Category'), l('amount', 'Amount'), l('pctOfTotal', '% of Total'), l('dailyAvg', 'Daily Avg')]],
             body: catBody,
             startY: yPos,
             headerHook,
@@ -1668,18 +1899,13 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     }
 
     // ── SECTION 4: TOP EXPENSES ─────────────────────────────────────────
-    // Parity with Annual PDF Bug 4 fix: use the merged entries (logged
-    // + recurring sub billings) so a Netflix renewal can compete for a
-    // Top Expenses slot alongside manual entries. Without this the Top
-    // Expenses table for March was missing the Rs.499 Netflix row even
-    // though it was the highest single expense of the month.
     const topExpenses = mergedMonthEntries
         .filter((e) => e.type === 'expense')
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 10);
 
     if (topExpenses.length > 0) {
-        yPos = drawSectionHeader(doc, 'Top Expenses This Month', yPos);
+        yPos = drawSectionHeader(doc, l('topExpenses', 'Top Expenses This Month'), yPos);
         const topBody = topExpenses.map((e) => [
             shortDate(e.date),
             categoryName(e.category),
@@ -1687,7 +1913,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             formatINR(e.amount),
         ]);
         table(doc, autoTable, {
-            head: [['Date', 'Category', 'Description', 'Amount']],
+            head: [[l('date', 'Date'), l('category', 'Category'), l('description', 'Description'), l('amount', 'Amount')]],
             body: topBody,
             startY: yPos,
             headerHook,
@@ -1702,12 +1928,12 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     // ── SECTION 5: INCOME SOURCES ───────────────────────────────────────
     const incomeEntries = data.entries.filter((e) => e.type === 'income');
     if (incomeEntries.length > 0) {
-        yPos = drawSectionHeader(doc, 'Income Sources', yPos);
+        yPos = drawSectionHeader(doc, l('incomeSources', 'Income Sources'), yPos);
         const incBody = incomeEntries
             .sort((a, b) => a.date.localeCompare(b.date))
             .map((e) => [shortDate(e.date), categoryName(e.category), descriptionFor(e), formatINR(e.amount)]);
         table(doc, autoTable, {
-            head: [['Date', 'Source', 'Description', 'Amount']],
+            head: [[l('date', 'Date'), l('source', 'Source'), l('description', 'Description'), l('amount', 'Amount')]],
             body: incBody,
             startY: yPos,
             headerHook,
@@ -1722,12 +1948,12 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     // ── SECTION 6: INVESTMENT SUMMARY ───────────────────────────────────
     const investmentEntries = data.entries.filter((e) => e.type === 'investment');
     if (investmentEntries.length > 0) {
-        yPos = drawSectionHeader(doc, 'Investments This Month', yPos);
+        yPos = drawSectionHeader(doc, l('investmentsThisMonth', 'Investments This Month'), yPos);
         const invBody = investmentEntries
             .sort((a, b) => a.date.localeCompare(b.date))
             .map((e) => [shortDate(e.date), categoryName(e.category), formatINR(e.amount), descriptionFor(e)]);
         table(doc, autoTable, {
-            head: [['Date', 'Category', 'Amount', 'Note']],
+            head: [[l('date', 'Date'), l('category', 'Category'), l('amount', 'Amount'), l('note', 'Note')]],
             body: invBody,
             startY: yPos,
             headerHook,
@@ -1740,26 +1966,19 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     }
 
     // ── SECTION 6.5: SUBSCRIPTION COMMITMENTS ───────────────────────────
-    // New section for subscriptions added via the Subscriptions tab.
-    // Previously these were invisible in all PDF reports even though they
-    // represent a recurring drain. We list each one with its billing cycle,
-    // next renewal, and monthly equivalent, then show the monthly total.
     if (activeSubs.length > 0) {
-        yPos = drawSectionHeader(doc, 'Subscription Commitments', yPos);
+        yPos = drawSectionHeader(doc, l('subscriptionCommitments', 'Subscription Commitments'), yPos);
 
-        // Row builder: monthly equivalent + pretty "next renewal" date
         const subsSorted = [...activeSubs].sort((a, b) => {
-            // Highest cost first (scaled to monthly) so the user sees the
-            // biggest drains at the top.
             const am = a.billingCycle === 'quarterly' ? a.amount / 3 : a.billingCycle === 'yearly' ? a.amount / 12 : a.amount;
             const bm = b.billingCycle === 'quarterly' ? b.amount / 3 : b.billingCycle === 'yearly' ? b.amount / 12 : b.amount;
             return bm - am;
         });
 
         const cycleLabel = (c: 'monthly' | 'quarterly' | 'yearly'): string => {
-            if (c === 'quarterly') return 'Quarterly';
-            if (c === 'yearly') return 'Yearly';
-            return 'Monthly';
+            if (c === 'quarterly') return l('quarterly', 'Quarterly');
+            if (c === 'yearly') return l('yearly', 'Yearly');
+            return l('monthly', 'Monthly');
         };
 
         const subsBody: (string | number)[][] = subsSorted.map((sub) => {
@@ -1767,50 +1986,37 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
                 : sub.billingCycle === 'yearly' ? sub.amount / 12
                 : sub.amount;
             const renewalLabel = sub.nextDueDate ? shortDate(sub.nextDueDate) : '—';
-            return [
-                sub.name,
-                cycleLabel(sub.billingCycle),
-                formatINR(sub.amount),
-                formatINR(monthly),
-                renewalLabel,
-            ];
+            return [sub.name, cycleLabel(sub.billingCycle), formatINR(sub.amount), formatINR(monthly), renewalLabel];
         });
-        subsBody.push([
-            'TOTAL',
-            '',
-            '',
-            formatINR(subsMonthlyTotal),
-            `${formatINR(subsMonthlyTotal * 12)} / yr`,
-        ]);
+        subsBody.push([l('total', 'TOTAL'), '', '', formatINR(subsMonthlyTotal), `${formatINR(subsMonthlyTotal * 12)} ${l('perYear', '/ yr')}`]);
 
         table(doc, autoTable, {
-            head: [['Subscription', 'Cycle', 'Billed', 'Monthly Equivalent', 'Next / Annual']],
+            head: [[l('subscription', 'Subscription'), l('cycle', 'Cycle'), l('billed', 'Billed'), l('monthlyEquivalent', 'Monthly Equivalent'), l('nextAnnual', 'Next / Annual')]],
             body: subsBody,
             startY: yPos,
             headerHook,
             keepTogether: subsBody.length <= 10,
-            columnStyles: {
-                2: { halign: 'right' },
-                3: { halign: 'right' },
-                4: { halign: 'right' },
-            },
+            columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
     }
 
     // ── SECTION 7: BUDGET PERFORMANCE ───────────────────────────────────
     if (data.budget && data.budget.categoryLimits.length > 0) {
-        yPos = drawSectionHeader(doc, 'Budget vs Actual', yPos);
+        yPos = drawSectionHeader(doc, l('budgetVsActual', 'Budget vs Actual'), yPos);
         let totalLimit = 0, totalSpent = 0;
         const budgetBody: (string | number)[][] = data.budget.categoryLimits.map((cl) => {
             const cat = summary.expenseByCategory.find((c) => c.categoryId === cl.categoryId);
-            // summary.expenseByCategory is now built from mergedMonthEntries
-            // which already includes the synthetic 'subscription' rows,
-            // so no manual addition is needed any more.
             const spent = cat?.amount ?? 0;
             const variance = cl.monthlyLimit - spent;
             const pct = cl.monthlyLimit > 0 ? (spent / cl.monthlyLimit) * 100 : 0;
-            const status = spent === 0 ? 'On Track' : pct > 100 ? 'Over Budget' : pct > 80 ? 'On Track' : 'Under Budget';
+            // FIX: When budget = 0 and spent > 0, show "No Limit Set" not "On Track"
+            const budgetStatus = cl.monthlyLimit === 0
+                ? (spent > 0 ? l('noLimitSet', 'No Limit Set') : l('onTrack', 'On Track'))
+                : pct > 100 ? l('overBudget', 'Over Budget')
+                : spent === 0 ? l('onTrack', 'On Track')
+                : pct > 80 ? l('onTrack', 'On Track')
+                : l('underBudget', 'Under Budget');
             totalLimit += cl.monthlyLimit;
             totalSpent += spent;
             return [
@@ -1818,18 +2024,18 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
                 formatINR(cl.monthlyLimit),
                 formatINR(spent),
                 formatINR(variance),
-                status,
+                budgetStatus,
             ];
         });
         budgetBody.push([
-            'TOTAL',
+            l('total', 'TOTAL'),
             formatINR(totalLimit),
             formatINR(totalSpent),
             formatINR(totalLimit - totalSpent),
-            totalSpent > totalLimit ? 'Over Budget' : 'Under Budget',
+            totalSpent > totalLimit ? l('overBudget', 'Over Budget') : l('underBudget', 'Under Budget'),
         ]);
         table(doc, autoTable, {
-            head: [['Category', 'Budget', 'Actual', 'Variance', 'Status']],
+            head: [[l('category', 'Category'), l('budget', 'Budget'), l('actual', 'Actual'), l('variance', 'Variance'), l('status', 'Status')]],
             body: budgetBody,
             startY: yPos,
             headerHook,
@@ -1839,18 +2045,16 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     }
 
     // ── SECTION 8: COMPLETE TRANSACTION LOG ─────────────────────────────
-    yPos = drawSectionHeader(doc, `Complete Transaction Log - ${data.monthLabel}`, yPos);
+    yPos = drawSectionHeader(doc, l('completeTransactionLog', `Complete Transaction Log - ${data.monthLabel}`).replace('{{month}}', data.monthLabel), yPos);
 
     if (mergedMonthEntries.length === 0) {
         table(doc, autoTable, {
-            head: [['Date', 'Category', 'Type', 'Description', 'Amount']],
-            body: [['—', '—', '—', 'No transactions recorded', '—']],
+            head: [[l('date', 'Date'), l('category', 'Category'), l('type', 'Type'), l('description', 'Description'), l('amount', 'Amount')]],
+            body: [['—', '—', '—', l('noTransactions', 'No transactions recorded'), '—']],
             startY: yPos,
             headerHook,
         });
     } else {
-        // Includes synthetic sub rows from monthSubEntries so the
-        // user sees "Netflix (Recurring)" inline with manual entries.
         const sorted = [...mergedMonthEntries].sort((a, b) => {
             if (a.date !== b.date) return a.date.localeCompare(b.date);
             return (a.createdAt || '').localeCompare(b.createdAt || '');
@@ -1864,7 +2068,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             formatINR(e.amount),
         ]);
         table(doc, autoTable, {
-            head: [['Date', 'Category', 'Type', 'Description', 'Amount']],
+            head: [[l('date', 'Date'), l('category', 'Category'), l('type', 'Type'), l('description', 'Description'), l('amount', 'Amount')]],
             body: txBody,
             startY: yPos,
             headerHook,
@@ -1878,10 +2082,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             const finalY = (doc as PDFDoc).lastAutoTable.finalY + 4;
             doc.setFontSize(7);
             doc.setTextColor(...MUTED);
-            doc.text(
-                `Note: showing ${MAX_TX_ROWS} of ${sorted.length} entries. All totals reflect the FULL dataset.`,
-                15, finalY,
-            );
+            doc.text(l('truncationNote', `Note: showing ${MAX_TX_ROWS} of ${sorted.length} entries. All totals reflect the FULL dataset.`).replace('{{shown}}', String(MAX_TX_ROWS)).replace('{{total}}', String(sorted.length)), 15, finalY);
             doc.setTextColor(...TEXT);
         }
     }
@@ -1889,12 +2090,12 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     // ── ACCOUNT BALANCES (optional appendix) ────────────────────────────
     if (data.accounts && data.accounts.length > 0) {
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
-        yPos = drawSectionHeader(doc, 'Account Balances Snapshot', yPos);
+        yPos = drawSectionHeader(doc, l('accountBalances', 'Account Balances Snapshot'), yPos);
         const accBody = data.accounts.map((a) => [a.name, a.bankName || '—', a.accountType, formatINR(a.manualBalance)]);
         const totalBalance = data.accounts.reduce((s, a) => s + a.manualBalance, 0);
-        accBody.push(['TOTAL', '', '', formatINR(totalBalance)]);
+        accBody.push([l('total', 'TOTAL'), '', '', formatINR(totalBalance)]);
         table(doc, autoTable, {
-            head: [['Account', 'Bank', 'Type', 'Balance']],
+            head: [[l('account', 'Account'), l('bank', 'Bank'), l('type', 'Type'), l('balance', 'Balance')]],
             body: accBody,
             startY: yPos,
             headerHook,
