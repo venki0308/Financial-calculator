@@ -30,6 +30,8 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.sip.name', descKey: 'calculators.sip.desc', icon: TrendingUp, color: '#3B82F6', path: '/calculator/sip', category: 'investments', keywords: ['sip', 'mutual', 'fund', 'investment'] },
     { nameKey: 'calculators.lumpsum.name', descKey: 'calculators.lumpsum.desc', icon: Wallet, color: '#10B981', path: '/calculator/lumpsum', category: 'investments', keywords: ['lumpsum', 'mutual', 'fund', 'one time'] },
     { nameKey: 'calculators.swp.name', descKey: 'calculators.swp.desc', icon: TrendingUp, color: '#F59E0B', path: '/calculator/swp', category: 'investments', keywords: ['swp', 'withdrawal', 'pension', 'regular'] },
+    { nameKey: 'calculators.stp.name', descKey: 'calculators.stp.desc', icon: RefreshCcw, color: '#06B6D4', path: '/calculator/stp', category: 'investments', keywords: ['stp', 'systematic', 'transfer', 'plan', 'debt', 'equity', 'lumpsum'] },
+    { nameKey: 'calculators.prag.name', descKey: 'calculators.prag.desc', icon: PiggyBank, color: '#8B5CF6', path: '/calculator/prag', category: 'investments', keywords: ['prag', 'portfolio', 'rebalance', 'allocation', 'asset', 'diversification'] },
     { nameKey: 'calculators.cagr.name', descKey: 'calculators.cagr.desc', icon: BarChart3, color: '#8B5CF6', path: '/calculator/cagr', category: 'investments', keywords: ['cagr', 'growth', 'annual', 'rate'] },
 
     // Banking

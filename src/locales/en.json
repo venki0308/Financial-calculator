@@ -102,6 +102,14 @@
             "name": "SWP Calculator",
             "desc": "Systematic withdrawal"
         },
+        "stp": {
+            "name": "STP Calculator",
+            "desc": "Systematic transfer plan"
+        },
+        "prag": {
+            "name": "Asset Rebalancer",
+            "desc": "Portfolio allocation guide"
+        },
         "cagr": {
             "name": "CAGR Calculator",
             "desc": "Growth rate calculator"

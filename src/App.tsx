@@ -75,6 +75,8 @@ const RDCalculator               = lr(() => import('./pages/RDCalculator'));
 const SimpleInterestCalculator   = lr(() => import('./pages/SimpleInterestCalculator'));
 const LumpsumCalculator          = lr(() => import('./pages/LumpsumCalculator'));
 const SWPCalculator              = lr(() => import('./pages/SWPCalculator'));
+const STPCalculator              = lr(() => import('./pages/STPCalculator'));
+const PRAGCalculator             = lr(() => import('./pages/PRAGCalculator'));
 const CAGRCalculator             = lr(() => import('./pages/CAGRCalculator'));
 
 // PPF / Retirement / Post-Office Calculators — lazy loaded with retry
@@ -379,6 +381,8 @@ function AppContent() {
                         <Route path="/calculator/simple-interest" element={<SimpleInterestCalculator />} />
                         <Route path="/calculator/lumpsum" element={<LumpsumCalculator />} />
                         <Route path="/calculator/swp" element={<SWPCalculator />} />
+                        <Route path="/calculator/stp" element={<STPCalculator />} />
+                        <Route path="/calculator/prag" element={<PRAGCalculator />} />
                         <Route path="/calculator/cagr" element={<CAGRCalculator />} />
                         <Route path="/calculator/step-up-sip" element={<Navigate to="/calculator/sip" replace />} />
                         <Route path="/calculator/goal-sip" element={<Navigate to="/calculator/sip" replace />} />
