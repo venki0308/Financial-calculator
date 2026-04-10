@@ -818,7 +818,9 @@
         "appTypeCSC": "CSC / Common Service Centre",
         "appTypeGovt": "Government Portal",
         "appTypeService": "Access Service",
-        "appTypeNoIndividual": "No Individual Application"
+        "appTypeNoIndividual": "No Individual Application",
+        "quarterlyNoteTitle": "Rates revised every quarter",
+        "quarterlyNoteBody": "PPF, SSY, NSC, KVP, POMIS, SCSS rates are notified by the Govt of India each quarter (Mar / Jun / Sep / Dec). Verify the current rate at indiapost.gov.in or rbi.gov.in before investing."
     },
     "profile": {
         "title": "Profile",

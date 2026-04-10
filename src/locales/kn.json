@@ -785,7 +785,9 @@
     "appTypeService": "ಸೇವೆ ಪ್ರವೇಶಿಸಿ",
     "lastVerified": "ಕೊನೆಯ ಪರಿಶೀಲನೆ",
     "launched": "ಪ್ರಾರಂಭ",
-    "source": "ಮೂಲ"
+    "source": "ಮೂಲ",
+    "quarterlyNoteTitle": "ಪ್ರತಿ ತ್ರೈಮಾಸಿಕದಲ್ಲಿ ದರಗಳು ಪರಿಷ್ಕರಿಸಲ್ಪಡುತ್ತವೆ",
+    "quarterlyNoteBody": "PPF, SSY, NSC, KVP, POMIS, SCSS ದರಗಳನ್ನು ಭಾರತ ಸರ್ಕಾರ ಪ್ರತಿ ತ್ರೈಮಾಸಿಕ (ಮಾರ್ಚ್ / ಜೂನ್ / ಸೆಪ್ / ಡಿಸೆ.) ಅಧಿಸೂಚಿಸುತ್ತದೆ. ಹೂಡಿಕೆ ಮಾಡುವ ಮೊದಲು indiapost.gov.in ಅಥವಾ rbi.gov.in ನಲ್ಲಿ ಪ್ರಸ್ತುತ ದರ ಪರಿಶೀಲಿಸಿ."
   },
   "profile": {
     "title": "ಪ್ರೊಫೈಲ್",

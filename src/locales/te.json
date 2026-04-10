@@ -785,7 +785,9 @@
     "appTypeService": "సేవను యాక్సెస్ చేయండి",
     "lastVerified": "చివరి ధృవీకరణ",
     "launched": "ప్రారంభం",
-    "source": "మూలం"
+    "source": "మూలం",
+    "quarterlyNoteTitle": "ప్రతి త్రైమాసికంలో రేట్లు సవరించబడతాయి",
+    "quarterlyNoteBody": "PPF, SSY, NSC, KVP, POMIS, SCSS రేట్లను భారత ప్రభుత్వం ప్రతి త్రైమాసికం (మార్చి / జూన్ / సెప్టెంబర్ / డిసెంబర్) నోటిఫై చేస్తుంది. పెట్టుబడి పెట్టడానికి ముందు indiapost.gov.in లేదా rbi.gov.in లో ప్రస్తుత రేటును ధృవీకరించండి."
   },
   "profile": {
     "title": "ప్రొఫైల్",

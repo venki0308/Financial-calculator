@@ -783,7 +783,9 @@
     "appTypeService": "सेवा का उपयोग करें",
     "lastVerified": "अंतिम सत्यापन",
     "launched": "शुरू",
-    "source": "स्रोत"
+    "source": "स्रोत",
+    "quarterlyNoteTitle": "हर तिमाही में दरें संशोधित होती हैं",
+    "quarterlyNoteBody": "PPF, SSY, NSC, KVP, POMIS, SCSS दरें भारत सरकार द्वारा हर तिमाही (मार्च / जून / सितंबर / दिसंबर) अधिसूचित की जाती हैं। निवेश करने से पहले indiapost.gov.in या rbi.gov.in पर वर्तमान दर सत्यापित करें।"
   },
   "profile": {
     "title": "प्रोफ़ाइल",
