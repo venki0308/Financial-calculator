@@ -906,7 +906,7 @@ export default function PRAGCalculator() {
         )}
 
         {/* ===== DISCLAIMER ===== */}
-        <DisclaimerComponent module="general" />
+        <DisclaimerComponent module="prag" />
       </div>
     </div>
   );
