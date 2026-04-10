@@ -433,10 +433,10 @@ export default function GratuityCalculator() {
                                                 result.recommendation.status === 'warning' ? 'text-orange-600 dark:text-orange-400' :
                                                 'text-brand-blue'
                                             }`}>
-                                                {result.recommendation.title}
+                                                {result.recommendation.titleKey ? t(result.recommendation.titleKey, result.recommendation.title) : result.recommendation.title}
                                             </h4>
                                             <p className="text-xs text-foreground/80 leading-relaxed">
-                                                {result.recommendation.description}
+                                                {result.recommendation.descKey ? t(result.recommendation.descKey, result.recommendation.description) : result.recommendation.description}
                                             </p>
                                         </div>
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2 mt-4">

@@ -359,7 +359,7 @@ export default function TwoWheelerLoanCalculator() {
                             className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${vehicleType === vt.id ? 'bg-violet-600 text-white shadow-lg' : ''}`}
                             style={vehicleType !== vt.id ? { color: c.textSecondary } : {}}
                         >
-                            {vt.icon} {vt.label}
+                            {vt.icon} {t(`tw.vt_${vt.id}`, vt.label)}
                         </button>
                     ))}
                 </div>
@@ -375,12 +375,12 @@ export default function TwoWheelerLoanCalculator() {
                                     className={`px-3 py-1.5 rounded-xl text-[10px] font-semibold transition-all ${segmentIdx === actualIdx ? 'bg-violet-600 text-white' : 'border'}`}
                                     style={segmentIdx !== actualIdx ? { borderColor: c.border, color: c.textSecondary } : {}}
                                 >
-                                    {s.label}
+                                    {t(`tw.seg_${s.id}`, s.label)}
                                 </button>
                             );
                         })}
                     </div>
-                    <p className="text-[9px] mt-1" style={{ color: c.textSecondary }}>{segment.desc} · {segment.for} · {t('tw.typical')}: {formatINR(segment.priceRange[0])} — {formatINR(segment.priceRange[1])}</p>
+                    <p className="text-[9px] mt-1" style={{ color: c.textSecondary }}>{t(`tw.segDesc_${segment.id}`, segment.desc)} · {t(`tw.segFor_${segment.id}`, segment.for)} · {t('tw.typical')}: {formatINR(segment.priceRange[0])} — {formatINR(segment.priceRange[1])}</p>
                 </div>
 
                 {/* Ex-showroom */}

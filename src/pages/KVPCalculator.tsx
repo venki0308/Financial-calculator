@@ -352,8 +352,8 @@ export default function KVPCalculator() {
                                                 {t('kvp.finalRecommendation')}
                                             </h3>
                                         </div>
-                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendation.title}</p>
-                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendation.description}</p>
+                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendation.titleKey ? t(recommendation.titleKey, recommendation.title) : recommendation.title}</p>
+                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendation.descKey ? t(recommendation.descKey, recommendation.description) : recommendation.description}</p>
                                     </div>
 
                                     {/* 2. Smart Insights */}

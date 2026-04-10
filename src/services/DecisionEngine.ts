@@ -13,6 +13,8 @@ export interface DecisionInput {
 export interface RecommendationOutput {
   title: string;
   description: string;
+  titleKey?: string;
+  descKey?: string;
   status: 'success' | 'warning' | 'info';
 }
 
@@ -87,6 +89,7 @@ export class DecisionEngine {
         return {
           title: "Long-Term Capital Doubling",
           description: "KVP is purely for growth through doubling. It lacks tax benefits and liquidity is locked for 2.5 years, making it strictly a long-term hold.",
+          titleKey: 'kvp.recTitle', descKey: 'kvp.recDesc',
           status: 'info'
         };
 
@@ -94,6 +97,7 @@ export class DecisionEngine {
         return {
           title: "Service Reward",
           description: "Gratuity is a statutory benefit. Maximizing your tenure beyond 5 years solidifies this tax-efficient corpus.",
+          titleKey: 'gratuity.recTitle', descKey: 'gratuity.recDesc',
           status: 'success'
         };
 
@@ -101,6 +105,7 @@ export class DecisionEngine {
         return {
           title: "Stable Asset",
           description: "Provides steady returns based on the defined parameters.",
+          titleKey: 'common.recDefaultTitle', descKey: 'common.recDefaultDesc',
           status: 'info'
         };
     }

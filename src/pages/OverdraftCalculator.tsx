@@ -208,7 +208,7 @@ export default function OverdraftCalculator() {
   const buildExportConfig = (forExcel: boolean): ExportConfig => {
     const tag = dateTag();
     const f = (v: number) => forExcel ? Math.round(v) : formatINR(v);
-    const odTypeLabel = odType === 'business' ? 'Business OD' : odType === 'personal' ? 'Personal OD' : odType === 'salary' ? 'Salary OD' : 'Against FD/Property';
+    const odTypeLabel = odType === 'business' ? t('od.typeBusiness', 'Business OD') : odType === 'personal' ? t('od.typePersonal', 'Personal OD') : odType === 'salary' ? t('od.typeSalary', 'Salary OD') : t('od.typeFD', 'Against FD/Property');
 
     useHistoryTracker('Overdraft Calculator', { utilizedAmount, interestRate, daysUtilized }, { totalPayable: totalPayableAmount }, totalInterest);
 
@@ -791,7 +791,7 @@ export default function OverdraftCalculator() {
               { label: t('od.limit', 'OD limit'), value: formatINR(limitNum) },
               { label: t('od.available', 'Available'), value: formatINR(availableLimit) },
               { label: t('od.effectiveCost', 'Effective annual cost'), value: `${effectiveCost.toFixed(2)}%` },
-              { label: t('od.type', 'Type'), value: odType === 'business' ? 'Business OD' : odType === 'personal' ? 'Personal OD' : odType === 'salary' ? 'Salary OD' : 'Secured OD' },
+              { label: t('od.type', 'Type'), value: odType === 'business' ? t('od.typeBusiness', 'Business OD') : odType === 'personal' ? t('od.typePersonal', 'Personal OD') : odType === 'salary' ? t('od.typeSalary', 'Salary OD') : t('od.typeFD', 'Against FD/Property') },
             ]}
             label={t('od.snapshotTitle', 'Overdraft Snapshot')}
           />

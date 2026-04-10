@@ -173,7 +173,7 @@ export default function EMICalculator() {
         }
 
         if (prepayInsight && prepayInsight.interestSaved > 10000) {
-            items.push({ type: 'tip', text: `Paying just ${formatINR(prepayInsight.extraMonthlyAmount)} extra/month saves ${formatINR(prepayInsight.interestSaved)} and closes loan ${prepayInsight.monthsSaved} months earlier.` });
+            items.push({ type: 'tip', text: t('emi.prepayTip', 'Paying just {{extra}} extra/month saves {{saved}} and closes loan {{months}} months earlier.', { extra: formatINR(prepayInsight.extraMonthlyAmount), saved: formatINR(prepayInsight.interestSaved), months: prepayInsight.monthsSaved }) });
         }
 
         return items;
