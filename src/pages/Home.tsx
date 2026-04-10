@@ -4,7 +4,8 @@ import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon,
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
-import { getBudgetForMonth } from '../utils/expenseStorage';
+import { getBudgetForMonth, getEntriesForMonth, getAllAccounts } from '../utils/expenseStorage';
+import { calculateSummary } from '../utils/expenseCalculations';
 import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
@@ -67,7 +68,7 @@ const defaultItems = [
 export default function Home() {
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const { monthlyBalances, monthlyIncome, getTotalFixed, getTotalSpent } = useBudgetTrackerStore();
+    const { monthlyIncome } = useBudgetTrackerStore();
 
     const [recentPaths, setRecentPaths] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -142,24 +143,31 @@ export default function Home() {
 
     const unreadCount = useNotificationStore(s => s.getUnreadCount());
 
-    // Compute effective current balance: if user hasn't set one, derive from income - expenses.
-    // Income is read from expenseStorage (the main tracker) first, with the old Zustand store
-    // as a fallback. This keeps Home in sync with whatever the user set in BudgetTab.
+    // Compute effective current balance from the SAME data source as BudgetTab:
+    // 1. If user has bank accounts, sum their balances
+    // 2. Otherwise derive from budget income - fixed expenses - actual spending
     const effectiveBalance = useMemo(() => {
         const now = new Date();
         const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        const manualBal = monthlyBalances[key]?.manual || 0;
 
-        if (manualBal > 0) return manualBal;
-        const expenseIncome = getBudgetForMonth(key)?.monthlyIncome ?? 0;
-        const effectiveIncome = expenseIncome > 0 ? expenseIncome : monthlyIncome;
-        if (effectiveIncome > 0) {
-            const fixed = getTotalFixed();
-            const spent = getTotalSpent();
-            return Math.max(0, effectiveIncome - fixed - spent);
+        // Priority 1: sum of bank account balances (if user has set up accounts)
+        const accounts = getAllAccounts();
+        if (accounts.length > 0) {
+            return accounts.reduce((s, a) => s + a.manualBalance, 0);
+        }
+
+        // Priority 2: derive from expenseStorage budget (same as BudgetTab)
+        const budget = getBudgetForMonth(key);
+        const budgetIncome = budget?.monthlyIncome ?? 0;
+        const fallbackIncome = budgetIncome > 0 ? budgetIncome : monthlyIncome;
+        if (fallbackIncome > 0) {
+            const budgetFixed = budget?.fixedExpenses.reduce((s, f) => s + f.amount, 0) ?? 0;
+            const entries = getEntriesForMonth(now.getFullYear(), now.getMonth() + 1);
+            const summary = calculateSummary(entries);
+            return Math.max(0, fallbackIncome - budgetFixed - summary.totalExpenses);
         }
         return 0;
-    }, [monthlyBalances, monthlyIncome, getTotalFixed, getTotalSpent]);
+    }, [monthlyIncome]);
 
     // Monthly income shown on the MY BUDGET card — expenseStorage is authoritative
     // (BudgetTab saves there), old Zustand store is fallback for legacy users.
