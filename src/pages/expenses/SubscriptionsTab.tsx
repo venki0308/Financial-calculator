@@ -155,6 +155,7 @@ export default function SubscriptionsTab() {
         const errs: typeof formErrors = {};
         if (!formData.name?.trim()) errs.name = t('expenses.nameRequired');
         if (!formData.amount || formData.amount <= 0) errs.amount = t('expenses.validAmount');
+        else if (formData.amount > 10_00_00_000) errs.amount = t('expenses.amountTooHigh', 'Maximum ₹10 Crore');
         setFormErrors(errs);
         return Object.keys(errs).length === 0;
     };
