@@ -20,18 +20,20 @@ const LOAN_TYPES_FOR_CALC = [
     { id: 'two_wheeler_loan', label: 'cibil.twoWheeler', icon: '🛵' },
     { id: 'education_loan', label: 'cibil.educationLoan', icon: '🎓' },
     { id: 'gold_loan', label: 'cibil.goldLoan', icon: '🥇' },
+    { id: 'mortgage', label: 'cibil.mortgage', icon: '🏦' },
 ];
 
 // Maps the rate-impact loan type → the actual calculator route. Lets the user
 // jump straight from "here's what your CIBIL costs you" → the calculator that
 // applies, rather than having to leave CIBIL and search for it.
 const LOAN_TYPE_ROUTE: Record<string, string> = {
-    home_loan: '/calculator/mortgage-calculator',
+    home_loan: '/calculator/loan-emi',
     car_loan: '/calculator/car-loan',
     personal_loan: '/calculator/personal-loan',
     two_wheeler_loan: '/two-wheeler-loan',
     education_loan: '/calculator/education-loan',
     gold_loan: '/gold-loan',
+    mortgage: '/calculator/mortgage-calculator',
 };
 
 export default function CibilScoreCalculator() {

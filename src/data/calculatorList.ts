@@ -1,4 +1,4 @@
-import { Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare, Calendar, Globe, Shield, Gem } from 'lucide-react';
+import { Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Bike, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare, Calendar, Globe, Shield, Gem } from 'lucide-react';
 
 export interface CalcItem { 
     nameKey: string; 
@@ -22,7 +22,7 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.educationLoan.name', descKey: 'calculators.educationLoan.desc', icon: GraduationCap, color: '#F59E0B', path: '/calculator/education-loan', category: 'loans', keywords: ['education', 'loan', 'student', 'study', 'college'] },
     { nameKey: 'calculators.emi.name', descKey: 'calculators.emi.desc', icon: Calculator, color: '#10B981', path: '/calculator/loan-emi', category: 'loans', keywords: ['emi', 'home', 'loan', 'mortgage'] },
     { nameKey: 'calculators.carLoan.name', descKey: 'calculators.carLoan.desc', icon: Car, color: '#3B82F6', path: '/calculator/car-loan', category: 'loans', keywords: ['car', 'loan', 'auto', 'vehicle'] },
-    { nameKey: 'calculators.twoWheeler.name', descKey: 'calculators.twoWheeler.desc', icon: Car, color: '#EC4899', path: '/two-wheeler-loan', category: 'loans', keywords: ['two', 'wheeler', 'bike', 'scooter', 'ev', 'electric', 'loan', 'emi'] },
+    { nameKey: 'calculators.twoWheeler.name', descKey: 'calculators.twoWheeler.desc', icon: Bike, color: '#EC4899', path: '/two-wheeler-loan', category: 'loans', keywords: ['two', 'wheeler', 'bike', 'scooter', 'ev', 'electric', 'loan', 'emi'] },
     { nameKey: 'calculators.goldLoan.name', descKey: 'calculators.goldLoan.desc', icon: Gem, color: '#EAB308', path: '/gold-loan', category: 'loans', keywords: ['gold', 'loan', 'jewellery', 'jewelry', 'ornament', 'pledge', 'pawn', 'bullet', 'rbi'] },
     { nameKey: 'calculators.compound.name', descKey: 'calculators.compound.desc', icon: Percent, color: '#8B5CF6', path: '/calculator/compound-interest', category: 'loans', keywords: ['compound', 'interest', 'ci'] },
 

@@ -76,6 +76,12 @@ export const LOAN_CIBIL_RATES: Record<string, LoanCibilConfig> = {
         ltv: { nh: 100, very_poor: 80, poor: 80, average: 90, good: 100, very_good: 100, excellent: 100 },
         notes: ['cibil.eduTip1'],
     },
+    mortgage: {
+        loanType: 'Mortgage', minBank: 700, minNBFC: 650, ideal: 760,
+        rates: { nh: { min: 9.5, max: 11 }, very_poor: { min: 10.5, max: 13 }, poor: { min: 10.5, max: 13 }, average: { min: 9.5, max: 11 }, good: { min: 8.85, max: 9.85 }, very_good: { min: 8.5, max: 9.25 }, excellent: { min: 8, max: 8.75 } },
+        ltv: { nh: 75, very_poor: 65, poor: 65, average: 75, good: 80, very_good: 85, excellent: 90 },
+        notes: ['cibil.homeTip1', 'cibil.homeTip2', 'cibil.homeTip3'],
+    },
     // Gold loan rates updated April 2026 to reflect actual market floors:
     // PSU banks (Kotak/SBI/PNB) start ~8.25%, private banks ~9-11%, NBFCs
     // ~11-22% (Muthoot/IIFL/Manappuram). CIBIL impact is small because the
