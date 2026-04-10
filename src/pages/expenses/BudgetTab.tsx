@@ -442,9 +442,10 @@ export default function BudgetTab() {
 
           <motion.button
             whileTap={{ scale: 0.85 }}
-            onClick={() => switchMonth(1)}
+            onClick={() => monthOffset < 0 && switchMonth(1)}
+            disabled={monthOffset >= 0}
             className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ backgroundColor: theme.bgPrimary, color: theme.textSecondary }}
+            style={{ backgroundColor: theme.bgPrimary, color: theme.textSecondary, opacity: monthOffset >= 0 ? 0.3 : 1 }}
           >
             <ChevronRight size={18} />
           </motion.button>
