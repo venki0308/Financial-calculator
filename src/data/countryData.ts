@@ -766,23 +766,36 @@ export function getSunTimes(iana: string, now: Date): { sunrise: string; sunset:
     // Use a simple heuristic by latitude band from region
     const meta = getCountryMeta(iana);
     const month = now.getMonth(); // 0-11
-    
+
     // Season factor: northern hemisphere summer = earlier sunrise, southern = opposite
     const latBands: Record<string, [number, number]> = {
         'Asia': [6, 18], 'Europe': [5, 20], 'Americas': [6, 20],
         'Africa': [6, 18], 'Oceania': [6, 18], 'Middle East': [6, 18],
         'Global': [6, 18],
     };
-    
+
     const region = meta.region.split('/')[0];
     const [baseRise, baseSet] = latBands[region] || [6, 18];
-    
+
     // Seasonal shift ±1 hour for summer/winter
     const isNorthernSummer = month >= 4 && month <= 9;
     const shift = region === 'Oceania' ? (isNorthernSummer ? 1 : -1) : (isNorthernSummer ? -1 : 1);
-    
-    const sunrise = `0${baseRise + shift}:00 Am`.replace(/^0(\d{2})/, '$1');
-    const sunset = `${baseSet - shift}:00 Pm`;
-    
-    return { sunrise, sunset };
+
+    // Render in clean 12-hour format with uppercase AM/PM. The previous
+    // implementation produced "07:00 Am" / "17:00 Pm" — neither valid
+    // 12-hour ("17:00 Pm" is meaningless because 17:00 is already a
+    // 24-hour reading) nor 24-hour. Convert to a single canonical
+    // 12-hour string so the Details screen sunrise/sunset cards always
+    // read like "7:00 AM" and "5:00 PM".
+    const fmt12 = (hour24: number, min: number): string => {
+        const safeH = ((hour24 % 24) + 24) % 24;
+        const period = safeH >= 12 ? 'PM' : 'AM';
+        const h12 = safeH === 0 ? 12 : safeH > 12 ? safeH - 12 : safeH;
+        return `${h12}:${String(min).padStart(2, '0')} ${period}`;
+    };
+
+    return {
+        sunrise: fmt12(baseRise + shift, 0),
+        sunset: fmt12(baseSet - shift, 0),
+    };
 }

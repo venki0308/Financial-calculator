@@ -99,6 +99,130 @@ export default function LoanDetail() {
     const { t } = useTranslation();
     const c = useAppColors();
 
+    // Translate a label string used in investmentMetrics cards/rows/headlineLabel.
+    // These labels were previously hardcoded English inside useMemo return objects.
+    // Adding every variant here keeps the useMemo itself readable and avoids
+    // passing `t` as a dependency (which would be a new reference every render).
+    const tl = (label: string): string => {
+        const map: Record<string, string> = {
+            // Section headers
+            'Investment Status': t('liveStatus.investmentStatus'),
+            'Progress': t('liveStatus.progressSection'),
+            'Complete Details': t('liveStatus.completeDetails'),
+            // Card / headline labels
+            'Principal': t('liveStatus.principalLabel'),
+            'Value Today': t('liveStatus.valueToday'),
+            'Interest': t('liveStatus.interestLabel'),
+            'Invested': t('liveStatus.invested'),
+            'Gain': t('liveStatus.gain'),
+            'Balance': t('liveStatus.balance'),
+            'Balance Today': t('liveStatus.balanceToday'),
+            'Corpus Today': t('liveStatus.corpusToday'),
+            'Corpus': t('liveStatus.corpusLabel'),
+            'Withdrawn': t('liveStatus.withdrawn'),
+            'Pension': t('liveStatus.pension'),
+            'Last Salary': t('liveStatus.lastSalary'),
+            'Gratuity': t('liveStatus.gratuity'),
+            'Net Payout': t('liveStatus.netPayout'),
+            'Cover': t('liveStatus.cover'),
+            'Sum Insured': t('liveStatus.sumInsured'),
+            'Premium (min)': t('liveStatus.premiumMin'),
+            'Premium (max)': t('liveStatus.premiumMax'),
+            'Total Cost': t('liveStatus.totalCost'),
+            'Initial': t('liveStatus.initial'),
+            'Final': t('liveStatus.finalLabel'),
+            'CAGR': t('liveStatus.cagrLabel'),
+            'Total Payable': t('liveStatus.totalPayableLabel'),
+            'Deposited': t('liveStatus.deposited'),
+            'Current Value': t('liveStatus.currentValue'),
+            'Current Balance': t('liveStatus.currentBalance'),
+            'Monthly Income': t('liveStatus.monthlyIncome') || 'Monthly Income',
+            'Quarterly': t('liveStatus.quarterly'),
+            'Quarterly Income': t('liveStatus.quarterlyIncome'),
+            'Total Earned': t('liveStatus.totalEarned'),
+            'Goal': t('liveStatus.goal'),
+            'Value': t('liveStatus.value'),
+            // Row labels
+            'Start Date': t('liveStatus.startDateRow'),
+            'Years Elapsed': t('liveStatus.yearsElapsed'),
+            'Months Elapsed': t('liveStatus.monthsElapsed'),
+            'Rate': t('liveStatus.rateLabel'),
+            'Mode': t('liveStatus.modeLabel'),
+            'Total at Maturity': t('liveStatus.totalAtMaturity'),
+            'Compounding': t('liveStatus.compoundingLabel'),
+            'Maturity Value': t('liveStatus.maturityValue'),
+            'Basic Salary': t('liveStatus.basicSalary'),
+            'Contribution': t('liveStatus.contribution'),
+            'EPF Rate': t('liveStatus.epfRate'),
+            'Projected Corpus': t('liveStatus.projectedCorpus'),
+            'Monthly Contribution': t('liveStatus.monthlyContribution'),
+            'Expected Return': t('liveStatus.expectedReturn'),
+            'Annuity %': t('liveStatus.annuityPct'),
+            'Projected Pension': t('liveStatus.projectedPension'),
+            'Service Period': t('liveStatus.servicePeriod'),
+            'Employer Type': t('liveStatus.employerType'),
+            'Tax Exemption': t('liveStatus.taxExemption'),
+            'Type': t('liveStatus.typeLabel'),
+            'Members': t('liveStatus.membersLabel'),
+            'City': t('liveStatus.cityLabel'),
+            'Has PED': t('liveStatus.hasPed'),
+            'Term': t('liveStatus.termLabel'),
+            'Age at Purchase': t('liveStatus.ageAtPurchase'),
+            'Period': t('liveStatus.periodLabel'),
+            'Total Return': t('liveStatus.totalReturn'),
+            'Wealth Multiplier': t('liveStatus.wealthMultiplier'),
+            'Monthly Withdrawal': t('liveStatus.monthlyWithdrawal'),
+            'Gratuity Payout': t('liveStatus.gratuityPayout'),
+            'Property Value': t('liveStatus.propertyValue'),
+            'Life Cover': t('liveStatus.lifeCover'),
+            'Months Invested': t('liveStatus.monthsInvested'),
+            'Return %': t('liveStatus.returnPct'),
+            'Running Since': t('liveStatus.runningSince'),
+            'Monthly SIP': t('liveStatus.monthlySipLabel'),
+            'Days Invested': t('liveStatus.daysInvested'),
+            'Daily Earning': t('liveStatus.dailyEarning'),
+            'Maturity Date': t('liveStatus.maturityDate'),
+            'Days Remaining': t('liveStatus.daysRemaining'),
+            'Interest Rate': t('liveStatus.interestRate'),
+            'Premature Value': t('liveStatus.prematureValue'),
+            'Monthly Deposit': t('liveStatus.monthlyDeposit'),
+            'Tenure': t('liveStatus.tenureLabel'),
+            'Completion': t('liveStatus.completionPct'),
+            'Year': t('liveStatus.yearLabel'),
+            'Yearly Deposit': t('liveStatus.yearlyDeposit'),
+            'Loan Eligible': t('liveStatus.loanEligible'),
+            'Withdrawal Eligible': t('liveStatus.withdrawalEligible'),
+            'Girl\'s Age': t('liveStatus.girlAge'),
+            'Account Age': t('liveStatus.accountAge'),
+            'Deposit Phase': t('liveStatus.depositPhase'),
+            'Days to Maturity': t('liveStatus.daysToMaturity'),
+            'Withdrawal': t('liveStatus.withdrawalLabel'),
+            'Years Completed': t('liveStatus.yearsCompleted'),
+            'Sec 80C Eligible': t('liveStatus.sec80cEligible'),
+            'Progress to 2x': t('liveStatus.progressTo2x'),
+            'Doubling Date': t('liveStatus.doublingDate'),
+            'Days to Doubling': t('liveStatus.daysToDoubling'),
+            'Maturity Amount': t('liveStatus.maturityAmount'),
+            'Premature': t('liveStatus.premature'),
+            'Payouts Received': t('liveStatus.payoutsReceived'),
+            'Total 5yr Income': t('liveStatus.total5yrIncome'),
+            'Remaining Payouts': t('liveStatus.remainingPayouts'),
+            'Quarters Completed': t('liveStatus.quartersCompleted'),
+            'Annual Income': t('liveStatus.annualIncome'),
+            'Wealth Gained': t('liveStatus.wealthGained'),
+            'Target Amount': t('liveStatus.targetAmount'),
+            'Goal Progress': t('liveStatus.goalProgress'),
+            'Property Type': t('liveStatus.propertyType'),
+            'Total Value': t('liveStatus.totalValue'),
+            'Built-up Area': t('liveStatus.builtUpArea'),
+            'Days Utilized': t('liveStatus.daysUtilized'),
+            'Inflation': t('liveStatus.inflationLabel'),
+            'Area': t('liveStatus.area'),
+            'Maturity': t('liveStatus.maturityLabel'),
+        };
+        return map[label] ?? label;
+    };
+
     const { savedProfiles, removeProfile } = useLiveStatusStore();
 
     useEffect(() => { AnalyticsService.trackScreen('Tracker_Detail'); }, []);
@@ -632,43 +756,43 @@ export default function LoanDetail() {
         try {
             if (mt('sip', 'sip calculator')) {
                 const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate });
-                return { cards: [{ label: 'Invested', value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: 'Value Today', value: formatINR(s.currentValue), color: '#10B981' }, { label: 'Gain', value: formatINR(s.wealthGained), color: '#F59E0B' }], rows: [['Months Invested', String(s.monthsInvested)], ['Return %', `${s.returnPercent.toFixed(2)}%`], ['Running Since', `${s.sipRunningYears}Y ${s.sipRunningMonths}M`], ['Monthly SIP', formatINR(d.monthlySip || d.monthlyAmount || 0)], ['Expected Return', `${d.annualReturn || 12}% p.a.`]], progress: Math.min(100, s.monthsInvested * 0.8), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
+                return { cards: [{ label: tl('Invested'), value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Gain'), value: formatINR(s.wealthGained), color: '#F59E0B' }], rows: [[tl('Months Invested'), String(s.monthsInvested)], [tl('Return %'), `${s.returnPercent.toFixed(2)}%`], [tl('Running Since'), `${s.sipRunningYears}Y ${s.sipRunningMonths}M`], [tl('Monthly SIP'), formatINR(d.monthlySip || d.monthlyAmount || 0)], [tl('Expected Return'), `${d.annualReturn || 12}% p.a.`]], progress: Math.min(100, s.monthsInvested * 0.8), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
             }
             if (mt('fd', 'fd calculator', 'potd', 'post office td')) {
                 const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4 });
-                return { cards: [{ label: 'Deposited', value: formatINR(d.principal), color: '#3B82F6' }, { label: 'Value Today', value: formatINR(s.valueToday), color: '#10B981' }, { label: 'Interest', value: formatINR(s.interestEarnedToday), color: '#F59E0B' }], rows: [['Days Invested', String(s.daysInvested)], ['Daily Earning', formatINR(s.dailyEarning)], ['Maturity Date', fmtDate(s.maturityDate)], ['Maturity Value', formatINR(s.maturityValue)], ['Days Remaining', String(s.daysRemaining)], ['Interest Rate', `${d.annualRate}% p.a.`], ['Premature Value', formatINR(s.prematureValue)]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.valueToday), headlineLabel: 'Value Today' };
+                return { cards: [{ label: tl('Deposited'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.valueToday), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarnedToday), color: '#F59E0B' }], rows: [[tl('Days Invested'), String(s.daysInvested)], [tl('Daily Earning'), formatINR(s.dailyEarning)], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Maturity Value'), formatINR(s.maturityValue)], [tl('Days Remaining'), String(s.daysRemaining)], [tl('Interest Rate'), `${d.annualRate}% p.a.`], [tl('Premature Value'), formatINR(s.prematureValue)]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.valueToday), headlineLabel: tl('Value Today') };
             }
             if (mt('rd')) {
                 const s = calculateRdStatus({ monthlyDeposit: d.monthlyDeposit || 0, annualRate: d.annualRate || 5.8, tenureMonths: d.tenureMonths || 60, startDate: d.startDate });
-                return { cards: [{ label: 'Deposited', value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: 'Value Today', value: formatINR(s.currentValue), color: '#10B981' }, { label: 'Interest', value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [['Monthly Deposit', formatINR(d.monthlyDeposit || 0)], ['Interest Rate', `${d.annualRate || 5.8}% p.a.`], ['Tenure', `${d.tenureMonths || 60} months`], ['Completion', `${s.percentComplete.toFixed(1)}%`]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
+                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [[tl('Monthly Deposit'), formatINR(d.monthlyDeposit || 0)], [tl('Interest Rate'), `${d.annualRate || 5.8}% p.a.`], [tl('Tenure'), `${d.tenureMonths || 60} months`], [tl('Completion'), `${s.percentComplete.toFixed(1)}%`]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
             }
             if (mt('ppf', 'ppf calculator')) {
                 const s = calculatePpfStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 7.1, openingDate: d.openingDate || d.startDate });
-                return { cards: [{ label: 'Deposited', value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: 'Balance', value: formatINR(s.balanceToday), color: '#10B981' }, { label: 'Interest', value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [['Year', `${s.currentYear} of 15`], ['Yearly Deposit', formatINR(d.yearlyDeposit || 0)], ['Rate', `${d.rate || d.annualRate || 7.1}% p.a.`], ['Maturity Date', fmtDate(s.maturityDate)], ['Maturity Value', formatINR(s.maturityValue || 0)], ['Loan Eligible', s.loanEligible ? `Yes — up to ${formatINR(s.loanAmount)}` : 'No (available yr 3-6)'], ['Withdrawal Eligible', s.withdrawalEligible ? `Yes — up to ${formatINR(s.withdrawalAmount)}` : 'No (available after yr 7)']], progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: `Year ${s.currentYear}/15`, headline: formatINR(s.balanceToday), headlineLabel: 'Current Balance' };
+                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Balance'), value: formatINR(s.balanceToday), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [[tl('Year'), `${s.currentYear} of 15`], [tl('Yearly Deposit'), formatINR(d.yearlyDeposit || 0)], [tl('Rate'), `${d.rate || d.annualRate || 7.1}% p.a.`], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Maturity Value'), formatINR(s.maturityValue || 0)], [tl('Loan Eligible'), s.loanEligible ? `Yes — up to ${formatINR(s.loanAmount)}` : 'No (available yr 3-6)'], [tl('Withdrawal Eligible'), s.withdrawalEligible ? `Yes — up to ${formatINR(s.withdrawalAmount)}` : 'No (available after yr 7)']], progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: `Year ${s.currentYear}/15`, headline: formatINR(s.balanceToday), headlineLabel: tl('Current Balance') };
             }
             if (mt('ssy', 'ssy calculator')) {
                 const s = calculateSsyStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 8.2, openingDate: d.openingDate || d.startDate, girlDob: d.girlDob || d.openingDate || d.startDate });
-                return { cards: [{ label: 'Deposited', value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: 'Balance', value: formatINR(Math.round(s.balanceToday)), color: '#10B981' }, { label: 'Interest', value: formatINR(Math.round(s.interestEarned)), color: '#EC4899' }], rows: [['Girl\'s Age', `${s.girlAge} years`], ['Account Age', `${s.accountAge} of 21 years`], ['Deposit Phase', s.depositPhaseActive ? `Active (${s.depositYearsRemaining}yr left)` : 'Complete — interest compounding'], ['Yearly Deposit', formatINR(d.yearlyDeposit || 0)], ['Rate', `${d.rate || d.annualRate || 8.2}% p.a.`], ['Maturity Value', formatINR(Math.round(s.maturityValue))], ['Maturity Date', fmtDate(s.maturityDate)], ['Days to Maturity', String(s.daysToMaturity)], ['Withdrawal', s.withdrawalEligible ? `Eligible — up to ${formatINR(s.withdrawalAmount)}` : 'After girl turns 18']], progress: Math.min(100, (s.accountAge / 21) * 100), statusText: `Year ${s.accountAge}/21`, headline: formatINR(Math.round(s.balanceToday)), headlineLabel: 'Current Balance' };
+                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Balance'), value: formatINR(Math.round(s.balanceToday)), color: '#10B981' }, { label: tl('Interest'), value: formatINR(Math.round(s.interestEarned)), color: '#EC4899' }], rows: [[tl('Girl\'s Age'), `${s.girlAge} years`], [tl('Account Age'), `${s.accountAge} of 21 years`], [tl('Deposit Phase'), s.depositPhaseActive ? `Active (${s.depositYearsRemaining}yr left)` : 'Complete — interest compounding'], [tl('Yearly Deposit'), formatINR(d.yearlyDeposit || 0)], [tl('Rate'), `${d.rate || d.annualRate || 8.2}% p.a.`], [tl('Maturity Value'), formatINR(Math.round(s.maturityValue))], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Days to Maturity'), String(s.daysToMaturity)], [tl('Withdrawal'), s.withdrawalEligible ? `Eligible — up to ${formatINR(s.withdrawalAmount)}` : 'After girl turns 18']], progress: Math.min(100, (s.accountAge / 21) * 100), statusText: `Year ${s.accountAge}/21`, headline: formatINR(Math.round(s.balanceToday)), headlineLabel: tl('Current Balance') };
             }
             if (mt('nsc', 'nsc calculator')) {
                 const s = calculateNscStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.7, purchaseDate: d.purchaseDate || d.startDate });
-                return { cards: [{ label: 'Invested', value: formatINR(d.principal), color: '#3B82F6' }, { label: 'Value Today', value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: 'Interest', value: formatINR(Math.round(s.interestEarned)), color: '#F59E0B' }], rows: [['Years Completed', `${s.yearsCompleted.toFixed(1)} of 5`], ['Rate', `${d.rate || d.annualRate || 7.7}% p.a.`], ['Maturity Value', formatINR(Math.round(s.maturityValue))], ['Maturity Date', fmtDate(s.maturityDate)], ['Days Remaining', String(s.daysToMaturity)], ['Sec 80C Eligible', 'Yes — Interest reinvested']], progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: `${(Math.min(1, s.yearsCompleted / 5) * 100).toFixed(0)}% of 5yr`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: 'Value Today' };
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: tl('Interest'), value: formatINR(Math.round(s.interestEarned)), color: '#F59E0B' }], rows: [[tl('Years Completed'), `${s.yearsCompleted.toFixed(1)} of 5`], [tl('Rate'), `${d.rate || d.annualRate || 7.7}% p.a.`], [tl('Maturity Value'), formatINR(Math.round(s.maturityValue))], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Days Remaining'), String(s.daysToMaturity)], [tl('Sec 80C Eligible'), 'Yes — Interest reinvested']], progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: `${(Math.min(1, s.yearsCompleted / 5) * 100).toFixed(0)}% of 5yr`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: tl('Value Today') };
             }
             if (mt('kvp', 'kvp calculator')) {
                 const s = calculateKvpStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.5, purchaseDate: d.purchaseDate || d.startDate });
-                return { cards: [{ label: 'Invested', value: formatINR(d.principal), color: '#3B82F6' }, { label: 'Value Today', value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: 'Gain', value: formatINR(Math.round(s.gainSoFar)), color: '#F59E0B' }], rows: [['Progress to 2x', `${s.progressToDoubling.toFixed(1)}%`], ['Rate', `${d.rate || d.annualRate || 7.5}% p.a.`], ['Doubling Date', fmtDate(s.doublingDate)], ['Days to Doubling', String(s.daysToDoubling)], ['Maturity Amount', formatINR(d.principal * 2)], ['Premature', s.prematureEligible ? 'Eligible now' : `After ${fmtDate(s.prematureEligibleDate)}`]], progress: s.progressToDoubling, statusText: `${s.progressToDoubling.toFixed(0)}% to 2x`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: 'Value Today' };
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: tl('Gain'), value: formatINR(Math.round(s.gainSoFar)), color: '#F59E0B' }], rows: [[tl('Progress to 2x'), `${s.progressToDoubling.toFixed(1)}%`], [tl('Rate'), `${d.rate || d.annualRate || 7.5}% p.a.`], [tl('Doubling Date'), fmtDate(s.doublingDate)], [tl('Days to Doubling'), String(s.daysToDoubling)], [tl('Maturity Amount'), formatINR(d.principal * 2)], [tl('Premature'), s.prematureEligible ? 'Eligible now' : `After ${fmtDate(s.prematureEligibleDate)}`]], progress: s.progressToDoubling, statusText: `${s.progressToDoubling.toFixed(0)}% to 2x`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: tl('Value Today') };
             }
             if (mt('pomis', 'post office mis')) {
                 const s = calculatePomisStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.4, startDate: d.startDate });
-                return { cards: [{ label: 'Invested', value: formatINR(d.principal), color: '#3B82F6' }, { label: 'Monthly Income', value: formatINR(s.monthlyIncome), color: '#10B981' }, { label: 'Total Earned', value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [['Payouts Received', `${s.monthsCompleted} of 60`], ['Rate', `${d.rate || d.annualRate || 7.4}% p.a.`], ['Total 5yr Income', formatINR(s.monthlyIncome * 60)], ['Remaining Payouts', `${60 - s.monthsCompleted}`], ['Maturity Date', fmtDate(s.maturityDate)]], progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: `${s.monthsCompleted}/60 payouts`, headline: formatINR(s.monthlyIncome), headlineLabel: 'Monthly Income' };
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Monthly Income'), value: formatINR(s.monthlyIncome), color: '#10B981' }, { label: tl('Total Earned'), value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [[tl('Payouts Received'), `${s.monthsCompleted} of 60`], [tl('Rate'), `${d.rate || d.annualRate || 7.4}% p.a.`], [tl('Total 5yr Income'), formatINR(s.monthlyIncome * 60)], [tl('Remaining Payouts'), `${60 - s.monthsCompleted}`], [tl('Maturity Date'), fmtDate(s.maturityDate)]], progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: `${s.monthsCompleted}/60 payouts`, headline: formatINR(s.monthlyIncome), headlineLabel: tl('Monthly Income') };
             }
             if (mt('scss', 'scss calculator')) {
                 const s = calculateScssStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 8.2, startDate: d.startDate, tenure: d.tenure || 5 });
-                return { cards: [{ label: 'Invested', value: formatINR(d.principal), color: '#3B82F6' }, { label: 'Quarterly', value: formatINR(s.quarterlyIncome), color: '#10B981' }, { label: 'Total Earned', value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [['Quarters Completed', `${s.quartersCompleted} of 20`], ['Rate', `${d.rate || d.annualRate || 8.2}% p.a.`], ['Annual Income', formatINR(s.quarterlyIncome * 4)], ['Total 5yr Income', formatINR(s.quarterlyIncome * 20)], ['Maturity Date', fmtDate(s.maturityDate)]], progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: `${s.quartersCompleted}/20 qtrs`, headline: formatINR(s.quarterlyIncome), headlineLabel: 'Quarterly Income' };
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Quarterly'), value: formatINR(s.quarterlyIncome), color: '#10B981' }, { label: tl('Total Earned'), value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [[tl('Quarters Completed'), `${s.quartersCompleted} of 20`], [tl('Rate'), `${d.rate || d.annualRate || 8.2}% p.a.`], [tl('Annual Income'), formatINR(s.quarterlyIncome * 4)], [tl('Total 5yr Income'), formatINR(s.quarterlyIncome * 20)], [tl('Maturity Date'), fmtDate(s.maturityDate)]], progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: `${s.quartersCompleted}/20 qtrs`, headline: formatINR(s.quarterlyIncome), headlineLabel: tl('Quarterly Income') };
             }
             if (mt('goal planner', 'goal')) {
                 const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate, targetAmount: d.targetAmount });
-                return { cards: [{ label: 'Invested', value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: 'Value', value: formatINR(s.currentValue), color: '#10B981' }, { label: 'Goal', value: `${s.progressToGoal.toFixed(0)}%`, color: '#8B5CF6' }], rows: [['Wealth Gained', formatINR(s.wealthGained)], ['Target Amount', d.targetAmount ? formatINR(d.targetAmount) : '—'], ['Goal Progress', `${s.progressToGoal.toFixed(1)}%`]], progress: s.progressToGoal, statusText: `${s.progressToGoal.toFixed(0)}% to goal`, headline: formatINR(s.currentValue), headlineLabel: 'Current Value' };
+                return { cards: [{ label: tl('Invested'), value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: tl('Value'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Goal'), value: `${s.progressToGoal.toFixed(0)}%`, color: '#8B5CF6' }], rows: [[tl('Wealth Gained'), formatINR(s.wealthGained)], [tl('Target Amount'), d.targetAmount ? formatINR(d.targetAmount) : '—'], [tl('Goal Progress'), `${s.progressToGoal.toFixed(1)}%`]], progress: s.progressToGoal, statusText: `${s.progressToGoal.toFixed(0)}% to goal`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
             }
 
             // ── LIVE SNAPSHOT TRACKERS ──
@@ -698,19 +822,19 @@ export default function LoanDetail() {
                 const maturityAtEnd = principal * Math.pow(1 + (rate / 100) / freq, freq * totalYears);
                 return {
                     cards: [
-                        { label: 'Principal', value: formatINR(principal), color: '#3B82F6' },
-                        { label: 'Value Today', value: formatINR(valueToday), color: '#10B981' },
-                        { label: 'Interest', value: formatINR(interest), color: '#F59E0B' },
+                        { label: tl('Principal'), value: formatINR(principal), color: '#3B82F6' },
+                        { label: tl('Value Today'), value: formatINR(valueToday), color: '#10B981' },
+                        { label: tl('Interest'), value: formatINR(interest), color: '#F59E0B' },
                     ],
                     rows: [
-                        ['Years Elapsed', `${elapsed.toFixed(1)} of ${totalYears}`],
-                        ['Rate', `${rate}% p.a.`],
-                        ['Compounding', freq === 1 ? 'Yearly' : freq === 2 ? 'Half-yearly' : freq === 4 ? 'Quarterly' : freq === 12 ? 'Monthly' : `${freq}x/year`],
-                        ['Maturity Value', formatINR(maturityAtEnd)],
+                        [tl('Years Elapsed'), `${elapsed.toFixed(1)} of ${totalYears}`],
+                        [tl('Rate'), `${rate}% p.a.`],
+                        [tl('Compounding'), freq === 1 ? 'Yearly' : freq === 2 ? 'Half-yearly' : freq === 4 ? 'Quarterly' : freq === 12 ? 'Monthly' : `${freq}x/year`],
+                        [tl('Maturity Value'), formatINR(maturityAtEnd)],
                     ],
                     progress, statusText,
                     headline: formatINR(valueToday),
-                    headlineLabel: 'Value Today',
+                    headlineLabel: tl('Value Today'),
                 };
             }
             if (mt('simple interest', 'si')) {
@@ -735,19 +859,19 @@ export default function LoanDetail() {
                 const totalAtEnd = principal + (principal * rate * totalMonths) / (12 * 100);
                 return {
                     cards: [
-                        { label: 'Principal', value: formatINR(principal), color: '#3B82F6' },
-                        { label: 'Interest', value: formatINR(interestSoFar), color: '#F59E0B' },
-                        { label: 'Value Today', value: formatINR(valueToday), color: '#10B981' },
+                        { label: tl('Principal'), value: formatINR(principal), color: '#3B82F6' },
+                        { label: tl('Interest'), value: formatINR(interestSoFar), color: '#F59E0B' },
+                        { label: tl('Value Today'), value: formatINR(valueToday), color: '#10B981' },
                     ],
                     rows: [
-                        ['Months Elapsed', `${elapsedMonths} of ${totalMonths}`],
-                        ['Rate', `${rate}% p.a.`],
-                        ['Mode', d.mode || 'Simple Interest'],
-                        ['Total at Maturity', formatINR(totalAtEnd)],
+                        [tl('Months Elapsed'), `${elapsedMonths} of ${totalMonths}`],
+                        [tl('Rate'), `${rate}% p.a.`],
+                        [tl('Mode'), d.mode || 'Simple Interest'],
+                        [tl('Total at Maturity'), formatINR(totalAtEnd)],
                     ],
                     progress, statusText,
                     headline: formatINR(valueToday),
-                    headlineLabel: 'Value Today',
+                    headlineLabel: tl('Value Today'),
                 };
             }
             // ── LUMPSUM (one-time investment, live tracker) ──
@@ -772,19 +896,19 @@ export default function LoanDetail() {
                 const maturityAtEnd = principal * Math.pow(1 + rate / 100, totalYears);
                 return {
                     cards: [
-                        { label: 'Invested', value: formatINR(principal), color: '#3B82F6' },
-                        { label: 'Value Today', value: formatINR(valueToday), color: '#10B981' },
-                        { label: 'Gain', value: formatINR(gain), color: '#F59E0B' },
+                        { label: tl('Invested'), value: formatINR(principal), color: '#3B82F6' },
+                        { label: tl('Value Today'), value: formatINR(valueToday), color: '#10B981' },
+                        { label: tl('Gain'), value: formatINR(gain), color: '#F59E0B' },
                     ],
                     rows: [
-                        ['Years Elapsed', `${elapsed.toFixed(1)} of ${totalYears}`],
-                        ['Rate', `${rate}% p.a.`],
-                        ['Maturity Value', formatINR(maturityAtEnd)],
-                        ...(d.inflation ? [['Inflation', `${d.inflation}% p.a.`]] : []),
+                        [tl('Years Elapsed'), `${elapsed.toFixed(1)} of ${totalYears}`],
+                        [tl('Rate'), `${rate}% p.a.`],
+                        [tl('Maturity Value'), formatINR(maturityAtEnd)],
+                        ...(d.inflation ? [[tl('Inflation'), `${d.inflation}% p.a.`]] : []),
                     ],
                     progress, statusText,
                     headline: formatINR(valueToday),
-                    headlineLabel: 'Value Today',
+                    headlineLabel: tl('Value Today'),
                 };
             }
             // ── SWP (live month-by-month withdrawal sim) ──
@@ -820,18 +944,18 @@ export default function LoanDetail() {
                 }
                 return {
                     cards: [
-                        { label: 'Corpus', value: formatINR(corpus), color: '#3B82F6' },
-                        { label: 'Balance Today', value: formatINR(balanceToday), color: '#10B981' },
-                        { label: 'Withdrawn', value: formatINR(withdrawnSoFar), color: '#F59E0B' },
+                        { label: tl('Corpus'), value: formatINR(corpus), color: '#3B82F6' },
+                        { label: tl('Balance Today'), value: formatINR(balanceToday), color: '#10B981' },
+                        { label: tl('Withdrawn'), value: formatINR(withdrawnSoFar), color: '#F59E0B' },
                     ],
                     rows: [
-                        ['Years Elapsed', `${elapsedY.toFixed(1)} of ${totalYears}`],
-                        ['Monthly Withdrawal', formatINR(monthlyWithdrawal)],
-                        ['Expected Return', `${rate}% p.a.`],
+                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        [tl('Monthly Withdrawal'), formatINR(monthlyWithdrawal)],
+                        [tl('Expected Return'), `${rate}% p.a.`],
                     ],
                     progress, statusText,
                     headline: formatINR(balanceToday),
-                    headlineLabel: 'Balance Today',
+                    headlineLabel: tl('Balance Today'),
                 };
             }
             // ── CAGR (snapshot — growth-rate calculation, no time elapsed math) ──
@@ -842,19 +966,19 @@ export default function LoanDetail() {
                 const years = d.years || 0;
                 return {
                     cards: [
-                        { label: 'Initial', value: formatINR(initial), color: '#3B82F6' },
-                        { label: 'Final', value: formatINR(final), color: '#10B981' },
-                        { label: 'CAGR', value: `${cagr.toFixed(2)}%`, color: '#F59E0B' },
+                        { label: tl('Initial'), value: formatINR(initial), color: '#3B82F6' },
+                        { label: tl('Final'), value: formatINR(final), color: '#10B981' },
+                        { label: tl('CAGR'), value: `${cagr.toFixed(2)}%`, color: '#F59E0B' },
                     ],
                     rows: [
-                        ['Period', `${years} years`],
-                        ['Total Return', `${(((final / Math.max(1, initial)) - 1) * 100).toFixed(2)}%`],
-                        ['Wealth Multiplier', `${(final / Math.max(1, initial)).toFixed(2)}x`],
+                        [tl('Period'), `${years} years`],
+                        [tl('Total Return'), `${(((final / Math.max(1, initial)) - 1) * 100).toFixed(2)}%`],
+                        [tl('Wealth Multiplier'), `${(final / Math.max(1, initial)).toFixed(2)}x`],
                     ],
                     progress: 100,
                     statusText: `${years}Y @ ${cagr.toFixed(1)}%`,
                     headline: `${cagr.toFixed(2)}%`,
-                    headlineLabel: 'CAGR',
+                    headlineLabel: tl('CAGR'),
                 };
             }
             // ── EPF (live month-by-month accumulation) ──
@@ -889,20 +1013,20 @@ export default function LoanDetail() {
                 const interestEarned = corpusToday - investedSoFar;
                 return {
                     cards: [
-                        { label: 'Invested', value: formatINR(investedSoFar), color: '#3B82F6' },
-                        { label: 'Corpus Today', value: formatINR(corpusToday), color: '#10B981' },
-                        { label: 'Interest', value: formatINR(interestEarned), color: '#F59E0B' },
+                        { label: tl('Invested'), value: formatINR(investedSoFar), color: '#3B82F6' },
+                        { label: tl('Corpus Today'), value: formatINR(corpusToday), color: '#10B981' },
+                        { label: tl('Interest'), value: formatINR(interestEarned), color: '#F59E0B' },
                     ],
                     rows: [
-                        ['Years Elapsed', `${elapsedY.toFixed(1)} of ${totalYears}`],
-                        ['Basic Salary', formatINR(basic)],
-                        ['Contribution', `${empPct}% (emp + employer)`],
-                        ['EPF Rate', `${rate}% p.a.`],
-                        ...(d.corpus ? [['Projected Corpus', formatINR(d.corpus)]] : []),
+                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        [tl('Basic Salary'), formatINR(basic)],
+                        [tl('Contribution'), `${empPct}% (emp + employer)`],
+                        [tl('EPF Rate'), `${rate}% p.a.`],
+                        ...(d.corpus ? [[tl('Projected Corpus'), formatINR(d.corpus)]] : []),
                     ],
                     progress, statusText,
                     headline: formatINR(corpusToday),
-                    headlineLabel: 'Corpus Today',
+                    headlineLabel: tl('Corpus Today'),
                 };
             }
             // ── NPS (live month-by-month accumulation) ──
@@ -934,20 +1058,20 @@ export default function LoanDetail() {
                 }
                 return {
                     cards: [
-                        { label: 'Invested', value: formatINR(investedSoFar), color: '#3B82F6' },
-                        { label: 'Corpus Today', value: formatINR(corpusToday), color: '#10B981' },
-                        { label: 'Pension', value: formatINR(d.monthlyPension || 0), color: '#F59E0B' },
+                        { label: tl('Invested'), value: formatINR(investedSoFar), color: '#3B82F6' },
+                        { label: tl('Corpus Today'), value: formatINR(corpusToday), color: '#10B981' },
+                        { label: tl('Pension'), value: formatINR(d.monthlyPension || 0), color: '#F59E0B' },
                     ],
                     rows: [
-                        ['Years Elapsed', `${elapsedY.toFixed(1)} of ${totalYears}`],
-                        ['Monthly Contribution', formatINR(monthly)],
-                        ['Expected Return', `${rate}% p.a.`],
-                        ['Annuity %', `${d.annuityPct || 40}%`],
-                        ...(d.monthlyPension ? [['Projected Pension', formatINR(d.monthlyPension)]] : []),
+                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        [tl('Monthly Contribution'), formatINR(monthly)],
+                        [tl('Expected Return'), `${rate}% p.a.`],
+                        [tl('Annuity %'), `${d.annuityPct || 40}%`],
+                        ...(d.monthlyPension ? [[tl('Projected Pension'), formatINR(d.monthlyPension)]] : []),
                     ],
                     progress, statusText,
                     headline: formatINR(corpusToday),
-                    headlineLabel: 'Corpus Today',
+                    headlineLabel: tl('Corpus Today'),
                 };
             }
             // ── GRATUITY (snapshot — payout is one-time at retirement) ──
@@ -957,19 +1081,19 @@ export default function LoanDetail() {
                 const yearsOfService = d.yearsOfService || 0;
                 return {
                     cards: [
-                        { label: 'Last Salary', value: formatINR(lastSalary), color: '#3B82F6' },
-                        { label: 'Gratuity', value: formatINR(gratuity), color: '#10B981' },
-                        { label: 'Net Payout', value: formatINR(d.netGratuity || gratuity), color: '#F59E0B' },
+                        { label: tl('Last Salary'), value: formatINR(lastSalary), color: '#3B82F6' },
+                        { label: tl('Gratuity'), value: formatINR(gratuity), color: '#10B981' },
+                        { label: tl('Net Payout'), value: formatINR(d.netGratuity || gratuity), color: '#F59E0B' },
                     ],
                     rows: [
-                        ['Service Period', `${yearsOfService} years`],
-                        ['Employer Type', d.employerType || 'Private'],
-                        ['Tax Exemption', d.employerType === 'Govt' ? 'Fully exempt' : 'Up to ₹25L'],
+                        [tl('Service Period'), `${yearsOfService} years`],
+                        [tl('Employer Type'), d.employerType || 'Private'],
+                        [tl('Tax Exemption'), d.employerType === 'Govt' ? 'Fully exempt' : 'Up to ₹25L'],
                     ],
                     progress: 100,
                     statusText: `${yearsOfService}Y service`,
                     headline: formatINR(gratuity),
-                    headlineLabel: 'Gratuity Payout',
+                    headlineLabel: tl('Gratuity Payout'),
                 };
             }
             // ── INSURANCE COMPARE (snapshot — comparison sample) ──
@@ -979,39 +1103,39 @@ export default function LoanDetail() {
                 const premiumB = d.premiumB || 0;
                 return {
                     cards: [
-                        { label: 'Cover', value: formatINR(sumInsured), color: '#10B981' },
-                        { label: 'Premium (min)', value: formatINR(premiumA), color: '#3B82F6' },
-                        { label: 'Premium (max)', value: formatINR(premiumB), color: '#F59E0B' },
+                        { label: tl('Cover'), value: formatINR(sumInsured), color: '#10B981' },
+                        { label: tl('Premium (min)'), value: formatINR(premiumA), color: '#3B82F6' },
+                        { label: tl('Premium (max)'), value: formatINR(premiumB), color: '#F59E0B' },
                     ],
                     rows: [
-                        ['Type', d.tab === 'life' ? 'Life Insurance' : 'Health Insurance'],
-                        ...(d.members ? [['Members', String(d.members)]] : []),
-                        ...(d.cityType ? [['City', String(d.cityType)]] : []),
-                        ['Has PED', d.hasPreExisting ? 'Yes' : 'No'],
+                        [tl('Type'), d.tab === 'life' ? 'Life Insurance' : 'Health Insurance'],
+                        ...(d.members ? [[tl('Members'), String(d.members)]] : []),
+                        ...(d.cityType ? [[tl('City'), String(d.cityType)]] : []),
+                        [tl('Has PED'), d.hasPreExisting ? 'Yes' : 'No'],
                     ],
                     progress: 100,
                     statusText: d.tab === 'life' ? 'Life Compare' : 'Health Compare',
                     headline: formatINR(sumInsured),
-                    headlineLabel: 'Sum Insured',
+                    headlineLabel: tl('Sum Insured'),
                 };
             }
             if (mt('property')) {
                 const totalCost = d.totalCost || d.propertyValue || 0;
                 return {
                     cards: [
-                        { label: 'Total Cost', value: formatINR(totalCost), color: '#F97316' },
-                        { label: 'Type', value: d.mode || '—', color: '#3B82F6' },
-                        { label: 'Area', value: d.area ? `${d.area} sqft` : '—', color: '#10B981' },
+                        { label: tl('Total Cost'), value: formatINR(totalCost), color: '#F97316' },
+                        { label: tl('Type'), value: d.mode || '—', color: '#3B82F6' },
+                        { label: tl('Area'), value: d.area ? `${d.area} sqft` : '—', color: '#10B981' },
                     ],
                     rows: [
-                        ['Property Type', d.mode || '—'],
-                        ['Total Value', formatINR(totalCost)],
-                        ...(d.area ? [['Built-up Area', `${d.area} sqft`]] : []),
+                        [tl('Property Type'), d.mode || '—'],
+                        [tl('Total Value'), formatINR(totalCost)],
+                        ...(d.area ? [[tl('Built-up Area'), `${d.area} sqft`]] : []),
                     ],
                     progress: 100,
                     statusText: d.mode || 'Property',
                     headline: formatINR(totalCost),
-                    headlineLabel: 'Property Value',
+                    headlineLabel: tl('Property Value'),
                 };
             }
             if (mt('insurance')) {
@@ -1021,19 +1145,19 @@ export default function LoanDetail() {
                 const isLife = d.tab === 'life';
                 return {
                     cards: [
-                        { label: isLife ? 'Cover' : 'Sum Insured', value: formatINR(sumInsured), color: '#10B981' },
-                        { label: 'Premium (min)', value: formatINR(premiumMin), color: '#3B82F6' },
-                        { label: 'Premium (max)', value: formatINR(premiumMax), color: '#F59E0B' },
+                        { label: isLife ? tl('Cover') : tl('Sum Insured'), value: formatINR(sumInsured), color: '#10B981' },
+                        { label: tl('Premium (min)'), value: formatINR(premiumMin), color: '#3B82F6' },
+                        { label: tl('Premium (max)'), value: formatINR(premiumMax), color: '#F59E0B' },
                     ],
                     rows: [
-                        ['Type', isLife ? 'Term Life Insurance' : 'Health Insurance'],
-                        ...(isLife && d.age ? [['Age at Purchase', `${d.age} years`]] : []),
-                        ...(d.tenure ? [['Term', `${d.tenure} years`]] : []),
+                        [tl('Type'), isLife ? 'Term Life Insurance' : 'Health Insurance'],
+                        ...(isLife && d.age ? [[tl('Age at Purchase'), `${d.age} years`]] : []),
+                        ...(d.tenure ? [[tl('Term'), `${d.tenure} years`]] : []),
                     ],
                     progress: 100,
                     statusText: isLife ? 'Life Cover' : 'Health Cover',
                     headline: formatINR(sumInsured),
-                    headlineLabel: isLife ? 'Life Cover' : 'Sum Insured',
+                    headlineLabel: isLife ? tl('Life Cover') : tl('Sum Insured'),
                 };
             }
             if (mt('overdraft', 'od')) {
@@ -1043,18 +1167,18 @@ export default function LoanDetail() {
                 return {
                     cards: [
                         { label: 'Utilized', value: formatINR(utilized), color: '#EF4444' },
-                        { label: 'Interest', value: formatINR(totalInterest), color: '#F59E0B' },
-                        { label: 'Total Payable', value: formatINR(totalPayable), color: '#10B981' },
+                        { label: tl('Interest'), value: formatINR(totalInterest), color: '#F59E0B' },
+                        { label: tl('Total Payable'), value: formatINR(totalPayable), color: '#10B981' },
                     ],
                     rows: [
-                        ['Days Utilized', String(d.days || 0)],
-                        ['Rate', `${d.rate || 0}% p.a.`],
-                        ['Mode', d.odType === 'business' ? 'Business OD' : 'Personal OD'],
+                        [tl('Days Utilized'), String(d.days || 0)],
+                        [tl('Rate'), `${d.rate || 0}% p.a.`],
+                        [tl('Mode'), d.odType === 'business' ? 'Business OD' : 'Personal OD'],
                     ],
                     progress: 100,
                     statusText: `${d.days || 0}d @ ${d.rate || 0}%`,
                     headline: formatINR(totalPayable),
-                    headlineLabel: 'Total Payable',
+                    headlineLabel: tl('Total Payable'),
                 };
             }
         } catch { /* skip */ }
@@ -1067,10 +1191,11 @@ export default function LoanDetail() {
         const startDate = getProfileStartDate(d);
         if (!startDate) return investmentMetrics;
         // Avoid double-injecting if a row labelled 'Start Date' already exists
-        if (investmentMetrics.rows.some(r => r[0] === 'Start Date')) return investmentMetrics;
+        const startDateLabel = tl('Start Date');
+        if (investmentMetrics.rows.some(r => r[0] === startDateLabel)) return investmentMetrics;
         return {
             ...investmentMetrics,
-            rows: [['Start Date', fmtDate(startDate)], ...investmentMetrics.rows],
+            rows: [[startDateLabel, fmtDate(startDate)], ...investmentMetrics.rows],
         };
     }, [investmentMetrics, d]);
 
@@ -1085,7 +1210,7 @@ export default function LoanDetail() {
             inputs: investmentMetrics.cards.map(card => ({ label: card.label, value: card.value })),
             results: [
                 { label: investmentMetrics.headlineLabel, value: investmentMetrics.headline },
-                { label: 'Progress', value: investmentMetrics.statusText },
+                { label: tl('Progress'), value: investmentMetrics.statusText },
                 ...investmentMetricsWithStartDate.rows.map(([label, value]) => ({ label, value: String(value) })),
             ],
             ...(yearWiseTable.rows.length > 0 ? {
@@ -1135,7 +1260,7 @@ export default function LoanDetail() {
                     <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
                         <div className="flex items-center gap-2 mb-3">
                             <Wallet className="w-4 h-4 text-blue-500" />
-                            <h3 className="text-sm font-bold" style={{ color: c.text }}>Investment Status</h3>
+                            <h3 className="text-sm font-bold" style={{ color: c.text }}>{tl('Investment Status')}</h3>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                             {investmentMetrics.cards.map((card, i) => (
@@ -1152,7 +1277,7 @@ export default function LoanDetail() {
                 <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
                     <div className="flex items-center gap-2 mb-3">
                         <BarChart3 className="w-4 h-4 text-violet-500" />
-                        <h3 className="text-sm font-bold" style={{ color: c.text }}>Progress</h3>
+                        <h3 className="text-sm font-bold" style={{ color: c.text }}>{tl('Progress')}</h3>
                         <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#10B98115', color: '#10B981' }}>{investmentMetrics.statusText}</span>
                     </div>
                     <div className="w-full h-3 rounded-full overflow-hidden mb-1" style={{ backgroundColor: c.bg }}>
@@ -1169,7 +1294,7 @@ export default function LoanDetail() {
                 <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
                     <div className="flex items-center gap-2 mb-3">
                         <Info className="w-4 h-4 text-blue-500" />
-                        <h3 className="text-sm font-bold" style={{ color: c.text }}>Complete Details</h3>
+                        <h3 className="text-sm font-bold" style={{ color: c.text }}>{tl('Complete Details')}</h3>
                     </div>
                     <div className="space-y-0">
                         {investmentMetricsWithStartDate.rows.map(([label, value], i) => (
