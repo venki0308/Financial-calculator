@@ -306,7 +306,7 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 label1: t('myLoans.metricValue'), value1: formatINR(sumInsured),
                 label2: t('myLoans.metricMonthly'), value2: `${formatINR(premiumMin)} – ${formatINR(premiumMax)}`,
                 label3: t('myLoans.metricStatus'), value3: d.tab === 'life' ? 'Life' : 'Health',
-                progress: 100, statusText: d.tab === 'life' ? 'Life Cover' : 'Health Cover',
+                progress: 100, statusText: d.tab === 'life' ? t('liveStatus.lifeCoverStatus', 'Life Cover') : t('liveStatus.healthCoverStatus', 'Health Cover'),
             };
         }
         // ── LUMPSUM (one-time investment, live tracker) ──
@@ -478,7 +478,7 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 label1: t('myLoans.metricValue'), value1: formatINR(sumInsured),
                 label2: t('myLoans.metricMonthly'), value2: `${formatINR(premiumA)} vs ${formatINR(premiumB)}`,
                 label3: t('myLoans.metricStatus'), value3: d.winner || '—',
-                progress: 100, statusText: d.tab === 'life' ? 'Life Compare' : 'Health Compare',
+                progress: 100, statusText: d.tab === 'life' ? t('liveStatus.lifeCompare', 'Life Compare') : t('liveStatus.healthCompare', 'Health Compare'),
             };
         }
     } catch { return null; }

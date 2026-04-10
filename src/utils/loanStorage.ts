@@ -50,12 +50,21 @@ export const saveLoan = (loan: SavedLoan): void => {
     } else {
         loans.push(loan);
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(loans));
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(loans));
+    } catch {
+        // QuotaExceededError — localStorage is full
+        console.warn('[LoanStorage] localStorage full, cannot save loan');
+    }
 };
 
 export const deleteLoan = (id: string): void => {
     const loans = getAllLoans().filter(l => l.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(loans));
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(loans));
+    } catch {
+        console.warn('[LoanStorage] localStorage full, cannot update loans');
+    }
 };
 
 export const getLoanById = (id: string): SavedLoan | null => {
@@ -63,7 +72,7 @@ export const getLoanById = (id: string): SavedLoan | null => {
 };
 
 export const generateLoanId = (): string => {
-    return 'loan_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    return 'loan_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
 };
 
 export const LOAN_TYPE_META: Record<LoanType, { icon: string; label: string; color: string }> = {

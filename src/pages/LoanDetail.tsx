@@ -219,6 +219,28 @@ export default function LoanDetail() {
             'Inflation': t('liveStatus.inflationLabel'),
             'Area': t('liveStatus.area'),
             'Maturity': t('liveStatus.maturityLabel'),
+            // Year-wise table column headers
+            'Deposit': t('liveStatus.colDeposit', 'Deposit'),
+            'Opening': t('liveStatus.colOpening', 'Opening'),
+            'Closing': t('liveStatus.colClosing', 'Closing'),
+            'Growth %': t('liveStatus.colGrowthPct', 'Growth %'),
+            'Interest Earned': t('liveStatus.colInterestEarned', 'Interest Earned'),
+            'Total Received': t('liveStatus.colTotalReceived', 'Total Received'),
+            'Cumulative': t('liveStatus.colCumulative', 'Cumulative'),
+            // Compounding frequency labels
+            'Yearly': t('liveStatus.freqYearly', 'Yearly'),
+            'Half-yearly': t('liveStatus.freqHalfYearly', 'Half-yearly'),
+            'Monthly': t('liveStatus.freqMonthly', 'Monthly'),
+            'Simple Interest': t('liveStatus.simpleInterest', 'Simple Interest'),
+            // Action labels
+            'Private': t('liveStatus.private', 'Private'),
+            'Government': t('liveStatus.government', 'Government'),
+            'Fully exempt': t('liveStatus.fullyExempt', 'Fully exempt'),
+            'Yes': t('liveStatus.yes', 'Yes'),
+            'No': t('liveStatus.no', 'No'),
+            'Today': t('liveStatus.today', 'Today'),
+            'sqft': t('liveStatus.sqft', 'sqft'),
+            'day': t('liveStatus.dayUnit', 'day'),
         };
         return map[label] ?? label;
     };
@@ -352,7 +374,7 @@ export default function LoanDetail() {
             if (prepayAmount <= 0) return null;
             const r = d.annualRate / 12 / 100;
             const newPrincipal = Math.max(0, status.principalOutstanding - prepayAmount);
-            if (newPrincipal <= 0) return { interestSaved: 0, monthsReduced: status.emisRemaining, newClosureDate: 'Today' };
+            if (newPrincipal <= 0) return { interestSaved: 0, monthsReduced: status.emisRemaining, newClosureDate: tl('Today') };
             let bal = newPrincipal, newMonths = 0, newInterest = 0;
             while (bal > 0 && newMonths < d.tenureMonths) {
                 const intPart = bal * r;
@@ -450,7 +472,7 @@ export default function LoanDetail() {
                                 <div className="flex justify-between"><span style={{ color: c.textSecondary }}>{t('liveStatus.interestAccruedDays', { days: status.daysSinceLastEmi, rate: d.annualRate })}</span><span className="font-medium text-amber-500">+{formatINR(status.interestAccruedToday)}</span></div>
                                 <div className="flex justify-between"><span style={{ color: c.textSecondary }}>{t('liveStatus.foreclosureChargeLabel', { type: isFloating ? t('liveStatus.nilRbi2014') : '3%' })}</span><span className={`font-medium ${status.foreclosureCharge > 0 ? 'text-red-500' : 'text-emerald-500'}`}>{status.foreclosureCharge > 0 ? `+${formatINR(status.foreclosureCharge)}` : t('liveStatus.nil')}</span></div>
                             </div>
-                            <p className="text-[10px] mt-3 text-center" style={{ color: c.textSecondary }}>{t('liveStatus.perDay')}: {formatINR(status.dailyInterest)}/day</p>
+                            <p className="text-[10px] mt-3 text-center" style={{ color: c.textSecondary }}>{t('liveStatus.perDay')}: {formatINR(status.dailyInterest)}/{tl('day')}</p>
                         </div>
                     )}
 
@@ -628,7 +650,7 @@ export default function LoanDetail() {
         if (mt('ppf', 'ppf calculator')) {
             const r = rate / 100;
             const deposit = d.yearlyDeposit || 0;
-            const cols = ['Year', 'Deposit', 'Interest', 'Balance'];
+            const cols = [tl('Year'), tl('Deposit'), tl('Interest'), tl('Balance')];
             const rows: Array<Array<string | number>> = [];
             let bal = 0;
             for (let y = 1; y <= 15; y++) {
@@ -643,7 +665,7 @@ export default function LoanDetail() {
         if (mt('ssy', 'ssy calculator')) {
             const r = rate / 100;
             const deposit = d.yearlyDeposit || 0;
-            const cols = ['Year', 'Deposit', 'Interest', 'Balance'];
+            const cols = [tl('Year'), tl('Deposit'), tl('Interest'), tl('Balance')];
             const rows: Array<Array<string | number>> = [];
             let bal = 0;
             for (let y = 1; y <= 21; y++) {
@@ -658,7 +680,7 @@ export default function LoanDetail() {
         if (mt('nsc', 'nsc calculator')) {
             const r = rate / 100;
             const principal = d.principal || 0;
-            const cols = ['Year', 'Opening', 'Interest', 'Closing'];
+            const cols = [tl('Year'), tl('Opening'), tl('Interest'), tl('Closing')];
             const rows: Array<Array<string | number>> = [];
             for (let y = 1; y <= 5; y++) {
                 const opening = principal * Math.pow(1 + r, y - 1);
@@ -672,7 +694,7 @@ export default function LoanDetail() {
             const r = rate / 100;
             const principal = d.principal || 0;
             const doublingYears = Math.ceil(Math.log(2) / Math.log(1 + r));
-            const cols = ['Year', 'Value', 'Gain', 'Growth %'];
+            const cols = [tl('Year'), tl('Value'), tl('Gain'), tl('Growth %')];
             const rows: Array<Array<string | number>> = [];
             for (let y = 1; y <= doublingYears; y++) {
                 const val = principal * Math.pow(1 + r, y);
@@ -684,7 +706,7 @@ export default function LoanDetail() {
             const principal = d.principal || 0;
             const freq = d.compoundingFreq || 4;
             const tenureYears = Math.ceil((d.tenureMonths || 60) / 12);
-            const cols = ['Year', 'Value', 'Interest Earned', 'Growth %'];
+            const cols = [tl('Year'), tl('Value'), tl('Interest Earned'), tl('Growth %')];
             const rows: Array<Array<string | number>> = [];
             for (let y = 1; y <= tenureYears; y++) {
                 const val = principal * Math.pow(1 + (rate / 100) / freq, freq * y);
@@ -696,7 +718,7 @@ export default function LoanDetail() {
             const monthly = d.monthlySip || d.monthlyAmount || 0;
             const annualReturn = d.annualReturn || 12;
             const r = annualReturn / 12 / 100;
-            const cols = ['Year', 'Invested', 'Value', 'Gain'];
+            const cols = [tl('Year'), tl('Invested'), tl('Value'), tl('Gain')];
             const rows: Array<Array<string | number>> = [];
             for (let y = 1; y <= 10; y++) {
                 const n = y * 12;
@@ -710,7 +732,7 @@ export default function LoanDetail() {
             const monthly = d.monthlyDeposit || 0;
             const tenureYears = Math.ceil((d.tenureMonths || 60) / 12);
             const r = (d.annualRate || 5.8) / 400;
-            const cols = ['Year', 'Deposited', 'Value', 'Interest'];
+            const cols = [tl('Year'), tl('Deposited'), tl('Value'), tl('Interest')];
             const rows: Array<Array<string | number>> = [];
             for (let y = 1; y <= tenureYears; y++) {
                 const n = y * 12;
@@ -727,7 +749,7 @@ export default function LoanDetail() {
         if (mt('pomis', 'post office mis')) {
             const principal = d.principal || 0;
             const monthlyIncome = Math.round(principal * rate / 100 / 12);
-            const cols = ['Year', 'Monthly Income', 'Total Received', 'Cumulative'];
+            const cols = [tl('Year'), tl('Monthly Income'), tl('Total Received'), tl('Cumulative')];
             const rows: Array<Array<string | number>> = [];
             for (let y = 1; y <= 5; y++) {
                 const annualIncome = monthlyIncome * 12;
@@ -738,7 +760,7 @@ export default function LoanDetail() {
         if (mt('scss', 'scss calculator')) {
             const principal = d.principal || 0;
             const quarterlyIncome = Math.round(principal * rate / 100 / 4);
-            const cols = ['Year', 'Quarterly Income', 'Annual Income', 'Cumulative'];
+            const cols = [tl('Year'), tl('Quarterly Income'), tl('Annual Income'), tl('Cumulative')];
             const rows: Array<Array<string | number>> = [];
             for (let y = 1; y <= (d.tenure || 5); y++) {
                 const annual = quarterlyIncome * 4;
@@ -829,7 +851,7 @@ export default function LoanDetail() {
                     rows: [
                         [tl('Years Elapsed'), `${elapsed.toFixed(1)} of ${totalYears}`],
                         [tl('Rate'), `${rate}% p.a.`],
-                        [tl('Compounding'), freq === 1 ? 'Yearly' : freq === 2 ? 'Half-yearly' : freq === 4 ? 'Quarterly' : freq === 12 ? 'Monthly' : `${freq}x/year`],
+                        [tl('Compounding'), freq === 1 ? tl('Yearly') : freq === 2 ? tl('Half-yearly') : freq === 4 ? tl('Quarterly') : freq === 12 ? tl('Monthly') : `${freq}x/year`],
                         [tl('Maturity Value'), formatINR(maturityAtEnd)],
                     ],
                     progress, statusText,
@@ -866,7 +888,7 @@ export default function LoanDetail() {
                     rows: [
                         [tl('Months Elapsed'), `${elapsedMonths} of ${totalMonths}`],
                         [tl('Rate'), `${rate}% p.a.`],
-                        [tl('Mode'), d.mode || 'Simple Interest'],
+                        [tl('Mode'), d.mode || tl('Simple Interest')],
                         [tl('Total at Maturity'), formatINR(totalAtEnd)],
                     ],
                     progress, statusText,
@@ -1086,12 +1108,12 @@ export default function LoanDetail() {
                         { label: tl('Net Payout'), value: formatINR(d.netGratuity || gratuity), color: '#F59E0B' },
                     ],
                     rows: [
-                        [tl('Service Period'), `${yearsOfService} years`],
-                        [tl('Employer Type'), d.employerType || 'Private'],
-                        [tl('Tax Exemption'), d.employerType === 'Govt' ? 'Fully exempt' : 'Up to ₹25L'],
+                        [tl('Service Period'), `${yearsOfService} ${t('prag.years', 'years')}`],
+                        [tl('Employer Type'), d.employerType === 'Govt' ? tl('Government') : tl('Private')],
+                        [tl('Tax Exemption'), d.employerType === 'Govt' ? tl('Fully exempt') : `${t('liveStatus.upTo', 'Up to')} ₹25L`],
                     ],
                     progress: 100,
-                    statusText: `${yearsOfService}Y service`,
+                    statusText: `${yearsOfService}Y ${t('liveStatus.service', 'service')}`,
                     headline: formatINR(gratuity),
                     headlineLabel: tl('Gratuity Payout'),
                 };
@@ -1108,13 +1130,13 @@ export default function LoanDetail() {
                         { label: tl('Premium (max)'), value: formatINR(premiumB), color: '#F59E0B' },
                     ],
                     rows: [
-                        [tl('Type'), d.tab === 'life' ? 'Life Insurance' : 'Health Insurance'],
+                        [tl('Type'), d.tab === 'life' ? t('liveStatus.lifeInsurance', 'Life Insurance') : t('liveStatus.healthInsurance', 'Health Insurance')],
                         ...(d.members ? [[tl('Members'), String(d.members)]] : []),
                         ...(d.cityType ? [[tl('City'), String(d.cityType)]] : []),
-                        [tl('Has PED'), d.hasPreExisting ? 'Yes' : 'No'],
+                        [tl('Has PED'), d.hasPreExisting ? tl('Yes') : tl('No')],
                     ],
                     progress: 100,
-                    statusText: d.tab === 'life' ? 'Life Compare' : 'Health Compare',
+                    statusText: d.tab === 'life' ? t('liveStatus.lifeCompare', 'Life Compare') : t('liveStatus.healthCompare', 'Health Compare'),
                     headline: formatINR(sumInsured),
                     headlineLabel: tl('Sum Insured'),
                 };
@@ -1125,15 +1147,15 @@ export default function LoanDetail() {
                     cards: [
                         { label: tl('Total Cost'), value: formatINR(totalCost), color: '#F97316' },
                         { label: tl('Type'), value: d.mode || '—', color: '#3B82F6' },
-                        { label: tl('Area'), value: d.area ? `${d.area} sqft` : '—', color: '#10B981' },
+                        { label: tl('Area'), value: d.area ? `${d.area} ${tl('sqft')}` : '—', color: '#10B981' },
                     ],
                     rows: [
                         [tl('Property Type'), d.mode || '—'],
                         [tl('Total Value'), formatINR(totalCost)],
-                        ...(d.area ? [[tl('Built-up Area'), `${d.area} sqft`]] : []),
+                        ...(d.area ? [[tl('Built-up Area'), `${d.area} ${tl('sqft')}`]] : []),
                     ],
                     progress: 100,
-                    statusText: d.mode || 'Property',
+                    statusText: d.mode || t('liveStatus.property', 'Property'),
                     headline: formatINR(totalCost),
                     headlineLabel: tl('Property Value'),
                 };
@@ -1150,12 +1172,12 @@ export default function LoanDetail() {
                         { label: tl('Premium (max)'), value: formatINR(premiumMax), color: '#F59E0B' },
                     ],
                     rows: [
-                        [tl('Type'), isLife ? 'Term Life Insurance' : 'Health Insurance'],
-                        ...(isLife && d.age ? [[tl('Age at Purchase'), `${d.age} years`]] : []),
-                        ...(d.tenure ? [[tl('Term'), `${d.tenure} years`]] : []),
+                        [tl('Type'), isLife ? t('liveStatus.termLife', 'Term Life Insurance') : t('liveStatus.healthInsurance', 'Health Insurance')],
+                        ...(isLife && d.age ? [[tl('Age at Purchase'), `${d.age} ${t('prag.years', 'years')}`]] : []),
+                        ...(d.tenure ? [[tl('Term'), `${d.tenure} ${t('prag.years', 'years')}`]] : []),
                     ],
                     progress: 100,
-                    statusText: isLife ? 'Life Cover' : 'Health Cover',
+                    statusText: isLife ? t('liveStatus.lifeCoverStatus', 'Life Cover') : t('liveStatus.healthCoverStatus', 'Health Cover'),
                     headline: formatINR(sumInsured),
                     headlineLabel: isLife ? tl('Life Cover') : tl('Sum Insured'),
                 };
@@ -1166,14 +1188,14 @@ export default function LoanDetail() {
                 const totalPayable = d.totalPayable ?? (utilized + totalInterest);
                 return {
                     cards: [
-                        { label: 'Utilized', value: formatINR(utilized), color: '#EF4444' },
+                        { label: t('liveStatus.utilized', 'Utilized'), value: formatINR(utilized), color: '#EF4444' },
                         { label: tl('Interest'), value: formatINR(totalInterest), color: '#F59E0B' },
                         { label: tl('Total Payable'), value: formatINR(totalPayable), color: '#10B981' },
                     ],
                     rows: [
                         [tl('Days Utilized'), String(d.days || 0)],
                         [tl('Rate'), `${d.rate || 0}% p.a.`],
-                        [tl('Mode'), d.odType === 'business' ? 'Business OD' : 'Personal OD'],
+                        [tl('Mode'), d.odType === 'business' ? t('od.typeBusiness', 'Business OD') : t('od.typePersonal', 'Personal OD')],
                     ],
                     progress: 100,
                     statusText: `${d.days || 0}d @ ${d.rate || 0}%`,
@@ -1284,9 +1306,9 @@ export default function LoanDetail() {
                         <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all" style={{ width: `${Math.min(investmentMetrics.progress, 100)}%` }} />
                     </div>
                     <div className="flex justify-between mt-1.5">
-                        <span className="text-[9px] font-medium" style={{ color: c.textSecondary }}>Start</span>
-                        <span className="text-[9px] font-bold" style={{ color: '#10B981' }}>{Math.min(investmentMetrics.progress, 100).toFixed(1)}% complete</span>
-                        <span className="text-[9px] font-medium" style={{ color: c.textSecondary }}>Maturity</span>
+                        <span className="text-[9px] font-medium" style={{ color: c.textSecondary }}>{t('liveStatus.start', 'Start')}</span>
+                        <span className="text-[9px] font-bold" style={{ color: '#10B981' }}>{Math.min(investmentMetrics.progress, 100).toFixed(1)}% {t('liveStatus.complete', 'complete')}</span>
+                        <span className="text-[9px] font-medium" style={{ color: c.textSecondary }}>{tl('Maturity')}</span>
                     </div>
                 </div>
 
