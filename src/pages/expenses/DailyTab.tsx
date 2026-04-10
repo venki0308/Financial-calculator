@@ -10,7 +10,7 @@ import {
   PAYMENT_METHOD_LABELS,
 } from '../../types/expense';
 import {
-  getEntriesForDate, deleteEntry,
+  getEntriesForDate, deleteEntry, deleteEntriesInRange,
   getAllCategories, getCategoryById, getAllEntries,
 } from '../../utils/expenseStorage';
 import { fmtINR, getTodayStr, formatFullDate } from '../../utils/expenseCalculations';
@@ -161,6 +161,14 @@ export default function DailyTab() {
 
   const goPrev = () => setSelectedDate(d => shiftDay(d, -1));
   const goNext = () => { if (canGoForward) setSelectedDate(d => shiftDay(d, 1)); };
+
+  // ── clear all entries for the selected day ──
+  const [showClearAll, setShowClearAll] = useState(false);
+  const handleClearAll = () => {
+    deleteEntriesInRange(selectedDate, selectedDate);
+    setShowClearAll(false);
+    refresh();
+  };
 
   const catFor = (entry: Entry): Category | undefined => getCategoryById(entry.category);
 
@@ -479,6 +487,17 @@ export default function DailyTab() {
         </motion.div>
       ) : (
         <div className="space-y-2">
+          {/* Clear All button */}
+          <div className="flex justify-end mb-1">
+            <button
+              onClick={() => setShowClearAll(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold"
+              style={{ color: et.accentExpense, backgroundColor: et.accentExpense + '15' }}
+            >
+              <Trash2 size={11} />
+              {t('expenses.clearAllEntries', 'Clear All')}
+            </button>
+          </div>
           <AnimatePresence mode="popLayout">
             {filteredEntries.map((entry, idx) => {
               const cat = catFor(entry);
@@ -616,6 +635,46 @@ export default function DailyTab() {
                     style={{ backgroundColor: et.accentExpense }}
                   >
                     {t('common.delete', 'Delete')}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
+
+      {/* ════════════════════════════════════════════════════════
+          CLEAR ALL CONFIRMATION DIALOG
+          ════════════════════════════════════════════════════════ */}
+      {createPortal(
+        <AnimatePresence>
+          {showClearAll && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[10001] flex items-center justify-center p-4"
+              style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
+              onClick={() => setShowClearAll(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.85, opacity: 0 }}
+                transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+                className="w-full max-w-xs rounded-2xl p-6"
+                style={{ backgroundColor: et.bgCard, boxShadow: et.shadowCard }}
+                onClick={e => e.stopPropagation()}
+              >
+                <p className="font-bold text-base mb-2" style={{ color: et.textPrimary }}>
+                  {t('expenses.clearAllTitle', 'Clear All Entries?')}
+                </p>
+                <p className="text-sm mb-5" style={{ color: et.textSecondary }}>
+                  {t('expenses.clearAllDayMsg', 'All entries for this day will be deleted. This cannot be undone.')}
+                </p>
+                <div className="flex gap-3">
+                  <button onClick={() => setShowClearAll(false)} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ backgroundColor: et.borderSubtle, color: et.textSecondary }}>
+                    {t('common.cancel', 'Cancel')}
+                  </button>
+                  <button onClick={handleClearAll} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white" style={{ backgroundColor: et.accentExpense }}>
+                    {t('expenses.clearAll', 'Clear All')}
                   </button>
                 </div>
               </motion.div>

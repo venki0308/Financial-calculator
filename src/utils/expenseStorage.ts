@@ -156,6 +156,28 @@ export const generateBudgetId = (): string => {
   return `budget_${Date.now()}`;
 };
 
+/** Remove the budget for a given month entirely from storage. */
+export const deleteBudget = (monthStr: string): void => {
+  const all = getAllBudgets().filter(b => b.month !== monthStr);
+  localStorage.setItem(BUDGETS_KEY, JSON.stringify(all));
+};
+
+/** Soft-delete all entries within a date range (inclusive). */
+export const deleteEntriesInRange = (startDate: string, endDate: string): number => {
+  const all = getAllEntriesRaw();
+  let count = 0;
+  const now = new Date().toISOString();
+  all.forEach(e => {
+    if (!e.isDeleted && e.date >= startDate && e.date <= endDate) {
+      e.isDeleted = true;
+      e.updatedAt = now;
+      count++;
+    }
+  });
+  if (count > 0) localStorage.setItem(ENTRIES_KEY, JSON.stringify(all));
+  return count;
+};
+
 // ─── CUSTOM CATEGORIES ────────────────────────────────────────
 
 export const getCustomCategories = (): Category[] => {

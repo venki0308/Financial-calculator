@@ -2,11 +2,11 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, ChevronRight, TrendingUp, TrendingDown,
-  Wallet, PiggyBank, BarChart3, CalendarDays,
+  Wallet, PiggyBank, BarChart3, CalendarDays, Trash2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useExpenseTheme } from '../../theme/expenseTheme';
-import { getEntriesForDateRange, getCategoryById } from '../../utils/expenseStorage';
+import { getEntriesForDateRange, getCategoryById, deleteEntriesInRange } from '../../utils/expenseStorage';
 import {
   calculateSummary, getWeekRange, fmtINR, fmtPct,
   formatFullDate, DAY_NAMES,
@@ -83,6 +83,8 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
   const [weekOffset, setWeekOffset] = useState(0);
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('expense');
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
+  const [showClearAll, setShowClearAll] = useState(false);
+  const [localRefresh, setLocalRefresh] = useState(0);
 
   const isCurrentWeek = weekOffset === 0;
 
@@ -101,16 +103,23 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
   /* ── entries (refreshKey is in deps so global-FAB saves trigger refetch) ── */
   const weekEntries = useMemo(
     () => getEntriesForDateRange(week.start, week.end),
-    [week, refreshKey],
+    [week, refreshKey, localRefresh],
   );
   const prevWeekEntries = useMemo(
     () => getEntriesForDateRange(prevWeek.start, prevWeek.end),
-    [prevWeek, refreshKey],
+    [prevWeek, refreshKey, localRefresh],
   );
 
   /* ── summaries ── */
   const summary = useMemo(() => calculateSummary(weekEntries), [weekEntries]);
   const prevSummary = useMemo(() => calculateSummary(prevWeekEntries), [prevWeekEntries]);
+
+  /* ── clear all entries for the week ── */
+  const handleClearAllWeek = () => {
+    deleteEntriesInRange(week.start, week.end);
+    setShowClearAll(false);
+    setLocalRefresh(k => k + 1);
+  };
 
   /* ── BUG 3.2: subscription billings hitting this week ── */
   const subscriptions = useBudgetTrackerStore(s => s.subscriptions);
@@ -310,6 +319,31 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
           <ChevronRight size={18} style={{ color: et.textSecondary }} />
         </button>
       </div>
+
+      {/* Clear All button */}
+      {weekEntries.length > 0 && (
+        <div className="flex justify-end">
+          <button onClick={() => setShowClearAll(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ color: et.accentExpense, backgroundColor: et.accentExpense + '15' }}>
+            <Trash2 size={11} /> {t('expenses.clearAllEntries', 'Clear All')}
+          </button>
+        </div>
+      )}
+
+      {/* Clear All confirmation */}
+      <AnimatePresence>
+        {showClearAll && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10001] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }} onClick={() => setShowClearAll(false)}>
+            <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.85, opacity: 0 }} className="w-full max-w-xs rounded-2xl p-6" style={{ backgroundColor: et.bgCard, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }} onClick={e => e.stopPropagation()}>
+              <p className="font-bold text-base mb-2" style={{ color: et.textPrimary }}>{t('expenses.clearAllTitle', 'Clear All Entries?')}</p>
+              <p className="text-sm mb-5" style={{ color: et.textSecondary }}>{t('expenses.clearAllWeekMsg', 'All entries for this week will be deleted. This cannot be undone.')}</p>
+              <div className="flex gap-3">
+                <button onClick={() => setShowClearAll(false)} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ backgroundColor: et.borderSubtle, color: et.textSecondary }}>{t('common.cancel', 'Cancel')}</button>
+                <button onClick={handleClearAllWeek} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white" style={{ backgroundColor: et.accentExpense }}>{t('expenses.clearAll', 'Clear All')}</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ═══════════════════════════════════════════════════════════
           2. HERO CARD

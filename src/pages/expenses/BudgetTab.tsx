@@ -17,7 +17,7 @@ import {
 } from '../../types/expense';
 
 import {
-  getBudgetForMonth, saveBudget, generateBudgetId,
+  getBudgetForMonth, saveBudget, deleteBudget, generateBudgetId,
   getEntriesForMonth,
   getAllAccounts,
 } from '../../utils/expenseStorage';
@@ -368,6 +368,20 @@ export default function BudgetTab() {
     saveBudget(copied);  // <-- THE PERSISTENCE FIX
     setCopyState('copied');
     setTimeout(() => setCopyState('idle'), 4000);
+  };
+
+  // ── clear budget ──────────────────────────────────────────
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [cleared, setCleared] = useState(false);
+
+  const handleClearBudget = () => {
+    deleteBudget(range.monthStr);
+    const fresh = emptyBudget(range.monthStr);
+    setBudget(fresh);
+    useBudgetTrackerStore.getState().setMonthlyIncome(0);
+    setShowClearConfirm(false);
+    setCleared(true);
+    setTimeout(() => setCleared(false), 2400);
   };
 
   // ── category lookup helper ────────────────────────────────
@@ -1645,6 +1659,72 @@ export default function BudgetTab() {
           {saved ? `\u2713 ${t('expenses.budgetSaved')}` : t('expenses.saveBudget')}
         </motion.button>
       </div>
+
+      {/* Clear Budget button — only shown when a budget is set */}
+      {isBudgetSet && (
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setShowClearConfirm(true)}
+          className="w-full py-3 rounded-2xl font-semibold text-xs border flex items-center justify-center gap-2"
+          style={{
+            borderColor: cleared ? theme.accentIncome : theme.accentExpense,
+            color: cleared ? theme.accentIncome : theme.accentExpense,
+            backgroundColor: theme.bgCard,
+          }}
+        >
+          <Trash2 size={14} />
+          {cleared ? `\u2713 ${t('expenses.budgetCleared', 'Budget Cleared!')}` : t('expenses.clearBudget', 'Clear Budget')}
+        </motion.button>
+      )}
+
+      {/* Clear Budget confirmation modal */}
+      <AnimatePresence>
+        {showClearConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center px-6"
+            style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+            onClick={() => setShowClearConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-sm rounded-2xl p-5 space-y-4"
+              style={{ backgroundColor: theme.bgCard, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: theme.bgExpense }}>
+                  <Trash2 size={18} style={{ color: theme.accentExpense }} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm" style={{ color: theme.textPrimary }}>{t('expenses.clearBudgetTitle', 'Clear Budget?')}</h3>
+                  <p className="text-[11px]" style={{ color: theme.textSecondary }}>{t('expenses.clearBudgetMsg', 'This will reset all income, fixed expenses, category limits and investment targets to zero for this month.')}</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowClearConfirm(false)}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-semibold border"
+                  style={{ borderColor: theme.borderSubtle, color: theme.textSecondary, backgroundColor: theme.bgPrimary }}
+                >
+                  {t('common.cancel', 'Cancel')}
+                </button>
+                <button
+                  onClick={handleClearBudget}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white"
+                  style={{ backgroundColor: theme.accentExpense }}
+                >
+                  {t('expenses.clearBudgetConfirm', 'Yes, Clear Budget')}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

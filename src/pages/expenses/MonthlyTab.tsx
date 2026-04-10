@@ -15,10 +15,11 @@ import {
   Target,
   Flame,
   Info,
+  Trash2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useExpenseTheme, getSavingsRating, getBudgetStatus, formatChange, TYPE_COLORS } from '../../theme/expenseTheme';
-import { getEntriesForMonth, getBudgetForMonth, getCategoryById } from '../../utils/expenseStorage';
+import { getEntriesForMonth, getBudgetForMonth, getCategoryById, deleteEntriesInRange } from '../../utils/expenseStorage';
 import {
   calculateSummary,
   buildWeeklyBreakdown,
@@ -113,6 +114,8 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
   const [monthOffset, setMonthOffset] = useState(0);
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('expenses');
   const [budgetExpanded, setBudgetExpanded] = useState(false);
+  const [showClearAll, setShowClearAll] = useState(false);
+  const [localRefresh, setLocalRefresh] = useState(0);
 
   // ── Derived data ──
 
@@ -120,8 +123,18 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
 
   const entries = useMemo(
     () => getEntriesForMonth(monthRange.year, monthRange.month),
-    [monthRange.year, monthRange.month, refreshKey],
+    [monthRange.year, monthRange.month, refreshKey, localRefresh],
   );
+
+  /* ── clear all entries for the month ── */
+  const handleClearAllMonth = () => {
+    const lastDay = new Date(monthRange.year, monthRange.month, 0).getDate();
+    const startISO = `${monthRange.year}-${String(monthRange.month).padStart(2, '0')}-01`;
+    const endISO = `${monthRange.year}-${String(monthRange.month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    deleteEntriesInRange(startISO, endISO);
+    setShowClearAll(false);
+    setLocalRefresh(k => k + 1);
+  };
 
   const prevMonthRange = useMemo(() => getMonthRange(monthOffset - 1), [monthOffset]);
   const prevEntries = useMemo(
@@ -338,6 +351,31 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
           <ChevronRight size={18} style={{ color: textSecondary }} />
         </motion.button>
       </div>
+
+      {/* Clear All button */}
+      {entries.length > 0 && (
+        <div className="flex justify-end">
+          <button onClick={() => setShowClearAll(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ color: theme.accentExpense, backgroundColor: theme.accentExpense + '15' }}>
+            <Trash2 size={11} /> {t('expenses.clearAllEntries', 'Clear All')}
+          </button>
+        </div>
+      )}
+
+      {/* Clear All confirmation */}
+      <AnimatePresence>
+        {showClearAll && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10001] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }} onClick={() => setShowClearAll(false)}>
+            <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.85, opacity: 0 }} className="w-full max-w-xs rounded-2xl p-6" style={{ backgroundColor: bgCard, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }} onClick={e => e.stopPropagation()}>
+              <p className="font-bold text-base mb-2" style={{ color: textPrimary }}>{t('expenses.clearAllTitle', 'Clear All Entries?')}</p>
+              <p className="text-sm mb-5" style={{ color: textSecondary }}>{t('expenses.clearAllMonthMsg', 'All entries for this month will be deleted. This cannot be undone.')}</p>
+              <div className="flex gap-3">
+                <button onClick={() => setShowClearAll(false)} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ backgroundColor: borderSubtle, color: textSecondary }}>{t('common.cancel', 'Cancel')}</button>
+                <button onClick={handleClearAllMonth} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white" style={{ backgroundColor: theme.accentExpense }}>{t('expenses.clearAll', 'Clear All')}</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ════════════════════════════════════════════════════════════ */}
       {/* 2. CASH FLOW HERO CARD                                     */}

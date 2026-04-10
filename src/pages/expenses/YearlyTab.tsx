@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, TrendingUp, BarChart3, Calendar } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, TrendingUp, BarChart3, Calendar, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useExpenseTheme, getSavingsRating, TYPE_COLORS, formatChange } from '../../theme/expenseTheme';
 import type { Entry } from '../../types/expense';
-import { getEntriesForMonth, getEntriesForYear, getCategoryById } from '../../utils/expenseStorage';
+import { getEntriesForMonth, getEntriesForYear, getCategoryById, deleteEntriesInRange } from '../../utils/expenseStorage';
 import {
   calculateSummary,
   getYearRange,
@@ -41,6 +41,8 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
   const theme = useExpenseTheme();
 
   const [yearOffset, setYearOffset] = useState(0);
+  const [showClearAll, setShowClearAll] = useState(false);
+  const [localRefresh, setLocalRefresh] = useState(0);
 
   const yearRange = useMemo(() => getYearRange(yearOffset), [yearOffset]);
   const currentYear = new Date().getFullYear();
@@ -50,8 +52,15 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
   // ── All entries for the year ──
   const yearEntries = useMemo(
     () => getEntriesForYear(yearRange.year),
-    [yearRange.year, refreshKey],
+    [yearRange.year, refreshKey, localRefresh],
   );
+
+  /* ── clear all entries for the year ── */
+  const handleClearAllYear = () => {
+    deleteEntriesInRange(`${yearRange.year}-01-01`, `${yearRange.year}-12-31`);
+    setShowClearAll(false);
+    setLocalRefresh(k => k + 1);
+  };
 
   const yearSummary = useMemo(
     () => calculateSummary(yearEntries),
@@ -197,6 +206,31 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
         theme={theme}
         t={t}
       />
+
+      {/* Clear All button */}
+      {yearEntries.length > 0 && (
+        <div className="flex justify-end">
+          <button onClick={() => setShowClearAll(true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ color: theme.accentExpense, backgroundColor: theme.accentExpense + '15' }}>
+            <Trash2 size={11} /> {t('expenses.clearAllEntries', 'Clear All')}
+          </button>
+        </div>
+      )}
+
+      {/* Clear All confirmation */}
+      <AnimatePresence>
+        {showClearAll && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10001] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }} onClick={() => setShowClearAll(false)}>
+            <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.85, opacity: 0 }} className="w-full max-w-xs rounded-2xl p-6" style={{ backgroundColor: theme.bgCard, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }} onClick={e => e.stopPropagation()}>
+              <p className="font-bold text-base mb-2" style={{ color: theme.textPrimary }}>{t('expenses.clearAllTitle', 'Clear All Entries?')}</p>
+              <p className="text-sm mb-5" style={{ color: theme.textSecondary }}>{t('expenses.clearAllYearMsg', 'All entries for this year will be deleted. This cannot be undone.')}</p>
+              <div className="flex gap-3">
+                <button onClick={() => setShowClearAll(false)} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ backgroundColor: theme.borderSubtle, color: theme.textSecondary }}>{t('common.cancel', 'Cancel')}</button>
+                <button onClick={handleClearAllYear} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white" style={{ backgroundColor: theme.accentExpense }}>{t('expenses.clearAll', 'Clear All')}</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── 2. Annual Summary Card ── (uses augmented summary so totals
               include all subs that actually billed this year) */}
