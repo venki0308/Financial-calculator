@@ -100,6 +100,6 @@ export const RemoteConfigService = {
     async openPlayStore() {
         const packageName = 'com.fincalix.app';
         const webUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
-        window.open(webUrl, '_blank');
+        window.open(webUrl, '_blank', 'noopener,noreferrer');
     },
 };

@@ -156,7 +156,7 @@ export default function Settings() {
                             // On Android, use market:// intent for direct Play Store launch
                             window.open(`market://details?id=${packageId}`, '_system');
                         } else {
-                            window.open(`https://play.google.com/store/apps/details?id=${packageId}`, '_blank');
+                            window.open(`https://play.google.com/store/apps/details?id=${packageId}`, '_blank', 'noopener,noreferrer');
                         }
                     }} />
                     <div className="h-px bg-border mx-4" />
