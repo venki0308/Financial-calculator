@@ -1694,7 +1694,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     }
 
     // ── NEW SECTION: MONTH-OVER-MONTH COMPARISON ───────────────────────
-    if (data.prevMonthEntries && data.prevMonthEntries.length > 0) {
+    if (data.prevMonthEntries) {
         const prevSubs = data.prevMonthSubscriptions ?? [];
         const prevStartISO = data.prevYear && data.prevMonth
             ? `${data.prevYear}-${String(data.prevMonth).padStart(2, '0')}-01` : '';
@@ -1753,7 +1753,13 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             else needsActual += c.amount; // default unmapped to needs
         });
         const savingsActual = Math.max(0, effectiveNetSavings) + summary.totalInvestments;
-        const baseIncome = Math.max(summary.totalIncome, effectiveExpenses + savingsActual);
+        // Use budget planned income when actual income is zero (user hasn't logged salary yet)
+        const budgetIncome = data.budget?.monthlyIncome ?? 0;
+        const baseIncome = summary.totalIncome > 0
+            ? summary.totalIncome
+            : budgetIncome > 0
+                ? budgetIncome
+                : Math.max(effectiveExpenses + savingsActual, 1);
         const needs50 = baseIncome * 0.5;
         const wants30 = baseIncome * 0.3;
         const savings20 = baseIncome * 0.2;
