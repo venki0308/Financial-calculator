@@ -93,7 +93,7 @@ export default function SSYCalculator() {
             });
         }
 
-        const invested = annual * investYears;
+        const invested = effectiveAnnual * investYears;
         const totalInterest = Math.round(balance - invested);
         const maturityAge = childAge + maturityYears;
         const withdrawalAt18 = childAge < 18 ? timeline.find(row => row.age >= 18) : null;

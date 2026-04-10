@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { App as CapApp } from '@capacitor/app';
 import { useSettingsStore } from './store/useSettingsStore';
 import { CrashlyticsService } from './lib/analytics';
@@ -147,11 +148,12 @@ const LazyFallback = (
 
 // Toast component for back-press notification
 function BackToast({ visible }: { visible: boolean }) {
+    const { t } = useTranslation();
     if (!visible) return null;
     return (
         <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
             <div className="px-5 py-2.5 rounded-full bg-card border-border border border-slate-700 shadow-xl">
-                <p className="text-foreground text-xs font-medium whitespace-nowrap">Press back again to exit FinCalix</p>
+                <p className="text-foreground text-xs font-medium whitespace-nowrap">{t('app.backToExit', 'Press back again to exit FinCalix')}</p>
             </div>
         </div>
     );

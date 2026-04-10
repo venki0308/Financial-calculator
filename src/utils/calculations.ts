@@ -49,7 +49,7 @@ export function calculateReducingEMI(principal: number, annualRate: number, mont
         const emi = Math.round(principal / months);
         return { emi, totalInterest: 0, totalPayment: principal, schedule: generateAmortization(principal, emi, r, months) };
     }
-    const emi = Math.round((principal * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1));
+    const emi = Math.ceil((principal * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1));
     const schedule = generateAmortization(principal, emi, r, months);
     const totalPayment = schedule.reduce((sum, row) => sum + row.emi, 0);
     const totalInterest = totalPayment - principal;

@@ -92,7 +92,7 @@ export default function FDCalculator() {
             const mat = principal * Math.pow(1 + effectiveRate / (100 * f.freq), years * f.freq);
             return { ...f, maturity: Math.round(mat), interest: Math.round(mat - principal) };
         });
-    }, [principal, rate, years]);
+    }, [principal, rate, years, isSeniorCitizen]);
 
     // Year-wise growth
     const yearWise = useMemo(() => {
@@ -102,7 +102,7 @@ export default function FDCalculator() {
             data.push({ year: y, value: Math.round(mat), interest: Math.round(mat - principal) });
         }
         return data;
-    }, [principal, rate, years, compounding]);
+    }, [principal, rate, years, compounding, isSeniorCitizen]);
 
     // Inflation-adjusted return
     const inflationAdj = useMemo(() => {
