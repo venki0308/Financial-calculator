@@ -13,7 +13,14 @@ import { getDailyInterest, getPeriodInterest, getGSTOnInterest, getTrueCost, get
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
-const RATE_PRESETS = [24, 36, 40, 42, 45];
+const RATE_PRESETS: { rate: number; label: string }[] = [
+  { rate: 24, label: '24%' },
+  { rate: 36, label: 'IDFC 36%' },
+  { rate: 40, label: 'SBI 40%' },
+  { rate: 42, label: 'HDFC 42%' },
+  { rate: 43, label: 'Axis 43%' },
+  { rate: 45, label: '45%' },
+];
 
 interface Insight { text: string; tone: 'warning' | 'success' | 'info' }
 
@@ -70,20 +77,27 @@ export default function CreditCardInterestCalculator() {
         return { dailyInt, periodInt, gst, totalCharge, costPerMonth, trueAPR };
     }, [balance, rate, days, includeGST]);
 
+    // Indian CC rule: if you don't pay FULL statement, interest is on the ENTIRE
+    // original balance (grace period is lost). Only 100% payment = zero interest.
     const scenarios = useMemo(() => {
         const pcts = [1, 0.8, 0.5, 0.05];
-        const labels = ['Full (100%)', '80%', '50%', 'Min (5%)'];
+        const labels = [t('ccInterest.payFull', 'Full (100%)'), '80%', '50%', t('ccInterest.payMin', 'Min (5%)')];
+        // Base cost: minimum payment scenario (interest on full balance)
+        const fullBalanceInt = getPeriodInterest(balance, rate, days);
+        const fullBalanceGst = includeGST ? getGSTOnInterest(fullBalanceInt) : 0;
+        const baseCost = fullBalanceInt + fullBalanceGst;
         return pcts.map((pct, i) => {
-            const paid = balance * pct;
+            const paid = Math.round(balance * pct);
             const remaining = balance - paid;
-            const intOnRemaining = getPeriodInterest(remaining, rate, days);
-            const gstOnRemaining = includeGST ? getGSTOnInterest(intOnRemaining) : 0;
-            const totalIfPartial = intOnRemaining + gstOnRemaining;
-            const totalIfMin = getPeriodInterest(balance * 0.95, rate, days) + (includeGST ? getGSTOnInterest(getPeriodInterest(balance * 0.95, rate, days)) : 0);
-            const saved = pct === 0.05 ? 0 : totalIfMin - totalIfPartial;
-            return { label: labels[i], pct, remaining: Math.round(remaining), saved: Math.round(saved), total: Math.round(remaining + intOnRemaining + gstOnRemaining) };
+            // Full payment = no interest (grace period preserved)
+            // Any partial payment = interest on FULL balance (grace period lost)
+            const interestCharged = pct >= 1 ? 0 : fullBalanceInt;
+            const gstCharged = pct >= 1 ? 0 : fullBalanceGst;
+            const totalOwed = remaining + interestCharged + gstCharged;
+            const saved = pct >= 1 ? baseCost : pct === 0.05 ? 0 : Math.round(baseCost * 0); // partial payments don't save vs min — all pay full interest
+            return { label: labels[i], pct, remaining: Math.round(remaining), saved: pct >= 1 ? Math.round(baseCost) : 0, total: Math.round(totalOwed) };
         });
-    }, [balance, rate, days, includeGST]);
+    }, [balance, rate, days, includeGST, t]);
 
     const caResult = useMemo(() => getCashAdvanceCost(caAmount, caFeePercent, rate, caDays), [caAmount, caFeePercent, rate, caDays]);
 
@@ -183,14 +197,14 @@ export default function CreditCardInterestCalculator() {
                         min={0} max={60} suffix="%"
                     />
                     <div className="flex flex-wrap gap-2 mt-2">
-                        {RATE_PRESETS.map(r => (
-                            <button key={r} onClick={() => { setSelectedRate(r); setUseCustomRate(false); }}
+                        {RATE_PRESETS.map(p => (
+                            <button key={p.rate} onClick={() => { setSelectedRate(p.rate); setUseCustomRate(false); }}
                                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                                    !useCustomRate && selectedRate === r
+                                    !useCustomRate && selectedRate === p.rate
                                         ? 'bg-brand-blue/20 border-brand-blue text-brand-blue'
                                         : 'bg-card border-border text-muted-foreground hover:bg-muted'
                                 }`}>
-                                {r}%
+                                {p.label}
                             </button>
                         ))}
                         <button onClick={() => setUseCustomRate(true)}
@@ -255,7 +269,7 @@ export default function CreditCardInterestCalculator() {
                                     <span className="text-sm font-bold text-amber-500">{fmtINR(result.costPerMonth)}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs text-muted-foreground">{t('ccInterest.trueAPR', 'True cost')}</span>
+                                    <span className="text-xs text-muted-foreground">{t('ccInterest.effectiveRate', 'Interest + GST Rate')}</span>
                                     <span className="text-sm font-bold text-red-500">{result.trueAPR}% {t('ccInterest.pa', 'p.a.')}</span>
                                 </div>
                             </div>

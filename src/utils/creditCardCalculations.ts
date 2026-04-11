@@ -65,15 +65,15 @@ export function getTrueCost(balance: number, annualRate: number, days: number) {
 export function getMinimumDue(balance: number, annualRate: number): number {
   if (balance <= 0) return 0;
   const monthlyInterest = balance * (annualRate / 100) / 12;
-  const option1 = balance * 0.05; // 5% of balance
+  const option1 = balance * 0.05; // 5% of balance (RBI standard)
   const option2 = monthlyInterest + (balance * 0.01); // interest + 1% principal
-  return Math.max(Math.ceil(Math.max(option1, option2)), 250);
+  return Math.max(Math.ceil(Math.max(option1, option2)), 200); // ₹200 floor per industry standard
 }
 
 // ─── Payoff Months ───────────────────────────────────────────────────────────
 
 export function getPayoffMonths(balance: number, annualRate: number, monthlyPayment: number): number {
-  if (balance <= 0) return 0;
+  if (balance <= 0 || monthlyPayment <= 0) return 0;
   const r = annualRate / 12 / 100;
   if (r === 0) return Math.ceil(balance / monthlyPayment);
   if (monthlyPayment <= balance * r) return Infinity;
@@ -109,12 +109,14 @@ export function getUtilizationBarColor(pct: number): string {
 // ─── Cash Advance ────────────────────────────────────────────────────────────
 
 export function getCashAdvanceCost(amount: number, feePercent: number, annualRate: number, days: number) {
+  if (amount <= 0 || days <= 0) return { fee: 0, feeGst: 0, interest: 0, interestGst: 0, total: 0, effectiveAPR: 0 };
   const fee = Math.round(amount * feePercent / 100);
   const feeGst = Math.round(fee * 0.18);
   const interest = Math.round(getPeriodInterest(amount, annualRate, days));
   const interestGst = Math.round(interest * 0.18);
   const total = fee + feeGst + interest + interestGst;
-  const effectiveAPR = total > 0 ? Math.round((total / amount) * (365 / days) * 10000) / 100 : 0;
+  // Note: Effective APR includes annualized one-time fee — intentionally shows the shock cost
+  const effectiveAPR = Math.round((total / amount) * (365 / days) * 10000) / 100;
   return { fee, feeGst, interest, interestGst, total, effectiveAPR };
 }
 
