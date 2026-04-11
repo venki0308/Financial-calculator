@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Wallet, Trash2, TrendingUp, Banknote, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Wallet, Trash2, TrendingUp, Banknote, ChevronRight, CreditCard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import { formatINR } from '../utils/calculations';
@@ -14,6 +14,8 @@ import {
     calculateKvpStatus, calculatePomisStatus, calculateScssStatus,
 } from '../utils/investmentStatusEngine';
 import { AnalyticsService } from '../lib/analytics';
+import { getAllCreditCards } from '../utils/creditCardStorage';
+import { getUtilization, getUtilizationBarColor, getDaysUntilDue } from '../utils/creditCardCalculations';
 
 const TYPE_META: Record<string, { icon: string; color: string; labelKey: string }> = {
     'Loan EMI': { icon: '🏠', color: '#8B5CF6', labelKey: 'myLoans.typeLabelLoanEmi' },
@@ -699,6 +701,73 @@ export default function MyLoans() {
                         </div>
                     </div>
                 )}
+
+                {/* Credit Card Debt */}
+                {(() => {
+                    const ccCards = getAllCreditCards().filter(cc => cc.isActive && cc.currentBalance > 0);
+                    if (ccCards.length === 0) return null;
+                    const ccTotal = ccCards.reduce((s, cc) => s + cc.currentBalance, 0);
+                    const ccLimit = ccCards.reduce((s, cc) => s + cc.creditLimit, 0);
+                    return (
+                        <div>
+                            <div className="flex items-center justify-between mb-3 px-1">
+                                <div className="flex items-center gap-2">
+                                    <CreditCard size={16} className="text-rose-500" />
+                                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: c.textSecondary }}>
+                                        {t('myLoans.creditCardDebt', 'Credit Card Debt')} ({ccCards.length})
+                                    </p>
+                                </div>
+                                <button onClick={() => navigate('/expenses')} className="text-[10px] font-bold text-brand-blue">
+                                    {t('myLoans.manageCards', 'Manage')} →
+                                </button>
+                            </div>
+                            {/* CC Summary */}
+                            <div className="grid grid-cols-2 gap-2 mb-3">
+                                <div className="p-3 rounded-xl border" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                                    <p className="text-[9px] uppercase font-bold" style={{ color: c.textMuted }}>{t('cc.totalOutstanding', 'Outstanding')}</p>
+                                    <p className="text-sm font-black text-rose-500">{formatINR(ccTotal)}</p>
+                                </div>
+                                <div className="p-3 rounded-xl border" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                                    <p className="text-[9px] uppercase font-bold" style={{ color: c.textMuted }}>{t('cc.utilization', 'Utilization')}</p>
+                                    <p className="text-sm font-black" style={{ color: getUtilizationBarColor(getUtilization(ccTotal, ccLimit)) }}>
+                                        {getUtilization(ccTotal, ccLimit)}%
+                                    </p>
+                                </div>
+                            </div>
+                            {/* CC Card List */}
+                            <div className="space-y-2">
+                                {ccCards.map(cc => {
+                                    const util = getUtilization(cc.currentBalance, cc.creditLimit);
+                                    const daysDue = getDaysUntilDue(cc.dueDate);
+                                    return (
+                                        <motion.div key={cc.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                                            onClick={() => navigate(`/expenses/credit-cards/${cc.id}`)}
+                                            className="p-3.5 rounded-xl border cursor-pointer"
+                                            style={{ backgroundColor: c.card, borderColor: c.border }}>
+                                            <div className="flex items-center justify-between mb-1.5">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: cc.cardColor || '#3b82f6' }} />
+                                                    <span className="text-xs font-bold" style={{ color: c.text }}>{cc.cardName}</span>
+                                                    <span className="text-[10px]" style={{ color: c.textMuted }}>{cc.bankName}</span>
+                                                </div>
+                                                <span className="text-[10px] font-bold" style={{ color: daysDue <= 3 ? '#ef4444' : daysDue <= 7 ? '#eab308' : '#22c55e' }}>
+                                                    {daysDue <= 0 ? t('cc.dueToday', 'Due today') : `${daysDue}d`}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-bold text-rose-500">{formatINR(cc.currentBalance)}</span>
+                                                <span className="text-[10px]" style={{ color: c.textSecondary }}>{cc.annualInterestRate}% APR</span>
+                                            </div>
+                                            <div className="mt-1.5 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: c.border }}>
+                                                <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(util, 100)}%`, backgroundColor: getUtilizationBarColor(util) }} />
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* Investment Trackers */}
                 {investmentProfiles.length > 0 && (

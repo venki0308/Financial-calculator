@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppColors } from '../../theme/useAppColors';
 import { formatINR } from '../../utils/calculations';
 import { getAllCreditCards } from '../../utils/creditCardStorage';
+import { getCibilProfile } from '../../utils/cibilProfile';
 import {
   getUtilization, getUtilizationBarColor, getDaysUntilDue,
   getDueUrgency, generateInsights,
@@ -163,6 +164,32 @@ export default function CreditCards() {
             </p>
           </motion.div>
         </div>
+
+        {/* ── CIBIL Integration Banner ────────────────────── */}
+        {(() => {
+          const cibil = getCibilProfile();
+          if (!cibil?.score || cards.length === 0) return null;
+          const target = overallUtil > 30;
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}
+              className="rounded-xl p-3 mb-4 flex items-center justify-between"
+              style={{ background: target ? '#ef444410' : '#22c55e10', border: `1px solid ${target ? '#ef444430' : '#22c55e30'}` }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black" style={{ color: target ? '#ef4444' : '#22c55e' }}>CIBIL: {cibil.score}</span>
+                <span className="text-[10px]" style={{ color: c.textSecondary }}>
+                  {target
+                    ? t('cc.cibilWarning', 'Utilization {{util}}% — keep below 30% for better score', { util: overallUtil })
+                    : t('cc.cibilGood', 'Utilization {{util}}% — good for CIBIL', { util: overallUtil })}
+                </span>
+              </div>
+              <button onClick={() => navigate('/cibil-score')} className="text-[10px] font-bold text-brand-blue">
+                {t('cc.viewCibil', 'View')} →
+              </button>
+            </motion.div>
+          );
+        })()}
 
         {/* ── Alert Banner ────────────────────────────────── */}
         {priorityAlerts.length > 0 && (
