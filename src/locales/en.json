@@ -110,6 +110,14 @@
             "name": "Asset Rebalancer",
             "desc": "Portfolio allocation guide"
         },
+        "ccPayoff": {
+            "name": "CC Payoff Calculator",
+            "desc": "Multi-card debt payoff strategies"
+        },
+        "ccInterest": {
+            "name": "CC Interest Calculator",
+            "desc": "Credit card interest & GST calculator"
+        },
         "cagr": {
             "name": "CAGR Calculator",
             "desc": "Growth rate calculator"
@@ -306,6 +314,8 @@
         "weekly": "Weekly",
         "weeklySubtitle": "Weekly overview",
         "reportsSubtitle": "Analytics & PDF export",
+        "creditCards": "Cards",
+        "creditCardsSubtitle": "Credit card manager",
         "totalSpentMonth": "Total Spent This Month",
         "budgetUsedLabel": "Budget used",
         "income": "Income",
@@ -3530,6 +3540,10 @@
         "prag": {
             "title": "Asset Allocation Guide",
             "text": "Asset allocation illustrations are generated algorithmically based on your age, risk profile, and investment goals. They are for educational purposes only and do not constitute personal financial advice. Expected returns and volatility figures are historical averages and may not reflect future performance. Rebalancing involves buying and selling assets which may trigger capital gains tax. Consult a SEBI-registered investment advisor or certified financial planner before making investment decisions. FinCalix is not a SEBI-registered investment advisor."
+        },
+        "creditCard": {
+            "title": "Credit Card Calculator",
+            "text": "Interest calculations use the simplified daily balance method. Actual charges may vary based on your bank's specific calculation method, billing cycle, and terms. 18% GST applies to all credit card finance charges (interest, fees, late payment charges) as per GST regulations. Credit utilization and CIBIL score impacts shown are estimates based on general scoring principles. Reward point values are estimates — actual redemption value depends on bank policies. FinCalix is not affiliated with any bank or credit card issuer. All card information is stored only on your device."
         },
         "welcome": "Welcome to FinCalix",
         "subtitle": "Please read before continuing",

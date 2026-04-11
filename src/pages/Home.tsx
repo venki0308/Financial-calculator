@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe, Search, X, Shield, Bike, Gem } from 'lucide-react';
+import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe, Search, X, Shield, Bike, Gem, CreditCard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
@@ -60,6 +60,8 @@ const calcCatalog: Record<string, { icon: React.ElementType; color: string; labe
     '/two-wheeler-loan': { icon: Bike, color: '#EC4899', label: 'Two Wheeler Loan' },
     '/gold-loan': { icon: Gem, color: '#EAB308', label: 'Gold Loan' },
     '/cibil-score': { icon: BarChart3, color: '#8B5CF6', label: 'CIBIL Score' },
+    '/calculator/credit-card-payoff': { icon: CreditCard, color: '#06B6D4', label: 'CC Payoff' },
+    '/calculator/credit-card-interest': { icon: CreditCard, color: '#EF4444', label: 'CC Interest' },
 };
 
 // Default items if history is empty

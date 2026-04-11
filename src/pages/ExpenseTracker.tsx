@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from 'react
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus, Repeat } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus, Repeat, CreditCard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExpenseTheme } from '../theme/expenseTheme';
 import { AnalyticsService } from '../lib/analytics';
@@ -19,6 +19,7 @@ const YearlyTab = lazy(() => import('./expenses/YearlyTab'));
 const ReportsTab = lazy(() => import('./expenses/ReportsTab'));
 const BudgetTab = lazy(() => import('./expenses/BudgetTab'));
 const SubscriptionsTab = lazy(() => import('./expenses/SubscriptionsTab'));
+const CreditCardsTab = lazy(() => import('./expenses/CreditCards'));
 const AddEntrySheet = lazy(() => import('../components/AddEntrySheet'));
 
 // ─── TAB DEFINITIONS ─────────────────────────────────────────
@@ -30,6 +31,7 @@ const TABS = [
   { id: 'yearly',        labelKey: 'expenses.yearly',        icon: TrendingUp,   emoji: '\u{1F4C8}' },
   { id: 'subscriptions', labelKey: 'expenses.subscriptions', icon: Repeat,       emoji: '\u{1F501}' },
   { id: 'reports',       labelKey: 'expenses.reports',       icon: FileText,     emoji: '\u{1F4CB}' },
+  { id: 'creditCards',   labelKey: 'expenses.creditCards',   icon: CreditCard,   emoji: '\u{1F4B3}' },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];
@@ -42,6 +44,7 @@ const TAB_SUBTITLES: Record<TabId, string> = {
   subscriptions: 'expenses.subscriptionsSubtitle',
   reports:       'expenses.reportsSubtitle',
   budget:        'expenses.budgetSubtitle',
+  creditCards:   'expenses.creditCardsSubtitle',
 };
 
 // ─── LOADING FALLBACK ────────────────────────────────────────
@@ -248,6 +251,7 @@ export default function ExpenseTracker() {
               {activeTab === 'subscriptions' && <SubscriptionsTab />}
               {activeTab === 'reports' && <ReportsTab />}
               {activeTab === 'budget' && <BudgetTab />}
+              {activeTab === 'creditCards' && <CreditCardsTab />}
             </Suspense>
           </motion.div>
         </AnimatePresence>

@@ -68,4 +68,7 @@ export const allCalcs: CalcItem[] = [
     // Insurance
     { nameKey: 'calculators.insurance.name', descKey: 'calculators.insurance.desc', icon: Shield, color: '#10B981', path: '/calculator/insurance', category: 'insurance', keywords: ['insurance', 'health', 'life', 'term', 'premium', 'cover', 'policy'] },
     { nameKey: 'calculators.insuranceCompare.name', descKey: 'calculators.insuranceCompare.desc', icon: GitCompare, color: '#06B6D4', path: '/insurance-compare', category: 'insurance', keywords: ['insurance', 'compare', 'health', 'plan', 'comparison', 'csr'] },
+    // Credit Cards
+    { nameKey: 'calculators.ccPayoff.name', descKey: 'calculators.ccPayoff.desc', icon: CreditCard, color: '#06B6D4', path: '/calculator/credit-card-payoff', category: 'loans', keywords: ['credit', 'card', 'payoff', 'debt', 'avalanche', 'snowball'] },
+    { nameKey: 'calculators.ccInterest.name', descKey: 'calculators.ccInterest.desc', icon: CreditCard, color: '#EF4444', path: '/calculator/credit-card-interest', category: 'loans', keywords: ['credit', 'card', 'interest', 'gst', 'finance', 'charge'] },
 ];

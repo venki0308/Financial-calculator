@@ -126,6 +126,10 @@ const CalculationHistory         = lr(() => import('./pages/CalculationHistory')
 const BookmarkedSchemes          = lr(() => import('./pages/BookmarkedSchemes'));
 const Notifications              = lr(() => import('./pages/Notifications'));
 const ValidatorPage              = lr(() => import('./pages/ValidatorPage'));
+const CreditCardAdd              = lr(() => import('./pages/expenses/CreditCardAdd'));
+const CreditCardDetail           = lr(() => import('./pages/expenses/CreditCardDetail'));
+const CreditCardPayoffCalculator = lr(() => import('./pages/CreditCardPayoffCalculator'));
+const CreditCardInterestCalculator = lr(() => import('./pages/CreditCardInterestCalculator'));
 
 // App-level modals — lazy loaded with retry (native app only)
 const GlobalDisclaimerModal      = lr(() => import('./components/GlobalDisclaimerModal'));
@@ -429,6 +433,10 @@ function AppContent() {
                         <Route path="/gold-loan" element={<GoldLoanCalculator />} />
                         <Route path="/cibil-score" element={<CibilScoreCalculator />} />
                         <Route path="/cibil-profile" element={<CibilProfileSetup />} />
+                        <Route path="/expenses/credit-cards/add" element={<CreditCardAdd />} />
+                        <Route path="/expenses/credit-cards/:id" element={<CreditCardDetail />} />
+                        <Route path="/calculator/credit-card-payoff" element={<CreditCardPayoffCalculator />} />
+                        <Route path="/calculator/credit-card-interest" element={<CreditCardInterestCalculator />} />
                         <Route path="/dev/validator" element={<ValidatorPage />} />
                     </Route>
 
