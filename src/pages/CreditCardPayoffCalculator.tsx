@@ -276,7 +276,7 @@ export default function CreditCardPayoffCalculator() {
               <table className="w-full text-[11px]">
                 <thead><tr className="bg-gray-50 dark:bg-gray-800/40">
                   <th className="p-2 text-left font-semibold text-gray-500">{t('ccPayoff.metric', 'Metric')}</th>
-                  {STRATEGIES.map(s => <th key={s} className={`p-2 text-right font-semibold ${s === selectedStrategy ? 'text-blue-600' : 'text-gray-500'}`}>{STRATEGY_LABELS[s]}</th>)}
+                  {STRATEGIES.map(s => <th key={s} className={`p-2 text-right font-semibold ${s === selectedStrategy ? 'text-blue-600' : 'text-gray-500'}`}>{t(STRATEGY_KEYS[s], STRATEGY_LABELS[s])}</th>)}
                 </tr></thead>
                 <tbody>
                   {[
@@ -337,7 +337,7 @@ export default function CreditCardPayoffCalculator() {
                 <p className="text-[11px] text-gray-500">{minimumOnly.totalMonths} {t('ccPayoff.months', 'months')}</p>
               </div>
               <div className="text-center p-2 rounded-lg bg-white dark:bg-gray-900/60">
-                <p className="text-[10px] text-gray-500 uppercase mb-1">{STRATEGY_LABELS[selectedStrategy]}</p>
+                <p className="text-[10px] text-gray-500 uppercase mb-1">{t(STRATEGY_KEYS[selectedStrategy], STRATEGY_LABELS[selectedStrategy])}</p>
                 <p className="text-lg font-black text-green-600">{fmt(current.totalInterest)}</p>
                 <p className="text-[11px] text-gray-500">{current.totalMonths} {t('ccPayoff.months', 'months')}</p>
               </div>

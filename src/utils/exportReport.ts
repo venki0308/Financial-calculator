@@ -59,6 +59,28 @@ export function fmt(n: number): string {
     return '₹' + Math.round(n).toLocaleString('en-IN');
 }
 
+/**
+ * Get a translation function that ALWAYS returns English text.
+ * Use this for PDF/Excel exports — jsPDF Helvetica cannot render Indian scripts.
+ * Usage: const te = getEnglishT(); then te('sip.title') → "SIP Calculator"
+ */
+export function getEnglishT(): (key: string, fallback?: string) => string {
+    try {
+        // i18next getFixedT forces English locale
+        const i18n = require('i18next').default;
+        if (i18n?.getFixedT) {
+            const fixedT = i18n.getFixedT('en');
+            return (key: string, fallback?: string) => {
+                const result = fixedT(key);
+                // If key not found, getFixedT returns the key itself
+                return result === key ? (fallback || key) : result;
+            };
+        }
+    } catch { /* fallback below */ }
+    // Fallback: just return the fallback/key
+    return (_key: string, fallback?: string) => fallback || _key;
+}
+
 /** Date tag for filenames: 28032026 */
 export function dateTag(): string {
     const d = new Date();
@@ -70,10 +92,19 @@ export function dateTag(): string {
 
 // ─── PDF helpers ──────────────────────────────────────────────────────────────
 
-/** Sanitize a cell value for jsPDF (strip emoji, replace ₹ with INR) */
+/** Sanitize a cell value for jsPDF (strip emoji, replace ₹ with INR, strip non-Latin scripts) */
 function san(cell: string | number): string | number {
     if (typeof cell !== 'string') return cell;
-    return sanitizeForPDF(cell.replace(/₹\s*/g, 'INR ').replace(/Rs\.\s*/g, 'INR '));
+    let s = cell.replace(/₹\s*/g, 'INR ').replace(/Rs\.\s*/g, 'INR ');
+    // Strip Devanagari, Telugu, Tamil, Kannada, Malayalam scripts that jsPDF can't render
+    s = s.replace(/[\u0900-\u097F]/g, '')  // Devanagari (Hindi)
+         .replace(/[\u0C00-\u0C7F]/g, '')  // Telugu
+         .replace(/[\u0B80-\u0BFF]/g, '')  // Tamil
+         .replace(/[\u0C80-\u0CFF]/g, '')  // Kannada
+         .replace(/[\u0D00-\u0D7F]/g, '')  // Malayalam
+         .replace(/\s{2,}/g, ' ')          // collapse multiple spaces
+         .trim();
+    return sanitizeForPDF(s) || cell.replace(/[^\x20-\x7E]/g, '').trim() || 'N/A';
 }
 
 /** Draw a perfect-circle donut pie chart on a 300×300 canvas and return PNG data URL */

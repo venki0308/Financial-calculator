@@ -25,7 +25,7 @@ const RATE_PRESETS: { rate: number; label: string }[] = [
 
 interface Insight { text: string; tone: 'warning' | 'success' | 'info' }
 
-function generateCCInsights(balance: number, rate: number, days: number, includeGST: boolean): Insight[] {
+function generateCCInsights(balance: number, rate: number, days: number, includeGST: boolean, t: (k: string, fb: string, opts?: Record<string, unknown>) => string): Insight[] {
     const out: Insight[] = [];
     if (balance <= 0) return out;
     const daily = getDailyInterest(balance, rate);
@@ -34,15 +34,15 @@ function generateCCInsights(balance: number, rate: number, days: number, include
     const total = periodInt + gst;
     const trueAPR = includeGST ? Math.round(rate * 1.18 * 100) / 100 : rate;
 
-    out.push({ text: `You are paying INR ${Math.round(daily)}/day in interest on your outstanding balance.`, tone: 'warning' });
+    if (daily > 10) out.push({ text: t('ccInterest.insightDaily', 'You are paying INR {{daily}}/day in interest on your outstanding balance.', { daily: Math.round(daily) }), tone: 'warning' });
     if (trueAPR > 40)
-        out.push({ text: `Effective APR of ${trueAPR}% is extremely high. Consider a balance transfer or personal loan at lower rates.`, tone: 'warning' });
+        out.push({ text: t('ccInterest.insightHighAPR', 'Effective APR of {{apr}}% is extremely high. Consider a balance transfer or personal loan.', { apr: trueAPR }), tone: 'warning' });
     if (balance >= 50000)
-        out.push({ text: `Paying the full balance of ${fmtINR(balance)} saves you ${fmtINR(total)} in finance charges this period.`, tone: 'success' });
+        out.push({ text: t('ccInterest.insightPayFull', 'Paying the full balance saves you {{amount}} in finance charges this period.', { amount: fmtINR(total) }), tone: 'success' });
     if (days > 45)
-        out.push({ text: `${days} days outstanding significantly increases your interest burden. Try to pay within the billing cycle.`, tone: 'info' });
+        out.push({ text: t('ccInterest.insightLongOutstanding', '{{days}} days outstanding significantly increases your interest burden.', { days }), tone: 'info' });
     if (includeGST && gst > 100)
-        out.push({ text: `GST alone adds ${fmtINR(gst)} to your finance charges. This is often overlooked by cardholders.`, tone: 'info' });
+        out.push({ text: t('ccInterest.insightGST', 'GST alone adds {{amount}} to your finance charges.', { amount: fmtINR(gst) }), tone: 'info' });
     return out;
 }
 
@@ -104,7 +104,7 @@ export default function CreditCardInterestCalculator() {
 
     const caResult = useMemo(() => getCashAdvanceCost(caAmount, caFeePercent, rate, caDays), [caAmount, caFeePercent, rate, caDays]);
 
-    const insights = useMemo(() => generateCCInsights(balance, rate, days, includeGST), [balance, rate, days, includeGST]);
+    const insights = useMemo(() => generateCCInsights(balance, rate, days, includeGST, t), [balance, rate, days, includeGST, t]);
 
     // ── History Tracking ──
     useHistoryTracker(

@@ -183,7 +183,7 @@ export default function CreditCardDetail() {
             <div style={{ marginTop: 4 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span style={{ fontSize: 12, color: c.textSecondary }}>{t('cc.utilization', 'Utilization')}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: calc.utilLabel.color }}>{calc.util}% — {calc.utilLabel.label}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: calc.utilLabel.color }}>{calc.util}% — {t(calc.utilLabel.labelKey, calc.utilLabel.label)}</span>
               </div>
               <div style={{ height: 8, borderRadius: 4, background: c.inputBg, overflow: 'hidden' }}>
                 <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(calc.util, 100)}%` }} transition={{ duration: 0.6 }} style={{ height: '100%', borderRadius: 4, background: calc.utilBarColor }} />
