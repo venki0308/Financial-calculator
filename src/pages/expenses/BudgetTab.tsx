@@ -34,6 +34,8 @@ import {
 // only ever queried expenseStorage. We pull active subs here so the
 // recurring monthly commitment counts toward the 'subscription' category.
 import { useBudgetTrackerStore } from '../../store/useBudgetTrackerStore';
+import { getAllCreditCards } from '../../utils/creditCardStorage';
+import { getUtilization, getDaysUntilDue } from '../../utils/creditCardCalculations';
 
 // ── pre-filled fixed expense templates ────────────────────────
 const FIXED_TEMPLATES: { name: string; nameKey: string; icon: string; category: string }[] = [
@@ -112,8 +114,9 @@ export default function BudgetTab() {
   // on focus so when the user navigates back from BankAccounts after
   // adding/editing accounts, the new data appears immediately.
   const [accounts, setAccounts] = useState<BankAccount[]>(() => getAllAccounts());
+  const [creditCards, setCreditCards] = useState(() => getAllCreditCards());
   useEffect(() => {
-    const reload = () => setAccounts(getAllAccounts());
+    const reload = () => { setAccounts(getAllAccounts()); setCreditCards(getAllCreditCards()); };
     window.addEventListener('focus', reload);
     return () => window.removeEventListener('focus', reload);
   }, []);
@@ -180,6 +183,20 @@ export default function BudgetTab() {
     }
     return { savings, creditUsed, net: savings - creditUsed };
   }, [accounts]);
+
+  // ── credit card totals ─────────────────────────────────────
+  const ccTotals = useMemo(() => {
+    let totalLimit = 0;
+    let totalOutstanding = 0;
+    let dueThisWeek = 0;
+    for (const cc of creditCards) {
+      totalLimit += cc.creditLimit;
+      totalOutstanding += cc.currentBalance;
+      if (getDaysUntilDue(cc.dueDate) <= 7) dueThisWeek++;
+    }
+    const utilPct = totalLimit > 0 ? getUtilization(totalOutstanding, totalLimit) : 0;
+    return { totalLimit, totalOutstanding, utilPct, dueThisWeek, count: creditCards.length };
+  }, [creditCards]);
 
   // ── subscriptions → recurring monthly commitment ──────────
   // The Subscriptions tab stores items in a separate Zustand store, so
@@ -791,6 +808,139 @@ export default function BudgetTab() {
             {accounts.length === 0
               ? t('expenses.addFirstAccount', 'Add your first account')
               : t('expenses.manageAccounts', 'Manage Accounts')}
+          </div>
+        </button>
+      </motion.div>
+
+      {/* ======================================================
+          2.6 SUBSCRIPTIONS — quick summary + navigate to tab
+          ====================================================== */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.09 }}
+        className="rounded-2xl border overflow-hidden"
+        style={elevatedCard}
+      >
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent('fincalix:switch-expense-tab', { detail: 'subscriptions' }))}
+          className="w-full text-left p-5 transition-colors"
+          aria-label={t('expenses.subscriptions', 'Subscriptions')}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+              style={{ backgroundColor: '#FEF3C7' }}
+            >
+              {'\u{1F501}'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-[10px] font-bold uppercase tracking-widest"
+                  style={{ color: theme.textSecondary }}
+                >
+                  {t('expenses.subscriptions', 'Subscriptions')}
+                </span>
+                {subscriptions.filter(s => s.isActive).length > 0 && (
+                  <span
+                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: '#FEF3C7', color: '#D97706' }}
+                  >
+                    {subscriptions.filter(s => s.isActive).length}
+                  </span>
+                )}
+              </div>
+              {subscriptions.filter(s => s.isActive).length === 0 ? (
+                <p className="text-xs font-medium mt-0.5" style={{ color: theme.textMuted }}>
+                  {t('expenses.subsEmpty', 'Tap to manage recurring subscriptions')}
+                </p>
+              ) : (
+                <p className="font-extrabold text-xl mt-0.5" style={{ color: '#D97706' }}>
+                  {fmtINR(subscriptionMonthlyTotal)}<span className="text-xs font-semibold" style={{ color: theme.textMuted }}> /{t('expenses.mo', 'mo')}</span>
+                </p>
+              )}
+            </div>
+            <ChevronRightArrow size={18} style={{ color: theme.textMuted }} />
+          </div>
+        </button>
+      </motion.div>
+
+      {/* ======================================================
+          2.7 CREDIT CARDS — quick summary + navigate to tab
+          ====================================================== */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.095 }}
+        className="rounded-2xl border overflow-hidden"
+        style={elevatedCard}
+      >
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent('fincalix:switch-expense-tab', { detail: 'creditCards' }))}
+          className="w-full text-left p-5 transition-colors"
+          aria-label={t('expenses.creditCards', 'Credit Cards')}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+              style={{ backgroundColor: '#EDE9FE' }}
+            >
+              {'\u{1F4B3}'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-[10px] font-bold uppercase tracking-widest"
+                  style={{ color: theme.textSecondary }}
+                >
+                  {t('expenses.creditCards', 'Credit Cards')}
+                </span>
+                {ccTotals.count > 0 && (
+                  <span
+                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: '#EDE9FE', color: '#7C3AED' }}
+                  >
+                    {ccTotals.count}
+                  </span>
+                )}
+              </div>
+              {ccTotals.count === 0 ? (
+                <p className="text-xs font-medium mt-0.5" style={{ color: theme.textMuted }}>
+                  {t('expenses.ccEmpty', 'Tap to manage your credit cards')}
+                </p>
+              ) : (
+                <>
+                  <p className="font-extrabold text-xl mt-0.5" style={{ color: ccTotals.totalOutstanding > 0 ? theme.accentExpense : theme.accentIncome }}>
+                    {fmtINR(ccTotals.totalOutstanding)}
+                    <span className="text-xs font-semibold ml-1" style={{ color: theme.textMuted }}>
+                      / {fmtINR(ccTotals.totalLimit)}
+                    </span>
+                  </p>
+                  <div className="flex items-center gap-3 mt-2">
+                    <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: theme.bgPrimary }}>
+                      <div className="h-full rounded-full transition-all" style={{
+                        width: `${Math.min(ccTotals.utilPct, 100)}%`,
+                        backgroundColor: ccTotals.utilPct > 75 ? '#EF4444' : ccTotals.utilPct > 30 ? '#F59E0B' : '#22C55E',
+                      }} />
+                    </div>
+                    <span className="text-[10px] font-bold" style={{
+                      color: ccTotals.utilPct > 75 ? '#EF4444' : ccTotals.utilPct > 30 ? '#F59E0B' : '#22C55E',
+                    }}>
+                      {ccTotals.utilPct.toFixed(0)}%
+                    </span>
+                  </div>
+                  {ccTotals.dueThisWeek > 0 && (
+                    <p className="text-[10px] font-semibold mt-1.5" style={{ color: '#EF4444' }}>
+                      {ccTotals.dueThisWeek} {t('expenses.ccDueSoon', 'card(s) due this week')}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+            <ChevronRightArrow size={18} style={{ color: theme.textMuted }} />
           </div>
         </button>
       </motion.div>

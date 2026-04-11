@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from 'react
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus, Repeat, CreditCard } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExpenseTheme } from '../theme/expenseTheme';
 import { AnalyticsService } from '../lib/analytics';
@@ -23,18 +23,20 @@ const CreditCardsTab = lazy(() => import('./expenses/CreditCards'));
 const AddEntrySheet = lazy(() => import('../components/AddEntrySheet'));
 
 // ─── TAB DEFINITIONS ─────────────────────────────────────────
-const TABS = [
-  { id: 'budget',        labelKey: 'expenses.budget',        icon: Target,       emoji: '\u{1F3AF}' },
-  { id: 'daily',         labelKey: 'expenses.daily',         icon: CalendarDays, emoji: '\u{1F4C5}' },
-  { id: 'weekly',        labelKey: 'expenses.weekly',        icon: Calendar,     emoji: '\u{1F4C6}' },
-  { id: 'monthly',       labelKey: 'expenses.monthly',       icon: BarChart3,    emoji: '\u{1F4CA}' },
-  { id: 'yearly',        labelKey: 'expenses.yearly',        icon: TrendingUp,   emoji: '\u{1F4C8}' },
-  { id: 'subscriptions', labelKey: 'expenses.subscriptions', icon: Repeat,       emoji: '\u{1F501}' },
-  { id: 'creditCards',   labelKey: 'expenses.creditCards',   icon: CreditCard,   emoji: '\u{1F4B3}' },
-  { id: 'reports',       labelKey: 'expenses.reports',       icon: FileText,     emoji: '\u{1F4CB}' },
-] as const;
+// All valid tab IDs — includes hidden tabs reachable from BudgetTab
+const ALL_TAB_IDS = ['budget', 'daily', 'weekly', 'monthly', 'yearly', 'subscriptions', 'creditCards', 'reports'] as const;
+type TabId = typeof ALL_TAB_IDS[number];
 
-type TabId = typeof TABS[number]['id'];
+// Only these tabs appear in the visible tab bar (Subscriptions & Credit
+// Cards moved into BudgetTab as summary cards to reduce tab-bar overflow)
+const TABS = [
+  { id: 'budget',  labelKey: 'expenses.budget',  icon: Target,       emoji: '\u{1F3AF}' },
+  { id: 'daily',   labelKey: 'expenses.daily',   icon: CalendarDays, emoji: '\u{1F4C5}' },
+  { id: 'weekly',  labelKey: 'expenses.weekly',   icon: Calendar,     emoji: '\u{1F4C6}' },
+  { id: 'monthly', labelKey: 'expenses.monthly', icon: BarChart3,    emoji: '\u{1F4CA}' },
+  { id: 'yearly',  labelKey: 'expenses.yearly',  icon: TrendingUp,   emoji: '\u{1F4C8}' },
+  { id: 'reports', labelKey: 'expenses.reports',  icon: FileText,     emoji: '\u{1F4CB}' },
+] as const;
 
 const TAB_SUBTITLES: Record<TabId, string> = {
   daily:         'expenses.dailySubtitle',
@@ -95,6 +97,8 @@ export default function ExpenseTracker() {
 
   // Tabs that show the global FAB (Daily has its own)
   const showFab = ['weekly', 'monthly', 'yearly'].includes(activeTab);
+  // Hidden tabs (accessible from BudgetTab, not in the tab bar)
+  const isHiddenTab = activeTab === 'subscriptions' || activeTab === 'creditCards';
 
   // Migrate old data on first mount
   useEffect(() => {
@@ -108,7 +112,7 @@ export default function ExpenseTracker() {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      if (typeof detail === 'string' && TABS.some(t => t.id === detail)) {
+      if (typeof detail === 'string' && (ALL_TAB_IDS as readonly string[]).includes(detail)) {
         setActiveTab(detail as TabId);
       }
     };
@@ -155,7 +159,7 @@ export default function ExpenseTracker() {
         <div className="flex items-center gap-3 px-4 pt-3 pb-2">
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => navigate(-1)}
+            onClick={() => isHiddenTab ? setActiveTab('budget') : navigate(-1)}
             className="w-10 h-10 rounded-xl flex items-center justify-center border"
             style={{
               backgroundColor: theme.bgPrimary,
@@ -193,39 +197,41 @@ export default function ExpenseTracker() {
         </div>
 
         {/* ── Tab Bar (min 48px touch target per Material guidelines) ── */}
-        <div className="px-3 pb-3">
-          <div className="flex rounded-2xl p-1 gap-1" style={{ backgroundColor: theme.bgPrimary }}>
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className="flex-1 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-200"
-                  style={{
-                    minHeight: 52,
-                    paddingTop: 8,
-                    paddingBottom: 8,
-                    backgroundColor: isActive ? theme.accentPrimary : 'transparent',
-                    boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-                  }}
-                >
-                  <span style={{ fontSize: 20, lineHeight: 1 }}>{tab.emoji}</span>
-                  <span
-                    className="tracking-wide leading-tight"
+        {!isHiddenTab && (
+          <div className="px-3 pb-3">
+            <div className="flex rounded-2xl p-1 gap-1" style={{ backgroundColor: theme.bgPrimary }}>
+              {TABS.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className="flex-1 flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-200"
                     style={{
-                      fontSize: '10px',
-                      fontWeight: isActive ? 700 : 500,
-                      color: isActive ? '#FFFFFF' : theme.textMuted,
+                      minHeight: 52,
+                      paddingTop: 8,
+                      paddingBottom: 8,
+                      backgroundColor: isActive ? theme.accentPrimary : 'transparent',
+                      boxShadow: isActive ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
                     }}
                   >
-                    {t(`expenses.${tab.id}`)}
-                  </span>
-                </button>
-              );
-            })}
+                    <span style={{ fontSize: 20, lineHeight: 1 }}>{tab.emoji}</span>
+                    <span
+                      className="tracking-wide leading-tight"
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: isActive ? 700 : 500,
+                        color: isActive ? '#FFFFFF' : theme.textMuted,
+                      }}
+                    >
+                      {t(`expenses.${tab.id}`)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* ── Tab Content ── */}

@@ -157,13 +157,13 @@ export default function CreditCardAdd() {
   const renderStep2 = () => (
     <div style={sectionGap}>
       <NumberInput label={t('cc.creditLimit', 'Credit Limit')} value={card.creditLimit}
-        onChange={v => upd({ creditLimit: v })} min={0} max={50_00_000} prefix="\u20B9" step={10000} />
+        onChange={v => upd({ creditLimit: v })} min={0} max={50_00_000} prefix="₹" step={10000} />
       <NumberInput label={t('cc.currentBalance', 'Current Balance')} value={card.currentBalance}
-        onChange={v => upd({ currentBalance: v })} min={0} max={card.creditLimit * 1.2} prefix="\u20B9" step={1000} />
+        onChange={v => upd({ currentBalance: v })} min={0} max={card.creditLimit * 1.2} prefix="₹" step={1000} />
       <NumberInput label={t('cc.statementBalance', 'Statement Balance')} value={card.statementBalance}
-        onChange={v => upd({ statementBalance: v })} min={0} max={card.creditLimit * 1.2} prefix="\u20B9" step={1000} />
+        onChange={v => upd({ statementBalance: v })} min={0} max={card.creditLimit * 1.2} prefix="₹" step={1000} />
       <NumberInput label={t('cc.minimumDue', 'Minimum Due')} value={card.minimumDue}
-        onChange={v => upd({ minimumDue: v })} min={0} max={card.statementBalance} prefix="\u20B9" step={100} />
+        onChange={v => upd({ minimumDue: v })} min={0} max={card.statementBalance} prefix="₹" step={100} />
       <div style={{ padding: '12px 14px', borderRadius: 12, background: c.inputBg, border: `1px solid ${c.border}` }}>
         <div style={{ fontSize: 13, color: c.textSecondary }}>{t('cc.availableCredit', 'Available Credit')}</div>
         <div style={{ fontSize: 22, fontWeight: 700, color: '#22c55e', marginTop: 4 }}>
@@ -204,10 +204,10 @@ export default function CreditCardAdd() {
         {hasAnnualFee && (
           <>
             <NumberInput label={t('cc.feeAmount', 'Fee Amount')} value={card.annualFee}
-              onChange={v => upd({ annualFee: v })} min={0} max={100000} prefix="\u20B9" step={100} />
+              onChange={v => upd({ annualFee: v })} min={0} max={100000} prefix="₹" step={100} />
             <div style={{ marginTop: 10 }}>
               <NumberInput label={t('cc.feeWaiverSpend', 'Fee Waiver Spend')} value={card.feeWaiverSpend}
-                onChange={v => upd({ feeWaiverSpend: v })} min={0} max={50_00_000} prefix="\u20B9" step={10000} />
+                onChange={v => upd({ feeWaiverSpend: v })} min={0} max={50_00_000} prefix="₹" step={10000} />
             </div>
           </>
         )}
@@ -217,9 +217,9 @@ export default function CreditCardAdd() {
       <NumberInput label={t('cc.forexMarkup', 'Forex Markup')} value={card.forexMarkup}
         onChange={v => upd({ forexMarkup: v })} min={0} max={10} suffix="%" step={0.5} />
       <NumberInput label={t('cc.latePaymentFee', 'Late Payment Fee')} value={card.latePaymentFee}
-        onChange={v => upd({ latePaymentFee: v })} min={0} max={5000} prefix="\u20B9" step={50} />
+        onChange={v => upd({ latePaymentFee: v })} min={0} max={5000} prefix="₹" step={50} />
       <NumberInput label={t('cc.overLimitFee', 'Over-limit Fee')} value={card.overLimitFee}
-        onChange={v => upd({ overLimitFee: v })} min={0} max={5000} prefix="\u20B9" step={50} />
+        onChange={v => upd({ overLimitFee: v })} min={0} max={5000} prefix="₹" step={50} />
     </div>
   );
 
@@ -260,7 +260,7 @@ export default function CreditCardAdd() {
             value={card.pendingRewardPoints} onChange={v => upd({ pendingRewardPoints: v })}
             min={0} max={10_00_000} step={100} />
           {card.rewardType !== 'cashback' && (
-            <NumberInput label={t('cc.pointValue', 'Point Value')} prefix="\u20B9"
+            <NumberInput label={t('cc.pointValue', 'Point Value')} prefix="₹"
               value={card.rewardValuePerPoint} onChange={v => upd({ rewardValuePerPoint: v })}
               min={0} max={100} step={0.05} />
           )}
@@ -272,7 +272,7 @@ export default function CreditCardAdd() {
         </>
       )}
       <NumberInput label={t('cc.annualSpend', 'Annual Spend')} value={card.annualSpend}
-        onChange={v => upd({ annualSpend: v })} min={0} max={1_00_00_000} prefix="\u20B9" step={10000} />
+        onChange={v => upd({ annualSpend: v })} min={0} max={1_00_00_000} prefix="₹" step={10000} />
       <div>
         <label style={labelStyle}>{t('cc.notes', 'Notes')}</label>
         <textarea style={{ ...inputStyle, minHeight: 60, resize: 'vertical' }} value={card.notes}
