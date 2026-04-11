@@ -10,6 +10,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { useAppColors } from '../theme/useAppColors';
 import { getDailyInterest, getPeriodInterest, getGSTOnInterest, getTrueCost, getCashAdvanceCost } from '../utils/creditCardCalculations';
+import { useCibil } from '../context/CibilContext';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -49,6 +50,8 @@ export default function CreditCardInterestCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const c = useAppColors();
+    const { profile: cibilProfile } = useCibil();
+    const cibilScore = cibilProfile?.isNTC ? 0 : (cibilProfile?.score ?? 0);
 
     // ── Core Inputs ──
     const [balance, setBalance] = useState(50000);
@@ -392,6 +395,23 @@ export default function CreditCardInterestCalculator() {
                     </button>
                 </div>
             </div>
+
+            {/* ── CIBIL Cross-Link ── */}
+            {cibilScore > 0 && (
+                <div className="mx-4 my-4 p-4 rounded-xl border flex items-center justify-between" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-black" style={{ backgroundColor: cibilScore >= 750 ? '#22c55e20' : '#eab30820', color: cibilScore >= 750 ? '#22c55e' : '#eab308' }}>{cibilScore}</div>
+                        <div>
+                            <p className="text-xs font-bold" style={{ color: c.text }}>{t('ccInterest.cibilScore', 'Your CIBIL')}: {cibilScore}</p>
+                            <p className="text-[10px]" style={{ color: c.textSecondary }}>
+                                {cibilScore >= 750 ? t('ccInterest.cibilGood', 'Eligible for lower-rate personal loan to pay off CC debt')
+                                 : t('ccInterest.cibilLow', 'High CC utilization may impact your score')}
+                            </p>
+                        </div>
+                    </div>
+                    <button onClick={() => navigate('/cibil-score')} className="text-[10px] font-bold text-brand-blue">{t('cc.viewCibil', 'View')} →</button>
+                </div>
+            )}
 
             <DisclaimerComponent module="creditCard" />
         </div>

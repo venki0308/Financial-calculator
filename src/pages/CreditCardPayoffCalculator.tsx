@@ -9,6 +9,7 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, type ExportConfig, dateTag } from '../utils/exportReport';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
+import { useCibil } from '../context/CibilContext';
 import { getAllCreditCards } from '../utils/creditCardStorage';
 import {
   calculateAvalanche, calculateSnowball, calculateHybrid, calculateEqual,
@@ -37,6 +38,8 @@ const ROWS_PER_PAGE = 12;
 export default function CreditCardPayoffCalculator() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { profile: cibilProfile } = useCibil();
+  const cibilScore = cibilProfile?.isNTC ? 0 : (cibilProfile?.score ?? 0);
 
   // ── Input sub-tabs ──
   const [inputTab, setInputTab] = useState<'saved' | 'manual'>('manual');
@@ -408,6 +411,26 @@ export default function CreditCardPayoffCalculator() {
             <button onClick={() => exportToExcel(buildExportConfig())}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-blue-600 text-blue-600 text-sm font-semibold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition">
               <Download size={16} /> {t('ccPayoff.excel', 'Excel')}
+            </button>
+          </div>
+        )}
+
+        {/* ── CIBIL Advisor ── */}
+        {cibilScore > 0 && (
+          <div className="p-4 rounded-2xl border flex items-center justify-between" style={{ backgroundColor: '#3b82f608', borderColor: '#3b82f630' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-black" style={{ backgroundColor: cibilScore >= 750 ? '#22c55e20' : '#eab30820', color: cibilScore >= 750 ? '#22c55e' : '#eab308' }}>{cibilScore}</div>
+              <div>
+                <p className="text-xs font-bold" style={{ color: '#3b82f6' }}>CIBIL: {cibilScore}</p>
+                <p className="text-[10px]" style={{ color: '#64748b' }}>
+                  {cibilScore >= 750
+                    ? t('ccPayoff.cibilGood', 'Good score — consider personal loan at 13% to clear high-APR CC debt')
+                    : t('ccPayoff.cibilLow', 'Pay down CC debt to improve utilization and CIBIL score')}
+                </p>
+              </div>
+            </div>
+            <button onClick={() => navigate('/cibil-score')} className="text-[10px] font-bold text-brand-blue">
+              {t('cc.viewCibil', 'View')} →
             </button>
           </div>
         )}
