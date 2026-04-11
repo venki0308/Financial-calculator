@@ -143,66 +143,68 @@ export default function NPSCalculator() {
         }
     };
 
+    // PDF: English labels — jsPDF Helvetica doesn't support Indian scripts
     const handleDownloadPDF = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: t('nps.reportTitle'),
+            title: 'NPS Retirement Report',
             inputs: [
-                { label: t('nps.monthlyContribution'), value: `₹${Math.round(monthly).toLocaleString('en-IN')}` },
-                { label: t('nps.expectedReturnRate'), value: `${rate}% ${t('nps.perAnnum')}` },
-                { label: t('nps.currentAge'), value: `${age} ${t('nps.years')}` },
-                { label: t('nps.retirementAge'), value: `${retireAge} ${t('nps.years')}` },
-                { label: t('nps.annuityPercentage'), value: `${annuityPct}%` },
-                { label: t('nps.annuityRateLabel'), value: `${annuityRate}% ${t('nps.perAnnum')}` },
+                { label: 'Monthly Contribution', value: `INR ${Math.round(monthly).toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate (%)', value: `${rate}% p.a.` },
+                { label: 'Current Age', value: `${age} years` },
+                { label: 'Retirement Age', value: `${retireAge} years` },
+                { label: 'Annuity %', value: `${annuityPct}%` },
+                { label: 'Annuity Rate', value: `${annuityRate}% p.a.` },
             ],
             results: [
-                { label: t('nps.totalCorpusAtRetirement'), value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
-                { label: t('nps.totalInvested'), value: `₹${Math.round(result.invested).toLocaleString('en-IN')}` },
-                { label: t('nps.wealthGained'), value: `₹${Math.round(result.wealthGained).toLocaleString('en-IN')}` },
-                { label: t('nps.lumpSum60'), value: `₹${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
-                { label: t('nps.annuityAmount40'), value: `₹${Math.round(result.annuity).toLocaleString('en-IN')}` },
-                { label: t('nps.estMonthlyPension'), value: `₹${Math.round(result.monthlyPension).toLocaleString('en-IN')}` },
+                { label: 'Total Corpus at Retirement', value: `INR ${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: 'Total Invested', value: `INR ${Math.round(result.invested).toLocaleString('en-IN')}` },
+                { label: 'Wealth Gained', value: `INR ${Math.round(result.wealthGained).toLocaleString('en-IN')}` },
+                { label: 'Lump Sum (60%)', value: `INR ${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
+                { label: 'Annuity Amount (40%)', value: `INR ${Math.round(result.annuity).toLocaleString('en-IN')}` },
+                { label: 'Est. Monthly Pension', value: `INR ${Math.round(result.monthlyPension).toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: t('nps.totalInvested'), value: result.invested, color: '#4F46E5' },
-                    { label: t('nps.wealthGained'), value: result.wealthGained, color: '#10B981' },
+                    { label: 'Total Invested', value: result.invested, color: '#4F46E5' },
+                    { label: 'Wealth Gained', value: result.wealthGained, color: '#10B981' },
                 ],
             },
-            projectionTitle: t('nps.yearlyGrowthSchedule'),
-            projectionColumns: [t('nps.year'), t('nps.age'), t('nps.annualContribution'), t('nps.cumulativeContribution'), t('nps.totalCorpus')],
+            projectionTitle: 'Yearly Growth Schedule',
+            projectionColumns: ['Year', 'Age', 'Annual Contribution', 'Cumulative Contribution', 'Total Corpus'],
             projectionRows: result.timeline.map((r: any) => [
-                `${t('nps.year')} ${r.year}`,
+                `Year ${r.year}`,
                 r.age,
-                `₹${Math.round(r.contrib).toLocaleString('en-IN')}`,
-                `₹${Math.round(r.cumContrib).toLocaleString('en-IN')}`,
-                `₹${Math.round(r.corpus).toLocaleString('en-IN')}`,
+                `INR ${Math.round(r.contrib).toLocaleString('en-IN')}`,
+                `INR ${Math.round(r.cumContrib).toLocaleString('en-IN')}`,
+                `INR ${Math.round(r.corpus).toLocaleString('en-IN')}`,
             ]),
             filename: `FinCalix_NPS_Report_${tag}`,
         };
         await exportToPDF(config);
     };
 
+    // PDF: English labels — jsPDF Helvetica doesn't support Indian scripts
     const handleDownloadExcel = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: t('nps.reportTitle'),
+            title: 'NPS Retirement Report',
             inputs: [
-                { label: t('nps.monthlyContribution'), value: `₹${Math.round(monthly).toLocaleString('en-IN')}` },
-                { label: t('nps.returnRate'), value: `${rate}%` },
-                { label: t('nps.currentAge'), value: String(age) },
-                { label: t('nps.retirementAge'), value: String(retireAge) },
+                { label: 'Monthly Contribution', value: `INR ${Math.round(monthly).toLocaleString('en-IN')}` },
+                { label: 'Return Rate', value: `${rate}%` },
+                { label: 'Current Age', value: String(age) },
+                { label: 'Retirement Age', value: String(retireAge) },
             ],
             results: [
-                { label: t('nps.totalCorpus'), value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
-                { label: t('nps.monthlyPension'), value: `₹${Math.round(result.monthlyPension).toLocaleString('en-IN')}` },
-                { label: t('nps.lumpSum'), value: `₹${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
+                { label: 'Total Corpus at Retirement', value: `INR ${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: 'Monthly Pension', value: `INR ${Math.round(result.monthlyPension).toLocaleString('en-IN')}` },
+                { label: 'Lumpsum at 60', value: `INR ${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: t('nps.yearlyGrowth'),
-            projectionColumns: [t('nps.year'), t('nps.age'), t('nps.annualContribution'), t('nps.cumulativeContribution'), t('nps.totalCorpus')],
+            projectionTitle: 'Yearly Growth',
+            projectionColumns: ['Year', 'Age', 'Annual Contribution', 'Cumulative Contribution', 'Total Corpus'],
             projectionRows: result.timeline.map((r: any) => [r.year, r.age, Math.round(r.contrib), Math.round(r.cumContrib), Math.round(r.corpus)]),
             filename: `FinCalix_NPS_Report_${tag}`,
         };

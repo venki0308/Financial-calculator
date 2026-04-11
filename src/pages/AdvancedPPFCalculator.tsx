@@ -132,53 +132,54 @@ export default function AdvancedPPFCalculator() {
         }
     };
 
+    // PDF: English labels — jsPDF Helvetica doesn't support Indian scripts
     const handlePDF = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
-        const freqLabel = frequency === 'monthly' ? t('ppf.monthly') : frequency === 'quarterly' ? t('ppf.quarterly') : frequency === 'half-yearly' ? t('ppf.halfYearly') : t('ppf.yearly');
+        const freqLabel = frequency === 'monthly' ? 'Monthly' : frequency === 'quarterly' ? 'Quarterly' : frequency === 'half-yearly' ? 'Half-Yearly' : 'Yearly';
         await exportToPDF({
-            title: t('ppf.reportTitle'),
+            title: 'PPF Investment Report',
             inputs: [
-                { label: t('ppf.contributionFrequency'), value: freqLabel },
-                { label: t('ppf.amountPerPeriod'), value: `₹${Math.round(amountPerPeriod).toLocaleString('en-IN')}` },
-                { label: t('ppf.interestRateLabel'), value: `${rate}% p.a.` },
-                { label: t('ppf.investmentPeriod'), value: `${years} ${t('ppf.years')}` },
+                { label: 'Contribution Frequency', value: freqLabel },
+                { label: 'Amount per Period', value: `INR ${Math.round(amountPerPeriod).toLocaleString('en-IN')}` },
+                { label: 'Interest Rate (%)', value: `${rate}% p.a.` },
+                { label: 'Investment Period', value: `${years} Years` },
             ],
             results: [
-                { label: t('ppf.totalAmountInvested'), value: `₹${Math.round(totalInvested).toLocaleString('en-IN')}` },
-                { label: t('ppf.totalInterestEarned'), value: `₹${Math.round(totalInterest).toLocaleString('en-IN')}` },
-                { label: t('ppf.maturityValue'), value: `₹${Math.round(maturityValue).toLocaleString('en-IN')}` },
-                { label: t('ppf.wealthMultiplier'), value: `${(maturityValue / totalInvested).toFixed(2)}x` },
+                { label: 'Total Amount Invested', value: `INR ${Math.round(totalInvested).toLocaleString('en-IN')}` },
+                { label: 'Total Interest Earned', value: `INR ${Math.round(totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Maturity Value', value: `INR ${Math.round(maturityValue).toLocaleString('en-IN')}` },
+                { label: 'Wealth Multiplier', value: `${(maturityValue / totalInvested).toFixed(2)}x` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: t('ppf.totalInvested'), value: totalInvested, color: '#4F46E5' },
-                    { label: t('ppf.interestEarned'), value: totalInterest, color: '#10B981' },
+                    { label: 'Total Invested', value: totalInvested, color: '#4F46E5' },
+                    { label: 'Interest Earned', value: totalInterest, color: '#10B981' },
                 ],
             },
-            projectionTitle: t('ppf.yearlyGrowth'),
-            projectionColumns: [t('ppf.year'), t('ppf.openingBalance'), t('ppf.annualDeposit'), t('ppf.interestEarned'), t('ppf.closingBalance')],
+            projectionTitle: 'Yearly Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Annual Deposit', 'Interest Earned', 'Closing Balance'],
             projectionRows: schedule.map((r: any) => [
-                `${t('ppf.year')} ${r.year}`,
-                `₹${Math.round(r.opening || 0).toLocaleString('en-IN')}`,
-                `₹${Math.round(r.contribution).toLocaleString('en-IN')}`,
-                `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
-                `₹${Math.round(r.closing).toLocaleString('en-IN')}`,
+                `Year ${r.year}`,
+                `INR ${Math.round(r.opening || 0).toLocaleString('en-IN')}`,
+                `INR ${Math.round(r.contribution).toLocaleString('en-IN')}`,
+                `INR ${Math.round(r.interest).toLocaleString('en-IN')}`,
+                `INR ${Math.round(r.closing).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(ppfStatus ? [{
-                    title: `${t('ppf.liveStatus')} (${t('ppf.asOf')} ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: [t('ppf.metric'), t('ppf.value')],
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
                     rows: [
-                        [t('ppf.accountAgeYears'), String(ppfStatus.yearsCompleted)],
-                        [t('ppf.currentYearOf15'), String(ppfStatus.currentYear)],
-                        [t('ppf.balanceToday'), formatINR(ppfStatus.balanceToday)],
-                        [t('ppf.totalDepositedLabel'), formatINR(ppfStatus.totalDeposited)],
-                        [t('ppf.interestEarnedLabel'), formatINR(ppfStatus.interestEarned)],
-                        [t('ppf.maturityDateLabel'), ppfStatus.maturityDate],
-                        [t('ppf.loanEligible'), ppfStatus.loanEligible ? t('ppf.yes') : t('ppf.no')],
-                        [t('ppf.withdrawalEligible'), ppfStatus.withdrawalEligible ? t('ppf.yes') : t('ppf.no')],
+                        ['Account Age (years)', String(ppfStatus.yearsCompleted)],
+                        ['Current Year (of 15)', String(ppfStatus.currentYear)],
+                        ['Balance Today', formatINR(ppfStatus.balanceToday)],
+                        ['Total Deposited', formatINR(ppfStatus.totalDeposited)],
+                        ['Interest Earned', formatINR(ppfStatus.interestEarned)],
+                        ['Maturity Date', ppfStatus.maturityDate],
+                        ['Loan Eligible', ppfStatus.loanEligible ? 'Yes' : 'No'],
+                        ['Withdrawal Eligible', ppfStatus.withdrawalEligible ? 'Yes' : 'No'],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -186,36 +187,37 @@ export default function AdvancedPPFCalculator() {
         });
     };
 
+    // PDF: English labels — jsPDF Helvetica doesn't support Indian scripts
     const handleExcel = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: t('ppf.reportTitle'),
+            title: 'PPF Investment Report',
             inputs: [
-                { label: t('ppf.interestRateLabel'), value: `${rate}%` },
-                { label: t('ppf.investmentPeriod'), value: `${years} ${t('ppf.years')}` },
+                { label: 'Interest Rate (%)', value: `${rate}%` },
+                { label: 'Investment Period', value: `${years} Years` },
             ],
             results: [
-                { label: t('ppf.totalInvested'), value: `₹${Math.round(totalInvested).toLocaleString('en-IN')}` },
-                { label: t('ppf.interestEarned'), value: `₹${Math.round(totalInterest).toLocaleString('en-IN')}` },
-                { label: t('ppf.maturityValue'), value: `₹${Math.round(maturityValue).toLocaleString('en-IN')}` },
+                { label: 'Total Invested', value: `INR ${Math.round(totalInvested).toLocaleString('en-IN')}` },
+                { label: 'Interest Earned', value: `INR ${Math.round(totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Maturity Value', value: `INR ${Math.round(maturityValue).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: t('ppf.yearlyGrowth'),
-            projectionColumns: [t('ppf.year'), t('ppf.openingBalance'), t('ppf.annualDeposit'), t('ppf.interestEarned'), t('ppf.closingBalance')],
+            projectionTitle: 'Yearly Growth',
+            projectionColumns: ['Year', 'Opening Balance', 'Annual Deposit', 'Interest Earned', 'Closing Balance'],
             projectionRows: schedule.map((r: any) => [r.year, Math.round(r.opening || 0), Math.round(r.contribution), Math.round(r.interest), Math.round(r.closing)]),
             additionalTables: [
                 ...(ppfStatus ? [{
-                    title: `${t('ppf.liveStatus')} (${t('ppf.asOf')} ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: [t('ppf.metric'), t('ppf.value')],
+                    title: `Live Status (as of ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: ['Metric', 'Value'],
                     rows: [
-                        [t('ppf.accountAgeYears'), String(ppfStatus.yearsCompleted)],
-                        [t('ppf.currentYearOf15'), String(ppfStatus.currentYear)],
-                        [t('ppf.balanceToday'), formatINR(ppfStatus.balanceToday)],
-                        [t('ppf.totalDepositedLabel'), formatINR(ppfStatus.totalDeposited)],
-                        [t('ppf.interestEarnedLabel'), formatINR(ppfStatus.interestEarned)],
-                        [t('ppf.maturityDateLabel'), ppfStatus.maturityDate],
-                        [t('ppf.loanEligible'), ppfStatus.loanEligible ? t('ppf.yes') : t('ppf.no')],
-                        [t('ppf.withdrawalEligible'), ppfStatus.withdrawalEligible ? t('ppf.yes') : t('ppf.no')],
+                        ['Account Age (years)', String(ppfStatus.yearsCompleted)],
+                        ['Current Year (of 15)', String(ppfStatus.currentYear)],
+                        ['Balance Today', formatINR(ppfStatus.balanceToday)],
+                        ['Total Deposited', formatINR(ppfStatus.totalDeposited)],
+                        ['Interest Earned', formatINR(ppfStatus.interestEarned)],
+                        ['Maturity Date', ppfStatus.maturityDate],
+                        ['Loan Eligible', ppfStatus.loanEligible ? 'Yes' : 'No'],
+                        ['Withdrawal Eligible', ppfStatus.withdrawalEligible ? 'Yes' : 'No'],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],

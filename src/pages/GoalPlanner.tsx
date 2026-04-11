@@ -352,7 +352,7 @@ export default function GoalPlanner() {
                 {goalStatus && selectedGoal && (
                     <div className="mt-5">
                         <LiveStatusCard
-                            calculatorType={t('goal.goalPlannerType')}
+                            calculatorType="Goal Planner"
                             profileData={{ monthlySip: result.monthlySIP, annualReturn: expectedReturn, startDate: goalStartDate, targetAmount: result.targetFV }}
                             title={t('goal.liveGoalStatus')}
                             subtitle={t(selectedGoal.labelKey)}

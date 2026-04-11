@@ -381,43 +381,44 @@ export default function IncomeTaxCalculator() {
     // Removed automatic notification trigger
 
     // ─── PDF Handler ──────────────────────────────────────────────────────────
+    // PDF: English labels — jsPDF Helvetica doesn't support Indian scripts
     const handleDownloadPDF = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
-        const modeLabel = inputMode === 'monthly' ? t('tax.pdfModeMonthly') : inputMode === 'annual' ? t('tax.pdfModeAnnual') : inputMode === 'ctc' ? t('tax.pdfModeCTC') : t('tax.pdfModePayslip');
+        const modeLabel = inputMode === 'monthly' ? 'Monthly' : inputMode === 'annual' ? 'Annual' : inputMode === 'ctc' ? 'CTC' : 'Payslip';
 
         const inputFields: Array<{ label: string; value: string }> = [
-            { label: t('tax.pdfFinancialYear'), value: `FY ${fy}` },
-            { label: t('tax.pdfInputMode'), value: modeLabel },
-            { label: t('tax.pdfTaxRegime'), value: regime === 'old' ? t('tax.oldRegime') : t('tax.newRegime') },
+            { label: 'Financial Year', value: `FY ${fy}` },
+            { label: 'Input Mode', value: modeLabel },
+            { label: 'Tax Regime', value: regime === 'old' ? 'Old Regime' : 'New Regime' },
         ];
         if (inputMode === 'ctc') {
             inputFields.push(
-                { label: t('tax.pdfAnnualCTC'), value: fmt(num('ctcAmount')) },
-                { label: t('tax.pdfGrossSalaryInHand'), value: fmt(ctcGross) },
+                { label: 'Annual CTC', value: fmt(num('ctcAmount')) },
+                { label: 'Gross Salary (In-hand)', value: fmt(ctcGross) },
             );
         } else {
             inputFields.push(
-                { label: t('tax.pdfBasicSalaryAnnual'), value: fmt(num('basicSalary') * multiplier) },
-                { label: t('tax.pdfHRAAnnual'), value: fmt(num('hra') * multiplier) },
-                { label: t('tax.pdfSpecialAllowanceAnnual'), value: fmt(num('special') * multiplier) },
-                { label: t('tax.pdfOtherIncomeAnnual'), value: fmt(num('otherIncome') * multiplier) },
+                { label: 'Basic Salary (Annual)', value: fmt(num('basicSalary') * multiplier) },
+                { label: 'HRA (Annual)', value: fmt(num('hra') * multiplier) },
+                { label: 'Special Allowance (Annual)', value: fmt(num('special') * multiplier) },
+                { label: 'Other Income (Annual)', value: fmt(num('otherIncome') * multiplier) },
             );
         }
-        if (num('variablePay') > 0) inputFields.push({ label: t('tax.pdfVariablePayBonus'), value: fmt(num('variablePay') * (inputMode === 'ctc' ? 1 : multiplier)) });
-        if (num('annualBonus') > 0) inputFields.push({ label: t('tax.pdfAnnualBonusExGratia'), value: fmt(num('annualBonus') * (inputMode === 'ctc' ? 1 : multiplier)) });
-        inputFields.push({ label: t('tax.pdfGrossAnnualIncome'), value: fmt(grossSalary) });
+        if (num('variablePay') > 0) inputFields.push({ label: 'Variable Pay / Performance Bonus', value: fmt(num('variablePay') * (inputMode === 'ctc' ? 1 : multiplier)) });
+        if (num('annualBonus') > 0) inputFields.push({ label: 'Annual Bonus / Ex-Gratia', value: fmt(num('annualBonus') * (inputMode === 'ctc' ? 1 : multiplier)) });
+        inputFields.push({ label: 'Gross Annual Income', value: fmt(grossSalary) });
 
         const resultFields: Array<{ label: string; value: string }> = [
-            { label: t('tax.pdfTaxableIncome'), value: fmt(activeTaxableIncome) },
-            { label: t('tax.pdfOldRegimeTax'), value: fmt(oldTotalTax) },
-            { label: t('tax.pdfNewRegimeTax'), value: fmt(newTotalTax) },
-            { label: t('tax.pdfRecommendedRegime'), value: `${betterRegime} ${t('tax.regime')}${saving > 0 ? ` (${t('tax.pdfSave')} ${fmt(saving)})` : ''}` },
-            { label: t('tax.pdfTotalTaxLiability'), value: fmt(activeTotalTax) },
-            { label: t('tax.pdfHealthEducationCess'), value: fmt(activeCess) },
-            { label: t('tax.pdfNetAnnualIncome'), value: fmt(netAnnual) },
-            { label: t('tax.pdfMonthlyTakeHome'), value: fmt(monthlyTakeHome) },
-            { label: t('tax.pdfEffectiveTaxRate'), value: `${effectiveRate.toFixed(2)}%` },
+            { label: 'Taxable Income', value: fmt(activeTaxableIncome) },
+            { label: 'Old Regime Tax', value: fmt(oldTotalTax) },
+            { label: 'New Regime Tax', value: fmt(newTotalTax) },
+            { label: 'Recommended Regime', value: `${betterRegime} Regime${saving > 0 ? ` (Save ${fmt(saving)})` : ''}` },
+            { label: 'Total Tax Liability', value: fmt(activeTotalTax) },
+            { label: 'Health & Education Cess (4%)', value: fmt(activeCess) },
+            { label: 'Net Annual Income', value: fmt(netAnnual) },
+            { label: 'Monthly Take-Home', value: fmt(monthlyTakeHome) },
+            { label: 'Effective Tax Rate', value: `${effectiveRate.toFixed(2)}%` },
         ];
 
         // Build slab breakdown comparing old vs new regime
@@ -432,7 +433,7 @@ export default function IncomeTaxCalculator() {
             const newSlab = NEW_REGIME.find(s => s.min === slabMin);
             const oldRate = oldSlab ? oldSlab.rate : OLD_REGIME_ACTIVE.filter(s => s.min <= slabMin).pop()?.rate ?? 0;
             const newRate = newSlab ? newSlab.rate : NEW_REGIME.filter(s => s.min <= slabMin).pop()?.rate ?? 0;
-            const label = slabMax === Infinity ? `${t('tax.above')} ${fmt(slabMin)}` : `${fmt(slabMin)} – ${fmt(slabMax)}`;
+            const label = slabMax === Infinity ? `above ${fmt(slabMin)}` : `${fmt(slabMin)} – ${fmt(slabMax)}`;
 
             const oldAmt = oldTaxableIncome > slabMin ? Math.min(oldTaxableIncome, slabMax === Infinity ? oldTaxableIncome : slabMax) - slabMin : 0;
             const newAmt = newTaxableIncome > slabMin ? Math.min(newTaxableIncome, slabMax === Infinity ? newTaxableIncome : slabMax) - slabMin : 0;
@@ -444,20 +445,20 @@ export default function IncomeTaxCalculator() {
                     label,
                     oldAmt > 0 ? fmt(oldAmt) : '-',
                     `${oldRate}%`,
-                    oldTaxAmt > 0 ? fmt(oldTaxAmt) : t('tax.nil'),
+                    oldTaxAmt > 0 ? fmt(oldTaxAmt) : 'NIL',
                     `${newRate}%`,
-                    newTaxAmt > 0 ? fmt(newTaxAmt) : t('tax.nil'),
+                    newTaxAmt > 0 ? fmt(newTaxAmt) : 'NIL',
                 ]);
             }
         }
 
         const config: ExportConfig = {
-            title: t('tax.pdfReportTitle'),
-            subtitle: `${t('tax.pdfTaxRegime')}: ${regime === 'old' ? t('tax.oldRegime') : t('tax.newRegime')}`,
+            title: 'Income Tax Calculator Report (FY 2026-27)',
+            subtitle: `Tax Regime: ${regime === 'old' ? 'Old Regime' : 'New Regime'}`,
             inputs: inputFields,
             results: resultFields,
-            projectionTitle: t('tax.pdfSlabBreakdown'),
-            projectionColumns: [t('tax.pdfColSlab'), t('tax.pdfColTaxableAmount'), t('tax.pdfColOldRate'), t('tax.pdfColOldTax'), t('tax.pdfColNewRate'), t('tax.pdfColNewTax')],
+            projectionTitle: 'Tax Slab Breakdown',
+            projectionColumns: ['Slab', 'Taxable Amount', 'Old Rate', 'Old Tax', 'New Rate', 'New Tax'],
             projectionRows: slabRows,
             filename: `FinCalix_IncomeTax_Report_${tag}`,
         };

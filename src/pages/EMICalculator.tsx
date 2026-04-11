@@ -317,6 +317,7 @@ export default function EMICalculator() {
     };
 
     // ─── PDF Export ─────────────────────────────────────────────────────
+    // PDF: English labels — jsPDF Helvetica doesn't support Indian scripts
     const handleDownloadPDF = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
@@ -332,36 +333,36 @@ export default function EMICalculator() {
             const closing = monthSlice[monthSlice.length - 1]?.closingBalance ?? 0;
             yearlyRows.push([
                 y,
-                `₹${Math.round(princPaid).toLocaleString('en-IN')}`,
-                `₹${Math.round(intPaid).toLocaleString('en-IN')}`,
-                `₹${Math.round(closing).toLocaleString('en-IN')}`,
+                `INR ${Math.round(princPaid).toLocaleString('en-IN')}`,
+                `INR ${Math.round(intPaid).toLocaleString('en-IN')}`,
+                `INR ${Math.round(closing).toLocaleString('en-IN')}`,
             ]);
         }
 
         const config: ExportConfig = {
-            title: `${loanType} ${t('emi.emiReport')}`,
-            subtitle: `${method === 'flat' ? t('emi.flatRate') : t('emi.reducingBalance')} ${t('emi.method')}`,
+            title: `${loanType} EMI Report`,
+            subtitle: `${method === 'flat' ? 'Flat Rate' : 'Reducing Balance'} Method`,
             inputs: [
-                { label: t('common.loanAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: t('emi.annualInterestRate'), value: `${rate}% p.a.` },
-                { label: t('emi.loanTenure'), value: `${tenureYears} ${t('common.years')} (${months} ${t('common.months')})` },
-                { label: t('emi.interestMethod'), value: method === 'flat' ? t('emi.flatRate') : t('emi.reducingBalance') },
+                { label: 'Loan Amount', value: `INR ${principal.toLocaleString('en-IN')}` },
+                { label: 'Annual Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Loan Tenure', value: `${tenureYears} years (${months} months)` },
+                { label: 'Interest Method', value: method === 'flat' ? 'Flat Rate' : 'Reducing Balance' },
             ],
             results: [
-                { label: t('common.monthlyEmi'), value: `₹${Math.round(result.emi).toLocaleString('en-IN')}` },
-                { label: t('common.totalInterest'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: t('emi.totalPayment'), value: `₹${Math.round(result.totalPayment).toLocaleString('en-IN')}` },
-                { label: t('common.loanAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Monthly EMI', value: `INR ${Math.round(result.emi).toLocaleString('en-IN')}` },
+                { label: 'Total Interest', value: `INR ${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Payment', value: `INR ${Math.round(result.totalPayment).toLocaleString('en-IN')}` },
+                { label: 'Loan Amount', value: `INR ${principal.toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: t('common.principalAmount'), value: principal, color: '#10B981' },
-                    { label: t('common.totalInterest'), value: result.totalInterest, color: '#EF4444' },
+                    { label: 'Principal Amount', value: principal, color: '#10B981' },
+                    { label: 'Total Interest', value: result.totalInterest, color: '#EF4444' },
                 ],
             },
-            projectionTitle: t('emi.amortizationSchedule'),
-            projectionColumns: [t('emi.month'), t('emi.emiCol'), t('emi.principalCol'), t('emi.interestCol'), t('emi.balanceCol')],
+            projectionTitle: 'Amortization Schedule',
+            projectionColumns: ['Month', 'EMI (INR)', 'Principal (INR)', 'Interest (INR)', 'Balance (INR)'],
             projectionRows: schedule.map((r: any) => [
                 r.month,
                 Math.round(r.emi),
@@ -375,26 +376,27 @@ export default function EMICalculator() {
         await exportToPDF(config);
     };
 
+    // PDF: English labels — jsPDF Helvetica doesn't support Indian scripts
     const handleDownloadExcel = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const schedule = result.schedule || [];
 
         const config: ExportConfig = {
-            title: `${loanType} ${t('emi.emiReport')}`,
+            title: `${loanType} EMI Report`,
             inputs: [
-                { label: t('common.loanAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: t('emi.annualInterestRate'), value: `${rate}% p.a.` },
-                { label: t('emi.loanTenure'), value: `${tenureYears} ${t('common.years')} (${months} ${t('common.months')})` },
-                { label: t('emi.interestMethod'), value: method === 'flat' ? t('emi.flatRate') : t('emi.reducingBalance') },
+                { label: 'Loan Amount', value: `INR ${principal.toLocaleString('en-IN')}` },
+                { label: 'Annual Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Loan Tenure', value: `${tenureYears} years (${months} months)` },
+                { label: 'Interest Method', value: method === 'flat' ? 'Flat Rate' : 'Reducing Balance' },
             ],
             results: [
-                { label: t('common.monthlyEmi'), value: `₹${Math.round(result.emi).toLocaleString('en-IN')}` },
-                { label: t('common.totalInterest'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: t('emi.totalPayment'), value: `₹${Math.round(result.totalPayment).toLocaleString('en-IN')}` },
+                { label: 'Monthly EMI', value: `INR ${Math.round(result.emi).toLocaleString('en-IN')}` },
+                { label: 'Total Interest', value: `INR ${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: 'Total Payment', value: `INR ${Math.round(result.totalPayment).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: t('emi.amortizationSchedule'),
-            projectionColumns: [t('emi.month'), t('emi.emiShort'), t('emi.principalCol'), t('emi.interestCol'), t('emi.outstandingBalance')],
+            projectionTitle: 'Amortization Schedule',
+            projectionColumns: ['Month', 'EMI', 'Principal (INR)', 'Interest (INR)', 'Outstanding Balance'],
             projectionRows: schedule.map((r: any) => [
                 r.month,
                 Math.round(r.emi),
