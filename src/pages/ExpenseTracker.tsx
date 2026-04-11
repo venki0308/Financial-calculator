@@ -30,8 +30,8 @@ const TABS = [
   { id: 'monthly',       labelKey: 'expenses.monthly',       icon: BarChart3,    emoji: '\u{1F4CA}' },
   { id: 'yearly',        labelKey: 'expenses.yearly',        icon: TrendingUp,   emoji: '\u{1F4C8}' },
   { id: 'subscriptions', labelKey: 'expenses.subscriptions', icon: Repeat,       emoji: '\u{1F501}' },
-  { id: 'reports',       labelKey: 'expenses.reports',       icon: FileText,     emoji: '\u{1F4CB}' },
   { id: 'creditCards',   labelKey: 'expenses.creditCards',   icon: CreditCard,   emoji: '\u{1F4B3}' },
+  { id: 'reports',       labelKey: 'expenses.reports',       icon: FileText,     emoji: '\u{1F4CB}' },
 ] as const;
 
 type TabId = typeof TABS[number]['id'];

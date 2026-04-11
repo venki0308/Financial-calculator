@@ -416,7 +416,7 @@ export default function CreditCardDetail() {
         <motion.div style={sectionStyle} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <div style={{ display: 'flex', gap: 10 }}>
             <button
-              onClick={() => navigate(`/expenses/credit-cards/edit/${card.id}`)}
+              onClick={() => navigate(`/expenses/credit-cards/add?edit=${card.id}`)}
               style={{
                 flex: 1, padding: '12px 0', borderRadius: 10, border: `1px solid ${c.border}`,
                 background: c.inputBg, color: c.text, fontWeight: 600, fontSize: 14,

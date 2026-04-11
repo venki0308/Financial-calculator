@@ -61,6 +61,8 @@ export default function CreditCardAdd() {
   const handleSave = () => {
     saveCreditCard(card);
     nav('/expenses');
+    // Switch to Credit Cards tab after navigation
+    setTimeout(() => window.dispatchEvent(new CustomEvent('fincalix:switch-expense-tab', { detail: 'creditCards' })), 100);
   };
 
   const canNext = () => {
@@ -336,9 +338,11 @@ export default function CreditCardAdd() {
 
       {/* Bottom nav buttons */}
       <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, padding: '12px 16px',
+        position: 'fixed', bottom: 72, left: 0, right: 0, padding: '12px 16px',
         background: c.navBg, backdropFilter: 'blur(12px)',
+        borderTop: `1px solid ${c.border}`,
         display: 'flex', gap: 12, zIndex: 30,
+        maxWidth: 428, margin: '0 auto',
       }}>
         {step > 1 && (
           <button onClick={() => setStep(s => s - 1)} style={{
