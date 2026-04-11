@@ -93,11 +93,11 @@ export function getUtilization(balance: number, limit: number): number {
   return Math.round((balance / limit) * 1000) / 10;
 }
 
-export function getUtilizationLabel(pct: number): { label: string; color: string } {
-  if (pct < 10) return { label: 'Excellent', color: '#22c55e' };
-  if (pct < 30) return { label: 'Good', color: '#3b82f6' };
-  if (pct < 50) return { label: 'Fair', color: '#eab308' };
-  return { label: 'High — CIBIL impact', color: '#ef4444' };
+export function getUtilizationLabel(pct: number): { label: string; labelKey: string; color: string } {
+  if (pct < 10) return { label: 'Excellent', labelKey: 'cc.utilExcellent', color: '#22c55e' };
+  if (pct < 30) return { label: 'Good', labelKey: 'cc.utilGood', color: '#3b82f6' };
+  if (pct < 50) return { label: 'Fair', labelKey: 'cc.utilFair', color: '#eab308' };
+  return { label: 'High — CIBIL impact', labelKey: 'cc.utilHigh', color: '#ef4444' };
 }
 
 export function getUtilizationBarColor(pct: number): string {
@@ -205,17 +205,19 @@ function runPayoffStrategy(
     let monthInterest = 0;
     let cardCleared: string | undefined;
 
-    // 1. Accrue interest on all active cards
+    // 1. Accrue interest + 18% GST on all active cards
     for (const id of active) {
       const interest = bals[id] * (rates[id] / 100) / 12;
-      bals[id] += interest;
-      monthInterest += interest;
-      interestPerCard[id] += interest;
+      const interestWithGst = interest * 1.18; // 18% GST on finance charges
+      bals[id] += interestWithGst;
+      monthInterest += interestWithGst;
+      interestPerCard[id] += interestWithGst;
     }
 
-    // 2. Pay minimums on all cards
+    // 2. Recalculate minimums based on current balance, then pay minimums
     for (const id of active) {
-      const minPay = Math.min(mins[id], bals[id]);
+      const dynamicMin = getMinimumDue(bals[id], rates[id]);
+      const minPay = Math.min(dynamicMin, bals[id]);
       payments[id] = minPay;
       bals[id] -= minPay;
       budget -= minPay;
@@ -235,7 +237,7 @@ function runPayoffStrategy(
       }
     }
 
-    // 4. Check cleared cards
+    // 4. Check cleared cards (support multiple clearances per month)
     const toRemove: string[] = [];
     for (const id of active) {
       if (bals[id] <= 1) {
@@ -294,12 +296,14 @@ export function calculateHybrid(cards: PayoffCardInput[], budget: number): Payof
 }
 
 export function calculateEqual(cards: PayoffCardInput[], budget: number): PayoffResult {
-  // For equal distribution, modify mins proportionally
+  // For equal distribution, modify mins proportionally — clamp to budget
   const totalBalance = cards.reduce((s, c) => s + c.balance, 0);
-  const adjusted = cards.map(c => ({
-    ...c,
-    minDue: totalBalance > 0 ? Math.max(c.minDue, Math.round(budget * (c.balance / totalBalance))) : c.minDue,
-  }));
+  if (totalBalance <= 0) return { strategy: 'equal', totalMonths: 0, totalInterest: 0, totalPaid: 0, payoffOrder: [], schedule: [] };
+  const rawMins = cards.map(c => Math.max(c.minDue, Math.round(budget * (c.balance / totalBalance))));
+  const rawTotal = rawMins.reduce((s, v) => s + v, 0);
+  // Normalize so total doesn't exceed budget
+  const scale = rawTotal > budget ? budget / rawTotal : 1;
+  const adjusted = cards.map((c, i) => ({ ...c, minDue: Math.round(rawMins[i] * scale) }));
   const result = runPayoffStrategy(adjusted, budget, (a, b) => b.apr - a.apr);
   result.strategy = 'equal';
   return result;

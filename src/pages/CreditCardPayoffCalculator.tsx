@@ -114,12 +114,6 @@ export default function CreditCardPayoffCalculator() {
   const [page, setPage] = useState(0);
   const totalPages = Math.ceil(current.schedule.length / ROWS_PER_PAGE);
   const pageRows = current.schedule.slice(page * ROWS_PER_PAGE, (page + 1) * ROWS_PER_PAGE);
-  const clearedIds = useMemo(() => {
-    const set = new Set<string>();
-    current.schedule.forEach(r => { if (r.cardCleared) set.add(r.cardCleared); });
-    return set;
-  }, [current.schedule]);
-
   // ── Payoff date helper ──
   const payoffDate = useCallback((months: number) => {
     if (months <= 0 || months === Infinity) return '-';
