@@ -17,6 +17,9 @@ import SaveNameDialog from '../components/SaveNameDialog';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { todayStr } from '../utils/dateUtils';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
+import { useCibil } from '../context/CibilContext';
+import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
+import CibilBadge from '../components/CibilBadge';
 
 // Helper to extract number
 const parseFormattedNumber = (value: string): number => {
@@ -37,6 +40,8 @@ export default function OverdraftCalculator() {
   const navigate = useNavigate();
   const c = useAppColors();
   const { addSaved, removeSaved } = useCalculatorStore();
+  const { profile: cibilProfile } = useCibil();
+  const cibilScore = cibilProfile?.isNTC ? 0 : (cibilProfile?.score ?? 0);
   const addProfile = useLiveStatusStore(s => s.addProfile);
   const removeProfile = useLiveStatusStore(s => s.removeProfile);
   const [saved, setSaved] = useState(false);
@@ -824,16 +829,16 @@ export default function OverdraftCalculator() {
         </div>
       )}
 
-      {/* Open CIBIL guide — Overdraft doesn't render CibilAdvisoryCard
-          (rates aren't credit-score driven for ODs), but the user may
-          still want to check how their score affects renewal terms. */}
-      <button
-        onClick={() => navigate('/cibil-score')}
-        className="w-full mb-6 py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 border transition-all active:scale-95"
-        style={{ borderColor: c.border, color: c.text, backgroundColor: c.card }}
-      >
-        📊 {t('cibil.openFullGuide', 'Open Full CIBIL Guide')}
-      </button>
+      {/* ── CIBIL Score Analysis ── */}
+      <div className="mb-4">
+        <CibilBadge loanType="overdraft" />
+      </div>
+      <CibilAdvisoryCard
+        score={cibilScore}
+        loanType="overdraft"
+        loanAmount={utilizedNum}
+        tenureMonths={Math.max(1, Math.round(daysNum / 30))}
+      />
 
       <DisclaimerComponent module="overdraft" />
 

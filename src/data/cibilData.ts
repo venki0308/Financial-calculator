@@ -94,6 +94,23 @@ export const LOAN_CIBIL_RATES: Record<string, LoanCibilConfig> = {
     // significantly affects: (1) card approval, (2) credit limit sanctioned,
     // (3) APR charged on revolving credit, (4) eligibility for premium cards.
     // Unlike loans, CC "LTV" maps to credit limit as a % of monthly income.
+    // Overdraft facility rates vary by type: salary OD (10-16%), personal OD
+    // (14-22%), business OD (12-18%). CIBIL affects approval, sanctioned limit,
+    // and renewal terms. Lower scores → higher margin over base rate.
+    overdraft: {
+        loanType: 'Overdraft', minBank: 700, minNBFC: 650, ideal: 750,
+        rates: {
+            nh:        { min: 18, max: 24 },
+            very_poor: { min: 18, max: 24 },
+            poor:      { min: 16, max: 22 },
+            average:   { min: 14, max: 18 },
+            good:      { min: 12, max: 16 },
+            very_good: { min: 10.5, max: 14 },
+            excellent: { min: 9.5, max: 12 },
+        },
+        ltv: { nh: 50, very_poor: 50, poor: 60, average: 70, good: 80, very_good: 90, excellent: 100 },
+        notes: ['cibil.odTip1', 'cibil.odTip2'],
+    },
     credit_card: {
         loanType: 'Credit Card', minBank: 750, minNBFC: 650, ideal: 750,
         rates: {
