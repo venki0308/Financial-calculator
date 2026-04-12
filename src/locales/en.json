@@ -5367,6 +5367,8 @@
         "educationLoan": "Education Loan",
         "goldLoan": "Gold Loan",
         "mortgage": "Mortgage",
+        "overdraft": "Overdraft",
+        "creditCard": "Credit Card",
         "loanAmount": "Loan Amount",
         "tenureYrs": "Tenure (Years)",
         "howToImprove": "How to Improve Your CIBIL Score",

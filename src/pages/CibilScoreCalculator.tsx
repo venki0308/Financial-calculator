@@ -21,6 +21,8 @@ const LOAN_TYPES_FOR_CALC = [
     { id: 'education_loan', label: 'cibil.educationLoan', icon: '🎓' },
     { id: 'gold_loan', label: 'cibil.goldLoan', icon: '🥇' },
     { id: 'mortgage', label: 'cibil.mortgage', icon: '🏦' },
+    { id: 'overdraft', label: 'cibil.overdraft', icon: '🏧' },
+    { id: 'credit_card', label: 'cibil.creditCard', icon: '💳' },
 ];
 
 // Maps the rate-impact loan type → the actual calculator route. Lets the user
@@ -34,6 +36,8 @@ const LOAN_TYPE_ROUTE: Record<string, string> = {
     education_loan: '/calculator/education-loan',
     gold_loan: '/gold-loan',
     mortgage: '/calculator/mortgage-calculator',
+    overdraft: '/calculator/overdraft',
+    credit_card: '/calculator/credit-card-interest',
 };
 
 export default function CibilScoreCalculator() {
