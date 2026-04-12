@@ -408,39 +408,6 @@ export default function OverdraftCalculator() {
 
       <div className="max-w-md mx-auto px-4 pt-4 pb-24 animate-fade-in">
 
-      {/* Export Buttons */}
-      <div className="flex gap-2 w-full mb-6">
-          <button onClick={handleDownloadPDF}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl shadow-sm text-sm font-bold transition-all border"
-            style={{ backgroundColor: c.card, borderColor: c.border, color: c.text }}>
-            <FileText size={16} /> PDF
-          </button>
-          <button onClick={handleDownloadExcel}
-            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl shadow-sm text-sm font-bold transition-all border"
-            style={{ backgroundColor: c.card, borderColor: c.border, color: c.text }}>
-            <Download size={16} /> Excel
-          </button>
-      </div>
-
-      {/* Save / Remove Button */}
-      <div className="mb-6">
-        {saved ? (
-            <div className="flex gap-2">
-                <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: '#10B98115', color: '#10B981', border: '1px solid #10B98130' }}>
-                    <Check size={16} /> Saved
-                </div>
-                <button onClick={handleRemove} className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: '#EF444415', color: '#EF4444', border: '1px solid #EF444430' }}>
-                    <Trash2 size={16} />
-                </button>
-            </div>
-        ) : (
-            <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave}
-                className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg">
-                <Save size={16} /> Save Calculation
-            </motion.button>
-        )}
-      </div>
-
       {/* SECTION 2: OD Type Selector */}
       <div className="flex gap-2 mb-6 overflow-x-auto hide-scrollbar pb-2 pt-1">
         {odTypes.map(type => {
@@ -809,6 +776,37 @@ export default function OverdraftCalculator() {
                  </div>
             </div>
         </div>
+      </div>
+
+      {/* Export & Save — positioned above schedule for better flow */}
+      <div className="flex gap-2 w-full mb-3">
+          <button onClick={handleDownloadPDF}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl shadow-sm text-sm font-bold transition-all border"
+            style={{ backgroundColor: c.card, borderColor: c.border, color: c.text }}>
+            <FileText size={16} /> PDF
+          </button>
+          <button onClick={handleDownloadExcel}
+            className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl shadow-sm text-sm font-bold transition-all border"
+            style={{ backgroundColor: c.card, borderColor: c.border, color: c.text }}>
+            <Download size={16} /> Excel
+          </button>
+      </div>
+      <div className="mb-6">
+        {saved ? (
+            <div className="flex gap-2">
+                <div className="flex-1 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: '#10B98115', color: '#10B981', border: '1px solid #10B98130' }}>
+                    <Check size={16} /> {t('common.saved', 'Saved')}
+                </div>
+                <button onClick={handleRemove} className="px-4 py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style={{ backgroundColor: '#EF444415', color: '#EF4444', border: '1px solid #EF444430' }}>
+                    <Trash2 size={16} />
+                </button>
+            </div>
+        ) : (
+            <motion.button whileTap={{ scale: 0.95 }} onClick={handleSave}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg">
+                <Save size={16} /> {t('od.saveCalc', 'Save Calculation')}
+            </motion.button>
+        )}
       </div>
 
       {/* SECTION 7: Daily Interest Schedule */}
