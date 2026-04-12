@@ -15,12 +15,11 @@ import { useCibil } from '../context/CibilContext';
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
 const RATE_PRESETS: { rate: number; label: string }[] = [
-  { rate: 24, label: '24%' },
-  { rate: 36, label: 'IDFC 36%' },
-  { rate: 40, label: 'SBI 40%' },
-  { rate: 42, label: 'HDFC 42%' },
-  { rate: 43, label: 'Axis 43%' },
-  { rate: 45, label: '45%' },
+  { rate: 24, label: 'Low 24%' },
+  { rate: 30, label: 'Standard 30%' },
+  { rate: 36, label: 'Mid 36%' },
+  { rate: 42, label: 'High 42%' },
+  { rate: 45, label: 'Very High 45%' },
 ];
 
 interface Insight { text: string; tone: 'warning' | 'success' | 'info' }
