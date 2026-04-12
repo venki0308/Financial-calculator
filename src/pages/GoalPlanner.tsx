@@ -14,6 +14,7 @@ import { exportToPDF, type ExportConfig, dateTag } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { todayStr } from '../utils/dateUtils';
+import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 interface GoalPreset {
     id: string;
@@ -98,6 +99,8 @@ export default function GoalPlanner() {
             realRate,
         };
     }, [currentCost, targetYears, expectedReturn, currentSavings, inflationRate]);
+
+    useHistoryTracker('Goal Planner', { currentCost, targetYears, expectedReturn, currentSavings }, { totalInvested: result.totalInvested, targetFV: result.targetFV }, result.monthlySIP);
 
     // Year-wise projection data
     const projection = useMemo(() => {
