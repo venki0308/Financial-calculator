@@ -10,6 +10,8 @@ import { exportToPDF, exportToExcel, type ExportConfig, dateTag } from '../utils
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { useCibil } from '../context/CibilContext';
+import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
+import CibilBadge from '../components/CibilBadge';
 import { getAllCreditCards } from '../utils/creditCardStorage';
 import {
   calculateAvalanche, calculateSnowball, calculateHybrid, calculateEqual,
@@ -415,25 +417,14 @@ export default function CreditCardPayoffCalculator() {
           </div>
         )}
 
-        {/* ── CIBIL Advisor ── */}
-        {cibilScore > 0 && (
-          <div className="p-4 rounded-2xl border flex items-center justify-between" style={{ backgroundColor: '#3b82f608', borderColor: '#3b82f630' }}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-black" style={{ backgroundColor: cibilScore >= 750 ? '#22c55e20' : '#eab30820', color: cibilScore >= 750 ? '#22c55e' : '#eab308' }}>{cibilScore}</div>
-              <div>
-                <p className="text-xs font-bold" style={{ color: '#3b82f6' }}>CIBIL: {cibilScore}</p>
-                <p className="text-[10px]" style={{ color: '#64748b' }}>
-                  {cibilScore >= 750
-                    ? t('ccPayoff.cibilGood', 'Good score — consider personal loan at 13% to clear high-APR CC debt')
-                    : t('ccPayoff.cibilLow', 'Pay down CC debt to improve utilization and CIBIL score')}
-                </p>
-              </div>
-            </div>
-            <button onClick={() => navigate('/cibil-score')} className="text-[10px] font-bold text-brand-blue">
-              {t('cc.viewCibil', 'View')} →
-            </button>
-          </div>
-        )}
+        {/* ── CIBIL Score Analysis ── */}
+        <CibilBadge loanType="credit_card" />
+        <CibilAdvisoryCard
+          score={cibilScore}
+          loanType="credit_card"
+          loanAmount={activeInputs.reduce((s, c) => s + c.balance, 0)}
+          tenureMonths={current.totalMonths || 12}
+        />
 
         {/* ── Disclaimer ── */}
         <DisclaimerComponent module="creditCard" />

@@ -90,6 +90,24 @@ export const LOAN_CIBIL_RATES: Record<string, LoanCibilConfig> = {
     // the score band. RBI 2026 LTV is tier-based (85/80/75) on loan amount,
     // not score, so the score-keyed LTV map below is purely informational
     // and gets overridden by GoldLoanCalculator's tiered logic at runtime.
+    // Credit card APR in India typically ranges 24-49% p.a. CIBIL score
+    // significantly affects: (1) card approval, (2) credit limit sanctioned,
+    // (3) APR charged on revolving credit, (4) eligibility for premium cards.
+    // Unlike loans, CC "LTV" maps to credit limit as a % of monthly income.
+    credit_card: {
+        loanType: 'Credit Card', minBank: 750, minNBFC: 650, ideal: 750,
+        rates: {
+            nh:        { min: 42, max: 49 },
+            very_poor: { min: 42, max: 49 },
+            poor:      { min: 40, max: 46 },
+            average:   { min: 36, max: 42 },
+            good:      { min: 30, max: 38 },
+            very_good: { min: 24, max: 33 },
+            excellent: { min: 22, max: 30 },
+        },
+        ltv: { nh: 50, very_poor: 50, poor: 100, average: 200, good: 300, very_good: 400, excellent: 500 },
+        notes: ['cibil.ccTip1', 'cibil.ccTip2', 'cibil.ccTip3'],
+    },
     gold_loan: {
         loanType: 'Gold Loan', minBank: 0, minNBFC: 0, ideal: 0,
         rates: {

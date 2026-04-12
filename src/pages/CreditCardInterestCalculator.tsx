@@ -11,6 +11,8 @@ import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { useAppColors } from '../theme/useAppColors';
 import { getDailyInterest, getPeriodInterest, getGSTOnInterest, getTrueCost, getCashAdvanceCost } from '../utils/creditCardCalculations';
 import { useCibil } from '../context/CibilContext';
+import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
+import CibilBadge from '../components/CibilBadge';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -395,22 +397,16 @@ export default function CreditCardInterestCalculator() {
                 </div>
             </div>
 
-            {/* ── CIBIL Cross-Link ── */}
-            {cibilScore > 0 && (
-                <div className="mx-4 my-4 p-4 rounded-xl border flex items-center justify-between" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-black" style={{ backgroundColor: cibilScore >= 750 ? '#22c55e20' : '#eab30820', color: cibilScore >= 750 ? '#22c55e' : '#eab308' }}>{cibilScore}</div>
-                        <div>
-                            <p className="text-xs font-bold" style={{ color: c.text }}>{t('ccInterest.cibilScore', 'Your CIBIL')}: {cibilScore}</p>
-                            <p className="text-[10px]" style={{ color: c.textSecondary }}>
-                                {cibilScore >= 750 ? t('ccInterest.cibilGood', 'Eligible for lower-rate personal loan to pay off CC debt')
-                                 : t('ccInterest.cibilLow', 'High CC utilization may impact your score')}
-                            </p>
-                        </div>
-                    </div>
-                    <button onClick={() => navigate('/cibil-score')} className="text-[10px] font-bold text-brand-blue">{t('cc.viewCibil', 'View')} →</button>
-                </div>
-            )}
+            {/* ── CIBIL Score Analysis ── */}
+            <div className="mx-4 my-4">
+                <CibilBadge loanType="credit_card" />
+            </div>
+            <CibilAdvisoryCard
+                score={cibilScore}
+                loanType="credit_card"
+                loanAmount={balance}
+                tenureMonths={12}
+            />
 
             <DisclaimerComponent module="creditCard" />
         </div>
