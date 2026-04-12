@@ -64,6 +64,11 @@ const calcMeta: Record<string, { label: string; icon: any; color: string; gradie
     'Simple Interest': { label: 'saved.calc.simpleInterest', icon: Calculator, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
     'Compound Interest': { label: 'saved.calc.compoundInterest', icon: Calculator, color: '#6366F1', gradient: 'from-indigo-600/20 to-purple-600/20' },
     'Advanced Mortgage': { label: 'saved.calc.advancedMortgage', icon: Home, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
+    'Advanced Mortgage Calculator': { label: 'saved.calc.advancedMortgage', icon: Home, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },
+    'Break-Even Calculator': { label: 'saved.calc.breakEven', icon: Calculator, color: '#22C55E', gradient: 'from-green-600/20 to-lime-600/20' },
+    'Two Wheeler Loan': { label: 'saved.calc.twoWheeler', icon: CreditCard, color: '#06B6D4', gradient: 'from-cyan-600/20 to-teal-600/20' },
+    'Gold Loan Calculator': { label: 'saved.calc.goldLoan', icon: IndianRupee, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
+    'Goal Planner': { label: 'saved.calc.goalPlanner', icon: TrendingUp, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
     'Overdraft Calculator': { label: 'saved.calc.overdraftCalculator', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
     'Live Loan Status': { label: 'saved.calc.loanTracker', icon: Activity, color: '#10B981', gradient: 'from-emerald-600/20 to-teal-600/20' },
 };
