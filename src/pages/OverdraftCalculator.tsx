@@ -205,12 +205,13 @@ export default function OverdraftCalculator() {
   const preclosureCharges = (utilizedNum * penaltyPct) / 100;
   const totalToClose = utilizedNum + totalInterest + preclosureCharges;
 
+  // Track in Recently Used (must be at top level — NOT inside buildExportConfig)
+  useHistoryTracker('Overdraft Calculator', { utilizedAmount, interestRate, daysUtilized }, { totalPayable: totalPayableAmount }, totalInterest);
+
   const buildExportConfig = (forExcel: boolean): ExportConfig => {
     const tag = dateTag();
     const f = (v: number) => forExcel ? Math.round(v) : formatINR(v);
     const odTypeLabel = odType === 'business' ? t('od.typeBusiness', 'Business OD') : odType === 'personal' ? t('od.typePersonal', 'Personal OD') : odType === 'salary' ? t('od.typeSalary', 'Salary OD') : t('od.typeFD', 'Against FD/Property');
-
-    useHistoryTracker('Overdraft Calculator', { utilizedAmount, interestRate, daysUtilized }, { totalPayable: totalPayableAmount }, totalInterest);
 
     const scheduleRows: Array<Array<string | number>> = [];
     const maxDays = Math.min(daysNum, 365);
