@@ -350,7 +350,7 @@ function HeroSection() {
             fontSize: isMobile ? '16px' : '18px', color: '#6B7280', lineHeight: 1.6,
             maxWidth: isMobile ? '100%' : '480px', marginBottom: '24px',
           }}>
-            India's most complete financial calculator — SIP, EMI, Tax, PPF, Insurance, Mortgage, Two-Wheeler & Gold Loan, CIBIL and 37+ tools. Free forever. Works offline. No login.
+            India's most complete financial calculator — SIP, EMI, Tax, PPF, Insurance, Mortgage, Two-Wheeler & Gold Loan, CIBIL and 42+ tools. Free forever. Works offline. No login.
           </p>
 
           {/* CTA */}
