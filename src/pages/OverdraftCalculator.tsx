@@ -116,6 +116,14 @@ export default function OverdraftCalculator() {
   const [processingFee, setProcessingFee] = useState('');
   const [annualCharge, setAnnualCharge] = useState('');
 
+  // ── Flexi/Dropline OD fields ──────────────────────────────
+  const [isFlexiOD, setIsFlexiOD] = useState(false);
+  const [tenureMonths, setTenureMonths] = useState('84');
+  const [amcPct, setAmcPct] = useState('');          // AMC as % of limit (e.g. 0.295)
+  const [flexiFacilityCharge, setFlexiFacilityCharge] = useState('');
+  const [insurancePremium, setInsurancePremium] = useState('');
+  const [stampDuty, setStampDuty] = useState('');
+
   const [showSchedule, setShowSchedule] = useState(false);
   const [showPreclosure, setShowPreclosure] = useState(false);
 
@@ -146,32 +154,65 @@ export default function OverdraftCalculator() {
   const daysNum = parseInt(daysUtilized) || 0;
   const feePct = parseFloat(processingFee) || 0;
   const amcNum = parseFormattedNumber(annualCharge) || 0;
+  const tenureNum = parseInt(tenureMonths) || 0;
+  const amcPctNum = parseFloat(amcPct) || 0;
+  const flexiChargeNum = parseFormattedNumber(flexiFacilityCharge) || 0;
+  const insuranceNum = parseFormattedNumber(insurancePremium) || 0;
+  const stampDutyNum = parseFormattedNumber(stampDuty) || 0;
 
-  const isOverLimit = utilizedNum > limitNum;
+  // ── Flexi/Dropline: current dropline limit reduces monthly ──
+  const elapsedMonths = useMemo(() => {
+    if (!isFlexiOD || tenureNum <= 0) return 0;
+    const s = new Date(startDate);
+    const now = new Date();
+    const months = (now.getFullYear() - s.getFullYear()) * 12 + (now.getMonth() - s.getMonth());
+    return Math.max(0, Math.min(months, tenureNum));
+  }, [isFlexiOD, tenureNum, startDate]);
+
+  const droplineLimit = useMemo(() => {
+    if (!isFlexiOD || tenureNum <= 0) return limitNum;
+    // Linear dropline: limit reduces equally each month
+    const monthlyDrop = limitNum / tenureNum;
+    return Math.max(0, Math.round(limitNum - monthlyDrop * elapsedMonths));
+  }, [isFlexiOD, limitNum, tenureNum, elapsedMonths]);
+
+  const activeLimit = isFlexiOD ? droplineLimit : limitNum;
+  const isOverLimit = utilizedNum > activeLimit;
+
+  // ── Monthly interest-only EMI (Flexi OD: you only pay interest) ──
+  const monthlyInterestEMI = (utilizedNum * rateNum) / (12 * 100);
 
   // Base daily formula
-  const activePrincipal = isOverLimit ? limitNum : utilizedNum;
+  const activePrincipal = isOverLimit ? activeLimit : utilizedNum;
   const dailyInterest = (activePrincipal * rateNum) / (365 * 100);
   const standardInterest = dailyInterest * daysNum;
 
   // Penalty for excess
-  const excess = isOverLimit ? utilizedNum - limitNum : 0;
+  const excess = isOverLimit ? utilizedNum - activeLimit : 0;
   const excessPenaltyRateNum = parseFloat(excessPenaltyRate) || 2;
   const penaltyInterest = excess > 0 ? (excess * (rateNum + excessPenaltyRateNum) * daysNum) / (365 * 100) : 0;
 
   const totalInterest = standardInterest + penaltyInterest;
   const processingFeeAmount = (limitNum * feePct) / 100;
-  const totalFees = processingFeeAmount + amcNum;
+  // AMC: if % is set, compute from limit; otherwise use flat amount
+  const amcAmount = amcPctNum > 0 ? Math.round(limitNum * amcPctNum / 100) : amcNum;
+  // Upfront costs (Flexi OD specific)
+  const upfrontCosts = processingFeeAmount + flexiChargeNum + insuranceNum + stampDutyNum;
+  const totalFees = upfrontCosts + amcAmount;
   const totalPayableAmount = utilizedNum + totalInterest + totalFees;
 
   // Stats
-  const availableLimit = Math.max(0, limitNum - utilizedNum);
+  const availableLimit = Math.max(0, activeLimit - utilizedNum);
   const effectiveCost = utilizedNum > 0 && daysNum > 0
     ? ((totalInterest + totalFees) / utilizedNum) * (365 / daysNum) * 100
     : 0;
 
+  // Flexi: remaining months and future interest
+  const remainingMonths = isFlexiOD ? Math.max(0, tenureNum - elapsedMonths) : 0;
+  const futureInterest = isFlexiOD ? monthlyInterestEMI * remainingMonths : 0;
+
   // Gauge
-  const utilPct = limitNum > 0 ? (utilizedNum / limitNum) * 100 : 0;
+  const utilPct = activeLimit > 0 ? (utilizedNum / activeLimit) * 100 : 0;
   let gaugeColor = 'bg-brand-green';
   let gaugeText = t('od.gaugeGreen');
   if (utilPct > 50 && utilPct <= 75) { gaugeColor = 'bg-amber-500'; gaugeText = t('od.gaugeAmber'); }
@@ -340,8 +381,14 @@ export default function OverdraftCalculator() {
     { id: 'business', icon: Building2, labelKey: 'od.typeBusiness' },
     { id: 'personal', icon: User, labelKey: 'od.typePersonal' },
     { id: 'salary', icon: Wallet, labelKey: 'od.typeSalary' },
-    { id: 'fd', icon: Landmark, labelKey: 'od.typeFD' }
+    { id: 'fd', icon: Landmark, labelKey: 'od.typeFD' },
+    { id: 'flexi', icon: Scale, labelKey: 'od.typeFlexi' },
   ];
+
+  // Auto-enable Flexi mode when flexi type is selected
+  useEffect(() => {
+    setIsFlexiOD(odType === 'flexi');
+  }, [odType]);
 
   return (
     <div className="min-h-screen pb-safe-nav" style={{ backgroundColor: c.bg, color: c.text }}>
@@ -542,14 +589,75 @@ export default function OverdraftCalculator() {
                  </div>
              </div>
         </div>
+
+        {/* ── Flexi / Dropline OD Inputs ── */}
+        {isFlexiOD && (
+          <div className="pt-3 border-t space-y-3" style={{ borderColor: c.border }}>
+            <label className="block text-sm font-bold mb-1" style={{ color: c.textSecondary }}>
+              {t('od.flexiDetails', 'Flexi / Dropline Details')}
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <span className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: c.textMuted }}>
+                  {t('od.tenure', 'Tenure (Months)')}
+                </span>
+                <input type="number" value={tenureMonths} onChange={e => setTenureMonths(e.target.value)} placeholder="84"
+                  className="w-full px-3 py-2.5 rounded-xl border text-sm font-semibold shadow-sm"
+                  style={{ backgroundColor: c.inputBg, borderColor: c.border, color: c.text }} />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: c.textMuted }}>
+                  {t('od.amcPct', 'AMC Rate (%)')}
+                </span>
+                <input type="number" step="0.01" value={amcPct} onChange={e => setAmcPct(e.target.value)} placeholder="0.295"
+                  className="w-full px-3 py-2.5 rounded-xl border text-sm font-semibold shadow-sm"
+                  style={{ backgroundColor: c.inputBg, borderColor: c.border, color: c.text }} />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: c.textMuted }}>
+                  {t('od.flexiCharge', 'Flexi Facility Charge')}
+                </span>
+                <input type="text" value={flexiFacilityCharge} onChange={e => setFlexiFacilityCharge(formatNumberExt(e.target.value))} placeholder="0"
+                  className="w-full px-3 py-2.5 rounded-xl border text-sm font-semibold shadow-sm"
+                  style={{ backgroundColor: c.inputBg, borderColor: c.border, color: c.text }} />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: c.textMuted }}>
+                  {t('od.insurance', 'Insurance Premium')}
+                </span>
+                <input type="text" value={insurancePremium} onChange={e => setInsurancePremium(formatNumberExt(e.target.value))} placeholder="0"
+                  className="w-full px-3 py-2.5 rounded-xl border text-sm font-semibold shadow-sm"
+                  style={{ backgroundColor: c.inputBg, borderColor: c.border, color: c.text }} />
+              </div>
+              <div className="col-span-2">
+                <span className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: c.textMuted }}>
+                  {t('od.stampDuty', 'Stamp Duty')}
+                </span>
+                <input type="text" value={stampDuty} onChange={e => setStampDuty(formatNumberExt(e.target.value))} placeholder="0"
+                  className="w-full px-3 py-2.5 rounded-xl border text-sm font-semibold shadow-sm"
+                  style={{ backgroundColor: c.inputBg, borderColor: c.border, color: c.text }} />
+              </div>
+            </div>
+            <p className="text-[10px] leading-relaxed" style={{ color: c.textMuted }}>
+              {t('od.flexiHint', 'In Flexi/Dropline OD, your sanctioned limit reduces monthly (dropline). You pay interest-only EMIs on the utilized amount. Principal is repaid via part payments.')}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* SECTION 4: Quick Stats Row */}
       <div className="grid grid-cols-2 gap-3 mb-6">
           <div className="rounded-xl p-4 flex flex-col justify-center border shadow-sm"
                style={{ backgroundColor: c.bg, borderColor: c.border }}>
-              <span className="text-[10px] uppercase font-bold mb-1" style={{ color: c.textSecondary }}>{t('od.sanctioned')}</span>
-              <span className="text-base font-bold truncate" style={{ color: c.text }}>{formatINR(limitNum)}</span>
+              <span className="text-[10px] uppercase font-bold mb-1" style={{ color: c.textSecondary }}>
+                {isFlexiOD ? t('od.droplineLimit', 'Dropline Limit') : t('od.sanctioned')}
+              </span>
+              <span className="text-base font-bold truncate" style={{ color: c.text }}>{formatINR(activeLimit)}</span>
+              {isFlexiOD && droplineLimit < limitNum && (
+                <span className="text-[9px] mt-0.5" style={{ color: c.textMuted }}>
+                  {t('od.originalLimit', 'Original')}: {formatINR(limitNum)}
+                </span>
+              )}
           </div>
           <div className="bg-red-50 dark:bg-red-500/10 rounded-xl p-4 flex flex-col justify-center border border-red-200 dark:border-transparent shadow-sm">
               <span className="text-[10px] uppercase font-bold text-red-700 dark:text-red-400 mb-1">{t('od.utilized')}</span>
@@ -564,6 +672,89 @@ export default function OverdraftCalculator() {
               <span className="text-base font-bold text-emerald-800 dark:text-emerald-400 truncate">{formatINR(availableLimit)}</span>
           </div>
       </div>
+
+      {/* SECTION 4.5: Flexi OD — Monthly EMI & Tenure Info */}
+      {isFlexiOD && utilizedNum > 0 && (
+        <div className="rounded-2xl border p-5 mb-6 shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
+          <h3 className="text-xs uppercase font-bold tracking-wider mb-4" style={{ color: c.textSecondary }}>
+            {t('od.flexiSummary', 'Flexi OD Summary')}
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <span className="text-[10px] uppercase font-bold block mb-1" style={{ color: c.textMuted }}>
+                {t('od.monthlyEMI', 'Monthly EMI (Interest Only)')}
+              </span>
+              <span className="text-xl font-black" style={{ color: '#3b82f6' }}>{formatINR(Math.round(monthlyInterestEMI))}</span>
+              <span className="text-[9px] block mt-0.5" style={{ color: c.textMuted }}>
+                {t('od.interestOnlyNote', 'Interest only — no principal reduction')}
+              </span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold block mb-1" style={{ color: c.textMuted }}>
+                {t('od.remainingTenure', 'Remaining Tenure')}
+              </span>
+              <span className="text-xl font-black" style={{ color: c.text }}>{remainingMonths} <span className="text-xs font-semibold" style={{ color: c.textMuted }}>{t('od.months', 'months')}</span></span>
+              <span className="text-[9px] block mt-0.5" style={{ color: c.textMuted }}>
+                {t('od.ofTotal', 'of {{total}} months', { total: tenureNum })}
+              </span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold block mb-1" style={{ color: c.textMuted }}>
+                {t('od.futureInterest', 'Future Interest (est.)')}
+              </span>
+              <span className="text-base font-bold text-amber-600 dark:text-amber-400">{formatINR(Math.round(futureInterest))}</span>
+            </div>
+            {amcAmount > 0 && (
+              <div>
+                <span className="text-[10px] uppercase font-bold block mb-1" style={{ color: c.textMuted }}>
+                  {t('od.nextAMC', 'Annual AMC')}
+                </span>
+                <span className="text-base font-bold" style={{ color: c.text }}>{formatINR(amcAmount)}</span>
+                {amcPctNum > 0 && <span className="text-[9px] block mt-0.5" style={{ color: c.textMuted }}>({amcPctNum}% {t('od.ofLimit', 'of limit')})</span>}
+              </div>
+            )}
+          </div>
+
+          {/* Upfront cost breakdown */}
+          {upfrontCosts > 0 && (
+            <div className="mt-4 pt-3 border-t" style={{ borderColor: c.border }}>
+              <span className="text-[10px] uppercase font-bold block mb-2" style={{ color: c.textMuted }}>
+                {t('od.upfrontCosts', 'Upfront Costs Deducted')}
+              </span>
+              <div className="space-y-1.5 text-xs">
+                {processingFeeAmount > 0 && (
+                  <div className="flex justify-between" style={{ color: c.textSecondary }}>
+                    <span>{t('od.processingFee')}</span>
+                    <span className="font-semibold" style={{ color: c.text }}>{formatINR(processingFeeAmount)}</span>
+                  </div>
+                )}
+                {flexiChargeNum > 0 && (
+                  <div className="flex justify-between" style={{ color: c.textSecondary }}>
+                    <span>{t('od.flexiCharge', 'Flexi Facility Charge')}</span>
+                    <span className="font-semibold" style={{ color: c.text }}>{formatINR(flexiChargeNum)}</span>
+                  </div>
+                )}
+                {insuranceNum > 0 && (
+                  <div className="flex justify-between" style={{ color: c.textSecondary }}>
+                    <span>{t('od.insurance', 'Insurance Premium')}</span>
+                    <span className="font-semibold" style={{ color: c.text }}>{formatINR(insuranceNum)}</span>
+                  </div>
+                )}
+                {stampDutyNum > 0 && (
+                  <div className="flex justify-between" style={{ color: c.textSecondary }}>
+                    <span>{t('od.stampDuty', 'Stamp Duty')}</span>
+                    <span className="font-semibold" style={{ color: c.text }}>{formatINR(stampDutyNum)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-1.5 border-t font-bold" style={{ borderColor: c.border, color: c.text }}>
+                  <span>{t('od.totalUpfront', 'Total Upfront')}</span>
+                  <span>{formatINR(upfrontCosts)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* SECTION 5: Utilization Gauge */}
       <div className="p-5 rounded-2xl shadow-sm border mb-6"

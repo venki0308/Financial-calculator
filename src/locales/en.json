@@ -3584,6 +3584,7 @@
         "typePersonal": "Personal OD",
         "typeSalary": "Salary OD",
         "typeFD": "Against FD/Property",
+        "typeFlexi": "Flexi / Dropline",
         "sanctionedLimit": "Sanctioned OD Limit",
         "utilizedAmount": "Utilized Amount",
         "annualInterestRate": "Annual Interest Rate",
