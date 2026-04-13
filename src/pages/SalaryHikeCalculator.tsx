@@ -486,8 +486,8 @@ export default function SalaryHikeCalculator() {
     }, [savedCalculations, currentSalary, hikePct, period, periodUnit, mode, result.hikePctComputed, ctcAmount, variablePct, achievementPct, fixedHikePct, offerA_salary, offerB_salary]);
 
     const modeOptions: { key: 'findHike' | 'findSalary' | 'ctcBreakdown' | 'compare'; label: string }[] = [
-        { key: 'findSalary', label: t('sh.findNewSalary') },
-        { key: 'findHike', label: t('sh.findHikePct') },
+        { key: 'findSalary', label: t('sh.findHikePct') },
+        { key: 'findHike', label: t('sh.findNewSalary') },
         { key: 'ctcBreakdown', label: t('sh.ctcBreakdown') },
         { key: 'compare', label: t('sh.compareOffers') },
     ];
