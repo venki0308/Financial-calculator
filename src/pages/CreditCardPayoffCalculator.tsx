@@ -69,7 +69,7 @@ export default function CreditCardPayoffCalculator() {
   const activeInputs: PayoffCardInput[] = useMemo(() => {
     if (inputTab === 'saved') {
       return savedCards.filter(c => selectedIds.has(c.id)).map(c => ({
-        id: c.id, name: c.cardName || `${c.bankName} ${c.last4Digits}`,
+        id: c.id, name: `${c.bankName || c.cardName} ${c.cardNetwork}${c.last4Digits ? ` •• ${c.last4Digits}` : ''}`.trim(),
         balance: c.currentBalance, apr: c.annualInterestRate,
         minDue: c.minimumDue || getMinimumDue(c.currentBalance, c.annualInterestRate),
       }));
@@ -202,8 +202,8 @@ export default function CreditCardPayoffCalculator() {
                   onChange={() => setSelectedIds(prev => { const s = new Set(prev); s.has(c.id) ? s.delete(c.id) : s.add(c.id); return s; })}
                   className="accent-blue-600 w-4 h-4" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{c.cardName || c.bankName}{c.last4Digits ? ` (${c.last4Digits})` : ''}</p>
-                  <p className="text-xs text-gray-500">{c.bankName} {c.cardNetwork} &middot; {fmt(c.currentBalance)} &middot; {c.annualInterestRate}% APR</p>
+                  <p className="text-sm font-semibold truncate">{c.bankName || c.cardName} {c.cardNetwork}{c.last4Digits ? ` •• ${c.last4Digits}` : ''}</p>
+                  <p className="text-xs text-gray-500">{fmt(c.currentBalance)} &middot; {c.annualInterestRate}% APR</p>
                 </div>
               </label>
             ))}

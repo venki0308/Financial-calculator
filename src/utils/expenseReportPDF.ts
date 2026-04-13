@@ -2959,7 +2959,7 @@ function drawCreditCardSection(doc: PDFDoc, autoTable: any, cards: CCCard[], yPo
         const util = getUtilization(card.currentBalance, card.creditLimit);
         const dueDays = getDaysUntilDue(card.dueDate);
         const utilLabel = util > 75 ? 'High' : util > 30 ? 'Medium' : 'Low';
-        const nameLabel = card.last4Digits ? `${card.cardName} (${card.last4Digits})` : card.cardName;
+        const nameLabel = `${card.bankName || card.cardName}${card.last4Digits ? ` •• ${card.last4Digits}` : ''}`;
         return [nameLabel, card.cardNetwork, formatINR(card.creditLimit), formatINR(card.currentBalance), `${util.toFixed(0)}% (${utilLabel})`, formatINR(card.minimumDue), `${dueDays}d`];
     });
     ccBody.push(['TOTAL', '', formatINR(totalLimit), formatINR(totalOut), `${overallUtil.toFixed(0)}%`, formatINR(totalMin), '']);
