@@ -49,6 +49,7 @@ const TYPE_META: Record<string, { icon: string; color: string; labelKey: string 
     // Investment / projection trackers — also snapshot mode
     'Lumpsum': { icon: '💎', color: '#3B82F6', labelKey: 'myLoans.typeLabelLumpsum' },
     'SWP': { icon: '💸', color: '#F59E0B', labelKey: 'myLoans.typeLabelSwp' },
+    'STP': { icon: '🔄', color: '#6366F1', labelKey: 'myLoans.typeLabelStp' },
     'CAGR': { icon: '📈', color: '#10B981', labelKey: 'myLoans.typeLabelCagr' },
     'EPF': { icon: '🏢', color: '#8B5CF6', labelKey: 'myLoans.typeLabelEpf' },
     'NPS': { icon: '🏛️', color: '#06B6D4', labelKey: 'myLoans.typeLabelNps' },
@@ -127,6 +128,7 @@ function isAnyLoanType(type: string): boolean {
     const t = type.toLowerCase().replace(/\s+calculator$/i, '').trim();
     return t === 'loan emi'
         || t === 'mortgage'
+        || t === 'advanced mortgage'
         || t === 'home loan'
         || t === 'car loan'
         || t === 'personal loan'
@@ -372,6 +374,34 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 label2: t('myLoans.metricMonthly'), value2: formatINR(monthlyWithdrawal),
                 label3: t('myLoans.metricEarned'), value3: formatINR(withdrawnSoFar),
                 progress, statusText,
+            };
+        }
+        // ── STP (systematic transfer plan — live tracker) ──
+        if (matchType(type, 'stp')) {
+            const initial = d.initialAmount || 0;
+            const transferAmt = d.transferAmount || 0;
+            const sourceRate = d.sourceRate || 0;
+            const targetRate = d.targetRate || 0;
+            const totalMonths = d.durationMonths || 0;
+            const elapsedY = yearsSince(d.startDate, totalMonths / 12);
+            const elapsedMonths = Math.min(Math.floor(elapsedY * 12), totalMonths);
+            let srcBal = initial;
+            let tgtVal = 0;
+            const srcR = sourceRate / 12 / 100;
+            const tgtR = targetRate / 12 / 100;
+            for (let i = 0; i < elapsedMonths && srcBal > 0; i++) {
+                srcBal *= (1 + srcR);
+                const xfer = Math.min(transferAmt, srcBal);
+                srcBal -= xfer;
+                tgtVal = (tgtVal + xfer) * (1 + tgtR);
+            }
+            const totalPortfolio = srcBal + tgtVal;
+            const progress = totalMonths > 0 ? Math.min(100, (elapsedMonths / totalMonths) * 100) : 100;
+            return {
+                label1: t('myLoans.metricInvested'), value1: formatINR(initial),
+                label2: t('myLoans.metricValue'), value2: formatINR(totalPortfolio),
+                label3: t('myLoans.metricGain'), value3: formatINR(totalPortfolio - initial),
+                progress, statusText: `${elapsedMonths}M of ${totalMonths}M`,
             };
         }
         // ── CAGR (compound annual growth — snapshot) ──

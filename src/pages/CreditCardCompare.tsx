@@ -9,6 +9,8 @@ import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { formatINR } from '../utils/calculations';
 import { calcCardTypeResults, type SpendProfile, type CardTypeResult } from '../utils/creditCardCalculations';
 import { useCibil } from '../context/CibilContext';
+import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
+import CibilBadge from '../components/CibilBadge';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import NumberInput from '../components/NumberInput';
 
@@ -351,6 +353,17 @@ export default function CreditCardCompare() {
                   </Accordion>
                 ))}
               </div>
+
+              {/* ── CIBIL Score Analysis ── */}
+              <div className="mb-3">
+                <CibilBadge loanType="credit_card" />
+              </div>
+              <CibilAdvisoryCard
+                score={cibilScore}
+                loanType="credit_card"
+                loanAmount={outstandingBalance || totalMonthly}
+                tenureMonths={12}
+              />
 
               {/* Back to edit */}
               <button onClick={() => setStep('profile')}

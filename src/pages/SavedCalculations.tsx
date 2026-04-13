@@ -58,6 +58,7 @@ const calcMeta: Record<string, { label: string; icon: any; color: string; gradie
     'Post Office TD': { label: 'saved.calc.postOfficeTd', icon: PiggyBank, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
     'Post Office MIS': { label: 'saved.calc.postOfficeMis', icon: PiggyBank, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
     'SWP Calculator': { label: 'saved.calc.swpCalculator', icon: TrendingUp, color: '#EF4444', gradient: 'from-red-600/20 to-orange-600/20' },
+    'STP Calculator': { label: 'saved.calc.stpCalculator', icon: TrendingUp, color: '#6366F1', gradient: 'from-indigo-600/20 to-violet-600/20' },
     'Villa Construction': { label: 'saved.calc.villaConstruction', icon: Home, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
     'Land Value': { label: 'saved.calc.landValueCalculator', icon: Home, color: '#22C55E', gradient: 'from-green-600/20 to-emerald-600/20' },
     'Flat Price': { label: 'saved.calc.flatPriceCalculator', icon: Home, color: '#3B82F6', gradient: 'from-blue-600/20 to-indigo-600/20' },

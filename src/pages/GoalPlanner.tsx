@@ -1,16 +1,19 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Home, GraduationCap, Car, Umbrella, Target, TrendingUp, FileText } from 'lucide-react';
+import { ArrowLeft, Home, GraduationCap, Car, Umbrella, Target, TrendingUp, FileText, Save, Check, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
 import LiveStatusCard from '../components/LiveStatusCard';
+import SaveNameDialog from '../components/SaveNameDialog';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { formatINR } from '../utils/calculations';
 import { calculateSipStatus, type SipStatusInput } from '../utils/investmentStatusEngine';
 import { exportToPDF, type ExportConfig, dateTag } from '../utils/exportReport';
+import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import { AnalyticsService } from '../lib/analytics';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { todayStr } from '../utils/dateUtils';
@@ -38,6 +41,10 @@ export default function GoalPlanner() {
     useEffect(() => { AnalyticsService.trackScreen('Goal_Planner'); }, []);
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const { addSaved, removeSaved } = useCalculatorStore();
+    const addProfile = useLiveStatusStore(s => s.addProfile);
+    const removeProfile = useLiveStatusStore(s => s.removeProfile);
+
     const [selectedGoal, setSelectedGoal] = useState<GoalPreset | null>(null);
     const [currentCost, setCurrentCost] = useState(5000000);
     const [inflationRate, setInflationRate] = useState(5); // RBI FY 2025-26 CPI ~4.8%
@@ -45,6 +52,9 @@ export default function GoalPlanner() {
     const [expectedReturn, setExpectedReturn] = useState(12);
     const [currentSavings, setCurrentSavings] = useState(0);
     const [goalStartDate, setGoalStartDate] = useState('');
+    const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+    const [showNameDialog, setShowNameDialog] = useState(false);
 
     const handleSelectGoal = (goal: GoalPreset) => {
         setSelectedGoal(goal);
@@ -101,6 +111,44 @@ export default function GoalPlanner() {
     }, [currentCost, targetYears, expectedReturn, currentSavings, inflationRate]);
 
     useHistoryTracker('Goal Planner', { currentCost, targetYears, expectedReturn, currentSavings }, { totalInvested: result.totalInvested, targetFV: result.targetFV }, result.monthlySIP);
+
+    const suggestedName = `Goal — ${selectedGoal ? selectedGoal.id.charAt(0).toUpperCase() + selectedGoal.id.slice(1) : 'Custom'} ${formatINR(result.targetFV)}`;
+
+    const handleSave = (customName: string) => {
+        const calcId = `goal-${Date.now()}`;
+        addSaved({
+            id: calcId,
+            calculatorType: 'Goal Planner',
+            inputValues: { currentCost, targetYears, expectedReturn, currentSavings, inflationRate, goalType: selectedGoal?.id, name: customName },
+            resultValues: { primary: result.monthlySIP, label: 'Monthly SIP', invested: result.totalInvested, returns: result.wealthGained },
+            timestamp: Date.now(),
+        });
+        addProfile({
+            id: calcId,
+            name: customName,
+            calculatorType: 'Goal Planner',
+            profileData: {
+                monthlySip: result.monthlySIP,
+                annualReturn: expectedReturn,
+                targetAmount: result.targetFV,
+                totalInvestment: result.totalInvested,
+                startDate: goalStartDate || new Date().toISOString().slice(0, 10),
+            },
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
+        setSaved(true);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            removeProfile(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
+    };
 
     // Year-wise projection data
     const projection = useMemo(() => {
@@ -353,6 +401,28 @@ export default function GoalPlanner() {
                     </div>
                 )}
 
+                {/* Save / Remove */}
+                {selectedGoal && result.monthlySIP > 0 && (
+                    <div className="flex gap-3 mt-4">
+                        {!saved ? (
+                            <button onClick={() => setShowNameDialog(true)}
+                                className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 font-bold text-xs transition-all active:scale-95">
+                                <Save size={16} /> {t('goalPlanner.saveToMyLoans', 'Save to My Loans')}
+                            </button>
+                        ) : (
+                            <>
+                                <div className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-bold text-xs">
+                                    <Check size={16} /> {t('common.saved', 'Saved')}
+                                </div>
+                                <button onClick={handleRemove}
+                                    className="px-4 py-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 font-bold text-xs transition-all active:scale-95">
+                                    <Trash2 size={16} />
+                                </button>
+                            </>
+                        )}
+                    </div>
+                )}
+
                 {goalStatus && selectedGoal && (
                     <div className="mt-5">
                         <LiveStatusCard
@@ -377,6 +447,13 @@ export default function GoalPlanner() {
 
                 <DisclaimerComponent module="goal" />
             </div>
+
+            <SaveNameDialog
+                open={showNameDialog}
+                defaultName={suggestedName}
+                onConfirm={(name: string) => { handleSave(name); setShowNameDialog(false); }}
+                onClose={() => setShowNameDialog(false)}
+            />
         </div>
     );
 }

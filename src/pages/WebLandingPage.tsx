@@ -8,7 +8,7 @@ const PLAY_BADGE_URL = 'https://play.google.com/intl/en_us/badges/static/images/
 // ── Data ──────────────────────────────────────────────────────────────────────
 const SCREENSHOTS = [
   { src: '/screenshots/screen1-home.webp',        caption: 'Home Dashboard'     },
-  { src: '/screenshots/screen2-calculators.webp', caption: '37+ Calculators'    },
+  { src: '/screenshots/screen2-calculators.webp', caption: '43+ Calculators'    },
   { src: '/screenshots/screen3-tax.webp',         caption: 'Income Tax 2026-27' },
   { src: '/screenshots/screen4-schemes.webp',     caption: 'Govt Schemes'       },
   { src: '/screenshots/screen5-expense.webp',     caption: 'Expense Tracker'    },
@@ -43,36 +43,63 @@ type CatId = typeof CAT_TABS[number]['id'];
 const ICON_COLORS = ['#EFF6FF','#FFF7ED','#F0FDF4','#FDF4FF','#ECFDF5','#FEF2F2','#F0F7FF','#FFFBEB','#F5F3FF','#FCE7F3'];
 
 const FEATURES = [
+  // ── Investments ──
   { icon:'📈', name:'SIP Calculator',       desc:'Mutual fund growth planner',        cat:'investments' },
+  { icon:'💎', name:'Lumpsum Calculator',    desc:'One-time investment returns',       cat:'investments' },
+  { icon:'💸', name:'SWP Calculator',        desc:'Systematic withdrawal planner',    cat:'investments' },
+  { icon:'🔄', name:'STP Calculator',        desc:'Systematic transfer plan',         cat:'investments' },
+  { icon:'📊', name:'CAGR Calculator',       desc:'Compound annual growth rate',      cat:'investments' },
+  { icon:'⚖️', name:'PRAG Rebalancer',      desc:'Portfolio asset rebalancer',       cat:'investments' },
+  { icon:'🏗️', name:'Property Calculator',  desc:'Stamp duty, EMI & flat cost',      cat:'investments' },
+  // ── Loans ──
   { icon:'🏠', name:'Home Loan EMI',         desc:'Monthly instalment planner',        cat:'loans'       },
   { icon:'🚗', name:'Car Loan EMI',          desc:'Vehicle finance calculator',        cat:'loans'       },
+  { icon:'🎓', name:'Education Loan',        desc:'Student loan EMI & interest',      cat:'loans'       },
   { icon:'🏍️', name:'Two-Wheeler Loan',     desc:'Bike & EV with PM E-Drive subsidy', cat:'loans'       },
-  { icon:'💎', name:'Gold Loan',             desc:'RBI LTV-based gold loan calculator',cat:'loans'       },
+  { icon:'🥇', name:'Gold Loan',             desc:'RBI LTV-based gold loan calculator',cat:'loans'       },
   { icon:'👤', name:'Personal Loan',         desc:'Interest & repayment schedule',     cat:'loans'       },
   { icon:'🏦', name:'Advanced Mortgage',     desc:'Prepayment, LTV, tax benefits',    cat:'loans'       },
-  { icon:'📊', name:'CIBIL Score',           desc:'Credit score & loan eligibility',   cat:'loans'       },
+  { icon:'💳', name:'Overdraft Calculator',  desc:'OD interest, flexi & dropline',    cat:'loans'       },
+  { icon:'📊', name:'CIBIL Score Guide',     desc:'Credit score & loan eligibility',   cat:'loans'       },
+  // ── Credit Cards ──
+  { icon:'💳', name:'CC Interest Calc',      desc:'Daily interest & true cost',       cat:'loans'       },
+  { icon:'📉', name:'CC Payoff Planner',     desc:'Avalanche, snowball & hybrid',     cat:'loans'       },
+  { icon:'🔍', name:'CC Compare',            desc:'Find best card for your spend',    cat:'loans'       },
+  // ── Tax & Salary ──
   { icon:'💼', name:'Income Tax',            desc:'Old vs New Regime 2026-27',         cat:'tax'         },
   { icon:'💰', name:'Salary Hike',           desc:'CTC breakdown & take-home',        cat:'tax'         },
   { icon:'🧾', name:'HRA Calculator',        desc:'House Rent Allowance exemption',    cat:'tax'         },
-  { icon:'📊', name:'GST Calculator',        desc:'Tax inclusive / exclusive',         cat:'business'    },
+  // ── Banking ──
   { icon:'🏦', name:'FD Calculator',         desc:'Fixed deposit returns',             cat:'banking'     },
   { icon:'📅', name:'RD Calculator',         desc:'Recurring deposit planner',         cat:'banking'     },
+  { icon:'🧮', name:'Simple Interest',       desc:'Basic interest calculator',         cat:'banking'     },
+  { icon:'📊', name:'Compound Interest',     desc:'Advanced compound growth',          cat:'banking'     },
+  // ── Retirement ──
   { icon:'💰', name:'PPF Calculator',        desc:'Public Provident Fund growth',      cat:'retirement'  },
   { icon:'🏛️', name:'NPS Calculator',       desc:'National pension system corpus',    cat:'retirement'  },
   { icon:'🧓', name:'EPF Calculator',        desc:'Employee Provident Fund growth',    cat:'retirement'  },
+  { icon:'🎁', name:'Gratuity Calculator',   desc:'Retirement gratuity estimator',    cat:'retirement'  },
+  // ── Post Office Schemes ──
   { icon:'👧', name:'Sukanya Samriddhi',     desc:'Girl child savings scheme',         cat:'postoffice'  },
   { icon:'🏅', name:'NSC Calculator',        desc:'National savings certificate',      cat:'postoffice'  },
   { icon:'🔑', name:'KVP Calculator',        desc:'Kisan Vikas Patra doubling',        cat:'postoffice'  },
+  { icon:'📬', name:'Post Office MIS',       desc:'Monthly income scheme',             cat:'postoffice'  },
+  { icon:'📮', name:'Post Office TD',        desc:'Time deposit calculator',           cat:'postoffice'  },
+  { icon:'👴', name:'SCSS Calculator',       desc:'Senior citizens savings scheme',    cat:'postoffice'  },
+  // ── Business ──
+  { icon:'📊', name:'GST Calculator',        desc:'Tax inclusive / exclusive',         cat:'business'    },
+  { icon:'📉', name:'Break-even Analysis',   desc:'Profit threshold calculator',       cat:'business'    },
+  // ── Insurance ──
   { icon:'🛡️', name:'Insurance Simulator',  desc:'IRDAI-based health & life cover',  cat:'all'         },
   { icon:'⚖️', name:'Insurance Compare',    desc:'Side-by-side plan comparison',      cat:'all'         },
-  { icon:'📉', name:'Break-even Analysis',   desc:'Profit threshold calculator',       cat:'business'    },
-  { icon:'🏗️', name:'Property Calculator',  desc:'Stamp duty, EMI & flat cost',      cat:'investments' },
+  // ── Tools & Utilities ──
   { icon:'🤖', name:'AI Smart Planner',      desc:'Personalized goal-based plan',     cat:'all'         },
   { icon:'🎯', name:'Goal Planner',          desc:'Plan & achieve financial targets', cat:'all'         },
   { icon:'📊', name:'Compare Scenarios',     desc:'Loan vs SIP vs FD side-by-side',   cat:'all'         },
-  { icon:'🌍', name:'World Clock',           desc:'Track time across timezones',       cat:'all'         },
   { icon:'📒', name:'Expense Tracker',       desc:'Track, budget & report spending',   cat:'all'         },
-  { icon:'💹', name:'Budget Tracker',        desc:'Monthly budgets with alerts',       cat:'all'         },
+  { icon:'💹', name:'My Loans Tracker',      desc:'Live loan & investment tracking',  cat:'all'         },
+  { icon:'🌍', name:'World Clock',           desc:'Track time across timezones',       cat:'all'         },
+  { icon:'🔬', name:'Scientific Calculator', desc:'Advanced math & trigonometry',     cat:'all'         },
   { icon:'🎂', name:'Age Calculator',        desc:'Exact age & life milestones',       cat:'all'         },
 ];
 
@@ -80,19 +107,19 @@ const FAQS = [
   { q:'Is FinCalix really free?',
     a:'Yes, 100% free. No subscription, no premium plan, no login, no hidden charges. Download and start calculating immediately.' },
   { q:'Does it work without internet?',
-    a:'All 37+ calculators, expense tracker, and budget planner work completely offline after download. No internet needed.' },
+    a:'All 43+ calculators, expense tracker, and budget planner work completely offline after download. No internet needed.' },
   { q:'Is Income Tax updated for Budget 2026-27?',
     a:'Yes. Income Tax Calculator is updated with Budget 2026-27 — zero tax up to ₹12L under New Regime after standard deduction.' },
   { q:'Which languages are supported?',
     a:'English, हिंदी, తెలుగు, தமிழ், ಕನ್ನಡ and Malayalam — 6 Indian languages.' },
-  { q:'Does FinCalix have insurance & mortgage tools?',
-    a:'Yes! IRDAI-based Insurance Simulator for health & life cover, side-by-side plan comparison, Advanced Mortgage Calculator with prepayment, RBI LTV analysis, and tax benefit calculations.' },
+  { q:'Does FinCalix have insurance, mortgage & credit card tools?',
+    a:'Yes! IRDAI-based Insurance Simulator, side-by-side plan comparison, Advanced Mortgage Calculator with prepayment & tax benefits, Credit Card Interest Calculator, CC Payoff Planner (avalanche/snowball), CC Compare tool, Overdraft Calculator with flexi/dropline modes, and CIBIL Score Guide.' },
   { q:'Does it support EV / Two-Wheeler & Gold loans?',
     a:'Yes. Two-Wheeler Loan Calculator includes the PM E-Drive EV subsidy (₹2,500/kWh, capped at ₹5,000) with petrol vs EV running-cost comparison. Gold Loan Calculator uses RBI LTV norms with bullet, EMI and overdraft repayment options.' },
   { q:'Is my financial data safe?',
     a:'Completely safe. We collect zero personal data. All your calculations and expense data stays only on your device.' },
   { q:'How many calculators does it have?',
-    a:'FinCalix has 37+ financial tools — SIP, EMI, FD, PPF, HRA, GST, Income Tax, NPS, Two-Wheeler Loan, Gold Loan, CIBIL Score, Insurance Simulator, Advanced Mortgage, Compare Scenarios, AI Smart Planner, Goal Planner, Expense Tracker, Budget Tracker, World Clock and more.' },
+    a:'FinCalix has 43+ financial tools — SIP, Lumpsum, SWP, STP, CAGR, EMI, FD, RD, PPF, NPS, EPF, Gratuity, Income Tax, HRA, Salary Hike, GST, Gold Loan, Two-Wheeler Loan, Overdraft, Credit Card Payoff, Credit Card Interest, Credit Card Compare, CIBIL Score, Insurance, Advanced Mortgage, Post Office MIS, SCSS, Goal Planner, AI Smart Planner, Expense Tracker, Budget Tracker, World Clock and more.' },
 ];
 
 // ── Global CSS ────────────────────────────────────────────────────────────────
@@ -350,7 +377,7 @@ function HeroSection() {
             fontSize: isMobile ? '16px' : '18px', color: '#6B7280', lineHeight: 1.6,
             maxWidth: isMobile ? '100%' : '480px', marginBottom: '24px',
           }}>
-            India's most complete financial calculator — SIP, EMI, Tax, PPF, Insurance, Mortgage, Two-Wheeler & Gold Loan, CIBIL and 42+ tools. Free forever. Works offline. No login.
+            India's most complete financial calculator — SIP, EMI, Tax, PPF, NPS, Insurance, Mortgage, Gold Loan, Credit Card, CIBIL, Overdraft, Expense Tracker and 43+ tools. Free forever. Works offline. No login.
           </p>
 
           {/* CTA */}
@@ -463,7 +490,7 @@ function HeroSection() {
             {/* Card 4 — right center (desktop only — would overflow on mobile) */}
             {!isMobile && (
               <div style={{ position: 'absolute', right: '-10px', top: '50%', transform: 'translateY(-50%)', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)', animation: 'float4 4.5s ease-in-out 1.5s infinite', minWidth: '120px', zIndex: 3 }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F1F18' }}>📊 37+ Tools</div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F1F18' }}>📊 43+ Tools</div>
                 <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>All Free</div>
               </div>
             )}
@@ -478,7 +505,7 @@ function HeroSection() {
 // ── 03 STATS BAR ──────────────────────────────────────────────────────────────
 function StatsBar() {
   const stats = [
-    { num: 37, suffix: '+', label: 'Smart Calculators' },
+    { num: 43, suffix: '+', label: 'Smart Calculators' },
     { num: 45, suffix: '+', label: 'Govt Schemes'      },
     { num: 6,  suffix: '',  label: 'Indian Languages'  },
     { num: 0,  suffix: '∞', label: 'Free Forever', special: true },
@@ -636,7 +663,7 @@ function FeaturesGrid() {
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <p style={{ color: '#2D6A4F', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '12px' }}>FEATURES</p>
             <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, color: '#0F1F18', letterSpacing: '-0.02em' }}>Everything You Need, Nothing You Don't</h2>
-            <p style={{ color: '#6B7280', fontSize: '16px', marginTop: '12px' }}>37+ tools built for Indian financial planning</p>
+            <p style={{ color: '#6B7280', fontSize: '16px', marginTop: '12px' }}>43+ tools built for Indian financial planning</p>
           </div>
         </Reveal>
 
@@ -833,7 +860,7 @@ function TrustSection() {
 function HowItWorks() {
   const steps = [
     { num: '01', title: 'Download Free', body: 'Get FinCalix from Play Store. No signup, no account. Takes 30 seconds.' },
-    { num: '02', title: 'Choose a Calculator', body: 'Pick from 37+ calculators or search any calculator instantly.' },
+    { num: '02', title: 'Choose a Calculator', body: 'Pick from 43+ calculators or search any calculator instantly.' },
     { num: '03', title: 'Get Instant Results', body: 'Accurate results with charts, comparisons and smart insights. Instantly.' },
   ];
   return (

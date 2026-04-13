@@ -1,11 +1,15 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ChevronDown, ChevronUp, FileText, ChevronLeft, ChevronRight, BrainCircuit, AlertTriangle, ArrowRightLeft, TrendingUp, Landmark, Zap } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, FileText, ChevronLeft, ChevronRight, BrainCircuit, AlertTriangle, ArrowRightLeft, TrendingUp, Landmark, Zap, Save, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, type ExportConfig, dateTag } from '../utils/exportReport';
+import { useCalculatorStore } from '../store/useCalculatorStore';
+import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import NumberInput from '../components/NumberInput';
+import DateInput from '../components/DateInput';
+import SaveNameDialog from '../components/SaveNameDialog';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { calculateSTP, getSTPInsights, type STPInputs } from '../utils/stpCalculations';
@@ -15,6 +19,9 @@ const fmtINR = (v: number) => formatINR(Math.round(v));
 export default function STPCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { addSaved, removeSaved } = useCalculatorStore();
+    const addProfile = useLiveStatusStore(s => s.addProfile);
+    const removeProfile = useLiveStatusStore(s => s.removeProfile);
 
     // STP Type
     const [stpType, setStpType] = useState<'fixed' | 'capital' | 'flex'>('fixed');
@@ -40,6 +47,10 @@ export default function STPCalculator() {
     const [showSchedule, setShowSchedule] = useState(false);
     const [showTax, setShowTax] = useState(false);
     const [page, setPage] = useState(1);
+    const [saved, setSaved] = useState(false);
+    const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+    const [planStartDate, setPlanStartDate] = useState('');
+    const [showNameDialog, setShowNameDialog] = useState(false);
 
     // Build inputs object
     const inputs: STPInputs = useMemo(() => ({
@@ -69,6 +80,49 @@ export default function STPCalculator() {
         { totalPortfolio: result.totalPortfolioValue },
         result.totalPortfolioValue,
     );
+
+    const suggestedName = `STP — ${fmtINR(initialAmount)} × ${durationMonths}M`;
+
+    const handleSave = (customName: string) => {
+        const calcId = `stp-${Date.now()}`;
+        addSaved({
+            id: calcId,
+            calculatorType: 'STP Calculator',
+            inputValues: { initialAmount, transferAmount, sourceRate, targetRate, durationMonths, stpType, name: customName },
+            resultValues: { primary: result.totalPortfolioValue, label: 'Total Portfolio', invested: initialAmount, returns: result.totalPortfolioValue - initialAmount },
+            timestamp: Date.now(),
+        });
+        addProfile({
+            id: calcId,
+            name: customName,
+            calculatorType: 'STP',
+            profileData: {
+                initialAmount,
+                transferAmount,
+                sourceRate,
+                targetRate,
+                durationMonths,
+                stpType,
+                totalPortfolioValue: result.totalPortfolioValue,
+                finalSourceBalance: result.finalSourceBalance,
+                finalTargetValue: result.finalTargetValue,
+                startDate: planStartDate || new Date().toISOString().slice(0, 10),
+            },
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+        });
+        setSaved(true);
+        setLastSavedId(calcId);
+    };
+
+    const handleRemove = () => {
+        if (lastSavedId) {
+            removeSaved(lastSavedId);
+            removeProfile(lastSavedId);
+            setLastSavedId(null);
+            setSaved(false);
+        }
+    };
 
     // Pie chart data
     const sourcePercent = result.totalPortfolioValue > 0
@@ -338,6 +392,32 @@ export default function STPCalculator() {
                             step={1}
                         />
                     </div>
+                    {/* Start Date for Live Tracking */}
+                    <DateInput
+                        label={t('stp.startDate', 'STP Start Date (for tracking)')}
+                        value={planStartDate}
+                        onChange={setPlanStartDate}
+                    />
+                </div>
+
+                {/* Save / Remove */}
+                <div className="flex gap-3">
+                    {!saved ? (
+                        <button onClick={() => setShowNameDialog(true)}
+                            className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-brand-blue/10 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-all active:scale-95">
+                            <Save size={16} /> {t('stp.saveToMyLoans', 'Save to My Loans')}
+                        </button>
+                    ) : (
+                        <>
+                            <div className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-brand-green/10 border border-brand-green/20 text-brand-green font-bold text-xs">
+                                <Check size={16} /> {t('common.saved', 'Saved')}
+                            </div>
+                            <button onClick={handleRemove}
+                                className="px-4 py-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 font-bold text-xs transition-all active:scale-95">
+                                <Trash2 size={16} />
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 {/* Results Hero Card */}
@@ -636,6 +716,13 @@ export default function STPCalculator() {
             </div>
 
             <DisclaimerComponent module="stp" />
+
+            <SaveNameDialog
+                open={showNameDialog}
+                defaultName={suggestedName}
+                onConfirm={(name: string) => { handleSave(name); setShowNameDialog(false); }}
+                onClose={() => setShowNameDialog(false)}
+            />
         </div>
     );
 }
