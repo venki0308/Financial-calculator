@@ -1638,7 +1638,7 @@ export default function BudgetTab() {
       {/* ======================================================
           8. BUDGET SUMMARY
           ======================================================
-          BUG 1.2 fix: Est. Savings now deducts subscriptionMonthlyTotal.
+          BUG 1.2.1 fix: Est. Savings now deducts subscriptionMonthlyTotal.
           BUG 1.4 fix: rows with value=0 use the empty sign ' ' rather
           than '−' so they don't render as "-₹0".
           The TRUE unallocated number (used for the Est. Savings row +
@@ -1680,7 +1680,7 @@ export default function BudgetTab() {
             <motion.div {...sectionAnim} className="overflow-hidden">
               <div className="px-4 pb-5 space-y-2.5 border-t pt-4" style={{ borderColor: theme.borderSubtle }}>
                 {(() => {
-                  // BUG 1.2 fix: TRUE Est. Savings = income - fixed -
+                  // BUG 1.2.1 fix: TRUE Est. Savings = income - fixed -
                   // category limits - investments - recurring subs.
                   // We compute this here so the math is colocated with
                   // the row that displays it.

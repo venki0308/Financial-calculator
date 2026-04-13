@@ -201,10 +201,39 @@
       "Bash(chmod +x /tmp/full_audit.sh)",
       "Bash(/tmp/full_audit.sh)",
       "Bash(chmod +x /tmp/precise_audit.sh)",
-      "Bash(/tmp/precise_audit.sh)"
+      "Bash(/tmp/precise_audit.sh)",
+      "Bash(grep -l \"CibilAdvisoryCard\\\\|CibilBadge\" /d/Skills/Financial-calculator/src/pages/*.tsx)",
+      "Bash(grep -r \"personal.?loan\\\\|home.?loan\\\\|education.?loan\\\\|car.?loan\\\\|mortgage\" /d/Skills/Financial-calculator/src/pages/*.tsx -i)",
+      "Bash(xargs -I {} basename {} .tsx)",
+      "Bash(grep -l \"home-loan\\\\|car-loan\\\\|personal-loan\\\\|education-loan\" /d/Skills/Financial-calculator/src/pages/*.tsx)",
+      "Bash(ls -la /d/Skills/Financial-calculator/src/pages/*[Ll]oan*.tsx /d/Skills/Financial-calculator/src/pages/*[Mm]ortgage*.tsx)",
+      "Bash(grep -l \"investmentStatusEngine\\\\|loanStatusEngine\" /d/Skills/Financial-calculator/src/pages/*.tsx)",
+      "Bash(bash /tmp/check_keys.sh)",
+      "Bash(node -e \"const j=require\\('./src/locales/en.json'\\); console.log\\(JSON.stringify\\(j.stp, null, 2\\)\\)\")",
+      "Bash(node -e \"const j=require\\('./src/locales/en.json'\\); console.log\\(JSON.stringify\\(j.goalPlanner, null, 2\\)\\)\")",
+      "Bash(node -e \"const j=require\\('./src/locales/en.json'\\); console.log\\(JSON.stringify\\(j.ccCompare, null, 2\\)\\)\")",
+      "Bash(node -e \"try { JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/hi.json','utf8'\\)\\); console.log\\('JSON is valid'\\); } catch\\(e\\) { console.log\\('JSON ERROR:', e.message\\); }\")",
+      "Bash(node -e \"const fs = require\\('fs'\\); try { JSON.parse\\(fs.readFileSync\\('src/locales/te.json', 'utf8'\\)\\); console.log\\('JSON is valid'\\); } catch\\(e\\) { console.error\\('JSON ERROR:', e.message\\); }\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/ta.json','utf8'\\)\\); console.log\\('Valid JSON'\\)\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/ml.json','utf8'\\)\\); console.log\\('Valid JSON'\\)\")",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(node -e \"const j=JSON.parse\\(require\\('fs'\\).readFileSync\\(0,'utf8'\\)\\); console.log\\('build:', j.scripts?.build\\); console.log\\('engines:', JSON.stringify\\(j.engines\\)\\)\")",
+      "Bash(node -e 'JSON.parse\\(require\\('\\\\''fs'\\\\''\\).readFileSync\\('\\\\''__TRACKED_VAR__'\\\\'','\\\\''utf8'\\\\''\\)\\); console.log\\('\\\\''OK'\\\\''\\)')",
+      "Bash(find d:/Skills/Financial-calculator/src -type f \\\\\\( -name \"*.tsx\" -o -name \"*.ts\" -o -name \"*.jsx\" -o -name \"*.js\" \\\\\\) -exec grep -l \"insightExpenseDrop\\\\|expenses\\\\.insightExpenseDrop\" {} \\\\;)",
+      "Bash(awk 'NR>=550 && NR<=800' d:/Skills/Financial-calculator/src/locales/en.json)",
+      "Bash(node -e \"const en=require\\('./src/locales/en.json'\\); console.log\\(JSON.stringify\\(Object.keys\\(en.ccInterest || {}\\).filter\\(k => k.startsWith\\('insight'\\)\\), null, 2\\)\\)\")",
+      "Bash(du -sh /d/Skills/Financial-calculator/dist/*)",
+      "Bash(identify /d/Skills/Financial-calculator/public/icons/fincalix-logo.jpg)",
+      "Bash(find /d/Skills/Financial-calculator/android/app/src/main/res/drawable* -name \"*.xml\")",
+      "Bash(ls -la /d/Skills/Financial-calculator/*.md /d/Skills/Financial-calculator/*.txt)",
+      "Bash(wc -l /d/Skills/Financial-calculator/dist/assets/*.js)",
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(ls -la /d/Skills/Financial-calculator/src/pages/expenses/*.tsx)"
     ],
     "additionalDirectories": [
-      "\\tmp"
+      "\\tmp",
+      "D:\\Skills\\Financial-calculator\\src\\locales"
     ]
   }
 }
