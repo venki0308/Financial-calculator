@@ -6,7 +6,6 @@ import { ArrowLeft, Info, TrendingUp, Download, ExternalLink, ChevronDown, Chevr
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportToPDF, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
-import { triggerCalcNotification } from '../services/calcNotifications';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 

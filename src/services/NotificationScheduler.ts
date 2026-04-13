@@ -11,6 +11,10 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { dailyQuotes } from '../data/quotes';
 import { RemoteConfigService } from './remoteConfig.service';
 import { APP_VERSION } from '../config/app';
+import { getAllCreditCards } from '../utils/creditCardStorage';
+import { getDaysUntilDue } from '../utils/creditCardCalculations';
+import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
+import { getAllLoans } from '../utils/loanStorage';
 
 const LAST_RUN_KEY = 'fincalix_scheduler_last_run';
 const MIN_INTERVAL_MS = 23 * 60 * 60 * 1000; // 23 hours
@@ -281,6 +285,101 @@ export function simulateAllNotifications() {
     });
 }
 
+function checkCreditCardBills() {
+    if (!useSettingsStore.getState().notifications.calcReminders) return;
+    try {
+        const cards = getAllCreditCards();
+        for (const card of cards) {
+            if (card.currentBalance <= 0) continue;
+            const daysUntil = getDaysUntilDue(card.dueDate);
+            const name = card.cardName || card.bankName || 'Credit Card';
+            const bal = card.currentBalance.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+            if (daysUntil <= 0) {
+                addNotif({
+                    type: 'cc_overdue',
+                    title: `🔴 ${name} — Payment Overdue`,
+                    body: `Outstanding: ${bal}. Pay immediately to avoid late fees and CIBIL impact.`,
+                    icon: '🔴',
+                    route: '/expenses',
+                });
+            } else if (daysUntil <= 3) {
+                addNotif({
+                    type: 'cc_due_urgent',
+                    title: `⚠️ ${name} — Due in ${daysUntil} day${daysUntil > 1 ? 's' : ''}`,
+                    body: `Outstanding: ${bal}. Pay full statement to avoid interest charges.`,
+                    icon: '⚠️',
+                    route: '/expenses',
+                });
+            } else if (daysUntil <= 7) {
+                addNotif({
+                    type: 'cc_due_soon',
+                    title: `💳 ${name} — Due in ${daysUntil} days`,
+                    body: `Outstanding: ${bal}. Plan your payment to maintain interest-free period.`,
+                    icon: '💳',
+                    route: '/expenses',
+                });
+            }
+        }
+    } catch { /* storage unavailable */ }
+}
+
+function checkSubscriptionRenewals() {
+    if (!useSettingsStore.getState().notifications.calcReminders) return;
+    try {
+        const subs = useBudgetTrackerStore.getState().subscriptions;
+        const today = new Date();
+        for (const sub of subs) {
+            if (!sub.isActive || !sub.nextDueDate) continue;
+            const due = new Date(sub.nextDueDate);
+            const diffDays = Math.ceil((due.getTime() - today.getTime()) / 86400000);
+            if (diffDays >= 0 && diffDays <= 3) {
+                const amt = sub.amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+                addNotif({
+                    type: 'sub_renewal',
+                    title: `🔁 ${sub.name} — Renews ${diffDays === 0 ? 'today' : `in ${diffDays} day${diffDays > 1 ? 's' : ''}`}`,
+                    body: `${amt} (${sub.billingCycle}). Review or cancel before renewal.`,
+                    icon: '🔁',
+                    route: '/expenses',
+                });
+            }
+        }
+    } catch { /* store unavailable */ }
+}
+
+function checkLoanPayments() {
+    if (!useSettingsStore.getState().notifications.calcReminders) return;
+    try {
+        const loans = getAllLoans().filter(l => l.isActive);
+        const dayOfMonth = new Date().getDate();
+        for (const loan of loans) {
+            const dueDay = loan.emiDueDay || 1;
+            const diff = dueDay - dayOfMonth;
+            // Notify 3 days before, on due day, and 1 day after
+            if (diff >= 0 && diff <= 3) {
+                const emi = loan.emiAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+                const name = loan.nickName || loan.loanType || 'Loan';
+                addNotif({
+                    type: 'loan_payment',
+                    title: `🏦 ${name} — EMI ${diff === 0 ? 'due today' : `in ${diff} day${diff > 1 ? 's' : ''}`}`,
+                    body: `EMI: ${emi}. Ensure sufficient balance in your repayment account.`,
+                    icon: '🏦',
+                    route: '/my-loans',
+                });
+            } else if (diff === -1) {
+                const emi = loan.emiAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+                const name = loan.nickName || loan.loanType || 'Loan';
+                addNotif({
+                    type: 'loan_overdue',
+                    title: `🔴 ${name} — EMI was due yesterday`,
+                    body: `EMI: ${emi}. Pay immediately to avoid late charges and CIBIL impact.`,
+                    icon: '🔴',
+                    route: '/my-loans',
+                });
+            }
+        }
+    } catch { /* storage unavailable */ }
+}
+
 async function checkAppUpdate() {
     if (!useSettingsStore.getState().notifications.appUpdates) return;
     try {
@@ -315,7 +414,7 @@ function seedInitialNotifications() {
     addNotif({
         type: 'general',
         title: '🎉 Welcome to FinCalix!',
-        body: 'Your personal finance super-app is ready. Explore 25+ calculators, budget tools, government schemes, and more!',
+        body: 'Your personal finance super-app is ready. Explore 43+ calculators, budget tools, government schemes, and more!',
         icon: '🎉',
         route: '/',
     });
@@ -358,6 +457,9 @@ export const NotificationScheduler = {
         checkEMIReminders();
         checkSIPReminders();
         checkTaxAlerts();
+        checkCreditCardBills();
+        checkSubscriptionRenewals();
+        checkLoanPayments();
         checkSavingsInsight();
         checkDailyQuote();
         checkAppUpdate(); // async, fire-and-forget
