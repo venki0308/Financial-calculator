@@ -826,7 +826,7 @@ export default function TwoWheelerLoanCalculator() {
                                 {/* Tenure advice */}
                                 {tenureMonths > 48 && <p>⏰ <strong>Consider shorter tenure (36 months)</strong> — You'll pay significantly less interest. A vehicle depreciates faster than your loan reduces.</p>}
                                 {/* CIBIL advice */}
-                                {cibilIdx >= 3 && <p>📊 <strong>Improve CIBIL before applying</strong> — Your score tier ({cibil.label}) adds {((rate - (isEV ? CIBIL_TIERS[0].evRange[0] : CIBIL_TIERS[0].petrolRange[0])) * loanAmount / 100 * tenureYears / 2).toFixed(0) !== 'NaN' ? formatINR(Math.round(Math.abs(rate - (isEV ? CIBIL_TIERS[0].evRange[0] : CIBIL_TIERS[0].petrolRange[0])) * loanAmount / 100 * tenureYears / 2)) : '₹0'} extra interest vs Excellent tier.</p>}
+                                {cibilIdx >= 3 && (() => { const extraInt = Math.abs(rate - (isEV ? CIBIL_TIERS[0].evRange[0] : CIBIL_TIERS[0].petrolRange[0])) * loanAmount / 100 * tenureYears / 2; return <p>📊 <strong>Improve CIBIL before applying</strong> — Your score tier ({cibil.label}) adds {Number.isFinite(extraInt) ? formatINR(Math.round(extraInt)) : '₹0'} extra interest vs Excellent tier.</p>; })()}
                             </div>
                         </div>
 

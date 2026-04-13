@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -157,6 +157,7 @@ export default function CreditCardPayoffCalculator() {
   // ── Schedule pagination ──
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [page, setPage] = useState(0);
+  useEffect(() => { setPage(0); }, [selectedStrategy]);
   const totalPages = Math.ceil(current.schedule.length / ROWS_PER_PAGE);
   const pageRows = current.schedule.slice(page * ROWS_PER_PAGE, (page + 1) * ROWS_PER_PAGE);
   // ── Payoff date helper ──

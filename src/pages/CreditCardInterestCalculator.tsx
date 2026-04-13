@@ -245,6 +245,7 @@ export default function CreditCardInterestCalculator() {
                                     setBalance(card.currentBalance);
                                     setSelectedRate(card.annualInterestRate);
                                     setCustomRate(card.annualInterestRate);
+                                    setUseCustomRate(false);
                                 }}
                                     className="flex-shrink-0 px-3 py-2 rounded-xl border text-xs font-semibold transition-all active:scale-95"
                                     style={{ borderColor: c.border, background: c.inputBg, color: c.text }}>

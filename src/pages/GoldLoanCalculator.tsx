@@ -815,52 +815,52 @@ export default function GoldLoanCalculator() {
 
                             {/* ── Decision Summary (Hero Advisory Card) ── */}
                             <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border-2 border-amber-500/20">
-                                <div className="flex items-center gap-2 mb-3"><Gem className="w-4 h-4 text-amber-500" /><h3 className="text-sm font-bold text-amber-700 dark:text-amber-400">Decision Summary</h3></div>
+                                <div className="flex items-center gap-2 mb-3"><Gem className="w-4 h-4 text-amber-500" /><h3 className="text-sm font-bold text-amber-700 dark:text-amber-400">{t('goldLoan.decisionSummary', 'Decision Summary')}</h3></div>
                                 <div className="grid grid-cols-2 gap-2 mb-3">
                                     <div className="p-2 rounded-xl text-center" style={{ background: '#10B98110' }}>
-                                        <p className="text-[9px] uppercase font-bold text-emerald-500">Recommended Mode</p>
-                                        <p className="text-xs font-black text-emerald-600">{tenureMonths <= 6 ? 'Bullet' : 'EMI'}</p>
+                                        <p className="text-[9px] uppercase font-bold text-emerald-500">{t('goldLoan.recMode', 'Recommended Mode')}</p>
+                                        <p className="text-xs font-black text-emerald-600">{tenureMonths <= 6 ? t('goldLoan.bullet', 'Bullet') : t('goldLoan.emiMode', 'EMI')}</p>
                                     </div>
                                     <div className="p-2 rounded-xl text-center" style={{ background: tierResult.ltv >= 85 ? '#EF444410' : tierResult.ltv >= 80 ? '#F59E0B10' : '#10B98110' }}>
-                                        <p className="text-[9px] uppercase font-bold" style={{ color: tierResult.ltv >= 85 ? '#EF4444' : tierResult.ltv >= 80 ? '#F59E0B' : '#10B981' }}>Risk Level</p>
-                                        <p className="text-xs font-black" style={{ color: tierResult.ltv >= 85 ? '#EF4444' : tierResult.ltv >= 80 ? '#F59E0B' : '#10B981' }}>{tierResult.ltv >= 85 ? 'Higher' : tierResult.ltv >= 80 ? 'Moderate' : 'Lower'}</p>
+                                        <p className="text-[9px] uppercase font-bold" style={{ color: tierResult.ltv >= 85 ? '#EF4444' : tierResult.ltv >= 80 ? '#F59E0B' : '#10B981' }}>{t('goldLoan.riskLevel', 'Risk Level')}</p>
+                                        <p className="text-xs font-black" style={{ color: tierResult.ltv >= 85 ? '#EF4444' : tierResult.ltv >= 80 ? '#F59E0B' : '#10B981' }}>{tierResult.ltv >= 85 ? t('goldLoan.riskHigher', 'Higher') : tierResult.ltv >= 80 ? t('goldLoan.riskModerate', 'Moderate') : t('goldLoan.riskLower', 'Lower')}</p>
                                     </div>
                                 </div>
                                 <p className="text-[11px] leading-relaxed" style={{ color: c.textSecondary }}>
                                     {tenureMonths <= 6
-                                        ? `💡 For ${tenureMonths}-month tenure, bullet repayment keeps monthly outflow low at ${formatINR(bulletResult.monthlyInterest)}/mo vs ${formatINR(emiResult?.emi || 0)}/mo EMI. Just ensure you have the lump sum (${formatINR(loanAmount)}) ready at the end.`
-                                        : `💡 For ${tenureMonths}-month tenure, EMI mode is recommended — you pay off principal gradually and save ${formatINR(Math.max(0, bulletResult.totalInterest - (emiResult?.totalInterest || 0)))} in total interest vs bullet.`}
+                                        ? t('goldLoan.bulletAdvice', { months: tenureMonths, bullet: formatINR(bulletResult.monthlyInterest), emi: formatINR(emiResult?.emi || 0), lump: formatINR(loanAmount), defaultValue: '💡 For {{months}}-month tenure, bullet keeps monthly outflow low at {{bullet}}/mo vs {{emi}}/mo EMI. Ensure lump sum ({{lump}}) ready at end.' })
+                                        : t('goldLoan.emiAdvice', { months: tenureMonths, saved: formatINR(Math.max(0, bulletResult.totalInterest - (emiResult?.totalInterest || 0))), defaultValue: '💡 For {{months}}-month tenure, EMI mode recommended — pay off principal gradually and save {{saved}} vs bullet.' })}
                                 </p>
                             </div>
 
                             {/* ── Gold Risk Warnings ── */}
                             {(tierResult.ltv >= 80 || interestRate > 18 || tenureMonths <= 3) && (
                                 <div className="p-4 rounded-2xl border-2 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 space-y-2">
-                                    <div className="flex items-center gap-2"><Info className="w-4 h-4 text-red-500" /><h3 className="text-sm font-bold text-red-600">Gold Loan Risk Alerts</h3></div>
-                                    {tierResult.ltv >= 80 && <p className="text-[11px] text-red-600 dark:text-red-400">🔴 <strong>Auction Risk:</strong> At {tierResult.ltv}% LTV, a {Math.round((1 - 75/tierResult.ltv) * 100)}% gold price drop triggers margin call. Lender can auction your gold after due notice.</p>}
-                                    {interestRate > 18 && <p className="text-[11px] text-red-600 dark:text-red-400">🔴 <strong>High Interest ({interestRate}%):</strong> NBFCs charge 14-26%. Consider banks (SBI ~8.25%, HDFC ~10%) for lower rates if you qualify.</p>}
-                                    {tenureMonths <= 3 && <p className="text-[11px] text-amber-600 dark:text-amber-400">🟡 <strong>Short Tenure Pressure:</strong> {tenureMonths}-month tenure means {repaymentMode === 'emi' ? `higher EMI of ${formatINR(emiResult?.emi || 0)}` : `full repayment of ${formatINR(loanAmount)} due very soon`}. Ensure repayment capacity.</p>}
+                                    <div className="flex items-center gap-2"><Info className="w-4 h-4 text-red-500" /><h3 className="text-sm font-bold text-red-600">{t('goldLoan.riskAlerts', 'Gold Loan Risk Alerts')}</h3></div>
+                                    {tierResult.ltv >= 80 && <p className="text-[11px] text-red-600 dark:text-red-400">🔴 <strong>{t('goldLoan.auctionRisk', 'Auction Risk')}:</strong> {t('goldLoan.auctionRiskDesc', { ltv: tierResult.ltv, drop: tierResult.ltv > 0 ? Math.round((1 - 75 / tierResult.ltv) * 100) : 0, defaultValue: 'At {{ltv}}% LTV, a {{drop}}% gold price drop triggers margin call. Lender can auction your gold after due notice.' })}</p>}
+                                    {interestRate > 18 && <p className="text-[11px] text-red-600 dark:text-red-400">🔴 <strong>{t('goldLoan.highInterest', 'High Interest')} ({interestRate}%):</strong> {t('goldLoan.highInterestDesc', 'NBFCs charge 14-26%. Consider banks for lower rates if you qualify.')}</p>}
+                                    {tenureMonths <= 3 && <p className="text-[11px] text-amber-600 dark:text-amber-400">🟡 <strong>{t('goldLoan.shortTenure', 'Short Tenure Pressure')}:</strong> {t('goldLoan.shortTenureDesc', { months: tenureMonths, amount: repaymentMode === 'emi' ? formatINR(emiResult?.emi || 0) : formatINR(loanAmount), defaultValue: '{{months}}-month tenure. Ensure repayment capacity for {{amount}}.' })}</p>}
                                 </div>
                             )}
 
                             {/* ── LTV Strategy Explanation ── */}
                             <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                                <div className="flex items-center gap-2 mb-3"><ShieldCheck className="w-4 h-4 text-blue-500" /><h3 className="text-sm font-bold" style={{ color: c.text }}>LTV Strategy</h3></div>
+                                <div className="flex items-center gap-2 mb-3"><ShieldCheck className="w-4 h-4 text-blue-500" /><h3 className="text-sm font-bold" style={{ color: c.text }}>{t('goldLoan.ltvStrategy', 'LTV Strategy')}</h3></div>
                                 <div className="w-full h-3 rounded-full overflow-hidden mb-2" style={{ background: c.inputBg }}>
                                     <div className="h-full rounded-full transition-all" style={{ width: `${tierResult.ltv}%`, background: tierResult.ltv >= 85 ? '#EF4444' : tierResult.ltv >= 80 ? '#F59E0B' : '#10B981' }} />
                                 </div>
                                 <div className="flex justify-between text-[9px] mb-2" style={{ color: c.textMuted }}>
-                                    <span>0%</span><span className="text-emerald-500 font-bold">75% Safe</span><span className="text-amber-500 font-bold">80%</span><span className="text-red-500 font-bold">85%</span>
+                                    <span>0%</span><span className="text-emerald-500 font-bold">75% {t('goldLoan.safe', 'Safe')}</span><span className="text-amber-500 font-bold">80%</span><span className="text-red-500 font-bold">85%</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1.5 text-center">
                                     {[
-                                        { ltv: 75, label: '≤75%', tier: '>₹5L', color: '#10B981', desc: 'Safest' },
-                                        { ltv: 80, label: '≤80%', tier: '₹2.5-5L', color: '#F59E0B', desc: 'Moderate' },
-                                        { ltv: 85, label: '≤85%', tier: '≤₹2.5L', color: '#EF4444', desc: 'Max Risk' },
-                                    ].map(t => (
-                                        <div key={t.ltv} className={`p-1.5 rounded-lg ${tierResult.ltv === t.ltv ? 'ring-2 ring-current' : ''}`} style={{ background: `${t.color}10`, color: t.color }}>
-                                            <p className="text-[9px] font-bold" style={{ color: t.color }}>{t.label}</p>
-                                            <p className="text-[8px]" style={{ color: c.textMuted }}>{t.tier}</p>
+                                        { ltv: 75, label: '≤75%', tier: '>₹5L', color: '#10B981' },
+                                        { ltv: 80, label: '≤80%', tier: '₹2.5-5L', color: '#F59E0B' },
+                                        { ltv: 85, label: '≤85%', tier: '≤₹2.5L', color: '#EF4444' },
+                                    ].map(lv => (
+                                        <div key={lv.ltv} className={`p-1.5 rounded-lg ${tierResult.ltv === lv.ltv ? 'ring-2 ring-current' : ''}`} style={{ background: `${lv.color}10`, color: lv.color }}>
+                                            <p className="text-[9px] font-bold" style={{ color: lv.color }}>{lv.label}</p>
+                                            <p className="text-[8px]" style={{ color: c.textMuted }}>{lv.tier}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -881,23 +881,23 @@ export default function GoldLoanCalculator() {
                                 if (tenureResults.length === 0) return null;
                                 return (
                                     <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                                        <div className="flex items-center gap-2 mb-3"><Lightbulb className="w-4 h-4 text-violet-500" /><h3 className="text-sm font-bold" style={{ color: c.text }}>Tenure Optimizer</h3></div>
+                                        <div className="flex items-center gap-2 mb-3"><Lightbulb className="w-4 h-4 text-violet-500" /><h3 className="text-sm font-bold" style={{ color: c.text }}>{t('goldLoan.tenureOptimizer', 'Tenure Optimizer')}</h3></div>
                                         <div className="space-y-1.5">
                                             {tenureResults.map(r => {
                                                 const diff = activeResult.totalInterest - r.totalInterest;
                                                 return (
                                                     <div key={r.months} className={`flex items-center justify-between p-2 rounded-lg ${diff > 0 ? 'bg-emerald-500/5' : ''}`} style={{ border: `1px solid ${c.border}40` }}>
                                                         <div>
-                                                            <p className="text-xs font-bold" style={{ color: c.text }}>{r.months} months ({r.type})</p>
-                                                            <p className="text-[9px]" style={{ color: c.textMuted }}>Monthly: {formatINR(r.emi)}</p>
+                                                            <p className="text-xs font-bold" style={{ color: c.text }}>{r.months} {t('goldLoan.months', 'months')} ({r.type})</p>
+                                                            <p className="text-[9px]" style={{ color: c.textMuted }}>{t('goldLoan.monthly', 'Monthly')}: {formatINR(r.emi)}</p>
                                                         </div>
                                                         <div className="text-right">
                                                             {diff > 0 ? (
-                                                                <p className="text-xs font-bold text-emerald-500">Save {formatINR(diff)}</p>
+                                                                <p className="text-xs font-bold text-emerald-500">{t('goldLoan.save', 'Save')} {formatINR(diff)}</p>
                                                             ) : diff < 0 ? (
                                                                 <p className="text-xs font-bold text-red-400">+{formatINR(Math.abs(diff))}</p>
                                                             ) : (
-                                                                <p className="text-xs font-bold" style={{ color: c.textMuted }}>Current</p>
+                                                                <p className="text-xs font-bold" style={{ color: c.textMuted }}>{t('goldLoan.current', 'Current')}</p>
                                                             )}
                                                         </div>
                                                     </div>
@@ -910,7 +910,7 @@ export default function GoldLoanCalculator() {
 
                             {/* ── Gold Price Risk Simulation ── */}
                             <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                                <div className="flex items-center gap-2 mb-3"><Coins className="w-4 h-4 text-amber-500" /><h3 className="text-sm font-bold" style={{ color: c.text }}>Gold Price Drop Impact</h3></div>
+                                <div className="flex items-center gap-2 mb-3"><Coins className="w-4 h-4 text-amber-500" /><h3 className="text-sm font-bold" style={{ color: c.text }}>{t('goldLoan.priceDropImpact', 'Gold Price Drop Impact')}</h3></div>
                                 <div className="space-y-1.5">
                                     {[-5, -10, -15, -20].map(drop => {
                                         const newValue = Math.round(goldValue * (1 + drop / 100));
@@ -919,21 +919,21 @@ export default function GoldLoanCalculator() {
                                         return (
                                             <div key={drop} className={`flex items-center justify-between p-2 rounded-lg ${currentLoanVsNewMax ? 'bg-red-500/5 border border-red-200 dark:border-red-800' : ''}`} style={!currentLoanVsNewMax ? { border: `1px solid ${c.border}40` } : {}}>
                                                 <div>
-                                                    <p className="text-xs font-bold" style={{ color: currentLoanVsNewMax ? '#EF4444' : c.text }}>Gold price {drop}%</p>
-                                                    <p className="text-[9px]" style={{ color: c.textMuted }}>Value: {formatINR(newValue)} · LTV cap: {newTier.ltv}%</p>
+                                                    <p className="text-xs font-bold" style={{ color: currentLoanVsNewMax ? '#EF4444' : c.text }}>{t('goldLoan.goldPrice', 'Gold price')} {drop}%</p>
+                                                    <p className="text-[9px]" style={{ color: c.textMuted }}>{t('goldLoan.value', 'Value')}: {formatINR(newValue)} · LTV: {newTier.ltv}%</p>
                                                 </div>
                                                 <div className="text-right">
                                                     {currentLoanVsNewMax ? (
-                                                        <p className="text-[10px] font-bold text-red-500">⚠️ Margin Call</p>
+                                                        <p className="text-[10px] font-bold text-red-500">⚠️ {t('goldLoan.marginCall', 'Margin Call')}</p>
                                                     ) : (
-                                                        <p className="text-[10px] font-bold text-emerald-500">✅ Safe</p>
+                                                        <p className="text-[10px] font-bold text-emerald-500">✅ {t('goldLoan.safe', 'Safe')}</p>
                                                     )}
                                                 </div>
                                             </div>
                                         );
                                     })}
                                 </div>
-                                <p className="text-[9px] mt-2 italic" style={{ color: c.textMuted }}>If gold price drops and your loan exceeds max LTV, the lender may demand additional gold or partial repayment.</p>
+                                <p className="text-[9px] mt-2 italic" style={{ color: c.textMuted }}>{t('goldLoan.priceDropNote', 'If gold price drops and your loan exceeds max LTV, the lender may demand additional gold or partial repayment.')}</p>
                             </div>
 
                             {/* ── EMI vs Bullet comparison ── */}
