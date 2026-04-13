@@ -132,23 +132,23 @@ export default function CreditCardPayoffCalculator() {
       const recSaved = minimumOnly.totalInterest - recResult.totalInterest;
       const recTimeSaved = minimumOnly.totalMonths - recResult.totalMonths;
       if (recSaved > 0) recs.push({
-        icon: '💡', title: `Pay ${fmt(recBudget)}/mo`,
-        detail: `Save ${fmt(recSaved)} interest & finish ${recTimeSaved} months faster`,
+        icon: '💡', title: t('ccPayoff.recPayTitle', { budget: fmt(recBudget), defaultValue: 'Pay {{budget}}/mo' }),
+        detail: t('ccPayoff.recPayDetail', { saved: fmt(recSaved), months: recTimeSaved, defaultValue: 'Save {{saved}} interest & finish {{months}} months faster' }),
         tone: 'green',
       });
     }
     // 2. Utilization insight
-    if (overallUtil > 75) recs.push({ icon: '🔴', title: 'High Utilization Risk', detail: `${overallUtil}% utilization damages your CIBIL score. Reduce below 30% for best impact.`, tone: 'red' });
-    else if (overallUtil > 30) recs.push({ icon: '🟡', title: 'Moderate Utilization', detail: `${overallUtil}% utilization. Target below 30% for optimal CIBIL score improvement.`, tone: 'amber' });
-    else if (overallUtil > 0) recs.push({ icon: '🟢', title: 'Healthy Utilization', detail: `${overallUtil}% utilization — excellent for your credit score!`, tone: 'green' });
+    if (overallUtil > 75) recs.push({ icon: '🔴', title: t('ccPayoff.recHighUtilTitle', 'High Utilization Risk'), detail: t('ccPayoff.recHighUtilDetail', { util: overallUtil, defaultValue: '{{util}}% utilization damages your CIBIL score. Reduce below 30% for best impact.' }), tone: 'red' });
+    else if (overallUtil > 30) recs.push({ icon: '🟡', title: t('ccPayoff.recModUtilTitle', 'Moderate Utilization'), detail: t('ccPayoff.recModUtilDetail', { util: overallUtil, defaultValue: '{{util}}% utilization. Target below 30% for optimal CIBIL score improvement.' }), tone: 'amber' });
+    else if (overallUtil > 0) recs.push({ icon: '🟢', title: t('ccPayoff.recHealthyUtilTitle', 'Healthy Utilization'), detail: t('ccPayoff.recHealthyUtilDetail', { util: overallUtil, defaultValue: '{{util}}% utilization — excellent for your credit score!' }), tone: 'green' });
     // 3. Daily cost of debt
     if (totalBalance > 0) {
       const dailyCost = Math.round((totalBalance * (weightedAPR / 100)) / 365);
       const monthlyCost = dailyCost * 30;
-      recs.push({ icon: '🔥', title: `₹${dailyCost}/day interest burn`, detail: `Your debt costs ₹${monthlyCost.toLocaleString('en-IN')}/month in interest alone — that's money going to the bank, not you.`, tone: 'red' });
+      recs.push({ icon: '🔥', title: t('ccPayoff.recDailyBurnTitle', { cost: dailyCost, defaultValue: '₹{{cost}}/day interest burn' }), detail: t('ccPayoff.recDailyBurnDetail', { monthly: monthlyCost.toLocaleString('en-IN'), defaultValue: "Your debt costs ₹{{monthly}}/month in interest alone — that's money going to the bank, not you." }), tone: 'red' });
     }
     return recs;
-  }, [hasCards, totalBalance, effectiveBudget, totalMinimum, activeInputs, minimumOnly, overallUtil, weightedAPR]);
+  }, [hasCards, totalBalance, effectiveBudget, totalMinimum, activeInputs, minimumOnly, overallUtil, weightedAPR, t]);
 
   // ── History tracker ──
   useHistoryTracker('CC Payoff', { cards: activeInputs.length, budget: effectiveBudget, strategy: selectedStrategy },
@@ -302,15 +302,15 @@ export default function CreditCardPayoffCalculator() {
             {hasCards && (
               <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
                 <div className="text-center">
-                  <p className="text-[9px] text-gray-400 uppercase">Debt Free</p>
+                  <p className="text-[9px] text-gray-400 uppercase">{t('ccPayoff.debtFree', 'Debt Free')}</p>
                   <p className="text-xs font-black text-blue-600">{payoffDate(current.totalMonths)}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-[9px] text-gray-400 uppercase">Interest</p>
+                  <p className="text-[9px] text-gray-400 uppercase">{t('ccPayoff.interest', 'Interest')}</p>
                   <p className="text-xs font-black text-red-500">{fmt(current.totalInterest)}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-[9px] text-gray-400 uppercase">You Save</p>
+                  <p className="text-[9px] text-gray-400 uppercase">{t('ccPayoff.youSave', 'You Save')}</p>
                   <p className="text-xs font-black text-green-600">{interestSaved > 0 ? fmt(interestSaved) : '—'}</p>
                 </div>
               </div>
@@ -346,20 +346,20 @@ export default function CreditCardPayoffCalculator() {
         {hasCards && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
             className="rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white shadow-lg">
-            <p className="text-[10px] uppercase tracking-widest opacity-80 mb-1">Debt Freedom Date</p>
+            <p className="text-[10px] uppercase tracking-widest opacity-80 mb-1">{t('ccPayoff.debtFreedomDate', 'Debt Freedom Date')}</p>
             <p className="text-3xl font-black mb-1">{payoffDate(current.totalMonths)}</p>
             <p className="text-xs opacity-80 mb-4">{current.totalMonths} months · {fmt(effectiveBudget)}/mo</p>
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-white/15 rounded-xl p-2.5 text-center">
-                <p className="text-[9px] uppercase opacity-70">Total Debt</p>
+                <p className="text-[9px] uppercase opacity-70">{t('ccPayoff.totalDebt', 'Total Debt')}</p>
                 <p className="font-black text-sm">{fmt(totalBalance)}</p>
               </div>
               <div className="bg-white/15 rounded-xl p-2.5 text-center">
-                <p className="text-[9px] uppercase opacity-70">Interest Cost</p>
+                <p className="text-[9px] uppercase opacity-70">{t('ccPayoff.interestCost', 'Interest Cost')}</p>
                 <p className="font-black text-sm text-red-300">{fmt(current.totalInterest)}</p>
               </div>
               <div className="bg-white/15 rounded-xl p-2.5 text-center">
-                <p className="text-[9px] uppercase opacity-70">Total Paid</p>
+                <p className="text-[9px] uppercase opacity-70">{t('ccPayoff.totalPaid', 'Total Paid')}</p>
                 <p className="font-black text-sm">{fmt(current.totalPaid)}</p>
               </div>
             </div>
@@ -373,15 +373,15 @@ export default function CreditCardPayoffCalculator() {
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-3 text-center">
               <Flame size={20} className="text-red-500 mx-auto mb-1" />
-              <p className="text-[10px] text-red-500 uppercase font-bold">Daily Interest Burn</p>
+              <p className="text-[10px] text-red-500 uppercase font-bold">{t('ccPayoff.dailyBurn', 'Daily Interest Burn')}</p>
               <p className="text-xl font-black text-red-600">₹{Math.round((totalBalance * (weightedAPR / 100)) / 365).toLocaleString('en-IN')}</p>
-              <p className="text-[9px] text-gray-500 mt-0.5">per day going to bank</p>
+              <p className="text-[9px] text-gray-500 mt-0.5">{t('ccPayoff.perDayBank', 'per day going to bank')}</p>
             </div>
             <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 text-center">
               <Zap size={20} className="text-amber-500 mx-auto mb-1" />
-              <p className="text-[10px] text-amber-500 uppercase font-bold">Monthly Interest</p>
+              <p className="text-[10px] text-amber-500 uppercase font-bold">{t('ccPayoff.monthlyInt', 'Monthly Interest')}</p>
               <p className="text-xl font-black text-amber-600">₹{Math.round((totalBalance * (weightedAPR / 100)) / 12).toLocaleString('en-IN')}</p>
-              <p className="text-[9px] text-gray-500 mt-0.5">wasted every month</p>
+              <p className="text-[9px] text-gray-500 mt-0.5">{t('ccPayoff.wastedMonthly', 'wasted every month')}</p>
             </div>
           </div>
         )}
@@ -393,7 +393,7 @@ export default function CreditCardPayoffCalculator() {
           <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
             <div className="flex items-center gap-2 mb-3">
               <Shield size={16} className={overallUtil > 75 ? 'text-red-500' : overallUtil > 30 ? 'text-amber-500' : 'text-green-500'} />
-              <h3 className="text-xs font-bold text-gray-700 dark:text-gray-200">Credit Utilization</h3>
+              <h3 className="text-xs font-bold text-gray-700 dark:text-gray-200">{t('ccPayoff.creditUtil', 'Credit Utilization')}</h3>
               <span className={`ml-auto text-xs font-black ${overallUtil > 75 ? 'text-red-600' : overallUtil > 30 ? 'text-amber-600' : 'text-green-600'}`}>{overallUtil}%</span>
             </div>
             <div className="w-full h-3 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden mb-2">
@@ -403,12 +403,12 @@ export default function CreditCardPayoffCalculator() {
               }} />
             </div>
             <div className="flex justify-between text-[9px] text-gray-400 mb-2">
-              <span>0%</span><span className="text-green-500 font-bold">30% Safe</span><span className="text-amber-500 font-bold">75%</span><span>100%</span>
+              <span>0%</span><span className="text-green-500 font-bold">{t('ccPayoff.safe30', '30% Safe')}</span><span className="text-amber-500 font-bold">75%</span><span>100%</span>
             </div>
             <p className="text-[11px] text-gray-600 dark:text-gray-400">
-              {overallUtil > 75 ? '⚠️ High utilization severely impacts CIBIL score. Prioritize paying down to below 30%.'
-                : overallUtil > 30 ? '🟡 Moderate utilization. Paying down to <30% will significantly boost your credit score.'
-                : '✅ Excellent! Low utilization helps maintain a strong credit score.'}
+              {overallUtil > 75 ? t('ccPayoff.utilHigh', '⚠️ High utilization severely impacts CIBIL score. Prioritize paying down to below 30%.')
+                : overallUtil > 30 ? t('ccPayoff.utilMod', '🟡 Moderate utilization. Paying down to <30% will significantly boost your credit score.')
+                : t('ccPayoff.utilGood', '✅ Excellent! Low utilization helps maintain a strong credit score.')}
             </p>
           </div>
         )}
@@ -418,7 +418,7 @@ export default function CreditCardPayoffCalculator() {
             ══════════════════════════════════════════════════════════ */}
         {recommendations.length > 0 && (
           <div className="space-y-2">
-            <h3 className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5"><Target size={14} className="text-blue-500" /> Smart Recommendations</h3>
+            <h3 className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5"><Target size={14} className="text-blue-500" /> {t('ccPayoff.smartRec', 'Smart Recommendations')}</h3>
             {recommendations.map((rec, i) => (
               <div key={i} className={`p-3 rounded-xl border text-xs ${
                 rec.tone === 'green' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' :
@@ -444,13 +444,13 @@ export default function CreditCardPayoffCalculator() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center p-3 rounded-xl bg-white dark:bg-gray-900/60 border border-red-200 dark:border-red-800">
-                <p className="text-[9px] text-red-500 uppercase font-bold mb-1">⚠️ Minimum Only</p>
+                <p className="text-[9px] text-red-500 uppercase font-bold mb-1">{t('ccPayoff.minOnly', '⚠️ Minimum Only')}</p>
                 <p className="text-2xl font-black text-red-600">{fmt(minimumOnly.totalInterest)}</p>
                 <p className="text-[11px] text-gray-500 font-semibold">{minimumOnly.totalMonths} months</p>
                 <p className="text-[9px] text-gray-400 mt-1">Payoff: {payoffDate(minimumOnly.totalMonths)}</p>
               </div>
               <div className="text-center p-3 rounded-xl bg-white dark:bg-gray-900/60 border border-green-200 dark:border-green-800">
-                <p className="text-[9px] text-green-500 uppercase font-bold mb-1">✅ Your Plan</p>
+                <p className="text-[9px] text-green-500 uppercase font-bold mb-1">{t('ccPayoff.yourPlan', '✅ Your Plan')}</p>
                 <p className="text-2xl font-black text-green-600">{fmt(current.totalInterest)}</p>
                 <p className="text-[11px] text-gray-500 font-semibold">{current.totalMonths} months</p>
                 <p className="text-[9px] text-gray-400 mt-1">Payoff: {payoffDate(current.totalMonths)}</p>
@@ -459,14 +459,14 @@ export default function CreditCardPayoffCalculator() {
             <div className="text-center pt-3 border-t border-red-200 dark:border-red-800">
               {interestSaved > 0 ? (
                 <>
-                  <p className="text-xs text-gray-500">By paying {fmt(effectiveBudget)}/mo you save</p>
+                  <p className="text-xs text-gray-500">{t('ccPayoff.byPaying', { budget: fmt(effectiveBudget), defaultValue: 'By paying {{budget}}/mo you save' })}</p>
                   <p className="text-2xl font-black text-green-600">{fmt(interestSaved)}</p>
-                  <p className="text-xs text-gray-500">&amp; become debt-free <span className="font-bold text-green-600">{timeSaved} months earlier</span></p>
+                  <p className="text-xs text-gray-500">{t('ccPayoff.debtFreeEarlier', { months: timeSaved, defaultValue: '& become debt-free {{months}} months earlier' })}</p>
                 </>
               ) : (
                 <div className="space-y-1">
-                  <p className="text-xs text-amber-600 font-bold">You're paying only the minimum!</p>
-                  <p className="text-[11px] text-gray-500">Slide the budget up to see how much you can save</p>
+                  <p className="text-xs text-amber-600 font-bold">{t('ccPayoff.onlyMinimum', "You're paying only the minimum!")}</p>
+                  <p className="text-[11px] text-gray-500">{t('ccPayoff.slideBudget', 'Slide the budget up to see how much you can save')}</p>
                 </div>
               )}
             </div>

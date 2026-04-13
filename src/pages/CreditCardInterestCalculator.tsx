@@ -142,9 +142,9 @@ export default function CreditCardInterestCalculator() {
         if (balance <= 0) return [];
         const ccMonthlyRate = rate / 100 / 12;
         const alts = [
-            { name: 'Credit Card (current)', apr: rate, color: '#EF4444' },
-            { name: 'Balance Transfer Card', apr: 12, color: '#F59E0B' },
-            { name: 'Personal Loan', apr: 14, color: '#3B82F6' },
+            { name: t('ccInterest.altCC', 'Credit Card (current)'), apr: rate, color: '#EF4444' },
+            { name: t('ccInterest.altBT', 'Balance Transfer Card'), apr: 12, color: '#F59E0B' },
+            { name: t('ccInterest.altPL', 'Personal Loan'), apr: 14, color: '#3B82F6' },
         ];
         return alts.map(({ name, apr, color }) => {
             const r = apr / 100 / 12;
@@ -154,7 +154,7 @@ export default function CreditCardInterestCalculator() {
             const totalInterest = totalPaid - balance;
             return { name, apr, emi: Math.round(emi), totalInterest, totalPaid, color };
         });
-    }, [balance, rate]);
+    }, [balance, rate, t]);
 
     // ── History Tracking ──
     useHistoryTracker(
@@ -473,10 +473,10 @@ export default function CreditCardInterestCalculator() {
                                         </div>
                                         <div className="text-right">
                                             <p className={`text-sm font-black ${d.months === 1 ? 'text-green-500' : d.months > 60 ? 'text-red-500' : 'text-foreground'}`}>
-                                                {d.months === Infinity ? '∞' : d.months === 1 ? '0 interest!' : `${d.months} mo`}
+                                                {d.months === Infinity ? '∞' : d.months === 1 ? t('ccInterest.zeroInterest', '0 interest!') : `${d.months} mo`}
                                             </p>
                                             {d.totalInterest > 0 && d.totalInterest < Infinity && (
-                                                <p className="text-[10px] text-red-400">Interest: {fmtINR(d.totalInterest)}</p>
+                                                <p className="text-[10px] text-red-400">{t('ccInterest.interestLabel', 'Interest')}: {fmtINR(d.totalInterest)}</p>
                                             )}
                                         </div>
                                     </div>
@@ -489,11 +489,10 @@ export default function CreditCardInterestCalculator() {
                 {/* ── GST Context ── */}
                 {balance > 0 && includeGST && result.gst > 0 && (
                     <div className="p-4 rounded-2xl bg-purple-500/5 border border-purple-500/20">
-                        <p className="text-xs font-bold text-purple-600 dark:text-purple-400 mb-1">💡 GST Impact on Your Debt</p>
+                        <p className="text-xs font-bold text-purple-600 dark:text-purple-400 mb-1">💡 {t('ccInterest.gstImpact', 'GST Impact on Your Debt')}</p>
                         <p className="text-[11px] text-muted-foreground leading-relaxed">
-                            GST at 18% on interest adds <span className="font-bold text-purple-500">{fmtINR(result.gst)}</span> to your charges.
-                            Over 12 months, that's ~<span className="font-bold text-purple-500">{fmtINR(Math.round(result.gst * 12))}</span> in hidden tax.
-                            <span className="font-semibold text-foreground"> Pay in full each month = zero interest = zero GST.</span>
+                            {t('ccInterest.gstDesc1', 'GST at 18% on interest adds')} <span className="font-bold text-purple-500">{fmtINR(result.gst)}</span> {t('ccInterest.gstDesc2', 'to your charges. Over 12 months, that\'s ~')}<span className="font-bold text-purple-500">{fmtINR(Math.round(result.gst * 12))}</span> {t('ccInterest.gstDesc3', 'in hidden tax.')}
+                            <span className="font-semibold text-foreground"> {t('ccInterest.gstDesc4', 'Pay in full each month = zero interest = zero GST.')}</span>
                         </p>
                     </div>
                 )}
@@ -508,20 +507,20 @@ export default function CreditCardInterestCalculator() {
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="text-center p-3 rounded-xl bg-green-500/5 border border-green-500/20">
-                                    <p className="text-[9px] text-green-500 uppercase font-bold mb-1">✅ Pay Full</p>
+                                    <p className="text-[9px] text-green-500 uppercase font-bold mb-1">{t('ccInterest.payFullLabel', '✅ Pay Full')}</p>
                                     <p className="text-lg font-black text-green-600">₹0</p>
-                                    <p className="text-[10px] text-muted-foreground">interest/year</p>
-                                    <p className="text-[9px] text-green-500 mt-1">Grace period active</p>
+                                    <p className="text-[10px] text-muted-foreground">{t('ccInterest.intPerYear', 'interest/year')}</p>
+                                    <p className="text-[9px] text-green-500 mt-1">{t('ccInterest.graceActive', 'Grace period active')}</p>
                                 </div>
                                 <div className="text-center p-3 rounded-xl bg-red-500/5 border border-red-500/20">
-                                    <p className="text-[9px] text-red-500 uppercase font-bold mb-1">⚠️ Carry Balance</p>
+                                    <p className="text-[9px] text-red-500 uppercase font-bold mb-1">{t('ccInterest.carryBalance', '⚠️ Carry Balance')}</p>
                                     <p className="text-lg font-black text-red-600">{fmtINR(Math.round(balance * rate / 100 * (includeGST ? 1.18 : 1)))}</p>
-                                    <p className="text-[10px] text-muted-foreground">interest/year</p>
-                                    <p className="text-[9px] text-red-500 mt-1">Grace period LOST</p>
+                                    <p className="text-[10px] text-muted-foreground">{t('ccInterest.intPerYear', 'interest/year')}</p>
+                                    <p className="text-[9px] text-red-500 mt-1">{t('ccInterest.graceLost', 'Grace period LOST')}</p>
                                 </div>
                             </div>
                             <p className="text-[10px] text-muted-foreground mt-3 text-center leading-relaxed">
-                                Even ₹1 less than full payment = interest on <span className="font-bold">entire balance</span> from transaction date
+                                {t('ccInterest.partialWarning', 'Even ₹1 less than full payment = interest on entire balance from transaction date')}
                             </p>
                         </div>
                     </div>
@@ -547,14 +546,14 @@ export default function CreditCardInterestCalculator() {
                                         </div>
                                         <div className="text-right">
                                             <p className={`text-xs font-black ${i === 0 ? 'text-red-500' : 'text-foreground'}`}>{fmtINR(alt.totalInterest)}</p>
-                                            <p className="text-[9px] text-muted-foreground">total interest</p>
+                                            <p className="text-[9px] text-muted-foreground">{t('ccInterest.totalInt', 'total interest')}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                             {loanAlternatives.length >= 3 && loanAlternatives[0].totalInterest > loanAlternatives[2].totalInterest && (
                                 <p className="text-[10px] text-green-600 dark:text-green-400 font-semibold mt-3 text-center">
-                                    💡 Switching to a personal loan saves {fmtINR(loanAlternatives[0].totalInterest - loanAlternatives[2].totalInterest)} in interest
+                                    💡 {t('ccInterest.switchSaves', 'Switching to a personal loan saves {{amount}} in interest', { amount: fmtINR(loanAlternatives[0].totalInterest - loanAlternatives[2].totalInterest) })}
                                 </p>
                             )}
                         </div>
@@ -564,11 +563,11 @@ export default function CreditCardInterestCalculator() {
                 {/* ── Actionable Recommendation ── */}
                 {balance > 0 && debtTimeline.length >= 3 && debtTimeline[2].months < Infinity && (
                     <div className="p-4 rounded-2xl bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20">
-                        <p className="text-xs font-black text-green-700 dark:text-green-400 mb-1">🎯 Recommended Action</p>
+                        <p className="text-xs font-black text-green-700 dark:text-green-400 mb-1">🎯 {t('ccInterest.recAction', 'Recommended Action')}</p>
                         <p className="text-[11px] text-foreground leading-relaxed">
-                            Pay <span className="font-black text-green-600">{fmtINR(debtTimeline[2].payment)}/mo</span> (25% of balance) →
-                            debt-free in <span className="font-black text-blue-600">{debtTimeline[2].months} months</span>,
-                            saving <span className="font-black text-green-600">{fmtINR(debtTimeline[0].totalInterest < Infinity ? debtTimeline[0].totalInterest - debtTimeline[2].totalInterest : debtTimeline[2].totalInterest)}</span> vs minimum payments
+                            {t('ccInterest.recPay', 'Pay')} <span className="font-black text-green-600">{fmtINR(debtTimeline[2].payment)}/{t('ccInterest.recMo', 'mo')}</span> {t('ccInterest.recPct', '(25% of balance)')} →
+                            {t('ccInterest.recDebtFree', 'debt-free in')} <span className="font-black text-blue-600">{debtTimeline[2].months} {t('ccInterest.recMonths', 'months')}</span>,
+                            {t('ccInterest.recSaving', 'saving')} <span className="font-black text-green-600">{fmtINR(debtTimeline[0].totalInterest < Infinity ? debtTimeline[0].totalInterest - debtTimeline[2].totalInterest : debtTimeline[2].totalInterest)}</span> {t('ccInterest.recVsMin', 'vs minimum payments')}
                         </p>
                     </div>
                 )}

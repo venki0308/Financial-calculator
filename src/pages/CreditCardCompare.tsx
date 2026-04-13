@@ -321,11 +321,11 @@ export default function CreditCardCompare() {
                   <div className="p-3 rounded-xl mb-3" style={{ background: '#22c55e10', border: '1px solid #22c55e30' }}>
                     <p className="text-xs font-bold mb-2" style={{ color: '#22c55e' }}>{topResult.type.emoji} {t(topResult.type.labelKey)} — Score {topResult.suitabilityScore}/100</p>
                     {[
-                      { label: 'Income Match', weight: '15%', score: monthlyIncome >= 50000 ? 'High' : monthlyIncome >= 25000 ? 'Medium' : 'Low', color: monthlyIncome >= 50000 ? '#22c55e' : '#f59e0b' },
-                      { label: 'Spending Alignment', weight: '35%', score: topResult.suitabilityScore >= 70 ? 'Strong' : 'Partial', color: topResult.suitabilityScore >= 70 ? '#22c55e' : '#3b82f6' },
-                      { label: 'Cost Efficiency', weight: '25%', score: topResult.netAnnualValue >= 0 ? 'Positive ROI' : 'Negative ROI', color: topResult.netAnnualValue >= 0 ? '#22c55e' : '#ef4444' },
-                      { label: 'Credit Profile', weight: '10%', score: cibilScore >= 750 ? 'Excellent' : cibilScore >= 650 ? 'Good' : 'Fair', color: cibilScore >= 750 ? '#22c55e' : '#f59e0b' },
-                      { label: 'Travel Fit', weight: '15%', score: domesticFlights >= 4 ? 'Frequent' : domesticFlights >= 1 ? 'Occasional' : 'None', color: domesticFlights >= 4 ? '#22c55e' : '#6b7280' },
+                      { label: t('ccCompare.factorIncome', 'Income Match'), weight: '15%', score: monthlyIncome >= 50000 ? t('ccCompare.scoreHigh', 'High') : monthlyIncome >= 25000 ? t('ccCompare.scoreMedium', 'Medium') : t('ccCompare.scoreLow', 'Low'), color: monthlyIncome >= 50000 ? '#22c55e' : '#f59e0b' },
+                      { label: t('ccCompare.factorSpend', 'Spending Alignment'), weight: '35%', score: topResult.suitabilityScore >= 70 ? t('ccCompare.scoreStrong', 'Strong') : t('ccCompare.scorePartial', 'Partial'), color: topResult.suitabilityScore >= 70 ? '#22c55e' : '#3b82f6' },
+                      { label: t('ccCompare.factorCost', 'Cost Efficiency'), weight: '25%', score: topResult.netAnnualValue >= 0 ? t('ccCompare.scorePositiveROI', 'Positive ROI') : t('ccCompare.scoreNegativeROI', 'Negative ROI'), color: topResult.netAnnualValue >= 0 ? '#22c55e' : '#ef4444' },
+                      { label: t('ccCompare.factorCredit', 'Credit Profile'), weight: '10%', score: cibilScore >= 750 ? t('ccCompare.scoreExcellent', 'Excellent') : cibilScore >= 650 ? t('ccCompare.scoreGood', 'Good') : t('ccCompare.scoreFair', 'Fair'), color: cibilScore >= 750 ? '#22c55e' : '#f59e0b' },
+                      { label: t('ccCompare.factorTravel', 'Travel Fit'), weight: '15%', score: domesticFlights >= 4 ? t('ccCompare.scoreFrequent', 'Frequent') : domesticFlights >= 1 ? t('ccCompare.scoreOccasional', 'Occasional') : t('ccCompare.scoreNone', 'None'), color: domesticFlights >= 4 ? '#22c55e' : '#6b7280' },
                     ].map((factor, i) => (
                       <div key={i} className="flex items-center justify-between py-1.5 border-b last:border-0" style={{ borderColor: `${c.border}40` }}>
                         <span className="text-[10px]" style={{ color: c.textSecondary }}>{factor.label} ({factor.weight})</span>
@@ -336,47 +336,60 @@ export default function CreditCardCompare() {
                 </div>
               )}
 
-              {/* ── Real Card Suggestions by Bank ── */}
+              {/* ── Category Tips ── */}
               {topResult && (
                 <div style={sectionStyle}>
                   <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: c.text }}>
-                    <CreditCard size={16} color="#6366F1" /> {t('ccCompare.bankCards', 'Popular Cards in This Category')}
+                    <CreditCard size={16} color="#6366F1" /> {t('ccCompare.categoryTipsTitle', 'Tips for Your Best Card Type')}
                   </h3>
                   {(() => {
-                    const cardSuggestions: Record<string, { name: string; bank: string; fee: string; highlight: string }[]> = {
-                      cashback: [
-                        { name: 'Cashback SBI Card', bank: 'SBI', fee: '₹999/yr', highlight: '5% on online, 1% offline' },
-                        { name: 'Amazon Pay ICICI', bank: 'ICICI', fee: 'Free', highlight: '5% Amazon, 2% bills, 1% rest' },
-                        { name: 'Flipkart Axis Bank', bank: 'Axis', fee: '₹500/yr', highlight: '5% Flipkart, 4% Uber/Swiggy' },
-                      ],
-                      rewards: [
-                        { name: 'HDFC Regalia Gold', bank: 'HDFC', fee: '₹2,500/yr', highlight: '4 RPs/₹150, lounge access' },
-                        { name: 'Axis Magnus', bank: 'Axis', fee: '₹12,500/yr', highlight: '12 Edge Miles/₹200, 8 lounges' },
-                        { name: 'SBI Elite', bank: 'SBI', fee: '₹4,999/yr', highlight: '2× points dining, 5× milestone' },
-                      ],
-                      travel: [
-                        { name: 'HDFC Infinia', bank: 'HDFC', fee: '₹12,500/yr', highlight: '5 RPs/₹150, unlimited lounges' },
-                        { name: 'Axis Atlas', bank: 'Axis', fee: '₹5,000/yr', highlight: '5 Edge Miles/₹100, Priority Pass' },
-                        { name: 'Amex Platinum Travel', bank: 'Amex', fee: '₹3,500/yr', highlight: '5× booking.com, 4 lounges/qtr' },
-                      ],
-                      fuel: [
-                        { name: 'IndianOil HDFC', bank: 'HDFC', fee: 'Free', highlight: '50L free fuel/yr, 5% cashback' },
-                        { name: 'BPCL SBI Card', bank: 'SBI', fee: '₹499/yr', highlight: '13× RPs at BPCL, surcharge waiver' },
-                        { name: 'IndianOil Citi', bank: 'Citi', fee: '₹1,000/yr', highlight: '4 turbo pts/₹150, savings up to ₹71/L' },
-                      ],
+                    const categoryTips: Record<string, { title: string; tips: string[] }> = {
+                      cashback: {
+                        title: t('ccCompare.tipCashback', 'What to Look For in Cashback Cards'),
+                        tips: [
+                          t('ccCompare.tipCb1', 'Look for 1-5% cashback on online & grocery spending'),
+                          t('ccCompare.tipCb2', 'Check if cashback is auto-credited or needs redemption'),
+                          t('ccCompare.tipCb3', 'Compare monthly cashback caps across cards'),
+                        ],
+                      },
+                      rewards: {
+                        title: t('ccCompare.tipRewards', 'What to Look For in Rewards Cards'),
+                        tips: [
+                          t('ccCompare.tipRw1', 'Higher reward rate per ₹100-₹150 spent = better value'),
+                          t('ccCompare.tipRw2', 'Check point expiry rules — some expire in 2-3 years'),
+                          t('ccCompare.tipRw3', 'Milestone bonuses can significantly boost annual value'),
+                        ],
+                      },
+                      travel: {
+                        title: t('ccCompare.tipTravel', 'What to Look For in Travel Cards'),
+                        tips: [
+                          t('ccCompare.tipTr1', 'Lounge access (domestic + international) is the biggest perk'),
+                          t('ccCompare.tipTr2', 'Look for complimentary travel insurance coverage'),
+                          t('ccCompare.tipTr3', 'Low forex markup (1.5-2%) saves money on international spends'),
+                        ],
+                      },
+                      fuel: {
+                        title: t('ccCompare.tipFuel', 'What to Look For in Fuel Cards'),
+                        tips: [
+                          t('ccCompare.tipFl1', 'Fuel surcharge waiver (1% saved on every fill) is essential'),
+                          t('ccCompare.tipFl2', 'Check if surcharge waiver has monthly/annual cap'),
+                          t('ccCompare.tipFl3', 'Some cards offer extra cashback at specific fuel stations'),
+                        ],
+                      },
                     };
-                    const suggestions = cardSuggestions[topResult.type.id] || cardSuggestions.cashback;
-                    return suggestions.map((card, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl mb-2 border" style={{ borderColor: c.border, background: c.inputBg }}>
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black" style={{ background: '#6366F120', color: '#6366F1' }}>{card.bank.charAt(0)}</div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold truncate" style={{ color: c.text }}>{card.name}</p>
-                          <p className="text-[10px]" style={{ color: c.textMuted }}>{card.fee} · {card.highlight}</p>
-                        </div>
+                    const tips = categoryTips[topResult.type.id] || categoryTips.cashback;
+                    return (
+                      <div>
+                        <p className="text-xs font-bold mb-2" style={{ color: c.text }}>{tips.title}</p>
+                        {tips.tips.map((tip, i) => (
+                          <div key={i} className="flex items-start gap-2 mb-1.5">
+                            <span className="text-emerald-500 flex-shrink-0 mt-0.5">✓</span>
+                            <p className="text-[11px]" style={{ color: c.textSecondary }}>{tip}</p>
+                          </div>
+                        ))}
                       </div>
-                    ));
+                    );
                   })()}
-                  <p className="text-[9px] italic mt-1" style={{ color: c.textMuted }}>Card features as of April 2026. Verify with bank before applying.</p>
                 </div>
               )}
 
@@ -395,26 +408,26 @@ export default function CreditCardCompare() {
                     <div className="space-y-2">
                       {excludedSpend > 0 && (
                         <div className="p-3 rounded-xl text-xs" style={{ background: '#ef44440d', border: '1px solid #ef444420' }}>
-                          <p className="font-bold text-red-500 mb-0.5">💸 {formatINR(excludedSpend)}/mo excluded from rewards</p>
-                          <p style={{ color: c.textMuted }}>Rent & utilities ({formatINR(excludedSpend)}/mo) earn zero rewards on most cards. That's {formatINR(excludedSpend * 12)}/yr invisible to reward programs.</p>
+                          <p className="font-bold text-red-500 mb-0.5">💸 {t('ccCompare.lossExcluded', { amount: formatINR(excludedSpend), defaultValue: '{{amount}}/mo excluded from rewards' })}</p>
+                          <p style={{ color: c.textMuted }}>{t('ccCompare.lossExcludedDesc', { monthly: formatINR(excludedSpend), annual: formatINR(excludedSpend * 12), defaultValue: 'Rent & utilities ({{monthly}}/mo) earn zero rewards on most cards. That\'s {{annual}}/yr invisible to reward programs.' })}</p>
                         </div>
                       )}
                       {missedAnnual > 0 && (
                         <div className="p-3 rounded-xl text-xs" style={{ background: '#f59e0b0d', border: '1px solid #f59e0b20' }}>
-                          <p className="font-bold text-amber-500 mb-0.5">🎯 Potential rewards: ~{formatINR(missedAnnual)}/year</p>
-                          <p style={{ color: c.textMuted }}>On {formatINR(rewardableSpend)}/mo eligible spend at ~1% average reward rate. The right card could earn even more.</p>
+                          <p className="font-bold text-amber-500 mb-0.5">🎯 {t('ccCompare.lossPotentialRewards', { amount: formatINR(missedAnnual), defaultValue: 'Potential rewards: ~{{amount}}/year' })}</p>
+                          <p style={{ color: c.textMuted }}>{t('ccCompare.lossPotentialRewardsDesc', { spend: formatINR(rewardableSpend), defaultValue: 'On {{spend}}/mo eligible spend at ~1% average reward rate. The right card could earn even more.' })}</p>
                         </div>
                       )}
                       {interestLoss > 0 && (
                         <div className="p-3 rounded-xl text-xs" style={{ background: '#ef44440d', border: '1px solid #ef444420' }}>
-                          <p className="font-bold text-red-500 mb-0.5">🔥 Interest leakage: {formatINR(interestLoss)}/year</p>
-                          <p style={{ color: c.textMuted }}>Carrying {formatINR(outstandingBalance)} at {apr}% APR + 18% GST. This completely erases any reward benefits. Pay in full to stop the leak.</p>
+                          <p className="font-bold text-red-500 mb-0.5">🔥 {t('ccCompare.lossInterest', { amount: formatINR(interestLoss), defaultValue: 'Interest leakage: {{amount}}/year' })}</p>
+                          <p style={{ color: c.textMuted }}>{t('ccCompare.lossInterestDesc', { balance: formatINR(outstandingBalance), apr: apr, defaultValue: 'Carrying {{balance}} at {{apr}}% APR + 18% GST. This completely erases any reward benefits. Pay in full to stop the leak.' })}</p>
                         </div>
                       )}
                       {interestLoss === 0 && paysFull && (
                         <div className="p-3 rounded-xl text-xs" style={{ background: '#22c55e0d', border: '1px solid #22c55e20' }}>
-                          <p className="font-bold text-green-500">✅ No interest leakage — you pay in full!</p>
-                          <p style={{ color: c.textMuted }}>Great habit! Your rewards are pure profit.</p>
+                          <p className="font-bold text-green-500">✅ {t('ccCompare.lossNone', 'No interest leakage — you pay in full!')}</p>
+                          <p style={{ color: c.textMuted }}>{t('ccCompare.lossNoneDesc', 'Great habit! Your rewards are pure profit.')}</p>
                         </div>
                       )}
                     </div>
