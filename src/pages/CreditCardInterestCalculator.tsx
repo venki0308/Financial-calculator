@@ -10,6 +10,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { useAppColors } from '../theme/useAppColors';
 import { getDailyInterest, getPeriodInterest, getGSTOnInterest, getTrueCost, getCashAdvanceCost } from '../utils/creditCardCalculations';
+import { getAllCreditCards } from '../utils/creditCardStorage';
 import { useCibil } from '../context/CibilContext';
 import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import CibilBadge from '../components/CibilBadge';
@@ -53,6 +54,9 @@ export default function CreditCardInterestCalculator() {
     const c = useAppColors();
     const { profile: cibilProfile } = useCibil();
     const cibilScore = cibilProfile?.isNTC ? 0 : (cibilProfile?.score ?? 0);
+
+    // ── Saved cards for quick-load ──
+    const savedCards = useMemo(() => getAllCreditCards().filter(cc => cc.isActive), []);
 
     // ── Core Inputs ──
     const [balance, setBalance] = useState(50000);
@@ -184,6 +188,28 @@ export default function CreditCardInterestCalculator() {
             </div>
 
             <div className="px-4 pt-5 space-y-5">
+                {/* Load from My Cards */}
+                {savedCards.length > 0 && (
+                    <div className="rounded-2xl border overflow-hidden" style={{ borderColor: c.border, background: c.card }}>
+                        <p className="px-4 pt-3 text-[10px] font-bold uppercase tracking-wider" style={{ color: c.textMuted }}>
+                            {t('ccInterest.loadFromCards', 'Load from My Cards')}
+                        </p>
+                        <div className="flex gap-2 px-4 pb-3 pt-2 overflow-x-auto">
+                            {savedCards.map(card => (
+                                <button key={card.id} onClick={() => {
+                                    setBalance(card.currentBalance);
+                                    setSelectedRate(card.annualInterestRate);
+                                    setCustomRate(card.annualInterestRate);
+                                }}
+                                    className="flex-shrink-0 px-3 py-2 rounded-xl border text-xs font-semibold transition-all active:scale-95"
+                                    style={{ borderColor: c.border, background: c.inputBg, color: c.text }}>
+                                    {card.cardName || card.bankName} {card.last4Digits ? `(${card.last4Digits})` : ''}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Outstanding Balance */}
                 <NumberInput
                     label={t('ccInterest.balance', 'Outstanding Balance')}

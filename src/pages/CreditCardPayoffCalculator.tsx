@@ -47,7 +47,7 @@ export default function CreditCardPayoffCalculator() {
   const [inputTab, setInputTab] = useState<'saved' | 'manual'>('manual');
 
   // ── Saved cards ──
-  const savedCards = useMemo(() => getAllCreditCards().filter(c => c.currentBalance > 0), []);
+  const savedCards = useMemo(() => getAllCreditCards().filter(c => c.isActive), []);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(savedCards.map(c => c.id)));
 
   // ── Manual cards ──
@@ -188,7 +188,14 @@ export default function CreditCardPayoffCalculator() {
         {/* ── Saved Cards ── */}
         {inputTab === 'saved' && (
           <div className="space-y-2">
-            {savedCards.length === 0 && <p className="text-sm text-gray-500 text-center py-4">{t('ccPayoff.noSavedCards', 'No saved cards with balances found.')}</p>}
+            {savedCards.length === 0 && (
+              <div className="text-center py-6">
+                <p className="text-sm text-gray-500">{t('ccPayoff.noSavedCards', 'No saved cards found.')}</p>
+                <button onClick={() => navigate('/expenses/credit-cards/add')} className="mt-3 text-sm font-bold text-blue-600 dark:text-blue-400">
+                  + {t('ccPayoff.addCardFirst', 'Add Your First Card')}
+                </button>
+              </div>
+            )}
             {savedCards.map(c => (
               <label key={c.id} className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                 <input type="checkbox" checked={selectedIds.has(c.id)}
