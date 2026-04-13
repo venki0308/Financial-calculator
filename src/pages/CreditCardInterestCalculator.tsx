@@ -111,6 +111,51 @@ export default function CreditCardInterestCalculator() {
 
     const insights = useMemo(() => generateCCInsights(balance, rate, days, includeGST, t), [balance, rate, days, includeGST, t]);
 
+    // ── Debt-Free Timeline ──
+    const debtTimeline = useMemo(() => {
+        if (balance <= 0) return [];
+        const r = rate / 100 / 12;
+        const paymentLevels = [
+            { label: 'Min Due (5%)', pct: 0.05 },
+            { label: '10% of Balance', pct: 0.10 },
+            { label: '25% of Balance', pct: 0.25 },
+            { label: 'Full Statement', pct: 1.0 },
+        ];
+        return paymentLevels.map(({ label, pct }) => {
+            const payment = Math.max(Math.round(balance * pct), 200);
+            if (pct >= 1) return { label, payment, months: 1, totalInterest: 0, totalPaid: balance };
+            if (r <= 0 || payment <= balance * r) return { label, payment, months: Infinity, totalInterest: Infinity, totalPaid: Infinity };
+            let bal = balance, totalInt = 0, m = 0;
+            while (bal > 0.5 && m < 600) {
+                const interest = bal * r;
+                const gst = includeGST ? interest * 0.18 : 0;
+                totalInt += interest + gst;
+                bal = bal + interest + gst - payment;
+                m++;
+            }
+            return { label, payment, months: m, totalInterest: Math.round(totalInt), totalPaid: Math.round(balance + totalInt) };
+        });
+    }, [balance, rate, includeGST]);
+
+    // ── Loan Alternative Comparison ──
+    const loanAlternatives = useMemo(() => {
+        if (balance <= 0) return [];
+        const ccMonthlyRate = rate / 100 / 12;
+        const alts = [
+            { name: 'Credit Card (current)', apr: rate, color: '#EF4444' },
+            { name: 'Balance Transfer Card', apr: 12, color: '#F59E0B' },
+            { name: 'Personal Loan', apr: 14, color: '#3B82F6' },
+        ];
+        return alts.map(({ name, apr, color }) => {
+            const r = apr / 100 / 12;
+            const tenure = 24;
+            const emi = r > 0 ? balance * r * Math.pow(1 + r, tenure) / (Math.pow(1 + r, tenure) - 1) : balance / tenure;
+            const totalPaid = Math.round(emi * tenure);
+            const totalInterest = totalPaid - balance;
+            return { name, apr, emi: Math.round(emi), totalInterest, totalPaid, color };
+        });
+    }, [balance, rate]);
+
     // ── History Tracking ──
     useHistoryTracker(
         'CC Interest Calculator',
@@ -407,6 +452,123 @@ export default function CreditCardInterestCalculator() {
                                 </p>
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* ── Debt-Free Timeline ── */}
+                {balance > 0 && debtTimeline.length > 0 && (
+                    <div className="rounded-3xl border border-border bg-card overflow-hidden">
+                        <div className="p-5">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="p-1.5 bg-green-500/10 rounded-lg"><TrendingUp size={16} className="text-green-500" /></div>
+                                <span className="text-foreground font-bold text-sm">{t('ccInterest.debtTimeline', 'Debt-Free Timeline')}</span>
+                            </div>
+                            <div className="space-y-2">
+                                {debtTimeline.map((d, i) => (
+                                    <div key={i} className={`flex items-center justify-between p-3 rounded-xl border ${i === debtTimeline.length - 1 ? 'bg-green-500/5 border-green-500/20' : 'border-border/50'}`}>
+                                        <div>
+                                            <p className="text-xs font-bold text-foreground">{d.label}</p>
+                                            <p className="text-[10px] text-muted-foreground">{fmtINR(d.payment)}/mo</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className={`text-sm font-black ${d.months === 1 ? 'text-green-500' : d.months > 60 ? 'text-red-500' : 'text-foreground'}`}>
+                                                {d.months === Infinity ? '∞' : d.months === 1 ? '0 interest!' : `${d.months} mo`}
+                                            </p>
+                                            {d.totalInterest > 0 && d.totalInterest < Infinity && (
+                                                <p className="text-[10px] text-red-400">Interest: {fmtINR(d.totalInterest)}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── GST Context ── */}
+                {balance > 0 && includeGST && result.gst > 0 && (
+                    <div className="p-4 rounded-2xl bg-purple-500/5 border border-purple-500/20">
+                        <p className="text-xs font-bold text-purple-600 dark:text-purple-400 mb-1">💡 GST Impact on Your Debt</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                            GST at 18% on interest adds <span className="font-bold text-purple-500">{fmtINR(result.gst)}</span> to your charges.
+                            Over 12 months, that's ~<span className="font-bold text-purple-500">{fmtINR(Math.round(result.gst * 12))}</span> in hidden tax.
+                            <span className="font-semibold text-foreground"> Pay in full each month = zero interest = zero GST.</span>
+                        </p>
+                    </div>
+                )}
+
+                {/* ── Behavior Insight: Pay Full vs Carry Balance ── */}
+                {balance > 0 && (
+                    <div className="rounded-3xl border border-border bg-card overflow-hidden">
+                        <div className="p-5">
+                            <div className="flex items-center gap-2 mb-3">
+                                <div className="p-1.5 bg-amber-500/10 rounded-lg"><AlertTriangle size={16} className="text-amber-500" /></div>
+                                <span className="text-foreground font-bold text-sm">{t('ccInterest.behavior', 'Pay Full vs Carry Balance')}</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="text-center p-3 rounded-xl bg-green-500/5 border border-green-500/20">
+                                    <p className="text-[9px] text-green-500 uppercase font-bold mb-1">✅ Pay Full</p>
+                                    <p className="text-lg font-black text-green-600">₹0</p>
+                                    <p className="text-[10px] text-muted-foreground">interest/year</p>
+                                    <p className="text-[9px] text-green-500 mt-1">Grace period active</p>
+                                </div>
+                                <div className="text-center p-3 rounded-xl bg-red-500/5 border border-red-500/20">
+                                    <p className="text-[9px] text-red-500 uppercase font-bold mb-1">⚠️ Carry Balance</p>
+                                    <p className="text-lg font-black text-red-600">{fmtINR(Math.round(balance * rate / 100 * (includeGST ? 1.18 : 1)))}</p>
+                                    <p className="text-[10px] text-muted-foreground">interest/year</p>
+                                    <p className="text-[9px] text-red-500 mt-1">Grace period LOST</p>
+                                </div>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-3 text-center leading-relaxed">
+                                Even ₹1 less than full payment = interest on <span className="font-bold">entire balance</span> from transaction date
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Smart Loan Alternatives ── */}
+                {balance >= 25000 && loanAlternatives.length > 0 && (
+                    <div className="rounded-3xl border border-border bg-card overflow-hidden">
+                        <div className="p-5">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="p-1.5 bg-blue-500/10 rounded-lg"><CreditCard size={16} className="text-blue-500" /></div>
+                                <span className="text-foreground font-bold text-sm">{t('ccInterest.loanAlt', 'Smarter Alternatives (24 months)')}</span>
+                            </div>
+                            <div className="space-y-2">
+                                {loanAlternatives.map((alt, i) => (
+                                    <div key={i} className={`flex items-center justify-between p-3 rounded-xl border ${i === 0 ? 'border-red-200 dark:border-red-800 bg-red-500/5' : 'border-border/50'}`}>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: alt.color }} />
+                                            <div>
+                                                <p className="text-xs font-bold text-foreground">{alt.name}</p>
+                                                <p className="text-[10px] text-muted-foreground">{alt.apr}% APR · {fmtINR(alt.emi)}/mo</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className={`text-xs font-black ${i === 0 ? 'text-red-500' : 'text-foreground'}`}>{fmtINR(alt.totalInterest)}</p>
+                                            <p className="text-[9px] text-muted-foreground">total interest</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            {loanAlternatives.length >= 3 && loanAlternatives[0].totalInterest > loanAlternatives[2].totalInterest && (
+                                <p className="text-[10px] text-green-600 dark:text-green-400 font-semibold mt-3 text-center">
+                                    💡 Switching to a personal loan saves {fmtINR(loanAlternatives[0].totalInterest - loanAlternatives[2].totalInterest)} in interest
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Actionable Recommendation ── */}
+                {balance > 0 && debtTimeline.length >= 3 && debtTimeline[2].months < Infinity && (
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20">
+                        <p className="text-xs font-black text-green-700 dark:text-green-400 mb-1">🎯 Recommended Action</p>
+                        <p className="text-[11px] text-foreground leading-relaxed">
+                            Pay <span className="font-black text-green-600">{fmtINR(debtTimeline[2].payment)}/mo</span> (25% of balance) →
+                            debt-free in <span className="font-black text-blue-600">{debtTimeline[2].months} months</span>,
+                            saving <span className="font-black text-green-600">{fmtINR(debtTimeline[0].totalInterest < Infinity ? debtTimeline[0].totalInterest - debtTimeline[2].totalInterest : debtTimeline[2].totalInterest)}</span> vs minimum payments
+                        </p>
                     </div>
                 )}
 
