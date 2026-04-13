@@ -340,6 +340,16 @@ export default function CreditCardPayoffCalculator() {
           </div>
         )}
 
+        {/* ── Smart Tips ── */}
+        {hasCards && interestSaved === 0 && budget <= totalMinimum && (
+          <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+            <p className="text-amber-700 dark:text-amber-400 font-bold text-xs flex items-center gap-1.5"><AlertTriangle size={14} /> {t('ccPayoff.tipIncreaseBudget', 'Increase your monthly budget above ₹{{min}} to pay off faster and save on interest!', { min: fmt(totalMinimum) })}</p>
+            {activeInputs.length === 1 && (
+              <p className="text-amber-600 dark:text-amber-500 text-[11px] mt-1">{t('ccPayoff.tipSingleCard', 'With a single card, all strategies produce the same result. Add more cards to compare strategies.')}</p>
+            )}
+          </div>
+        )}
+
         {/* ── Minimum Payment Trap ── */}
         {hasCards && (
           <div className="rounded-xl border-2 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4 space-y-3">
@@ -360,9 +370,15 @@ export default function CreditCardPayoffCalculator() {
               </div>
             </div>
             <div className="text-center pt-2 border-t border-red-200 dark:border-red-800">
-              <p className="text-xs text-gray-600 dark:text-gray-400">{t('ccPayoff.youSave', 'You save')}</p>
-              <p className="text-xl font-black text-green-600">{fmt(interestSaved)}</p>
-              <p className="text-xs text-gray-500">&amp; <span className="font-bold">{timeSaved} {t('ccPayoff.months', 'months')}</span> {t('ccPayoff.faster', 'faster debt-free')}</p>
+              {interestSaved > 0 ? (
+                <>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">{t('ccPayoff.youSave', 'You save')}</p>
+                  <p className="text-xl font-black text-green-600">{fmt(interestSaved)}</p>
+                  <p className="text-xs text-gray-500">&amp; <span className="font-bold">{timeSaved} {t('ccPayoff.months', 'months')}</span> {t('ccPayoff.faster', 'faster debt-free')}</p>
+                </>
+              ) : (
+                <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">{t('ccPayoff.increaseToSave', 'Increase monthly budget above minimum to start saving on interest')}</p>
+              )}
             </div>
           </div>
         )}
