@@ -6,6 +6,7 @@
 import { Capacitor } from '@capacitor/core';
 import { sanitizeForPDF } from './exportUtils';
 import { useSettingsStore } from '../store/useSettingsStore';
+import i18nInstance from '../i18n';
 
 // ─── Lazy loaders for heavy export libraries ─────────────────────────────────
 // jsPDF (~250KB) + jspdf-autotable (~80KB) + xlsx (~430KB) are loaded only when
@@ -65,20 +66,12 @@ export function fmt(n: number): string {
  * Usage: const te = getEnglishT(); then te('sip.title') → "SIP Calculator"
  */
 export function getEnglishT(): (key: string, fallback?: string) => string {
-    try {
-        // i18next getFixedT forces English locale
-        const i18n = require('i18next').default;
-        if (i18n?.getFixedT) {
-            const fixedT = i18n.getFixedT('en');
-            return (key: string, fallback?: string) => {
-                const result = fixedT(key);
-                // If key not found, getFixedT returns the key itself
-                return result === key ? (fallback || key) : result;
-            };
-        }
-    } catch { /* fallback below */ }
-    // Fallback: just return the fallback/key
-    return (_key: string, fallback?: string) => fallback || _key;
+    const fixedT = i18nInstance.getFixedT('en');
+    return (key: string, fallback?: string) => {
+        const result = fixedT(key);
+        // If key not found, getFixedT returns the key itself
+        return result === key ? (fallback || key) : result;
+    };
 }
 
 /** Date tag for filenames: 28032026 */
