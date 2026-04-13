@@ -167,7 +167,8 @@ export default function BudgetTab() {
   // The TRUE unallocated number that powers "Est. Savings" is computed
   // below (`unallocatedAfterSubs`) once we know the subscription total.
   const unallocated = useMemo(() => getBudgetUnallocated(budget), [budget]);
-  const available = budget.monthlyIncome - totalFixed - totalInvestments;
+  // available is computed below after subscriptionMonthlyTotal is declared (line ~209)
+  // const available = ...  → see useMemo below
 
   // ── account totals (cash on hand + credit usage) ─────────
   // savingsTotal counts every non-credit-card account; creditUsed
@@ -215,6 +216,9 @@ export default function BudgetTab() {
         return sum + s.amount; // monthly (default)
       }, 0);
   }, [subscriptions]);
+
+  // Available after fixed, investments, and subscriptions — used by category budget progress bars
+  const available = budget.monthlyIncome - totalFixed - totalInvestments - subscriptionMonthlyTotal;
 
   // ── allocation percentages ────────────────────────────────
   // BUG 1.1 fix: include a 5th "Recurring Subscriptions" segment

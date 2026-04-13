@@ -1884,7 +1884,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     }
 
     // ── SECTION 2: WEEK-BY-WEEK ────────────────────────────────────────
-    const allWeeks = buildWeeklyBreakdown(data.entries, data.year, data.month);
+    const allWeeks = buildWeeklyBreakdown(mergedMonthEntries, data.year, data.month);
     const visibleWeeks = allWeeks.filter((w) => w.startDate <= today);
 
     if (visibleWeeks.length > 0) {

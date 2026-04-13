@@ -111,7 +111,7 @@ export default function CreditCardDetail() {
   const handleDelete = useCallback(() => {
     if (!id) return;
     deleteCreditCard(id);
-    navigate('/expenses', { replace: true });
+    navigate('/expenses', { state: { switchTab: 'creditCards' }, replace: true });
   }, [id, navigate]);
 
   // ── Not found ──────────────────────────────────────────────────────────────
@@ -120,7 +120,7 @@ export default function CreditCardDetail() {
       <div style={{ minHeight: '100vh', background: c.bg, padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <CreditCard size={48} color={c.textMuted} />
         <p style={{ color: c.textSecondary, marginTop: 12 }}>{t('cc.notFound', 'Card not found')}</p>
-        <button onClick={() => navigate('/expenses')} style={{ marginTop: 16, padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer' }}>
+        <button onClick={() => navigate('/expenses', { state: { switchTab: 'creditCards' } })} style={{ marginTop: 16, padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer' }}>
           {t('cc.goBack', 'Go Back')}
         </button>
       </div>
