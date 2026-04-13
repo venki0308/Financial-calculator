@@ -212,7 +212,7 @@ export default function CreditCardDetail() {
                   : `${t('cc.interest', 'Interest')}: ${formatINR(calc.minTotalInterest)}`}
               </div>
               <div style={{ fontSize: 9, fontWeight: 700, color: '#ef4444', marginTop: 4, display: 'flex', alignItems: 'center', gap: 3 }}>
-                <AlertTriangle size={10} /> {t('cc.minWarning', 'DEBT TRAP')}
+                <AlertTriangle size={10} /> {t('cc.minWarning', { apr: card.annualInterestRate, interest: formatINR(calc.minTotalInterest), months: calc.minPayoffMonths, defaultValue: 'Paying only minimum at {{apr}}% APR will cost {{interest}} in interest over {{months}} months' })}
               </div>
             </div>
 
@@ -246,19 +246,25 @@ export default function CreditCardDetail() {
             {customCalc && (
               <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, color: c.textSecondary }}>{t('cc.payoffIn', 'Payoff in')}</div>
+                  <div style={{ fontSize: 10, color: c.textSecondary }}>
+                    {t('cc.payoffIn', { months: customCalc.months === Infinity ? '---' : customCalc.months, defaultValue: 'Payoff in {{months}} months' })}
+                  </div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: c.text }}>
                     {customCalc.months === Infinity ? '---' : `${customCalc.months} ${t('cc.months', 'months')}`}
                   </div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, color: c.textSecondary }}>{t('cc.totalInterest', 'Total Interest')}</div>
+                  <div style={{ fontSize: 10, color: c.textSecondary }}>
+                    {t('cc.totalInterest', { amount: customCalc.interest === Infinity ? '---' : formatINR(customCalc.interest), defaultValue: 'Total interest: {{amount}}' })}
+                  </div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: c.text }}>
                     {customCalc.interest === Infinity ? '---' : formatINR(customCalc.interest)}
                   </div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, color: c.textSecondary }}>{t('cc.savings', 'Savings vs min')}</div>
+                  <div style={{ fontSize: 10, color: c.textSecondary }}>
+                    {t('cc.savings', { amount: (customCalc.savingsVsMin === Infinity || customCalc.interest === Infinity) ? '---' : formatINR(Math.max(0, customCalc.savingsVsMin)), defaultValue: 'Saves {{amount}} vs minimum' })}
+                  </div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#22c55e' }}>
                     {customCalc.savingsVsMin === Infinity || customCalc.interest === Infinity ? '---' : formatINR(Math.max(0, customCalc.savingsVsMin))}
                   </div>
@@ -301,12 +307,12 @@ export default function CreditCardDetail() {
             <div>
               <div style={{ fontSize: 11, fontWeight: 700, color: calc.interestFreeDays > 0 ? '#22c55e' : '#ef4444' }}>
                 {calc.interestFreeDays > 0
-                  ? t('cc.interestFreeActive', 'Interest-free period active')
+                  ? t('cc.interestFreeActive', { days: calc.interestFreeDays, defaultValue: 'Active — {{days}} days remaining' })
                   : t('cc.interestFreeExpired', 'Interest-free period expired')}
               </div>
               <div style={{ fontSize: 10, color: c.textSecondary }}>
                 {calc.interestFreeDays > 0
-                  ? `${calc.interestFreeDays} ${t('cc.daysRemaining', 'days remaining — pay full to avoid charges')}`
+                  ? t('cc.daysRemaining', { days: calc.interestFreeDays, defaultValue: '{{days}} days left' })
                   : t('cc.interestRunning', 'Interest is being charged on outstanding balance')}
               </div>
             </div>
