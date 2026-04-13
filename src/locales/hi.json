@@ -6886,6 +6886,11 @@
     "caEffAPR": "प्रभावी APR",
     "caDays": "बकाया दिन",
     "smartInsights": "स्मार्ट इनसाइट्स",
+    "insightDaily": "आप अपने बकाया बैलेंस पर प्रतिदिन INR {{daily}} ब्याज दे रहे हैं।",
+    "insightHighAPR": "{{apr}}% प्रभावी APR बहुत अधिक है। बैलेंस ट्रांसफर या पर्सनल लोन पर विचार करें।",
+    "insightPayFull": "पूरा बैलेंस चुकाने से इस अवधि में {{amount}} फाइनेंस चार्ज बचता है।",
+    "insightLongOutstanding": "{{days}} दिन बकाया आपके ब्याज बोझ को काफी बढ़ाता है।",
+    "insightGST": "GST अकेले आपके फाइनेंस चार्ज में {{amount}} जोड़ता है।",
     "custom": "कस्टम",
     "exportPDF": "PDF डाउनलोड",
     "exportExcel": "Excel डाउनलोड"

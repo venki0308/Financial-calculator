@@ -490,6 +490,7 @@ export default function ReportsTab() {
         summary: currentSummary,
         health: healthScore,
         netWorth,
+        creditCards: getAllCreditCards().filter(c => c.isActive),
         insights: translatedInsights,
       });
     } catch (err) {

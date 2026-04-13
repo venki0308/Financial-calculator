@@ -6617,6 +6617,11 @@
         "caEffAPR": "Effective APR",
         "caDays": "Days Outstanding",
         "smartInsights": "Smart Insights",
+        "insightDaily": "You are paying INR {{daily}}/day in interest on your outstanding balance.",
+        "insightHighAPR": "Effective APR of {{apr}}% is extremely high. Consider a balance transfer or personal loan.",
+        "insightPayFull": "Paying the full balance saves you {{amount}} in finance charges this period.",
+        "insightLongOutstanding": "{{days}} days outstanding significantly increases your interest burden.",
+        "insightGST": "GST alone adds {{amount}} to your finance charges.",
         "custom": "Custom",
         "exportPDF": "Download PDF",
         "exportExcel": "Download Excel"

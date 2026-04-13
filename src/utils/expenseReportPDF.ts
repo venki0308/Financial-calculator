@@ -421,6 +421,8 @@ export interface HealthReportData {
     summary: PeriodSummary;
     health: FinancialHealthScore;
     netWorth: NetWorthSummary;
+    /** Active credit cards — rendered as a Credit Card Summary section. */
+    creditCards?: CCCard[];
     /** Pre-translated insight rows (i18n is owned by the caller). */
     insights: Array<{ title: string; description: string; value?: string; tone: 'warning' | 'positive' | 'info' }>;
 }
@@ -2945,6 +2947,50 @@ export async function generateHealthReportPDF(data: HealthReportData): Promise<v
             startY: yPos,
             headerHook,
             columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' } },
+        });
+    }
+
+    // ── SECTION 5: CREDIT CARD SUMMARY ───────────────────────────────────
+    const healthCards = (data.creditCards ?? []).filter(c => c.isActive);
+    if (healthCards.length > 0) {
+        let ccY = (doc as PDFDoc).lastAutoTable?.finalY ? (doc as PDFDoc).lastAutoTable.finalY + 10 : yPos + 10;
+        ccY = drawSectionHeader(doc, 'Credit Card Summary', ccY);
+
+        const totalLimit = healthCards.reduce((s, c) => s + c.creditLimit, 0);
+        const totalOut = healthCards.reduce((s, c) => s + c.currentBalance, 0);
+        const overallUtil = totalLimit > 0 ? (totalOut / totalLimit) * 100 : 0;
+        const totalMin = healthCards.reduce((s, c) => s + c.minimumDue, 0);
+
+        ccY = drawStatBoxes(doc, [
+            { label: 'Total Credit Limit', value: formatINR(totalLimit), tone: 'neutral' },
+            { label: 'Total Outstanding', value: formatINR(totalOut), tone: 'expense' },
+            { label: 'Overall Utilization', value: `${overallUtil.toFixed(1)}%`, tone: overallUtil > 75 ? 'expense' : 'income' },
+            { label: 'Min Due', value: formatINR(totalMin), tone: 'expense' },
+        ], ccY);
+
+        const ccBody: (string | number)[][] = healthCards.map(card => {
+            const util = getUtilization(card.currentBalance, card.creditLimit);
+            const dueDays = getDaysUntilDue(card.dueDate);
+            const utilLabel = util > 75 ? 'High' : util > 30 ? 'Medium' : 'Low';
+            return [
+                `${card.cardName} (${card.last4Digits})`,
+                card.cardNetwork,
+                formatINR(card.creditLimit),
+                formatINR(card.currentBalance),
+                `${util.toFixed(0)}% (${utilLabel})`,
+                formatINR(card.minimumDue),
+                `${dueDays}d`,
+            ];
+        });
+        ccBody.push(['TOTAL', '', formatINR(totalLimit), formatINR(totalOut), `${overallUtil.toFixed(0)}%`, formatINR(totalMin), '']);
+
+        table(doc, autoTable, {
+            head: [['Card', 'Network', 'Limit', 'Outstanding', 'Util %', 'Min Due', 'Due In']],
+            body: ccBody,
+            startY: ccY,
+            headerHook,
+            keepTogether: ccBody.length <= 8,
+            columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' } },
         });
     }
 
