@@ -602,6 +602,100 @@ export default function InsuranceCalculator() {
   const suggestedHealthName = `Health Cover — ${fmtCr(si)} • ${allAges.length} members`;
   const suggestedLifeName = `Life Term — ${fmtCr(activeCover)}`;
 
+  // ── 1. FINAL RECOMMENDATION ENGINE (Health: Base + Top-Up Split) ──────────
+  const healthRec = useMemo(() => {
+    const cityMinBase = city === 'metro' ? 1000000 : city === 'tier2' ? 500000 : 300000;
+    let totalNeed = city === 'metro' ? 2500000 : city === 'tier2' ? 1500000 : 1000000;
+    if (parents.some(a => a >= 60)) totalNeed = Math.round(totalNeed * 1.4);
+    if (preExisting) totalNeed = Math.round(totalNeed * 1.2);
+    if (allAges.length >= 5) totalNeed = Math.round(totalNeed * 1.15);
+    const recBase = Math.min(si, cityMinBase);
+    const topUpNeeded = Math.max(0, totalNeed - si);
+    const topUpPremiumEst = topUpNeeded > 0 ? Math.round(topUpNeeded * 0.003) : 0; // ~₹3 per ₹1000 SI
+    return { totalNeed, recBase, topUpNeeded, topUpPremiumEst, isAdequate: si >= totalNeed };
+  }, [si, city, parents, preExisting, allAges.length]);
+
+  // ── 2. UNDERINSURANCE ALERTS ──────────────────────────────────────────────
+  const underinsuranceAlerts = useMemo(() => {
+    const alerts: { type: 'critical' | 'warning'; title: string; desc: string }[] = [];
+    const icuDaily = city === 'metro' ? 45000 : city === 'tier2' ? 25000 : 15000;
+    const icuCost10Days = icuDaily * 10;
+    if (si < icuCost10Days)
+      alerts.push({ type: 'critical', title: t('ins.advisor.alertICU', 'Coverage < 10-Day ICU Cost'), desc: t('ins.advisor.alertICUDesc', { cost: fmt(icuCost10Days), cover: fmtCr(si), defaultValue: '10-day ICU stay costs ~{{cost}} in your city. Your cover of {{cover}} may not be enough.' }) });
+    const heartSurgeryCost = city === 'metro' ? 600000 : 350000;
+    if (si < heartSurgeryCost)
+      alerts.push({ type: 'critical', title: t('ins.advisor.alertHeart', 'Coverage < Heart Surgery Cost'), desc: t('ins.advisor.alertHeartDesc', { cost: fmt(heartSurgeryCost), defaultValue: 'Heart bypass/stent surgery costs ~{{cost}} in your city. Consider increasing cover.' }) });
+    if (parents.some(a => a >= 60) && si < 1500000)
+      alerts.push({ type: 'warning', title: t('ins.advisor.alertSenior', 'Senior Parents — Low Cover'), desc: t('ins.advisor.alertSeniorDesc', 'Parents 60+ have higher hospitalisation rates. ₹15L+ cover recommended for families with senior members.') });
+    const siL = si / 100000;
+    if (city === 'metro' && siL < 10)
+      alerts.push({ type: 'warning', title: t('ins.advisor.alertMetro', 'Metro City — Cover Below ₹10L'), desc: t('ins.advisor.alertMetroDesc', 'Average metro hospitalisation costs ₹3-5L. With ICU/surgery, costs reach ₹10-25L. ₹10L is the minimum for metros.') });
+    return alerts;
+  }, [si, city, parents, t]);
+
+  // ── 3. REAL-WORLD COST TABLE ──────────────────────────────────────────────
+  const hospitalCosts = useMemo(() => {
+    const mul = city === 'metro' ? 1.0 : city === 'tier2' ? 0.6 : 0.4;
+    return [
+      { procedure: t('ins.advisor.costICU', 'ICU (per day)'), cost: Math.round(45000 * mul), range: `${fmt(Math.round(35000 * mul))} — ${fmt(Math.round(55000 * mul))}` },
+      { procedure: t('ins.advisor.costHeart', 'Heart Surgery'), cost: Math.round(600000 * mul), range: `${fmt(Math.round(400000 * mul))} — ${fmt(Math.round(800000 * mul))}` },
+      { procedure: t('ins.advisor.costKnee', 'Knee Replacement'), cost: Math.round(350000 * mul), range: `${fmt(Math.round(250000 * mul))} — ${fmt(Math.round(500000 * mul))}` },
+      { procedure: t('ins.advisor.costCancer', 'Cancer Treatment'), cost: Math.round(1500000 * mul), range: `${fmt(Math.round(800000 * mul))} — ${fmt(Math.round(2500000 * mul))}` },
+      { procedure: t('ins.advisor.costMaternity', 'Normal Delivery'), cost: Math.round(80000 * mul), range: `${fmt(Math.round(50000 * mul))} — ${fmt(Math.round(150000 * mul))}` },
+      { procedure: t('ins.advisor.costCSection', 'C-Section'), cost: Math.round(200000 * mul), range: `${fmt(Math.round(120000 * mul))} — ${fmt(Math.round(350000 * mul))}` },
+    ];
+  }, [city, t]);
+
+  // ── 4. FAMILY INTELLIGENCE ────────────────────────────────────────────────
+  const familyInsights = useMemo(() => {
+    const tips: { icon: string; text: string }[] = [];
+    if (parents.length > 0 && parents.some(a => a >= 60))
+      tips.push({ icon: '👴', text: t('ins.advisor.famSenior', 'Consider a separate policy for parents 60+. Family floater with senior members significantly increases premiums for younger members.') });
+    if (hasSpouse && children.length === 0)
+      tips.push({ icon: '👫', text: t('ins.advisor.famCouple', 'Young couple without kids — ideal time to lock in low premiums. Add maternity cover if planning children.') });
+    if (children.some(c => c <= 1))
+      tips.push({ icon: '👶', text: t('ins.advisor.famNewborn', 'Newborns need day-care procedure cover (not just hospitalisation). Check if your plan covers vaccinations & paediatric emergencies.') });
+    if (allAges.length >= 5)
+      tips.push({ icon: '👨‍👩‍👧‍👦', text: t('ins.advisor.famLarge', 'Large family (5+ members) — consider splitting into 2 policies: one for young family, one for parents. Better coverage at similar cost.') });
+    if (allAges.every(a => a < 35))
+      tips.push({ icon: '💪', text: t('ins.advisor.famYoung', 'All members under 35 — you get the best premium rates now. Lock in a high sum insured (₹25L+) with lifetime renewability.') });
+    return tips;
+  }, [parents, hasSpouse, children, allAges, t]);
+
+  // ── 5. LIFE COVER LOGIC (Enhanced) ────────────────────────────────────────
+  const lifeCoverDetailed = useMemo(() => {
+    const incomeReplace = annualIncome * 15;
+    const loanCover = outstandingLoans;
+    const childEducation = children.length > 0 ? children.length * 2500000 : dependents * 2000000; // ₹25L per child
+    const emergencyFund = annualIncome; // 1 year
+    const total = incomeReplace + loanCover + childEducation + emergencyFund;
+    return { incomeReplace, loanCover, childEducation, emergencyFund, total };
+  }, [annualIncome, outstandingLoans, children.length, dependents]);
+
+  // ── 6. WHAT-IF STATE ──────────────────────────────────────────────────────
+  const [whatIfSi, setWhatIfSi] = useState(si);
+  const [whatIfTerm, setWhatIfTerm] = useState(policyTerm);
+  const whatIfHealthPremium = useMemo(() => {
+    const [lo, hi] = getMemberPremium(selfAge, whatIfSi, city, preExisting);
+    const ff = getFloaterFactor(allAges.length);
+    return { lo: Math.round(lo * ff * allAges.length / 100) * 100, hi: Math.round(hi * ff * allAges.length / 100) * 100 };
+  }, [whatIfSi, selfAge, city, preExisting, allAges.length]);
+  const whatIfLifePremium = useMemo(
+    () => calcTermRange(lifeAge, lifeGender, lifeSmoker, Math.max(activeCoverCr, 0.5), whatIfTerm),
+    [lifeAge, lifeGender, lifeSmoker, activeCoverCr, whatIfTerm],
+  );
+
+  // ── 7. CSR IMPACT INSIGHT ─────────────────────────────────────────────────
+  const csrInsight = useMemo(() => {
+    // Illustrative: show how CSR affects claim probability
+    return [
+      { csr: 98, label: t('ins.advisor.csrExcellent', 'CSR 98%+'), desc: t('ins.advisor.csrExcellentDesc', '98 out of 100 claims settled. Top-tier insurers. Look for this.'), color: '#22c55e' },
+      { csr: 95, label: t('ins.advisor.csrGood', 'CSR 95-97%'), desc: t('ins.advisor.csrGoodDesc', '95-97 claims settled per 100. Reliable. Most major insurers fall here.'), color: '#84cc16' },
+      { csr: 90, label: t('ins.advisor.csrAvg', 'CSR 90-94%'), desc: t('ins.advisor.csrAvgDesc', '5-10 claims rejected per 100. Check complaint ratio before choosing.'), color: '#f59e0b' },
+      { csr: 85, label: t('ins.advisor.csrPoor', 'CSR <90%'), desc: t('ins.advisor.csrPoorDesc', 'More than 10% claims rejected. Avoid unless very low premiums justify the risk.'), color: '#ef4444' },
+    ];
+  }, [t]);
+
   // ── Save snapshot to My Loans tracker ────────────────────────────────────────
   const handleHealthTrackerSave = (customName: string) => {
     const id = `ins-h-${Date.now()}`;
@@ -879,6 +973,50 @@ export default function InsuranceCalculator() {
                     </div>
                   </div>
 
+                  {/* ── UNDERINSURANCE ALERTS ── */}
+                  {underinsuranceAlerts.length > 0 && (
+                    <div className="space-y-2">
+                      {underinsuranceAlerts.map((alert, i) => (
+                        <div key={i} className="p-3 rounded-2xl flex gap-3 items-start" style={{ backgroundColor: alert.type === 'critical' ? '#EF444415' : '#F59E0B15', border: `1px solid ${alert.type === 'critical' ? '#EF444440' : '#F59E0B40'}` }}>
+                          <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: alert.type === 'critical' ? '#EF4444' : '#F59E0B' }} />
+                          <div>
+                            <p className="text-xs font-bold" style={{ color: alert.type === 'critical' ? '#EF4444' : '#F59E0B' }}>{alert.title}</p>
+                            <p className="text-[10px] mt-0.5 text-muted-foreground">{alert.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* ── FINAL RECOMMENDATION: Base + Top-Up Split ── */}
+                  <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Shield size={15} className="text-brand-green" />
+                      <h3 className="text-sm font-bold text-foreground">{t('ins.advisor.recTitle', 'Coverage Recommendation')}</h3>
+                    </div>
+                    <div className={`grid ${healthRec.topUpNeeded > 0 ? 'grid-cols-2' : 'grid-cols-1'} gap-2 mb-3`}>
+                      <div className="p-3 rounded-xl text-center" style={{ background: '#22c55e10' }}>
+                        <p className="text-[9px] uppercase font-bold text-emerald-500">{t('ins.advisor.basePlan', 'Base Plan')}</p>
+                        <p className="text-lg font-black text-emerald-600">{fmtCr(si)}</p>
+                        <p className="text-[9px] text-muted-foreground">{t('ins.advisor.yourCurrent', 'Your current selection')}</p>
+                      </div>
+                      {healthRec.topUpNeeded > 0 && (
+                        <div className="p-3 rounded-xl text-center" style={{ background: '#3b82f610' }}>
+                          <p className="text-[9px] uppercase font-bold text-blue-500">{t('ins.advisor.topUp', '+ Top-Up Plan')}</p>
+                          <p className="text-lg font-black text-blue-600">{fmtCr(healthRec.topUpNeeded)}</p>
+                          <p className="text-[9px] text-muted-foreground">~{fmt(healthRec.topUpPremiumEst)}/{t('ins.life.yr', 'yr')}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 rounded-xl" style={{ background: healthRec.isAdequate ? '#22c55e10' : '#f59e0b10', border: `1px solid ${healthRec.isAdequate ? '#22c55e30' : '#f59e0b30'}` }}>
+                      <p className="text-[11px] leading-relaxed" style={{ color: healthRec.isAdequate ? '#22c55e' : '#f59e0b' }}>
+                        {healthRec.isAdequate
+                          ? t('ins.advisor.recAdequate', 'Your coverage meets the recommended level for your city and family profile.')
+                          : t('ins.advisor.recTopUp', { total: fmtCr(healthRec.totalNeed), topUp: fmtCr(healthRec.topUpNeeded), premium: fmt(healthRec.topUpPremiumEst), defaultValue: 'Recommended total: {{total}}. Add a top-up of {{topUp}} at ~{{premium}}/yr for full protection.' })}
+                      </p>
+                    </div>
+                  </div>
+
                   {/* CARD B — Estimated Premium Range */}
                   <div className="p-4 rounded-2xl bg-gradient-to-br from-brand-green/5 to-emerald-500/5 border border-brand-green/20">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">{t('ins.health.premiumTitle')}</p>
@@ -1070,6 +1208,89 @@ export default function InsuranceCalculator() {
                     defaultName={suggestedHealthName}
                   />
 
+                  {/* ── REAL-WORLD HOSPITAL COSTS ── */}
+                  <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <HeartPulse size={15} className="text-red-500" />
+                      <h3 className="text-sm font-bold text-foreground">{t('ins.advisor.costTitle', 'Real Hospital Costs in Your City')}</h3>
+                    </div>
+                    <div className="space-y-1.5">
+                      {hospitalCosts.map((item, i) => (
+                        <div key={i} className="flex items-center justify-between p-2 rounded-lg" style={{ background: si < item.cost ? '#ef44440a' : '#22c55e0a' }}>
+                          <span className="text-[11px] font-medium text-foreground">{item.procedure}</span>
+                          <div className="text-right">
+                            <span className={`text-[10px] font-bold ${si < item.cost ? 'text-red-500' : 'text-emerald-500'}`}>{item.range}</span>
+                            {si < item.cost && <p className="text-[8px] text-red-400">{t('ins.advisor.exceedsCover', 'exceeds your cover')}</p>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[9px] text-muted-foreground mt-2 italic">{t('ins.advisor.costNote', 'Costs are indicative ranges based on city type. Actual costs vary by hospital.')}</p>
+                  </div>
+
+                  {/* ── FAMILY INTELLIGENCE ── */}
+                  {familyInsights.length > 0 && (
+                    <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Users size={15} className="text-violet-500" />
+                        <h3 className="text-sm font-bold text-foreground">{t('ins.advisor.familyTitle', 'Family-Specific Advice')}</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {familyInsights.map((tip, i) => (
+                          <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-violet-500/5 border border-violet-500/15">
+                            <span className="text-base flex-shrink-0">{tip.icon}</span>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">{tip.text}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── WHAT-IF SIMULATOR (Health) ── */}
+                  <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <TrendingUp size={15} className="text-blue-500" />
+                      <h3 className="text-sm font-bold text-foreground">{t('ins.advisor.whatIfTitle', 'What-If: Change Coverage')}</h3>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mb-3">{t('ins.advisor.whatIfDesc', 'Slide to see how coverage amount affects your premium')}</p>
+                    <div className="mb-3">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-[10px] font-bold text-foreground">{t('ins.advisor.whatIfCover', 'Coverage')}</span>
+                        <span className="text-[10px] font-bold text-blue-500">{fmtCr(whatIfSi)}</span>
+                      </div>
+                      <input type="range" min={300000} max={10000000} step={100000} value={whatIfSi} onChange={e => setWhatIfSi(Number(e.target.value))} className="w-full accent-blue-500 h-2" />
+                      <div className="flex justify-between text-[8px] text-muted-foreground"><span>₹3L</span><span>₹25L</span><span>₹50L</span><span>₹1Cr</span></div>
+                    </div>
+                    <div className="p-3 rounded-xl text-center" style={{ background: '#3b82f610' }}>
+                      <p className="text-[9px] text-muted-foreground uppercase font-bold">{t('ins.advisor.whatIfPremium', 'Estimated Annual Premium')}</p>
+                      <p className="text-xl font-black text-blue-600">{fmtRange(whatIfHealthPremium.lo, whatIfHealthPremium.hi)}</p>
+                      <p className="text-[9px] text-muted-foreground mt-0.5">≈ {fmtRange(Math.round(whatIfHealthPremium.lo / 12 / 100) * 100, Math.round(whatIfHealthPremium.hi / 12 / 100) * 100)}/{t('ins.health.perMonth', 'mo')}</p>
+                    </div>
+                  </div>
+
+                  {/* ── CSR CLAIM RISK INSIGHTS ── */}
+                  <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle size={15} className="text-emerald-500" />
+                      <h3 className="text-sm font-bold text-foreground">{t('ins.advisor.csrTitle', 'Claim Settlement — What CSR Means')}</h3>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mb-3">{t('ins.advisor.csrDesc', 'CSR (Claim Settlement Ratio) = claims paid ÷ claims received. Higher = better.')}</p>
+                    <div className="space-y-1.5">
+                      {csrInsight.map((tier, i) => (
+                        <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl" style={{ background: `${tier.color}08`, border: `1px solid ${tier.color}20` }}>
+                          <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${tier.color}15` }}>
+                            <span className="text-sm font-black" style={{ color: tier.color }}>{tier.csr}%</span>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-[11px] font-bold" style={{ color: tier.color }}>{tier.label}</p>
+                            <p className="text-[10px] text-muted-foreground">{tier.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[9px] text-muted-foreground mt-2 italic">{t('ins.advisor.csrSource', 'Source: IRDAI Annual Report. Always verify at irdai.gov.in')}</p>
+                  </div>
+
                   {/* CARD C — Personalised Checklist */}
                   <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
                     <p className="text-sm font-bold text-foreground mb-0.5">{t('ins.health.checklistTitle')}</p>
@@ -1236,6 +1457,38 @@ export default function InsuranceCalculator() {
               </div>
             </div>
 
+            {/* ── ENHANCED LIFE COVER BREAKDOWN ── */}
+            <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Banknote size={15} className="text-amber-500" />
+                <h3 className="text-sm font-bold text-foreground">{t('ins.advisor.lifeBreakTitle', 'Your Life Cover — Detailed Breakdown')}</h3>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { label: t('ins.advisor.lifeIncome', 'Income Replacement (15× annual)'), value: lifeCoverDetailed.incomeReplace, color: '#22c55e' },
+                  ...(lifeCoverDetailed.loanCover > 0 ? [{ label: t('ins.advisor.lifeLoan', 'Outstanding Loans'), value: lifeCoverDetailed.loanCover, color: '#ef4444' }] : []),
+                  { label: t('ins.advisor.lifeChild', 'Children Education Fund'), value: lifeCoverDetailed.childEducation, color: '#3b82f6' },
+                  { label: t('ins.advisor.lifeEmergency', 'Emergency Fund (1 yr income)'), value: lifeCoverDetailed.emergencyFund, color: '#f59e0b' },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center justify-between p-2.5 rounded-xl" style={{ background: `${item.color}08` }}>
+                    <span className="text-[11px] text-muted-foreground">{item.label}</span>
+                    <span className="text-xs font-bold" style={{ color: item.color }}>{fmtCr(item.value)}</span>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between p-3 rounded-xl bg-brand-green/10 border border-brand-green/20 mt-1">
+                  <span className="text-xs font-bold text-foreground">{t('ins.advisor.lifeTotalNeed', 'Total Life Cover Needed')}</span>
+                  <span className="text-lg font-black text-brand-green">{fmtCr(lifeCoverDetailed.total)}</span>
+                </div>
+              </div>
+              {activeCover < lifeCoverDetailed.total && (
+                <div className="mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                  <p className="text-[11px] text-amber-500 font-semibold">
+                    ⚠ {t('ins.advisor.lifeUnder', { gap: fmtCr(lifeCoverDetailed.total - activeCover), defaultValue: 'Your current cover is {{gap}} short of the recommended amount. Consider increasing.' })}
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* R2 — Plan type comparison */}
             <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
               <p className="text-sm font-bold text-foreground mb-1">{t('ins.life.planTypeTitle')}</p>
@@ -1338,6 +1591,34 @@ export default function InsuranceCalculator() {
                 <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 leading-snug">
                   {t('ins.life.section10dBody', 'The full sum assured paid to your nominee is tax-free under Section 10(10D), with no upper cap. Endowment / TROP maturity is tax-free only if annual premium ≤ 10% of sum assured (post-Apr 2012 policies).')}
                 </p>
+              </div>
+            </div>
+
+            {/* ── WHAT-IF SIMULATOR (Life) ── */}
+            <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp size={15} className="text-blue-500" />
+                <h3 className="text-sm font-bold text-foreground">{t('ins.advisor.whatIfLifeTitle', 'What-If: Change Policy Term')}</h3>
+              </div>
+              <p className="text-[10px] text-muted-foreground mb-3">{t('ins.advisor.whatIfLifeDesc', 'See how policy term affects your annual premium')}</p>
+              <div className="mb-3">
+                <div className="flex justify-between mb-1">
+                  <span className="text-[10px] font-bold text-foreground">{t('ins.advisor.whatIfTerm', 'Policy Term')}</span>
+                  <span className="text-[10px] font-bold text-blue-500">{whatIfTerm} {t('ins.health.years', 'years')}</span>
+                </div>
+                <input type="range" min={10} max={40} step={5} value={whatIfTerm} onChange={e => setWhatIfTerm(Number(e.target.value))} className="w-full accent-blue-500 h-2" />
+                <div className="flex justify-between text-[8px] text-muted-foreground">{[10, 15, 20, 25, 30, 35, 40].map(y => <span key={y}>{y}</span>)}</div>
+              </div>
+              <div className="p-3 rounded-xl text-center" style={{ background: '#3b82f610' }}>
+                <p className="text-[9px] text-muted-foreground uppercase font-bold">{fmtCr(activeCover)} · {whatIfTerm}-{t('ins.life.yearTerm', 'year term')}</p>
+                <p className="text-xl font-black text-blue-600">{fmtRange(whatIfLifePremium.lo, whatIfLifePremium.hi)}<span className="text-xs font-normal text-muted-foreground"> /{t('ins.life.year', 'year')}</span></p>
+                {whatIfTerm !== policyTerm && (
+                  <p className="text-[10px] mt-1" style={{ color: whatIfLifePremium.lo < termRange.lo ? '#22c55e' : '#f59e0b' }}>
+                    {whatIfLifePremium.lo < termRange.lo
+                      ? `↓ ${fmt(termRange.lo - whatIfLifePremium.lo)} ${t('ins.advisor.lessPerYear', 'less/year vs your selection')}`
+                      : `↑ ${fmt(whatIfLifePremium.lo - termRange.lo)} ${t('ins.advisor.morePerYear', 'more/year vs your selection')}`}
+                  </p>
+                )}
               </div>
             </div>
 
