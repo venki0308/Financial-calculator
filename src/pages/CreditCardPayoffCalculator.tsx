@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft, Plus, Trash2, CreditCard, ChevronDown, ChevronUp,
-  FileText, Download, AlertTriangle, ChevronLeft, ChevronRight
+  FileText, Download, AlertTriangle, ChevronLeft, ChevronRight,
+  TrendingUp, Flame, Shield, Zap, Target
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, type ExportConfig, dateTag } from '../utils/exportReport';
 import DisclaimerComponent from '../components/DisclaimerComponent';
@@ -109,6 +111,44 @@ export default function CreditCardPayoffCalculator() {
   const current = results[selectedStrategy];
   const interestSaved = minimumOnly.totalInterest - current.totalInterest;
   const timeSaved = minimumOnly.totalMonths - current.totalMonths;
+  const totalBalance = activeInputs.reduce((s, c) => s + c.balance, 0);
+  const totalLimit = useMemo(() => {
+    if (inputTab === 'saved') return savedCards.filter(c => selectedIds.has(c.id)).reduce((s, c) => s + c.creditLimit, 0);
+    return totalBalance * 2; // estimate for manual entry
+  }, [inputTab, savedCards, selectedIds, totalBalance]);
+  const overallUtil = totalLimit > 0 ? Math.round((totalBalance / totalLimit) * 100) : 0;
+  const weightedAPR = totalBalance > 0 ? activeInputs.reduce((s, c) => s + c.apr * c.balance, 0) / totalBalance : 0;
+  const hasCards = activeInputs.length > 0 && current.totalMonths > 0;
+
+  // ── Actionable Recommendations ──
+  const recommendations = useMemo(() => {
+    if (!hasCards || totalBalance <= 0) return [];
+    const recs: { icon: string; title: string; detail: string; tone: 'green' | 'amber' | 'red' | 'blue' }[] = [];
+    // 1. Budget increase recommendation
+    const recBudgets = [totalMinimum * 1.5, totalMinimum * 2, totalMinimum * 3].filter(b => b > effectiveBudget);
+    if (recBudgets.length > 0) {
+      const recBudget = Math.round(recBudgets[0] / 100) * 100;
+      const recResult = calculateAvalanche(activeInputs, recBudget);
+      const recSaved = minimumOnly.totalInterest - recResult.totalInterest;
+      const recTimeSaved = minimumOnly.totalMonths - recResult.totalMonths;
+      if (recSaved > 0) recs.push({
+        icon: '💡', title: `Pay ${fmt(recBudget)}/mo`,
+        detail: `Save ${fmt(recSaved)} interest & finish ${recTimeSaved} months faster`,
+        tone: 'green',
+      });
+    }
+    // 2. Utilization insight
+    if (overallUtil > 75) recs.push({ icon: '🔴', title: 'High Utilization Risk', detail: `${overallUtil}% utilization damages your CIBIL score. Reduce below 30% for best impact.`, tone: 'red' });
+    else if (overallUtil > 30) recs.push({ icon: '🟡', title: 'Moderate Utilization', detail: `${overallUtil}% utilization. Target below 30% for optimal CIBIL score improvement.`, tone: 'amber' });
+    else if (overallUtil > 0) recs.push({ icon: '🟢', title: 'Healthy Utilization', detail: `${overallUtil}% utilization — excellent for your credit score!`, tone: 'green' });
+    // 3. Daily cost of debt
+    if (totalBalance > 0) {
+      const dailyCost = Math.round((totalBalance * (weightedAPR / 100)) / 365);
+      const monthlyCost = dailyCost * 30;
+      recs.push({ icon: '🔥', title: `₹${dailyCost}/day interest burn`, detail: `Your debt costs ₹${monthlyCost.toLocaleString('en-IN')}/month in interest alone — that's money going to the bank, not you.`, tone: 'red' });
+    }
+    return recs;
+  }, [hasCards, totalBalance, effectiveBudget, totalMinimum, activeInputs, minimumOnly, overallUtil, weightedAPR]);
 
   // ── History tracker ──
   useHistoryTracker('CC Payoff', { cards: activeInputs.length, budget: effectiveBudget, strategy: selectedStrategy },
@@ -161,8 +201,6 @@ export default function CreditCardPayoffCalculator() {
       filename: `FinCalix_CC_Payoff_${tag}`,
     };
   }, [selectedStrategy, activeInputs, effectiveBudget, current, interestSaved, timeSaved]);
-
-  const hasCards = activeInputs.length > 0 && current.totalMonths > 0;
 
   // ── RENDER ──
   return (
@@ -245,24 +283,42 @@ export default function CreditCardPayoffCalculator() {
           </div>
         )}
 
-        {/* ── Monthly Budget Slider ── */}
+        {/* ── Smart Budget Slider ── */}
         {activeInputs.length > 0 && (
-          <div className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-            <div className="flex justify-between items-baseline mb-1">
-              <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">{t('ccPayoff.monthlyBudget', 'Monthly Budget')}</span>
-              <span className="text-sm font-bold text-blue-600">{fmt(effectiveBudget)}</span>
+          <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5"><TrendingUp size={14} className="text-blue-500" /> {t('ccPayoff.monthlyBudget', 'Monthly Budget')}</span>
+              <span className="text-lg font-black text-blue-600">{fmt(effectiveBudget)}</span>
             </div>
             <input type="range" min={totalMinimum} max={maxBudget} step={500} value={effectiveBudget}
               onChange={e => setBudget(Number(e.target.value))}
-              className="w-full accent-blue-600" />
-            <p className="text-[11px] text-gray-500 mt-1">
-              {t('ccPayoff.extraBudget', 'Extra budget')}: <span className="font-semibold text-green-600">{fmt(effectiveBudget - totalMinimum)}</span> {t('ccPayoff.aboveMinimums', 'above minimums')}
-            </p>
+              className="w-full accent-blue-600 h-2" />
+            <div className="flex justify-between text-[9px] text-gray-400">
+              <span>Min: {fmt(totalMinimum)}</span>
+              <span>Max: {fmt(maxBudget)}</span>
+            </div>
+            {/* Live preview of payoff impact */}
+            {hasCards && (
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                <div className="text-center">
+                  <p className="text-[9px] text-gray-400 uppercase">Debt Free</p>
+                  <p className="text-xs font-black text-blue-600">{payoffDate(current.totalMonths)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[9px] text-gray-400 uppercase">Interest</p>
+                  <p className="text-xs font-black text-red-500">{fmt(current.totalInterest)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-[9px] text-gray-400 uppercase">You Save</p>
+                  <p className="text-xs font-black text-green-600">{interestSaved > 0 ? fmt(interestSaved) : '—'}</p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* ── Strategy Tabs ── */}
-        {activeInputs.length > 0 && (
+        {/* ── Strategy Tabs (multi-card only) ── */}
+        {activeInputs.length > 1 && (
           <div className="flex gap-1 overflow-x-auto pb-1">
             {STRATEGIES.map(s => (
               <button key={s} onClick={() => setSelectedStrategy(s)}
@@ -283,9 +339,144 @@ export default function CreditCardPayoffCalculator() {
           </div>
         )}
 
-        {/* ── Strategy Comparison ── */}
+        {/* ══════════════════════════════════════════════════════════
+            HERO RESULT CARD — Payoff Overview
+            ══════════════════════════════════════════════════════════ */}
         {hasCards && (
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white shadow-lg">
+            <p className="text-[10px] uppercase tracking-widest opacity-80 mb-1">Debt Freedom Date</p>
+            <p className="text-3xl font-black mb-1">{payoffDate(current.totalMonths)}</p>
+            <p className="text-xs opacity-80 mb-4">{current.totalMonths} months · {fmt(effectiveBudget)}/mo</p>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-white/15 rounded-xl p-2.5 text-center">
+                <p className="text-[9px] uppercase opacity-70">Total Debt</p>
+                <p className="font-black text-sm">{fmt(totalBalance)}</p>
+              </div>
+              <div className="bg-white/15 rounded-xl p-2.5 text-center">
+                <p className="text-[9px] uppercase opacity-70">Interest Cost</p>
+                <p className="font-black text-sm text-red-300">{fmt(current.totalInterest)}</p>
+              </div>
+              <div className="bg-white/15 rounded-xl p-2.5 text-center">
+                <p className="text-[9px] uppercase opacity-70">Total Paid</p>
+                <p className="font-black text-sm">{fmt(current.totalPaid)}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════
+            PSYCHOLOGICAL INSIGHTS — Daily/Monthly cost of debt
+            ══════════════════════════════════════════════════════════ */}
+        {hasCards && totalBalance > 0 && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-3 text-center">
+              <Flame size={20} className="text-red-500 mx-auto mb-1" />
+              <p className="text-[10px] text-red-500 uppercase font-bold">Daily Interest Burn</p>
+              <p className="text-xl font-black text-red-600">₹{Math.round((totalBalance * (weightedAPR / 100)) / 365).toLocaleString('en-IN')}</p>
+              <p className="text-[9px] text-gray-500 mt-0.5">per day going to bank</p>
+            </div>
+            <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 text-center">
+              <Zap size={20} className="text-amber-500 mx-auto mb-1" />
+              <p className="text-[10px] text-amber-500 uppercase font-bold">Monthly Interest</p>
+              <p className="text-xl font-black text-amber-600">₹{Math.round((totalBalance * (weightedAPR / 100)) / 12).toLocaleString('en-IN')}</p>
+              <p className="text-[9px] text-gray-500 mt-0.5">wasted every month</p>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════
+            UTILIZATION INSIGHT — Credit health gauge
+            ══════════════════════════════════════════════════════════ */}
+        {hasCards && totalLimit > 0 && (
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Shield size={16} className={overallUtil > 75 ? 'text-red-500' : overallUtil > 30 ? 'text-amber-500' : 'text-green-500'} />
+              <h3 className="text-xs font-bold text-gray-700 dark:text-gray-200">Credit Utilization</h3>
+              <span className={`ml-auto text-xs font-black ${overallUtil > 75 ? 'text-red-600' : overallUtil > 30 ? 'text-amber-600' : 'text-green-600'}`}>{overallUtil}%</span>
+            </div>
+            <div className="w-full h-3 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden mb-2">
+              <div className="h-full rounded-full transition-all" style={{
+                width: `${Math.min(overallUtil, 100)}%`,
+                background: overallUtil > 75 ? '#EF4444' : overallUtil > 30 ? '#F59E0B' : '#22C55E',
+              }} />
+            </div>
+            <div className="flex justify-between text-[9px] text-gray-400 mb-2">
+              <span>0%</span><span className="text-green-500 font-bold">30% Safe</span><span className="text-amber-500 font-bold">75%</span><span>100%</span>
+            </div>
+            <p className="text-[11px] text-gray-600 dark:text-gray-400">
+              {overallUtil > 75 ? '⚠️ High utilization severely impacts CIBIL score. Prioritize paying down to below 30%.'
+                : overallUtil > 30 ? '🟡 Moderate utilization. Paying down to <30% will significantly boost your credit score.'
+                : '✅ Excellent! Low utilization helps maintain a strong credit score.'}
+            </p>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════
+            ACTIONABLE RECOMMENDATIONS
+            ══════════════════════════════════════════════════════════ */}
+        {recommendations.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1.5"><Target size={14} className="text-blue-500" /> Smart Recommendations</h3>
+            {recommendations.map((rec, i) => (
+              <div key={i} className={`p-3 rounded-xl border text-xs ${
+                rec.tone === 'green' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' :
+                rec.tone === 'amber' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' :
+                rec.tone === 'red' ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800' :
+                'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+              }`}>
+                <p className="font-bold mb-0.5">{rec.icon} {rec.title}</p>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{rec.detail}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════
+            MINIMUM PAYMENT TRAP — Strong Version
+            ══════════════════════════════════════════════════════════ */}
+        {hasCards && (
+          <div className="rounded-2xl border-2 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={18} className="text-red-600" />
+              <h3 className="text-sm font-bold text-red-700 dark:text-red-400">{t('ccPayoff.trap', 'Minimum Payment Trap')}</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="text-center p-3 rounded-xl bg-white dark:bg-gray-900/60 border border-red-200 dark:border-red-800">
+                <p className="text-[9px] text-red-500 uppercase font-bold mb-1">⚠️ Minimum Only</p>
+                <p className="text-2xl font-black text-red-600">{fmt(minimumOnly.totalInterest)}</p>
+                <p className="text-[11px] text-gray-500 font-semibold">{minimumOnly.totalMonths} months</p>
+                <p className="text-[9px] text-gray-400 mt-1">Payoff: {payoffDate(minimumOnly.totalMonths)}</p>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-white dark:bg-gray-900/60 border border-green-200 dark:border-green-800">
+                <p className="text-[9px] text-green-500 uppercase font-bold mb-1">✅ Your Plan</p>
+                <p className="text-2xl font-black text-green-600">{fmt(current.totalInterest)}</p>
+                <p className="text-[11px] text-gray-500 font-semibold">{current.totalMonths} months</p>
+                <p className="text-[9px] text-gray-400 mt-1">Payoff: {payoffDate(current.totalMonths)}</p>
+              </div>
+            </div>
+            <div className="text-center pt-3 border-t border-red-200 dark:border-red-800">
+              {interestSaved > 0 ? (
+                <>
+                  <p className="text-xs text-gray-500">By paying {fmt(effectiveBudget)}/mo you save</p>
+                  <p className="text-2xl font-black text-green-600">{fmt(interestSaved)}</p>
+                  <p className="text-xs text-gray-500">&amp; become debt-free <span className="font-bold text-green-600">{timeSaved} months earlier</span></p>
+                </>
+              ) : (
+                <div className="space-y-1">
+                  <p className="text-xs text-amber-600 font-bold">You're paying only the minimum!</p>
+                  <p className="text-[11px] text-gray-500">Slide the budget up to see how much you can save</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════
+            STRATEGY COMPARISON (multi-card only)
+            ══════════════════════════════════════════════════════════ */}
+        {hasCards && activeInputs.length > 1 && (
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="bg-gray-50 dark:bg-gray-800/60 px-3 py-2">
               <h3 className="text-xs font-bold text-gray-700 dark:text-gray-200">{t('ccPayoff.comparison', 'Strategy Comparison')}</h3>
             </div>
@@ -313,72 +504,37 @@ export default function CreditCardPayoffCalculator() {
           </div>
         )}
 
+        {/* ── Single card note ── */}
+        {hasCards && activeInputs.length === 1 && (
+          <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-center">
+            <p className="text-blue-600 dark:text-blue-400 text-xs font-semibold">💡 Add more cards to compare Avalanche vs Snowball strategies</p>
+          </div>
+        )}
+
         {/* ── Card-by-Card Payoff Order ── */}
         {hasCards && current.payoffOrder.length > 0 && (
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="bg-gray-50 dark:bg-gray-800/60 px-3 py-2">
-              <h3 className="text-xs font-bold text-gray-700 dark:text-gray-200">{t('ccPayoff.payoffOrder', 'Card-by-Card Payoff Order')}</h3>
+              <h3 className="text-xs font-bold text-gray-700 dark:text-gray-200">{t('ccPayoff.payoffOrder', 'Payoff Order')}</h3>
             </div>
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {current.payoffOrder.map((p, i) => {
                 const card = activeInputs.find(c => c.id === p.id);
+                const cardUtil = card && totalLimit > 0 ? Math.round((card.balance / (totalLimit / activeInputs.length)) * 100) : 0;
                 return (
-                  <div key={p.id} className="px-3 py-2 flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                  <div key={p.id} className="px-3 py-3 flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 text-xs font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">{p.name}</p>
-                      <p className="text-[11px] text-gray-500">{fmt(card?.balance || 0)} &middot; {card?.apr}% APR</p>
+                      <p className="text-[10px] text-gray-500">{fmt(card?.balance || 0)} · {card?.apr}% APR</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                       <p className="text-xs font-bold">{payoffDate(p.month)}</p>
-                      <p className="text-[10px] text-red-500">{t('ccPayoff.interest', 'Interest')}: {fmt(p.interest)}</p>
+                      <p className="text-[10px] text-red-500">Interest: {fmt(p.interest)}</p>
                     </div>
                   </div>
                 );
               })}
-            </div>
-          </div>
-        )}
-
-        {/* ── Smart Tips ── */}
-        {hasCards && interestSaved === 0 && budget <= totalMinimum && (
-          <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-            <p className="text-amber-700 dark:text-amber-400 font-bold text-xs flex items-center gap-1.5"><AlertTriangle size={14} /> {t('ccPayoff.tipIncreaseBudget', 'Increase your monthly budget above ₹{{min}} to pay off faster and save on interest!', { min: fmt(totalMinimum) })}</p>
-            {activeInputs.length === 1 && (
-              <p className="text-amber-600 dark:text-amber-500 text-[11px] mt-1">{t('ccPayoff.tipSingleCard', 'With a single card, all strategies produce the same result. Add more cards to compare strategies.')}</p>
-            )}
-          </div>
-        )}
-
-        {/* ── Minimum Payment Trap ── */}
-        {hasCards && (
-          <div className="rounded-xl border-2 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <AlertTriangle size={18} className="text-red-600" />
-              <h3 className="text-sm font-bold text-red-700 dark:text-red-400">{t('ccPayoff.trap', 'Minimum Payment Trap')}</h3>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="text-center p-2 rounded-lg bg-white dark:bg-gray-900/60">
-                <p className="text-[10px] text-gray-500 uppercase mb-1">{t('ccPayoff.minOnly', 'Minimum Only')}</p>
-                <p className="text-lg font-black text-red-600">{fmt(minimumOnly.totalInterest)}</p>
-                <p className="text-[11px] text-gray-500">{minimumOnly.totalMonths} {t('ccPayoff.months', 'months')}</p>
-              </div>
-              <div className="text-center p-2 rounded-lg bg-white dark:bg-gray-900/60">
-                <p className="text-[10px] text-gray-500 uppercase mb-1">{t(STRATEGY_KEYS[selectedStrategy], STRATEGY_LABELS[selectedStrategy])}</p>
-                <p className="text-lg font-black text-green-600">{fmt(current.totalInterest)}</p>
-                <p className="text-[11px] text-gray-500">{current.totalMonths} {t('ccPayoff.months', 'months')}</p>
-              </div>
-            </div>
-            <div className="text-center pt-2 border-t border-red-200 dark:border-red-800">
-              {interestSaved > 0 ? (
-                <>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">{t('ccPayoff.youSave', 'You save')}</p>
-                  <p className="text-xl font-black text-green-600">{fmt(interestSaved)}</p>
-                  <p className="text-xs text-gray-500">&amp; <span className="font-bold">{timeSaved} {t('ccPayoff.months', 'months')}</span> {t('ccPayoff.faster', 'faster debt-free')}</p>
-                </>
-              ) : (
-                <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">{t('ccPayoff.increaseToSave', 'Increase monthly budget above minimum to start saving on interest')}</p>
-              )}
             </div>
           </div>
         )}
