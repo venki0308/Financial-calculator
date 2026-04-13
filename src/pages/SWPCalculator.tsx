@@ -201,30 +201,30 @@ export default function SWPCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: t('swp.reportTitle'),
+            title: 'SWP Calculator Report',
             inputs: [
-                { label: t('swp.investedCorpus'), value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: t('swp.monthlyWithdrawal'), value: `₹${withdrawal.toLocaleString('en-IN')}` },
-                { label: t('swp.expectedReturnRate'), value: `${rate}% ${t('swp.perAnnum')}` },
-                { label: t('swp.withdrawalPeriod'), value: `${years} ${t('swp.years')}` },
+                { label: 'Invested Corpus', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Monthly Withdrawal', value: `₹${withdrawal.toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
+                { label: 'Withdrawal Period', value: `${years} years` },
             ],
             results: [
-                { label: t('swp.totalAmountWithdrawn'), value: `₹${Math.round(result.totalWithdrawn).toLocaleString('en-IN')}` },
-                { label: t('swp.finalCorpusBalance'), value: `₹${Math.round(result.finalBalance).toLocaleString('en-IN')}` },
-                { label: t('swp.safeWithdrawalRate'), value: `${result.swr.toFixed(1)}% (${result.swrRisk} ${t('swp.risk')})` },
-                { label: t('swp.corpusStatus'), value: result.depletionMonth ? t('swp.depletesInYears', { years: (result.depletionMonth/12).toFixed(1) }) : t('swp.sustainableForYears', { years }) },
+                { label: 'Total Amount Withdrawn', value: `₹${Math.round(result.totalWithdrawn).toLocaleString('en-IN')}` },
+                { label: 'Final Corpus Balance', value: `₹${Math.round(result.finalBalance).toLocaleString('en-IN')}` },
+                { label: 'Safe Withdrawal Rate', value: `${result.swr.toFixed(1)}%` },
+                { label: 'Corpus Status', value: result.depletionMonth ? `Depletes in ${(result.depletionMonth/12).toFixed(1)} years` : `Sustainable for ${years} years` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: t('swp.totalWithdrawn'), value: result.totalWithdrawn, color: '#EF4444' },
-                    { label: t('swp.remainingCorpus'), value: Math.max(0, result.finalBalance), color: '#10B981' },
+                    { label: 'Total Withdrawn', value: result.totalWithdrawn, color: '#EF4444' },
+                    { label: 'Remaining Corpus', value: Math.max(0, result.finalBalance), color: '#10B981' },
                 ],
             },
-            projectionTitle: t('swp.annualWithdrawalSchedule'),
-            projectionColumns: [t('swp.yearCol'), t('swp.openingBalance'), t('swp.totalWithdrawnCol'), t('swp.returnsEarned'), t('swp.closingBalance')],
+            projectionTitle: 'Annual Withdrawal Schedule',
+            projectionColumns: ['Year', 'Opening Balance', 'Total Withdrawn', 'Returns Earned', 'Closing Balance'],
             projectionRows: result.yearlySchedule.map((r: any) => [
-                `${t('swp.yearCol')} ${r.year}`,
+                `Year ${r.year}`,
                 `₹${Math.round(r.open).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.withdrawn).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
@@ -239,19 +239,19 @@ export default function SWPCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: t('swp.reportTitle'),
+            title: 'SWP Calculator Report',
             inputs: [
-                { label: t('swp.investedCorpus'), value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: t('swp.monthlyWithdrawal'), value: `₹${withdrawal.toLocaleString('en-IN')}` },
-                { label: t('swp.expectedReturnRate'), value: `${rate}% ${t('swp.perAnnum')}` },
-                { label: t('swp.withdrawalPeriod'), value: `${years} ${t('swp.years')}` },
+                { label: 'Invested Corpus', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Monthly Withdrawal', value: `₹${withdrawal.toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
+                { label: 'Withdrawal Period', value: `${years} years` },
             ],
             results: [
-                { label: t('swp.totalAmountWithdrawn'), value: `₹${Math.round(result.totalWithdrawn).toLocaleString('en-IN')}` },
-                { label: t('swp.finalCorpusBalance'), value: `₹${Math.round(result.finalBalance).toLocaleString('en-IN')}` },
+                { label: 'Total Amount Withdrawn', value: `₹${Math.round(result.totalWithdrawn).toLocaleString('en-IN')}` },
+                { label: 'Final Corpus Balance', value: `₹${Math.round(result.finalBalance).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: t('swp.annualWithdrawalSchedule'),
-            projectionColumns: [t('swp.yearCol'), t('swp.openingBalance'), t('swp.totalWithdrawnCol'), t('swp.returnsEarned'), t('swp.closingBalance')],
+            projectionTitle: 'Annual Withdrawal Schedule',
+            projectionColumns: ['Year', 'Opening Balance', 'Total Withdrawn', 'Returns Earned', 'Closing Balance'],
             projectionRows: result.yearlySchedule.map((r: any) => [
                 r.year,
                 Math.round(r.open),

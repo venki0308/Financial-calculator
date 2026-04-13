@@ -145,33 +145,33 @@ export default function CompoundInterestCalculator() {
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const freqLabel = (freqOptions || []).find((o: any) => o.val === freq)?.label || `${freq}x/year`;
         const config: ExportConfig = {
-            title: t('ci.reportTitle'),
+            title: 'Compound Interest Report',
             inputs: [
-                { label: t('ci.principalAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: t('ci.annualRate'), value: `${rate}%` },
-                { label: t('ci.timePeriod'), value: `${years} ${t('ci.years')}` },
-                { label: t('ci.compoundingFrequency'), value: freqLabel },
-                { label: t('ci.assumedInflation'), value: `${inflation}% p.a.` },
+                { label: 'Principal Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Annual Rate', value: `${rate}%` },
+                { label: 'Time Period', value: `${years} years` },
+                { label: 'Compounding Frequency', value: freqLabel },
+                { label: 'Assumed Inflation', value: `${inflation}% p.a.` },
             ],
             results: [
-                { label: t('ci.totalAmount'), value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
-                { label: t('ci.interestEarned'), value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
-                { label: t('ci.wealthMultiplier'), value: `${(result.amount / principal).toFixed(2)}x` },
-                { label: t('ci.effectiveRateEAR'), value: `${advanced.ear.toFixed(2)}%` },
-                { label: t('ci.doublingTime'), value: `${advanced.rule72.toFixed(1)} ${t('ci.years')}` },
-                { label: t('ci.realMaturityValue'), value: `₹${Math.round(advanced.realMaturity).toLocaleString('en-IN')}` },
+                { label: 'Total Amount', value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
+                { label: 'Interest Earned', value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
+                { label: 'Wealth Multiplier', value: `${(result.amount / principal).toFixed(2)}x` },
+                { label: 'Effective Rate (EAR)', value: `${advanced.ear.toFixed(2)}%` },
+                { label: 'Doubling Time', value: `${advanced.rule72.toFixed(1)} years` },
+                { label: 'Real Maturity Value', value: `₹${Math.round(advanced.realMaturity).toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: t('ci.principalAmount'), value: principal, color: '#4F46E5' },
-                    { label: t('ci.interestEarned'), value: result.interest, color: '#10B981' },
+                    { label: 'Principal Amount', value: principal, color: '#4F46E5' },
+                    { label: 'Interest Earned', value: result.interest, color: '#10B981' },
                 ],
             },
-            projectionTitle: t('ci.yearWiseGrowth'),
-            projectionColumns: [t('ci.year'), t('ci.opening'), t('ci.interestEarned'), t('ci.closing')],
+            projectionTitle: 'Year-wise Growth',
+            projectionColumns: ['Year', 'Opening', 'Interest Earned', 'Closing'],
             projectionRows: advanced.table.map((r: any) => [
-                `${t('ci.year')} ${r.year}`,
+                `Year ${r.year}`,
                 `₹${Math.round(r.opening).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.closing).toLocaleString('en-IN')}`,
@@ -185,18 +185,18 @@ export default function CompoundInterestCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: t('ci.reportTitle'),
+            title: 'Compound Interest Report',
             inputs: [
-                { label: t('ci.principal'), value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: t('ci.rate'), value: `${rate}%` },
-                { label: t('ci.timePeriod'), value: `${years} ${t('ci.years')}` },
+                { label: 'Principal', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Rate', value: `${rate}%` },
+                { label: 'Time Period', value: `${years} years` },
             ],
             results: [
-                { label: t('ci.totalAmount'), value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
-                { label: t('ci.interestEarned'), value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
+                { label: 'Total Amount', value: `₹${Math.round(result.amount).toLocaleString('en-IN')}` },
+                { label: 'Interest Earned', value: `₹${Math.round(result.interest).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: t('ci.yearWiseGrowth'),
-            projectionColumns: [t('ci.year'), t('ci.opening'), t('ci.interestEarned'), t('ci.closing')],
+            projectionTitle: 'Year-wise Growth',
+            projectionColumns: ['Year', 'Opening', 'Interest Earned', 'Closing'],
             projectionRows: advanced.table.map((r: any) => [r.year, Math.round(r.opening), Math.round(r.interest), Math.round(r.closing)]),
             filename: `FinCalix_CompoundInterest_Report_${tag}`,
         };

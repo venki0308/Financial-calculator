@@ -165,31 +165,31 @@ export default function LumpsumCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: t('lumpsum.pdfTitle'),
+            title: 'Lumpsum Calculator Report',
             inputs: [
-                { label: t('lumpsum.pdfInvestmentAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: t('lumpsum.pdfExpectedReturnRate'), value: `${rate}% ${t('lumpsum.pdfPA')} (${result.riskLevel} ${t('lumpsum.risk')})` },
-                { label: t('lumpsum.pdfInvestmentPeriod'), value: `${years} ${t('lumpsum.pdfYears')}` },
-                { label: t('lumpsum.pdfInflationRate'), value: `${inflation}% ${t('lumpsum.pdfPA')}` },
+                { label: 'Investment Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
+                { label: 'Investment Period', value: `${years} years` },
+                { label: 'Inflation Rate', value: `${inflation}% p.a.` },
             ],
             results: [
-                { label: t('lumpsum.pdfMaturityValue'), value: `₹${Math.round(result.fv).toLocaleString('en-IN')}` },
-                { label: t('lumpsum.pdfWealthGained'), value: `₹${Math.round(result.fv - principal).toLocaleString('en-IN')}` },
-                { label: t('lumpsum.pdfWealthMultiplier'), value: `${result.wealthRatio.toFixed(2)}x` },
-                { label: t('lumpsum.pdfEffectiveCAGR'), value: `${result.cagr.toFixed(2)}%` },
-                { label: t('lumpsum.pdfRealMaturityValue'), value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
+                { label: 'Maturity Value', value: `₹${Math.round(result.fv).toLocaleString('en-IN')}` },
+                { label: 'Wealth Gained', value: `₹${Math.round(result.fv - principal).toLocaleString('en-IN')}` },
+                { label: 'Wealth Multiplier', value: `${result.wealthRatio.toFixed(2)}x` },
+                { label: 'Effective CAGR', value: `${result.cagr.toFixed(2)}%` },
+                { label: 'Real Maturity Value', value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: t('lumpsum.pdfPrincipalInvested'), value: principal, color: '#4F46E5' },
-                    { label: t('lumpsum.pdfWealthGained'), value: result.fv - principal, color: '#10B981' },
+                    { label: 'Principal Invested', value: principal, color: '#4F46E5' },
+                    { label: 'Wealth Gained', value: result.fv - principal, color: '#10B981' },
                 ],
             },
-            projectionTitle: t('lumpsum.pdfYearlyGrowthSchedule'),
-            projectionColumns: [t('lumpsum.pdfColYear'), t('lumpsum.pdfColOpeningValue'), t('lumpsum.pdfColYearlyGrowth'), t('lumpsum.pdfColClosingValue')],
+            projectionTitle: 'Yearly Growth Schedule',
+            projectionColumns: ['Year', 'Opening Value', 'Yearly Growth', 'Closing Value'],
             projectionRows: result.table.map((r: any) => [
-                `${t('lumpsum.pdfColYear')} ${r.year}`,
+                `Year ${r.year}`,
                 `₹${Math.round(r.value - r.yearlyGain).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.yearlyGain).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.value).toLocaleString('en-IN')}`,
@@ -203,19 +203,19 @@ export default function LumpsumCalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: t('lumpsum.pdfTitle'),
+            title: 'Lumpsum Calculator Report',
             inputs: [
-                { label: t('lumpsum.pdfInvestmentAmount'), value: `₹${principal.toLocaleString('en-IN')}` },
-                { label: t('lumpsum.pdfExpectedReturnRate'), value: `${rate}% ${t('lumpsum.pdfPA')}` },
-                { label: t('lumpsum.pdfInvestmentPeriod'), value: `${years} ${t('lumpsum.pdfYears')}` },
+                { label: 'Investment Amount', value: `₹${principal.toLocaleString('en-IN')}` },
+                { label: 'Expected Return Rate', value: `${rate}% p.a.` },
+                { label: 'Investment Period', value: `${years} years` },
             ],
             results: [
-                { label: t('lumpsum.pdfMaturityValue'), value: `₹${Math.round(result.fv).toLocaleString('en-IN')}` },
-                { label: t('lumpsum.pdfWealthGained'), value: `₹${Math.round(result.fv - principal).toLocaleString('en-IN')}` },
-                { label: t('lumpsum.pdfCAGR'), value: `${result.cagr.toFixed(2)}%` },
+                { label: 'Maturity Value', value: `₹${Math.round(result.fv).toLocaleString('en-IN')}` },
+                { label: 'Wealth Gained', value: `₹${Math.round(result.fv - principal).toLocaleString('en-IN')}` },
+                { label: 'CAGR', value: `${result.cagr.toFixed(2)}%` },
             ],
-            projectionTitle: t('lumpsum.pdfYearlyGrowthSchedule'),
-            projectionColumns: [t('lumpsum.pdfColYear'), t('lumpsum.pdfColYearlyGrowth'), t('lumpsum.pdfColCumulativeGain'), t('lumpsum.pdfColClosingValue')],
+            projectionTitle: 'Yearly Growth Schedule',
+            projectionColumns: ['Year', 'Yearly Growth', 'Cumulative Gain', 'Closing Value'],
             projectionRows: result.table.map((r: any) => [r.year, Math.round(r.yearlyGain), Math.round(r.gain), Math.round(r.value)]),
             filename: `FinCalix_Lumpsum_Report_${tag}`,
         };
