@@ -202,8 +202,8 @@ export default function CreditCardPayoffCalculator() {
                   onChange={() => setSelectedIds(prev => { const s = new Set(prev); s.has(c.id) ? s.delete(c.id) : s.add(c.id); return s; })}
                   className="accent-blue-600 w-4 h-4" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{c.cardName || c.bankName}</p>
-                  <p className="text-xs text-gray-500">{fmt(c.currentBalance)} &middot; {c.annualInterestRate}% APR</p>
+                  <p className="text-sm font-semibold truncate">{c.cardName || c.bankName}{c.last4Digits ? ` (${c.last4Digits})` : ''}</p>
+                  <p className="text-xs text-gray-500">{c.bankName} {c.cardNetwork} &middot; {fmt(c.currentBalance)} &middot; {c.annualInterestRate}% APR</p>
                 </div>
               </label>
             ))}
@@ -272,6 +272,14 @@ export default function CreditCardPayoffCalculator() {
                 {s === 'avalanche' && <span className="ml-1 text-[9px] px-1 py-0.5 bg-green-500 text-white rounded-sm align-middle">{t('ccPayoff.recommended', 'RECOMMENDED')}</span>}
               </button>
             ))}
+          </div>
+        )}
+
+        {/* ── Zero Balance Message ── */}
+        {activeInputs.length > 0 && !hasCards && (
+          <div className="p-5 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-center">
+            <p className="text-green-700 dark:text-green-400 font-bold text-sm">🎉 {t('ccPayoff.noDebt', 'No outstanding balance!')}</p>
+            <p className="text-green-600 dark:text-green-500 text-xs mt-1">{t('ccPayoff.noDebtDesc', 'Your selected cards have ₹0 balance. No payoff plan needed — great job staying debt-free!')}</p>
           </div>
         )}
 
