@@ -45,7 +45,10 @@ export interface SipStatus {
 export function calculateSipStatus(input: SipStatusInput): SipStatus {
     const t = today();
     const start = new Date(input.startDate); start.setHours(0, 0, 0, 0);
-    const monthsInvested = Math.max(0, monthsBetween(start, t));
+    // First SIP installment is in the starting month itself, so add 1.
+    // E.g. start Dec 5 → today Apr 13 = invested in Dec,Jan,Feb,Mar,Apr = 5
+    const raw = monthsBetween(start, t);
+    const monthsInvested = Math.max(0, raw >= 0 ? raw + 1 : 0);
     const totalInvested = monthsInvested * input.monthlySip;
     const r = input.annualReturn / 12 / 100;
     let currentValue = 0;
@@ -150,7 +153,11 @@ export interface RdStatus {
 export function calculateRdStatus(input: RdStatusInput): RdStatus {
     const t = today();
     const start = new Date(input.startDate); start.setHours(0, 0, 0, 0);
-    const monthsInvested = Math.min(input.tenureMonths, Math.max(0, monthsBetween(start, t)));
+    // monthsBetween gives the gap (Dec→Apr = 4), but the first deposit
+    // happens in the starting month itself, so add 1 to include it.
+    // E.g. start Dec 2 → today Apr 13 = deposits in Dec,Jan,Feb,Mar,Apr = 5
+    const rawMonths = monthsBetween(start, t);
+    const monthsInvested = Math.min(input.tenureMonths, Math.max(0, rawMonths >= 0 ? rawMonths + 1 : 0));
     const totalDeposited = monthsInvested * input.monthlyDeposit;
     const r = input.annualRate / 400; // quarterly rate
     const totalQ = Math.ceil(input.tenureMonths / 3);
