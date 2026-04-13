@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,8 +71,19 @@ function TabLoader({ theme }: { theme: ReturnType<typeof useExpenseTheme> }) {
 export default function ExpenseTracker() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useExpenseTheme();
   const [activeTab, setActiveTab] = useState<TabId>('budget');
+
+  // Read Router state to switch tab (e.g. after CreditCardAdd save)
+  useEffect(() => {
+    const state = location.state as { switchTab?: string } | null;
+    if (state?.switchTab && (ALL_TAB_IDS as readonly string[]).includes(state.switchTab)) {
+      setActiveTab(state.switchTab as TabId);
+      // Clear state so it doesn't re-trigger on back navigation
+      window.history.replaceState({}, '');
+    }
+  }, [location.state]);
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   // Edit state — when set, the AddEntrySheet opens in edit mode pre-filled

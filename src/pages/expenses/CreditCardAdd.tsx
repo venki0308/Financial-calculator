@@ -60,9 +60,8 @@ export default function CreditCardAdd() {
 
   const handleSave = () => {
     saveCreditCard(card);
-    nav('/expenses');
-    // Switch to Credit Cards tab after navigation
-    setTimeout(() => window.dispatchEvent(new CustomEvent('fincalix:switch-expense-tab', { detail: 'creditCards' })), 100);
+    // Use Router state to signal which tab to activate — avoids setTimeout race condition
+    nav('/expenses', { state: { switchTab: 'creditCards' } });
   };
 
   const canNext = () => {

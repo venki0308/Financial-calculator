@@ -116,8 +116,84 @@ export default function ScientificCalculator() {
                 return Math.sign(val) * Math.pow(Math.abs(val), 1 / root);
             };
 
-            const calculate = new Function('Math', 'factorial', 'nthRoot', `return ${parsed}`);
-            let res = calculate(Math, factorial, nthRoot);
+            // Safe expression evaluator — no eval/new Function
+            const mathFns: Record<string, (...a: number[]) => number> = {
+              'Math.sin': Math.sin, 'Math.cos': Math.cos, 'Math.tan': Math.tan,
+              'Math.asin': Math.asin, 'Math.acos': Math.acos, 'Math.atan': Math.atan,
+              'Math.sinh': Math.sinh, 'Math.cosh': Math.cosh, 'Math.tanh': Math.tanh,
+              'Math.asinh': Math.asinh, 'Math.acosh': Math.acosh, 'Math.atanh': Math.atanh,
+              'Math.log10': Math.log10, 'Math.log2': Math.log2, 'Math.log': Math.log,
+              'Math.sqrt': Math.sqrt, 'Math.cbrt': Math.cbrt, 'Math.abs': Math.abs,
+              'Math.exp': Math.exp, 'factorial': factorial, 'nthRoot': nthRoot,
+            };
+            let pos = 0;
+            const peek = () => parsed[pos] || '';
+            const next = () => parsed[pos++];
+            const skipWs = () => { while (pos < parsed.length && parsed[pos] === ' ') pos++; };
+
+            const parseNumber = (): number => {
+              skipWs();
+              // Check for function call: "Math.sin(" or "factorial("
+              for (const fname of Object.keys(mathFns)) {
+                if (parsed.startsWith(fname + '(', pos)) {
+                  pos += fname.length + 1; // skip "fname("
+                  const args: number[] = [parseExpr()];
+                  while (peek() === ',') { next(); args.push(parseExpr()); }
+                  if (peek() === ')') next();
+                  return mathFns[fname](...args);
+                }
+              }
+              // Check for "(180/Math.PI)*Math.aXXX(" pattern (degree inverse trig)
+              const degInvMatch = parsed.slice(pos).match(/^\(180\/Math\.PI\)\*(Math\.a(?:sin|cos|tan)h?)\(/);
+              if (degInvMatch) {
+                pos += degInvMatch[0].length;
+                const val = parseExpr();
+                if (peek() === ')') next();
+                return (180 / Math.PI) * mathFns[degInvMatch[1]](val);
+              }
+              // Constants
+              if (parsed.startsWith('Math.PI', pos)) { pos += 7; return Math.PI; }
+              // Parenthesized expression
+              if (peek() === '(') { next(); const v = parseExpr(); if (peek() === ')') next(); return v; }
+              // Unary minus
+              if (peek() === '-') { next(); return -parseNumber(); }
+              if (peek() === '+') { next(); return parseNumber(); }
+              // Number literal
+              let numStr = '';
+              while (pos < parsed.length && /[\d.]/.test(parsed[pos])) numStr += next();
+              if (!numStr) return NaN;
+              return parseFloat(numStr);
+            };
+
+            const parsePower = (): number => {
+              let base = parseNumber(); skipWs();
+              while (parsed.slice(pos, pos + 2) === '**') { pos += 2; base = Math.pow(base, parseNumber()); skipWs(); }
+              return base;
+            };
+
+            const parseMulDiv = (): number => {
+              let left = parsePower(); skipWs();
+              while (peek() === '*' || peek() === '/' || peek() === '%') {
+                const op = next(); skipWs();
+                const right = parsePower(); skipWs();
+                if (op === '*') left *= right;
+                else if (op === '/') left /= right;
+                else left %= right;
+              }
+              return left;
+            };
+
+            const parseExpr = (): number => {
+              let left = parseMulDiv(); skipWs();
+              while (peek() === '+' || peek() === '-') {
+                const op = next(); skipWs();
+                const right = parseMulDiv(); skipWs();
+                left = op === '+' ? left + right : left - right;
+              }
+              return left;
+            };
+
+            let res = parseExpr();
             if (!isFinite(res) || isNaN(res)) return 'Error';
             res = Math.round(res * 1e10) / 1e10;
             return res.toString();
