@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Download, ChevronDown, ChevronUp, Lightbulb, Shield, Zap, Info, Save, Check, Trash2, Share2 } from 'lucide-react';
+import { ArrowLeft, Download, ChevronDown, ChevronUp, Lightbulb, Shield, Zap, Info, Save, Check, Trash2, Share2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import NumberInput from '../components/NumberInput';
@@ -709,6 +709,126 @@ export default function TwoWheelerLoanCalculator() {
                             loanAmount={loanAmount}
                             tenureMonths={tenureMonths}
                         />
+
+                        {/* ══════════════════════════════════════════════
+                            DECISION ASSISTANT — Affordability + Risk + Down Payment + EV Intelligence + Final Recommendation
+                            ══════════════════════════════════════════════ */}
+
+                        {/* ── Enhanced Affordability Engine ── */}
+                        {monthlyIncome > 0 && affordability && (
+                            <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                                <div className="flex items-center gap-2 mb-3"><Shield className="w-4 h-4" style={{ color: affordability.status === 'red' ? '#EF4444' : affordability.status === 'yellow' ? '#F59E0B' : '#10B981' }} /><h3 className="text-sm font-bold" style={{ color: c.text }}>Affordability Analysis</h3></div>
+                                {/* Visual gauge */}
+                                <div className="w-full h-3 rounded-full overflow-hidden mb-2" style={{ background: c.inputBg }}>
+                                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(affordability.ratio, 100)}%`, background: affordability.status === 'red' ? '#EF4444' : affordability.status === 'yellow' ? '#F59E0B' : '#10B981' }} />
+                                </div>
+                                <div className="flex justify-between text-[9px] mb-3" style={{ color: c.textMuted }}>
+                                    <span>0%</span><span className="text-emerald-500 font-bold">25% Safe</span><span className="text-amber-500 font-bold">40%</span><span>100%</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="p-2 rounded-lg text-center" style={{ background: affordability.status === 'red' ? '#EF444410' : affordability.status === 'yellow' ? '#F59E0B10' : '#10B98110' }}>
+                                        <p className="text-[9px] uppercase font-bold" style={{ color: c.textMuted }}>EMI-to-Income</p>
+                                        <p className="text-lg font-black" style={{ color: affordability.status === 'red' ? '#EF4444' : affordability.status === 'yellow' ? '#F59E0B' : '#10B981' }}>{affordability.ratio.toFixed(1)}%</p>
+                                    </div>
+                                    <div className="p-2 rounded-lg text-center" style={{ background: '#3B82F610' }}>
+                                        <p className="text-[9px] uppercase font-bold" style={{ color: c.textMuted }}>Min Income Needed</p>
+                                        <p className="text-lg font-black text-blue-500">{formatINR(Math.round(emi / 0.25))}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ── Risk Analysis ── */}
+                        {(rate > 20 || (monthlyIncome > 0 && affordability && affordability.ratio > 40) || ltv > 90) && (
+                            <div className="p-4 rounded-2xl border-2 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 space-y-2">
+                                <div className="flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-red-500" /><h3 className="text-sm font-bold text-red-600">Risk Alerts</h3></div>
+                                {rate > 20 && <p className="text-[11px] text-red-600 dark:text-red-400">🔴 <strong>High interest rate ({rate}%)</strong> — Consider improving CIBIL score or increasing down payment to negotiate a lower rate.</p>}
+                                {monthlyIncome > 0 && affordability && affordability.ratio > 40 && <p className="text-[11px] text-red-600 dark:text-red-400">🔴 <strong>EMI exceeds 40% of income</strong> — Financial stress risk. Consider a longer tenure or cheaper vehicle.</p>}
+                                {ltv > 90 && <p className="text-[11px] text-amber-600 dark:text-amber-400">🟡 <strong>LTV ratio {ltv.toFixed(0)}%</strong> — Very low down payment. Increase to at least 15-20% for better rates.</p>}
+                            </div>
+                        )}
+
+                        {/* ── Down Payment Optimizer ── */}
+                        {(() => {
+                            const dpLevels = [10, 15, 20, 25, 30].filter(p => p !== downPaymentPct);
+                            const dpResults = dpLevels.map(pct => {
+                                const dp = Math.round(effectivePrice * pct / 100);
+                                const la = Math.max(0, effectivePrice - dp);
+                                if (la <= 0 || rate <= 0) return null;
+                                const calc = calculateReducingEMI(la, rate, tenureMonths);
+                                return { pct, dp, loanAmount: la, emi: calc.emi, totalInterest: calc.totalInterest, interestSaved: totalInterest - calc.totalInterest };
+                            }).filter(Boolean) as { pct: number; dp: number; loanAmount: number; emi: number; totalInterest: number; interestSaved: number }[];
+                            if (dpResults.length === 0) return null;
+                            return (
+                                <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                                    <div className="flex items-center gap-2 mb-3"><Lightbulb className="w-4 h-4 text-amber-500" /><h3 className="text-sm font-bold" style={{ color: c.text }}>Down Payment Optimizer</h3></div>
+                                    <div className="space-y-1.5">
+                                        {dpResults.map(d => (
+                                            <div key={d.pct} className={`flex items-center justify-between p-2 rounded-lg ${d.interestSaved > 0 ? 'bg-emerald-500/5' : ''}`} style={{ border: `1px solid ${c.border}40` }}>
+                                                <div>
+                                                    <p className="text-xs font-bold" style={{ color: c.text }}>{d.pct}% — {formatINR(d.dp)}</p>
+                                                    <p className="text-[9px]" style={{ color: c.textMuted }}>EMI: {formatINR(d.emi)}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    {d.interestSaved > 0 ? (
+                                                        <p className="text-xs font-bold text-emerald-500">Save {formatINR(d.interestSaved)}</p>
+                                                    ) : (
+                                                        <p className="text-xs font-bold text-red-400">+{formatINR(Math.abs(d.interestSaved))}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
+                        {/* ── EV vs Petrol Intelligence — Break-even + Cost per KM ── */}
+                        {comparison.saving !== 0 && (
+                            <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
+                                <div className="flex items-center gap-2 mb-3"><Zap className="w-4 h-4 text-emerald-500" /><h3 className="text-sm font-bold" style={{ color: c.text }}>EV vs Petrol Intelligence</h3></div>
+                                <div className="grid grid-cols-3 gap-2 mb-3">
+                                    <div className="p-2 rounded-lg text-center" style={{ background: '#10B98110' }}>
+                                        <p className="text-[9px] uppercase font-bold text-emerald-500">Cost/KM (EV)</p>
+                                        <p className="text-sm font-black text-emerald-600">₹{(comparison.evTotal / (yearlyKm * comparison.years) || 0).toFixed(1)}</p>
+                                    </div>
+                                    <div className="p-2 rounded-lg text-center" style={{ background: '#EF444410' }}>
+                                        <p className="text-[9px] uppercase font-bold text-red-500">Cost/KM (Petrol)</p>
+                                        <p className="text-sm font-black text-red-600">₹{(comparison.petrolTotal / (yearlyKm * comparison.years) || 0).toFixed(1)}</p>
+                                    </div>
+                                    <div className="p-2 rounded-lg text-center" style={{ background: comparison.saving > 0 ? '#10B98110' : '#F59E0B10' }}>
+                                        <p className="text-[9px] uppercase font-bold" style={{ color: comparison.saving > 0 ? '#10B981' : '#F59E0B' }}>{comparison.years.toFixed(0)}yr Saving</p>
+                                        <p className="text-sm font-black" style={{ color: comparison.saving > 0 ? '#10B981' : '#F59E0B' }}>{formatINR(Math.abs(comparison.saving))}</p>
+                                    </div>
+                                </div>
+                                {comparison.saving > 0 && yearlyKm > 0 && (
+                                    <p className="text-[10px] text-center font-semibold" style={{ color: '#10B981' }}>
+                                        💡 EV break-even in ~{Math.max(1, Math.round((exShowroom * 0.15) / (comparison.saving / comparison.years)))} years at {yearlyKm.toLocaleString('en-IN')} km/year
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ── FINAL RECOMMENDATION ENGINE ── */}
+                        <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/10 to-indigo-500/10 border border-violet-500/20">
+                            <div className="flex items-center gap-2 mb-3"><Lightbulb className="w-4 h-4 text-violet-500" /><h3 className="text-sm font-bold text-violet-600 dark:text-violet-400">Purchase Recommendation</h3></div>
+                            <div className="space-y-2 text-[11px] leading-relaxed" style={{ color: c.textSecondary }}>
+                                {/* EV vs Petrol recommendation */}
+                                {comparison.saving > 5000 ? (
+                                    <p>⚡ <strong className="text-emerald-500">Go Electric</strong> — Saves {formatINR(comparison.saving)} over {comparison.years.toFixed(0)} years in running costs. {isEvSubsidyEligible ? `PM E-DRIVE subsidy of ${formatINR(centralSubsidy)} makes it even better.` : ''}</p>
+                                ) : comparison.saving < -5000 ? (
+                                    <p>⛽ <strong className="text-blue-500">Petrol is better value</strong> — Running cost difference of just {formatINR(Math.abs(comparison.saving))} doesn't justify the EV premium for your usage.</p>
+                                ) : (
+                                    <p>⚖️ <strong className="text-amber-500">Both are comparable</strong> — Running costs are similar. Choose based on preference, charging access, and resale value.</p>
+                                )}
+                                {/* Down payment advice */}
+                                {downPaymentPct < 20 && <p>💰 <strong>Increase down payment to 20%</strong> — Saves {formatINR(Math.round(totalInterest * 0.15))} in interest and improves approval odds.</p>}
+                                {/* Tenure advice */}
+                                {tenureMonths > 48 && <p>⏰ <strong>Consider shorter tenure (36 months)</strong> — You'll pay significantly less interest. A vehicle depreciates faster than your loan reduces.</p>}
+                                {/* CIBIL advice */}
+                                {cibilIdx >= 3 && <p>📊 <strong>Improve CIBIL before applying</strong> — Your score tier ({cibil.label}) adds {((rate - (isEV ? CIBIL_TIERS[0].evRange[0] : CIBIL_TIERS[0].petrolRange[0])) * loanAmount / 100 * tenureYears / 2).toFixed(0) !== 'NaN' ? formatINR(Math.round(Math.abs(rate - (isEV ? CIBIL_TIERS[0].evRange[0] : CIBIL_TIERS[0].petrolRange[0])) * loanAmount / 100 * tenureYears / 2)) : '₹0'} extra interest vs Excellent tier.</p>}
+                            </div>
+                        </div>
 
                         {/* Advisor Tips */}
                         <div className="p-4 rounded-2xl" style={{ backgroundColor: '#10B98110', border: '1px solid #10B98125' }}>
