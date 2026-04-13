@@ -62,6 +62,7 @@ const calcCatalog: Record<string, { icon: React.ElementType; color: string; labe
     '/cibil-score': { icon: BarChart3, color: '#8B5CF6', label: 'CIBIL Score' },
     '/calculator/credit-card-payoff': { icon: CreditCard, color: '#06B6D4', label: 'CC Payoff' },
     '/calculator/credit-card-interest': { icon: CreditCard, color: '#EF4444', label: 'CC Interest' },
+    '/calculator/credit-card-compare': { icon: CreditCard, color: '#8B5CF6', label: 'CC Compare' },
 };
 
 // Default items if history is empty

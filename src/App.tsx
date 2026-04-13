@@ -130,6 +130,7 @@ const CreditCardAdd              = lr(() => import('./pages/expenses/CreditCardA
 const CreditCardDetail           = lr(() => import('./pages/expenses/CreditCardDetail'));
 const CreditCardPayoffCalculator = lr(() => import('./pages/CreditCardPayoffCalculator'));
 const CreditCardInterestCalculator = lr(() => import('./pages/CreditCardInterestCalculator'));
+const CreditCardCompare = lr(() => import('./pages/CreditCardCompare'));
 
 // App-level modals — lazy loaded with retry (native app only)
 const GlobalDisclaimerModal      = lr(() => import('./components/GlobalDisclaimerModal'));
@@ -437,6 +438,7 @@ function AppContent() {
                         <Route path="/expenses/credit-cards/:id" element={<CreditCardDetail />} />
                         <Route path="/calculator/credit-card-payoff" element={<CreditCardPayoffCalculator />} />
                         <Route path="/calculator/credit-card-interest" element={<CreditCardInterestCalculator />} />
+                        <Route path="/calculator/credit-card-compare" element={<CreditCardCompare />} />
                         <Route path="/dev/validator" element={<ValidatorPage />} />
                     </Route>
 

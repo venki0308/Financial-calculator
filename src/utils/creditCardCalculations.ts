@@ -432,3 +432,160 @@ export function getDueUrgency(daysUntil: number): { label: string; color: string
   if (daysUntil <= 7) return { label: 'DUE SOON', color: '#eab308', emoji: '🟡' };
   return { label: 'UPCOMING', color: '#22c55e', emoji: '🟢' };
 }
+
+// ─── CC COMPARE SCENARIOS ─────────────────────────────────────────────────────
+
+export interface SpendProfile {
+  groceries: number;
+  fuel: number;
+  dining: number;
+  onlineShopping: number;
+  travel: number;
+  utilities: number;
+  rent: number;
+  entertainment: number;
+  medical: number;
+  other: number;
+}
+
+export type CardTypeId = 'cashback' | 'rewards' | 'travel' | 'fuel' | 'lifestyle' | 'shopping' | 'premium' | 'entry' | 'secured' | 'rupay';
+
+interface CardTypeDef {
+  id: CardTypeId;
+  labelKey: string;
+  emoji: string;
+  annualFeeRange: [number, number];
+  feeWaiverSpend: number;
+  baseRate: number;
+  boosts: Partial<Record<keyof SpendProfile, number>>;
+  excluded: (keyof SpendProfile)[];
+  fuelSurchargeWaiver: boolean;
+  loungeVisitsPerYear: number;
+  milestoneThreshold: number;
+  milestoneBonus: number;
+  forexMarkup: number;
+  minIncome: number;
+  minCibil: number;
+}
+
+const CARD_TYPES: CardTypeDef[] = [
+  { id: 'cashback', labelKey: 'ccCompare.typeCashback', emoji: '💰', annualFeeRange: [0, 500], feeWaiverSpend: 50000, baseRate: 1, boosts: { groceries: 2, onlineShopping: 2 }, excluded: ['rent', 'utilities'], fuelSurchargeWaiver: false, loungeVisitsPerYear: 0, milestoneThreshold: 0, milestoneBonus: 0, forexMarkup: 3.5, minIncome: 15000, minCibil: 650 },
+  { id: 'rewards', labelKey: 'ccCompare.typeRewards', emoji: '🎁', annualFeeRange: [500, 2000], feeWaiverSpend: 150000, baseRate: 0.75, boosts: { dining: 3, entertainment: 3, onlineShopping: 2 }, excluded: ['rent', 'utilities'], fuelSurchargeWaiver: false, loungeVisitsPerYear: 2, milestoneThreshold: 200000, milestoneBonus: 2000, forexMarkup: 3.5, minIncome: 30000, minCibil: 700 },
+  { id: 'travel', labelKey: 'ccCompare.typeTravel', emoji: '✈️', annualFeeRange: [2500, 10000], feeWaiverSpend: 500000, baseRate: 0.75, boosts: { travel: 5, dining: 2 }, excluded: ['rent', 'utilities'], fuelSurchargeWaiver: false, loungeVisitsPerYear: 8, milestoneThreshold: 400000, milestoneBonus: 5000, forexMarkup: 1.75, minIncome: 75000, minCibil: 750 },
+  { id: 'fuel', labelKey: 'ccCompare.typeFuel', emoji: '⛽', annualFeeRange: [0, 500], feeWaiverSpend: 50000, baseRate: 0.5, boosts: { fuel: 3 }, excluded: ['rent', 'utilities'], fuelSurchargeWaiver: true, loungeVisitsPerYear: 0, milestoneThreshold: 0, milestoneBonus: 0, forexMarkup: 3.5, minIncome: 15000, minCibil: 650 },
+  { id: 'lifestyle', labelKey: 'ccCompare.typeLifestyle', emoji: '🍽️', annualFeeRange: [500, 3000], feeWaiverSpend: 200000, baseRate: 0.75, boosts: { dining: 5, entertainment: 5 }, excluded: ['rent', 'utilities'], fuelSurchargeWaiver: false, loungeVisitsPerYear: 4, milestoneThreshold: 200000, milestoneBonus: 2500, forexMarkup: 3.5, minIncome: 40000, minCibil: 700 },
+  { id: 'shopping', labelKey: 'ccCompare.typeShopping', emoji: '🛒', annualFeeRange: [0, 1500], feeWaiverSpend: 100000, baseRate: 1, boosts: { onlineShopping: 5, groceries: 2 }, excluded: ['rent', 'utilities'], fuelSurchargeWaiver: false, loungeVisitsPerYear: 0, milestoneThreshold: 150000, milestoneBonus: 1500, forexMarkup: 3.5, minIncome: 25000, minCibil: 680 },
+  { id: 'premium', labelKey: 'ccCompare.typePremium', emoji: '👑', annualFeeRange: [5000, 15000], feeWaiverSpend: 800000, baseRate: 1.5, boosts: { travel: 3, dining: 3, onlineShopping: 2 }, excluded: ['rent'], fuelSurchargeWaiver: true, loungeVisitsPerYear: 12, milestoneThreshold: 500000, milestoneBonus: 10000, forexMarkup: 2, minIncome: 100000, minCibil: 750 },
+  { id: 'entry', labelKey: 'ccCompare.typeEntry', emoji: '🆓', annualFeeRange: [0, 0], feeWaiverSpend: 0, baseRate: 0.5, boosts: {}, excluded: ['rent', 'utilities'], fuelSurchargeWaiver: false, loungeVisitsPerYear: 0, milestoneThreshold: 0, milestoneBonus: 0, forexMarkup: 3.5, minIncome: 12000, minCibil: 0 },
+  { id: 'secured', labelKey: 'ccCompare.typeSecured', emoji: '🔒', annualFeeRange: [0, 500], feeWaiverSpend: 0, baseRate: 0.25, boosts: {}, excluded: ['rent', 'utilities'], fuelSurchargeWaiver: false, loungeVisitsPerYear: 0, milestoneThreshold: 0, milestoneBonus: 0, forexMarkup: 3.5, minIncome: 0, minCibil: 0 },
+  { id: 'rupay', labelKey: 'ccCompare.typeRuPay', emoji: '🇮🇳', annualFeeRange: [0, 500], feeWaiverSpend: 50000, baseRate: 0.75, boosts: { groceries: 1.5 }, excluded: ['rent', 'utilities'], fuelSurchargeWaiver: false, loungeVisitsPerYear: 4, milestoneThreshold: 0, milestoneBonus: 0, forexMarkup: 99, minIncome: 15000, minCibil: 0 },
+];
+
+export function getCardTypes(): CardTypeDef[] { return CARD_TYPES; }
+
+export interface CardTypeResult {
+  type: CardTypeDef;
+  annualRewardValue: number;
+  fuelSurchargeWaiverValue: number;
+  loungeValue: number;
+  milestoneValue: number;
+  annualFee: number;
+  netAnnualValue: number;
+  breakEvenSpend: number;
+  suitabilityScore: number;
+  eligible: boolean;
+}
+
+export function calcCardTypeResults(
+  spend: SpendProfile,
+  monthlyIncome: number,
+  cibilScore: number,
+  domesticFlights: number,
+  paysFull: boolean,
+  outstandingBalance: number,
+  apr: number,
+): CardTypeResult[] {
+  const totalMonthly = Object.values(spend).reduce((s, v) => s + v, 0);
+  const totalAnnual = totalMonthly * 12;
+
+  return CARD_TYPES.map(ct => {
+    // Reward value
+    let annualRewardValue = 0;
+    let eligibleSpend = 0;
+    for (const [cat, monthly] of Object.entries(spend) as [keyof SpendProfile, number][]) {
+      if (ct.excluded.includes(cat) || monthly <= 0) continue;
+      const annual = monthly * 12;
+      eligibleSpend += annual;
+      const rate = ct.boosts[cat] || ct.baseRate;
+      annualRewardValue += annual * (rate / 100);
+    }
+
+    // Fuel surcharge waiver (1% on Rs 400-5000 txns, capped Rs 250/cycle × 12)
+    const fuelSurchargeWaiverValue = ct.fuelSurchargeWaiver
+      ? Math.min(spend.fuel * 12 * 0.01, 250 * 12)
+      : 0;
+
+    // Lounge value (Rs 500/visit avg)
+    const loungeValue = Math.min(domesticFlights, ct.loungeVisitsPerYear) * 500;
+
+    // Milestone
+    const milestoneValue = (ct.milestoneThreshold > 0 && eligibleSpend >= ct.milestoneThreshold)
+      ? ct.milestoneBonus : 0;
+
+    // Fee
+    const midFee = (ct.annualFeeRange[0] + ct.annualFeeRange[1]) / 2;
+    const feeWaived = ct.feeWaiverSpend > 0 && totalAnnual >= ct.feeWaiverSpend;
+    const annualFee = feeWaived ? 0 : Math.round(midFee * 1.18);
+
+    // Net value
+    let netAnnualValue = annualRewardValue + fuelSurchargeWaiverValue + loungeValue + milestoneValue - annualFee;
+
+    // Interest cost if carrying balance
+    let interestCost = 0;
+    if (!paysFull && outstandingBalance > 0) {
+      interestCost = outstandingBalance * (apr / 100) * 1.18; // Annual interest + GST
+      netAnnualValue -= interestCost;
+    }
+
+    // Break-even
+    const effectiveRate = eligibleSpend > 0 ? annualRewardValue / eligibleSpend : 0;
+    const breakEvenSpend = effectiveRate > 0 ? Math.round(annualFee / effectiveRate) : 0;
+
+    // Eligibility
+    const eligible = monthlyIncome >= ct.minIncome && (ct.minCibil === 0 || cibilScore === 0 || cibilScore >= ct.minCibil);
+
+    // Suitability score (0-100)
+    let score = 0;
+    // Income match (15%)
+    if (monthlyIncome >= ct.minIncome * 2) score += 15;
+    else if (monthlyIncome >= ct.minIncome) score += 10;
+    // Spend match (35%) — how well do boosted categories align with user's top spends
+    const sortedSpends = Object.entries(spend).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const topCats = sortedSpends.map(s => s[0]);
+    const boostCats = Object.keys(ct.boosts);
+    const matchCount = topCats.filter(c => boostCats.includes(c)).length;
+    score += Math.round((matchCount / Math.max(topCats.length, 1)) * 35);
+    // Cost efficiency (25%)
+    const efficiencyRatio = annualFee > 0 ? annualRewardValue / annualFee : (annualRewardValue > 0 ? 2 : 0.5);
+    score += Math.min(25, Math.round(efficiencyRatio * 12.5));
+    // Credit match (10%)
+    if (ct.minCibil === 0 || cibilScore >= ct.minCibil) score += 10;
+    // Travel alignment (15%)
+    if (ct.loungeVisitsPerYear > 0 && domesticFlights >= 4) score += 15;
+    else if (ct.loungeVisitsPerYear === 0 && domesticFlights < 2) score += 10;
+    else score += 5;
+
+    return {
+      type: ct,
+      annualRewardValue: Math.round(annualRewardValue),
+      fuelSurchargeWaiverValue: Math.round(fuelSurchargeWaiverValue),
+      loungeValue: Math.round(loungeValue),
+      milestoneValue: Math.round(milestoneValue),
+      annualFee,
+      netAnnualValue: Math.round(netAnnualValue),
+      breakEvenSpend,
+      suitabilityScore: Math.min(100, Math.max(0, score)),
+      eligible,
+    };
+  }).sort((a, b) => b.suitabilityScore - a.suitabilityScore);
+}

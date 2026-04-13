@@ -71,4 +71,5 @@ export const allCalcs: CalcItem[] = [
     // Credit Cards
     { nameKey: 'calculators.ccPayoff.name', descKey: 'calculators.ccPayoff.desc', icon: CreditCard, color: '#06B6D4', path: '/calculator/credit-card-payoff', category: 'loans', keywords: ['credit', 'card', 'payoff', 'debt', 'avalanche', 'snowball'] },
     { nameKey: 'calculators.ccInterest.name', descKey: 'calculators.ccInterest.desc', icon: CreditCard, color: '#EF4444', path: '/calculator/credit-card-interest', category: 'loans', keywords: ['credit', 'card', 'interest', 'gst', 'finance', 'charge'] },
+    { nameKey: 'calculators.ccCompare.name', descKey: 'calculators.ccCompare.desc', icon: GitCompare, color: '#8B5CF6', path: '/calculator/credit-card-compare', category: 'loans', keywords: ['credit', 'card', 'compare', 'type', 'cashback', 'rewards', 'travel', 'fuel'] },
 ];
