@@ -19,17 +19,6 @@ import SaveNameDialog from '../components/SaveNameDialog';
 
 const SUM_INSURED_VALUES = [5, 10, 15, 25, 50, 100] as const;
 
-const PRIORITY_OPTIONS = [
-  { id: 'csr', label: 'Highest CSR' },
-  { id: 'restoration', label: 'Unlimited Restore' },
-  { id: 'network', label: 'Best Network' },
-  { id: 'opd', label: 'OPD Cover' },
-  { id: 'wellness', label: 'Wellness Rewards' },
-  { id: 'claim_speed', label: 'Fast Claims' },
-  { id: 'senior', label: 'Senior Friendly' },
-  { id: 'child', label: 'Child Focused' },
-];
-
 // ─── Formatting ─────────────────────────────────────────────────────────────────
 
 function fmt(n: number): string {
@@ -186,51 +175,7 @@ function AccordionItem({ title, body, idx, open, onToggle }: {
   );
 }
 
-// ─── Static data ────────────────────────────────────────────────────────────────
-
-const PRIORITY_GUIDANCE: Record<string, string> = {
-  csr: 'CSR = claims settled ÷ claims received × 100. Look for CSR above 95%. Verify only at irdai.gov.in → Statistics → Annual Report. Third-party sites may show stale or adjusted numbers.',
-  restoration: 'After one member exhausts cover, it should automatically restore — either once or unlimited per year. Unlimited restoration for different illnesses is the gold standard. Ask specifically whether restoration applies to the same illness too.',
-  network: 'Before buying, search your preferred hospital on the insurer\'s own website. Hospital network lists change frequently — never rely on a broker or aggregator site for this verification.',
-  opd: 'OPD benefit covers doctor consultations, diagnostics and medicines without hospitalisation. Check the annual OPD limit, sublimits per visit, and whether it requires a network doctor. Some plans offer OPD via teleconsultation.',
-  wellness: 'Wellness rewards (gym, step count, health check-ups) reduce renewal premium in some plans. Read the fine print — reward redemption often requires specific apps or partner brands. Useful bonus, not a primary criterion.',
-  claim_speed: 'Insurers with in-house claim processing settle cashless faster than TPA-based models. Ask the insurer directly: "Who processes my cashless claims?" Also check their median cashless settlement time.',
-  senior: 'For members above 60, avoid plans with age-based co-payment (you pay 10–20% of every claim). Look for zero co-pay, higher room rent limits, and dedicated senior customer service. Consider a separate senior citizen plan.',
-  child: 'For children under 5, verify the newborn clause (Day 1 or within 90 days). Check vaccination OPD benefit and whether paediatric sub-limits apply. Family floater sum insured should be adequate for a child hospitalisation.',
-};
-
-const BASE_CHECKLIST: { title: string; body: string }[] = [
-  { title: 'No Room Rent Capping', body: 'Ensure the plan has NO sub-limit on room rent. A plan capping room rent at ₹5,000/day means ALL linked charges (doctor fees, nursing, procedures) are proportionally reduced. Avoid any plan with room rent sub-limits.' },
-  { title: 'Sum Insured Restoration', body: 'After one member uses up the sum insured, it should automatically restore — either once per year or unlimited. Ask: "Does restoration apply to the same illness or a different illness?" Unlimited is better.' },
-  { title: 'No Claim Bonus (NCB)', body: 'Every claim-free year should increase your sum insured by 10–50% at no extra cost. Check: 1) What % NCB per year? 2) Is NCB protected after a small claim? 3) What is the maximum NCB cap? 50% is good, 100% is excellent.' },
-  { title: 'Pre-Existing Disease Waiting Period', body: 'IRDAI 2025 rules: maximum PED waiting period is now 36 months for new policies. Shorter is better. After the waiting period ends, your pre-existing conditions must be covered. Never hide a condition — non-disclosure is the #1 cause of claim rejection.' },
-  { title: 'Lifetime Renewability', body: 'Under IRDAI HIR 2016 Regulation 12, any policy renewed without a break cannot be denied renewal due to age. Ensure the policy explicitly states "Lifelong Renewable". Never let your health policy lapse — you lose accumulated waiting period credits.' },
-  { title: 'Claim Settlement Ratio', body: 'CSR = claims settled / claims received × 100. Look for CSR above 95%. Verify from IRDAI\'s official annual report at irdai.gov.in — not from broker or comparison websites. Also check Complaint Volume per 10,000 claims.' },
-  { title: 'In-House vs TPA Claims', body: 'Insurers with in-house claim teams process cashless faster and with fewer disputes. Ask the insurer directly: "Who processes my cashless claims at the hospital?" In-house is better for smooth experience.' },
-];
-
-const IRDAI_RIGHTS = [
-  { title: 'No Age Limit for New Policies', body: 'Insurers cannot deny new health insurance based on age alone. (IRDAI 2025 guideline)' },
-  { title: 'Maximum 36-Month PED Waiting', body: 'Waiting period for pre-existing diseases capped at 36 months for new policies. (IRDAI 2025)' },
-  { title: 'Lifetime Renewability', body: 'No policy can be denied renewal due to age if renewed without break. (IRDAI HIR 2016 Reg 12)' },
-  { title: '5-Year Moratorium', body: 'After 5 years continuous coverage, insurer cannot reject claims citing non-disclosure except fraud. (IRDAI Master Circular 2024)' },
-  { title: '10% Cap for 65+', body: 'Renewal premium increase capped at 10%/year for policyholders above 65. (IRDAI Circular Jan 2025)' },
-  { title: 'Free 30-Day Review', body: 'Return the policy within 30 days for a full refund if unsatisfied. (IRDAI free-look rule)' },
-  { title: 'Cashless Everywhere', body: 'Emergency cashless treatment allowed even at non-network hospitals. (IRDAI 2024)' },
-  { title: 'GST-Free Premiums', body: 'Individual health insurance premiums are GST exempt from September 22, 2025. (56th GST Council)' },
-  { title: 'Portability Right', body: 'Switch insurer without losing accrued waiting period benefits. Apply 45 days before renewal.' },
-  { title: 'Insurance Ombudsman', body: 'Free dispute resolution if claim is rejected. File at irdai.gov.in — no lawyer needed.' },
-];
-
-const HOW_TO_BUY = [
-  { step: 1, title: 'Fix your sum insured first', body: 'Rule of thumb: 1 year of gross income OR ₹10L minimum for Tier 2/3, ₹15–25L for metro. Medical inflation is 14%/year — choose a sum insured adequate for 10 years.' },
-  { step: 2, title: 'Shortlist using IRDAI data', body: 'Go to irdai.gov.in → Statistics → Annual Report. Look for CSR above 95% AND complaint ratio below 20 per 10,000 claims.' },
-  { step: 3, title: 'Read the Policy Wording, not the brochure', body: 'Search the document for: "room rent", "co-pay", "sub-limit", "waiting period", "restoration". These are your risk areas — not in the brochure.' },
-  { step: 4, title: 'Get quotes from 3 insurers directly', body: 'Visit insurer websites directly for quotes with identical sum insured and members. Never compare a ₹10L plan from one insurer with a ₹5L plan from another.' },
-  { step: 5, title: 'Check network hospitals yourself', body: 'Visit each insurer\'s own website and search your preferred hospital. Hospital lists change — never rely on broker or aggregator sites.' },
-  { step: 6, title: 'Buy directly from the insurer', body: 'Buying directly (insurer website or app) avoids broker commission loading. Use a broker for advice but buy direct.' },
-  { step: 7, title: 'Declare everything honestly', body: 'Disclose all pre-existing conditions, past surgeries, family medical history. Non-disclosure = claim rejection at the worst possible time.' },
-];
+// ─── Helpers ────────────────────────────────────────────────────────────────────
 
 const childAgeLabel = (age: number, t: (key: string) => string): string => {
   if (age < 1) return t('ins.compare.childNewborn');
@@ -483,7 +428,7 @@ export default function InsuranceCompare() {
       const ff = getFloaterFactor(ages.length);
       const premium = Math.round(rawLo * ff / 100) * 100;
       const adequacy = calcAdequacy(siL, cityType, allAges, parents, hasPreExisting);
-      const valueScore = adequacy > 0 ? Math.round((adequacy / premium) * 10000) : 0;
+      const valueScore = adequacy > 0 && premium > 0 ? Math.round((adequacy / premium) * 10000) : 0;
       return { siL, premium, adequacy, valueScore, isCurrent: siL === sumInsured };
     });
     const best = options.reduce((a, b) => (b.valueScore > a.valueScore && b.adequacy >= 70) ? b : a, options[0]);

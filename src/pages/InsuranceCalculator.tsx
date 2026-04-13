@@ -675,11 +675,18 @@ export default function InsuranceCalculator() {
   // ── 6. WHAT-IF STATE ──────────────────────────────────────────────────────
   const [whatIfSi, setWhatIfSi] = useState(si);
   const [whatIfTerm, setWhatIfTerm] = useState(policyTerm);
+  useEffect(() => { setWhatIfSi(si); }, [si]);
+  useEffect(() => { setWhatIfTerm(policyTerm); }, [policyTerm]);
   const whatIfHealthPremium = useMemo(() => {
-    const [lo, hi] = getMemberPremium(selfAge, whatIfSi, city, preExisting);
+    const siL = whatIfSi / 100000;
+    let rawLo = 0, rawHi = 0;
+    allAges.forEach(age => {
+      const [lo, hi] = getMemberPremium(age, siL >= 1 ? whatIfSi : whatIfSi, city, preExisting);
+      rawLo += lo; rawHi += hi;
+    });
     const ff = getFloaterFactor(allAges.length);
-    return { lo: Math.round(lo * ff * allAges.length / 100) * 100, hi: Math.round(hi * ff * allAges.length / 100) * 100 };
-  }, [whatIfSi, selfAge, city, preExisting, allAges.length]);
+    return { lo: Math.round(rawLo * ff / 100) * 100, hi: Math.round(rawHi * ff / 100) * 100 };
+  }, [whatIfSi, allAges, city, preExisting]);
   const whatIfLifePremium = useMemo(
     () => calcTermRange(lifeAge, lifeGender, lifeSmoker, Math.max(activeCoverCr, 0.5), whatIfTerm),
     [lifeAge, lifeGender, lifeSmoker, activeCoverCr, whatIfTerm],
