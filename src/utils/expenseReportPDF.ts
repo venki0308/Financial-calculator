@@ -218,6 +218,8 @@ export interface DailyReportData {
     budget?: Budget;
     /** All active subscriptions — used to surface a "Renewals today" notice */
     subscriptions?: PDFSubscription[];
+    /** Active credit cards — rendered as a Credit Card Summary section. */
+    creditCards?: CCCard[];
 }
 
 export interface WeeklyReportData {
@@ -228,6 +230,8 @@ export interface WeeklyReportData {
     prevWeekEntries?: Entry[];
     /** All active subscriptions — used to surface renewals due this week */
     subscriptions?: PDFSubscription[];
+    /** Active credit cards — rendered as a Credit Card Summary section. */
+    creditCards?: CCCard[];
 }
 
 /** Pre-translated labels for the monthly PDF (i18n owned by the caller). */
@@ -404,6 +408,8 @@ export interface AnnualReportData {
     budget?: Budget;
     /** Used for the "Annual Subscription Commitment" projection row */
     subscriptions?: PDFSubscription[];
+    /** Active credit cards — rendered as a Credit Card Summary section. */
+    creditCards?: CCCard[];
 }
 
 export interface CustomReportData {
@@ -414,6 +420,8 @@ export interface CustomReportData {
     budget?: Budget;
     accounts?: BankAccount[];
     subscriptions?: PDFSubscription[];
+    /** Active credit cards — rendered as a Credit Card Summary section. */
+    creditCards?: CCCard[];
 }
 
 export interface HealthReportData {
@@ -1095,8 +1103,13 @@ export async function generateDailyPDF(data: DailyReportData): Promise<void> {
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
     }
 
+    // ── Credit Card Summary ──
+    if (data.creditCards && data.creditCards.length > 0) {
+        yPos = drawCreditCardSection(doc, autoTable, data.creditCards, (doc as PDFDoc).lastAutoTable.finalY + 10, headerHook);
+    }
+
     // Disclaimer block at the end of every report
-    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
+    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable?.finalY ? (doc as PDFDoc).lastAutoTable.finalY + 8 : yPos + 8);
 
     drawFooters(doc);
     await savePDF(doc, `FinCalix_Daily_${dateTagFromStr(data.date)}.pdf`);
@@ -1393,6 +1406,11 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
             keepTogether: invBody.length <= 8,
             columnStyles: { 2: { halign: 'right' } },
         });
+    }
+
+    // ── Credit Card Summary ──
+    if (data.creditCards && data.creditCards.length > 0) {
+        drawCreditCardSection(doc, autoTable, data.creditCards, (doc as PDFDoc).lastAutoTable.finalY + 10, headerHook);
     }
 
     drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
@@ -2027,67 +2045,8 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     }
 
     // ── SECTION 6.6: CREDIT CARD SUMMARY ─────────────────────────────────
-    const activeCards = (data.creditCards ?? []).filter(c => c.isActive);
-    if (activeCards.length > 0) {
-        yPos = drawSectionHeader(doc, l('creditCardSummary', 'Credit Card Summary'), yPos);
-
-        const totalLimit = activeCards.reduce((s, c) => s + c.creditLimit, 0);
-        const totalOutstanding = activeCards.reduce((s, c) => s + c.currentBalance, 0);
-        const overallUtil = totalLimit > 0 ? (totalOutstanding / totalLimit) * 100 : 0;
-        const totalMinDue = activeCards.reduce((s, c) => s + c.minimumDue, 0);
-
-        // Summary stat boxes
-        yPos = drawStatBoxes(doc, [
-            { label: l('totalCreditLimit', 'Total Credit Limit'), value: formatINR(totalLimit), tone: 'neutral' },
-            { label: l('totalOutstanding', 'Total Outstanding'), value: formatINR(totalOutstanding), tone: 'expense' },
-            { label: l('overallUtilization', 'Overall Utilization'), value: `${overallUtil.toFixed(1)}%`, tone: overallUtil > 75 ? 'expense' : 'income' },
-            { label: l('minDue', 'Min Due'), value: formatINR(totalMinDue), tone: 'expense' },
-        ], yPos);
-
-        // Per-card table
-        const ccBody: (string | number)[][] = activeCards.map(card => {
-            const util = getUtilization(card.currentBalance, card.creditLimit);
-            const dueDays = getDaysUntilDue(card.dueDate);
-            const utilLabel = util > 75 ? l('ccDanger', 'High') : util > 30 ? l('ccWarning', 'Medium') : l('ccHealthy', 'Low');
-            return [
-                `${card.cardName}\n(${card.last4Digits})`,
-                card.cardNetwork,
-                formatINR(card.creditLimit),
-                formatINR(card.currentBalance),
-                `${util.toFixed(0)}% (${utilLabel})`,
-                formatINR(card.minimumDue),
-                `${dueDays}d`,
-            ];
-        });
-
-        // Totals row
-        ccBody.push([
-            l('total', 'TOTAL'),
-            '',
-            formatINR(totalLimit),
-            formatINR(totalOutstanding),
-            `${overallUtil.toFixed(0)}%`,
-            formatINR(totalMinDue),
-            '',
-        ]);
-
-        table(doc, autoTable, {
-            head: [[
-                l('cardName', 'Card'),
-                l('network', 'Network'),
-                l('creditLimit', 'Limit'),
-                l('outstanding', 'Outstanding'),
-                l('utilization', 'Util %'),
-                l('minDue', 'Min Due'),
-                l('dueDays', 'Due In'),
-            ]],
-            body: ccBody,
-            startY: yPos,
-            headerHook,
-            keepTogether: ccBody.length <= 8,
-            columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' } },
-        });
-        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    if (data.creditCards && data.creditCards.length > 0) {
+        yPos = drawCreditCardSection(doc, autoTable, data.creditCards, yPos, headerHook);
     }
 
     // ── SECTION 7: BUDGET PERFORMANCE ───────────────────────────────────
@@ -2580,6 +2539,11 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
         });
     }
 
+    // ── Credit Card Summary ──
+    if (data.creditCards && data.creditCards.length > 0) {
+        drawCreditCardSection(doc, autoTable, data.creditCards, (doc as PDFDoc).lastAutoTable.finalY + 10, headerHook);
+    }
+
     drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
     drawFooters(doc);
     await savePDF(doc, `FinCalix_Annual_${data.year}.pdf`);
@@ -2826,6 +2790,11 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
         }
     }
 
+    // ── Credit Card Summary ──
+    if (data.creditCards && data.creditCards.length > 0) {
+        drawCreditCardSection(doc, autoTable, data.creditCards, (doc as PDFDoc).lastAutoTable.finalY + 10, headerHook);
+    }
+
     drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
     drawFooters(doc);
     const fname = `FinCalix_Custom_${dateTagFromStr(data.startDate)}_to_${dateTagFromStr(data.endDate)}.pdf`;
@@ -2951,52 +2920,59 @@ export async function generateHealthReportPDF(data: HealthReportData): Promise<v
     }
 
     // ── SECTION 5: CREDIT CARD SUMMARY ───────────────────────────────────
-    const healthCards = (data.creditCards ?? []).filter(c => c.isActive);
-    if (healthCards.length > 0) {
-        let ccY = (doc as PDFDoc).lastAutoTable?.finalY ? (doc as PDFDoc).lastAutoTable.finalY + 10 : yPos + 10;
-        ccY = drawSectionHeader(doc, 'Credit Card Summary', ccY);
-
-        const totalLimit = healthCards.reduce((s, c) => s + c.creditLimit, 0);
-        const totalOut = healthCards.reduce((s, c) => s + c.currentBalance, 0);
-        const overallUtil = totalLimit > 0 ? (totalOut / totalLimit) * 100 : 0;
-        const totalMin = healthCards.reduce((s, c) => s + c.minimumDue, 0);
-
-        ccY = drawStatBoxes(doc, [
-            { label: 'Total Credit Limit', value: formatINR(totalLimit), tone: 'neutral' },
-            { label: 'Total Outstanding', value: formatINR(totalOut), tone: 'expense' },
-            { label: 'Overall Utilization', value: `${overallUtil.toFixed(1)}%`, tone: overallUtil > 75 ? 'expense' : 'income' },
-            { label: 'Min Due', value: formatINR(totalMin), tone: 'expense' },
-        ], ccY);
-
-        const ccBody: (string | number)[][] = healthCards.map(card => {
-            const util = getUtilization(card.currentBalance, card.creditLimit);
-            const dueDays = getDaysUntilDue(card.dueDate);
-            const utilLabel = util > 75 ? 'High' : util > 30 ? 'Medium' : 'Low';
-            return [
-                `${card.cardName} (${card.last4Digits})`,
-                card.cardNetwork,
-                formatINR(card.creditLimit),
-                formatINR(card.currentBalance),
-                `${util.toFixed(0)}% (${utilLabel})`,
-                formatINR(card.minimumDue),
-                `${dueDays}d`,
-            ];
-        });
-        ccBody.push(['TOTAL', '', formatINR(totalLimit), formatINR(totalOut), `${overallUtil.toFixed(0)}%`, formatINR(totalMin), '']);
-
-        table(doc, autoTable, {
-            head: [['Card', 'Network', 'Limit', 'Outstanding', 'Util %', 'Min Due', 'Due In']],
-            body: ccBody,
-            startY: ccY,
-            headerHook,
-            keepTogether: ccBody.length <= 8,
-            columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' } },
-        });
+    if (data.creditCards && data.creditCards.length > 0) {
+        const ccStartY = (doc as PDFDoc).lastAutoTable?.finalY ? (doc as PDFDoc).lastAutoTable.finalY + 10 : yPos + 10;
+        drawCreditCardSection(doc, autoTable, data.creditCards, ccStartY, headerHook);
     }
 
     drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
     drawFooters(doc);
     await savePDF(doc, `FinCalix_Health_${data.monthLabel.replace(/\s+/g, '')}_${dateTag()}.pdf`);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SHARED: CREDIT CARD PDF SECTION
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Renders a Credit Card Summary section (stat boxes + per-card table).
+ *  Reusable across daily, weekly, monthly, annual, custom, and health reports. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function drawCreditCardSection(doc: PDFDoc, autoTable: any, cards: CCCard[], yPos: number, headerHook: any): number {
+    const activeCards = cards.filter(c => c.isActive);
+    if (activeCards.length === 0) return yPos;
+
+    yPos = drawSectionHeader(doc, 'Credit Card Summary', yPos);
+
+    const totalLimit = activeCards.reduce((s, c) => s + c.creditLimit, 0);
+    const totalOut = activeCards.reduce((s, c) => s + c.currentBalance, 0);
+    const overallUtil = totalLimit > 0 ? (totalOut / totalLimit) * 100 : 0;
+    const totalMin = activeCards.reduce((s, c) => s + c.minimumDue, 0);
+
+    yPos = drawStatBoxes(doc, [
+        { label: 'Total Credit Limit', value: formatINR(totalLimit), tone: 'neutral' },
+        { label: 'Total Outstanding', value: formatINR(totalOut), tone: 'expense' },
+        { label: 'Overall Utilization', value: `${overallUtil.toFixed(1)}%`, tone: overallUtil > 75 ? 'expense' : 'income' },
+        { label: 'Min Due', value: formatINR(totalMin), tone: 'expense' },
+    ], yPos);
+
+    const ccBody: (string | number)[][] = activeCards.map(card => {
+        const util = getUtilization(card.currentBalance, card.creditLimit);
+        const dueDays = getDaysUntilDue(card.dueDate);
+        const utilLabel = util > 75 ? 'High' : util > 30 ? 'Medium' : 'Low';
+        const nameLabel = card.last4Digits ? `${card.cardName} (${card.last4Digits})` : card.cardName;
+        return [nameLabel, card.cardNetwork, formatINR(card.creditLimit), formatINR(card.currentBalance), `${util.toFixed(0)}% (${utilLabel})`, formatINR(card.minimumDue), `${dueDays}d`];
+    });
+    ccBody.push(['TOTAL', '', formatINR(totalLimit), formatINR(totalOut), `${overallUtil.toFixed(0)}%`, formatINR(totalMin), '']);
+
+    table(doc, autoTable, {
+        head: [['Card', 'Network', 'Limit', 'Outstanding', 'Util %', 'Min Due', 'Due In']],
+        body: ccBody,
+        startY: yPos,
+        headerHook,
+        keepTogether: ccBody.length <= 8,
+        columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' } },
+    });
+    return (doc as PDFDoc).lastAutoTable.finalY + 10;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

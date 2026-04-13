@@ -213,6 +213,7 @@ export default function ReportsTab() {
             entries,
             budget: dailyBudget,
             subscriptions: pdfSubscriptions,
+            creditCards: getAllCreditCards().filter(c => c.isActive),
           });
           break;
         }
@@ -228,6 +229,7 @@ export default function ReportsTab() {
             entries,
             prevWeekEntries,
             subscriptions: pdfSubscriptions,
+            creditCards: getAllCreditCards().filter(c => c.isActive),
           });
           break;
         }
@@ -418,6 +420,7 @@ export default function ReportsTab() {
             year: selectedYear.year,
             entries,
             subscriptions: pdfSubscriptions,
+            creditCards: getAllCreditCards().filter(c => c.isActive),
           });
           break;
         }
@@ -435,6 +438,7 @@ export default function ReportsTab() {
             entries,
             accounts: getAllAccounts(),
             subscriptions: pdfSubscriptions,
+            creditCards: getAllCreditCards().filter(c => c.isActive),
           });
           break;
         }
