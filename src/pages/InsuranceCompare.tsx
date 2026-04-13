@@ -391,6 +391,105 @@ export default function InsuranceCompare() {
     return items;
   }, [children, parents, seniorParents.length, elderlyParents.length, hasPreExisting, sumInsured, cityType, allAges.length]);
 
+  // ── 1. PLAN COMPARISON: Base + Top-Up vs Full Coverage ──────────────────────
+  const planComparison = useMemo(() => {
+    const siAmount = sumInsured * 100000;
+    const baseSi = cityType === 'metro' ? 10 : cityType === 'tier2' ? 5 : 5; // lakhs
+    const topUpSi = Math.max(0, sumInsured - baseSi);
+    const [baseLo, baseHi] = [premiumData.lo * 0.55, premiumData.hi * 0.55]; // base portion
+    const topUpPremium = topUpSi > 0 ? Math.round(topUpSi * 100000 * 0.003) : 0;
+    const planACost = Math.round(baseLo) + topUpPremium;
+    const planBCost = premiumData.lo;
+    return {
+      baseSi, topUpSi, siAmount,
+      planA: { name: t('ins.cmp.planA', 'Plan A: Base + Top-Up'), baseCover: baseSi, topUpCover: topUpSi, premium: planACost, desc: t('ins.cmp.planADesc', 'Lower base premium + affordable top-up for high coverage') },
+      planB: { name: t('ins.cmp.planB', 'Plan B: Single Full Plan'), cover: sumInsured, premium: planBCost, desc: t('ins.cmp.planBDesc', 'One comprehensive plan — simpler but higher premium') },
+      savings: planBCost - planACost,
+    };
+  }, [sumInsured, cityType, premiumData, t]);
+
+  // ── 2. PRIORITY MAPPING ───────────────────────────────────────────────────────
+  const priorityMapping = useMemo(() => {
+    const map: { priority: string; label: string; metric: string; recommendation: string }[] = [];
+    priorities.forEach(p => {
+      if (p === 'csr') map.push({ priority: p, label: t('ins.cmp.csrLabel', 'Claim Settlement'), metric: t('ins.cmp.csrMetric', 'Look for CSR > 95%'), recommendation: t('ins.cmp.csrRec', 'Verify only at irdai.gov.in. Third-party sites show stale data.') });
+      if (p === 'network') map.push({ priority: p, label: t('ins.cmp.networkLabel', 'Hospital Network'), metric: t('ins.cmp.networkMetric', 'Check your hospital on insurer website'), recommendation: t('ins.cmp.networkRec', 'Network lists change frequently. Never rely on broker sites.') });
+      if (p === 'claim_speed') map.push({ priority: p, label: t('ins.cmp.claimLabel', 'Claim Speed'), metric: t('ins.cmp.claimMetric', 'In-house > TPA processing'), recommendation: t('ins.cmp.claimRec', 'Ask insurer: "Who processes cashless claims?" In-house = faster.') });
+      if (p === 'restoration') map.push({ priority: p, label: t('ins.cmp.restoreLabel', 'Restoration'), metric: t('ins.cmp.restoreMetric', 'Unlimited > Once/year'), recommendation: t('ins.cmp.restoreRec', 'Ask if restoration applies to same illness or different only.') });
+      if (p === 'opd') map.push({ priority: p, label: t('ins.cmp.opdLabel', 'OPD Cover'), metric: t('ins.cmp.opdMetric', 'Check annual OPD limit'), recommendation: t('ins.cmp.opdRec', 'Check sublimits per visit and network doctor requirement.') });
+      if (p === 'senior') map.push({ priority: p, label: t('ins.cmp.seniorLabel', 'Senior Friendly'), metric: t('ins.cmp.seniorMetric', 'Zero co-pay + no age sublimits'), recommendation: t('ins.cmp.seniorRec', 'Avoid plans with age-based co-payment (10-20% of every claim).') });
+      if (p === 'child') map.push({ priority: p, label: t('ins.cmp.childLabel', 'Child Focused'), metric: t('ins.cmp.childMetric', 'Day 1 newborn + vaccination'), recommendation: t('ins.cmp.childRec', 'Verify newborn clause and paediatric sublimits.') });
+      if (p === 'wellness') map.push({ priority: p, label: t('ins.cmp.wellnessLabel', 'Wellness'), metric: t('ins.cmp.wellnessMetric', 'Premium discount for healthy habits'), recommendation: t('ins.cmp.wellnessRec', 'Read fine print — reward redemption often requires specific apps.') });
+    });
+    return map;
+  }, [priorities, t]);
+
+  // ── 3. TRADE-OFF ANALYSIS ─────────────────────────────────────────────────────
+  const tradeOffs = useMemo(() => {
+    const items: { title: string; choice1: string; choice2: string; verdict: string }[] = [];
+    items.push({
+      title: t('ins.cmp.tradeoffCost', 'Cost vs Coverage'),
+      choice1: t('ins.cmp.tradeoffLowPremium', 'Lower premium (₹5-10L cover) — save ₹5-15K/yr'),
+      choice2: t('ins.cmp.tradeoffHighCover', 'Higher cover (₹25-50L) — protected against major illness'),
+      verdict: cityType === 'metro' ? t('ins.cmp.tradeoffMetroVerdict', 'In metros, higher cover wins. One ICU stay can exceed ₹5L.') : t('ins.cmp.tradeoffTierVerdict', 'In Tier 2/3, ₹10-15L is usually adequate.'),
+    });
+    items.push({
+      title: t('ins.cmp.tradeoffRisk', 'Risk vs Premium'),
+      choice1: t('ins.cmp.tradeoffCopay', 'Co-pay plan (10-20% you pay) — 15-25% lower premium'),
+      choice2: t('ins.cmp.tradeoffZeroCopay', 'Zero co-pay plan — higher premium but full coverage'),
+      verdict: hasPreExisting ? t('ins.cmp.tradeoffPedVerdict', 'With pre-existing conditions, zero co-pay is critical. Co-pay on chronic illness claims adds up.') : t('ins.cmp.tradeoffNoPedVerdict', 'For healthy families, co-pay plans can save money if you rarely claim.'),
+    });
+    if (parents.length > 0) {
+      items.push({
+        title: t('ins.cmp.tradeoffFamily', 'Floater vs Individual'),
+        choice1: t('ins.cmp.tradeoffFloater', 'Family floater — one policy, shared sum insured'),
+        choice2: t('ins.cmp.tradeoffIndividual', 'Separate policies — higher cost but independent cover'),
+        verdict: seniorParents.length > 0 ? t('ins.cmp.tradeoffSeniorVerdict', 'Separate policy for parents 60+ recommended. Floater with seniors inflates young family premium.') : t('ins.cmp.tradeoffYoungVerdict', 'Floater is cost-effective when all members are under 60.'),
+      });
+    }
+    return items;
+  }, [cityType, hasPreExisting, parents.length, seniorParents.length, t]);
+
+  // ── 4. FAMILY-BASED RECOMMENDATIONS ───────────────────────────────────────────
+  const familyRecs = useMemo(() => {
+    const recs: { icon: string; text: string }[] = [];
+    if (seniorParents.length > 0) recs.push({ icon: '👴', text: t('ins.cmp.famSenior', 'Parents 60+ should ideally be on a separate senior citizen plan to avoid inflating your family floater premium.') });
+    if (elderlyParents.length > 0) recs.push({ icon: '🏥', text: t('ins.cmp.famElderly', 'Parents 70+ have very high hospitalisation risk. Ensure zero co-pay and no room rent capping. Consider ₹25L+ cover for them.') });
+    if (children.some(c => c <= 4)) recs.push({ icon: '👶', text: t('ins.cmp.famToddler', 'Toddlers need day-care procedure cover and vaccination OPD. Verify the newborn clause — Day 1 cover is best.') });
+    if (hasSpouse && children.length === 0) recs.push({ icon: '💑', text: t('ins.cmp.famCouple', 'Planning children? Add maternity benefit now. Most plans have 2-4 year waiting period for maternity.') });
+    if (allAges.every(a => a < 35)) recs.push({ icon: '💪', text: t('ins.cmp.famYoung', 'All members under 35 — lock in a high sum insured now. Premiums are lowest at this age and won\'t increase for existing members.') });
+    return recs;
+  }, [seniorParents.length, elderlyParents.length, children, hasSpouse, allAges, t]);
+
+  // ── 5. REAL RISK CONTEXT (Hospital costs + coverage gaps) ─────────────────────
+  const riskContext = useMemo(() => {
+    const mul = cityType === 'metro' ? 1.0 : cityType === 'tier2' ? 0.6 : 0.4;
+    const siAmount = sumInsured * 100000;
+    const scenarios = [
+      { event: t('ins.cmp.scenarioICU', '10-Day ICU Stay'), cost: Math.round(450000 * mul), covered: siAmount >= Math.round(450000 * mul) },
+      { event: t('ins.cmp.scenarioHeart', 'Heart Surgery + Recovery'), cost: Math.round(700000 * mul), covered: siAmount >= Math.round(700000 * mul) },
+      { event: t('ins.cmp.scenarioCancer', 'Cancer (1yr treatment)'), cost: Math.round(1500000 * mul), covered: siAmount >= Math.round(1500000 * mul) },
+      { event: t('ins.cmp.scenarioKnee', 'Joint Replacement'), cost: Math.round(400000 * mul), covered: siAmount >= Math.round(400000 * mul) },
+    ];
+    const gaps = scenarios.filter(s => !s.covered);
+    return { scenarios, gaps, hasGaps: gaps.length > 0 };
+  }, [sumInsured, cityType, t]);
+
+  // ── 6. COST OPTIMIZATION ──────────────────────────────────────────────────────
+  const costOptimization = useMemo(() => {
+    const options = SUM_INSURED_VALUES.map(siL => {
+      const ages = allAges;
+      const rawLo = ages.reduce((s, age) => s + getMemberPremium(age, siL, cityType, hasPreExisting)[0], 0);
+      const ff = getFloaterFactor(ages.length);
+      const premium = Math.round(rawLo * ff / 100) * 100;
+      const adequacy = calcAdequacy(siL, cityType, allAges, parents, hasPreExisting);
+      const valueScore = adequacy > 0 ? Math.round((adequacy / premium) * 10000) : 0;
+      return { siL, premium, adequacy, valueScore, isCurrent: siL === sumInsured };
+    });
+    const best = options.reduce((a, b) => (b.valueScore > a.valueScore && b.adequacy >= 70) ? b : a, options[0]);
+    return { options, best };
+  }, [sumInsured, allAges, parents, cityType, hasPreExisting]);
+
   // ── Save / Remove handlers ────────────────────────────────────────────────────
   const suggestedName = `Health Compare — ${allAges.length} members · ${fmtL(sumInsured)} cover`;
 
@@ -763,6 +862,139 @@ export default function InsuranceCompare() {
                   </p>
                 </div>
               </div>
+
+              {/* ── 1. PLAN COMPARISON: Base + Top-Up vs Full ── */}
+              {sumInsured >= 10 && (
+                <div className="p-4 rounded-2xl bg-card border border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Shield size={15} className="text-blue-400" />
+                    <h3 className="text-sm font-bold text-foreground">{t('ins.cmp.planCompareTitle', 'Plan Comparison')}</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className={`p-3 rounded-xl border ${planComparison.savings > 0 ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-border'}`}>
+                      <p className="text-[9px] uppercase font-bold text-emerald-400 mb-1">{planComparison.planA.name}</p>
+                      <p className="text-xs text-muted-foreground mb-1">{fmtL(planComparison.baseSi)} + {fmtL(planComparison.topUpSi)} {t('ins.cmp.topUpLabel', 'top-up')}</p>
+                      <p className="text-lg font-black text-foreground">~{fmt(planComparison.planA.premium)}<span className="text-[9px] font-normal text-muted-foreground">/{t('ins.life.yr', 'yr')}</span></p>
+                      <p className="text-[9px] text-muted-foreground mt-1">{planComparison.planA.desc}</p>
+                    </div>
+                    <div className={`p-3 rounded-xl border ${planComparison.savings <= 0 ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-border'}`}>
+                      <p className="text-[9px] uppercase font-bold text-blue-400 mb-1">{planComparison.planB.name}</p>
+                      <p className="text-xs text-muted-foreground mb-1">{fmtL(sumInsured)} {t('ins.cmp.singlePlan', 'single plan')}</p>
+                      <p className="text-lg font-black text-foreground">~{fmt(planComparison.planB.premium)}<span className="text-[9px] font-normal text-muted-foreground">/{t('ins.life.yr', 'yr')}</span></p>
+                      <p className="text-[9px] text-muted-foreground mt-1">{planComparison.planB.desc}</p>
+                    </div>
+                  </div>
+                  {planComparison.savings > 0 && (
+                    <p className="text-[10px] text-center font-semibold text-emerald-400">💡 {t('ins.cmp.planASaves', { amount: fmt(planComparison.savings), defaultValue: 'Base + Top-Up can save ~{{amount}}/yr with same total coverage' })}</p>
+                  )}
+                </div>
+              )}
+
+              {/* ── 3. TRADE-OFF EXPLANATIONS ── */}
+              <div className="p-4 rounded-2xl bg-card border border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Info size={15} className="text-amber-400" />
+                  <h3 className="text-sm font-bold text-foreground">{t('ins.cmp.tradeoffTitle', 'Key Trade-Offs to Consider')}</h3>
+                </div>
+                <div className="space-y-3">
+                  {tradeOffs.map((tf, i) => (
+                    <div key={i} className="p-3 rounded-xl bg-muted/30 border border-border">
+                      <p className="text-xs font-bold text-foreground mb-2">{tf.title}</p>
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        <p className="text-[10px] text-muted-foreground p-2 rounded-lg bg-blue-500/5">⚖️ {tf.choice1}</p>
+                        <p className="text-[10px] text-muted-foreground p-2 rounded-lg bg-emerald-500/5">⚖️ {tf.choice2}</p>
+                      </div>
+                      <p className="text-[10px] font-semibold text-emerald-400">→ {tf.verdict}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── 5. REAL RISK CONTEXT — Hospital cost scenarios ── */}
+              <div className="p-4 rounded-2xl bg-card border border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Heart size={15} className="text-red-400" />
+                  <h3 className="text-sm font-bold text-foreground">{t('ins.cmp.riskTitle', 'Will Your Cover Handle This?')}</h3>
+                </div>
+                <div className="space-y-1.5">
+                  {riskContext.scenarios.map((s, i) => (
+                    <div key={i} className="flex items-center justify-between p-2.5 rounded-xl" style={{ background: s.covered ? '#22c55e08' : '#ef44440a' }}>
+                      <span className="text-[11px] font-medium text-foreground">{s.event}</span>
+                      <div className="text-right">
+                        <span className={`text-[10px] font-bold ${s.covered ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(s.cost)}</span>
+                        <p className="text-[8px]" style={{ color: s.covered ? '#22c55e' : '#ef4444' }}>{s.covered ? '✅ ' + t('ins.cmp.covered', 'Covered') : '⚠ ' + t('ins.cmp.gap', 'Gap!')}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {riskContext.hasGaps && (
+                  <p className="text-[10px] text-red-400 mt-2 font-semibold">{t('ins.cmp.gapWarning', { count: riskContext.gaps.length, defaultValue: '{{count}} scenario(s) exceed your coverage. Consider increasing sum insured.' })}</p>
+                )}
+              </div>
+
+              {/* ── 4. FAMILY-BASED RECOMMENDATIONS ── */}
+              {familyRecs.length > 0 && (
+                <div className="p-4 rounded-2xl bg-card border border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Users size={15} className="text-violet-400" />
+                    <h3 className="text-sm font-bold text-foreground">{t('ins.cmp.familyRecTitle', 'Family-Specific Advice')}</h3>
+                  </div>
+                  <div className="space-y-2">
+                    {familyRecs.map((rec, i) => (
+                      <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-violet-500/5 border border-violet-500/15">
+                        <span className="text-base flex-shrink-0">{rec.icon}</span>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">{rec.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── 6. COST OPTIMIZATION ── */}
+              <div className="p-4 rounded-2xl bg-card border border-border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Shield size={15} className="text-emerald-400" />
+                  <h3 className="text-sm font-bold text-foreground">{t('ins.cmp.optimizeTitle', 'Best Value Coverage')}</h3>
+                </div>
+                <p className="text-[10px] text-muted-foreground mb-3">{t('ins.cmp.optimizeDesc', 'Coverage adequacy vs premium — find the sweet spot')}</p>
+                <div className="space-y-1.5">
+                  {costOptimization.options.filter(o => o.adequacy > 0).map(o => (
+                    <div key={o.siL} className={`flex items-center justify-between p-2.5 rounded-xl ${o.siL === costOptimization.best.siL ? 'bg-emerald-500/10 border border-emerald-500/25' : o.isCurrent ? 'bg-blue-500/5 border border-blue-500/20' : ''}`} style={o.siL !== costOptimization.best.siL && !o.isCurrent ? { border: '1px solid transparent' } : {}}>
+                      <div>
+                        <p className="text-xs font-bold text-foreground">{fmtL(o.siL)}</p>
+                        <p className="text-[9px] text-muted-foreground">~{fmt(o.premium)}/{t('ins.life.yr', 'yr')}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-2 rounded-full overflow-hidden bg-muted">
+                          <div className="h-full rounded-full" style={{ width: `${o.adequacy}%`, background: o.adequacy >= 75 ? '#22c55e' : o.adequacy >= 50 ? '#f59e0b' : '#ef4444' }} />
+                        </div>
+                        <span className="text-[10px] font-bold w-8 text-right" style={{ color: o.adequacy >= 75 ? '#22c55e' : o.adequacy >= 50 ? '#f59e0b' : '#ef4444' }}>{o.adequacy}%</span>
+                        {o.siL === costOptimization.best.siL && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">{t('ins.cmp.bestValue', 'Best')}</span>}
+                        {o.isCurrent && o.siL !== costOptimization.best.siL && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-bold">{t('ins.cmp.yourPick', 'Yours')}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── 2. PRIORITY-BASED LOGIC — if priorities selected ── */}
+              {priorityMapping.length > 0 && (
+                <div className="p-4 rounded-2xl bg-card border border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle size={15} className="text-amber-400" />
+                    <h3 className="text-sm font-bold text-foreground">{t('ins.cmp.priorityMapTitle', 'What to Check Based on Your Priorities')}</h3>
+                  </div>
+                  <div className="space-y-2.5">
+                    {priorityMapping.map((pm, i) => (
+                      <div key={i} className="p-3 rounded-xl border border-border">
+                        <p className="text-xs font-bold text-foreground mb-1">{pm.label}</p>
+                        <p className="text-[10px] text-amber-400 font-semibold mb-1">📊 {pm.metric}</p>
+                        <p className="text-[10px] text-muted-foreground">{pm.recommendation}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Save to My Loans / Trackers */}
               <div className="p-4 rounded-2xl bg-card border border-border space-y-3">
