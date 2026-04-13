@@ -33,6 +33,7 @@ import {
     formatPeriodChange,
 } from './expenseCalculations';
 import { getCategoryById } from './expenseStorage';
+import { getUtilization, getDaysUntilDue, type CCCard } from './creditCardCalculations';
 
 /** Loose subscription shape used for richer PDF rows (name, billing cycle,
  *  next renewal). The SubscriptionInput contract above is enough for
@@ -310,6 +311,20 @@ export interface MonthlyReportLabels {
     monthlyEquivalent: string;
     nextAnnual: string;
     perYear: string;
+    creditCardSummary: string;
+    cardName: string;
+    network: string;
+    creditLimit: string;
+    outstanding: string;
+    utilization: string;
+    minDue: string;
+    dueDays: string;
+    totalCreditLimit: string;
+    totalOutstanding: string;
+    overallUtilization: string;
+    ccHealthy: string;
+    ccWarning: string;
+    ccDanger: string;
     budgetVsActual: string;
     onTrack: string;
     overBudget: string;
@@ -368,6 +383,8 @@ export interface MonthlyReportData {
     /** All active subscriptions — counted in the monthly cash flow + listed
      *  in a "Subscription Commitments" section at the end of the report. */
     subscriptions?: PDFSubscription[];
+    /** Active credit cards — rendered as a Credit Card Summary section. */
+    creditCards?: CCCard[];
     /** Pre-translated labels for i18n support (optional — falls back to English). */
     labels?: MonthlyReportLabels;
     /** Previous month entries for month-over-month comparison. */
@@ -2003,6 +2020,70 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             headerHook,
             keepTogether: subsBody.length <= 10,
             columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    }
+
+    // ── SECTION 6.6: CREDIT CARD SUMMARY ─────────────────────────────────
+    const activeCards = (data.creditCards ?? []).filter(c => c.isActive);
+    if (activeCards.length > 0) {
+        yPos = drawSectionHeader(doc, l('creditCardSummary', 'Credit Card Summary'), yPos);
+
+        const totalLimit = activeCards.reduce((s, c) => s + c.creditLimit, 0);
+        const totalOutstanding = activeCards.reduce((s, c) => s + c.currentBalance, 0);
+        const overallUtil = totalLimit > 0 ? (totalOutstanding / totalLimit) * 100 : 0;
+        const totalMinDue = activeCards.reduce((s, c) => s + c.minimumDue, 0);
+
+        // Summary stat boxes
+        yPos = drawStatBoxes(doc, [
+            { label: l('totalCreditLimit', 'Total Credit Limit'), value: formatINR(totalLimit), tone: 'neutral' },
+            { label: l('totalOutstanding', 'Total Outstanding'), value: formatINR(totalOutstanding), tone: 'expense' },
+            { label: l('overallUtilization', 'Overall Utilization'), value: `${overallUtil.toFixed(1)}%`, tone: overallUtil > 75 ? 'expense' : 'income' },
+            { label: l('minDue', 'Min Due'), value: formatINR(totalMinDue), tone: 'expense' },
+        ], yPos);
+
+        // Per-card table
+        const ccBody: (string | number)[][] = activeCards.map(card => {
+            const util = getUtilization(card.currentBalance, card.creditLimit);
+            const dueDays = getDaysUntilDue(card.dueDate);
+            const utilLabel = util > 75 ? l('ccDanger', 'High') : util > 30 ? l('ccWarning', 'Medium') : l('ccHealthy', 'Low');
+            return [
+                `${card.cardName}\n(${card.last4Digits})`,
+                card.cardNetwork,
+                formatINR(card.creditLimit),
+                formatINR(card.currentBalance),
+                `${util.toFixed(0)}% (${utilLabel})`,
+                formatINR(card.minimumDue),
+                `${dueDays}d`,
+            ];
+        });
+
+        // Totals row
+        ccBody.push([
+            l('total', 'TOTAL'),
+            '',
+            formatINR(totalLimit),
+            formatINR(totalOutstanding),
+            `${overallUtil.toFixed(0)}%`,
+            formatINR(totalMinDue),
+            '',
+        ]);
+
+        table(doc, autoTable, {
+            head: [[
+                l('cardName', 'Card'),
+                l('network', 'Network'),
+                l('creditLimit', 'Limit'),
+                l('outstanding', 'Outstanding'),
+                l('utilization', 'Util %'),
+                l('minDue', 'Min Due'),
+                l('dueDays', 'Due In'),
+            ]],
+            body: ccBody,
+            startY: yPos,
+            headerHook,
+            keepTogether: ccBody.length <= 8,
+            columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
     }

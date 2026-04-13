@@ -46,6 +46,7 @@ import type { PDFSubscription } from '../../utils/expenseReportPDF';
 // commitments are visible in reports. Without this the PDF silently
 // understated monthly outflow by however much the user had in active subs.
 import { useBudgetTrackerStore } from '../../store/useBudgetTrackerStore';
+import { getAllCreditCards } from '../../utils/creditCardStorage';
 import SVGPieChart from '../../components/charts/SVGPieChart';
 import HealthScoreGauge from '../../components/charts/HealthScoreGauge';
 
@@ -332,6 +333,20 @@ export default function ReportsTab() {
             monthlyEquivalent: te('pdfReport.monthlyEquivalent', 'Monthly Equivalent'),
             nextAnnual: te('pdfReport.nextAnnual', 'Next / Annual'),
             perYear: te('pdfReport.perYear', '/ yr'),
+            creditCardSummary: te('pdfReport.creditCardSummary', 'Credit Card Summary'),
+            cardName: te('pdfReport.cardName', 'Card'),
+            network: te('pdfReport.network', 'Network'),
+            creditLimit: te('pdfReport.creditLimit', 'Limit'),
+            outstanding: te('pdfReport.outstanding', 'Outstanding'),
+            utilization: te('pdfReport.utilization', 'Util %'),
+            minDue: te('pdfReport.minDue', 'Min Due'),
+            dueDays: te('pdfReport.dueDays', 'Due In'),
+            totalCreditLimit: te('pdfReport.totalCreditLimit', 'Total Credit Limit'),
+            totalOutstanding: te('pdfReport.totalOutstanding', 'Total Outstanding'),
+            overallUtilization: te('pdfReport.overallUtilization', 'Overall Utilization'),
+            ccHealthy: te('pdfReport.ccHealthy', 'Low'),
+            ccWarning: te('pdfReport.ccWarning', 'Medium'),
+            ccDanger: te('pdfReport.ccDanger', 'High'),
             budgetVsActual: te('pdfReport.budgetVsActual', 'Budget vs Actual'),
             onTrack: te('pdfReport.onTrack', 'On Track'),
             overBudget: te('pdfReport.overBudget', 'Over Budget'),
@@ -387,6 +402,7 @@ export default function ReportsTab() {
             budget: monthBudget,
             accounts: accs,
             subscriptions: pdfSubscriptions,
+            creditCards: getAllCreditCards().filter(c => c.isActive),
             labels,
             prevMonthEntries,
             prevMonthSubscriptions: pdfSubscriptions,
