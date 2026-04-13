@@ -479,21 +479,37 @@ function HeroSection() {
               <div style={{ fontSize: isMobile ? '10px' : '11px', color: '#6B7280', marginTop: '2px', whiteSpace: 'nowrap' }}>Home, Car, Personal</div>
             </div>
 
-            {/* Card 3 — left center (desktop only — would overflow on mobile) */}
-            {!isMobile && (
-              <div style={{ position: 'absolute', left: '-10px', top: '50%', transform: 'translateY(-50%)', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)', animation: 'float3 6s ease-in-out .5s infinite', minWidth: '150px', zIndex: 3 }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F1F18' }}>💰 Budget 2026-27</div>
-                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>Zero tax up to ₹12L</div>
-              </div>
-            )}
+            {/* Card 3 — left center */}
+            <div style={{
+              position: 'absolute',
+              left: isMobile ? '-10px' : '-10px',
+              top: isMobile ? '38%' : '50%',
+              transform: 'translateY(-50%)',
+              background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px',
+              padding: isMobile ? '8px 12px' : '10px 14px',
+              boxShadow: '0 8px 24px rgba(0,0,0,.10)',
+              animation: 'float3 6s ease-in-out .5s infinite',
+              minWidth: isMobile ? 'auto' : '150px', zIndex: 3,
+            }}>
+              <div style={{ fontSize: isMobile ? '11px' : '13px', fontWeight: 700, color: '#0F1F18', whiteSpace: 'nowrap' }}>🔥 Budget 2026-27</div>
+              <div style={{ fontSize: isMobile ? '10px' : '11px', color: '#6B7280', marginTop: '2px', whiteSpace: 'nowrap' }}>Zero tax up to ₹12L</div>
+            </div>
 
-            {/* Card 4 — right center (desktop only — would overflow on mobile) */}
-            {!isMobile && (
-              <div style={{ position: 'absolute', right: '-10px', top: '50%', transform: 'translateY(-50%)', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '10px 14px', boxShadow: '0 8px 24px rgba(0,0,0,.10)', animation: 'float4 4.5s ease-in-out 1.5s infinite', minWidth: '120px', zIndex: 3 }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F1F18' }}>📊 43+ Tools</div>
-                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>All Free</div>
-              </div>
-            )}
+            {/* Card 4 — right center */}
+            <div style={{
+              position: 'absolute',
+              right: isMobile ? '-10px' : '-10px',
+              top: isMobile ? '55%' : '50%',
+              transform: 'translateY(-50%)',
+              background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px',
+              padding: isMobile ? '8px 12px' : '10px 14px',
+              boxShadow: '0 8px 24px rgba(0,0,0,.10)',
+              animation: 'float4 4.5s ease-in-out 1.5s infinite',
+              minWidth: isMobile ? 'auto' : '120px', zIndex: 3,
+            }}>
+              <div style={{ fontSize: isMobile ? '11px' : '13px', fontWeight: 700, color: '#0F1F18', whiteSpace: 'nowrap' }}>📊 43+ Tools</div>
+              <div style={{ fontSize: isMobile ? '10px' : '11px', color: '#6B7280', marginTop: '2px', whiteSpace: 'nowrap' }}>All Free</div>
+            </div>
           </div>
         </div>
 
