@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -59,8 +59,10 @@ export default function CreditCards() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [sortKey, setSortKey] = useState<SortKey>('due');
+  const [tick, setTick] = useState(0);
+  useEffect(() => { setTick(t => t + 1); }, []);
 
-  const cards = useMemo(() => getAllCreditCards().filter((cd) => cd.isActive), []);
+  const cards = useMemo(() => getAllCreditCards().filter((cd) => cd.isActive), [tick]);
   const sorted = useMemo(() => sortCards(cards, sortKey), [cards, sortKey]);
   const insights = useMemo(() => generateInsights(cards), [cards]);
 

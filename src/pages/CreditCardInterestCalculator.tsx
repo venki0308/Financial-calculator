@@ -56,7 +56,7 @@ export default function CreditCardInterestCalculator() {
     const cibilScore = cibilProfile?.isNTC ? 0 : (cibilProfile?.score ?? 0);
 
     // ── Saved cards for quick-load ──
-    const savedCards = useMemo(() => getAllCreditCards().filter(cc => cc.isActive), []);
+    const savedCards = getAllCreditCards().filter(cc => cc.isActive);
 
     // ── Core Inputs ──
     const [balance, setBalance] = useState(50000);

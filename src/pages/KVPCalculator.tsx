@@ -45,6 +45,7 @@ export default function KVPCalculator() {
 
     const result = useMemo(() => {
         // Exact doubling time using annual compounding: t = ln(2) / ln(1 + r/100)
+        if (rate <= 0) return { doublingMonths: 0, doublingYearsTotal: 0, maturity: investment, yearTable: [], premature: [], cagr: 0, taxLiable: 0, postTaxMaturity: investment, postTaxCAGR: 0, realMaturity: investment, realReturn: 0, totalInterest: 0 };
         const doublingYearsExact = Math.log(2) / Math.log(1 + rate / 100);
         const doublingMonths = Math.round(doublingYearsExact * 12);
         const maturity = investment * 2;

@@ -5,7 +5,7 @@ import { ArrowLeft, Calendar, Star, Clock, Cake, Info, Activity, Wind, Moon } fr
 import { motion } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import DateInput from '../components/DateInput';
-
+import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 
@@ -51,6 +51,7 @@ function getNextBirthday(birthDate: Date, today: Date) {
 
 export default function AgeCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('Age_Calculator'); }, []);
+    useTrackCalculator();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [birthDate, setBirthDate] = useState('');

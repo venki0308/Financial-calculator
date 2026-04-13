@@ -72,6 +72,14 @@ const calcMeta: Record<string, { label: string; icon: any; color: string; gradie
     'Goal Planner': { label: 'saved.calc.goalPlanner', icon: TrendingUp, color: '#8B5CF6', gradient: 'from-violet-600/20 to-purple-600/20' },
     'Overdraft Calculator': { label: 'saved.calc.overdraftCalculator', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
     'Live Loan Status': { label: 'saved.calc.loanTracker', icon: Activity, color: '#10B981', gradient: 'from-emerald-600/20 to-teal-600/20' },
+    // Short-name variants that some calculators save as
+    'Gratuity': { label: 'saved.calc.gratuityCalculator', icon: Briefcase, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
+    'NPS': { label: 'saved.calc.npsCalculator', icon: PiggyBank, color: '#06B6D4', gradient: 'from-cyan-600/20 to-teal-600/20' },
+    'Insurance': { label: 'saved.calc.insuranceCalculator', icon: Heart, color: '#10B981', gradient: 'from-green-600/20 to-emerald-600/20' },
+    'Insurance Compare': { label: 'saved.calc.insuranceCompare', icon: Heart, color: '#14B8A6', gradient: 'from-teal-600/20 to-cyan-600/20' },
+    'Property': { label: 'saved.calc.propertyCalculator', icon: Home, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
+    'Overdraft': { label: 'saved.calc.overdraftCalculator', icon: CreditCard, color: '#F97316', gradient: 'from-orange-600/20 to-amber-600/20' },
+    'Gold Loan': { label: 'saved.calc.goldLoan', icon: IndianRupee, color: '#F59E0B', gradient: 'from-amber-600/20 to-yellow-600/20' },
 };
 
 const defaultMeta = { label: 'saved.calc.default', icon: Calculator, color: '#64748B', gradient: 'from-slate-600/20 to-gray-600/20' };

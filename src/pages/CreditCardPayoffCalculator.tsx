@@ -47,7 +47,7 @@ export default function CreditCardPayoffCalculator() {
   const [inputTab, setInputTab] = useState<'saved' | 'manual'>('manual');
 
   // ── Saved cards ──
-  const savedCards = useMemo(() => getAllCreditCards().filter(c => c.isActive), []);
+  const savedCards = getAllCreditCards().filter(c => c.isActive);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(savedCards.map(c => c.id)));
 
   // ── Manual cards ──
