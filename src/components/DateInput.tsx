@@ -47,6 +47,7 @@ function firstDayOfMonth(year: number, month: number) {
 /* ────────────────────────── props ────────────────────────────── */
 
 interface Props {
+    label?: string;
     value: string;          // YYYY-MM-DD (empty = no selection)
     onChange: (v: string) => void;
     className?: string;
@@ -57,26 +58,30 @@ interface Props {
 
 /* ────────────────────────── component ────────────────────────── */
 
-export default function DateInput({ value, onChange, className = '', max, min, placeholder }: Props) {
+export default function DateInput({ label, value, onChange, className = '', max, min, placeholder }: Props) {
     const isDark = useSettingsStore(s => s.darkMode);
 
     /* ── Web fallback ──────────────────────────────────────────── */
     if (!Capacitor.isNativePlatform()) {
         return (
-            <input
-                type="date"
-                value={value}
-                onChange={e => onChange(e.target.value)}
-                max={max}
-                min={min}
-                className={className}
-            />
+            <div className="space-y-2">
+                {label && <label className="block text-xs font-medium text-slate-500 dark:text-muted-foreground">{label}</label>}
+                <input
+                    type="date"
+                    value={value}
+                    onChange={e => onChange(e.target.value)}
+                    max={max}
+                    min={min}
+                    className={className}
+                />
+            </div>
         );
     }
 
     /* ── Native (Android) — custom calendar ────────────────────── */
     return (
         <NativeCalendarInput
+            label={label}
             value={value}
             onChange={onChange}
             className={className}
@@ -96,7 +101,7 @@ export default function DateInput({ value, onChange, className = '', max, min, p
 
 interface NativeProps extends Props { isDark: boolean; }
 
-function NativeCalendarInput({ value, onChange, className, max, min, placeholder, isDark }: NativeProps) {
+function NativeCalendarInput({ label, value, onChange, className, max, min, placeholder, isDark }: NativeProps) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
 
@@ -111,12 +116,13 @@ function NativeCalendarInput({ value, onChange, className, max, min, placeholder
     }, [value]);
 
     return (
-        <>
+        <div className="space-y-2">
+            {label && <label className="block text-xs font-medium text-slate-500 dark:text-muted-foreground">{label}</label>}
             <button
                 type="button"
                 onClick={() => setOpen(true)}
                 className={className}
-                style={{ textAlign: 'left' }}
+                style={{ textAlign: 'left', width: '100%' }}
             >
                 {value ? formatDisplay(value, t) : (placeholder ?? t('dateInput.selectDate'))}
             </button>
@@ -133,7 +139,7 @@ function NativeCalendarInput({ value, onChange, className, max, min, placeholder
                     onClose={() => setOpen(false)}
                 />
             )}
-        </>
+        </div>
     );
 }
 
