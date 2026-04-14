@@ -187,16 +187,9 @@ function AppContent() {
         // Sync the native Android status bar with the current theme.
         if (Capacitor.isNativePlatform()) {
             try {
-                // Use ONLY the native bridge for icon color and background handling.
-                // The Capacitor StatusBar plugin internally conflicts with the
-                // modern WindowInsetsControllerCompat API on API 35+ devices, causing
-                // theme styles to toggle randomly or revert to wrong icon colors.
-                const bridge = (window as any).FinCalixBridge;
-                if (bridge && bridge.setStatusBarStyle) {
-                    bridge.setStatusBarStyle(darkMode);
-                }
+                StatusBar.setStyle({ style: darkMode ? Style.Dark : Style.Light }).catch(() => {});
             } catch (_) {
-                // Bridge not available — running on web or old native
+                // Ignore error if StatusBar plugin is not available
             }
         }
     }, [darkMode]);
