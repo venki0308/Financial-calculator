@@ -7,7 +7,7 @@ import { useAppColors } from '../theme/useAppColors';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { calculateReducingEMI, formatINR } from '../utils/calculations';
-import { exportToPDF, type ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
@@ -297,9 +297,9 @@ export default function TwoWheelerLoanCalculator() {
         setLoanSaved(true);
     };
 
-    const handlePDF = async () => {
+    const buildExportConfig = (): ExportConfig => {
         const tag = todayStr();
-        const config: ExportConfig = {
+        return {
             title: 'Two Wheeler Loan Report',
             subtitle: `${isEV ? 'Electric' : 'Petrol'} — ${segment.label}`,
             inputs: [
@@ -330,8 +330,9 @@ export default function TwoWheelerLoanCalculator() {
             }] : [],
             filename: `FinCalix_TwoWheeler_${tag}`,
         };
-        await exportToPDF(config);
     };
+    const handlePDF = async () => { await exportToPDF(buildExportConfig()); };
+    const handleExcel = async () => { await exportToExcel(buildExportConfig()); };
 
     const suggestedRange = isEV ? cibil.evRange : cibil.petrolRange;
 
@@ -927,9 +928,10 @@ export default function TwoWheelerLoanCalculator() {
                         )}
 
                         {/* Export */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <button onClick={handlePDF} className="flex items-center justify-center gap-2 py-3 rounded-2xl border text-sm font-bold" style={{ borderColor: c.border, color: c.text }}><Download size={16} /> PDF</button>
-                            <button onClick={handleShare} className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm font-bold"><Share2 size={16} /> {t('tw.share')}</button>
+                        <div className="grid grid-cols-3 gap-2">
+                            <button onClick={handlePDF} className="flex items-center justify-center gap-1.5 py-3 rounded-2xl border text-xs font-bold" style={{ borderColor: c.border, color: c.text }}><Download size={14} /> PDF</button>
+                            <button onClick={handleExcel} className="flex items-center justify-center gap-1.5 py-3 rounded-2xl border text-xs font-bold" style={{ borderColor: c.border, color: c.text }}><Download size={14} /> XLSX</button>
+                            <button onClick={handleShare} className="flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-xs font-bold"><Share2 size={14} /> {t('tw.share')}</button>
                         </div>
 
                         {/* Save to My Loans */}

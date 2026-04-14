@@ -219,7 +219,10 @@ function AppContent() {
         // ── Android WebView Input Bug Fix ──────────────────────────────
         // Layer 2 (JS) defense — the native onActionModeStarted in
         // MainActivity.java is the primary kill-switch for the Android
-        // clipboard toolbar. These JS handlers are a secondary safety net.
+        // clipboard toolbar. These JS handlers are a secondary safety net
+        // and are deliberately skipped in the browser so web/dev-mode
+        // testers keep the native right-click menu and text selection.
+        if (!Capacitor.isNativePlatform()) return;
 
         // Prevent Android clipboard toolbar by clearing rogue selections
         const onSelectionChange = () => {

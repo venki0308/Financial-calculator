@@ -27,7 +27,10 @@ export const useCalculatorStore = create<CalculatorState>()(
             savedCalculations: [],
             history: [],
             addSaved: (calc) => {
-                set((s) => ({ savedCalculations: [calc, ...s.savedCalculations] }));
+                // Cap saved calculations at 200. Older entries fall off the
+                // tail so localStorage quota (~5-10MB) is never silently hit,
+                // which would cause subsequent persist writes to fail.
+                set((s) => ({ savedCalculations: [calc, ...s.savedCalculations].slice(0, 200) }));
             },
             updateSaved: (id, inputValues, resultValues) => set((s) => ({
                 savedCalculations: s.savedCalculations.map((c) =>

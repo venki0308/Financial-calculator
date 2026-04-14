@@ -80,8 +80,11 @@ export default function ExpenseTracker() {
     const state = location.state as { switchTab?: string } | null;
     if (state?.switchTab && (ALL_TAB_IDS as readonly string[]).includes(state.switchTab)) {
       setActiveTab(state.switchTab as TabId);
-      // Clear state so it doesn't re-trigger on back navigation
-      window.history.replaceState({}, '');
+      // Clear only the React Router state slot, preserving its navigation
+      // key. A raw `replaceState({}, '')` wipes router's internal key and
+      // breaks scroll restoration / back navigation on some paths.
+      const current = window.history.state ?? {};
+      window.history.replaceState({ ...current, usr: null }, '');
     }
   }, [location.state]);
   const [showAddSheet, setShowAddSheet] = useState(false);

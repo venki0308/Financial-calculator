@@ -45,31 +45,35 @@ export default function CAGRCalculator() {
 
     // 1. CORE CALCULATION
     const result = useMemo(() => {
-        // Handle edge cases
+        // Allow losses: validFinal can be below validInitial (negative CAGR) or zero
+        // (total loss → -100% CAGR). Only guard against negative inputs.
         const validInitial = Math.max(1, initial);
-        const validFinal = Math.max(validInitial, final);
+        const validFinal = Math.max(0, final);
         const validYears = Math.max(0.1, years);
 
-        const cagr = (Math.pow(validFinal / validInitial, 1 / validYears) - 1) * 100;
+        // Total loss → -100% CAGR. Otherwise standard compounding formula.
+        const cagr = validFinal === 0
+            ? -100
+            : (Math.pow(validFinal / validInitial, 1 / validYears) - 1) * 100;
         const absReturn = ((validFinal / validInitial) - 1) * 100;
-        
+
         let doubleTime = 0;
         if (cagr > 0) doubleTime = 72 / cagr;
-        else if (cagr < 0) doubleTime = -1; // Never
+        else if (cagr < 0) doubleTime = -1; // Never — investment lost value
 
         // Investment Quality Tag
         let qualityTag = t('cagr.qualityLowGrowth'); let qualityColor = 'text-rose-500'; let qualityBg = 'bg-rose-500/10 border-rose-500/20';
         if (cagr > 15) { qualityTag = t('cagr.qualityAggressive'); qualityColor = 'text-brand-green'; qualityBg = 'bg-brand-green/10 border-brand-green/20'; }
         else if (cagr >= 8) { qualityTag = t('cagr.qualityGood'); qualityColor = 'text-blue-500'; qualityBg = 'bg-blue-500/10 border-blue-500/20'; }
+        else if (cagr < 0) { qualityTag = t('cagr.qualityLoss', 'Loss'); qualityColor = 'text-rose-500'; qualityBg = 'bg-rose-500/10 border-rose-500/20'; }
 
-        // Year-wise schedule
-        // In reality, CAGR implies a smooth curve. We just show the theoretical year-end values.
+        // Year-wise schedule — works for negative cagr too (decaying curve).
         const schedule: { year: number; value: number; growthPct: number }[] = [];
-        let curVal = validInitial;
         for (let y = 1; y <= Math.ceil(validYears); y++) {
              const t = Math.min(y, validYears);
-             const v = validInitial * Math.pow(1 + cagr / 100, t);
-             const growth = y === 1 ? ((v / validInitial) - 1)*100 : cagr;
+             // cagr >= -100 by construction, so 1 + cagr/100 >= 0; Math.pow is safe.
+             const v = validInitial * Math.pow(Math.max(0, 1 + cagr / 100), t);
+             const growth = y === 1 ? ((v / validInitial) - 1) * 100 : cagr;
              schedule.push({ year: y, value: v, growthPct: growth });
         }
 

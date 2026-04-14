@@ -19,6 +19,7 @@ const STORAGE_KEYS = {
     accounts: 'fincalix_accounts',
     budgets: 'fincalix_budgets',
     loans: 'fincalix_my_loans',
+    creditCards: 'fincalix_credit_cards',
 } as const;
 
 // ── Validators ─────────────────────────────────────────────
@@ -54,6 +55,20 @@ const isValidLoan = (l: unknown): l is SavedLoan => {
         typeof x.loanAmount === 'number' && Number.isFinite(x.loanAmount) && x.loanAmount > 0 &&
         typeof x.interestRate === 'number' && Number.isFinite(x.interestRate) && x.interestRate >= 0 &&
         typeof x.tenureMonths === 'number' && x.tenureMonths > 0
+    );
+};
+
+const isValidCreditCard = (c: unknown): c is Record<string, unknown> => {
+    if (!c || typeof c !== 'object') return false;
+    const x = c as Record<string, unknown>;
+    return (
+        typeof x.id === 'string' &&
+        typeof x.bankName === 'string' &&
+        typeof x.creditLimit === 'number' && Number.isFinite(x.creditLimit) && x.creditLimit >= 0 &&
+        typeof x.currentBalance === 'number' && Number.isFinite(x.currentBalance) && x.currentBalance >= 0 &&
+        typeof x.annualInterestRate === 'number' && Number.isFinite(x.annualInterestRate) && x.annualInterestRate >= 0 &&
+        typeof x.statementDate === 'number' && x.statementDate >= 1 && x.statementDate <= 31 &&
+        typeof x.dueDate === 'number' && x.dueDate >= 1 && x.dueDate <= 31
     );
 };
 
@@ -140,6 +155,11 @@ export function runDataIntegrityCheck(): IntegrityReport {
 
         // Budgets is a single object per month, but stored as array
         validateStore(STORAGE_KEYS.budgets, isValidBudget, report, 'budgets');
+
+        // Credit cards — flat array, same pattern as the others. Catches
+        // NaN limits, corrupt dates, and missing required fields before
+        // the Credit Card Manager tries to render them.
+        validateStore(STORAGE_KEYS.creditCards, isValidCreditCard, report, 'creditCards');
     } catch (err) {
         report.issues.push(`Integrity check failed: ${(err as Error).message}`);
     }

@@ -213,17 +213,18 @@ export default function FDCalculator() {
         await exportToPDF(config);
     };
 
-    // PDF: English labels — jsPDF Helvetica doesn't support Indian scripts
+    // Excel export — keep input labels in sync with the PDF flow.
     const handleDownloadExcel = async () => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
+        const compLabel = compounding === 12 ? 'Monthly' : compounding === 4 ? 'Quarterly' : compounding === 365 ? 'Daily' : 'Yearly';
         const config: ExportConfig = {
             title: 'Fixed Deposit (FD) Report',
             inputs: [
                 { label: 'Deposit Amount', value: `INR ${principal.toLocaleString('en-IN')}` },
-                { label: 'Interest Rate', value: `${rate}% p.a.` },
+                { label: 'Interest Rate', value: `${effectiveRate}% p.a.${isSeniorCitizen ? ' (Senior Citizen +0.5%)' : ''}` },
                 { label: 'Tenure', value: `${years} Years` },
-                { label: 'Compounding Frequency', value: String(compounding) },
+                { label: 'Compounding Frequency', value: compLabel },
             ],
             results: [
                 { label: 'Interest Earned', value: `INR ${Math.round(result.interest).toLocaleString('en-IN')}` },

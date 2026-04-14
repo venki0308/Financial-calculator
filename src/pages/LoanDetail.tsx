@@ -18,9 +18,9 @@ import {
 } from '../utils/investmentStatusEngine';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import { exportToPDF, type ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
-import { toLocalDateStr, todayStr } from '../utils/dateUtils';
+import { toLocalDateStr, todayStr, parseLocalDate } from '../utils/dateUtils';
 
 function fmtDate(d: string | number): string {
     if (!d) return '—';
@@ -85,7 +85,10 @@ function fmtYM(months: number, t?: (key: string) => string): string {
  */
 function yearsSince(dateStr: string | undefined, capYears: number = 100): number {
     if (!dateStr) return 0;
-    const start = new Date(dateStr).getTime();
+    // Use parseLocalDate for YYYY-MM-DD so timezone-negative users don't
+    // see the start date shifted back by a day.
+    const parsed = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? parseLocalDate(dateStr) : new Date(dateStr);
+    const start = parsed.getTime();
     if (isNaN(start)) return 0;
     const diffMs = Date.now() - start;
     if (diffMs <= 0) return 0;
@@ -390,10 +393,10 @@ export default function LoanDetail() {
             return { interestSaved: Math.round(Math.max(0, currentRemInt - newInterest)), monthsReduced: Math.max(0, status.emisRemaining - newMonths), newClosureDate: fmtDate(toLocalDateStr(closureDate)) };
         }, [prepayAmount, status, d]);
 
-        // PDF Export
-        const handleExportPDF = async () => {
+        // Build the shared config once so PDF and Excel stay in lock-step.
+        const buildLoanExportConfig = (): ExportConfig => {
             const tag = todayStr();
-            const config: ExportConfig = {
+            return {
                 title: profile.name,
                 subtitle: `${t('myLoans.pdfLoanTrackerReport')} — ${fmtDate(status.today)}`,
                 inputs: [
@@ -425,8 +428,9 @@ export default function LoanDetail() {
                 }],
                 filename: `FinCalix_LoanTracker_${tag}`,
             };
-            await exportToPDF(config);
         };
+        const handleExportPDF = async () => { await exportToPDF(buildLoanExportConfig()); };
+        const handleExportExcel = async () => { await exportToExcel(buildLoanExportConfig()); };
 
         return (
             <div className="min-h-dvh" style={{ backgroundColor: c.bg }}>
@@ -441,9 +445,14 @@ export default function LoanDetail() {
                                 <p className="text-[10px]" style={{ color: c.textSecondary }}>{profile.calculatorType}</p>
                             </div>
                         </div>
-                        <button onClick={handleExportPDF} className="p-2 rounded-xl border" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                            <Download size={16} style={{ color: c.textSecondary }} />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <button onClick={handleExportPDF} aria-label="Download PDF" className="px-2.5 py-2 rounded-xl border text-[10px] font-bold flex items-center gap-1" style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
+                                <Download size={14} /> PDF
+                            </button>
+                            <button onClick={handleExportExcel} aria-label="Download Excel" className="px-2.5 py-2 rounded-xl border text-[10px] font-bold flex items-center gap-1" style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
+                                <Download size={14} /> XLSX
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1223,10 +1232,11 @@ export default function LoanDetail() {
 
     const [showYearTable, setShowYearTable] = useState(false);
 
-    // PDF for investment
-    const handleInvestmentPDF = async () => {
+    // Shared config for investment tracker exports — PDF and Excel read from
+    // the same source so the numbers in both files never drift apart.
+    const buildInvestmentExportConfig = (): ExportConfig => {
         const tag = todayStr();
-        const config: ExportConfig = {
+        return {
             title: profile.name,
             subtitle: `${profile.calculatorType} — Live Status Report (${fmtDate(todayStr())})`,
             inputs: investmentMetrics.cards.map(card => ({ label: card.label, value: card.value })),
@@ -1242,8 +1252,9 @@ export default function LoanDetail() {
             } : {}),
             filename: `FinCalix_${profile.calculatorType.replace(/\s+/g, '_')}_${tag}`,
         };
-        await exportToPDF(config);
     };
+    const handleInvestmentPDF = async () => { await exportToPDF(buildInvestmentExportConfig()); };
+    const handleInvestmentExcel = async () => { await exportToExcel(buildInvestmentExportConfig()); };
 
     return (
         <div className="min-h-dvh" style={{ backgroundColor: c.bg }}>
@@ -1256,7 +1267,14 @@ export default function LoanDetail() {
                             <p className="text-[10px]" style={{ color: c.textSecondary }}>{profile.calculatorType}</p>
                         </div>
                     </div>
-                    <button onClick={handleInvestmentPDF} className="p-2 rounded-xl border" style={{ backgroundColor: c.card, borderColor: c.border }}><Download size={16} style={{ color: c.textSecondary }} /></button>
+                    <div className="flex items-center gap-2">
+                        <button onClick={handleInvestmentPDF} aria-label="Download PDF" className="px-2.5 py-2 rounded-xl border text-[10px] font-bold flex items-center gap-1" style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
+                            <Download size={14} /> PDF
+                        </button>
+                        <button onClick={handleInvestmentExcel} aria-label="Download Excel" className="px-2.5 py-2 rounded-xl border text-[10px] font-bold flex items-center gap-1" style={{ backgroundColor: c.card, borderColor: c.border, color: c.textSecondary }}>
+                            <Download size={14} /> XLSX
+                        </button>
+                    </div>
                 </div>
             </div>
 

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -48,7 +48,9 @@ export default function CreditCardDetail() {
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [daysSincePayment, setDaysSincePayment] = useState(30);
-  const [customPayment, setCustomPayment] = useState(0);
+  // null = "not yet initialised"; derived `effectivePayment` below falls back
+  // to calc.minDue so the slider never renders an out-of-range value.
+  const [customPayment, setCustomPayment] = useState<number | null>(null);
 
   const card: CCCard | null = useMemo(() => (id ? getCreditCardById(id) : null), [id]);
 
@@ -93,20 +95,27 @@ export default function CreditCardDetail() {
     };
   }, [card, daysSincePayment]);
 
+  // Slider value — falls back to minDue until the user interacts, so the
+  // initial render never shows ₹0 or a value below the slider's `min`.
+  const effectivePayment = customPayment ?? calc?.minDue ?? 0;
+
   // Custom payment derived
   const customCalc = useMemo(() => {
     if (!card || !calc) return null;
-    const pay = customPayment || calc.minDue;
-    const months = getPayoffMonths(card.currentBalance, card.annualInterestRate, pay);
-    const interest = getTotalInterest(card.currentBalance, card.annualInterestRate, pay);
+    const months = getPayoffMonths(card.currentBalance, card.annualInterestRate, effectivePayment);
+    const interest = getTotalInterest(card.currentBalance, card.annualInterestRate, effectivePayment);
     const savingsVsMin = calc.minTotalInterest === Infinity ? Infinity : calc.minTotalInterest - interest;
     return { months, interest, savingsVsMin };
-  }, [card, calc, customPayment]);
+  }, [card, calc, effectivePayment]);
 
-  // Init custom slider on first calc
-  useMemo(() => {
-    if (calc && customPayment === 0) setCustomPayment(calc.minDue);
-  }, [calc?.minDue]);
+  // If the user already picked a custom payment and then edits the card so
+  // minDue/stmtBal move, clamp their stale value back into the new range.
+  useEffect(() => {
+    if (!calc || customPayment === null) return;
+    if (customPayment < calc.minDue || customPayment > calc.stmtBal) {
+      setCustomPayment(calc.minDue);
+    }
+  }, [calc?.minDue, calc?.stmtBal, customPayment]);
 
   const handleDelete = useCallback(() => {
     if (!id) return;
@@ -230,12 +239,12 @@ export default function CreditCardDetail() {
           {/* Option 3 — Custom */}
           <div style={{ padding: 12, borderRadius: 10, background: c.inputBg, border: `1px solid ${c.border}` }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: '#3b82f6', marginBottom: 6 }}>{t('cc.customPayment', 'CUSTOM PAYMENT')}</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: c.text, marginBottom: 6 }}>{formatINR(customPayment)}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: c.text, marginBottom: 6 }}>{formatINR(effectivePayment)}</div>
             <input
               type="range"
               min={calc.minDue}
               max={Math.max(calc.stmtBal, calc.minDue + 1)}
-              value={customPayment}
+              value={effectivePayment}
               onChange={e => setCustomPayment(Number(e.target.value))}
               style={{ width: '100%', accentColor: '#3b82f6' }}
             />

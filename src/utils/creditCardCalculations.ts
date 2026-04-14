@@ -71,13 +71,20 @@ export function getMinimumDue(balance: number, annualRate: number): number {
 }
 
 // ─── Payoff Months ───────────────────────────────────────────────────────────
+// Indian CC convention: finance charges carry 18% GST, so the effective monthly
+// accrual on a carried balance is `apr/12 * 1.18`. Both single-card (here) and
+// multi-card (`runPayoffStrategy`) engines use the same GST-inclusive rate so
+// the Detail page and the Payoff Calculator agree on month counts and totals.
+const GST_RATE = 1.18;
+const PAYOFF_MONTHS_CAP = 1200; // 100 years — anything beyond is "never pays off"
 
 export function getPayoffMonths(balance: number, annualRate: number, monthlyPayment: number): number {
   if (balance <= 0 || monthlyPayment <= 0) return 0;
-  const r = annualRate / 12 / 100;
+  const r = (annualRate / 12 / 100) * GST_RATE;
   if (r === 0) return Math.ceil(balance / monthlyPayment);
   if (monthlyPayment <= balance * r) return Infinity;
-  return Math.ceil(Math.log(monthlyPayment / (monthlyPayment - balance * r)) / Math.log(1 + r));
+  const months = Math.ceil(Math.log(monthlyPayment / (monthlyPayment - balance * r)) / Math.log(1 + r));
+  return months > PAYOFF_MONTHS_CAP ? Infinity : months;
 }
 
 export function getTotalInterest(balance: number, annualRate: number, monthlyPayment: number): number {

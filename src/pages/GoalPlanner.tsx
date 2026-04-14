@@ -11,7 +11,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 
 import { formatINR } from '../utils/calculations';
 import { calculateSipStatus, type SipStatusInput } from '../utils/investmentStatusEngine';
-import { exportToPDF, type ExportConfig, dateTag } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, type ExportConfig, dateTag } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import { AnalyticsService } from '../lib/analytics';
@@ -173,9 +173,9 @@ export default function GoalPlanner() {
         });
     }, [goalStartDate, selectedGoal, result.monthlySIP, expectedReturn, result.targetFV]);
 
-    const handleDownloadPDF = async () => {
+    const buildExportConfig = (): ExportConfig => {
         const goalLabel = selectedGoal ? selectedGoal.id.charAt(0).toUpperCase() + selectedGoal.id.slice(1) : 'Custom';
-        const config: ExportConfig = {
+        return {
             title: 'Goal Planner Report',
             subtitle: goalLabel,
             inputs: [
@@ -223,8 +223,9 @@ export default function GoalPlanner() {
             ],
             filename: `FinCalix_Goal_Planner_${dateTag()}`,
         };
-        await exportToPDF(config);
     };
+    const handleDownloadPDF = async () => { await exportToPDF(buildExportConfig()); };
+    const handleDownloadExcel = async () => { await exportToExcel(buildExportConfig()); };
 
     return (
         <div className="min-h-dvh bg-background animate-fade-in">
@@ -391,13 +392,21 @@ export default function GoalPlanner() {
                             </div>
                         )}
 
-                        {/* Export PDF */}
-                        <button
-                            onClick={handleDownloadPDF}
-                            className="w-full mt-4 flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-colors hover:bg-brand-blue/10 active:scale-95"
-                        >
-                            <FileText size={20} /> {t('goalPlanner.exportReport')}
-                        </button>
+                        {/* Export PDF + Excel */}
+                        <div className="grid grid-cols-2 gap-2 mt-4">
+                            <button
+                                onClick={handleDownloadPDF}
+                                className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-blue/5 border border-brand-blue/20 text-brand-blue font-bold text-xs transition-colors hover:bg-brand-blue/10 active:scale-95"
+                            >
+                                <FileText size={20} /> PDF
+                            </button>
+                            <button
+                                onClick={handleDownloadExcel}
+                                className="flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl bg-brand-green/5 border border-brand-green/20 text-brand-green font-bold text-xs transition-colors hover:bg-brand-green/10 active:scale-95"
+                            >
+                                <FileText size={20} /> Excel
+                            </button>
+                        </div>
                     </div>
                 )}
 

@@ -6,7 +6,7 @@
  * and any custom loan type.
  */
 
-import { toLocalDateStr } from './dateUtils';
+import { toLocalDateStr, parseLocalDate } from './dateUtils';
 
 export interface LoanProfile {
     loanAmount: number;
@@ -51,7 +51,10 @@ export function calculateLiveLoanStatus(profile: LoanProfile): LiveLoanStatus {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const disbDate = new Date(profile.disbursementDate);
+    // Parse as LOCAL midnight. `new Date('YYYY-MM-DD')` is UTC-midnight,
+    // which for users in UTC-negative timezones lands on the previous
+    // local date and shifts every generated EMI by a day.
+    const disbDate = parseLocalDate(profile.disbursementDate);
     disbDate.setHours(0, 0, 0, 0);
 
     const monthlyRate = profile.annualRate / 12 / 100;

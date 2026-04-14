@@ -16,6 +16,7 @@ import {
 import { AnalyticsService } from '../lib/analytics';
 import { getAllCreditCards } from '../utils/creditCardStorage';
 import { getUtilization, getUtilizationBarColor, getDaysUntilDue } from '../utils/creditCardCalculations';
+import { parseLocalDate } from '../utils/dateUtils';
 
 const TYPE_META: Record<string, { icon: string; color: string; labelKey: string }> = {
     'Loan EMI': { icon: '🏠', color: '#8B5CF6', labelKey: 'myLoans.typeLabelLoanEmi' },
@@ -84,7 +85,10 @@ function fmtDate(ts: number | string): string {
  */
 function yearsSince(dateStr: string | undefined, capYears: number = 100): number {
     if (!dateStr) return 0;
-    const start = new Date(dateStr).getTime();
+    // Use parseLocalDate for YYYY-MM-DD so timezone-negative users don't
+    // see the start date shifted back by a day.
+    const parsed = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? parseLocalDate(dateStr) : new Date(dateStr);
+    const start = parsed.getTime();
     if (isNaN(start)) return 0;
     const diffMs = Date.now() - start;
     if (diffMs <= 0) return 0;
@@ -747,7 +751,7 @@ export default function MyLoans() {
                                         {t('myLoans.creditCardDebt', 'Credit Card Debt')} ({ccCards.length})
                                     </p>
                                 </div>
-                                <button onClick={() => navigate('/expenses')} className="text-[10px] font-bold text-brand-blue">
+                                <button onClick={() => navigate('/expenses', { state: { switchTab: 'creditCards' } })} className="text-[10px] font-bold text-brand-blue">
                                     {t('myLoans.manageCards', 'Manage')} →
                                 </button>
                             </div>

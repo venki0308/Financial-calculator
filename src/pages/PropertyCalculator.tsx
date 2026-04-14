@@ -7,7 +7,14 @@ import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import { AnalyticsService } from '../lib/analytics';
-import { exportToPDF } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
+
+// Dispatch helper so every handler in this file can emit either PDF or Excel
+// from the same config. Keeps the seven branches below DRY and guarantees
+// numbers in both files stay in sync.
+type ExportFmt = 'pdf' | 'xlsx';
+const runExport = (cfg: ExportConfig, fmt: ExportFmt) =>
+    fmt === 'xlsx' ? exportToExcel(cfg) : exportToPDF(cfg);
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 
@@ -311,11 +318,11 @@ export default function PropertyCalculator() {
     }, [convVal, fromUnit, toUnit]);
 
     // ── PDF Export ────────────────────────────────────────────────────────────
-    const handleExportPDF = async () => {
+    const handleExport = async (xFmt: ExportFmt = 'pdf') => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         if (mode === 'land' && landResult) {
-            await exportToPDF({
+            await runExport({
                 title: t('property.pdfLandValueReport'),
                 inputs: [
                     { label: t('property.area'), value: `${landArea} ${UNIT_LABELS[landUnit]}` },
@@ -330,9 +337,9 @@ export default function PropertyCalculator() {
                 projectionColumns: [t('property.unit'), t('property.equivalentArea')],
                 projectionRows: landResult.conversions.map(c => [c.key, c.value]),
                 filename: `FinCalix_Land_Value_Report_${tag}`,
-            });
+            }, xFmt);
         } else if (mode === 'flat' && flatResult) {
-            await exportToPDF({
+            await runExport({
                 title: t('property.pdfFlatCostReport'),
                 inputs: [
                     { label: t('property.builtUpArea'), value: `${builtUp} ${t('property.sqftUnit')}` },
@@ -359,16 +366,16 @@ export default function PropertyCalculator() {
                     [t('property.total'), fmt(flatResult.totalCost)],
                 ],
                 filename: `FinCalix_Flat_Cost_Report_${tag}`,
-            });
+            }, xFmt);
         }
     };
 
-    const handleStampDutyPDF = async () => {
+    const handleStampDuty = async (xFmt: ExportFmt = 'pdf') => {
         if (!sdResult) return;
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const stateName = STATE_RATES[sdState]?.name || sdState;
-        await exportToPDF({
+        await runExport({
             title: t('property.pdfStampDutyReport'),
             inputs: [
                 { label: t('property.state'), value: stateName },
@@ -390,14 +397,14 @@ export default function PropertyCalculator() {
                 [t('property.total'), '-', fmt(sdResult.total)],
             ],
             filename: `FinCalix_Stamp_Duty_Report_${tag}`,
-        });
+        }, xFmt);
     };
 
-    const handleRentalYieldPDF = async () => {
+    const handleRentalYield = async (xFmt: ExportFmt = 'pdf') => {
         if (!ryResult) return;
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
-        await exportToPDF({
+        await runExport({
             title: t('property.pdfRentalYieldReport'),
             inputs: [
                 { label: t('property.propertyValue'), value: fmt(Number(ryPropertyValue)) },
@@ -420,14 +427,14 @@ export default function PropertyCalculator() {
                 [t('property.paybackPeriod'), `${ryResult.paybackYears.toFixed(1)} ${t('property.years')}`],
             ],
             filename: `FinCalix_Rental_Yield_Report_${tag}`,
-        });
+        }, xFmt);
     };
 
-    const handleAppreciationPDF = async () => {
+    const handleAppreciation = async (xFmt: ExportFmt = 'pdf') => {
         if (!apResult) return;
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
-        await exportToPDF({
+        await runExport({
             title: t('property.pdfAppreciationForecast'),
             inputs: [
                 { label: t('property.currentPropertyValue'), value: fmt(Number(apCurrentValue)) },
@@ -445,14 +452,14 @@ export default function PropertyCalculator() {
                 fmt(p.gain),
             ]),
             filename: `FinCalix_Appreciation_Forecast_${tag}`,
-        });
+        }, xFmt);
     };
 
-    const handleHomeLoanPDF = async () => {
+    const handleHomeLoan = async (xFmt: ExportFmt = 'pdf') => {
         if (!emiResult) return;
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
-        await exportToPDF({
+        await runExport({
             title: t('property.pdfHomeLoanReport'),
             inputs: [
                 { label: t('property.loanAmount'), value: fmt(Number(loanAmt)) },
@@ -473,16 +480,16 @@ export default function PropertyCalculator() {
                 [t('property.monthlyEMI'), fmt(emiResult.emi)],
             ],
             filename: `FinCalix_Home_Loan_EMI_Report_${tag}`,
-        });
+        }, xFmt);
     };
 
-    const handleVillaPDF = async () => {
+    const handleVilla = async (xFmt: ExportFmt = 'pdf') => {
         if (!villaResult) return;
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const totalBUA = villaResult.floors.reduce((sum, f) => sum + f.area, 0);
         const gradeName = CONSTRUCTION_GRADES.find(g => g.key === constGrade)?.label || constGrade;
-        await exportToPDF({
+        await runExport({
             title: t('property.pdfVillaReport'),
             inputs: [
                 { label: t('property.totalBuiltUpArea'), value: `${totalBUA.toLocaleString('en-IN')} ${t('property.sqftUnit')}` },
@@ -512,8 +519,24 @@ export default function PropertyCalculator() {
                 [t('property.total'), totalBUA.toLocaleString('en-IN'), fmt(villaResult.totalCost)],
             ],
             filename: `FinCalix_Villa_Construction_Report_${tag}`,
-        });
+        }, xFmt);
     };
+
+    // Format-specific wrappers — keep UI signature `() => void` and let us
+    // swap formats without threading the arg through each child component.
+    // Declared after the handlers so TS doesn't flag use-before-declaration.
+    const handleExportPDF = () => handleExport('pdf');
+    const handleExportExcel = () => handleExport('xlsx');
+    const handleStampDutyPDF = () => handleStampDuty('pdf');
+    const handleStampDutyExcel = () => handleStampDuty('xlsx');
+    const handleRentalYieldPDF = () => handleRentalYield('pdf');
+    const handleRentalYieldExcel = () => handleRentalYield('xlsx');
+    const handleAppreciationPDF = () => handleAppreciation('pdf');
+    const handleAppreciationExcel = () => handleAppreciation('xlsx');
+    const handleHomeLoanPDF = () => handleHomeLoan('pdf');
+    const handleHomeLoanExcel = () => handleHomeLoan('xlsx');
+    const handleVillaPDF = () => handleVilla('pdf');
+    const handleVillaExcel = () => handleVilla('xlsx');
 
     return (
         <div className="min-h-dvh bg-background animate-fade-in relative pb-[env(safe-area-inset-bottom,40px)]" style={{ maxWidth: 428, margin: '0 auto' }}>
@@ -700,9 +723,14 @@ export default function PropertyCalculator() {
                                                     {t('property.save')}
                                                 </button>
                                             )}
-                                            <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
-                                                📄 {t('property.pdf')}
-                                            </button>
+                                            <div className="grid grid-cols-2 gap-1">
+                                                <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
+                                                    📄 PDF
+                                                </button>
+                                                <button onClick={handleExportExcel} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">
+                                                    📊 XLSX
+                                                </button>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 )}
@@ -832,7 +860,10 @@ export default function PropertyCalculator() {
                                                 <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: t('property.flatPrice'), inputValues: { builtUp, carpet, ppsf, parking, amenities, maint, gstPct }, resultValues: { primary: flatResult.totalCost }, timestamp: Date.now() }); trackProperty(id, `${t('property.flatPrice')} • ${builtUp} sqft`, 'Flat', flatResult.totalCost, Number(builtUp) || 0); setPropertySaved(true); setLastSavedId(id); }}
                                                     className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
                                             )}
-                                            <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 {t('property.pdf')}</button>
+                                            <div className="grid grid-cols-2 gap-1">
+                                                <button onClick={handleExportPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 PDF</button>
+                                                <button onClick={handleExportExcel} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📊 XLSX</button>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 )}
@@ -969,7 +1000,10 @@ export default function PropertyCalculator() {
                                                 <button onClick={() => { const id = Date.now().toString(); addSaved({ id, calculatorType: t('property.villaConstruction'), inputValues: { groundFloor, firstFloor, secondFloor, constRate }, resultValues: { primary: villaResult.totalCost }, timestamp: Date.now() }); trackProperty(id, `${t('property.villaConstruction')} • ${(Number(groundFloor) || 0) + (Number(firstFloor) || 0) + (Number(secondFloor) || 0)} sqft`, 'Villa', villaResult.totalCost, (Number(groundFloor) || 0) + (Number(firstFloor) || 0) + (Number(secondFloor) || 0)); setPropertySaved(true); setLastSavedId(id); }}
                                                     className="py-3 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple text-xs font-bold">{t('property.save')}</button>
                                             )}
-                                            <button onClick={handleVillaPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 {t('property.pdf')}</button>
+                                            <div className="grid grid-cols-2 gap-1">
+                                                <button onClick={handleVillaPDF} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📄 PDF</button>
+                                                <button onClick={handleVillaExcel} className="py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold">📊 XLSX</button>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 )}
@@ -1105,10 +1139,16 @@ export default function PropertyCalculator() {
                                             </div>
                                         ))}
                                     </div>
-                                    <button onClick={handleRentalYieldPDF}
-                                        className="w-full py-3 rounded-xl bg-brand-green/10 border border-brand-green/30 text-brand-green text-xs font-bold flex items-center justify-center gap-2">
-                                        <Download size={14} /> {t('property.downloadRentalYieldReport')}
-                                    </button>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button onClick={handleRentalYieldPDF}
+                                            className="py-3 rounded-xl bg-brand-green/10 border border-brand-green/30 text-brand-green text-xs font-bold flex items-center justify-center gap-1.5">
+                                            <Download size={14} /> PDF
+                                        </button>
+                                        <button onClick={handleRentalYieldExcel}
+                                            className="py-3 rounded-xl bg-brand-green/10 border border-brand-green/30 text-brand-green text-xs font-bold flex items-center justify-center gap-1.5">
+                                            <Download size={14} /> Excel
+                                        </button>
+                                    </div>
                                 </motion.div>
                             )}
                         </div>
@@ -1134,10 +1174,16 @@ export default function PropertyCalculator() {
                                             <p className="text-brand-green font-extrabold text-sm">{fmt(p.value)}</p>
                                         </div>
                                     ))}
-                                    <button onClick={handleAppreciationPDF}
-                                        className="w-full py-3 rounded-xl bg-indigo-600/10 border border-indigo-600/30 text-indigo-400 text-xs font-bold flex items-center justify-center gap-2 mt-2">
-                                        <Download size={14} /> {t('property.downloadAppreciationReport')}
-                                    </button>
+                                    <div className="grid grid-cols-2 gap-2 mt-2">
+                                        <button onClick={handleAppreciationPDF}
+                                            className="py-3 rounded-xl bg-indigo-600/10 border border-indigo-600/30 text-indigo-400 text-xs font-bold flex items-center justify-center gap-1.5">
+                                            <Download size={14} /> PDF
+                                        </button>
+                                        <button onClick={handleAppreciationExcel}
+                                            className="py-3 rounded-xl bg-indigo-600/10 border border-indigo-600/30 text-indigo-400 text-xs font-bold flex items-center justify-center gap-1.5">
+                                            <Download size={14} /> Excel
+                                        </button>
+                                    </div>
                                 </motion.div>
                             )}
                         </div>

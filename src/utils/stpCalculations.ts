@@ -80,6 +80,10 @@ export function calculateSTP(inputs: STPInputs): STPResults {
 
     const schedule: STPMonthlyRow[] = [];
     let sourceBalance = initialAmount;
+    // Cost basis of the portion still sitting in the source fund. Shrinks
+    // proportionally with each transfer so tax on later transfers is computed
+    // against the *remaining* cost basis, not the original initialAmount.
+    let remainingCostBasis = initialAmount;
     let totalTransferred = 0;
     let totalExitLoad = 0;
     let totalTax = 0;
@@ -125,14 +129,21 @@ export function calculateSTP(inputs: STPInputs): STPResults {
             exitLoad = transfer * exitLoadPercent / 100;
         }
 
-        // Tax on source fund gains (debt fund — slab rate on proportional gains)
-        // Each transfer contains a proportional share of cost + gains
-        const costBasis = initialAmount; // original investment
-        const gainFraction = Math.max(0, (sourceAfterInterest - costBasis) / sourceAfterInterest);
+        // Tax on source fund gains (debt fund — slab rate on proportional gains).
+        // Each transfer contains its proportional share of the *current* unrealized
+        // gain, computed against the remaining cost basis of the source holding.
+        const gainFraction = sourceAfterInterest > 0
+            ? Math.max(0, (sourceAfterInterest - remainingCostBasis) / sourceAfterInterest)
+            : 0;
         const gainsInTransfer = transfer * gainFraction;
         const tax = gainsInTransfer * taxSlabPercent / 100;
 
         const netTransfer = transfer - exitLoad - tax;
+
+        // Reduce remaining cost basis proportionally to the fraction transferred out.
+        if (sourceAfterInterest > 0) {
+            remainingCostBasis = remainingCostBasis * (sourceAfterInterest - transfer) / sourceAfterInterest;
+        }
 
         // Update source balance
         sourceBalance = sourceAfterInterest - transfer;

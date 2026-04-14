@@ -162,7 +162,9 @@ export default function CreditCardAdd() {
       <NumberInput label={t('cc.statementBalance', 'Statement Balance')} value={card.statementBalance}
         onChange={v => upd({ statementBalance: v })} min={0} max={card.creditLimit * 1.2} prefix="₹" step={1000} />
       <NumberInput label={t('cc.minimumDue', 'Minimum Due')} value={card.minimumDue}
-        onChange={v => upd({ minimumDue: v })} min={0} max={card.statementBalance} prefix="₹" step={100} />
+        onChange={v => upd({ minimumDue: v })} min={0}
+        max={Math.max(card.statementBalance, card.creditLimit * 1.2, 1)}
+        prefix="₹" step={100} />
       <div style={{ padding: '12px 14px', borderRadius: 12, background: c.inputBg, border: `1px solid ${c.border}` }}>
         <div style={{ fontSize: 13, color: c.textSecondary }}>{t('cc.availableCredit', 'Available Credit')}</div>
         <div style={{ fontSize: 22, fontWeight: 700, color: '#22c55e', marginTop: 4 }}>

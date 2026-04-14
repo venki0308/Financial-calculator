@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, TrendingUp, Download, ExternalLink, ChevronDown, ChevronUp, Lightbulb, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { exportToPDF, ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
@@ -379,9 +379,9 @@ export default function IncomeTaxCalculator() {
 
     // Removed automatic notification trigger
 
-    // ─── PDF Handler ──────────────────────────────────────────────────────────
+    // ─── Shared config builder (PDF + Excel stay identical) ──────────────────
     // PDF: English labels — jsPDF Helvetica doesn't support Indian scripts
-    const handleDownloadPDF = async () => {
+    const buildExportConfig = (): ExportConfig => {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const modeLabel = inputMode === 'monthly' ? 'Monthly' : inputMode === 'annual' ? 'Annual' : inputMode === 'ctc' ? 'CTC' : 'Payslip';
@@ -421,9 +421,7 @@ export default function IncomeTaxCalculator() {
         ];
 
         // Build slab breakdown comparing old vs new regime
-        const allSlabs = regime === 'new' ? NEW_REGIME : OLD_REGIME_ACTIVE;
         const slabRows: Array<Array<string | number>> = [];
-        const maxIncome = Math.max(oldTaxableIncome, newTaxableIncome);
         const combinedSlabs = [...new Set([...OLD_REGIME_ACTIVE.map(s => s.min), ...NEW_REGIME_2026_27.map(s => s.min)])].sort((a, b) => a - b);
         for (let i = 0; i < combinedSlabs.length; i++) {
             const slabMin = combinedSlabs[i];
@@ -451,7 +449,7 @@ export default function IncomeTaxCalculator() {
             }
         }
 
-        const config: ExportConfig = {
+        return {
             title: 'Income Tax Calculator Report (FY 2026-27)',
             subtitle: `Tax Regime: ${regime === 'old' ? 'Old Regime' : 'New Regime'}`,
             inputs: inputFields,
@@ -461,8 +459,9 @@ export default function IncomeTaxCalculator() {
             projectionRows: slabRows,
             filename: `FinCalix_IncomeTax_Report_${tag}`,
         };
-        await exportToPDF(config);
     };
+    const handleDownloadPDF = async () => { await exportToPDF(buildExportConfig()); };
+    const handleDownloadExcel = async () => { await exportToExcel(buildExportConfig()); };
 
     // ══════════════════════════════════════════════════════════════════════════
     // RENDER
@@ -930,10 +929,15 @@ export default function IncomeTaxCalculator() {
                             </div>
                         )}
 
-                        {/* Download PDF */}
-                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleDownloadPDF} className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple text-white font-bold shadow-lg shadow-brand-purple/30">
-                            <Download size={18} /> {t('tax.downloadTaxReport')}
-                        </motion.button>
+                        {/* Download PDF + Excel */}
+                        <div className="grid grid-cols-2 gap-2">
+                            <motion.button whileTap={{ scale: 0.97 }} onClick={handleDownloadPDF} className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-purple text-white font-bold shadow-lg shadow-brand-purple/30">
+                                <Download size={18} /> PDF
+                            </motion.button>
+                            <motion.button whileTap={{ scale: 0.97 }} onClick={handleDownloadExcel} className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-green text-white font-bold shadow-lg shadow-brand-green/30">
+                                <Download size={18} /> Excel
+                            </motion.button>
+                        </div>
                     </>
                 )}
 
