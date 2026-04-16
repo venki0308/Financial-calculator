@@ -136,7 +136,7 @@ export default function LegalLayout({
             >
                 <div
                     style={{
-                        maxWidth: '880px', margin: '0 auto', padding: '14px 24px',
+                        maxWidth: '880px', margin: '0 auto', padding: '56px 24px 14px',
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px',
                     }}
                 >

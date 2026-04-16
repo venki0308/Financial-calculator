@@ -146,7 +146,7 @@ export default function CreditCardCompare() {
   return (
     <div className="min-h-screen pb-safe-nav" style={{ background: c.bg, color: c.text }}>
       {/* Header */}
-      <div className="sticky top-0 z-40 px-4 py-3 flex items-center gap-3 backdrop-blur-md shadow-sm border-b" style={{ background: `${c.card}E6`, borderColor: c.border, paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}>
+      <div className="sticky top-0 z-40 px-4 pt-14 pb-3 flex items-center gap-3 backdrop-blur-md shadow-sm border-b" style={{ background: `${c.card}E6`, borderColor: c.border }}>
         <button onClick={() => step === 'results' ? setStep('profile') : navigate(-1)} className="p-2 -ml-2 rounded-full" style={{ color: c.textSecondary }}>
           <ArrowLeft size={20} />
         </button>

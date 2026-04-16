@@ -203,11 +203,10 @@ export default function BankAccounts() {
     >
       {/* ═══ HEADER ═══ */}
       <div
-        className="sticky top-0 z-30 border-b"
+        className="sticky top-0 z-30 border-b pt-10"
         style={{
           backgroundColor: c.navBg,
           borderColor: c.border,
-          paddingTop: 'calc(env(safe-area-inset-top, 24px) + 0px)',
         }}
       >
         <div className="flex items-center justify-between px-4 pt-3 pb-3">

@@ -162,11 +162,10 @@ export default function ExpenseTracker() {
     >
       {/* ── Sticky header ── */}
       <div
-        className="sticky top-0 z-30 backdrop-blur-xl border-b"
+        className="sticky top-0 z-30 backdrop-blur-xl border-b pt-10"
         style={{
           backgroundColor: theme.bgCard + 'F2',
           borderColor: theme.borderSubtle,
-          paddingTop: 'calc(env(safe-area-inset-top, 24px) + 0px)',
         }}
       >
         {/* Title row */}

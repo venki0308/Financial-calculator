@@ -142,7 +142,7 @@ export default function CreditCardDetail() {
   return (
     <div style={{ minHeight: '100vh', background: c.bg, paddingBottom: 40 }}>
       {/* Header */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 20, background: c.navBg, backdropFilter: 'blur(12px)', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${c.border}` }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 20, background: c.navBg, backdropFilter: 'blur(12px)', padding: '56px 16px 12px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${c.border}` }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.text, padding: 4 }}>
           <ArrowLeft size={22} />
         </button>

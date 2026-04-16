@@ -394,8 +394,8 @@ export default function OverdraftCalculator() {
     <div className="min-h-screen pb-safe-nav" style={{ backgroundColor: c.bg, color: c.text }}>
 
       {/* Sticky Header */}
-      <div className="sticky top-0 z-40 px-4 py-3 flex items-center gap-3 backdrop-blur-md shadow-sm border-b"
-           style={{ backgroundColor: `${c.card}E6`, borderColor: c.border, paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}>
+      <div className="sticky top-0 z-40 px-4 pt-14 pb-3 flex items-center gap-3 backdrop-blur-md shadow-sm border-b"
+           style={{ backgroundColor: `${c.card}E6`, borderColor: c.border }}>
           <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full transition-colors"
                   style={{ color: c.textSecondary }}>
               <ArrowLeft className="w-5 h-5" />

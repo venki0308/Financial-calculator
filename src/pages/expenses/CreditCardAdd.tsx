@@ -291,8 +291,7 @@ export default function CreditCardAdd() {
   return (
     <div style={{ minHeight: '100vh', background: c.bg, color: c.text }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 8px',
-        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1rem)',
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '56px 16px 8px',
         position: 'sticky', top: 0, zIndex: 20, background: c.bg }}>
         <ArrowLeft size={22} style={{ cursor: 'pointer' }} onClick={() => nav(-1)} />
         <span style={{ fontSize: 18, fontWeight: 700 }}>
