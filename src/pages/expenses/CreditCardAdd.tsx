@@ -329,7 +329,7 @@ export default function CreditCardAdd() {
       </div>
 
       {/* Form body */}
-      <div style={{ padding: '0 16px 120px' }}>
+      <div style={{ padding: '0 16px 200px' }}>
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
         {step === 3 && renderStep3()}
@@ -339,7 +339,7 @@ export default function CreditCardAdd() {
 
       {/* Bottom nav buttons */}
       <div style={{
-        position: 'fixed', bottom: 96, left: 0, right: 0, padding: '12px 16px',
+        position: 'fixed', bottom: 104, left: 0, right: 0, padding: '12px 16px',
         background: c.navBg, backdropFilter: 'blur(12px)',
         borderTop: `1px solid ${c.border}`,
         display: 'flex', gap: 12, zIndex: 30,

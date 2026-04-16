@@ -120,6 +120,11 @@ export default function ExpenseTracker() {
     AnalyticsService.trackScreen('Expense_Tracker');
   }, []);
 
+  // Scroll to top when switching tabs
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [activeTab]);
+
   // Cross-tab routing: BudgetTab dispatches a custom event from its
   // "Manage Subscriptions" button so we can switch tabs without a
   // route change. Add other emitters here if needed.
@@ -286,7 +291,7 @@ export default function ExpenseTracker() {
           whileTap={{ scale: 0.88 }}
           whileHover={{ scale: 1.05 }}
           onClick={() => setShowAddSheet(true)}
-          className="fixed bottom-28 right-5 z-[999] flex items-center justify-center"
+          className="fixed bottom-36 right-5 z-[10000] flex items-center justify-center"
           style={{
             width: 56, height: 56,
             borderRadius: '50%',

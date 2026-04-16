@@ -350,7 +350,7 @@ export default function CreditCards() {
       <motion.button
         initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3, type: 'spring' }}
         onClick={() => navigate('/expenses/credit-cards/add')}
-        className="fixed right-4 bottom-28 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-30"
+        className="fixed right-4 bottom-36 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-[10000]"
         style={{ background: '#3b82f6' }}
         whileTap={{ scale: 0.9 }}
       >
