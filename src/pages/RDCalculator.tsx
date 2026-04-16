@@ -25,7 +25,7 @@ export default function RDCalculator() {
 
     // Base Inputs
     const [monthly, setMonthly] = useState(5000);
-    const [rate, setRate] = useState(6.75);
+    const [rate, setRate] = useState(6.7);
     const [months, setMonths] = useState(12);
     const [isSeniorCitizen, setIsSeniorCitizen] = useState(false);
     const effectiveRate = isSeniorCitizen ? rate + 0.5 : rate;

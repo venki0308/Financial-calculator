@@ -19,7 +19,7 @@ import LiveLoanStatus from '../components/LiveLoanStatus';
 import CibilBadge from '../components/CibilBadge';
 import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import { useCibil } from '../context/CibilContext';
-import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
+import { saveLoan as saveLoanToStorage, deleteLoan as deleteLoanFromStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
 import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -40,6 +40,8 @@ export default function AdvancedMortgageCalculator() {
     const cibilScore = cibilProfile?.isNTC ? 0 : (cibilProfile?.score ?? 750);
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+    // Tracks the loanStorage ID separately so handleRemove can clean BOTH stores.
+    const [lastLoanStorageId, setLastLoanStorageId] = useState<string | null>(null);
 
     // ─── Input State ────────────────────────────────────────────────────────
     const [propertyValue, setPropertyValue] = useState(10000000);
@@ -445,15 +447,16 @@ export default function AdvancedMortgageCalculator() {
         saveLoanToStorage(loanData);
 
         setLastSavedId(newId);
+        setLastLoanStorageId(trackerId);
         setSaved(true);
     };
 
     const handleRemove = () => {
-        if (lastSavedId) {
-            removeSaved(lastSavedId);
-            setLastSavedId(null);
-            setSaved(false);
-        }
+        if (lastSavedId) removeSaved(lastSavedId);
+        if (lastLoanStorageId) deleteLoanFromStorage(lastLoanStorageId);
+        setLastSavedId(null);
+        setLastLoanStorageId(null);
+        setSaved(false);
     };
 
     // ─── Render ─────────────────────────────────────────────────────────────

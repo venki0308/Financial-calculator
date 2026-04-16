@@ -63,7 +63,7 @@ export default function GratuityCalculator() {
         const fraction = years - fullYears;
         const payoutYears = fraction >= 0.5 ? fullYears + 1 : fullYears;
         const gratuity = isEligible ? (salary * 15 * payoutYears) / 26 : 0;
-        const exemptionLimit = employerType === 'Govt' ? Infinity : 2500000; // Govt fully exempt; Private: Rs 25L (2024 amendment)
+        const exemptionLimit = employerType === 'Govt' ? Infinity : 2000000; // Govt fully exempt; Private: Rs 20L per Income Tax Act s.10(10)
         const taxableGratuity = Math.max(0, gratuity - exemptionLimit);
         
         // Use standard tax calculation

@@ -74,16 +74,24 @@ function computeSlabTax(income: number, slabs: typeof OLD_REGIME): number {
     return tax;
 }
 
-// fy retained for future year differentiations; both FY 2025-26 and 2026-27 share same rebate logic
+// Section 87A rebate + marginal relief.
+// Without marginal relief, a user at ₹12.1L taxable pays ₹61,500 while at
+// ₹12L they pay ₹0 — a cliff of ₹61K on ₹10K of income. Every top Indian
+// tax calculator (ClearTax, Groww, BankBazaar) handles this; we must too.
 function applyRebate87A(tax: number, taxableIncome: number, regime: 'old' | 'new', _fy: '2026-27' | '2025-26'): number {
     if (regime === 'new') {
-        // Budget 2025 raised rebate to full exemption ≤ ₹12L; unchanged in Budget 2026
-        if (taxableIncome <= 1200000) return 0;
+        const threshold = 1200000;
+        if (taxableIncome <= threshold) return 0;
+        // Marginal relief: tax payable must not exceed the income above the
+        // rebate threshold. Prevents the ₹0→₹61K cliff at ₹12L boundary.
+        const excess = taxableIncome - threshold;
+        return Math.min(tax, excess);
     } else {
-        // Old regime: 87A eliminates tax fully for taxable income ≤ ₹5L (max tax = ₹12,500 at 5%)
-        if (taxableIncome <= 500000) return 0;
+        const threshold = 500000;
+        if (taxableIncome <= threshold) return 0;
+        const excess = taxableIncome - threshold;
+        return Math.min(tax, excess);
     }
-    return tax;
 }
 
 // Surcharge calculation — old regime has 37% tier (>₹5Cr); new regime capped at 25%

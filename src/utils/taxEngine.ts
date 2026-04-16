@@ -66,9 +66,14 @@ function calculateTaxForIncome(income: number, regime: TaxRegime, deductions: nu
     }
   }
 
-  // Rebate u/s 87A (Simplified without marginal relief for the basic logic)
+  // Rebate u/s 87A with marginal relief. Without marginal relief, a user
+  // at ₹12.1L taxable would jump from ₹0 tax to ₹61,500 — a cliff of ₹61K
+  // on just ₹10K of income. Marginal relief caps the tax at the excess.
   if (taxable <= rebateLimit) {
     tax = 0;
+  } else {
+    const excess = taxable - rebateLimit;
+    if (tax > excess) tax = excess;
   }
 
   // Health and Education Cess

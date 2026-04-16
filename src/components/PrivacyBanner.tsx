@@ -35,7 +35,7 @@ export function PrivacyBanner() {
                     initial={{ opacity: 0, y: 50 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 50 }}
-                    className="fixed bottom-0 left-0 right-0 z-[9998] p-4 sm:p-6 pb-8 sm:pb-6 pointer-events-none flex justify-center"
+                    className="fixed bottom-24 left-0 right-0 z-[9998] p-4 sm:p-6 pointer-events-none flex justify-center"
                 >
                     <div className="w-full max-w-md bg-card/95 backdrop-blur-md border border-border shadow-2xl rounded-2xl p-4 sm:p-5 pointer-events-auto relative">
                         <button 
