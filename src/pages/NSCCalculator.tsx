@@ -5,7 +5,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, Che
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, ExportConfig, getEnglishT } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
@@ -127,50 +127,51 @@ export default function NSCCalculator() {
     };
 
     const handlePDFExport = async () => {
+        const te = getEnglishT();
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: t('nsc.reportTitle'),
+            title: te('nsc.reportTitle', 'NSC Calculator Report'),
             inputs: [
-                { label: t('nsc.investmentAmountLabel'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
-                { label: t('nsc.interestRateLabel'), value: `${rate}% ${t('nsc.perAnnum')}` },
-                { label: t('nsc.tenureLabel'), value: t('nsc.fiveYearsFixed') },
-                { label: t('nsc.taxRegimeLabel'), value: taxRegime === 'old' ? t('nsc.oldRegime') : t('nsc.newRegime') },
+                { label: te('nsc.investmentAmountLabel', 'Investment Amount'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: te('nsc.interestRateLabel', 'Interest Rate'), value: `${rate}% ${te('nsc.perAnnum', 'p.a.')}` },
+                { label: te('nsc.tenureLabel', 'Tenure'), value: te('nsc.fiveYearsFixed', '5 Years (Fixed)') },
+                { label: te('nsc.taxRegimeLabel', 'Tax Regime'), value: taxRegime === 'old' ? te('nsc.oldRegime', 'Old Regime') : te('nsc.newRegime', 'New Regime') },
             ],
             results: [
-                { label: t('nsc.maturityAmountLabel'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
-                { label: t('nsc.totalInterestEarnedLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: t('nsc.sec80CDeductionLabel'), value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
-                { label: t('nsc.taxSavingLabel'), value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
-                { label: t('nsc.postTaxMaturityLabel'), value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
-                { label: t('nsc.inflationAdjustedValueLabel'), value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
+                { label: te('nsc.maturityAmountLabel', 'Maturity Amount'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: te('nsc.totalInterestEarnedLabel', 'Total Interest Earned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: te('nsc.sec80CDeductionLabel', 'Sec 80C Deduction'), value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
+                { label: te('nsc.taxSavingLabel', 'Tax Saving'), value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
+                { label: te('nsc.postTaxMaturityLabel', 'Post-Tax Maturity'), value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+                { label: te('nsc.inflationAdjustedValueLabel', 'Inflation-Adjusted Value'), value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: t('nsc.principalInvested'), value: investment, color: '#4F46E5' },
-                    { label: t('nsc.interestEarnedChart'), value: result.totalInterest, color: '#10B981' },
+                    { label: te('nsc.principalInvested', 'Principal Invested'), value: investment, color: '#4F46E5' },
+                    { label: te('nsc.interestEarnedChart', 'Interest Earned'), value: result.totalInterest, color: '#10B981' },
                 ],
             },
-            projectionTitle: t('nsc.yearWiseGrowth'),
-            projectionColumns: [t('nsc.yearCol'), t('nsc.openingBalanceCol'), t('nsc.interestEarnedCol'), t('nsc.closingBalanceCol')],
+            projectionTitle: te('nsc.yearWiseGrowth', 'Year-Wise Growth'),
+            projectionColumns: [te('nsc.yearCol', 'Year'), te('nsc.openingBalanceCol', 'Opening Balance'), te('nsc.interestEarnedCol', 'Interest Earned'), te('nsc.closingBalanceCol', 'Closing Balance')],
             projectionRows: result.table.map((y: any) => [
-                `${t('nsc.yearPrefix')} ${y.year}`,
+                `${te('nsc.yearPrefix', 'Year')} ${y.year}`,
                 `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(nscStatus ? [{
-                    title: `${t('nsc.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: [t('nsc.metricCol'), t('nsc.valueCol')],
+                    title: `${te('nsc.liveStatusAsOf', 'Live Status (as of')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [te('nsc.metricCol', 'Metric'), te('nsc.valueCol', 'Value')],
                     rows: [
-                        [t('nsc.nscAge'), `${nscStatus.yearsCompleted}y ${nscStatus.monthsInCurrentYear}m`],
-                        [t('nsc.currentValue'), fmtINR(nscStatus.valueToday)],
-                        [t('nsc.interestEarnedMetric'), fmtINR(nscStatus.interestEarned)],
-                        [t('nsc.maturityDate'), nscStatus.maturityDate],
-                        [t('nsc.daysToMaturity'), String(nscStatus.daysToMaturity)],
-                        [t('nsc.maturityValue'), fmtINR(nscStatus.maturityValue)],
+                        [te('nsc.nscAge', 'NSC Age'), `${nscStatus.yearsCompleted}y ${nscStatus.monthsInCurrentYear}m`],
+                        [te('nsc.currentValue', 'Current Value'), fmtINR(nscStatus.valueToday)],
+                        [te('nsc.interestEarnedMetric', 'Interest Earned'), fmtINR(nscStatus.interestEarned)],
+                        [te('nsc.maturityDate', 'Maturity Date'), nscStatus.maturityDate],
+                        [te('nsc.daysToMaturity', 'Days to Maturity'), String(nscStatus.daysToMaturity)],
+                        [te('nsc.maturityValue', 'Maturity Value'), fmtINR(nscStatus.maturityValue)],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -179,43 +180,44 @@ export default function NSCCalculator() {
     };
 
     const handleExcelExport = async () => {
+        const te = getEnglishT();
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: t('nsc.reportTitle'),
+            title: te('nsc.reportTitle', 'NSC Calculator Report'),
             inputs: [
-                { label: t('nsc.investmentAmountLabel'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
-                { label: t('nsc.interestRateLabel'), value: `${rate}% ${t('nsc.perAnnum')}` },
-                { label: t('nsc.tenureLabel'), value: t('nsc.fiveYearsFixed') },
-                { label: t('nsc.taxRegimeLabel'), value: taxRegime === 'old' ? t('nsc.oldRegime') : t('nsc.newRegime') },
+                { label: te('nsc.investmentAmountLabel', 'Investment Amount'), value: `₹${Math.round(investment).toLocaleString('en-IN')}` },
+                { label: te('nsc.interestRateLabel', 'Interest Rate'), value: `${rate}% ${te('nsc.perAnnum', 'p.a.')}` },
+                { label: te('nsc.tenureLabel', 'Tenure'), value: te('nsc.fiveYearsFixed', '5 Years (Fixed)') },
+                { label: te('nsc.taxRegimeLabel', 'Tax Regime'), value: taxRegime === 'old' ? te('nsc.oldRegime', 'Old Regime') : te('nsc.newRegime', 'New Regime') },
             ],
             results: [
-                { label: t('nsc.maturityAmountLabel'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
-                { label: t('nsc.totalInterestEarnedLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: t('nsc.sec80CDeductionLabel'), value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
-                { label: t('nsc.taxSavingLabel'), value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
-                { label: t('nsc.postTaxMaturityLabel'), value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
-                { label: t('nsc.inflationAdjustedValueLabel'), value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
+                { label: te('nsc.maturityAmountLabel', 'Maturity Amount'), value: `₹${Math.round(result.maturity).toLocaleString('en-IN')}` },
+                { label: te('nsc.totalInterestEarnedLabel', 'Total Interest Earned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: te('nsc.sec80CDeductionLabel', 'Sec 80C Deduction'), value: `₹${Math.round(result.sec80cDeduction).toLocaleString('en-IN')}` },
+                { label: te('nsc.taxSavingLabel', 'Tax Saving'), value: `₹${Math.round(result.taxSaving).toLocaleString('en-IN')}` },
+                { label: te('nsc.postTaxMaturityLabel', 'Post-Tax Maturity'), value: `₹${Math.round(result.postTaxMaturity).toLocaleString('en-IN')}` },
+                { label: te('nsc.inflationAdjustedValueLabel', 'Inflation-Adjusted Value'), value: `₹${Math.round(result.realValue).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: t('nsc.yearWiseGrowth'),
-            projectionColumns: [t('nsc.yearCol'), t('nsc.openingBalanceCol'), t('nsc.interestEarnedCol'), t('nsc.closingBalanceCol')],
+            projectionTitle: te('nsc.yearWiseGrowth', 'Year-Wise Growth'),
+            projectionColumns: [te('nsc.yearCol', 'Year'), te('nsc.openingBalanceCol', 'Opening Balance'), te('nsc.interestEarnedCol', 'Interest Earned'), te('nsc.closingBalanceCol', 'Closing Balance')],
             projectionRows: result.table.map((y: any) => [
-                `${t('nsc.yearPrefix')} ${y.year}`,
+                `${te('nsc.yearPrefix', 'Year')} ${y.year}`,
                 `₹${Math.round(y.openBal).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.interest).toLocaleString('en-IN')}`,
                 `₹${Math.round(y.closeBal).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(nscStatus ? [{
-                    title: `${t('nsc.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: [t('nsc.metricCol'), t('nsc.valueCol')],
+                    title: `${te('nsc.liveStatusAsOf', 'Live Status (as of')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [te('nsc.metricCol', 'Metric'), te('nsc.valueCol', 'Value')],
                     rows: [
-                        [t('nsc.nscAge'), `${nscStatus.yearsCompleted}y ${nscStatus.monthsInCurrentYear}m`],
-                        [t('nsc.currentValue'), fmtINR(nscStatus.valueToday)],
-                        [t('nsc.interestEarnedMetric'), fmtINR(nscStatus.interestEarned)],
-                        [t('nsc.maturityDate'), nscStatus.maturityDate],
-                        [t('nsc.daysToMaturity'), String(nscStatus.daysToMaturity)],
-                        [t('nsc.maturityValue'), fmtINR(nscStatus.maturityValue)],
+                        [te('nsc.nscAge', 'NSC Age'), `${nscStatus.yearsCompleted}y ${nscStatus.monthsInCurrentYear}m`],
+                        [te('nsc.currentValue', 'Current Value'), fmtINR(nscStatus.valueToday)],
+                        [te('nsc.interestEarnedMetric', 'Interest Earned'), fmtINR(nscStatus.interestEarned)],
+                        [te('nsc.maturityDate', 'Maturity Date'), nscStatus.maturityDate],
+                        [te('nsc.daysToMaturity', 'Days to Maturity'), String(nscStatus.daysToMaturity)],
+                        [te('nsc.maturityValue', 'Maturity Value'), fmtINR(nscStatus.maturityValue)],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],

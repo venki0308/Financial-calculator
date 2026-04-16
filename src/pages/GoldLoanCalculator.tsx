@@ -30,7 +30,7 @@ import LiveLoanStatus from '../components/LiveLoanStatus';
 import SaveNameDialog from '../components/SaveNameDialog';
 import type { LoanProfile } from '../utils/loanStatusEngine';
 import { calculateReducingEMI, formatINR, formatINRShort } from '../utils/calculations';
-import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, getEnglishT, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
@@ -484,54 +484,55 @@ export default function GoldLoanCalculator() {
     };
 
     const buildExportConfig = (): ExportConfig => {
+        const te = getEnglishT();
         const tag = todayStr();
         const inputs: { label: string; value: string }[] = [
-            { label: t('goldLoan.mode'), value: mode === 'byWeight' ? t('goldLoan.byWeight') : t('goldLoan.byAmount') },
-            { label: t('goldLoan.weight'), value: `${goldWeight} g` },
-            { label: t('goldLoan.purity'), value: `${purity} (${PURITY_OPTIONS.find(p => p.id === purity)?.factorText})` },
-            { label: t('goldLoan.goldRate24K'), value: `${formatINR(goldRate24K)} / g` },
-            { label: t('goldLoan.repaymentMode'), value: repaymentMode === 'emi' ? t('goldLoan.modeEmi') : repaymentMode === 'bullet' ? t('goldLoan.modeBullet') : t('goldLoan.modeInterestOnly') },
-            { label: t('goldLoan.rate'), value: `${interestRate}% p.a.` },
-            { label: t('goldLoan.tenure'), value: `${tenureMonths} ${t('goldLoan.months')}` },
+            { label: te('goldLoan.mode', 'Mode'), value: mode === 'byWeight' ? te('goldLoan.byWeight', 'By Gold Weight') : te('goldLoan.byAmount', 'By Loan Amount') },
+            { label: te('goldLoan.weight', 'Gold Weight'), value: `${goldWeight} g` },
+            { label: te('goldLoan.purity', 'Purity'), value: `${purity} (${PURITY_OPTIONS.find(p => p.id === purity)?.factorText})` },
+            { label: te('goldLoan.goldRate24K', 'Gold Rate (24K)'), value: `${formatINR(goldRate24K)} / g` },
+            { label: te('goldLoan.repaymentMode', 'Repayment Mode'), value: repaymentMode === 'emi' ? te('goldLoan.modeEmi', 'EMI') : repaymentMode === 'bullet' ? te('goldLoan.modeBullet', 'Bullet') : te('goldLoan.modeInterestOnly', 'Interest Only') },
+            { label: te('goldLoan.rate', 'Interest Rate'), value: `${interestRate}% p.a.` },
+            { label: te('goldLoan.tenure', 'Tenure'), value: `${tenureMonths} ${te('goldLoan.months', 'months')}` },
         ];
         if (mode === 'byAmount') {
-            inputs.splice(1, 0, { label: t('goldLoan.loanNeeded'), value: formatINR(loanAmountNeeded) });
-            inputs.splice(2, 0, { label: t('goldLoan.requiredGold'), value: `${requiredGoldGrams} g` });
+            inputs.splice(1, 0, { label: te('goldLoan.loanNeeded', 'Loan Needed'), value: formatINR(loanAmountNeeded) });
+            inputs.splice(2, 0, { label: te('goldLoan.requiredGold', 'Required Gold'), value: `${requiredGoldGrams} g` });
         }
 
         const results: { label: string; value: string }[] = [
-            { label: t('goldLoan.goldValue'), value: formatINR(goldValue) },
-            { label: t('goldLoan.applicableLTV'), value: `${tierResult.ltv}%` },
-            { label: t('goldLoan.maxEligible'), value: formatINR(tierResult.maxLoan) },
-            { label: t('goldLoan.loanAmount'), value: formatINR(loanAmount) },
-            { label: activeResult.isEmi ? t('goldLoan.monthlyEmi') : t('goldLoan.monthlyInterest'), value: formatINR(activeResult.monthly) },
-            { label: t('goldLoan.totalInterest'), value: formatINR(activeResult.totalInterest) },
-            { label: t('goldLoan.totalPayment'), value: formatINR(activeResult.totalPayment) },
-            { label: t('goldLoan.processingFee'), value: formatINR(charges.procFee) },
-            { label: t('goldLoan.trueCost'), value: formatINR(charges.trueCost) },
+            { label: te('goldLoan.goldValue', 'Gold Value'), value: formatINR(goldValue) },
+            { label: te('goldLoan.applicableLTV', 'Applicable LTV'), value: `${tierResult.ltv}%` },
+            { label: te('goldLoan.maxEligible', 'Max Eligible Loan'), value: formatINR(tierResult.maxLoan) },
+            { label: te('goldLoan.loanAmount', 'Loan Amount'), value: formatINR(loanAmount) },
+            { label: activeResult.isEmi ? te('goldLoan.monthlyEmi', 'Monthly EMI') : te('goldLoan.monthlyInterest', 'Monthly Interest'), value: formatINR(activeResult.monthly) },
+            { label: te('goldLoan.totalInterest', 'Total Interest'), value: formatINR(activeResult.totalInterest) },
+            { label: te('goldLoan.totalPayment', 'Total Payment'), value: formatINR(activeResult.totalPayment) },
+            { label: te('goldLoan.processingFee', 'Processing Fee'), value: formatINR(charges.procFee) },
+            { label: te('goldLoan.trueCost', 'True Cost'), value: formatINR(charges.trueCost) },
         ];
 
         const additionalTables = [
             {
-                title: t('goldLoan.sensitivityTitle'),
-                columns: [t('goldLoan.colGoldRate'), t('goldLoan.colGoldValue'), t('goldLoan.colLtv'), t('goldLoan.colMaxLoan')],
+                title: te('goldLoan.sensitivityTitle', 'Gold Rate Sensitivity'),
+                columns: [te('goldLoan.colGoldRate', 'Gold Rate'), te('goldLoan.colGoldValue', 'Gold Value'), te('goldLoan.colLtv', 'LTV'), te('goldLoan.colMaxLoan', 'Max Loan')],
                 rows: sensitivity.map(s => [`${formatINR(s.rate)}/g${s.isCurrent ? ' *' : ''}`, formatINR(s.value), `${s.ltv}%`, formatINR(s.maxLoan)]),
             },
             {
-                title: t('goldLoan.comparisonTitle'),
-                columns: [t('goldLoan.colMetric'), t('goldLoan.modeEmi'), t('goldLoan.modeBullet')],
+                title: te('goldLoan.comparisonTitle', 'EMI vs Bullet Comparison'),
+                columns: [te('goldLoan.colMetric', 'Metric'), te('goldLoan.modeEmi', 'EMI'), te('goldLoan.modeBullet', 'Bullet')],
                 rows: [
-                    [t('goldLoan.monthlyOutflow'), formatINR(emiResult?.emi || 0), formatINR(bulletResult.monthlyInterest)],
-                    [t('goldLoan.totalInterest'), formatINR(emiResult?.totalInterest || 0), formatINR(bulletResult.totalInterest)],
-                    [t('goldLoan.totalPayment'), formatINR(emiResult?.totalPayment || 0), formatINR(bulletResult.totalPayment)],
+                    [te('goldLoan.monthlyOutflow', 'Monthly Outflow'), formatINR(emiResult?.emi || 0), formatINR(bulletResult.monthlyInterest)],
+                    [te('goldLoan.totalInterest', 'Total Interest'), formatINR(emiResult?.totalInterest || 0), formatINR(bulletResult.totalInterest)],
+                    [te('goldLoan.totalPayment', 'Total Payment'), formatINR(emiResult?.totalPayment || 0), formatINR(bulletResult.totalPayment)],
                 ],
             },
         ];
 
         if (activeResult.schedule.length > 0) {
             additionalTables.push({
-                title: t('goldLoan.amortTitle'),
-                columns: [t('goldLoan.colMonth'), t('goldLoan.colOpening'), t('goldLoan.colPayment'), t('goldLoan.colPrincipal'), t('goldLoan.colInterest'), t('goldLoan.colClosing')],
+                title: te('goldLoan.amortTitle', 'Amortisation Schedule'),
+                columns: [te('goldLoan.colMonth', 'Month'), te('goldLoan.colOpening', 'Opening Balance'), te('goldLoan.colPayment', 'Payment'), te('goldLoan.colPrincipal', 'Principal'), te('goldLoan.colInterest', 'Interest'), te('goldLoan.colClosing', 'Closing Balance')],
                 rows: activeResult.schedule.map(r => [
                     String(r.month),
                     formatINR(r.openingBalance ?? loanAmount),
@@ -544,16 +545,16 @@ export default function GoldLoanCalculator() {
         }
 
         return {
-            title: t('goldLoan.title'),
-            subtitle: `${goldWeight}g ${purity} • ${repaymentMode === 'emi' ? t('goldLoan.modeEmi') : t('goldLoan.modeBullet')}`,
+            title: te('goldLoan.title', 'Gold Loan Calculator'),
+            subtitle: `${goldWeight}g ${purity} • ${repaymentMode === 'emi' ? te('goldLoan.modeEmi', 'EMI') : te('goldLoan.modeBullet', 'Bullet')}`,
             inputs,
             results,
             chart: { type: 'pie', segments: [
-                { label: t('goldLoan.principalLabel'), value: loanAmount, color: '#10B981' },
-                { label: t('goldLoan.interestLabel'), value: activeResult.totalInterest, color: '#F59E0B' },
+                { label: te('goldLoan.principalLabel', 'Principal'), value: loanAmount, color: '#10B981' },
+                { label: te('goldLoan.interestLabel', 'Interest'), value: activeResult.totalInterest, color: '#F59E0B' },
             ]},
             additionalTables,
-            notes: t('goldLoan.pdfNotes'),
+            notes: te('goldLoan.pdfNotes', 'Disclaimer: This report is for informational purposes only.'),
             filename: `FinCalix_GoldLoan_${tag}`,
         };
     };

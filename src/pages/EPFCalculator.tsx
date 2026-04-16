@@ -5,7 +5,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, 
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, getEnglishT, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
@@ -215,38 +215,39 @@ export default function EPFCalculator() {
     };
 
     const handleDownloadPDF = async () => {
+        const te = getEnglishT();
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: t('epf.reportTitle'),
+            title: te('epf.reportTitle', 'EPF Report'),
             inputs: [
-                { label: t('epf.basicMonthlySalary'), value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
-                { label: t('epf.employeeContribution'), value: `${totalEmpPct}%${vpfPct > 0 ? ` ${t('epf.vpfBreakdown', { vpf: vpfPct })}` : ''}` },
-                { label: t('epf.epfInterestRate'), value: `${rate}% ${t('epf.perAnnum')}` },
-                { label: t('epf.currentAge'), value: `${age} ${t('epf.years')}` },
-                { label: t('epf.retirementAge'), value: `${retireAge} ${t('epf.years')}` },
-                { label: t('epf.annualSalaryHike'), value: `${hike}%` },
-                { label: t('epf.assumedInflation'), value: `${inflationRate}%` },
+                { label: te('epf.basicMonthlySalary', 'Basic Monthly Salary'), value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
+                { label: te('epf.employeeContribution', 'Employee Contribution'), value: `${totalEmpPct}%${vpfPct > 0 ? ` (incl. VPF ${vpfPct}%)` : ''}` },
+                { label: te('epf.epfInterestRate', 'EPF Interest Rate'), value: `${rate}% ${te('epf.perAnnum', 'p.a.')}` },
+                { label: te('epf.currentAge', 'Current Age'), value: `${age} ${te('epf.years', 'years')}` },
+                { label: te('epf.retirementAge', 'Retirement Age'), value: `${retireAge} ${te('epf.years', 'years')}` },
+                { label: te('epf.annualSalaryHike', 'Annual Salary Hike'), value: `${hike}%` },
+                { label: te('epf.assumedInflation', 'Assumed Inflation'), value: `${inflationRate}%` },
             ],
             results: [
-                { label: t('epf.expectedCorpus'), value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
-                { label: t('epf.totalEmployeeContrib'), value: `₹${Math.round(result.totalEmp).toLocaleString('en-IN')}` },
-                { label: t('epf.totalEmployerShare'), value: `₹${Math.round(result.totalEmployer).toLocaleString('en-IN')}` },
-                { label: t('epf.totalInterestEarned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: t('epf.yearsToRetirement'), value: `${result.years} ${t('epf.years')}` },
+                { label: te('epf.expectedCorpus', 'Expected Corpus'), value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: te('epf.totalEmployeeContrib', 'Total Employee Contribution'), value: `₹${Math.round(result.totalEmp).toLocaleString('en-IN')}` },
+                { label: te('epf.totalEmployerShare', 'Total Employer Share'), value: `₹${Math.round(result.totalEmployer).toLocaleString('en-IN')}` },
+                { label: te('epf.totalInterestEarned', 'Total Interest Earned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: te('epf.yearsToRetirement', 'Years to Retirement'), value: `${result.years} ${te('epf.years', 'years')}` },
             ],
             chart: {
                 type: 'pie',
                 segments: [
-                    { label: t('epf.employeeContributions'), value: result.totalEmp, color: '#4F46E5' },
-                    { label: t('epf.employerContributions'), value: result.totalEmployer, color: '#F59E0B' },
-                    { label: t('epf.interestEarned'), value: result.totalInterest, color: '#10B981' },
+                    { label: te('epf.employeeContributions', 'Employee Contributions'), value: result.totalEmp, color: '#4F46E5' },
+                    { label: te('epf.employerContributions', 'Employer Contributions'), value: result.totalEmployer, color: '#F59E0B' },
+                    { label: te('epf.interestEarned', 'Interest Earned'), value: result.totalInterest, color: '#10B981' },
                 ],
             },
-            projectionTitle: t('epf.yearlyGrowthSchedule'),
-            projectionColumns: [t('epf.yearCol'), t('epf.age'), t('epf.employeeContrib'), t('epf.employerContrib'), t('epf.interestLabel'), t('epf.closingBalance')],
+            projectionTitle: te('epf.yearlyGrowthSchedule', 'Yearly Growth Schedule'),
+            projectionColumns: [te('epf.yearCol', 'Year'), te('epf.age', 'Age'), te('epf.employeeContrib', 'Employee Contrib.'), te('epf.employerContrib', 'Employer Contrib.'), te('epf.interestLabel', 'Interest'), te('epf.closingBalance', 'Closing Balance')],
             projectionRows: result.schedule.map((r: any) => [
-                `${t('epf.yearCol')} ${r.year}`,
+                `${te('epf.yearCol', 'Year')} ${r.year}`,
                 r.age,
                 `₹${Math.round(r.empContrib).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.emplerContrib).toLocaleString('en-IN')}`,
@@ -259,25 +260,26 @@ export default function EPFCalculator() {
     };
 
     const handleDownloadExcel = async () => {
+        const te = getEnglishT();
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         const config: ExportConfig = {
-            title: t('epf.reportTitle'),
+            title: te('epf.reportTitle', 'EPF Report'),
             inputs: [
-                { label: t('epf.basicMonthlySalary'), value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
-                { label: t('epf.employeeContribution'), value: `${totalEmpPct}%${vpfPct > 0 ? ` ${t('epf.vpfBreakdown', { vpf: vpfPct })}` : ''}` },
-                { label: t('epf.epfInterestRate'), value: `${rate}%` },
-                { label: t('epf.currentAge'), value: `${age}` },
-                { label: t('epf.retirementAge'), value: `${retireAge}` },
+                { label: te('epf.basicMonthlySalary', 'Basic Monthly Salary'), value: `₹${Math.round(basic).toLocaleString('en-IN')}` },
+                { label: te('epf.employeeContribution', 'Employee Contribution'), value: `${totalEmpPct}%${vpfPct > 0 ? ` (incl. VPF ${vpfPct}%)` : ''}` },
+                { label: te('epf.epfInterestRate', 'EPF Interest Rate'), value: `${rate}%` },
+                { label: te('epf.currentAge', 'Current Age'), value: `${age}` },
+                { label: te('epf.retirementAge', 'Retirement Age'), value: `${retireAge}` },
             ],
             results: [
-                { label: t('epf.expectedCorpus'), value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
-                { label: t('epf.totalEmployeeContrib'), value: `₹${Math.round(result.totalEmp).toLocaleString('en-IN')}` },
-                { label: t('epf.totalEmployerShare'), value: `₹${Math.round(result.totalEmployer).toLocaleString('en-IN')}` },
-                { label: t('epf.totalInterestEarned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: te('epf.expectedCorpus', 'Expected Corpus'), value: `₹${Math.round(result.corpus).toLocaleString('en-IN')}` },
+                { label: te('epf.totalEmployeeContrib', 'Total Employee Contribution'), value: `₹${Math.round(result.totalEmp).toLocaleString('en-IN')}` },
+                { label: te('epf.totalEmployerShare', 'Total Employer Share'), value: `₹${Math.round(result.totalEmployer).toLocaleString('en-IN')}` },
+                { label: te('epf.totalInterestEarned', 'Total Interest Earned'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
             ],
-            projectionTitle: t('epf.yearlyGrowth'),
-            projectionColumns: [t('epf.yearCol'), t('epf.age'), t('epf.employeeContrib'), t('epf.employerContrib'), t('epf.interestLabel'), t('epf.closingBalance')],
+            projectionTitle: te('epf.yearlyGrowth', 'Yearly Growth'),
+            projectionColumns: [te('epf.yearCol', 'Year'), te('epf.age', 'Age'), te('epf.employeeContrib', 'Employee Contrib.'), te('epf.employerContrib', 'Employer Contrib.'), te('epf.interestLabel', 'Interest'), te('epf.closingBalance', 'Closing Balance')],
             projectionRows: result.schedule.map((r: any) => [r.year, r.age, Math.round(r.empContrib), Math.round(r.emplerContrib), Math.round(r.interest), Math.round(r.closingBal)]),
             filename: `FinCalix_EPF_Report_${tag}`,
         };

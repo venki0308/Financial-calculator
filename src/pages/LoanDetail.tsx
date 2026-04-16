@@ -18,7 +18,7 @@ import {
 } from '../utils/investmentStatusEngine';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, getEnglishT, type ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { toLocalDateStr, todayStr, parseLocalDate } from '../utils/dateUtils';
 
@@ -396,34 +396,35 @@ export default function LoanDetail() {
         // Build the shared config once so PDF and Excel stay in lock-step.
         const buildLoanExportConfig = (): ExportConfig => {
             const tag = todayStr();
+            const te = getEnglishT();
             return {
                 title: profile.name,
-                subtitle: `${t('myLoans.pdfLoanTrackerReport')} — ${fmtDate(status.today)}`,
+                subtitle: `${te('myLoans.pdfLoanTrackerReport', 'Loan Tracker Report')} — ${fmtDate(status.today)}`,
                 inputs: [
-                    { label: t('myLoans.pdfLoanAmount'), value: formatINR(d.loanAmount) },
-                    { label: t('myLoans.pdfInterestRate'), value: `${d.annualRate}% ${t('myLoans.pdfPa')}` },
-                    { label: t('myLoans.pdfTenure'), value: `${d.tenureMonths} ${t('myLoans.pdfMonths')}` },
-                    { label: t('myLoans.pdfEmi'), value: formatINR(d.emiAmount) },
-                    { label: t('myLoans.pdfDisbursed'), value: fmtDate(d.disbursementDate) },
-                    { label: t('myLoans.pdfRateType'), value: d.loanType === 'floating' ? t('myLoans.pdfFloating') : t('myLoans.pdfFixed') },
+                    { label: te('myLoans.pdfLoanAmount', 'Loan Amount'), value: formatINR(d.loanAmount) },
+                    { label: te('myLoans.pdfInterestRate', 'Interest Rate'), value: `${d.annualRate}% ${te('myLoans.pdfPa', 'p.a.')}` },
+                    { label: te('myLoans.pdfTenure', 'Tenure'), value: `${d.tenureMonths} ${te('myLoans.pdfMonths', 'months')}` },
+                    { label: 'EMI', value: formatINR(d.emiAmount) },
+                    { label: te('myLoans.pdfDisbursed', 'Disbursed'), value: fmtDate(d.disbursementDate) },
+                    { label: te('myLoans.pdfRateType', 'Rate Type'), value: d.loanType === 'floating' ? te('myLoans.pdfFloating', 'Floating') : te('myLoans.pdfFixed', 'Fixed') },
                 ],
                 results: [
-                    { label: t('myLoans.pdfOutstandingPrincipal'), value: formatINR(status.principalOutstanding) },
-                    { label: t('myLoans.pdfEmisPaid'), value: `${status.emisPaid} of ${d.tenureMonths}` },
-                    { label: t('myLoans.pdfTotalPaidSoFar'), value: formatINR(status.totalPaidSoFar) },
-                    { label: t('myLoans.pdfPrincipalPaid'), value: formatINR(status.principalPaidSoFar) },
-                    { label: t('myLoans.pdfInterestPaid'), value: formatINR(status.interestPaidSoFar) },
-                    { label: t('myLoans.pdfSettlementToday'), value: formatINR(status.totalSettlementToday) },
-                    { label: t('myLoans.pdfInterestSavedIfClose'), value: formatINR(status.interestSavedIfCloseToday) },
-                    { label: t('myLoans.pdfDailyInterest'), value: formatINR(status.dailyInterest) },
-                    { label: t('myLoans.pdfProgress'), value: `${status.percentComplete.toFixed(1)}%` },
+                    { label: te('myLoans.pdfOutstandingPrincipal', 'Outstanding Principal'), value: formatINR(status.principalOutstanding) },
+                    { label: te('myLoans.pdfEmisPaid', 'EMIs Paid'), value: `${status.emisPaid} of ${d.tenureMonths}` },
+                    { label: te('myLoans.pdfTotalPaidSoFar', 'Total Paid So Far'), value: formatINR(status.totalPaidSoFar) },
+                    { label: te('myLoans.pdfPrincipalPaid', 'Principal Paid'), value: formatINR(status.principalPaidSoFar) },
+                    { label: te('myLoans.pdfInterestPaid', 'Interest Paid'), value: formatINR(status.interestPaidSoFar) },
+                    { label: te('myLoans.pdfSettlementToday', 'Settlement Today'), value: formatINR(status.totalSettlementToday) },
+                    { label: te('myLoans.pdfInterestSavedIfClose', 'Interest Saved if Close'), value: formatINR(status.interestSavedIfCloseToday) },
+                    { label: te('myLoans.pdfDailyInterest', 'Daily Interest'), value: formatINR(status.dailyInterest) },
+                    { label: te('myLoans.pdfProgress', 'Progress'), value: `${status.percentComplete.toFixed(1)}%` },
                 ],
-                projectionTitle: t('myLoans.pdfMonthWiseSchedule'),
-                projectionColumns: [t('myLoans.pdfColMonth'), t('myLoans.pdfColDate'), t('myLoans.pdfColEmi'), t('myLoans.pdfColInterest'), t('myLoans.pdfColPrincipal'), t('myLoans.pdfColBalance')],
+                projectionTitle: te('myLoans.pdfMonthWiseSchedule', 'Month-wise Amortization Schedule'),
+                projectionColumns: [te('myLoans.pdfColMonth', 'Month'), te('myLoans.pdfColDate', 'Date'), 'EMI', te('myLoans.pdfColInterest', 'Interest'), te('myLoans.pdfColPrincipal', 'Principal'), te('myLoans.pdfColBalance', 'Balance')],
                 projectionRows: fullSchedule.map(r => [r.month, fmtDate(r.date), formatINR(r.emi), formatINR(r.interest), formatINR(r.principal), formatINR(r.balance)]),
                 additionalTables: [{
-                    title: t('myLoans.pdfYearWiseSummary'),
-                    columns: [t('myLoans.pdfColYear'), t('myLoans.pdfColTotalPaid'), t('myLoans.pdfColPrincipal'), t('myLoans.pdfColInterest'), t('myLoans.pdfColClosingBalance')],
+                    title: te('myLoans.pdfYearWiseSummary', 'Year-wise Summary'),
+                    columns: [te('myLoans.pdfColYear', 'Year'), te('myLoans.pdfColTotalPaid', 'Total Paid'), te('myLoans.pdfColPrincipal', 'Principal'), te('myLoans.pdfColInterest', 'Interest'), te('myLoans.pdfColClosingBalance', 'Closing Balance')],
                     rows: yearlySummary.map(r => [r.year, formatINR(r.totalPaid), formatINR(r.principal), formatINR(r.interest), formatINR(r.closingBal)]),
                 }],
                 filename: `FinCalix_LoanTracker_${tag}`,

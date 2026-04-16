@@ -15,7 +15,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, getEnglishT, type ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAppColors } from '../theme/useAppColors';
@@ -96,23 +96,24 @@ export default function BreakEvenCalculator() {
     };
 
     const handlePDF = async () => {
+        const te = getEnglishT();
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: t('breakeven.reportTitle'),
+            title: te('breakeven.reportTitle', 'Break-Even Analysis Report'),
             inputs: [
-                { label: t('breakeven.fixedCosts'), value: `₹${Math.round(fixed).toLocaleString('en-IN')}` },
-                { label: t('breakeven.sellingPricePerUnit'), value: `₹${Math.round(price).toLocaleString('en-IN')}` },
-                { label: t('breakeven.variableCostPerUnit'), value: `₹${Math.round(variable).toLocaleString('en-IN')}` },
+                { label: te('breakeven.fixedCosts', 'Fixed Costs'), value: `₹${Math.round(fixed).toLocaleString('en-IN')}` },
+                { label: te('breakeven.sellingPricePerUnit', 'Selling Price per Unit'), value: `₹${Math.round(price).toLocaleString('en-IN')}` },
+                { label: te('breakeven.variableCostPerUnit', 'Variable Cost per Unit'), value: `₹${Math.round(variable).toLocaleString('en-IN')}` },
             ],
             results: [
-                { label: t('breakeven.breakEvenUnits'), value: `${Math.round(result.breakEvenUnits).toLocaleString('en-IN')} ${t('breakeven.units')}` },
-                { label: t('breakeven.breakEvenRevenue'), value: `₹${Math.round(result.breakEvenSales).toLocaleString('en-IN')}` },
-                { label: t('breakeven.contributionMarginPerUnit'), value: `₹${Math.round(result.contribution).toLocaleString('en-IN')}` },
-                { label: t('breakeven.contributionMarginPercent'), value: `${result.marginPct}%` },
+                { label: te('breakeven.breakEvenUnits', 'Break-Even Units'), value: `${Math.round(result.breakEvenUnits).toLocaleString('en-IN')} ${te('breakeven.units', 'units')}` },
+                { label: te('breakeven.breakEvenRevenue', 'Break-Even Revenue'), value: `₹${Math.round(result.breakEvenSales).toLocaleString('en-IN')}` },
+                { label: te('breakeven.contributionMarginPerUnit', 'Contribution Margin per Unit'), value: `₹${Math.round(result.contribution).toLocaleString('en-IN')}` },
+                { label: te('breakeven.contributionMarginPercent', 'Contribution Margin %'), value: `${result.marginPct}%` },
             ],
-            projectionTitle: t('breakeven.profitLossAtVolumes'),
-            projectionColumns: [t('breakeven.unitsSold'), t('breakeven.revenue'), t('breakeven.totalCost'), t('breakeven.profitLoss'), t('breakeven.marginPercent')],
+            projectionTitle: te('breakeven.profitLossAtVolumes', 'Profit / Loss at Various Volumes'),
+            projectionColumns: [te('breakeven.unitsSold', 'Units Sold'), te('breakeven.revenue', 'Revenue'), te('breakeven.totalCost', 'Total Cost'), te('breakeven.profitLoss', 'Profit / Loss'), te('breakeven.marginPercent', 'Margin %')],
             projectionRows: result.projection.map((r: any) => [
                 Math.round(r.units).toLocaleString('en-IN'),
                 `₹${Math.round(r.revenue).toLocaleString('en-IN')}`,
@@ -125,22 +126,23 @@ export default function BreakEvenCalculator() {
     };
 
     const handleExcel = async () => {
+        const te = getEnglishT();
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: t('breakeven.reportTitle'),
+            title: te('breakeven.reportTitle', 'Break-Even Analysis Report'),
             inputs: [
-                { label: t('breakeven.fixedCosts'), value: `₹${Math.round(fixed).toLocaleString('en-IN')}` },
-                { label: t('breakeven.sellingPricePerUnit'), value: `₹${price}` },
-                { label: t('breakeven.variableCostPerUnit'), value: `₹${variable}` },
+                { label: te('breakeven.fixedCosts', 'Fixed Costs'), value: `₹${Math.round(fixed).toLocaleString('en-IN')}` },
+                { label: te('breakeven.sellingPricePerUnit', 'Selling Price per Unit'), value: `₹${price}` },
+                { label: te('breakeven.variableCostPerUnit', 'Variable Cost per Unit'), value: `₹${variable}` },
             ],
             results: [
-                { label: t('breakeven.breakEvenUnits'), value: String(Math.round(result.breakEvenUnits)) },
-                { label: t('breakeven.breakEvenRevenue'), value: `₹${Math.round(result.breakEvenSales).toLocaleString('en-IN')}` },
-                { label: t('breakeven.contributionMarginPercent'), value: `${result.marginPct}%` },
+                { label: te('breakeven.breakEvenUnits', 'Break-Even Units'), value: String(Math.round(result.breakEvenUnits)) },
+                { label: te('breakeven.breakEvenRevenue', 'Break-Even Revenue'), value: `₹${Math.round(result.breakEvenSales).toLocaleString('en-IN')}` },
+                { label: te('breakeven.contributionMarginPercent', 'Contribution Margin %'), value: `${result.marginPct}%` },
             ],
-            projectionTitle: t('breakeven.profitLossProjection'),
-            projectionColumns: [t('breakeven.unitsSold'), t('breakeven.revenue'), t('breakeven.totalCost'), t('breakeven.profitLoss'), t('breakeven.marginPercent')],
+            projectionTitle: te('breakeven.profitLossProjection', 'Profit / Loss Projection'),
+            projectionColumns: [te('breakeven.unitsSold', 'Units Sold'), te('breakeven.revenue', 'Revenue'), te('breakeven.totalCost', 'Total Cost'), te('breakeven.profitLoss', 'Profit / Loss'), te('breakeven.marginPercent', 'Margin %')],
             projectionRows: result.projection.map((r: any) => [
                 Math.round(r.units),
                 Math.round(r.revenue),

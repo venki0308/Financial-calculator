@@ -5,7 +5,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, Shi
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, getEnglishT, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
@@ -161,40 +161,41 @@ export default function POMISCalculator() {
     };
 
     const handlePDFExport = async () => {
+        const te = getEnglishT();
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToPDF({
-            title: t('pomis.reportTitle'),
+            title: te('pomis.reportTitle', 'POMIS Calculator Report'),
             inputs: [
-                { label: t('pomis.investmentAmountLabel'), value: `₹${Math.round(result.clampedInvestment).toLocaleString('en-IN')}` },
-                { label: t('pomis.accountTypeLabel'), value: isJoint ? t('pomis.jointAccountType') : t('pomis.singleAccountType') },
-                { label: t('pomis.interestRateLabel'), value: `${rate}% ${t('pomis.perAnnum')}` },
-                { label: t('pomis.tenureLabel'), value: t('pomis.tenureValue') },
+                { label: te('pomis.investmentAmountLabel', 'Investment Amount'), value: `₹${Math.round(result.clampedInvestment).toLocaleString('en-IN')}` },
+                { label: te('pomis.accountTypeLabel', 'Account Type'), value: isJoint ? te('pomis.jointAccountType', 'Joint Account') : te('pomis.singleAccountType', 'Single Account') },
+                { label: te('pomis.interestRateLabel', 'Interest Rate'), value: `${rate}% ${te('pomis.perAnnum', 'p.a.')}` },
+                { label: te('pomis.tenureLabel', 'Tenure'), value: te('pomis.tenureValue', '5 Years') },
             ],
             results: [
-                { label: t('pomis.monthlyIncomeGrossLabel'), value: `₹${Math.round(result.monthlyIncome).toLocaleString('en-IN')}` },
-                { label: t('pomis.annualEarningsLabel'), value: `₹${Math.round(result.yearlyInterest).toLocaleString('en-IN')}` },
-                { label: t('pomis.totalInterest5yLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: t('pomis.netMonthlyAfterTaxLabel'), value: `₹${Math.round(result.netMonthlyAfterTax).toLocaleString('en-IN')}` },
-                { label: t('pomis.postTaxYieldLabel'), value: `${result.postTaxYield.toFixed(2)}%` },
+                { label: te('pomis.monthlyIncomeGrossLabel', 'Monthly Income (Gross)'), value: `₹${Math.round(result.monthlyIncome).toLocaleString('en-IN')}` },
+                { label: te('pomis.annualEarningsLabel', 'Annual Earnings'), value: `₹${Math.round(result.yearlyInterest).toLocaleString('en-IN')}` },
+                { label: te('pomis.totalInterest5yLabel', 'Total Interest (5 Years)'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: te('pomis.netMonthlyAfterTaxLabel', 'Net Monthly After Tax'), value: `₹${Math.round(result.netMonthlyAfterTax).toLocaleString('en-IN')}` },
+                { label: te('pomis.postTaxYieldLabel', 'Post-Tax Yield'), value: `${result.postTaxYield.toFixed(2)}%` },
             ],
-            projectionTitle: t('pomis.payoutScheduleTitle'),
-            projectionColumns: [t('pomis.monthColumn'), t('pomis.monthlyPayoutColumn'), t('pomis.cumulativeIncomeColumn')],
+            projectionTitle: te('pomis.payoutScheduleTitle', 'Payout Schedule'),
+            projectionColumns: [te('pomis.monthColumn', 'Month'), te('pomis.monthlyPayoutColumn', 'Monthly Payout'), te('pomis.cumulativeIncomeColumn', 'Cumulative Income')],
             projectionRows: result.schedule.map((r: any) => [
-                `${t('pomis.monthPrefix')} ${r.month}`,
+                `${te('pomis.monthPrefix', 'Month')} ${r.month}`,
                 `₹${Math.round(r.payout).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(pomisStatus ? [{
-                    title: `${t('pomis.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: [t('pomis.metricColumn'), t('pomis.valueColumn')],
+                    title: `${te('pomis.liveStatusAsOf', 'Live Status (as of')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [te('pomis.metricColumn', 'Metric'), te('pomis.valueColumn', 'Value')],
                     rows: [
-                        [t('pomis.monthsCompleted'), String(pomisStatus.monthsCompleted)],
-                        [t('pomis.monthlyIncomeLabel'), formatINR(pomisStatus.monthlyIncome)],
-                        [t('pomis.totalIncomeReceived'), formatINR(pomisStatus.totalIncomeReceived)],
-                        [t('pomis.monthsRemaining'), String(pomisStatus.monthsRemaining)],
-                        [t('pomis.maturityDateLabel'), pomisStatus.maturityDate],
+                        [te('pomis.monthsCompleted', 'Months Completed'), String(pomisStatus.monthsCompleted)],
+                        [te('pomis.monthlyIncomeLabel', 'Monthly Income'), formatINR(pomisStatus.monthlyIncome)],
+                        [te('pomis.totalIncomeReceived', 'Total Income Received'), formatINR(pomisStatus.totalIncomeReceived)],
+                        [te('pomis.monthsRemaining', 'Months Remaining'), String(pomisStatus.monthsRemaining)],
+                        [te('pomis.maturityDateLabel', 'Maturity Date'), pomisStatus.maturityDate],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],
@@ -203,40 +204,41 @@ export default function POMISCalculator() {
     };
 
     const handleExcelExport = async () => {
+        const te = getEnglishT();
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
         await exportToExcel({
-            title: t('pomis.reportTitle'),
+            title: te('pomis.reportTitle', 'POMIS Calculator Report'),
             inputs: [
-                { label: t('pomis.investmentAmountLabel'), value: `₹${Math.round(result.clampedInvestment).toLocaleString('en-IN')}` },
-                { label: t('pomis.accountTypeLabel'), value: isJoint ? t('pomis.jointAccountType') : t('pomis.singleAccountType') },
-                { label: t('pomis.interestRateLabel'), value: `${rate}% ${t('pomis.perAnnum')}` },
-                { label: t('pomis.tenureLabel'), value: t('pomis.tenureValue') },
+                { label: te('pomis.investmentAmountLabel', 'Investment Amount'), value: `₹${Math.round(result.clampedInvestment).toLocaleString('en-IN')}` },
+                { label: te('pomis.accountTypeLabel', 'Account Type'), value: isJoint ? te('pomis.jointAccountType', 'Joint Account') : te('pomis.singleAccountType', 'Single Account') },
+                { label: te('pomis.interestRateLabel', 'Interest Rate'), value: `${rate}% ${te('pomis.perAnnum', 'p.a.')}` },
+                { label: te('pomis.tenureLabel', 'Tenure'), value: te('pomis.tenureValue', '5 Years') },
             ],
             results: [
-                { label: t('pomis.monthlyIncomeGrossLabel'), value: `₹${Math.round(result.monthlyIncome).toLocaleString('en-IN')}` },
-                { label: t('pomis.annualEarningsLabel'), value: `₹${Math.round(result.yearlyInterest).toLocaleString('en-IN')}` },
-                { label: t('pomis.totalInterest5yLabel'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
-                { label: t('pomis.netMonthlyAfterTaxLabel'), value: `₹${Math.round(result.netMonthlyAfterTax).toLocaleString('en-IN')}` },
-                { label: t('pomis.postTaxYieldLabel'), value: `${result.postTaxYield.toFixed(2)}%` },
+                { label: te('pomis.monthlyIncomeGrossLabel', 'Monthly Income (Gross)'), value: `₹${Math.round(result.monthlyIncome).toLocaleString('en-IN')}` },
+                { label: te('pomis.annualEarningsLabel', 'Annual Earnings'), value: `₹${Math.round(result.yearlyInterest).toLocaleString('en-IN')}` },
+                { label: te('pomis.totalInterest5yLabel', 'Total Interest (5 Years)'), value: `₹${Math.round(result.totalInterest).toLocaleString('en-IN')}` },
+                { label: te('pomis.netMonthlyAfterTaxLabel', 'Net Monthly After Tax'), value: `₹${Math.round(result.netMonthlyAfterTax).toLocaleString('en-IN')}` },
+                { label: te('pomis.postTaxYieldLabel', 'Post-Tax Yield'), value: `${result.postTaxYield.toFixed(2)}%` },
             ],
-            projectionTitle: t('pomis.payoutScheduleTitle'),
-            projectionColumns: [t('pomis.monthColumn'), t('pomis.monthlyPayoutColumn'), t('pomis.cumulativeIncomeColumn')],
+            projectionTitle: te('pomis.payoutScheduleTitle', 'Payout Schedule'),
+            projectionColumns: [te('pomis.monthColumn', 'Month'), te('pomis.monthlyPayoutColumn', 'Monthly Payout'), te('pomis.cumulativeIncomeColumn', 'Cumulative Income')],
             projectionRows: result.schedule.map((r: any) => [
-                `${t('pomis.monthPrefix')} ${r.month}`,
+                `${te('pomis.monthPrefix', 'Month')} ${r.month}`,
                 `₹${Math.round(r.payout).toLocaleString('en-IN')}`,
                 `₹${Math.round(r.cumulative).toLocaleString('en-IN')}`,
             ]),
             additionalTables: [
                 ...(pomisStatus ? [{
-                    title: `${t('pomis.liveStatusAsOf')} ${new Date().toLocaleDateString('en-IN')})`,
-                    columns: [t('pomis.metricColumn'), t('pomis.valueColumn')],
+                    title: `${te('pomis.liveStatusAsOf', 'Live Status (as of')} ${new Date().toLocaleDateString('en-IN')})`,
+                    columns: [te('pomis.metricColumn', 'Metric'), te('pomis.valueColumn', 'Value')],
                     rows: [
-                        [t('pomis.monthsCompleted'), String(pomisStatus.monthsCompleted)],
-                        [t('pomis.monthlyIncomeLabel'), formatINR(pomisStatus.monthlyIncome)],
-                        [t('pomis.totalIncomeReceived'), formatINR(pomisStatus.totalIncomeReceived)],
-                        [t('pomis.monthsRemaining'), String(pomisStatus.monthsRemaining)],
-                        [t('pomis.maturityDateLabel'), pomisStatus.maturityDate],
+                        [te('pomis.monthsCompleted', 'Months Completed'), String(pomisStatus.monthsCompleted)],
+                        [te('pomis.monthlyIncomeLabel', 'Monthly Income'), formatINR(pomisStatus.monthlyIncome)],
+                        [te('pomis.totalIncomeReceived', 'Total Income Received'), formatINR(pomisStatus.totalIncomeReceived)],
+                        [te('pomis.monthsRemaining', 'Months Remaining'), String(pomisStatus.monthsRemaining)],
+                        [te('pomis.maturityDateLabel', 'Maturity Date'), pomisStatus.maturityDate],
                     ] as Array<Array<string | number>>,
                 }] : []),
             ],

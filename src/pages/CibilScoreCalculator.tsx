@@ -10,7 +10,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR, calculateReducingEMI } from '../utils/calculations';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { AnalyticsService } from '../lib/analytics';
-import { exportToPDF, type ExportConfig } from '../utils/exportReport';
+import { exportToPDF, getEnglishT, type ExportConfig } from '../utils/exportReport';
 import { CIBIL_RANGES, getCibilTier, getTierId, LOAN_CIBIL_RATES, CIBIL_TIPS, CIBIL_MYTHS, RBI_NOTES } from '../data/cibilData';
 import { todayStr } from '../utils/dateUtils';
 
@@ -201,13 +201,14 @@ export default function CibilScoreCalculator() {
     }, [calcLoanType, calcAmount, calcTenure, tierId]);
 
     const handlePDF = async () => {
+        const te = getEnglishT();
         const config: ExportConfig = {
-            title: t('cibil.title'),
-            subtitle: `CIBIL ${effectiveScore > 0 ? effectiveScore : t('cibil.noHistory')} — ${tier.label}`,
-            inputs: [{ label: t('cibil.pdfCibilScore'), value: effectiveScore > 0 ? String(effectiveScore) : t('cibil.noHistory') }, { label: t('cibil.pdfTier'), value: `${tier.emoji} ${tier.label}` }],
-            results: eligibility.map(e => ({ label: e.loanType, value: `${e.status} ${t('cibil.pdfBank')}${e.minBank || t('cibil.pdfNA')} | ${t('cibil.pdfNBFC')}${e.minNBFC || t('cibil.pdfNA')}` })),
-            projectionTitle: t('cibil.rateImpact'),
-            projectionColumns: [t('cibil.pdfScore'), t('cibil.rate'), t('cibil.pdfEmi'), t('cibil.totalInt'), t('cibil.extraCost')],
+            title: te('cibil.title', 'CIBIL Score Guide'),
+            subtitle: `CIBIL ${effectiveScore > 0 ? effectiveScore : te('cibil.noHistory', 'No History')} — ${tier.label}`,
+            inputs: [{ label: te('cibil.pdfCibilScore', 'CIBIL Score'), value: effectiveScore > 0 ? String(effectiveScore) : te('cibil.noHistory', 'No History') }, { label: te('cibil.pdfTier', 'Tier'), value: `${tier.emoji} ${tier.label}` }],
+            results: eligibility.map(e => ({ label: e.loanType, value: `${e.status} ${te('cibil.pdfBank', 'Bank: ')}${e.minBank || te('cibil.pdfNA', 'N/A')} | ${te('cibil.pdfNBFC', 'NBFC: ')}${e.minNBFC || te('cibil.pdfNA', 'N/A')}` })),
+            projectionTitle: te('cibil.rateImpact', 'Rate Impact Analysis'),
+            projectionColumns: [te('cibil.pdfScore', 'Score'), te('cibil.rate', 'Rate'), te('cibil.pdfEmi', 'EMI'), te('cibil.totalInt', 'Total Interest'), te('cibil.extraCost', 'Extra Cost')],
             projectionRows: rateComparison.map(r => [r.label, `${r.rate.toFixed(1)}%`, formatINR(r.emi), formatINR(r.totalInterest), r.extra > 0 ? `+${formatINR(r.extra)}` : '—']),
             filename: `FinCalix_CIBIL_Guide_${todayStr()}`,
         };
