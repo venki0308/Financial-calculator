@@ -1,6 +1,6 @@
 {
   "minRequiredVersion": "1.0.0",
-  "latestVersion": "1.2.2",
+  "latestVersion": "1.2.3",
   "features": {
     "adMobEnabled": false,
     "showBannerAds": false,

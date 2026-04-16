@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bookmark, Share2, CheckCircle2, ExternalLink, Phone, Building2, Globe, BadgeCheck } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, Bookmark, Share2, CheckCircle2, Phone, Building2, Globe, BadgeCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { schemes } from '../data/schemes';
 import { useSchemeStore } from '../store/useSchemeStore';
@@ -226,34 +225,8 @@ export default function SchemeDetail() {
                 )}
             </div>
 
-            
 
-            {/* Sticky bottom buttons */}
-            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[428px] bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-border p-4 flex gap-3 safe-area-bottom z-[10000]">
-                <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => nativeShare(scheme.name, '', window.location.href)}
-                    className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-muted-foreground font-semibold text-sm"
-                >
-                    <Share2 size={18} /> {t('schemes.share')}
-                </motion.button>
 
-                {noIndividualApp ? (
-                    <div className="flex-[2] flex items-center justify-center py-3.5 rounded-2xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-muted-foreground text-sm font-medium">
-                        {t('schemes.noAppReq')}
-                    </div>
-                ) : isServiceAccess ? (
-                    <motion.a whileTap={{ scale: 0.97 }} href={scheme.officialWebsite} target="_blank" rel="noopener noreferrer"
-                        className="flex-[2] flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-brand-blue text-white font-semibold text-sm shadow-lg shadow-brand-blue/20">
-                        <Phone size={18} /> {t('schemes.accessService')} <ExternalLink size={14} />
-                    </motion.a>
-                ) : (
-                    <motion.a whileTap={{ scale: 0.97 }} href={scheme.officialWebsite} target="_blank" rel="noopener noreferrer"
-                        className="flex-[2] flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-brand-green text-white font-semibold text-sm shadow-lg shadow-brand-green/20">
-                        {isBankApp ? t('schemes.applyAtBank') : t('schemes.applyNow')} <ExternalLink size={18} />
-                    </motion.a>
-                )}
-            </div>
         </div>
     );
 }
