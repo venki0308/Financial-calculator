@@ -339,7 +339,7 @@ export default function CreditCardAdd() {
 
       {/* Bottom nav buttons */}
       <div style={{
-        position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)', left: 0, right: 0, padding: '12px 16px',
+        position: 'fixed', bottom: 96, left: 0, right: 0, padding: '12px 16px',
         background: c.navBg, backdropFilter: 'blur(12px)',
         borderTop: `1px solid ${c.border}`,
         display: 'flex', gap: 12, zIndex: 30,

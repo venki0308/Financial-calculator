@@ -471,7 +471,7 @@ export default function SubscriptionsTab() {
                 whileTap={{ scale: 0.88 }}
                 whileHover={{ scale: 1.05 }}
                 onClick={() => openAddForm()}
-                className="fixed right-5 w-14 h-14 bg-brand-purple text-white rounded-2xl flex items-center justify-center shadow-xl shadow-brand-purple/35 z-40 bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)]"
+                className="fixed right-5 w-14 h-14 bg-brand-purple text-white rounded-2xl flex items-center justify-center shadow-xl shadow-brand-purple/35 z-40 bottom-28"
             >
                 <Plus size={26} strokeWidth={2.5} />
             </motion.button>

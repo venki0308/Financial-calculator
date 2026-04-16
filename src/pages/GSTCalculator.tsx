@@ -41,21 +41,13 @@ const modes: { key: GSTMode; labelKey: string; icon: React.ElementType; descKey:
     { key: 'invoice', labelKey: 'gst.mode_invoice', icon: FileText, descKey: 'gst.desc_invoice' },
 ];
 
-const gstRates = [0, 5, 12, 18, 28];
-
-// Compensation cess presets — applies on top of 28% GST for "sin / luxury"
-// goods. Most users won't touch these but the cess can dwarf the base GST
-// (cigarettes 60-200% pre-2024, cars 1-22%). Source: GST Compensation Cess Act.
-const CESS_PRESETS: { labelKey: string; fallback: string; cess: number }[] = [
-    { labelKey: 'gst.cessNone', fallback: 'None', cess: 0 },
-    { labelKey: 'gst.cessSmallPetrol', fallback: 'Small car (≤4m, ≤1.2L petrol)', cess: 1 },
-    { labelKey: 'gst.cessSmallDiesel', fallback: 'Small car (≤4m, ≤1.5L diesel)', cess: 3 },
-    { labelKey: 'gst.cessMidCar', fallback: 'Mid car (4m+, ≤1500cc)', cess: 17 },
-    { labelKey: 'gst.cessLargeCar', fallback: 'Large car / SUV (>1500cc)', cess: 22 },
-    { labelKey: 'gst.cessAerated', fallback: 'Aerated drinks', cess: 12 },
-    { labelKey: 'gst.cessTobacco', fallback: 'Tobacco / pan masala', cess: 60 },
-    { labelKey: 'gst.cessCigarettes', fallback: 'Cigarettes', cess: 36 },
-];
+// GST 2.0 (post Feb 2026): Compensation cess was abolished and merged into
+// the base rate. Former 28%+cess items now have their own rate slabs.
+// 0.25% — rough diamonds/precious stones
+// 3%    — gold, silver, platinum, precious metals
+// 5%, 12%, 18%, 28% — standard slabs (unchanged)
+// 40%   — luxury cars (>4m / >1500cc), SUVs, aerated drinks (was 28%+cess)
+const gstRates = [0, 3, 5, 12, 18, 28, 40];
 
 interface InvoiceItem {
     id: number;
@@ -83,8 +75,10 @@ export default function GSTCalculator() {
     const [stdAmount, setStdAmount] = useState(10000);
     const [stdRate, setStdRate] = useState(18);
     const [isIGST, setIsIGST] = useState(false);
-    /** Compensation cess (luxury / sin goods). Default 0 — additive on top of stdRate. */
-    const [cessRate, setCessRate] = useState(0);
+    // Cess was abolished under GST 2.0 (Feb 2026). Former cess items now
+    // use the merged 40% slab. Keeping cessRate as a constant 0 so the
+    // stdResult computation doesn't need restructuring.
+    const cessRate = 0;
 
     // Profit Margin mode
     const [costPrice, setCostPrice] = useState(1000);
@@ -380,12 +374,26 @@ export default function GSTCalculator() {
         if (mode === 'standard' || mode === 'reverse') {
             const r = (mode === 'standard' ? stdResult : reverseResult)!;
             if (!r) return;
-            inputs = [{ label: 'Mode', value: mode }, { label: 'Amount', value: String(stdAmount) }, { label: 'GST Rate', value: `${stdRate}%` }];
+            inputs = [{ label: 'Mode', value: mode }, { label: 'Amount', value: String(stdAmount) }, { label: 'GST Rate', value: `${stdRate}%` }, { label: 'Type', value: isIGST ? 'IGST' : 'CGST + SGST' }];
             results = [{ label: 'Base', value: String(Math.round(r.base)) }, { label: 'GST', value: String(Math.round(r.gst)) }, { label: 'Total', value: String(Math.round(r.total)) }];
             projCols = ['Component', 'Amount'];
-            projRows = [['Base', Math.round(r.base)], ['CGST', Math.round(r.cgst)], ['SGST', Math.round(r.sgst)], ['IGST', Math.round(r.igst)], ['Total', Math.round(r.total)]];
+            projRows = isIGST
+                ? [['Base', Math.round(r.base)], ['IGST', Math.round(r.igst)], ['Total', Math.round(r.total)]]
+                : [['Base', Math.round(r.base)], ['CGST', Math.round(r.cgst)], ['SGST', Math.round(r.sgst)], ['Total', Math.round(r.total)]];
+        } else if (mode === 'profit') {
+            if (!profitResult) return;
+            inputs = [{ label: 'Cost Price', value: String(costPrice) }, { label: 'Selling Price', value: String(sellingPrice) }, { label: 'GST Rate', value: `${profitGstRate}%` }];
+            results = [{ label: 'Profit', value: String(Math.round(profitResult.profit)) }, { label: 'Profit %', value: `${profitResult.profitPct.toFixed(2)}%` }, { label: 'GST on Sale', value: String(Math.round(profitResult.gstOnSale)) }, { label: 'Net GST Payable', value: String(Math.round(profitResult.netGst)) }, { label: 'Total with GST', value: String(Math.round(profitResult.totalWithGst)) }];
+            projCols = ['Component', 'Amount'];
+            projRows = [['Cost Price', costPrice], ['Selling Price', sellingPrice], ['Profit', Math.round(profitResult.profit)], ['GST on Sale', Math.round(profitResult.gstOnSale)], ['GST on Cost (ITC)', Math.round(profitResult.gstOnCost)], ['Net GST Payable', Math.round(profitResult.netGst)]];
+        } else if (mode === 'itc') {
+            if (!itcResult) return;
+            inputs = [{ label: 'Input GST Paid', value: String(purchaseGst) }, { label: 'Output GST Collected', value: String(salesGst) }];
+            results = [{ label: 'ITC Available', value: String(Math.round(itcResult.itc)) }, { label: 'GST Liability', value: String(Math.round(itcResult.liability)) }, { label: 'Net GST Payable', value: String(Math.round(itcResult.netPayable)) }, { label: 'ITC Refund', value: String(Math.round(itcResult.refund)) }];
+            projCols = ['Component', 'Amount'];
+            projRows = [['Input GST (ITC)', Math.round(itcResult.itc)], ['Output GST (Liability)', Math.round(itcResult.liability)], ['Net Payable', Math.round(itcResult.netPayable)], ['Refund', Math.round(itcResult.refund)]];
         } else if (mode === 'invoice') {
-            inputs = [{ label: 'Type', value: invoiceIsIGST ? 'IGST' : 'CGST + SGST' }];
+            inputs = [{ label: 'Type', value: invoiceIsIGST ? 'IGST' : 'CGST + SGST' }, { label: 'Items', value: String(invoiceItems.length) }];
             results = [{ label: 'Subtotal', value: String(Math.round(invoiceTotals.amount)) }, { label: 'Total GST', value: String(Math.round(invoiceTotals.gst)) }, { label: 'Invoice Total', value: String(Math.round(invoiceTotals.total)) }];
             projCols = ['Item', 'Qty', 'Price', 'GST %', 'Amount', 'GST', 'Total'];
             projRows = invoiceResult.map((item: any) => [item.name || `Item ${item.id}`, item.qty, item.price, item.rate, Math.round(item.amount), Math.round(item.gst), Math.round(item.total)]);
@@ -486,39 +494,14 @@ export default function GSTCalculator() {
                             <NumberInput label={stdDirection === 'add' ? t('gst.baseAmountExcl') : t('gst.totalAmountIncl')} value={stdAmount} onChange={setStdAmount} prefix="₹" min={0} max={999999999} />
                             <div>
                                 <label className="text-xs text-muted-foreground mb-2 block">{t('gst.gstRate')}</label>
-                                <div className="grid grid-cols-5 gap-2">
+                                <div className="flex flex-wrap gap-2">
                                     {gstRates.map(r => (
-                                        <button key={r} onClick={() => setStdRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${stdRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
+                                        <button key={r} onClick={() => setStdRate(r)} className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all border ${stdRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
                                     ))}
                                 </div>
                             </div>
-                            {/* Compensation cess picker — relevant for cars,
-                                tobacco, aerated drinks. Sits collapsed unless
-                                stdRate is 28% (the only slab where cess
-                                practically applies). */}
-                            {stdRate === 28 && (
-                                <div>
-                                    <label className="text-xs text-muted-foreground mb-2 block">
-                                        {t('gst.compensationCess', 'Compensation cess (luxury / sin goods)')}
-                                    </label>
-                                    <select
-                                        value={cessRate}
-                                        onChange={e => setCessRate(Number(e.target.value))}
-                                        className="w-full bg-dark-bg border border-border rounded-xl px-3 py-2.5 text-xs text-foreground"
-                                    >
-                                        {CESS_PRESETS.map(p => (
-                                            <option key={p.labelKey} value={p.cess}>
-                                                {t(p.labelKey, p.fallback)} {p.cess > 0 ? `— +${p.cess}%` : ''}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {cessRate > 0 && (
-                                        <p className="text-[10px] text-amber-500 mt-1.5">
-                                            ⚠ {t('gst.cessNote', 'Cess is over and above the 28% GST. Total tax = {{total}}%', { total: 28 + cessRate })}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
+                            {/* Cess was abolished under GST 2.0 (Feb 2026).
+                                Former 28%+cess items now use the 40% slab. */}
                             <ToggleIGST value={isIGST} onChange={setIsIGST} />
                         </div>
 
@@ -533,9 +516,9 @@ export default function GSTCalculator() {
                             <NumberInput label={t('gst.totalAmountIncl')} value={stdAmount} onChange={setStdAmount} prefix="₹" min={0} max={999999999} />
                             <div>
                                 <label className="text-xs text-muted-foreground mb-2 block">{t('gst.gstRate')}</label>
-                                <div className="grid grid-cols-5 gap-2">
+                                <div className="flex flex-wrap gap-2">
                                     {gstRates.map(r => (
-                                        <button key={r} onClick={() => setStdRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${stdRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
+                                        <button key={r} onClick={() => setStdRate(r)} className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all border ${stdRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
                                     ))}
                                 </div>
                             </div>
@@ -576,9 +559,9 @@ export default function GSTCalculator() {
                             <NumberInput label={t('gst.sellingPrice')} value={sellingPrice} onChange={setSellingPrice} prefix="₹" min={0} max={999999999} />
                             <div>
                                 <label className="text-xs text-muted-foreground mb-2 block">{t('gst.gstRateOnSale')}</label>
-                                <div className="grid grid-cols-5 gap-2">
-                                    {gstRates.map(r => (
-                                        <button key={r} onClick={() => setProfitGstRate(r)} className={`py-3 rounded-xl text-xs font-bold transition-all border ${profitGstRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
+                                <div className="flex flex-wrap gap-2">
+                                    {gstRates.filter(r => r > 0).map(r => (
+                                        <button key={r} onClick={() => setProfitGstRate(r)} className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all border ${profitGstRate === r ? 'bg-brand-purple border-brand-purple text-foreground' : 'bg-dark-bg border-border text-muted-foreground'}`}>{r}%</button>
                                     ))}
                                 </div>
                             </div>
@@ -854,7 +837,7 @@ function ResultCard({ result, rate, isIGST, chartData, chartRef, showBreakdown, 
                 {showBreakdown && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                         <div className="mt-3 space-y-2">
-                            {[5, 12, 18, 28].map(r => {
+                            {[3, 5, 12, 18, 28, 40].map(r => {
                                 const g = result.base * (r / 100);
                                 return (
                                     <div key={r} className={`flex justify-between items-center py-2 px-3 rounded-lg ${r === rate ? 'bg-brand-purple/10 border border-brand-purple/30' : 'bg-slate-100 dark:bg-slate-800/20'}`}>

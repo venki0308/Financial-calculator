@@ -86,7 +86,7 @@ export function UpdateChecker() {
     // Optional update banner — dismissible
     if (updateState.status === 'optional' && !dismissed) {
         return (
-            <div className="fixed bottom-20 left-3 right-3 z-50 animate-in slide-in-from-bottom-4">
+            <div className="fixed bottom-28 left-3 right-3 z-50 animate-in slide-in-from-bottom-4">
                 <div className="bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-2xl p-4 shadow-2xl">
                     <div className="flex items-start gap-3">
                         <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">

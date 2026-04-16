@@ -156,7 +156,7 @@ function BackToast({ visible }: { visible: boolean }) {
     const { t } = useTranslation();
     if (!visible) return null;
     return (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
             <div className="px-5 py-2.5 rounded-full bg-card border-border border border-slate-700 shadow-xl">
                 <p className="text-foreground text-xs font-medium whitespace-nowrap">{t('app.backToExit', 'Press back again to exit FinCalix')}</p>
             </div>

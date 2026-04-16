@@ -286,7 +286,7 @@ export default function ExpenseTracker() {
           whileTap={{ scale: 0.88 }}
           whileHover={{ scale: 1.05 }}
           onClick={() => setShowAddSheet(true)}
-          className="fixed bottom-20 right-5 z-[999] flex items-center justify-center"
+          className="fixed bottom-28 right-5 z-[999] flex items-center justify-center"
           style={{
             width: 56, height: 56,
             borderRadius: '50%',

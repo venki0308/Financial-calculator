@@ -170,7 +170,7 @@ check('HRA exemption', 14000, hra, 0);
 // 2M — Education Loan (₹10L @ 10.5% for 84m)
 console.log('\n2M. Education Loan (₹10L @ 10.5% for 84m)');
 const eduEmi = emi(1000000, 10.5, 84);
-check('Education loan EMI', 16775, eduEmi, 5);
+check('Education loan EMI', 16861, eduEmi, 5);
 
 // ──────────────────────────────────────────────────────────────
 // 2O — Two Wheeler Loan (₹1L @ 14% for 36m)

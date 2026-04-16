@@ -95,7 +95,7 @@ check('Outstanding > 90% of original', 1, balance / profile.loanAmount, 0.1);
 // Daily interest
 const dailyInterest = balance * dailyRate;
 console.log(`  Daily interest accrual: ₹${Math.round(dailyInterest).toLocaleString('en-IN')}`);
-check('Daily interest in expected range (₹4K-₹6K)', 5300, dailyInterest, 1000);
+check('Daily interest in expected range (₹400-₹700)', 530, dailyInterest, 100);
 
 // Foreclosure (floating rate)
 const foreclosureCharge = profile.loanType === 'fixed' ? balance * 0.03 : 0;

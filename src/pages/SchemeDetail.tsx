@@ -229,7 +229,7 @@ export default function SchemeDetail() {
             
 
             {/* Sticky bottom buttons */}
-            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[428px] bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-border p-4 flex gap-3 safe-area-bottom">
+            <div className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-[428px] bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-border p-4 flex gap-3">
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => nativeShare(scheme.name, '', window.location.href)}
