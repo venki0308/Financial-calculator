@@ -292,6 +292,7 @@ export default function CreditCardAdd() {
     <div style={{ minHeight: '100vh', background: c.bg, color: c.text }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 8px',
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1rem)',
         position: 'sticky', top: 0, zIndex: 20, background: c.bg }}>
         <ArrowLeft size={22} style={{ cursor: 'pointer' }} onClick={() => nav(-1)} />
         <span style={{ fontSize: 18, fontWeight: 700 }}>
@@ -339,7 +340,7 @@ export default function CreditCardAdd() {
 
       {/* Bottom nav buttons */}
       <div style={{
-        position: 'fixed', bottom: 72, left: 0, right: 0, padding: '12px 16px',
+        position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)', left: 0, right: 0, padding: '12px 16px',
         background: c.navBg, backdropFilter: 'blur(12px)',
         borderTop: `1px solid ${c.border}`,
         display: 'flex', gap: 12, zIndex: 30,
