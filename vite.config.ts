@@ -11,6 +11,8 @@ export default defineConfig({
         drop: ['console', 'debugger'],
     },
     build: {
+        minify: 'terser',
+        sourcemap: false,
         chunkSizeWarningLimit: 800,
         rollupOptions: {
             output: {

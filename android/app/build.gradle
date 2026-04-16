@@ -9,6 +9,18 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.fincalix.app"
     compileSdk = rootProject.ext.compileSdkVersion
+
+    bundle {
+        language {
+            enableSplit = true
+        }
+        density {
+            enableSplit = true
+        }
+        abi {
+            enableSplit = true
+        }
+    }
     defaultConfig {
         applicationId "com.fincalix.app"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -32,9 +44,13 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            ndk {
+                debugSymbolLevel 'FULL'
+            }
         }
     }
 }
