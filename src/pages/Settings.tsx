@@ -40,9 +40,11 @@ export default function Settings() {
 
     useEffect(() => { AnalyticsService.trackScreen('Settings'); }, []);
 
+    const { setLanguage } = useSettingsStore();
     const changeLanguage = async (code: string) => {
         await switchLanguage(code);
         localStorage.setItem('language', code);
+        setLanguage(code);
         AnalyticsService.trackLanguageChanged(code);
         setShowLangPicker(false);
     };

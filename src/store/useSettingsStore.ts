@@ -14,8 +14,8 @@ export const useSettingsStore = create<SettingsState>()(
     persist(
         (set) => ({
             darkMode: true,
-            language: 'English',
-            notifications: { priceAlerts: true, newSchemes: true, calcReminders: false, appUpdates: true, dailyQuotes: true },
+            language: 'en',
+            notifications: { priceAlerts: true, newSchemes: true, calcReminders: true, appUpdates: true, dailyQuotes: true },
             toggleDarkMode: () =>
                 set((s) => {
                     const next = !s.darkMode;

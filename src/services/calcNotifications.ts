@@ -92,7 +92,7 @@ export function triggerCalcNotification(data: CalcNotifData) {
             body = `Your FD of ₹${formatINR(data.metadata.amount)} @ ${data.metadata.rate}% matures on ${data.metadata.date}. Plan your reinvestment.`;
             icon = '🏛️';
             category = 'reminder';
-            actionRoute = '/calculator/fd';
+            actionRoute = '/calculator/fixed-deposit';
             actionLabel = 'Open FD Calculator';
             break;
         case 'od_saved':
@@ -116,7 +116,7 @@ export function triggerCalcNotification(data: CalcNotifData) {
             body = `Invest in PPF before March 31 to claim Sec 80C / Sec 123 deduction. Maximum: ₹1,50,000/year.`;
             icon = '🛡️';
             category = 'reminder';
-            actionRoute = '/calculator/ppf-advanced';
+            actionRoute = '/calculator/ppf';
             actionLabel = 'Open PPF Calculator';
             break;
         case 'tax_opportunity':

@@ -15,6 +15,7 @@ import { getAllCreditCards } from '../utils/creditCardStorage';
 import { getDaysUntilDue } from '../utils/creditCardCalculations';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
 import { getAllLoans } from '../utils/loanStorage';
+import { parseLocalDate } from '../utils/dateUtils';
 
 const LAST_RUN_KEY = 'fincalix_scheduler_last_run';
 const MIN_INTERVAL_MS = 23 * 60 * 60 * 1000; // 23 hours
@@ -44,10 +45,12 @@ function checkEMIReminders() {
     const today = new Date();
     const dayOfMonth = today.getDate();
     
-    // Check saved EMI calculations
+    // Check saved EMI calculations. Match on enableReminder flag rather than
+    // calculatorType string, because calculatorType is i18n-translated and
+    // won't match 'Loan EMI Calculator' for Hindi/Telugu/Tamil/Kannada/Malayalam users.
     const saved = useCalculatorStore.getState().savedCalculations;
     const emiReminders = saved.filter(
-        c => c.calculatorType === 'Loan EMI Calculator' && c.inputValues.enableReminder && c.inputValues.reminderDate === dayOfMonth
+        c => c.inputValues?.enableReminder && c.inputValues.reminderDate === dayOfMonth
     );
 
     if (emiReminders.length > 0) {
@@ -156,7 +159,7 @@ function checkTaxAlerts() {
 }
 
 function checkSavingsInsight() {
-    if (!useSettingsStore.getState().notifications.priceAlerts) return;
+    if (!useSettingsStore.getState().notifications.calcReminders) return;
     const savedCalcs = localStorage.getItem('fincalix-calculator-store');
     if (!savedCalcs) return;
 
@@ -173,9 +176,10 @@ async function checkDailyQuote() {
     const settings = useSettingsStore.getState();
     if (!settings.notifications.dailyQuotes) return;
 
-    // Build a type-safe record to avoid indexing issues
+    // Accept both locale codes ('en','hi') and legacy display names ('English','Hindi')
     const langMap: Record<string, 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml'> = {
-        'English': 'en', 'Hindi': 'hi', 'Telugu': 'te', 'Tamil': 'ta', 'Kannada': 'kn', 'Malayalam': 'ml'
+        'en': 'en', 'hi': 'hi', 'te': 'te', 'ta': 'ta', 'kn': 'kn', 'ml': 'ml',
+        'English': 'en', 'Hindi': 'hi', 'Telugu': 'te', 'Tamil': 'ta', 'Kannada': 'kn', 'Malayalam': 'ml',
     };
     const langKey = langMap[settings.language] || 'en';
 
@@ -330,7 +334,7 @@ function checkSubscriptionRenewals() {
         const today = new Date();
         for (const sub of subs) {
             if (!sub.isActive || !sub.nextDueDate) continue;
-            const due = new Date(sub.nextDueDate);
+            const due = parseLocalDate(sub.nextDueDate);
             const diffDays = Math.ceil((due.getTime() - today.getTime()) / 86400000);
             if (diffDays >= 0 && diffDays <= 3) {
                 const amt = sub.amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
