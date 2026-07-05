@@ -26,8 +26,11 @@ const ENTRY_TYPES: { id: EntryType; label: string; emoji: string }[] = [
   { id: 'investment', label: 'Investment', emoji: '📈' },
 ];
 
-const SUB_TAB_IDS = ['all', 'expense', 'income', 'investment'] as const;
+const SUB_TAB_IDS = ['all', 'expense', 'income', 'investment', 'transfer'] as const;
 type SubTab = (typeof SUB_TAB_IDS)[number];
+
+// Neutral blue for transfers — matches WeeklyTab's entryTypeColor
+const TRANSFER_COLOR = '#0284c7';
 
 const QUICK_AMOUNTS = [100, 250, 500, 1000, 5000];
 
@@ -69,6 +72,7 @@ function buildWeekStrip(center: string): { date: string; dayName: string; dayNum
 function typeColor(type: EntryType, et: ReturnType<typeof useExpenseTheme>): string {
   if (type === 'income') return et.accentIncome;
   if (type === 'investment') return et.accentInvestment;
+  if (type === 'transfer') return TRANSFER_COLOR;
   return et.accentExpense;
 }
 
@@ -76,6 +80,7 @@ function subTabColor(tab: SubTab, et: ReturnType<typeof useExpenseTheme>): strin
   if (tab === 'expense') return et.accentExpense;
   if (tab === 'income') return et.accentIncome;
   if (tab === 'investment') return et.accentInvestment;
+  if (tab === 'transfer') return TRANSFER_COLOR;
   return et.accentPrimary;
 }
 
@@ -414,13 +419,14 @@ export default function DailyTab() {
       {/* ════════════════════════════════════════════════════════
           4. SUB-TAB PILLS
           ════════════════════════════════════════════════════════ */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {SUB_TAB_IDS.map(id => {
           const labels: Record<SubTab, string> = {
             all: t('expenses.all', 'All'),
             expense: t('expenses.expenses', 'Expenses'),
             income: t('expenses.income', 'Income'),
             investment: t('expenses.investments', 'Invested'),
+            transfer: t('expenses.transfers', 'Transfers'),
           };
           const active = subTab === id;
           const color = subTabColor(id, et);
@@ -531,11 +537,13 @@ export default function DailyTab() {
                     style={{
                       width: 44, height: 44,
                       borderRadius: 14,
-                      backgroundColor: (cat?.color ?? et.accentInvestment) + '26',
+                      backgroundColor: entry.type === 'transfer'
+                        ? TRANSFER_COLOR + '26'
+                        : (cat?.color ?? et.accentInvestment) + '26',
                       fontSize: 20,
                     }}
                   >
-                    {cat?.icon ?? '📦'}
+                    {entry.type === 'transfer' ? '🔄' : (cat?.icon ?? '📦')}
                   </div>
 
                   {/* Description + meta */}
@@ -550,7 +558,9 @@ export default function DailyTab() {
                       className="truncate mt-0.5"
                       style={{ color: et.textMuted, fontSize: 12 }}
                     >
-                      {cat?.name ?? entry.category}
+                      {entry.type === 'transfer'
+                        ? t('expenses.transfer', 'Transfer')
+                        : (cat?.name ?? entry.category)}
                       {pmLabel ? ` \u00B7 ${pmLabel.icon} ${pmLabel.label}` : ''}
                     </p>
                   </div>

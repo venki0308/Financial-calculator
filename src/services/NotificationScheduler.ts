@@ -17,6 +17,7 @@ import { getDaysUntilDue } from '../utils/creditCardCalculations';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
 import { getAllLoans } from '../utils/loanStorage';
 import { parseLocalDate } from '../utils/dateUtils';
+import { getEntriesForDate } from '../utils/expenseStorage';
 
 const LAST_RUN_KEY = 'fincalix_scheduler_last_run';
 const MIN_INTERVAL_MS = 23 * 60 * 60 * 1000; // 23 hours
@@ -29,9 +30,14 @@ const PERM_REQUESTED_KEY = 'fincalix_notif_perm_requested';
 // Route handoff from a tapped native notification → App.tsx router.
 const PENDING_NAV_KEY = 'fincalix_pending_nav';
 export const NOTIFICATION_NAV_EVENT = 'fincalix:notification-nav';
-// Id ranges: 1000–1099 = daily quotes (see checkDailyQuote). Scheduled
-// reminders live at >= REMINDER_ID_BASE so reconciliation never touches quotes.
+// Id ranges: 1000–1099 = daily quotes (see checkDailyQuote).
+// 3000–3006 = daily "log today's expenses" reminders (see
+// scheduleDailyLogReminders — one id per day of the 7-day window). Scheduled
+// reminders live at >= REMINDER_ID_BASE so reconciliation never touches
+// quotes or log reminders.
 const REMINDER_ID_BASE = 10000;
+const LOG_REMINDER_ID_BASE = 3000;
+const LOG_REMINDER_DAYS = 7; // ids 3000..3006
 
 function addNotif(n: { type: string, title: string, body: string, icon: string, route?: string, itemId?: string }) {
     useNotificationStore.getState().addNotification({
@@ -641,6 +647,60 @@ async function scheduleUpcomingNativeReminders(): Promise<void> {
     }
 }
 
+/**
+ * Evening "log today's expenses" reminder — a daily 20:30 nudge that builds
+ * the logging habit an expense tracker lives or dies by. Ids 3000–3006 (one
+ * per day of a rolling 7-day window; id = 3000 + day offset from today).
+ * Refreshed on every launch: cancel the whole range, then reschedule if the
+ * toggle is on. Today's slot (id 3000) is skipped when the user has already
+ * logged any entry today, so the reminder never nags someone who's done the
+ * work — and because this runs on each app open, logging an entry during the
+ * day effectively cancels tonight's reminder on the next open.
+ */
+async function scheduleDailyLogReminders(): Promise<void> {
+    try {
+        // Cancel our whole id range first so toggling OFF (or re-scheduling)
+        // never leaves stale reminders behind.
+        const pending = await LocalNotifications.getPending();
+        const stale = pending.notifications
+            .filter(n => n.id >= LOG_REMINDER_ID_BASE && n.id < LOG_REMINDER_ID_BASE + LOG_REMINDER_DAYS)
+            .map(n => ({ id: n.id }));
+        if (stale.length > 0) {
+            await LocalNotifications.cancel({ notifications: stale });
+        }
+
+        // Default TRUE — only an explicit false disables (new flag; older
+        // persisted settings without it must behave as enabled).
+        if (useSettingsStore.getState().notifications.logReminder === false) return;
+
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        let loggedToday = false;
+        try { loggedToday = getEntriesForDate(todayStr).length > 0; } catch { /* storage unavailable */ }
+
+        const notifications: LocalNotificationSchema[] = [];
+        for (let i = 0; i < LOG_REMINDER_DAYS; i++) {
+            const at = new Date(now);
+            at.setDate(now.getDate() + i);
+            at.setHours(20, 30, 0, 0); // 20:30 local — end of the spending day
+            if (i === 0 && (at.getTime() <= now.getTime() || loggedToday)) continue;
+            notifications.push({
+                id: LOG_REMINDER_ID_BASE + i,
+                title: "Log today's expenses",
+                body: 'A 10-second habit that keeps your budget honest.',
+                schedule: { at, allowWhileIdle: true },
+                channelId: REMINDER_CHANNEL_ID,
+                extra: { route: '/expenses' },
+            });
+        }
+        if (notifications.length > 0) {
+            await LocalNotifications.schedule({ notifications });
+        }
+    } catch (e) {
+        console.error('Failed to schedule daily log reminders', e);
+    }
+}
+
 export const NotificationScheduler = {
     initialize() {
         // Always seed for first-time users
@@ -690,6 +750,9 @@ export const NotificationScheduler = {
                 // 23h-gated) so newly added cards/subs/loans and permission grants
                 // take effect immediately. Safe: stable ids + cancel-before-schedule.
                 try { await scheduleUpcomingNativeReminders(); } catch (e) { console.error('Native reminder refresh failed', e); }
+                // Evening log reminder (ids 3000–3006) — also refreshed every
+                // launch so an entry logged today cancels tonight's nudge.
+                try { await scheduleDailyLogReminders(); } catch (e) { console.error('Log reminder refresh failed', e); }
             }
         })();
     },

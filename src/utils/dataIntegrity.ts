@@ -22,6 +22,7 @@ const STORAGE_KEYS = {
     creditCards: 'fincalix_credit_cards',
     businesses: 'fincalix_businesses',
     businessEntries: 'fincalix_business_entries',
+    recurring: 'fincalix_recurring',
 } as const;
 
 // ── Validators ─────────────────────────────────────────────
@@ -99,6 +100,23 @@ const isValidBizEntry = (e: unknown): e is Record<string, unknown> => {
         typeof x.category === 'string' &&
         ['income', 'expense'].includes(x.type as string) &&
         // BusinessDetail sorts entries with createdAt.localeCompare — must be a string
+        typeof x.createdAt === 'string'
+    );
+};
+
+// Recurring transaction rules (recurringStorage.ts) — RecurringRule shape.
+// Required: id, type ('expense'|'income'), finite amount, nextDueDate
+// 'YYYY-MM-DD' (the materializer string-compares it against today), and a
+// string createdAt. Other fields are tolerated loose; the materializer
+// guards them individually.
+const isValidRecurringRule = (r: unknown): r is Record<string, unknown> => {
+    if (!r || typeof r !== 'object') return false;
+    const x = r as Record<string, unknown>;
+    return (
+        typeof x.id === 'string' &&
+        ['expense', 'income'].includes(x.type as string) &&
+        typeof x.amount === 'number' && Number.isFinite(x.amount) && x.amount >= 0 &&
+        typeof x.nextDueDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x.nextDueDate) &&
         typeof x.createdAt === 'string'
     );
 };
@@ -197,6 +215,11 @@ export function runDataIntegrityCheck(): IntegrityReport {
         // malformed dates before BusinessTracker/BusinessDetail render them.
         validateStore(STORAGE_KEYS.businesses, isValidBusiness, report, 'businesses');
         validateStore(STORAGE_KEYS.businessEntries, isValidBizEntry, report, 'businessEntries');
+
+        // Recurring transaction rules — validated BEFORE the materializer
+        // runs (App.tsx chains materializeDueRecurring after this check),
+        // so a corrupt rule can never spawn corrupt entries.
+        validateStore(STORAGE_KEYS.recurring, isValidRecurringRule, report, 'recurring');
     } catch (err) {
         report.issues.push(`Integrity check failed: ${(err as Error).message}`);
     }

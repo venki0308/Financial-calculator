@@ -822,10 +822,12 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
                         <div
                           className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
                           style={{
-                            backgroundColor: `${cat?.color ?? '#8b5cf6'}20`,
+                            backgroundColor: entry.type === 'transfer'
+                              ? `${color}20`
+                              : `${cat?.color ?? '#8b5cf6'}20`,
                           }}
                         >
-                          {cat?.icon ?? '\uD83D\uDCE6'}
+                          {entry.type === 'transfer' ? '\uD83D\uDD04' : (cat?.icon ?? '\uD83D\uDCE6')}
                         </div>
 
                         {/* Text */}
@@ -849,7 +851,9 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
                             >
                               {badgeLabel}
                             </span>
-                            {cat?.name ?? entry.category}
+                            {entry.type === 'transfer'
+                              ? t('expenses.transfer', 'Transfer')
+                              : (cat?.name ?? entry.category)}
                           </p>
                         </div>
 

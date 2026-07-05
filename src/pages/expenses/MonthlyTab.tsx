@@ -19,11 +19,12 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useExpenseTheme, getSavingsRating, getBudgetStatus, formatChange, TYPE_COLORS } from '../../theme/expenseTheme';
-import { getEntriesForMonth, getBudgetForMonth, getCategoryById, deleteEntriesInRange } from '../../utils/expenseStorage';
+import { getEntriesForDateRange, getBudgetForMonth, getCategoryById, deleteEntriesInRange } from '../../utils/expenseStorage';
 import {
   calculateSummary,
   buildWeeklyBreakdown,
   getMonthRange,
+  getMonthStartDay,
   fmtINR,
   fmtPct,
   formatFullDate,
@@ -119,27 +120,38 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
 
   // ── Derived data ──
 
-  const monthRange = useMemo(() => getMonthRange(monthOffset), [monthOffset]);
+  // Salary-cycle month start day (1 = calendar months, the default).
+  // Read on every render — cheap, and the tab re-mounts on tab switches
+  // so a change made in the Budget tab is picked up immediately.
+  const monthStartDay = getMonthStartDay();
 
+  const monthRange = useMemo(() => getMonthRange(monthOffset), [monthOffset, monthStartDay]);
+
+  // Range-based fetch. For monthStartDay = 1 this is IDENTICAL to the
+  // previous getEntriesForMonth(year, month): monthRange.start/end are
+  // exactly 'YYYY-MM-01'..'YYYY-MM-<lastDay>' and entry dates are always
+  // zero-padded 'YYYY-MM-DD', so the string-range filter selects the
+  // same set as the startsWith('YYYY-MM') filter did.
   const entries = useMemo(
-    () => getEntriesForMonth(monthRange.year, monthRange.month),
-    [monthRange.year, monthRange.month, refreshKey, localRefresh],
+    () => getEntriesForDateRange(monthRange.start, monthRange.end),
+    [monthRange.start, monthRange.end, refreshKey, localRefresh],
   );
 
   /* ── clear all entries for the month ── */
   const handleClearAllMonth = () => {
-    const lastDay = new Date(monthRange.year, monthRange.month, 0).getDate();
-    const startISO = `${monthRange.year}-${String(monthRange.month).padStart(2, '0')}-01`;
-    const endISO = `${monthRange.year}-${String(monthRange.month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-    deleteEntriesInRange(startISO, endISO);
+    // monthRange.start/end are the same strings the previous inline
+    // calendar computation produced when monthStartDay = 1, and the
+    // cycle window otherwise — so "Clear All" always clears exactly
+    // what the tab is displaying.
+    deleteEntriesInRange(monthRange.start, monthRange.end);
     setShowClearAll(false);
     setLocalRefresh(k => k + 1);
   };
 
-  const prevMonthRange = useMemo(() => getMonthRange(monthOffset - 1), [monthOffset]);
+  const prevMonthRange = useMemo(() => getMonthRange(monthOffset - 1), [monthOffset, monthStartDay]);
   const prevEntries = useMemo(
-    () => getEntriesForMonth(prevMonthRange.year, prevMonthRange.month),
-    [prevMonthRange.year, prevMonthRange.month, refreshKey],
+    () => getEntriesForDateRange(prevMonthRange.start, prevMonthRange.end),
+    [prevMonthRange.start, prevMonthRange.end, refreshKey],
   );
 
   const budget = useMemo(
@@ -157,9 +169,17 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
     [prevEntries],
   );
 
+  // Weekly breakdown inside the month. Default path (monthStartDay = 1)
+  // calls buildWeeklyBreakdown exactly as before; for salary cycles we
+  // pass the cycle window so weeks tile the cycle, not the calendar month.
   const weeklyBreakdown = useMemo(
-    () => buildWeeklyBreakdown(entries, monthRange.year, monthRange.month),
-    [entries, monthRange.year, monthRange.month],
+    () => monthStartDay === 1
+      ? buildWeeklyBreakdown(entries, monthRange.year, monthRange.month)
+      : buildWeeklyBreakdown(entries, monthRange.year, monthRange.month, {
+          start: monthRange.start,
+          end: monthRange.end,
+        }),
+    [entries, monthRange.year, monthRange.month, monthRange.start, monthRange.end, monthStartDay],
   );
 
   // BUG 2.3 fix: filter out weeks whose start date is after today.

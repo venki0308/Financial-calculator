@@ -13,7 +13,7 @@ import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { APP_VERSION } from '../config/app';
 import { useAppColors } from '../theme/useAppColors';
-import { exportBackup, importBackup } from '../utils/backupRestore';
+import { exportBackup, importBackup, snapshotBackup, isAutoBackupEnabled, AUTO_BACKUP_ENABLED_KEY, AUTO_BACKUP_LAST_KEY } from '../utils/backupRestore';
 
 // Minimal toast (same pattern as exportReport/PdfActionSheet)
 function showToast(message: string, isError = false) {
@@ -58,6 +58,15 @@ export default function Settings() {
     const [showExportChoice, setShowExportChoice] = useState(false);
     const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
     const importInputRef = useRef<HTMLInputElement>(null);
+    // Automatic daily backup (native): '1'/absent = ON, '0' = OFF.
+    // Device-local preference — deliberately not part of BACKUP_KEYS.
+    const [autoBackupOn, setAutoBackupOn] = useState(() => isAutoBackupEnabled());
+    const lastAutoBackup = localStorage.getItem(AUTO_BACKUP_LAST_KEY);
+    const toggleAutoBackup = () => {
+        const next = !autoBackupOn;
+        setAutoBackupOn(next);
+        localStorage.setItem(AUTO_BACKUP_ENABLED_KEY, next ? '1' : '0');
+    };
     const c = useAppColors();
 
     const currentLang = languages.find(l => i18n.language.startsWith(l.code)) || languages[0];
@@ -109,6 +118,10 @@ export default function Settings() {
         const file = pendingImportFile;
         setPendingImportFile(null);
         if (!file) return;
+        // Safety snapshot of the CURRENT data before it is overwritten.
+        // Best-effort: never block the restore on snapshot failure
+        // (snapshotBackup swallows its own errors; the guard is belt+braces).
+        try { await snapshotBackup('import'); } catch { /* never block */ }
         try {
             const { restored } = await importBackup(file);
             showToast(t('settings.restoreSuccess', 'Backup restored ({{count}} items). Restarting…', { count: restored }));
@@ -120,7 +133,11 @@ export default function Settings() {
         }
     };
 
-    const handleClearData = () => {
+    const handleClearData = async () => {
+        // Safety snapshot BEFORE the wipe (Documents/FinCalix/pre-clear-*.json)
+        // so "cleared by mistake" is recoverable via Import App Data.
+        // Best-effort: never block the clear on snapshot failure.
+        try { await snapshotBackup('clear'); } catch { /* never block */ }
         // Wipe ALL persisted data for a true fresh-install reset.
         // Covers Zustand stores, expense tracker, loans, CIBIL profile,
         // settings, and one-time flags.
@@ -145,6 +162,7 @@ export default function Settings() {
             'fincalix_credit_cards',
             'fincalix_businesses',
             'fincalix_business_entries',
+            'fincalix_recurring',
             'fincalix_cibil_profile',
             'fincalix_property_data',
             'fincalix_world_clocks',
@@ -317,6 +335,26 @@ export default function Settings() {
                         <ChevronRight size={16} className="text-muted-foreground" />
                     </button>
                     <input ref={importInputRef} type="file" accept="application/json,.json" className="hidden" onChange={handleImportFileSelected} />
+                    {Capacitor.isNativePlatform() && (
+                        <>
+                            <div className="h-px bg-border mx-4" />
+                            <div className="w-full flex items-center gap-4 p-4">
+                                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                                    <Download size={20} className="text-purple-500" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <p className="text-foreground font-medium text-sm">{t('settings.autoBackup', 'Automatic daily backup')}</p>
+                                    <p className="text-muted-foreground text-xs">{t('settings.autoBackupDesc', 'Keeps the last 7 days in Documents/FinCalix — restorable via Import App Data')}</p>
+                                    {lastAutoBackup && (
+                                        <p className="text-muted-foreground text-[10px] mt-0.5">{t('settings.lastAutoBackup', 'Last auto-backup: {{date}}', { date: lastAutoBackup })}</p>
+                                    )}
+                                </div>
+                                <button onClick={toggleAutoBackup} className={`w-12 h-7 rounded-full p-0.5 transition-colors flex-shrink-0 ${autoBackupOn ? 'bg-brand-green' : 'bg-slate-600'}`}>
+                                    <motion.div layout className={`w-6 h-6 rounded-full bg-white shadow-md ${autoBackupOn ? 'ml-auto' : 'ml-0'}`} />
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Data Management */}
@@ -366,9 +404,18 @@ export default function Settings() {
             {/* Notification Sheet */}
             <BottomSheet isOpen={showNotif} onClose={() => setShowNotif(false)} title={t('settings.notifications')}>
                 <div className="space-y-3">
-                    {([['dailyQuotes', t('settings.dailyQuotes')], ['newSchemes', t('settings.newSchemes')], ['calcReminders', t('settings.calcReminders')], ['appUpdates', t('settings.appUpdates')]] as const).map(([key, label]) => (
+                    {([
+                        ['dailyQuotes', t('settings.dailyQuotes'), ''],
+                        ['logReminder', t('settings.logReminder', 'Daily log reminder'), t('settings.logReminderDesc', "Evening nudge to record the day's spending")],
+                        ['newSchemes', t('settings.newSchemes'), ''],
+                        ['calcReminders', t('settings.calcReminders'), ''],
+                        ['appUpdates', t('settings.appUpdates'), ''],
+                    ] as const).map(([key, label, desc]) => (
                         <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-muted">
-                            <span className="text-foreground text-sm">{label}</span>
+                            <div className="flex-1 min-w-0 pr-3">
+                                <span className="text-foreground text-sm">{label}</span>
+                                {desc && <p className="text-muted-foreground text-xs mt-0.5">{desc}</p>}
+                            </div>
                             <button onClick={async () => {
                                 const nextVal = !notifications[key];
                                 setNotification(key, nextVal);
@@ -380,13 +427,14 @@ export default function Settings() {
                                     } else if ('Notification' in window) {
                                         granted = (await Notification.requestPermission()) === 'granted';
                                     }
-                                    // Only dailyQuotes drives OS-level banner notifications;
-                                    // the other toggles feed the in-app bell (no OS permission
-                                    // needed), so revert only dailyQuotes on denial — otherwise
-                                    // a permanently-denied user could never re-enable them.
-                                    if (!granted && key === 'dailyQuotes') setNotification(key, false);
+                                    // Only dailyQuotes and logReminder drive OS-level banner
+                                    // notifications; the other toggles feed the in-app bell
+                                    // (no OS permission needed), so revert only those two on
+                                    // denial — otherwise a permanently-denied user could
+                                    // never re-enable the bell-only toggles.
+                                    if (!granted && (key === 'dailyQuotes' || key === 'logReminder')) setNotification(key, false);
                                 }
-                            }} className={`w-12 h-7 rounded-full p-0.5 transition-colors ${notifications[key] ? 'bg-brand-green' : 'bg-slate-600'}`}>
+                            }} className={`w-12 h-7 rounded-full p-0.5 transition-colors flex-shrink-0 ${notifications[key] ? 'bg-brand-green' : 'bg-slate-600'}`}>
                                 <motion.div layout className={`w-6 h-6 rounded-full bg-white shadow-md ${notifications[key] ? 'ml-auto' : 'ml-0'}`} />
                             </button>
                         </div>
@@ -427,7 +475,7 @@ export default function Settings() {
                                     <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center"><AlertTriangle size={32} className="text-red-500" /></div>
                                 </div>
                                 <h3 style={{ color: c.text }} className="text-xl font-bold text-center mb-2">{t('settings.clearDataFinalTitle', 'Delete everything permanently?')}</h3>
-                                <p style={{ color: c.textSecondary }} className="text-center text-sm mb-6">{t('settings.clearDataFinalBody', 'This erases all expenses, budgets, loans, credit cards, businesses, saved calculations and settings. This cannot be undone. Consider exporting a backup first.')}</p>
+                                <p style={{ color: c.textSecondary }} className="text-center text-sm mb-6">{t('settings.clearDataFinalBody', 'This erases all expenses, budgets, loans, credit cards, businesses, saved calculations and settings. This cannot be undone. Consider exporting a backup first. Note: automatic backups in Documents/FinCalix are kept as a safety net and can be restored via Import App Data.')}</p>
                                 <div className="flex gap-3">
                                     <button onClick={() => setShowClearConfirmFinal(false)} style={{ backgroundColor: c.inputBg, color: c.text, borderColor: c.border }} className="flex-1 py-3 rounded-xl font-semibold text-sm border-2">{t('settings.clearDataCancel')}</button>
                                     <button onClick={handleClearData} className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold text-sm border-2 border-red-500">{t('settings.clearDataFinalConfirm', 'Yes, delete everything')}</button>

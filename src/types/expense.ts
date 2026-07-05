@@ -31,6 +31,10 @@ export interface Entry {
   tags?: string[];
   recurrence: RecurrenceType;
   recurrenceParentId?: string;
+  /** Set when this entry was auto-created from a RecurringRule
+   *  (recurringStorage.ts). Used for idempotency: one entry per
+   *  (recurringId, date) pair. Optional — manual entries never set it. */
+  recurringId?: string;
   investmentType?: string;
   isDeleted: boolean;
   createdAt: string;            // ISO timestamp
@@ -128,6 +132,11 @@ export interface Budget {
   fixedExpenses: FixedExpense[];
   categoryLimits: CategoryLimit[];
   investmentTargets: InvestmentTarget[];
+  /** Opt-in (default off = legacy behavior): add last month's unspent
+   *  category budget to this month's limits. Budget-level flag, not
+   *  per-category, to keep the model simple and predictable.
+   *  See getCategorySpentVsBudget in expenseCalculations.ts. */
+  carryOver?: boolean;
   createdAt: string;
   updatedAt: string;
 }

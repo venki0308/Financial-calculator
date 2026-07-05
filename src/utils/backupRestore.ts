@@ -20,7 +20,8 @@ export const BACKUP_SCHEMA = 1;
  * Deliberately excluded (device-specific / transient): fincalix_anon_id,
  * fincalix_analytics_queue, fincalix_dev_access, fincalix_last_quote_date,
  * fincalix_last_update_notif_version, fincalix_scheduler_first_seed,
- * fincalix_scheduler_last_run.
+ * fincalix_scheduler_last_run, fincalix_auto_backup_enabled,
+ * fincalix_auto_backup_last (auto-backup scheduling state — see below).
  */
 export const BACKUP_KEYS: readonly string[] = [
     // Expense tracker + money data (plain localStorage)
@@ -32,6 +33,7 @@ export const BACKUP_KEYS: readonly string[] = [
     'fincalix_credit_cards',
     'fincalix_businesses',
     'fincalix_business_entries',
+    'fincalix_recurring',
     'fincalix_cibil_profile',
     'fincalix_property_data',
     'fincalix_world_clocks',
@@ -87,7 +89,7 @@ function backupFileName(): string {
     return `fincalix-backup-${yyyy}${mm}${dd}.json`;
 }
 
-function buildEnvelope(): BackupEnvelope {
+export function buildEnvelope(): BackupEnvelope {
     const data: Record<string, string | null> = {};
     for (const key of BACKUP_KEYS) {
         data[key] = localStorage.getItem(key);
@@ -169,6 +171,108 @@ export async function exportBackup(mode: ExportMode = 'share'): Promise<ExportRe
     a.click();
     setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
     return { fileName, location: 'download' };
+}
+
+// ─── Automatic daily backups (native only) ─────────────────────────────────
+// The #1 complaint class for offline trackers is data loss (uninstall, phone
+// reset, WebView data wipe). A silent daily snapshot in Documents/FinCalix
+// gives every user a recovery path with zero effort. Files are plain backup
+// envelopes, so the existing "Import App Data" file picker restores them.
+//
+// NOTE: 'fincalix_auto_backup_enabled' and 'fincalix_auto_backup_last' are
+// deliberately NOT in BACKUP_KEYS — they are device-transient scheduling
+// state; restoring them onto a new phone would suppress that phone's first
+// auto-backup and carry over a stale toggle.
+
+/** '1' (default) = auto-backup on; '0' = off. Read by Settings + runAutoBackup. */
+export const AUTO_BACKUP_ENABLED_KEY = 'fincalix_auto_backup_enabled';
+/** YYYY-MM-DD of the last successful auto-backup (throttle + Settings display). */
+export const AUTO_BACKUP_LAST_KEY = 'fincalix_auto_backup_last';
+
+const AUTO_BACKUP_DIR = 'FinCalix';
+const AUTO_BACKUP_KEEP = 7;
+const AUTO_BACKUP_RE = /^auto-backup-\d{8}\.json$/;
+
+function todayLocalISO(): string {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+export function isAutoBackupEnabled(): boolean {
+    // Default ON — only an explicit '0' disables.
+    return localStorage.getItem(AUTO_BACKUP_ENABLED_KEY) !== '0';
+}
+
+/**
+ * Write today's automatic backup to Documents/FinCalix/auto-backup-<YYYYMMDD>.json
+ * (native only, at most once per calendar day), then prune to the newest
+ * AUTO_BACKUP_KEEP auto-backup files. All failures are silent (console.warn):
+ * auto-backup is a safety net and must never disturb app startup.
+ */
+export async function runAutoBackup(): Promise<void> {
+    try {
+        if (!Capacitor.isNativePlatform()) return;
+        if (!isAutoBackupEnabled()) return;
+        const today = todayLocalISO();
+        if (localStorage.getItem(AUTO_BACKUP_LAST_KEY) === today) return; // once per day
+
+        const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
+        const json = JSON.stringify(buildEnvelope());
+        const fileName = `auto-backup-${today.replace(/-/g, '')}.json`;
+        await Filesystem.writeFile({
+            path: `${AUTO_BACKUP_DIR}/${fileName}`,
+            data: json,
+            directory: Directory.Documents,
+            encoding: Encoding.UTF8,
+            recursive: true,
+        });
+        localStorage.setItem(AUTO_BACKUP_LAST_KEY, today);
+
+        // Prune: keep the newest AUTO_BACKUP_KEEP auto-backup-*.json files.
+        // Date is embedded in the name, so a simple name sort is a date sort.
+        try {
+            const listing = await Filesystem.readdir({ path: AUTO_BACKUP_DIR, directory: Directory.Documents });
+            const autoFiles = listing.files
+                .map(f => f.name)
+                .filter(name => AUTO_BACKUP_RE.test(name))
+                .sort()          // ascending → oldest first
+                .reverse();      // newest first
+            for (const name of autoFiles.slice(AUTO_BACKUP_KEEP)) {
+                try {
+                    await Filesystem.deleteFile({ path: `${AUTO_BACKUP_DIR}/${name}`, directory: Directory.Documents });
+                } catch (e) {
+                    console.warn('[FinCalix] auto-backup prune failed for', name, e);
+                }
+            }
+        } catch (e) {
+            console.warn('[FinCalix] auto-backup prune listing failed', e);
+        }
+    } catch (e) {
+        console.warn('[FinCalix] auto-backup failed', e);
+    }
+}
+
+/**
+ * Safety snapshot taken immediately BEFORE a destructive action (Clear All
+ * Data / Import-overwrite). No daily throttle — every destructive action gets
+ * its own snapshot. Native only, silent on failure; callers must never block
+ * the action on this (best-effort insurance, not a gate).
+ */
+export async function snapshotBackup(reason: 'clear' | 'import'): Promise<void> {
+    try {
+        if (!Capacitor.isNativePlatform()) return;
+        const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
+        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+        await Filesystem.writeFile({
+            path: `${AUTO_BACKUP_DIR}/pre-${reason}-${ts}.json`,
+            data: JSON.stringify(buildEnvelope()),
+            directory: Directory.Documents,
+            encoding: Encoding.UTF8,
+            recursive: true,
+        });
+    } catch (e) {
+        console.warn(`[FinCalix] pre-${reason} snapshot failed`, e);
+    }
 }
 
 function readFileAsText(file: File): Promise<string> {

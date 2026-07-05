@@ -61,6 +61,7 @@ const Schemes                    = lr(() => import('./pages/Schemes'));
 const SchemeDetail               = lr(() => import('./pages/SchemeDetail'));
 const ExpenseTracker             = lr(() => import('./pages/ExpenseTracker'));
 const BankAccounts               = lr(() => import('./pages/BankAccounts'));
+const RecurringTransactions      = lr(() => import('./pages/expenses/RecurringTransactions'));
 const Profile                    = lr(() => import('./pages/Profile'));
 const Settings                   = lr(() => import('./pages/Settings'));
 
@@ -202,6 +203,18 @@ function AppContent() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Automatic daily backup (native only, throttled to once/day inside
+    // runAutoBackup). Delayed ~5s so it never competes with app startup;
+    // dynamically imported so backup code stays off the critical path.
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            import('./utils/backupRestore')
+                .then(({ runAutoBackup }) => runAutoBackup())
+                .catch((e) => console.warn('[FinCalix] auto-backup skipped', e));
+        }, 5000);
+        return () => clearTimeout(timer);
+    }, []);
+
     useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
         document.documentElement.classList.toggle('light', !darkMode);
@@ -224,6 +237,17 @@ function AppContent() {
             if (report.issues.length > 0) {
                 CrashlyticsService.log(`Data integrity: ${report.issues.length} issue(s) repaired`);
             }
+            // Materialize due recurring transactions (rent/EMI/salary rules)
+            // AFTER integrity repair so we never write against corrupt stores.
+            // Runs once per app open, native + web (pure localStorage). If it
+            // creates entries while a tracker tab is visible, the tab picks
+            // them up on its next mount (existing refreshKey/re-mount pattern).
+            import('./utils/recurringStorage').then(({ materializeDueRecurring }) => {
+                const { created } = materializeDueRecurring();
+                if (created > 0) {
+                    CrashlyticsService.log(`Recurring: auto-logged ${created} entr${created === 1 ? 'y' : 'ies'}`);
+                }
+            });
         });
 
         const initAnalytics = async () => {
@@ -386,6 +410,7 @@ function AppContent() {
                         <Route path="/scheme/:id" element={<SchemeDetail />} />
                         <Route path="/expenses" element={<ExpenseTracker />} />
                         <Route path="/expenses/accounts" element={<BankAccounts />} />
+                        <Route path="/expenses/recurring" element={<RecurringTransactions />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/profile/saved" element={<SavedCalculations />} />
                         <Route path="/profile/history" element={<CalculationHistory />} />

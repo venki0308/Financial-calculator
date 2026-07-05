@@ -6,7 +6,7 @@
 
 import type { Entry, Budget, Category } from '../types/expense';
 import { ALL_DEFAULT_CATEGORIES } from '../types/expense';
-import { getCustomCategories } from './expenseStorage';
+import { getCustomCategories, getBudgetForMonth, getEntriesForMonth } from './expenseStorage';
 
 // ─── INTERFACES ───────────────────────────────────────────────
 
@@ -167,9 +167,17 @@ const buildDailyTotals = (entries: Entry[]): DailyTotal[] => {
 
 // ─── WEEKLY BREAKDOWN FOR A MONTH ─────────────────────────────
 
-export const buildWeeklyBreakdown = (entries: Entry[], year: number, month: number): WeeklySummary[] => {
-  const firstDay = new Date(year, month - 1, 1);
-  const lastDay = new Date(year, month, 0);
+export const buildWeeklyBreakdown = (
+  entries: Entry[],
+  year: number,
+  month: number,
+  /** Optional explicit window for salary-cycle months (month start day > 1).
+   *  When omitted the function behaves EXACTLY as before: the calendar
+   *  month given by year/month. Default callers must not pass this. */
+  range?: { start: string; end: string },
+): WeeklySummary[] => {
+  const firstDay = range ? new Date(range.start + 'T00:00:00') : new Date(year, month - 1, 1);
+  const lastDay = range ? new Date(range.end + 'T00:00:00') : new Date(year, month, 0);
   const weeks: WeeklySummary[] = [];
   let weekStart = new Date(firstDay);
   let weekNum = 1;
@@ -225,20 +233,119 @@ export const getWeekRange = (weekOffset: number = 0) => {
   };
 };
 
-export const getMonthRange = (monthOffset: number = 0) => {
-  const d = new Date();
-  d.setDate(1);
-  d.setMonth(d.getMonth() + monthOffset);
+// ─── SALARY-CYCLE MONTH START DAY ────────────────────────────
+// "My month starts on day N" (1–28). Salaried users can budget
+// salary-date → salary-date. Stored as a plain localStorage key so the
+// pure calc layer stays store-free. Default 1 = calendar months, which
+// keeps every computation byte-identical to the pre-feature behavior.
 
-  const start = toLocalDateStr(d);
-  const end = toLocalDateStr(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+const MONTH_START_DAY_KEY = 'fincalix_month_start_day';
+
+/** Read the user's month start day. Always a safe integer in [1, 28];
+ *  any missing/corrupt value falls back to 1 (calendar months). */
+export const getMonthStartDay = (): number => {
+  try {
+    const raw = localStorage.getItem(MONTH_START_DAY_KEY);
+    if (!raw) return 1;
+    const n = parseInt(raw, 10);
+    if (!Number.isFinite(n)) return 1;
+    return Math.min(28, Math.max(1, n));
+  } catch {
+    return 1;
+  }
+};
+
+/** Persist the month start day (clamped to [1, 28]). */
+export const setMonthStartDay = (day: number): void => {
+  try {
+    const clamped = Math.min(28, Math.max(1, Math.round(day) || 1));
+    localStorage.setItem(MONTH_START_DAY_KEY, String(clamped));
+  } catch {
+    // localStorage unavailable — setting simply won't persist.
+  }
+};
+
+/** Day N clamped to the last day of (year, month0). N ≤ 28 always fits
+ *  (Feb has ≥ 28 days), but clamp defensively. */
+const clampStartDay = (year: number, month0: number, day: number): number => {
+  const lastDay = new Date(year, month0 + 1, 0).getDate();
+  return Math.min(day, lastDay);
+};
+
+/** The salary cycle whose STARTING calendar month is (year, month 1-12):
+ *  [day N of that month, day N−1 of the next month]. For startDay = 1
+ *  this degenerates to the plain calendar month. Budgets for a cycle
+ *  stay keyed by the cycle's starting month ('YYYY-MM'). */
+export const getCycleRangeForMonth = (
+  year: number,
+  month: number,
+  startDay: number = getMonthStartDay(),
+) => {
+  const m0 = month - 1;
+  if (startDay <= 1) {
+    const lastDay = new Date(year, month, 0).getDate();
+    return {
+      start: `${year}-${String(month).padStart(2, '0')}-01`,
+      end: `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
+    };
+  }
+  const startD = new Date(year, m0, clampStartDay(year, m0, startDay));
+  const endD = new Date(year, m0 + 1, clampStartDay(year, m0 + 1, startDay));
+  endD.setDate(endD.getDate() - 1);
+  return { start: toLocalDateStr(startD), end: toLocalDateStr(endD) };
+};
+
+export const getMonthRange = (monthOffset: number = 0) => {
+  const startDay = getMonthStartDay();
+
+  if (startDay === 1) {
+    // DEFAULT PATH — byte-identical to the pre-salary-cycle behavior.
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + monthOffset);
+
+    const start = toLocalDateStr(d);
+    const end = toLocalDateStr(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+
+    return {
+      start, end,
+      year: d.getFullYear(),
+      month: d.getMonth() + 1,
+      monthStr: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      label: d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }),
+    };
+  }
+
+  // SALARY-CYCLE PATH (startDay = N > 1). The cycle containing today is
+  // [N of month M, N−1 of month M+1], where M is the current calendar
+  // month if today's day ≥ N, else the previous month. `monthOffset`
+  // shifts by whole cycles. year/month/monthStr keep pointing at the
+  // cycle's STARTING calendar month so budget keys ('YYYY-MM') and all
+  // downstream monthStr consumers keep working: the budget for
+  // "5 Jul – 4 Aug" lives under '2026-07'.
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let anchorMonth0 = today.getMonth();
+  const anchorYear = today.getFullYear();
+  if (today.getDate() < clampStartDay(anchorYear, anchorMonth0, startDay)) {
+    anchorMonth0 -= 1; // normalized by the Date constructor below
+  }
+
+  const anchor = new Date(anchorYear, anchorMonth0 + monthOffset, 1);
+  const ay = anchor.getFullYear();
+  const am = anchor.getMonth();
+
+  const cycleStart = new Date(ay, am, clampStartDay(ay, am, startDay));
+  const cycleEnd = new Date(ay, am + 1, clampStartDay(ay, am + 1, startDay));
+  cycleEnd.setDate(cycleEnd.getDate() - 1);
 
   return {
-    start, end,
-    year: d.getFullYear(),
-    month: d.getMonth() + 1,
-    monthStr: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
-    label: d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }),
+    start: toLocalDateStr(cycleStart),
+    end: toLocalDateStr(cycleEnd),
+    year: ay,
+    month: am + 1,
+    monthStr: `${ay}-${String(am + 1).padStart(2, '0')}`,
+    label: `${formatShortDate(cycleStart)} – ${formatShortDate(cycleEnd, true)}`,
   };
 };
 
@@ -725,19 +832,65 @@ export const getBudgetUnallocated = (budget: Budget): number => {
     - getBudgetTotalInvestments(budget);
 };
 
+/** Previous calendar month of a 'YYYY-MM' string ('2026-01' → '2025-12'). */
+const prevMonthStr = (monthStr: string): string | null => {
+  const m = /^(\d{4})-(\d{2})$/.exec(monthStr);
+  if (!m) return null;
+  const d = new Date(Number(m[1]), Number(m[2]) - 2, 1); // string month is 1-based
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+
+/** Per-category carry-over from the PREVIOUS month:
+ *  max(0, prevMonthLimit − prevMonthSpent) for each category in prev budget.
+ *
+ *  ONE month lookback only, and the previous month's own carryOver flag is
+ *  deliberately ignored — chaining carry-overs recursively would make a
+ *  category's effective limit depend on unbounded history, which is neither
+ *  predictable for the user nor cheap to compute. Bounded = trustworthy.
+ *
+ *  Reads storage internally (getBudgetForMonth / getEntriesForMonth) so
+ *  callers need zero changes; only invoked when the CURRENT budget opts in. */
+const getCarryOverByCategory = (monthStr: string): Map<string, number> => {
+  const out = new Map<string, number>();
+  const prev = prevMonthStr(monthStr);
+  if (!prev) return out;
+  const prevBudget = getBudgetForMonth(prev);
+  if (!prevBudget) return out;
+  const [py, pm] = prev.split('-').map(Number);
+  const prevEntries = getEntriesForMonth(py, pm);
+  const spentByCat = new Map<string, number>();
+  for (const e of prevEntries) {
+    if (e.type !== 'expense') continue;
+    const cat = e.category || 'other_expense';
+    spentByCat.set(cat, (spentByCat.get(cat) ?? 0) + e.amount);
+  }
+  for (const cl of prevBudget.categoryLimits) {
+    if (cl.monthlyLimit <= 0) continue;
+    const unspent = cl.monthlyLimit - (spentByCat.get(cl.categoryId) ?? 0);
+    if (unspent > 0) out.set(cl.categoryId, unspent); // overspent months carry 0
+  }
+  return out;
+};
+
 export const getCategorySpentVsBudget = (
   entries: Entry[],
   budget: Budget
-): Array<{ categoryId: string; budgeted: number; spent: number; pct: number }> => {
+): Array<{ categoryId: string; budgeted: number; spent: number; pct: number; carried?: number }> => {
   const summary = calculateSummary(entries, budget);
+  // Carry-over is strictly opt-in: with the flag off (or absent — every
+  // pre-existing budget), the result is identical to the legacy behavior.
+  const carry = budget.carryOver ? getCarryOverByCategory(budget.month) : null;
   return budget.categoryLimits.map(cl => {
     const cat = summary.expenseByCategory.find(c => c.categoryId === cl.categoryId);
     const spent = cat?.amount ?? 0;
+    const carried = carry?.get(cl.categoryId) ?? 0;
+    const effectiveLimit = cl.monthlyLimit + carried;
     return {
       categoryId: cl.categoryId,
-      budgeted: cl.monthlyLimit,
+      budgeted: effectiveLimit,
       spent,
-      pct: cl.monthlyLimit > 0 ? (spent / cl.monthlyLimit) * 100 : 0,
+      pct: effectiveLimit > 0 ? (spent / effectiveLimit) * 100 : 0,
+      ...(carried > 0 ? { carried } : {}),
     };
   });
 };

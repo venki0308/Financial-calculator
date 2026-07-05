@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from 'react
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExpenseTheme } from '../theme/expenseTheme';
 import { AnalyticsService } from '../lib/analytics';
@@ -21,6 +21,7 @@ const BudgetTab = lazy(() => import('./expenses/BudgetTab'));
 const SubscriptionsTab = lazy(() => import('./expenses/SubscriptionsTab'));
 const CreditCardsTab = lazy(() => import('./expenses/CreditCards'));
 const AddEntrySheet = lazy(() => import('../components/AddEntrySheet'));
+const TransactionSearch = lazy(() => import('../components/TransactionSearch'));
 
 // ─── TAB DEFINITIONS ─────────────────────────────────────────
 // All valid tab IDs — includes hidden tabs reachable from BudgetTab
@@ -88,6 +89,8 @@ export default function ExpenseTracker() {
     }
   }, [location.state]);
   const [showAddSheet, setShowAddSheet] = useState(false);
+  // Transaction search overlay (opened from the header search icon)
+  const [showSearch, setShowSearch] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   // Edit state — when set, the AddEntrySheet opens in edit mode pre-filled
   // with this entry. Tabs (Weekly/Monthly) call requestEdit(entry) to trigger.
@@ -206,6 +209,21 @@ export default function ExpenseTracker() {
             </motion.p>
           </div>
 
+          {/* Search all transactions (opens full-screen search overlay) */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setShowSearch(true)}
+            className="w-10 h-10 rounded-xl flex items-center justify-center border"
+            style={{
+              backgroundColor: theme.bgPrimary,
+              borderColor: theme.borderSubtle,
+              color: theme.textSecondary,
+            }}
+            aria-label={t('expenses.searchTitle', 'Search Transactions')}
+          >
+            <Search size={17} />
+          </motion.button>
+
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
             style={{ backgroundColor: theme.bgInvestment }}
@@ -301,6 +319,25 @@ export default function ExpenseTracker() {
         >
           <Plus size={26} color="#fff" />
         </motion.button>
+      )}
+
+      {/* ── Transaction Search overlay ──
+           Rendered BEFORE the AddEntrySheet portal so that tapping a search
+           result (→ requestEdit) stacks the shared edit sheet ON TOP of the
+           search results; after saving, refreshKey updates the results. */}
+      {createPortal(
+        <AnimatePresence>
+          {showSearch && (
+            <Suspense fallback={null}>
+              <TransactionSearch
+                refreshKey={refreshKey}
+                onEditEntry={requestEdit}
+                onClose={() => setShowSearch(false)}
+              />
+            </Suspense>
+          )}
+        </AnimatePresence>,
+        document.body,
       )}
 
       {/* ── Global Add / Edit Entry Sheet ──

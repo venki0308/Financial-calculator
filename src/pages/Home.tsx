@@ -4,8 +4,8 @@ import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon,
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
-import { getBudgetForMonth, getEntriesForMonth, getAllAccounts } from '../utils/expenseStorage';
-import { calculateSummary } from '../utils/expenseCalculations';
+import { getBudgetForMonth, getEntriesForDateRange, getAllAccounts } from '../utils/expenseStorage';
+import { calculateSummary, getMonthRange } from '../utils/expenseCalculations';
 import { formatINR } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
@@ -155,8 +155,15 @@ export default function Home() {
     // 1. If user has bank accounts, sum their balances
     // 2. Otherwise derive from budget income - fixed expenses - actual spending
     const effectiveBalance = useMemo(() => {
-        const now = new Date();
-        const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        // Salary-cycle aware "this month" window. With the default month
+        // start day (1) getMonthRange(0) yields exactly the calendar month:
+        // key === 'YYYY-MM' of today and start/end are the calendar month
+        // bounds, so the fetched entries and budget are identical to the
+        // previous getEntriesForMonth/calendar-key behavior. With a custom
+        // start day N, the window is the current salary cycle and the
+        // budget is the one stored under the cycle's STARTING month.
+        const cycle = getMonthRange(0);
+        const key = cycle.monthStr;
 
         // Priority 1: sum of bank account balances (if user has set up accounts)
         const accounts = getAllAccounts();
@@ -170,7 +177,7 @@ export default function Home() {
         const fallbackIncome = budgetIncome > 0 ? budgetIncome : monthlyIncome;
         if (fallbackIncome > 0) {
             const budgetFixed = budget?.fixedExpenses.reduce((s, f) => s + f.amount, 0) ?? 0;
-            const entries = getEntriesForMonth(now.getFullYear(), now.getMonth() + 1);
+            const entries = getEntriesForDateRange(cycle.start, cycle.end);
             const summary = calculateSummary(entries);
             // Cash balance = income − fixed − expenses − investments (invested
             // money left the wallet too). Can go negative when the user has
@@ -183,8 +190,9 @@ export default function Home() {
     // Monthly income shown on the MY BUDGET card — expenseStorage is authoritative
     // (BudgetTab saves there), old Zustand store is fallback for legacy users.
     const displayMonthlyIncome = useMemo(() => {
-        const now = new Date();
-        const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        // Same cycle-aware budget key as effectiveBalance — identical
+        // 'YYYY-MM' string when the month start day is the default 1.
+        const key = getMonthRange(0).monthStr;
         const expenseIncome = getBudgetForMonth(key)?.monthlyIncome ?? 0;
         return expenseIncome > 0 ? expenseIncome : monthlyIncome;
     }, [monthlyIncome]);

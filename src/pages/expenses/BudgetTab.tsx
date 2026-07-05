@@ -18,11 +18,12 @@ import {
 
 import {
   getBudgetForMonth, saveBudget, deleteBudget, generateBudgetId,
-  getEntriesForMonth,
+  getEntriesForDateRange,
   getAllAccounts,
 } from '../../utils/expenseStorage';
 import {
   getMonthRange, fmtINR,
+  getMonthStartDay, setMonthStartDay,
   getBudgetTotalFixed, getBudgetTotalCategoryLimits,
   getBudgetTotalInvestments, getBudgetUnallocated,
   getCategorySpentVsBudget,
@@ -38,6 +39,7 @@ import { useBudgetTrackerStore } from '../../store/useBudgetTrackerStore';
 import { getAllCreditCards } from '../../utils/creditCardStorage';
 import { getUtilization, getDaysUntilDue } from '../../utils/creditCardCalculations';
 import { getAllBusinesses } from '../../utils/businessStorage';
+import { getActiveRulesCount } from '../../utils/recurringStorage';
 
 // ── pre-filled fixed expense templates ────────────────────────
 const FIXED_TEMPLATES: { name: string; nameKey: string; icon: string; category: string }[] = [
@@ -88,7 +90,11 @@ export default function BudgetTab() {
 
   // ── month navigation ──────────────────────────────────────
   const [monthOffset, setMonthOffset] = useState(0);
-  const range = useMemo(() => getMonthRange(monthOffset), [monthOffset]);
+  // Salary-cycle "month starts on day N" setting (1 = calendar months,
+  // the default — every range below is then byte-identical to before).
+  // Kept in state so changing it recomputes all ranges immediately.
+  const [monthStartDay, setMonthStartDayState] = useState<number>(() => getMonthStartDay());
+  const range = useMemo(() => getMonthRange(monthOffset), [monthOffset, monthStartDay]);
 
   // ── load / init budget ────────────────────────────────────
   // If expenseStorage has no income set for this month, seed it from the
@@ -130,6 +136,18 @@ export default function BudgetTab() {
     const newOffset = monthOffset + dir;
     setMonthOffset(newOffset);
     const newRange = getMonthRange(newOffset);
+    setBudget(getBudgetForMonth(newRange.monthStr) ?? emptyBudget(newRange.monthStr));
+  }, [monthOffset]);
+
+  // ── change the salary-cycle month start day ───────────────
+  // Persists to localStorage ('fincalix_month_start_day'), bumps the
+  // local state so `range` (and everything derived from it) recomputes,
+  // and reloads the budget for the possibly-different cycle-start month.
+  const handleMonthStartDayChange = useCallback((day: number) => {
+    const clamped = Math.min(28, Math.max(1, Math.round(day) || 1));
+    setMonthStartDay(clamped);        // write localStorage first…
+    setMonthStartDayState(clamped);   // …then trigger the recompute
+    const newRange = getMonthRange(monthOffset);
     setBudget(getBudgetForMonth(newRange.monthStr) ?? emptyBudget(newRange.monthStr));
   }, [monthOffset]);
 
@@ -192,6 +210,10 @@ export default function BudgetTab() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const businessCount = useMemo(() => getAllBusinesses().length, []);
 
+  // Recurring Transactions shortcut badge — active-rule count, re-read on mount.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const recurringCount = useMemo(() => getActiveRulesCount(), []);
+
   const ccTotals = useMemo(() => {
     let totalLimit = 0;
     let totalOutstanding = 0;
@@ -244,10 +266,13 @@ export default function BudgetTab() {
     return { fixedPct, varPct, invPct, subsPct, freePct, isOver };
   }, [budget.monthlyIncome, totalFixed, totalCategoryLimits, totalInvestments, subscriptionMonthlyTotal]);
 
-  // ── budget progress (entries for current month) ───────────
+  // ── budget progress (entries for the displayed month/cycle) ──
+  // Range-based fetch: for monthStartDay = 1, range.start/end are exactly
+  // the calendar month bounds, so this selects the identical entry set
+  // the previous getEntriesForMonth(range.year, range.month) did.
   const entries = useMemo(
-    () => getEntriesForMonth(range.year, range.month),
-    [range.year, range.month],
+    () => getEntriesForDateRange(range.start, range.end),
+    [range.start, range.end],
   );
 
   // Subscriptions actually billed within the displayed month (billing
@@ -357,6 +382,16 @@ export default function BudgetTab() {
         cl.categoryId === categoryId ? { ...cl, monthlyLimit: sanitiseAmount(monthlyLimit) } : cl,
       ),
     }));
+
+  // Carry-over toggle — opt-in, default OFF (absent on legacy budgets =
+  // exactly today's behavior). Persist immediately through the existing
+  // saveBudget path so the choice survives even without pressing Save.
+  const setCarryOver = (v: boolean) =>
+    setBudget(prev => {
+      const next = { ...prev, carryOver: v, month: range.monthStr, updatedAt: new Date().toISOString() };
+      saveBudget(next);
+      return next;
+    });
 
   const setInvestmentTarget = (categoryId: string, monthlyTarget: number) =>
     setBudget(prev => ({
@@ -502,6 +537,56 @@ export default function BudgetTab() {
             <ChevronRight size={18} />
           </motion.button>
         </div>
+      </motion.div>
+
+      {/* ======================================================
+          1.5 SALARY-CYCLE MONTH START — "Month starts on day N"
+          ======================================================
+          Lets salaried users budget salary-date → salary-date. Stored
+          in localStorage ('fincalix_month_start_day', '1'..'28'); the
+          default (1) keeps everything on calendar months exactly as
+          before. Changing it recomputes every range in this tab and
+          is picked up by the Monthly/Yearly tabs and Home on mount. */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.03 }}
+        className="rounded-2xl border p-4"
+        style={cardStyle}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold" style={{ color: theme.textPrimary }}>
+              {t('expenses.monthStartLabel', 'Month starts on day')}
+            </p>
+            <p className="text-[10px] mt-0.5 leading-relaxed" style={{ color: theme.textMuted }}>
+              {t('expenses.monthStartHelper', 'Set to your salary date to budget salary-to-salary')}
+            </p>
+          </div>
+          <select
+            value={monthStartDay}
+            onChange={e => handleMonthStartDayChange(Number(e.target.value))}
+            aria-label={t('expenses.monthStartLabel', 'Month starts on day')}
+            className="rounded-xl px-3 py-2 text-sm font-bold outline-none border flex-shrink-0"
+            style={{
+              backgroundColor: theme.bgPrimary,
+              borderColor: theme.borderSubtle,
+              color: theme.textPrimary,
+            }}
+          >
+            {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
+        </div>
+        {monthStartDay > 1 && (
+          <p
+            className="text-[10px] font-semibold mt-2 pt-2 border-t"
+            style={{ color: theme.accentInvestment, borderColor: theme.borderSubtle }}
+          >
+            {t('expenses.currentCycle', 'Current cycle')}: {range.label}
+          </p>
+        )}
       </motion.div>
 
       {/* First-run hint — only shown when the user has not yet set any
@@ -882,6 +967,56 @@ export default function BudgetTab() {
                   {fmtINR(subscriptionMonthlyTotal)}<span className="text-xs font-semibold" style={{ color: theme.textMuted }}> /{t('expenses.mo', 'mo')}</span>
                 </p>
               )}
+            </div>
+            <ChevronRightArrow size={18} style={{ color: theme.textMuted }} />
+          </div>
+        </button>
+      </motion.div>
+
+      {/* ======================================================
+          2.65 RECURRING TRANSACTIONS — rent/EMI/salary autopilot
+          Shortcut to /expenses/recurring (RecurringTransactions.tsx).
+          ====================================================== */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.092 }}
+        className="rounded-2xl border overflow-hidden"
+        style={elevatedCard}
+      >
+        <button
+          type="button"
+          onClick={() => navigate('/expenses/recurring')}
+          className="w-full text-left p-5 transition-colors"
+          aria-label={t('recurring.title', 'Recurring Transactions')}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+              style={{ backgroundColor: '#E0E7FF' }}
+            >
+              {'\u{1F501}'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-[10px] font-bold uppercase tracking-widest"
+                  style={{ color: theme.textSecondary }}
+                >
+                  {t('recurring.title', 'Recurring Transactions')}
+                </span>
+                {recurringCount > 0 && (
+                  <span
+                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: '#E0E7FF', color: '#4F46E5' }}
+                  >
+                    {recurringCount}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs font-medium mt-0.5" style={{ color: theme.textMuted }}>
+                {t('recurring.budgetTabSub', 'Rent, EMI, salary logged automatically')}
+              </p>
             </div>
             <ChevronRightArrow size={18} style={{ color: theme.textMuted }} />
           </div>
@@ -1310,6 +1445,29 @@ export default function BudgetTab() {
                   </span>
                 </div>
 
+                {/* Carry-over toggle — opt-in; default OFF keeps current behavior */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold" style={{ color: theme.textPrimary }}>
+                      {t('expenses.carryOverTitle', 'Carry over unused budget')}
+                    </p>
+                    <p className="text-[10px] mt-0.5" style={{ color: theme.textMuted }}>
+                      {t('expenses.carryOverDesc', "Unspent category budget from last month is added to this month's limit")}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCarryOver(!budget.carryOver)}
+                    className="w-12 h-7 rounded-full p-0.5 transition-colors flex-shrink-0"
+                    style={{ backgroundColor: budget.carryOver ? theme.accentIncome : theme.bgPrimary }}
+                  >
+                    <motion.div
+                      layout
+                      className={`w-6 h-6 rounded-full bg-white shadow-md ${budget.carryOver ? 'ml-auto' : 'ml-0'}`}
+                    />
+                  </button>
+                </div>
+
                 {budget.categoryLimits.map(cl => {
                   const info = catInfo(cl.categoryId);
                   return (
@@ -1664,7 +1822,16 @@ export default function BudgetTab() {
                         {/* Labels row — when overspent, replace "left ₹0"
                             with a red "Over: ₹X" so the magnitude is visible. */}
                         <div className="flex justify-between text-[10px] mb-1.5" style={{ color: theme.textMuted }}>
-                          <span>{t('expenses.budget')}: {fmtINR(cp.budgeted)}</span>
+                          <span>
+                            {t('expenses.budget')}: {fmtINR(cp.budgeted)}
+                            {/* Carry-over hint: the effective limit includes
+                                last month's unspent budget — show how much. */}
+                            {(cp.carried ?? 0) > 0 && (
+                              <span style={{ color: theme.accentIncome, fontWeight: 700 }}>
+                                {' '}(+{fmtINR(cp.carried ?? 0)} {t('expenses.carried', 'carried')})
+                              </span>
+                            )}
+                          </span>
                           <span>{t('expenses.spent')}: {fmtINR(cp.spent)}</span>
                           {isOver
                             ? <span style={{ color: theme.accentExpense, fontWeight: 700 }}>

@@ -4,10 +4,12 @@ import { ChevronLeft, ChevronRight, TrendingUp, BarChart3, Calendar, Trash2 } fr
 import { useTranslation } from 'react-i18next';
 import { useExpenseTheme, getSavingsRating, TYPE_COLORS, formatChange } from '../../theme/expenseTheme';
 import type { Entry } from '../../types/expense';
-import { getEntriesForMonth, getEntriesForYear, getCategoryById, deleteEntriesInRange } from '../../utils/expenseStorage';
+import { getEntriesForMonth, getEntriesForYear, getEntriesForDateRange, getCategoryById, deleteEntriesInRange } from '../../utils/expenseStorage';
 import {
   calculateSummary,
   getYearRange,
+  getMonthStartDay,
+  getCycleRangeForMonth,
   fmtINR,
   fmtINRShort,
   fmtPct,
@@ -49,15 +51,36 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
   const currentMonth = new Date().getMonth() + 1; // 1-indexed
   const isCurrentYear = yearRange.year === currentYear;
 
+  // Salary-cycle month start day (1 = calendar months, the default).
+  // For startDay = N > 1 the twelve "months" of a year are the twelve
+  // consecutive cycles starting with January's cycle: cycle m =
+  // [N of month m, N−1 of month m+1]. The year therefore spans
+  // [Jan N .. Jan N−1 of the next year].
+  const monthStartDay = getMonthStartDay();
+
   // ── All entries for the year ──
+  // Default path untouched (getEntriesForYear). Cycle path fetches the
+  // exact 12-cycle span so the annual totals tie out with the 12 rows.
   const yearEntries = useMemo(
-    () => getEntriesForYear(yearRange.year),
-    [yearRange.year, refreshKey, localRefresh],
+    () => {
+      if (monthStartDay === 1) return getEntriesForYear(yearRange.year);
+      const first = getCycleRangeForMonth(yearRange.year, 1, monthStartDay);
+      const last = getCycleRangeForMonth(yearRange.year, 12, monthStartDay);
+      return getEntriesForDateRange(first.start, last.end);
+    },
+    [yearRange.year, refreshKey, localRefresh, monthStartDay],
   );
 
   /* ── clear all entries for the year ── */
   const handleClearAllYear = () => {
-    deleteEntriesInRange(`${yearRange.year}-01-01`, `${yearRange.year}-12-31`);
+    if (monthStartDay === 1) {
+      deleteEntriesInRange(`${yearRange.year}-01-01`, `${yearRange.year}-12-31`);
+    } else {
+      // Clear exactly the displayed 12-cycle span.
+      const first = getCycleRangeForMonth(yearRange.year, 1, monthStartDay);
+      const last = getCycleRangeForMonth(yearRange.year, 12, monthStartDay);
+      deleteEntriesInRange(first.start, last.end);
+    }
     setShowClearAll(false);
     setLocalRefresh(k => k + 1);
   };
@@ -79,13 +102,30 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
   const monthlySummaries = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
       const month = i + 1;
-      const entries = getEntriesForMonth(yearRange.year, month);
+      // Period plumbing: default path (monthStartDay = 1) is byte-for-byte
+      // the previous calendar-month fetch + range strings. Cycle path
+      // fetches [N of month m .. N−1 of month m+1] by date range instead;
+      // the row keeps its Jan..Dec label (the cycle STARTING that month).
+      let entries;
+      let startISO: string;
+      let endISO: string;
+      let isFuture: boolean;
+      if (monthStartDay === 1) {
+        entries = getEntriesForMonth(yearRange.year, month);
+        isFuture = isCurrentYear && month > currentMonth;
+        // Range for this month
+        startISO = `${yearRange.year}-${String(month).padStart(2, '0')}-01`;
+        const lastDay = new Date(yearRange.year, month, 0).getDate();
+        endISO = `${yearRange.year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+      } else {
+        const cycle = getCycleRangeForMonth(yearRange.year, month, monthStartDay);
+        startISO = cycle.start;
+        endISO = cycle.end;
+        entries = getEntriesForDateRange(startISO, endISO);
+        // A cycle is "future" when it hasn't started yet.
+        isFuture = isCurrentYear && startISO > todayISO;
+      }
       const summary = calculateSummary(entries);
-      const isFuture = isCurrentYear && month > currentMonth;
-      // Range for this month
-      const startISO = `${yearRange.year}-${String(month).padStart(2, '0')}-01`;
-      const lastDay = new Date(yearRange.year, month, 0).getDate();
-      const endISO = `${yearRange.year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
       const subsBilled = getUnloggedSubsForRange(entries, subscriptions, startISO, endISO, todayISO);
       // Augment the summary so downstream renderers (bars, totals,
       // savings rate) all see the canonical figure without further
@@ -109,7 +149,7 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
       const hasIncome = summary.totalIncome > 0;
       return { month, summary: augmentedSummary, subsBilled, hasData, hasIncome, isFuture };
     });
-  }, [yearRange.year, isCurrentYear, currentMonth, refreshKey, subscriptions, todayISO]);
+  }, [yearRange.year, isCurrentYear, currentMonth, refreshKey, subscriptions, todayISO, monthStartDay]);
 
   // ── Augmented YEAR-LEVEL summary using the per-month canonicals.
   // We can't just call calculateSummary(yearEntries) any more because
