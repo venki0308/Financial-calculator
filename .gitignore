@@ -69,3 +69,4 @@ missing_keys.json
 
 .vercel
 .claude/settings.local.json
+.playwright-mcp/
