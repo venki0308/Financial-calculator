@@ -3,11 +3,11 @@ import LegalLayout, { LangSelector, PlayStoreBadge, type Lang } from './LegalLay
 import { useAppColors } from '../../theme/useAppColors';
 
 const T = {
-    en: { title: 'Terms of Service', subtitle: 'USAGE AGREEMENT', updated: 'Last updated · March 2026', s1: 'For Reference Only', s2: 'Not Financial Advice', s3: 'Government Schemes', s4: 'Liability', closing: 'By using this app, you acknowledge and agree to the terms outlined above.' },
-    hi: { title: 'सेवा की शर्तें', subtitle: 'उपयोग अनुबंध', updated: 'अंतिम अपडेट · मार्च 2026', s1: 'केवल संदर्भ के लिए', s2: 'वित्तीय सलाह नहीं', s3: 'सरकारी योजनाएं', s4: 'दायित्व', closing: 'इस ऐप का उपयोग करके, आप ऊपर दी गई शर्तों से सहमत हैं।' },
-    te: { title: 'సేవా నిబంధనలు', subtitle: 'వినియోగ ఒప్పందం', updated: 'చివరి నవీకరణ · మార్చి 2026', s1: 'కేవలం సూచన కోసం', s2: 'ఆర్థిక సలహా కాదు', s3: 'ప్రభుత్వ పథకాలు', s4: 'బాధ్యత', closing: 'ఈ యాప్ ఉపయోగించడం ద్వారా మీరు పై నిబంధనలకు అంగీకరిస్తున్నారు.' },
-    ta: { title: 'சேவை விதிமுறைகள்', subtitle: 'பயன்பாட்டு ஒப்பந்தம்', updated: 'கடைசியாக புதுப்பிக்கப்பட்டது · மார்ச் 2026', s1: 'குறிப்புக்கு மட்டும்', s2: 'நிதி ஆலோசனை இல்லை', s3: 'அரசு திட்டங்கள்', s4: 'பொறுப்பு', closing: 'இந்த செயலியை பயன்படுத்துவதன் மூலம் மேற்கூறிய விதிகளுக்கு ஒப்புக்கொள்கிறீர்கள்.' },
-    kn: { title: 'ಸೇವಾ ನಿಯಮಗಳು', subtitle: 'ಬಳಕೆ ಒಪ್ಪಂದ', updated: 'ಕೊನೆಯ ಅಪ್ಡೇಟ್ · ಮಾರ್ಚ್ 2026', s1: 'ಉಲ್ಲೇಖಕ್ಕಾಗಿ ಮಾತ್ರ', s2: 'ಹಣಕಾಸು ಸಲಹೆ ಅಲ್ಲ', s3: 'ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು', s4: 'ಹೊಣೆಗಾರಿಕೆ', closing: 'ಈ ಅಪ್ಲಿಕೇಶನ್ ಬಳಸುವ ಮೂಲಕ ನೀವು ಮೇಲಿನ ನಿಯಮಗಳಿಗೆ ಒಪ್ಪಿಗೆ ನೀಡುತ್ತೀರಿ.' },
+    en: { title: 'Terms of Service', subtitle: 'USAGE AGREEMENT', updated: 'Last updated · July 2026', s1: 'For Reference Only', s2: 'Not Financial Advice', s3: 'Government Schemes', s4: 'Liability', s5: 'Backups & Data Loss', closing: 'By using this app, you acknowledge and agree to the terms outlined above.' },
+    hi: { title: 'सेवा की शर्तें', subtitle: 'उपयोग अनुबंध', updated: 'अंतिम अपडेट · जुलाई 2026', s1: 'केवल संदर्भ के लिए', s2: 'वित्तीय सलाह नहीं', s3: 'सरकारी योजनाएं', s4: 'दायित्व', s5: 'बैकअप और डेटा हानि', closing: 'इस ऐप का उपयोग करके, आप ऊपर दी गई शर्तों से सहमत हैं।' },
+    te: { title: 'సేవా నిబంధనలు', subtitle: 'వినియోగ ఒప్పందం', updated: 'చివరి నవీకరణ · జూలై 2026', s1: 'కేవలం సూచన కోసం', s2: 'ఆర్థిక సలహా కాదు', s3: 'ప్రభుత్వ పథకాలు', s4: 'బాధ్యత', s5: 'బ్యాకప్‌లు & డేటా నష్టం', closing: 'ఈ యాప్ ఉపయోగించడం ద్వారా మీరు పై నిబంధనలకు అంగీకరిస్తున్నారు.' },
+    ta: { title: 'சேவை விதிமுறைகள்', subtitle: 'பயன்பாட்டு ஒப்பந்தம்', updated: 'கடைசியாக புதுப்பிக்கப்பட்டது · ஜூலை 2026', s1: 'குறிப்புக்கு மட்டும்', s2: 'நிதி ஆலோசனை இல்லை', s3: 'அரசு திட்டங்கள்', s4: 'பொறுப்பு', s5: 'காப்புப்பிரதிகள் & தரவு இழப்பு', closing: 'இந்த செயலியை பயன்படுத்துவதன் மூலம் மேற்கூறிய விதிகளுக்கு ஒப்புக்கொள்கிறீர்கள்.' },
+    kn: { title: 'ಸೇವಾ ನಿಯಮಗಳು', subtitle: 'ಬಳಕೆ ಒಪ್ಪಂದ', updated: 'ಕೊನೆಯ ಅಪ್ಡೇಟ್ · ಜುಲೈ 2026', s1: 'ಉಲ್ಲೇಖಕ್ಕಾಗಿ ಮಾತ್ರ', s2: 'ಹಣಕಾಸು ಸಲಹೆ ಅಲ್ಲ', s3: 'ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು', s4: 'ಹೊಣೆಗಾರಿಕೆ', s5: 'ಬ್ಯಾಕಪ್ ಮತ್ತು ಡೇಟಾ ನಷ್ಟ', closing: 'ಈ ಅಪ್ಲಿಕೇಶನ್ ಬಳಸುವ ಮೂಲಕ ನೀವು ಮೇಲಿನ ನಿಯಮಗಳಿಗೆ ಒಪ್ಪಿಗೆ ನೀಡುತ್ತೀರಿ.' },
 } as const;
 
 const SECTIONS = (t: any) => [
@@ -26,6 +26,10 @@ const SECTIONS = (t: any) => [
     {
         n: '4', color: '#F59E0B', title: t.s4,
         text: 'FinCalix shall not be liable for any financial losses or decisions made based on the data provided within this application.',
+    },
+    {
+        n: '5', color: '#EC4899', title: t.s5,
+        text: 'You are solely responsible for safekeeping backup files you export from FinCalix and for any data loss caused by importing a wrong or outdated backup — importing a backup replaces the data currently on the device. FinCalix is not liable for backup files shared to third-party services such as Google Drive or email, or for their loss, exposure or misuse.',
     },
 ];
 

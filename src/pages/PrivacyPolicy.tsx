@@ -262,6 +262,18 @@ export default function PrivacyPolicy() {
                     </div>
                 </Section>
 
+                {/* Section 13 — Backup & Restore */}
+                <Section number={13} title={t('privacyPolicy.sec13Title')} icon={Server}>
+                    <p>{t('privacyPolicy.sec13Desc')}</p>
+                    <ul className="list-disc pl-4 space-y-1">
+                        <li>{t('privacyPolicy.sec13Li1')}</li>
+                        <li>{t('privacyPolicy.sec13Li2')}</li>
+                        <li>{t('privacyPolicy.sec13Li3')}</li>
+                        <li>{t('privacyPolicy.sec13Li4')}</li>
+                        <li>{t('privacyPolicy.sec13Li5')}</li>
+                    </ul>
+                </Section>
+
                 {/* Data & Privacy Link */}
 
                 <div className="pt-2">

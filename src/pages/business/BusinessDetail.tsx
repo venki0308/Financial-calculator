@@ -31,7 +31,6 @@ import { AnalyticsService } from '../../lib/analytics';
 const PERIODS = ['daily', 'weekly', 'monthly', 'yearly'] as const;
 type Period = (typeof PERIODS)[number];
 
-const QUICK_AMOUNTS = [100, 500, 1000, 5000];
 const MAX_ENTRY = 1000000000; // ₹100 Cr per entry (same cap as expense tracker)
 
 interface PeriodRange {
@@ -679,10 +678,6 @@ function AddBizEntrySheet({ businessId, defaultDate, onSave, onClose }: SheetPro
     setCategoryId(tp === 'income' ? 'sales' : 'ingredients');
   };
 
-  const handleQuickAmount = (val: number) => {
-    setAmount(prev => String((parseFloat(prev) || 0) + val));
-  };
-
   const handleSave = () => {
     if (!isValid) return;
     // Defensive: reject dates that would break aggregation windows —
@@ -792,18 +787,6 @@ function AddBizEntrySheet({ businessId, defaultDate, onSave, onClose }: SheetPro
                 className="bg-transparent text-center font-extrabold focus:outline-none"
                 style={{ color: et.textPrimary, fontSize: 32, width: '60%', caretColor: typeColor }}
               />
-            </div>
-            <div className="flex gap-2 mt-3 justify-center flex-wrap">
-              {QUICK_AMOUNTS.map(val => (
-                <button
-                  key={val}
-                  onClick={() => handleQuickAmount(val)}
-                  className="px-3 py-1 text-[11px] font-bold rounded-full transition-colors"
-                  style={{ backgroundColor: typeColor + '12', color: typeColor, border: `1px solid ${typeColor}25` }}
-                >
-                  {`+₹${val.toLocaleString('en-IN')}`}
-                </button>
-              ))}
             </div>
           </div>
 

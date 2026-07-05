@@ -32,6 +32,12 @@ export default function TermsOfService() {
             body: t('termsOfService.sec4Body'),
             accent: '#F59E0B',
         },
+        {
+            num: 5,
+            title: t('termsOfService.sec5Title'),
+            body: t('termsOfService.sec5Body'),
+            accent: '#EC4899',
+        },
     ];
 
     return (

@@ -19,7 +19,6 @@ const ENTRY_TYPES: { id: EntryType; emoji: string }[] = [
 ];
 
 const PM_LIST: PaymentMethod[] = ['cash', 'upi', 'debit_card', 'credit_card', 'net_banking', 'auto_debit'];
-const QUICK_AMOUNTS = [100, 250, 500, 1000, 5000];
 
 function typeColor(type: EntryType, et: ReturnType<typeof useExpenseTheme>): string {
   if (type === 'income') return et.accentIncome;
@@ -133,13 +132,6 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
     onSave(); // closes sheet + triggers parent refresh
   };
 
-  const handleQuickAmount = (val: number) => {
-    setAmount(prev => {
-      const current = parseFloat(prev) || 0;
-      return String(current + val);
-    });
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -241,18 +233,6 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
                   className="bg-transparent text-center font-extrabold focus:outline-none"
                   style={{ color: et.textPrimary, fontSize: 32, width: '60%', caretColor: currentTypeColor }}
                 />
-              </div>
-              <div className="flex gap-2 mt-3 justify-center flex-wrap">
-                {QUICK_AMOUNTS.map(val => (
-                  <button
-                    key={val}
-                    onClick={() => handleQuickAmount(val)}
-                    className="px-3 py-1 text-[11px] font-bold rounded-full transition-colors"
-                    style={{ backgroundColor: currentTypeColor + '12', color: currentTypeColor, border: `1px solid ${currentTypeColor}25` }}
-                  >
-                    {`+₹${val.toLocaleString('en-IN')}`}
-                  </button>
-                ))}
               </div>
             </div>
 

@@ -3,11 +3,11 @@ import LegalLayout, { LangSelector, PlayStoreBadge, type Lang } from './LegalLay
 import { useAppColors } from '../../theme/useAppColors';
 
 const T = {
-    en: { title: 'Data & Privacy', hero: 'Your Data Stays With You', heroSub: 'FinCalix processes all your financial data locally. We only use limited anonymous analytics to improve stability.', updated: 'Last Updated: March 2026', s: { collect: 'What FinCalix Collects', storage: 'Stored on Your Device Only', analytics: 'Anonymous Usage Analytics', promises: 'Our Promises', safety: 'Google Play Data Safety Declaration', contact: 'Contact' } },
-    hi: { title: 'डेटा और गोपनीयता', hero: 'आपका डेटा आपके साथ रहता है', heroSub: 'FinCalix सभी वित्तीय डेटा स्थानीय रूप से प्रोसेस करता है।', updated: 'अंतिम अपडेट: मार्च 2026', s: { collect: 'FinCalix क्या एकत्रित करता है', storage: 'केवल आपके डिवाइस पर संग्रहीत', analytics: 'अनाम उपयोग विश्लेषण', promises: 'हमारे वादे', safety: 'Google Play डेटा सुरक्षा', contact: 'संपर्क' } },
-    te: { title: 'డేటా మరియు గోప్యత', hero: 'మీ డేటా మీతోనే ఉంటుంది', heroSub: 'FinCalix అన్ని ఆర్థిక డేటాను స్థానికంగా ప్రాసెస్ చేస్తుంది.', updated: 'చివరి నవీకరణ: మార్చి 2026', s: { collect: 'FinCalix ఏమి సేకరిస్తుంది', storage: 'మీ పరికరంలో మాత్రమే నిల్వ', analytics: 'అనామక వినియోగ విశ్లేషణ', promises: 'మా వాగ్దానాలు', safety: 'Google Play డేటా భద్రత', contact: 'సంప్రదించండి' } },
-    ta: { title: 'தரவு மற்றும் தனியுரிமை', hero: 'உங்கள் தரவு உங்களிடமே உள்ளது', heroSub: 'FinCalix அனைத்து நிதி தரவையும் உள்ளூரில் செயலாக்குகிறது.', updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: மார்ச் 2026', s: { collect: 'FinCalix என்ன சேகரிக்கிறது', storage: 'உங்கள் சாதனத்தில் மட்டும் சேமிக்கப்பட்டுள்ளது', analytics: 'அநாமதேய பயன்பாட்டு பகுப்பாய்வு', promises: 'எங்கள் வாக்குறுதிகள்', safety: 'Google Play தரவு பாதுகாப்பு', contact: 'தொடர்பு' } },
-    kn: { title: 'ಡೇಟಾ ಮತ್ತು ಗೌಪ್ಯತೆ', hero: 'ನಿಮ್ಮ ಡೇಟಾ ನಿಮ್ಮೊಂದಿಗಿದೆ', heroSub: 'FinCalix ಎಲ್ಲಾ ಹಣಕಾಸು ಡೇಟಾವನ್ನು ಸ್ಥಳೀಯವಾಗಿ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸುತ್ತದೆ.', updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: ಮಾರ್ಚ್ 2026', s: { collect: 'FinCalix ಏನು ಸಂಗ್ರಹಿಸುತ್ತದೆ', storage: 'ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ ಸಂಗ್ರಹ', analytics: 'ಅನಾಮಧೇಯ ಬಳಕೆ ವಿಶ್ಲೇಷಣೆ', promises: 'ನಮ್ಮ ವಾಗ್ದಾನಗಳು', safety: 'Google Play ಡೇಟಾ ಸುರಕ್ಷತೆ', contact: 'ಸಂಪರ್ಕಿಸಿ' } },
+    en: { title: 'Data & Privacy', hero: 'Your Data Stays With You', heroSub: 'FinCalix processes all your financial data locally. We only use limited anonymous analytics to improve stability.', updated: 'Last Updated: July 2026', s: { collect: 'What FinCalix Collects', storage: 'Stored on Your Device Only', backup: 'Backup & Restore', analytics: 'Anonymous Usage Analytics', promises: 'Our Promises', safety: 'Google Play Data Safety Declaration', contact: 'Contact' } },
+    hi: { title: 'डेटा और गोपनीयता', hero: 'आपका डेटा आपके साथ रहता है', heroSub: 'FinCalix सभी वित्तीय डेटा स्थानीय रूप से प्रोसेस करता है।', updated: 'अंतिम अपडेट: जुलाई 2026', s: { collect: 'FinCalix क्या एकत्रित करता है', storage: 'केवल आपके डिवाइस पर संग्रहीत', backup: 'बैकअप और रीस्टोर', analytics: 'अनाम उपयोग विश्लेषण', promises: 'हमारे वादे', safety: 'Google Play डेटा सुरक्षा', contact: 'संपर्क' } },
+    te: { title: 'డేటా మరియు గోప్యత', hero: 'మీ డేటా మీతోనే ఉంటుంది', heroSub: 'FinCalix అన్ని ఆర్థిక డేటాను స్థానికంగా ప్రాసెస్ చేస్తుంది.', updated: 'చివరి నవీకరణ: జూలై 2026', s: { collect: 'FinCalix ఏమి సేకరిస్తుంది', storage: 'మీ పరికరంలో మాత్రమే నిల్వ', backup: 'బ్యాకప్ & రీస్టోర్', analytics: 'అనామక వినియోగ విశ్లేషణ', promises: 'మా వాగ్దానాలు', safety: 'Google Play డేటా భద్రత', contact: 'సంప్రదించండి' } },
+    ta: { title: 'தரவு மற்றும் தனியுரிமை', hero: 'உங்கள் தரவு உங்களிடமே உள்ளது', heroSub: 'FinCalix அனைத்து நிதி தரவையும் உள்ளூரில் செயலாக்குகிறது.', updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: ஜூலை 2026', s: { collect: 'FinCalix என்ன சேகரிக்கிறது', storage: 'உங்கள் சாதனத்தில் மட்டும் சேமிக்கப்பட்டுள்ளது', backup: 'காப்புப்பிரதி & மீட்டெடுப்பு', analytics: 'அநாமதேய பயன்பாட்டு பகுப்பாய்வு', promises: 'எங்கள் வாக்குறுதிகள்', safety: 'Google Play தரவு பாதுகாப்பு', contact: 'தொடர்பு' } },
+    kn: { title: 'ಡೇಟಾ ಮತ್ತು ಗೌಪ್ಯತೆ', hero: 'ನಿಮ್ಮ ಡೇಟಾ ನಿಮ್ಮೊಂದಿಗಿದೆ', heroSub: 'FinCalix ಎಲ್ಲಾ ಹಣಕಾಸು ಡೇಟಾವನ್ನು ಸ್ಥಳೀಯವಾಗಿ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸುತ್ತದೆ.', updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: ಜುಲೈ 2026', s: { collect: 'FinCalix ಏನು ಸಂಗ್ರಹಿಸುತ್ತದೆ', storage: 'ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ ಸಂಗ್ರಹ', backup: 'ಬ್ಯಾಕಪ್ & ರೀಸ್ಟೋರ್', analytics: 'ಅನಾಮಧೇಯ ಬಳಕೆ ವಿಶ್ಲೇಷಣೆ', promises: 'ನಮ್ಮ ವಾಗ್ದಾನಗಳು', safety: 'Google Play ಡೇಟಾ ಸುರಕ್ಷತೆ', contact: 'ಸಂಪರ್ಕಿಸಿ' } },
 } as const;
 
 function Section({ icon, color, title, children }: { icon: string; color: string; title: string; children: React.ReactNode }) {
@@ -72,6 +72,12 @@ export default function DataPrivacy() {
                 <p style={{ marginBottom: '10px' }}>Your calculation history is saved in your device's local storage.</p>
                 <p style={{ marginBottom: '10px' }}>This data never leaves your phone or browser. We have no access to what you've calculated.</p>
                 <p>Clearing app data or uninstalling removes it completely.</p>
+            </Section>
+
+            <Section icon="💾" color="#14B8A6" title={t.s.backup}>
+                <p style={{ marginBottom: '10px' }}>Your data leaves your device <strong style={{ color: colors.text }}>ONLY</strong> via a user-initiated export / share — when you yourself create a backup file and choose where to send it.</p>
+                <p style={{ marginBottom: '10px' }}>The backup file contains, at a high level: expenses & budgets, Business Tracker entries, loans & credit cards, CIBIL profile inputs, saved calculations and app settings.</p>
+                <p>FinCalix never uploads the backup to any server. Importing a backup replaces the data currently on the device.</p>
             </Section>
 
             <Section icon="📊" color="#EC4899" title={t.s.analytics}>

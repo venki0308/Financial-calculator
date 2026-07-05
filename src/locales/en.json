@@ -1320,8 +1320,10 @@
         "sec3Body": "While we provide details of government schemes, we are NOT an official government entity. Always verify details on official portals (e.g., .gov.in domains) as rules are subject to change.",
         "sec4Title": "Liability",
         "sec4Body": "FinCalix shall not be liable for any financial losses or decisions made based on the data provided within this application.",
+        "sec5Title": "Backups & Data Loss",
+        "sec5Body": "You are solely responsible for safekeeping any backup file you export from FinCalix and for any data loss caused by importing a wrong or outdated backup — importing a backup replaces the data currently on the device. FinCalix is not liable for backup files shared to third-party services (e.g. Google Drive or email) or for their loss, exposure or misuse.",
         "acceptance": "By using this app, you acknowledge and agree to the terms outlined above.",
-        "lastUpdated": "Last updated · April 2026"
+        "lastUpdated": "Last updated · July 2026"
     },
     "dataSafety": {
         "title": "Data & Privacy",
@@ -1335,6 +1337,10 @@
         "sec2Body1": "Your calculation history is saved in your device's local storage.",
         "sec2Body2": "This data never leaves your phone or browser. We have no access to what you've calculated.",
         "sec2Body3": "Clearing app data or uninstalling removes it completely.",
+        "backupTitle": "Backup & Restore (Export / Import)",
+        "backupBody1": "Your data leaves your device ONLY through a user-initiated export / share — when you yourself create a backup file and choose where to send it.",
+        "backupBody2": "The backup file contains, at a high level: expenses & budgets, Business Tracker entries, loans & credit cards, CIBIL profile inputs, saved calculations and app settings.",
+        "backupBody3": "FinCalix never uploads the backup to any server. Importing a backup replaces the data currently on the device.",
         "sec3Title": "Anonymous Usage Analytics",
         "sec3Body1": "We use Firebase Analytics to understand which calculators are most useful and to improve app stability.",
         "sec3Body2": "Data collected: which calculator was opened, session duration, device type.",
@@ -1366,7 +1372,7 @@
         "title": "Privacy Policy",
         "heroTitle": "Your Privacy Matters",
         "heroDesc": "FinCalix collects <span class='text-brand-green font-bold'>zero personal data</span>. No backend, no database, no server-side storage. Everything stays on your device.",
-        "lastUpdated": "Last Updated: April 2026",
+        "lastUpdated": "Last Updated: July 2026",
         "sec1Title": "Information We Collect",
         "sec1Desc": "FinCalix does <strong class='text-foreground'>NOT</strong> collect any personal information whatsoever.",
         "sec1Li1": "No name, email address, phone number, or postal address is collected",
@@ -1454,7 +1460,14 @@
         "sec12RightsLi4": "Right to grievance redressal — email support@fincalix.com",
         "sec12RightsLi5": "Right to withdraw consent — disable analytics by clearing app data",
         "sec12TrademarkTitle": "Third-Party Trademarks",
-        "sec12TrademarkBody": "CIBIL® is a registered trademark of TransUnion CIBIL Limited. FinCalix is not affiliated with, endorsed by, or partnered with TransUnion CIBIL or any credit bureau. All other trademarks (RBI, SEBI, IRDAI, AMFI, IT Department, India Post, etc.) are the property of their respective owners and are referenced for educational purposes only."
+        "sec12TrademarkBody": "CIBIL® is a registered trademark of TransUnion CIBIL Limited. FinCalix is not affiliated with, endorsed by, or partnered with TransUnion CIBIL or any credit bureau. All other trademarks (RBI, SEBI, IRDAI, AMFI, IT Department, India Post, etc.) are the property of their respective owners and are referenced for educational purposes only.",
+        "sec13Title": "Backup & Restore",
+        "sec13Desc": "FinCalix includes an optional Backup & Restore feature so you can move your data to a new device. The backup file contains all your locally stored app data — expenses, budgets, Business Tracker entries, loans, credit cards, CIBIL profile inputs, saved calculations and settings. Business Tracker entries are stored locally on your device, exactly like all other data.",
+        "sec13Li1": "Export and sharing are entirely user-initiated — nothing is backed up automatically",
+        "sec13Li2": "The backup file is created on your device and goes only where you choose to send it (phone storage, Google Drive, email, etc.)",
+        "sec13Li3": "Keeping the backup file secure is your responsibility — anyone with the file can read your financial data",
+        "sec13Li4": "Importing a backup replaces the data currently on the device",
+        "sec13Li5": "FinCalix never uploads your backup to any server"
     },
     "globalDisclaimer": {
         "title": "Important Disclaimer",
@@ -3729,6 +3742,8 @@
         "expensePrivacyBody": "All expense entries, budgets, recurring transactions, attached receipts and category preferences live entirely in your device's local storage. FinCalix does not upload, mirror, sync or back this data up to any server. If you uninstall the app, switch devices, or clear app storage, this data is permanently lost. You are responsible for your own backups (use the Export feature if you want a copy).",
         "dataPrivacyTitle": "Data Privacy & My Loans Tracker",
         "dataPrivacyBody": "Saved loans, investment trackers, CIBIL profile inputs and calculator history are stored on your device only. FinCalix does not collect personal data, does not track usage, and does not share any information with third parties. Saved loan / tracker entries in My Loans are user-entered records — they are NOT live links to any bank, NBFC or AMC and the values shown are recomputed locally from your inputs.",
+        "backupTitle": "Backup, Export & Import",
+        "backupBody": "FinCalix lets you export a backup file containing all your app data (expenses, budgets, businesses, loans, credit cards, CIBIL profile inputs, saved calculations and settings) and import it on another device. The backup file is created on your device and is shared or stored ONLY where you choose to send it (e.g. your phone's storage, Google Drive, email). Anyone with access to your backup file can read your financial data — store it securely and delete old copies. Importing a backup replaces the data currently on the device. FinCalix never uploads your backup to any server.",
         "advisorTitle": "Professional Advice",
         "advisorBody": "For any decision that affects your money in a material way — large loans, insurance purchases, retirement planning, tax filing, estate planning, or business investments — please consult a SEBI-registered investment advisor, IRDAI-licensed insurance agent, Chartered Accountant or other qualified professional. FinCalix is a tool to help you ask better questions, not a substitute for personalised professional guidance.",
         "utilityTitle": "Utility Tools",

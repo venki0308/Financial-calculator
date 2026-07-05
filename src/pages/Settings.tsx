@@ -55,6 +55,7 @@ export default function Settings() {
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [showClearConfirmFinal, setShowClearConfirmFinal] = useState(false);
     const [exporting, setExporting] = useState(false);
+    const [showExportChoice, setShowExportChoice] = useState(false);
     const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
     const importInputRef = useRef<HTMLInputElement>(null);
     const c = useAppColors();
@@ -72,11 +73,12 @@ export default function Settings() {
         setShowLangPicker(false);
     };
 
-    const handleExportBackup = async () => {
+    const handleExportBackup = async (mode: 'download' | 'share') => {
         if (exporting) return;
+        setShowExportChoice(false);
         setExporting(true);
         try {
-            const result = await exportBackup();
+            const result = await exportBackup(mode);
             showToast(result.location === 'documents'
                 ? t('settings.backupSavedNative', 'Backup saved: {{file}}', { file: result.fileName })
                 : t('settings.backupSavedWeb', 'Backup downloaded: {{file}}', { file: result.fileName }));
@@ -86,6 +88,14 @@ export default function Settings() {
         } finally {
             setExporting(false);
         }
+    };
+
+    // Native: let the user choose Download (save to Documents) vs Share.
+    // Web: share sheet doesn't apply — download directly.
+    const handleExportClick = () => {
+        if (exporting) return;
+        if (Capacitor.isNativePlatform()) setShowExportChoice(true);
+        else handleExportBackup('download');
     };
 
     const handleImportFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,6 +156,7 @@ export default function Settings() {
             // Disclaimer / consent flags
             'fincalix_disclaimer_accepted',
             'fincalix_disclaimer_accepted_v2',
+            'fincalix_disclaimer_accepted_v3',
             'fincalix_privacy_accepted',
             'appDisclaimerAccepted',
             'expenseTrackerDisclaimerAccepted',
@@ -284,7 +295,7 @@ export default function Settings() {
                 {/* Backup & Restore */}
                 <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.backupRestore', 'Backup & Restore')}</p>
                 <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
-                    <button onClick={handleExportBackup} disabled={exporting} className="w-full flex items-center gap-4 p-4 disabled:opacity-60">
+                    <button onClick={handleExportClick} disabled={exporting} className="w-full flex items-center gap-4 p-4 disabled:opacity-60">
                         <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                             <Download size={20} className="text-emerald-500" />
                         </div>
@@ -429,6 +440,29 @@ export default function Settings() {
 
             {/* Import Backup Confirmation */}
             <AnimatePresence>
+                {showExportChoice && (
+                    <>
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[10000]" onClick={() => setShowExportChoice(false)} />
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="fixed inset-0 z-[10001] flex items-center justify-center p-4 pointer-events-none">
+                            <div style={{ backgroundColor: c.card, borderColor: c.border }} className="border-2 rounded-2xl w-full max-w-sm shadow-2xl pointer-events-auto p-6">
+                                <div className="flex justify-center mb-4">
+                                    <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center"><Download size={32} className="text-emerald-500" /></div>
+                                </div>
+                                <h3 style={{ color: c.text }} className="text-xl font-bold text-center mb-2">{t('settings.exportChoiceTitle', 'Export backup')}</h3>
+                                <p style={{ color: c.textSecondary }} className="text-center text-sm mb-6">{t('settings.exportChoiceBody', 'Download saves the file to your phone. Share sends it to Drive, email or your new phone.')}</p>
+                                <div className="space-y-3">
+                                    <button onClick={() => handleExportBackup('download')} className="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold text-sm border-2 border-emerald-500 flex items-center justify-center gap-2">
+                                        <Download size={16} /> {t('settings.exportDownload', 'Download to phone')}
+                                    </button>
+                                    <button onClick={() => handleExportBackup('share')} className="w-full py-3 rounded-xl bg-blue-600 text-white font-bold text-sm border-2 border-blue-500 flex items-center justify-center gap-2">
+                                        <Share2 size={16} /> {t('settings.exportShare', 'Share')}
+                                    </button>
+                                    <button onClick={() => setShowExportChoice(false)} style={{ backgroundColor: c.inputBg, color: c.text, borderColor: c.border }} className="w-full py-3 rounded-xl font-semibold text-sm border-2">{t('settings.importCancel', 'Cancel')}</button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
                 {pendingImportFile && (
                     <>
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[10000]" onClick={() => setPendingImportFile(null)} />

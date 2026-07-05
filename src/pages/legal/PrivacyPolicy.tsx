@@ -8,10 +8,11 @@ const T = {
         title: 'Privacy Policy',
         hero: 'Your Privacy Matters',
         heroSub: 'FinCalix stores zero personal or financial data on any server. All your financial data stays exclusively on your device. We use anonymous Firebase Analytics for app improvement — no names, no amounts, no PAN, no phone numbers. See Section 4 for details.',
-        updated: 'Last Updated: March 2026',
+        updated: 'Last Updated: July 2026',
         s: {
             collect: 'Information We Collect',
             storage: 'Data Stored on Your Device',
+            backup: 'Backup & Restore',
             analytics: 'Analytics & Tracking',
             thirdParty: 'Third-Party Services',
             financial: 'Your Financial Data',
@@ -30,10 +31,11 @@ const T = {
         title: 'गोपनीयता नीति',
         hero: 'आपकी गोपनीयता महत्वपूर्ण है',
         heroSub: 'FinCalix कोई व्यक्तिगत डेटा नहीं संग्रहित करता। कोई सर्वर नहीं, कोई डेटाबेस नहीं।',
-        updated: 'अंतिम अपडेट: मार्च 2026',
+        updated: 'अंतिम अपडेट: जुलाई 2026',
         s: {
             collect: 'हम क्या जानकारी एकत्रित करते हैं',
             storage: 'आपके डिवाइस पर संग्रहीत डेटा',
+            backup: 'बैकअप और रीस्टोर',
             analytics: 'विश्लेषण और ट्रैकिंग',
             thirdParty: 'तृतीय-पक्ष सेवाएं',
             financial: 'आपका वित्तीय डेटा',
@@ -52,10 +54,11 @@ const T = {
         title: 'గోప్యతా విధానం',
         hero: 'మీ గోప్యత ముఖ్యమైనది',
         heroSub: 'FinCalix వ్యక్తిగత డేటాను సేకరించదు. సర్వర్ నిల్వ లేదు — అన్నీ మీ పరికరంపైనే ఉంటాయి.',
-        updated: 'చివరి నవీకరణ: మార్చి 2026',
+        updated: 'చివరి నవీకరణ: జూలై 2026',
         s: {
             collect: 'మేము సేకరించే సమాచారం',
             storage: 'మీ పరికరంలో నిల్వ చేసిన డేటా',
+            backup: 'బ్యాకప్ & రీస్టోర్',
             analytics: 'విశ్లేషణ మరియు ట్రాకింగ్',
             thirdParty: 'మూడవ పక్ష సేవలు',
             financial: 'మీ ఆర్థిక డేటా',
@@ -74,10 +77,11 @@ const T = {
         title: 'தனியுரிமைக் கொள்கை',
         hero: 'உங்கள் தனியுரிமை முக்கியம்',
         heroSub: 'FinCalix எந்த தனிப்பட்ட தரவையும் சேகரிக்கவில்லை. சர்வர் சேமிப்பு இல்லை.',
-        updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: மார்ச் 2026',
+        updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: ஜூலை 2026',
         s: {
             collect: 'நாங்கள் சேகரிக்கும் தகவல்',
             storage: 'உங்கள் சாதனத்தில் சேமிக்கப்பட்ட தரவு',
+            backup: 'காப்புப்பிரதி & மீட்டெடுப்பு',
             analytics: 'பகுப்பாய்வு மற்றும் கண்காணிப்பு',
             thirdParty: 'மூன்றாம் தரப்பு சேவைகள்',
             financial: 'உங்கள் நிதி தரவு',
@@ -96,10 +100,11 @@ const T = {
         title: 'ಗೌಪ್ಯತಾ ನೀತಿ',
         hero: 'ನಿಮ್ಮ ಗೌಪ್ಯತೆ ಮುಖ್ಯ',
         heroSub: 'FinCalix ಯಾವುದೇ ವ್ಯಕ್ತಿಗತ ಡೇಟಾವನ್ನು ಸಂಗ್ರಹಿಸುವುದಿಲ್ಲ. ಸರ್ವರ್ ಸಂಗ್ರಹ ಇಲ್ಲ.',
-        updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: ಮಾರ್ಚ್ 2026',
+        updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: ಜುಲೈ 2026',
         s: {
             collect: 'ನಾವು ಸಂಗ್ರಹಿಸುವ ಮಾಹಿತಿ',
             storage: 'ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಸಂಗ್ರಹಿಸಿದ ಡೇಟಾ',
+            backup: 'ಬ್ಯಾಕಪ್ & ರೀಸ್ಟೋರ್',
             analytics: 'ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ಟ್ರ್ಯಾಕಿಂಗ್',
             thirdParty: 'ಮೂರನೇ ವ್ಯಕ್ತಿ ಸೇವೆಗಳು',
             financial: 'ನಿಮ್ಮ ಹಣಕಾಸು ಡೇಟಾ',
@@ -291,6 +296,18 @@ export default function PrivacyPolicy() {
                         'There is no backend or API that receives your data',
                     ]} />
                 </GreenBox>
+            </Section>
+
+            {/* Backup & Restore */}
+            <Section icon="💾" color="#14B8A6" title={t.s.backup}>
+                <p style={{ marginBottom: '10px' }}>FinCalix includes an optional Backup & Restore feature so you can move your data to a new device. The backup file contains all your locally stored app data — expenses, budgets, Business Tracker entries, loans, credit cards, CIBIL profile inputs, saved calculations and settings. Business Tracker entries are stored locally on your device, exactly like all other data.</p>
+                <Bullets items={[
+                    'Export and sharing are entirely user-initiated — nothing is backed up automatically',
+                    'The backup file is created on your device and goes only where you choose to send it (phone storage, Google Drive, email)',
+                    'Keeping the backup file secure is your responsibility — anyone with the file can read your financial data',
+                    'Importing a backup replaces the data currently on the device',
+                    'FinCalix never uploads your backup to any server',
+                ]} />
             </Section>
 
             {/* 6 */}

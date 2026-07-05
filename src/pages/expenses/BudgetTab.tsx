@@ -37,6 +37,7 @@ import {
 import { useBudgetTrackerStore } from '../../store/useBudgetTrackerStore';
 import { getAllCreditCards } from '../../utils/creditCardStorage';
 import { getUtilization, getDaysUntilDue } from '../../utils/creditCardCalculations';
+import { getAllBusinesses } from '../../utils/businessStorage';
 
 // ── pre-filled fixed expense templates ────────────────────────
 const FIXED_TEMPLATES: { name: string; nameKey: string; icon: string; category: string }[] = [
@@ -187,6 +188,10 @@ export default function BudgetTab() {
   }, [accounts]);
 
   // ── credit card totals ─────────────────────────────────────
+  // Business Tracker shortcut badge — count only, re-read when the tab mounts.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const businessCount = useMemo(() => getAllBusinesses().length, []);
+
   const ccTotals = useMemo(() => {
     let totalLimit = 0;
     let totalOutstanding = 0;
@@ -955,6 +960,49 @@ export default function BudgetTab() {
                   )}
                 </>
               )}
+            </div>
+            <ChevronRightArrow size={18} style={{ color: theme.textMuted }} />
+          </div>
+        </button>
+      </motion.div>
+
+      {/* ── Business Tracker shortcut ── */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.09 }}>
+        <button
+          onClick={() => navigate('/business-tracker')}
+          className="w-full rounded-2xl border p-4 text-left transition-transform active:scale-[0.99]"
+          style={elevatedCard}
+          aria-label={t('biz.title', 'Business Tracker')}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+              style={{ backgroundColor: '#D1FAE5' }}
+            >
+              {'\u{1F3EA}'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-[10px] font-bold uppercase tracking-widest"
+                  style={{ color: theme.textSecondary }}
+                >
+                  {t('biz.title', 'Business Tracker')}
+                </span>
+                {businessCount > 0 && (
+                  <span
+                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: '#D1FAE5', color: '#059669' }}
+                  >
+                    {businessCount}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs font-medium mt-0.5" style={{ color: theme.textMuted }}>
+                {businessCount === 0
+                  ? t('biz.budgetTabEmpty', 'Tap to track your restaurant, shop or side business')
+                  : t('biz.budgetTabSub', 'Daily income & expenses for your business')}
+              </p>
             </div>
             <ChevronRightArrow size={18} style={{ color: theme.textMuted }} />
           </div>

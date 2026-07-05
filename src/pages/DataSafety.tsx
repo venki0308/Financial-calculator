@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Shield, Lock, Eye, CheckCircle, Server, Mail, Smartphone, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Shield, Lock, Eye, CheckCircle, Server, Mail, Smartphone, BarChart3, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { switchLanguage } from '../i18n';
@@ -98,6 +98,19 @@ export default function DataSafety() {
                         <p>{t('dataSafety.sec2Body1')}</p>
                         <p>{t('dataSafety.sec2Body2')}</p>
                         <p>{t('dataSafety.sec2Body3')}</p>
+                    </div>
+                </motion.div>
+
+                {/* Section 2b — Backup & Restore (Export / Import) */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="space-y-2">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-teal-500/15 flex items-center justify-center"><Download size={14} className="text-teal-400" /></div>
+                        <h3 className="text-foreground font-bold text-sm">{t('dataSafety.backupTitle')}</h3>
+                    </div>
+                    <div className="pl-9 space-y-1.5 text-muted-foreground text-xs leading-relaxed">
+                        <p>{t('dataSafety.backupBody1')}</p>
+                        <p>{t('dataSafety.backupBody2')}</p>
+                        <p>{t('dataSafety.backupBody3')}</p>
                     </div>
                 </motion.div>
 

@@ -51,6 +51,7 @@ export const BACKUP_KEYS: readonly string[] = [
     // One-time flags / consent (so a migrated phone isn't re-prompted)
     'fincalix_disclaimer_accepted',
     'fincalix_disclaimer_accepted_v2',
+    'fincalix_disclaimer_accepted_v3',
     'fincalix_privacy_accepted',
     'appDisclaimerAccepted',
     'expenseTrackerDisclaimerAccepted',
@@ -100,13 +101,17 @@ function buildEnvelope(): BackupEnvelope {
     };
 }
 
+export type ExportMode = 'download' | 'share';
+
 /**
  * Build the backup and hand it to the user:
- * - Native: write to Documents (fallback: Cache) via Filesystem, then open
- *   the system Share sheet so the user can send it to Drive/email/new phone.
- * - Web: plain blob download.
+ * - Native 'download': write to Documents (fallback: Cache) — no share sheet;
+ *   the caller's toast tells the user where the file landed.
+ * - Native 'share': write the file, then open the system Share sheet so the
+ *   user can send it to Drive/email/the new phone.
+ * - Web: plain blob download regardless of mode.
  */
-export async function exportBackup(): Promise<ExportResult> {
+export async function exportBackup(mode: ExportMode = 'share'): Promise<ExportResult> {
     // Compact JSON — the file is machine-restored, never hand-read, and
     // pretty-printing roughly doubles multi-MB backups.
     const json = JSON.stringify(buildEnvelope());
@@ -136,18 +141,20 @@ export async function exportBackup(): Promise<ExportResult> {
             });
             uri = result.uri;
         }
-        try {
-            const { Share } = await import('@capacitor/share');
-            const can = await Share.canShare();
-            if (can.value) {
-                await Share.share({
-                    title: `FinCalix Backup – ${fileName}`,
-                    url: uri,
-                    dialogTitle: 'Save or share your FinCalix backup',
-                });
+        if (mode === 'share') {
+            try {
+                const { Share } = await import('@capacitor/share');
+                const can = await Share.canShare();
+                if (can.value) {
+                    await Share.share({
+                        title: `FinCalix Backup – ${fileName}`,
+                        url: uri,
+                        dialogTitle: 'Save or share your FinCalix backup',
+                    });
+                }
+            } catch {
+                // Share dismissed or unavailable — file is already written.
             }
-        } catch {
-            // Share dismissed or unavailable — file is already written.
         }
         return { fileName, location: 'documents' };
     }
