@@ -1372,12 +1372,12 @@ export default function ReportsTab() {
                       className="text-xs font-bold"
                       style={{
                         color:
-                          customRangeSummary.netSavings >= 0
+                          customRangeSummary.cashBalance >= 0
                             ? theme.accentIncome
                             : theme.accentExpense,
                       }}
                     >
-                      {fmtINRShort(customRangeSummary.netSavings)}
+                      {fmtINRShort(customRangeSummary.cashBalance)}
                     </span>
                   </div>
                 </div>

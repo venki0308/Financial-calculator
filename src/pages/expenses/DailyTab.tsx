@@ -133,7 +133,8 @@ export default function DailyTab() {
     () => dayEntries.filter(e => e.type === 'investment').reduce((s, e) => s + e.amount, 0),
     [dayEntries],
   );
-  const todayNet = todayIncome - todayExpense;
+  // Cash net for the day: investments are money that left the wallet too.
+  const todayNet = todayIncome - todayExpense - todayInvestment;
 
   const filteredEntries = useMemo(() => {
     if (subTab === 'all') return dayEntries;

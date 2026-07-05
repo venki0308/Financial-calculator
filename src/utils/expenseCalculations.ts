@@ -16,6 +16,11 @@ export interface PeriodSummary {
   totalInvestments: number;
   totalTransfers: number;
   netSavings: number;
+  /** Cash actually left in hand: income − expenses − investments.
+   *  Use this for every "money left" / balance / net display.
+   *  `netSavings` (income − expenses) stays as the savings-metric basis
+   *  (investments count AS savings for savingsRate/grading). */
+  cashBalance: number;
   savingsRate: number;
   investmentRate: number;
   entryCount: number;
@@ -73,6 +78,7 @@ export const calculateSummary = (entries: Entry[], budget?: Budget): PeriodSumma
   const totalTransfers = transferEntries.reduce((s, e) => s + e.amount, 0);
 
   const netSavings = totalIncome - totalExpenses;
+  const cashBalance = totalIncome - totalExpenses - totalInvestments;
   const savingsRate = totalIncome > 0 ? (netSavings / totalIncome) * 100 : 0;
   const investmentRate = totalIncome > 0 ? (totalInvestments / totalIncome) * 100 : 0;
 
@@ -89,7 +95,7 @@ export const calculateSummary = (entries: Entry[], budget?: Budget): PeriodSumma
 
   return {
     totalIncome, totalExpenses, totalInvestments, totalTransfers,
-    netSavings, savingsRate, investmentRate,
+    netSavings, cashBalance, savingsRate, investmentRate,
     entryCount: entries.length,
     expenseCount: expenseEntries.length,
     incomeCount: incomeEntries.length,
@@ -153,7 +159,7 @@ const buildDailyTotals = (entries: Entry[]): DailyTotal[] => {
     if (e.type === 'income') day.income += e.amount;
     if (e.type === 'expense') day.expenses += e.amount;
     if (e.type === 'investment') day.investments += e.amount;
-    day.net = day.income - day.expenses;
+    day.net = day.income - day.expenses - day.investments;
   });
 
   return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
@@ -187,7 +193,7 @@ export const buildWeeklyBreakdown = (entries: Entry[], year: number, month: numb
       endDate: endStr,
       label: `${formatShortDate(weekStart)}-${formatShortDate(weekEnd)}`,
       income, expenses, investments,
-      net: income - expenses,
+      net: income - expenses - investments,
     });
 
     weekNum++;

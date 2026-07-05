@@ -249,12 +249,19 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
   // summary.netSavings everywhere in the rest of the component.
   const canonicalExpenses = summary.totalExpenses + monthSubsBilled;
   const prevCanonicalExpenses = prevSummary.totalExpenses + prevMonthSubsBilled;
-  const canonicalNetSavings = summary.totalIncome - canonicalExpenses;
+  // Cash net: investments also leave the wallet, so the headline "Net
+  // Savings" figure subtracts them (income − expenses − investments).
+  const canonicalNetSavings = summary.totalIncome - canonicalExpenses - summary.totalInvestments;
 
   // ── Savings & change calculations ──
 
   const netSavings = canonicalNetSavings;
-  const savingsRate = summary.totalIncome > 0 ? (netSavings / summary.totalIncome) * 100 : 0;
+  // Savings RATE keeps its original basis: (income − expenses) / income.
+  // Investments count AS savings here, so the Excellent/Good grading
+  // stays meaningful for users who invest aggressively.
+  const savingsRate = summary.totalIncome > 0
+    ? ((summary.totalIncome - canonicalExpenses) / summary.totalIncome) * 100
+    : 0;
   const savingsRating = getSavingsRating(savingsRate);
   const isPositiveSavings = netSavings >= 0;
 
@@ -492,6 +499,28 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
             </p>
           )}
         </div>
+
+        {/* Total Invested row — money routed into investments also leaves
+            the wallet, so it's shown as an outflow before Net Savings.
+            Hidden when the user has no investments to keep the card clean. */}
+        {summary.totalInvestments > 0 && (
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2.5">
+              <div
+                className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: isDark ? 'rgba(167,139,250,0.1)' : 'rgba(124,58,237,0.08)' }}
+              >
+                <Landmark size={14} style={{ color: accentInvestment }} />
+              </div>
+              <span className="text-xs font-semibold" style={{ color: textSecondary }}>
+                {t('expenses.totalInvested', 'Total Invested')}
+              </span>
+            </div>
+            <span className="text-sm font-bold" style={{ color: accentInvestment }}>
+              -{fmtINR(summary.totalInvestments)}
+            </span>
+          </div>
+        )}
 
         {/* Divider */}
         <div className="my-3.5 relative">

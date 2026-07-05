@@ -145,6 +145,9 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
   /* ── canonical totals (logged + subs) ── */
   const canonicalExpenses = summary.totalExpenses + weekSubsBilled;
   const prevCanonicalExpenses = prevSummary.totalExpenses + prevWeekSubsBilled;
+  // Cash net for the week: income − expenses − investments (money that
+  // left the wallet includes what was invested).
+  const canonicalWeekNet = summary.totalIncome - canonicalExpenses - summary.totalInvestments;
 
   /* ── vs last week change ── BUG 3.1 fix:
        use calcPeriodChange so zero-base cases ("Same", "New activity",
@@ -435,9 +438,9 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
             },
             {
               label: t('expenses.netSaved', 'Net Saved'),
-              value: fmtINR(summary.totalIncome - canonicalExpenses),
-              color: (summary.totalIncome - canonicalExpenses) >= 0 ? et.accentIncome : et.accentExpense,
-              bg: (summary.totalIncome - canonicalExpenses) >= 0 ? et.bgIncome : et.bgExpense,
+              value: fmtINR(canonicalWeekNet),
+              color: canonicalWeekNet >= 0 ? et.accentIncome : et.accentExpense,
+              bg: canonicalWeekNet >= 0 ? et.bgIncome : et.bgExpense,
               icon: <PiggyBank size={14} />,
             },
           ].map((stat) => (

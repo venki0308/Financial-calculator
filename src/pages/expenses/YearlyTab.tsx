@@ -92,9 +92,12 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
       // changes. Build a NEW summary object — never mutate the
       // calculateSummary result.
       const augmentedTotalExpenses = summary.totalExpenses + subsBilled;
-      const augmentedNetSavings = summary.totalIncome - augmentedTotalExpenses;
+      // Cash net: investments also leave the wallet.
+      const augmentedNetSavings = summary.totalIncome - augmentedTotalExpenses - summary.totalInvestments;
+      // Savings RATE keeps its original basis (income − expenses) / income —
+      // investments count AS savings for the rate/grading.
       const augmentedSavingsRate = summary.totalIncome > 0
-        ? (augmentedNetSavings / summary.totalIncome) * 100
+        ? ((summary.totalIncome - augmentedTotalExpenses) / summary.totalIncome) * 100
         : 0;
       const augmentedSummary: PeriodSummary = {
         ...summary,
@@ -114,8 +117,10 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
   const augmentedYearSummary = useMemo<PeriodSummary>(() => {
     const totalExpenses = monthlySummaries.reduce((s, m) => s + m.summary.totalExpenses, 0);
     const totalIncome = yearSummary.totalIncome;
-    const netSavings = totalIncome - totalExpenses;
-    const savingsRate = totalIncome > 0 ? (netSavings / totalIncome) * 100 : 0;
+    // Cash net subtracts investments; savings RATE keeps its original
+    // (income − expenses) / income basis.
+    const netSavings = totalIncome - totalExpenses - yearSummary.totalInvestments;
+    const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
     return {
       ...yearSummary,
       totalExpenses,

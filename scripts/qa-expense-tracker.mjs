@@ -58,6 +58,9 @@ function calculateSummary(entries, budget) {
   const totalInvestments = investmentEntries.reduce((s, e) => s + e.amount, 0);
 
   const netSavings = totalIncome - totalExpenses;
+  // Cash actually left in hand: investments also leave the wallet.
+  // Mirrors PeriodSummary.cashBalance in src/utils/expenseCalculations.ts.
+  const cashBalance = totalIncome - totalExpenses - totalInvestments;
   const savingsRate = totalIncome > 0 ? (netSavings / totalIncome) * 100 : 0;
   const investmentRate = totalIncome > 0 ? (totalInvestments / totalIncome) * 100 : 0;
 
@@ -69,7 +72,7 @@ function calculateSummary(entries, budget) {
 
   return {
     totalIncome, totalExpenses, totalInvestments,
-    netSavings, savingsRate, investmentRate,
+    netSavings, cashBalance, savingsRate, investmentRate,
     expenseCount: expenseEntries.length,
     incomeCount: incomeEntries.length,
     investmentCount: investmentEntries.length,
@@ -181,7 +184,7 @@ const todaySummary = calculateSummary(todayEntries);
 check('Daily income', 80000, todaySummary.totalIncome);
 check('Daily expenses', 450 + 1200, todaySummary.totalExpenses);  // 1650
 check('Daily investments', 0, todaySummary.totalInvestments);
-check('Daily net (income - expenses)', 80000 - 1650, todaySummary.netSavings);
+check('Daily net (income - expenses - investments)', 80000 - 1650 - 0, todaySummary.cashBalance);
 check('Daily entry count', 3, todaySummary.entryCount);
 
 // ── 3. WEEKLY TAB (current week) ──
@@ -197,6 +200,7 @@ console.log(`  Weekly entries: ${weekEntries.length}`);
 check('Weekly income', 80000, weekSummary.totalIncome);          // e1
 check('Weekly expenses', 450 + 1200 + 350, weekSummary.totalExpenses); // e2, e3, e4 = 2000
 check('Weekly investments', 0, weekSummary.totalInvestments);
+check('Weekly net (income - expenses - investments)', 80000 - 2000 - 0, weekSummary.cashBalance);
 check('Weekly entry count', 4, weekSummary.entryCount);
 
 // ── 4. MONTHLY TAB (April 2026) ──
@@ -208,8 +212,8 @@ console.log(`  Monthly entries: ${monthEntries.length}`);
 check('Monthly income', 80000, monthSummary.totalIncome);
 check('Monthly expenses', 450 + 1200 + 350 + 2500 + 15000 + 1800, monthSummary.totalExpenses); // 21300
 check('Monthly investments', 5000 + 3000, monthSummary.totalInvestments); // 8000
-check('Monthly net', 80000 - 21300, monthSummary.netSavings); // 58700
-check('Monthly savings rate %', ((80000 - 21300) / 80000) * 100, monthSummary.savingsRate); // 73.375
+check('Monthly net (income - expenses - investments)', 80000 - 21300 - 8000, monthSummary.cashBalance); // 50700
+check('Monthly savings rate %', ((80000 - 21300) / 80000) * 100, monthSummary.savingsRate); // 73.375 (basis unchanged: investments count as savings)
 check('Monthly investment rate %', (8000 / 80000) * 100, monthSummary.investmentRate);      // 10
 check('Monthly entry count', 9, monthSummary.entryCount);
 
@@ -221,8 +225,8 @@ console.log(`  Yearly entries: ${yearEntries.length}`);
 check('Yearly income', 80000 + 78000, yearSummary.totalIncome);                    // 158000
 check('Yearly expenses', 450 + 1200 + 350 + 2500 + 15000 + 1800 + 22000, yearSummary.totalExpenses); // 43300
 check('Yearly investments', 5000 + 3000 + 5000, yearSummary.totalInvestments);     // 13000
-check('Yearly net', 158000 - 43300, yearSummary.netSavings);                       // 114700
-check('Yearly savings rate %', ((158000 - 43300) / 158000) * 100, yearSummary.savingsRate);
+check('Yearly net (income - expenses - investments)', 158000 - 43300 - 13000, yearSummary.cashBalance); // 101700
+check('Yearly savings rate %', ((158000 - 43300) / 158000) * 100, yearSummary.savingsRate); // basis unchanged
 check('Yearly entry count', 12, yearSummary.entryCount);
 
 // ── 6. CUSTOM RANGE (March 1 – April 7) ──
@@ -233,6 +237,7 @@ console.log(`  Custom range entries: ${customEntries.length}`);
 check('Custom income', 80000 + 78000, customSummary.totalIncome);
 check('Custom expenses', 43300, customSummary.totalExpenses);
 check('Custom investments', 13000, customSummary.totalInvestments);
+check('Custom net (income - expenses - investments)', 158000 - 43300 - 13000, customSummary.cashBalance); // 101700
 check('Custom entry count', 12, customSummary.entryCount);
 
 // ── 7. PREVIOUS MONTH (March 2026) ──
@@ -293,11 +298,11 @@ if (fail > 0) {
 } else {
   console.log('\n\u2705 ALL CALCULATIONS VERIFIED CORRECTLY\n');
   console.log('Summary of audit:');
-  console.log(`  • Daily tab    → ${todaySummary.entryCount} entries, net ${fmtINR(todaySummary.netSavings)}`);
-  console.log(`  • Weekly tab   → ${weekSummary.entryCount} entries, net ${fmtINR(weekSummary.netSavings)}`);
-  console.log(`  • Monthly tab  → ${monthSummary.entryCount} entries, net ${fmtINR(monthSummary.netSavings)}, savings rate ${fmtPct(monthSummary.savingsRate)}`);
-  console.log(`  • Yearly tab   → ${yearSummary.entryCount} entries, net ${fmtINR(yearSummary.netSavings)}`);
-  console.log(`  • Custom range → ${customSummary.entryCount} entries, net ${fmtINR(customSummary.netSavings)}`);
+  console.log(`  • Daily tab    → ${todaySummary.entryCount} entries, cash net ${fmtINR(todaySummary.cashBalance)}`);
+  console.log(`  • Weekly tab   → ${weekSummary.entryCount} entries, cash net ${fmtINR(weekSummary.cashBalance)}`);
+  console.log(`  • Monthly tab  → ${monthSummary.entryCount} entries, cash net ${fmtINR(monthSummary.cashBalance)}, savings rate ${fmtPct(monthSummary.savingsRate)}`);
+  console.log(`  • Yearly tab   → ${yearSummary.entryCount} entries, cash net ${fmtINR(yearSummary.cashBalance)}`);
+  console.log(`  • Custom range → ${customSummary.entryCount} entries, cash net ${fmtINR(customSummary.cashBalance)}`);
   console.log(`  • Health score → ${health.overall}/100 (${health.grade})\n`);
   process.exit(0);
 }

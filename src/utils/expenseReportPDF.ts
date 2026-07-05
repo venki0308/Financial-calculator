@@ -931,7 +931,7 @@ export async function generateDailyPDF(data: DailyReportData): Promise<void> {
     yPos = drawStatBoxes(doc, [
         { label: 'Total Earned', value: formatINR(summary.totalIncome), tone: 'income' },
         { label: 'Total Spent', value: formatINR(summary.totalExpenses), tone: 'expense' },
-        { label: 'Net', value: formatINR(summary.totalIncome - summary.totalExpenses), tone: summary.totalIncome - summary.totalExpenses >= 0 ? 'income' : 'expense' },
+        { label: 'Net', value: formatINR(summary.cashBalance), tone: summary.cashBalance >= 0 ? 'income' : 'expense' },
     ], yPos);
 
     if (summary.totalInvestments > 0) {
@@ -1185,7 +1185,8 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
     // summary.totalExpenses already includes the merged sub billings,
     // so the canonical figures are just the summary fields directly.
     const canonicalWeekExpenses = summary.totalExpenses;
-    const canonicalWeekNet = summary.totalIncome - canonicalWeekExpenses;
+    // Cash net: investments also leave the wallet (income − expenses − invested).
+    const canonicalWeekNet = summary.totalIncome - canonicalWeekExpenses - summary.totalInvestments;
 
     // Days in this week up to & including today (skip future days)
     const daysInWeek: { date: string; dayName: string; isToday: boolean }[] = [];
@@ -1253,16 +1254,16 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
             formatINR(inc),
             formatINR(exp),
             formatINR(inv),
-            formatINR(inc - exp),
+            formatINR(inc - exp - inv),
         ];
     });
-    dayBody.push(['TOTAL', '', formatINR(totalI), formatINR(totalE), formatINR(totalIn), formatINR(totalI - totalE)]);
+    dayBody.push(['TOTAL', '', formatINR(totalI), formatINR(totalE), formatINR(totalIn), formatINR(totalI - totalE - totalIn)]);
 
     table(doc, autoTable, {
-        // "Net Saved" = Income - Expenses (NOT minus investments). Investments
-        // are still your money parked in a different bucket, so the savings
-        // formula treats them as savings, not as outflows. The TOTAL row at
-        // the bottom matches the headline "Net Saved" stat box for consistency.
+        // "Net Saved" = Income - Expenses - Investments (cash actually left).
+        // Investments count as savings only for the Savings Rate metric.
+        // The TOTAL row at the bottom matches the headline "Net Saved" stat
+        // box for consistency.
         head: [['Day', 'Date', 'Income', 'Expenses', 'Investments', 'Net Saved']],
         body: dayBody,
         startY: yPos,
@@ -1501,9 +1502,12 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     // forward-looking monthly equivalent) so March/April totals match
     // the Yearly tab.
     const effectiveExpenses = summary.totalExpenses; // already includes subs via merge
-    const effectiveNetSavings = summary.totalIncome - effectiveExpenses;
+    // Cash net: investments also leave the wallet (income − expenses − invested).
+    const effectiveNetSavings = summary.totalIncome - effectiveExpenses - summary.totalInvestments;
+    // Savings RATE keeps its original (income − expenses) / income basis —
+    // investments count AS savings for the rate/grade.
     const effectiveSavingsRate = summary.totalIncome > 0
-        ? (effectiveNetSavings / summary.totalIncome) * 100
+        ? ((summary.totalIncome - effectiveExpenses) / summary.totalIncome) * 100
         : 0;
 
     // ── PAGE 1: EXECUTIVE SUMMARY ───────────────────────────────────────
@@ -1760,8 +1764,10 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         const prevMerged = [...data.prevMonthEntries, ...prevSubEntries];
         const prevSummary = calculateSummary(prevMerged, data.budget);
         const prevEffExp = prevSummary.totalExpenses;
-        const prevEffNet = prevSummary.totalIncome - prevEffExp;
-        const prevSR = prevSummary.totalIncome > 0 ? (prevEffNet / prevSummary.totalIncome) * 100 : 0;
+        // Same cash-net basis as this month (income − expenses − invested).
+        const prevEffNet = prevSummary.totalIncome - prevEffExp - prevSummary.totalInvestments;
+        // Rate keeps (income − expenses) / income basis.
+        const prevSR = prevSummary.totalIncome > 0 ? ((prevSummary.totalIncome - prevEffExp) / prevSummary.totalIncome) * 100 : 0;
 
         const fmtChg = (cur: number, prev: number): string => {
             if (prev === 0 && cur === 0) return '—';
@@ -2234,9 +2240,11 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
         const monthSubsBilled = getUnloggedSubsForRange(mEntries, annualSubs, startISO, endISO, today);
         aISub += monthSubsBilled;
         const augmentedExp = mSum.totalExpenses + monthSubsBilled;
-        const augmentedNet = mSum.totalIncome - augmentedExp;
+        // Cash net: investments also leave the wallet.
+        const augmentedNet = mSum.totalIncome - augmentedExp - mSum.totalInvestments;
         const hasIncome = mSum.totalIncome > 0;
-        const augmentedRate = hasIncome ? (augmentedNet / mSum.totalIncome) * 100 : null;
+        // Rate keeps (income − expenses) / income basis.
+        const augmentedRate = hasIncome ? ((mSum.totalIncome - augmentedExp) / mSum.totalIncome) * 100 : null;
         const hasAnyData = hasIncome || augmentedExp > 0 || mSum.totalInvestments > 0;
         monthRows.push({
             m,
@@ -2255,9 +2263,11 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
     // Compute the canonical annual figures from the per-month rows so
     // the headline matches the table totals exactly.
     const annualCanonExpenses = monthRows.reduce((s, r) => s + r.exp, 0);
-    const annualCanonNet = summary.totalIncome - annualCanonExpenses;
+    // Cash net: investments also leave the wallet.
+    const annualCanonNet = summary.totalIncome - annualCanonExpenses - summary.totalInvestments;
+    // Rate keeps (income − expenses) / income basis.
     const annualCanonRate: number | null = summary.totalIncome > 0
-        ? (annualCanonNet / summary.totalIncome) * 100
+        ? ((summary.totalIncome - annualCanonExpenses) / summary.totalIncome) * 100
         : null;
 
     // INVARIANT: sum(monthRows.exp) === annualCanonExpenses.
@@ -2339,7 +2349,7 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
         formatINR(aI),
         formatINR(aE),
         formatINR(aIn),
-        formatINR(aI - aE),
+        formatINR(aI - aE - aIn),
         totalRate === null ? '—' : `${totalRate.toFixed(1)}%`,
     ]);
     monthBody.push([
@@ -2347,7 +2357,7 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
         formatINR(aI / completedMonths),
         formatINR(aE / completedMonths),
         formatINR(aIn / completedMonths),
-        formatINR((aI - aE) / completedMonths),
+        formatINR((aI - aE - aIn) / completedMonths),
         '',
     ]);
 
@@ -2632,7 +2642,7 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
     ], yPos);
     yPos = drawStatBoxes(doc, [
         { label: 'Total Invested', value: formatINR(summary.totalInvestments), tone: 'investment' },
-        { label: 'Net Savings', value: formatINR(summary.netSavings), tone: summary.netSavings >= 0 ? 'income' : 'expense' },
+        { label: 'Net Savings', value: formatINR(summary.cashBalance), tone: summary.cashBalance >= 0 ? 'income' : 'expense' },
     ], yPos);
     yPos = drawStatBoxes(doc, [
         { label: 'Days', value: String(days), tone: 'neutral' },
@@ -2648,7 +2658,7 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
             ['Total Income', formatINR(summary.totalIncome), entriesLabel(summary.incomeCount)],
             ['Total Expenses', formatINR(summary.totalExpenses), entriesLabel(summary.expenseCount)],
             ['Investments', formatINR(summary.totalInvestments), entriesLabel(summary.investmentCount)],
-            ['Net Savings', formatINR(summary.netSavings), summary.netSavings >= 0 ? 'Positive' : 'Negative'],
+            ['Net Savings', formatINR(summary.cashBalance), summary.cashBalance >= 0 ? 'Positive' : 'Negative'],
             ['Savings Rate', `${summary.savingsRate.toFixed(1)}%`, 'Target: 20%'],
         ],
         startY: yPos,
@@ -2668,15 +2678,15 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
                 formatINR(d.income),
                 formatINR(d.expenses),
                 formatINR(d.investments),
-                formatINR(d.income - d.expenses),
+                formatINR(d.income - d.expenses - d.investments),
             ];
         });
-        dayBody.push(['TOTAL', formatINR(dI), formatINR(dE), formatINR(dIn), formatINR(dI - dE)]);
+        dayBody.push(['TOTAL', formatINR(dI), formatINR(dE), formatINR(dIn), formatINR(dI - dE - dIn)]);
         table(doc, autoTable, {
-            // "Net Saved" = Income - Expenses. Investments are still your
-            // money parked in a different bucket and intentionally excluded
-            // from this column so the row totals tie back to the headline
-            // "Net Savings" stat at the top of the report.
+            // "Net Saved" = Income - Expenses - Investments (cash actually
+            // left). The row totals tie back to the headline "Net Savings"
+            // stat (summary.cashBalance) at the top of the report; only the
+            // Savings Rate metric still treats investments as savings.
             head: [['Date', 'Income', 'Expenses', 'Investments', 'Net Saved']],
             body: dayBody,
             startY: yPos,

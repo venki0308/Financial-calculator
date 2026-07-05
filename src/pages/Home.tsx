@@ -172,8 +172,10 @@ export default function Home() {
             const budgetFixed = budget?.fixedExpenses.reduce((s, f) => s + f.amount, 0) ?? 0;
             const entries = getEntriesForMonth(now.getFullYear(), now.getMonth() + 1);
             const summary = calculateSummary(entries);
-            // Can go negative when the user has overspent — show the real number
-            return fallbackIncome - budgetFixed - summary.totalExpenses;
+            // Cash balance = income − fixed − expenses − investments (invested
+            // money left the wallet too). Can go negative when the user has
+            // overspent — show the real number.
+            return fallbackIncome - budgetFixed - summary.totalExpenses - summary.totalInvestments;
         }
         return 0;
     }, [monthlyIncome]);
