@@ -26,6 +26,7 @@ import {
   getBudgetTotalFixed, getBudgetTotalCategoryLimits,
   getBudgetTotalInvestments, getBudgetUnallocated,
   getCategorySpentVsBudget,
+  getUnloggedSubsForRange,
 } from '../../utils/expenseCalculations';
 // Subscriptions live in a separate Zustand store (useBudgetTrackerStore)
 // from the main expense entries (expenseStorage). Without bridging the
@@ -244,19 +245,30 @@ export default function BudgetTab() {
     [range.year, range.month],
   );
 
+  // Subscriptions actually billed within the displayed month (billing
+  // date reached, as of today) that are NOT already covered by a
+  // manually-logged 'subscription' entry — the canonical additive form
+  // used by the Weekly/Monthly/Yearly tabs, so "spent" never double-counts
+  // a logged debit nor under-reports when logged + unlogged coexist.
+  const subsBilledInMonth = useMemo(
+    () => getUnloggedSubsForRange(entries, subscriptions, range.start, range.end),
+    [entries, subscriptions, range.start, range.end],
+  );
+
   const categoryProgress = useMemo(() => {
     const base = getCategorySpentVsBudget(entries, budget);
-    if (subscriptionMonthlyTotal <= 0) return base;
+    if (subsBilledInMonth <= 0) return base;
     return base.map(cp => {
       if (cp.categoryId !== 'subscription') return cp;
-      const newSpent = cp.spent + subscriptionMonthlyTotal;
+      // Logged subscription spend + unlogged billings (canonical form).
+      const newSpent = cp.spent + subsBilledInMonth;
       return {
         ...cp,
         spent: newSpent,
         pct: cp.budgeted > 0 ? (newSpent / cp.budgeted) * 100 : 0,
       };
     });
-  }, [entries, budget, subscriptionMonthlyTotal]);
+  }, [entries, budget, subsBilledInMonth]);
   // Show the Subscriptions row whenever the user has either set a limit
   // OR added recurring subs — previously, a row with budgeted=0 would
   // disappear even if the user had ₹2k/mo in active subs.

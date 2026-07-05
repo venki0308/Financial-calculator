@@ -111,8 +111,11 @@ export default function EMICalculator() {
     const effectiveRate = useMemo(() => method === 'flat' ? calculateEffectiveRate(rate) : null, [method, rate]);
 
     const foreclosureResult = useMemo((): ForeclosureResult | null => {
-        if (!showForeclosure || method !== 'reducing' || !result.schedule.length) return null;
-        return calculateForeclosure(result.schedule, foreclosureMonths, foreclosureChargePercent);
+        if (!showForeclosure || method !== 'reducing' || result.schedule.length <= 1) return null;
+        // Clamp so the default (24) can't exceed short schedules (<25 months),
+        // where calculateForeclosure would return null and blank the simulator.
+        const effectiveFcMonths = Math.min(Math.max(1, foreclosureMonths), result.schedule.length - 1);
+        return calculateForeclosure(result.schedule, effectiveFcMonths, foreclosureChargePercent);
     }, [showForeclosure, foreclosureMonths, foreclosureChargePercent, result.schedule, method]);
 
     const prepayInsight = useMemo((): PrepaymentInsight | null => {
@@ -698,7 +701,9 @@ export default function EMICalculator() {
                                         </div>
 
                                         {foreclosureResult && (() => {
-                                            const emisPaidTotal = foreclosureMonths * result.emi;
+                                            // Use the (possibly clamped) monthsPaid from the result
+                                            // so the totals always match the figures shown below.
+                                            const emisPaidTotal = foreclosureResult.monthsPaid * result.emi;
                                             const totalCostForeclosure = emisPaidTotal + foreclosureResult.totalSettlement;
                                             const totalCostFullTerm = result.totalPayment;
                                             const totalSaving = totalCostFullTerm - totalCostForeclosure;
@@ -707,7 +712,7 @@ export default function EMICalculator() {
                                                 {/* EMIs Paid Summary */}
                                                 <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
                                                     <div className="flex justify-between items-center">
-                                                        <span className="text-muted-foreground text-[10px] font-bold">{t('emi.emisPaid')} ({foreclosureMonths} {t('emi.months')} × {formatINR(result.emi)})</span>
+                                                        <span className="text-muted-foreground text-[10px] font-bold">{t('emi.emisPaid')} ({foreclosureResult.monthsPaid} {t('emi.months')} × {formatINR(result.emi)})</span>
                                                         <span className="text-blue-600 dark:text-blue-400 font-bold text-xs">{formatINR(emisPaidTotal)}</span>
                                                     </div>
                                                 </div>

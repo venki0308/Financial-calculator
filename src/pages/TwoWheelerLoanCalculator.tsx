@@ -111,7 +111,11 @@ export default function TwoWheelerLoanCalculator() {
     // July 31, 2026). Premium EVs above the cap get NO central subsidy.
     // Without this guard the calculator was silently granting subsidy on
     // bikes that don't actually qualify, overstating the savings.
-    const isEvSubsidyEligible = isEV && exShowroom > 0 && exShowroom <= EV_SUBSIDY.priceCapExFactory;
+    // Also gate on the scheme's expiry date: once past validUntilDate the
+    // subsidy is zeroed so the EMI/on-road price agree with the "expired"
+    // banner shown below (which previously kept deducting the subsidy).
+    const isEvSubsidyEligible = isEV && exShowroom > 0 && exShowroom <= EV_SUBSIDY.priceCapExFactory
+        && todayStr() <= EV_SUBSIDY.validUntilDate;
     const centralSubsidy = isEvSubsidyEligible
         ? Math.min(batteryKwh * EV_SUBSIDY.ratePerKwh, EV_SUBSIDY.maxPerVehicle)
         : 0;

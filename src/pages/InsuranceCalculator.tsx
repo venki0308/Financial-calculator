@@ -575,7 +575,10 @@ export default function InsuranceCalculator() {
 
   // Active cover: use custom if set, else recommended (income × 20)
   const activeCover = customCover > 0 ? customCover : coverRec.recommended;
-  const activeCoverCr = Math.max(activeCover / 10000000, 0.5);
+  // Scale premiums by the ACTUAL cover shown in the UI. The old 0.5 Cr floor
+  // silently priced a ₹50L policy for anyone with a smaller cover (e.g. a
+  // ₹40L recommendation was quoted at ₹50L rates). Guard only against <= 0.
+  const activeCoverCr = Math.max(activeCover / 10000000, 0.05);
 
   const termRange = useMemo(
     () => calcTermRange(lifeAge, lifeGender, lifeSmoker, activeCoverCr, policyTerm),
@@ -688,7 +691,7 @@ export default function InsuranceCalculator() {
     return { lo: Math.round(rawLo * ff / 100) * 100, hi: Math.round(rawHi * ff / 100) * 100 };
   }, [whatIfSi, allAges, city, preExisting]);
   const whatIfLifePremium = useMemo(
-    () => calcTermRange(lifeAge, lifeGender, lifeSmoker, Math.max(activeCoverCr, 0.5), whatIfTerm),
+    () => calcTermRange(lifeAge, lifeGender, lifeSmoker, activeCoverCr, whatIfTerm),
     [lifeAge, lifeGender, lifeSmoker, activeCoverCr, whatIfTerm],
   );
 

@@ -5,6 +5,7 @@
 
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
+import type { LocalNotificationSchema } from '@capacitor/local-notifications';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -20,7 +21,19 @@ import { parseLocalDate } from '../utils/dateUtils';
 const LAST_RUN_KEY = 'fincalix_scheduler_last_run';
 const MIN_INTERVAL_MS = 23 * 60 * 60 * 1000; // 23 hours
 
-function addNotif(n: { type: string, title: string, body: string, icon: string, route?: string }) {
+// ── Native (background) reminder scheduling ────────────────────────────
+// Android 8+ requires a channel; importance 4 (HIGH) gives heads-up banners.
+const REMINDER_CHANNEL_ID = 'fincalix_reminders';
+// Ask for POST_NOTIFICATIONS at most once from the default flow (Android 13+).
+const PERM_REQUESTED_KEY = 'fincalix_notif_perm_requested';
+// Route handoff from a tapped native notification → App.tsx router.
+const PENDING_NAV_KEY = 'fincalix_pending_nav';
+export const NOTIFICATION_NAV_EVENT = 'fincalix:notification-nav';
+// Id ranges: 1000–1099 = daily quotes (see checkDailyQuote). Scheduled
+// reminders live at >= REMINDER_ID_BASE so reconciliation never touches quotes.
+const REMINDER_ID_BASE = 10000;
+
+function addNotif(n: { type: string, title: string, body: string, icon: string, route?: string, itemId?: string }) {
     useNotificationStore.getState().addNotification({
         type: n.type,
         category: n.type.includes('alert') ? 'alert' : n.type.includes('insight') ? 'insight' : 'reminder',
@@ -30,7 +43,9 @@ function addNotif(n: { type: string, title: string, body: string, icon: string, 
         isActionable: !!n.route,
         actionRoute: n.route,
         actionLabel: n.route ? 'Open' : undefined,
-        metadata: {}
+        // calcId makes the store's same-day dedup per-item, so two cards/
+        // subs/loans due on the same day don't overwrite each other.
+        metadata: n.itemId ? { calcId: n.itemId } : {}
     });
 }
 
@@ -305,6 +320,7 @@ function checkCreditCardBills() {
                     body: `Outstanding: ${bal}. Pay immediately to avoid late fees and CIBIL impact.`,
                     icon: '🔴',
                     route: '/expenses',
+                    itemId: card.id,
                 });
             } else if (daysUntil <= 3) {
                 addNotif({
@@ -313,6 +329,7 @@ function checkCreditCardBills() {
                     body: `Outstanding: ${bal}. Pay full statement to avoid interest charges.`,
                     icon: '⚠️',
                     route: '/expenses',
+                    itemId: card.id,
                 });
             } else if (daysUntil <= 7) {
                 addNotif({
@@ -321,6 +338,7 @@ function checkCreditCardBills() {
                     body: `Outstanding: ${bal}. Plan your payment to maintain interest-free period.`,
                     icon: '💳',
                     route: '/expenses',
+                    itemId: card.id,
                 });
             }
         }
@@ -344,6 +362,7 @@ function checkSubscriptionRenewals() {
                     body: `${amt} (${sub.billingCycle}). Review or cancel before renewal.`,
                     icon: '🔁',
                     route: '/expenses',
+                    itemId: sub.id,
                 });
             }
         }
@@ -368,6 +387,7 @@ function checkLoanPayments() {
                     body: `EMI: ${emi}. Ensure sufficient balance in your repayment account.`,
                     icon: '🏦',
                     route: '/my-loans',
+                    itemId: loan.id,
                 });
             } else if (diff === -1) {
                 const emi = loan.emiAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
@@ -378,6 +398,7 @@ function checkLoanPayments() {
                     body: `EMI: ${emi}. Pay immediately to avoid late charges and CIBIL impact.`,
                     icon: '🔴',
                     route: '/my-loans',
+                    itemId: loan.id,
                 });
             }
         }
@@ -449,24 +470,228 @@ function seedInitialNotifications() {
     localStorage.setItem(SEED_KEY, 'done');
 }
 
+// ─── Native scheduled reminders (delivered while the app is closed) ─────────
+
+/** Stable numeric id from (kind, itemId, date) so re-scheduling replaces, never duplicates. */
+function stableNotifId(kind: string, itemId: string, dateStr: string): number {
+    const s = `${kind}|${itemId}|${dateStr}`;
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; // djb2
+    return REMINDER_ID_BASE + (Math.abs(h) % 2000000000);
+}
+
+/** Next occurrence of a day-of-month due day, clamped to short months (mirrors getDaysUntilDue). */
+function nextDueOccurrence(dueDay: number, today: Date): Date {
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const thisMonthLastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const thisMonth = new Date(today.getFullYear(), today.getMonth(), Math.min(dueDay, thisMonthLastDay));
+    if (thisMonth.getTime() >= startOfToday.getTime()) return thisMonth;
+    const nextMonthLastDay = new Date(today.getFullYear(), today.getMonth() + 2, 0).getDate();
+    return new Date(today.getFullYear(), today.getMonth() + 1, Math.min(dueDay, nextMonthLastDay));
+}
+
+function at9AM(d: Date): Date {
+    const t = new Date(d);
+    t.setHours(9, 0, 0, 0);
+    return t;
+}
+
+function addDays(d: Date, days: number): Date {
+    const t = new Date(d);
+    t.setDate(t.getDate() + days);
+    return t;
+}
+
+let tapListenerRegistered = false;
+
+/**
+ * Route the user when they tap a native notification. Uses `retained`
+ * delivery from the plugin, so cold-start taps fire once this listener
+ * attaches. The route is handed to App.tsx via localStorage + a window
+ * event (see PENDING_NAV_KEY consumer in App.tsx).
+ */
+function registerTapListener() {
+    if (tapListenerRegistered) return;
+    tapListenerRegistered = true;
+    LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
+        const route = event.notification?.extra?.route;
+        if (typeof route === 'string' && route.startsWith('/')) {
+            localStorage.setItem(PENDING_NAV_KEY, route);
+            window.dispatchEvent(new Event(NOTIFICATION_NAV_EVENT));
+        }
+    }).catch(() => { tapListenerRegistered = false; });
+}
+
+/**
+ * Native-only init: create the HIGH-importance channel (idempotent) and make
+ * sure POST_NOTIFICATIONS is granted. If the OS reports 'prompt', request it
+ * once and remember that we asked; if denied, return false and skip silently.
+ */
+async function ensureNativeNotificationsReady(): Promise<boolean> {
+    if (!Capacitor.isNativePlatform()) return false;
+    registerTapListener();
+    try {
+        await LocalNotifications.createChannel({
+            id: REMINDER_CHANNEL_ID,
+            name: 'Payment & Scheme Reminders',
+            description: 'EMI, credit card, and subscription due-date reminders',
+            importance: 4, // HIGH — heads-up banner + sound
+            visibility: 1, // PUBLIC
+        });
+    } catch { /* iOS / channel API unavailable — safe to ignore */ }
+    try {
+        let perm = await LocalNotifications.checkPermissions();
+        if (perm.display === 'prompt' || perm.display === 'prompt-with-rationale') {
+            if (!localStorage.getItem(PERM_REQUESTED_KEY)) {
+                localStorage.setItem(PERM_REQUESTED_KEY, '1');
+                perm = await LocalNotifications.requestPermissions();
+            }
+        }
+        return perm.display === 'granted';
+    } catch {
+        return false;
+    }
+}
+
+/** Build the next-7-days reminder batch from cards, subscriptions, and loans. */
+function buildUpcomingReminders(): LocalNotificationSchema[] {
+    const out: LocalNotificationSchema[] = [];
+    if (!useSettingsStore.getState().notifications.calcReminders) return out;
+
+    const now = new Date();
+    const windowEnd = addDays(now, 7).getTime();
+    const push = (kind: string, itemId: string, when: Date, title: string, body: string, route: string) => {
+        if (when.getTime() <= now.getTime() || when.getTime() > windowEnd) return;
+        out.push({
+            id: stableNotifId(kind, itemId, `${when.getFullYear()}-${when.getMonth() + 1}-${when.getDate()}`),
+            title,
+            body,
+            schedule: { at: when, allowWhileIdle: true },
+            channelId: REMINDER_CHANNEL_ID,
+            extra: { route },
+        });
+    };
+
+    // Credit cards: 3 days before + on due date (same copy as in-app checks)
+    try {
+        for (const card of getAllCreditCards()) {
+            if (card.currentBalance <= 0) continue;
+            const name = card.cardName || card.bankName || 'Credit Card';
+            const bal = card.currentBalance.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+            const due = nextDueOccurrence(card.dueDate, now);
+            push('cc_pre', card.id, at9AM(addDays(due, -3)),
+                `💳 ${name} — Due in 3 days`,
+                `Outstanding: ${bal}. Plan your payment to maintain interest-free period.`, '/expenses');
+            push('cc_due', card.id, at9AM(due),
+                `⚠️ ${name} — Payment due today`,
+                `Outstanding: ${bal}. Pay full statement to avoid interest charges.`, '/expenses');
+        }
+    } catch { /* storage unavailable */ }
+
+    // Subscriptions: 1 day before renewal
+    try {
+        for (const sub of useBudgetTrackerStore.getState().subscriptions) {
+            if (!sub.isActive || !sub.nextDueDate) continue;
+            const due = parseLocalDate(sub.nextDueDate);
+            const amt = sub.amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+            push('sub_pre', sub.id, at9AM(addDays(due, -1)),
+                `🔁 ${sub.name} — Renews tomorrow`,
+                `${amt} (${sub.billingCycle}). Review or cancel before renewal.`, '/expenses');
+        }
+    } catch { /* store unavailable */ }
+
+    // Loans: 2 days before + on EMI due day
+    try {
+        for (const loan of getAllLoans().filter(l => l.isActive)) {
+            const due = nextDueOccurrence(loan.emiDueDay || 1, now);
+            const emi = loan.emiAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+            const name = loan.nickName || loan.loanType || 'Loan';
+            push('loan_pre', loan.id, at9AM(addDays(due, -2)),
+                `🏦 ${name} — EMI in 2 days`,
+                `EMI: ${emi}. Ensure sufficient balance in your repayment account.`, '/my-loans');
+            push('loan_due', loan.id, at9AM(due),
+                `🏦 ${name} — EMI due today`,
+                `EMI: ${emi}. Ensure sufficient balance in your repayment account.`, '/my-loans');
+        }
+    } catch { /* storage unavailable */ }
+
+    return out;
+}
+
+/**
+ * Reconcile + schedule the 7-day native reminder window. Cancels only our
+ * reminder ids (>= REMINDER_ID_BASE) so the daily-quote series (1000–1099)
+ * is untouched, then schedules the fresh batch. Idempotent per launch.
+ */
+async function scheduleUpcomingNativeReminders(): Promise<void> {
+    try {
+        const pending = await LocalNotifications.getPending();
+        const stale = pending.notifications
+            .filter(n => n.id >= REMINDER_ID_BASE)
+            .map(n => ({ id: n.id }));
+        if (stale.length > 0) {
+            await LocalNotifications.cancel({ notifications: stale });
+        }
+        const notifications = buildUpcomingReminders();
+        if (notifications.length > 0) {
+            await LocalNotifications.schedule({ notifications });
+        }
+    } catch (e) {
+        console.error('Failed to schedule native reminders', e);
+    }
+}
+
 export const NotificationScheduler = {
     initialize() {
         // Always seed for first-time users
         seedInitialNotifications();
 
-        if (!shouldRun()) return;
-        localStorage.setItem(LAST_RUN_KEY, Date.now().toString());
-        
-        // Run all checks
-        checkEMIReminders();
-        checkSIPReminders();
-        checkTaxAlerts();
-        checkCreditCardBills();
-        checkSubscriptionRenewals();
-        checkLoanPayments();
-        checkSavingsInsight();
-        checkDailyQuote();
-        checkAppUpdate(); // async, fire-and-forget
+        void (async () => {
+            // Kick off channel + POST_NOTIFICATIONS settlement WITHOUT awaiting:
+            // the in-app (bell) checks below need no OS permission and must not
+            // be blocked (or killed) by native permission plumbing.
+            const readyPromise = ensureNativeNotificationsReady();
+
+            const gated = shouldRun(); // capture once — LAST_RUN_KEY is set next
+            if (gated) {
+                localStorage.setItem(LAST_RUN_KEY, Date.now().toString());
+
+                // Run all in-app (bell) checks — each isolated so one failure
+                // can't skip the rest (or the native scheduling further down).
+                const bellChecks: Array<[string, () => void]> = [
+                    ['EMI', checkEMIReminders],
+                    ['SIP', checkSIPReminders],
+                    ['tax', checkTaxAlerts],
+                    ['creditCard', checkCreditCardBills],
+                    ['subscription', checkSubscriptionRenewals],
+                    ['loan', checkLoanPayments],
+                    ['savings', checkSavingsInsight],
+                    ['appUpdate', checkAppUpdate], // async, fire-and-forget
+                ];
+                for (const [name, fn] of bellChecks) {
+                    try { fn(); } catch (e) { console.error(`Bell check failed: ${name}`, e); }
+                }
+            }
+
+            // Channel + POST_NOTIFICATIONS must be settled before any native
+            // scheduling (incl. checkDailyQuote, which relies on permission).
+            const granted = await readyPromise.catch(() => false);
+
+            // ensureNativeNotificationsReady() is always false on web, but the
+            // web branch of checkDailyQuote only adds an in-app bell entry
+            // (no OS permission needed) — so web stays eligible.
+            if (gated && (granted || !Capacitor.isNativePlatform())) {
+                // Still 23h-gated; isolated so a quote failure can't
+                // block the native reminder refresh below.
+                try { await checkDailyQuote(); } catch (e) { console.error('Daily quote check failed', e); }
+            }
+            if (granted) {
+                // Refresh the 7-day native reminder window on EVERY launch (not
+                // 23h-gated) so newly added cards/subs/loans and permission grants
+                // take effect immediately. Safe: stable ids + cancel-before-schedule.
+                try { await scheduleUpcomingNativeReminders(); } catch (e) { console.error('Native reminder refresh failed', e); }
+            }
+        })();
     },
 };
 

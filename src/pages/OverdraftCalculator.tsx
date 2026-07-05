@@ -203,8 +203,11 @@ export default function OverdraftCalculator() {
 
   // Stats
   const availableLimit = Math.max(0, activeLimit - utilizedNum);
+  // First-year effective cost: annualize only the interest; recurring AMC counts
+  // once per year and one-time upfront fees (processing/flexi/insurance/stamp)
+  // count once — they must not be multiplied by 365/days.
   const effectiveCost = utilizedNum > 0 && daysNum > 0
-    ? ((totalInterest + totalFees) / utilizedNum) * (365 / daysNum) * 100
+    ? ((totalInterest * (365 / daysNum)) + amcAmount + upfrontCosts) / utilizedNum * 100
     : 0;
 
   // Flexi: remaining months and future interest

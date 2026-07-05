@@ -37,21 +37,28 @@ const PPF_WITHDRAWAL_YEAR = 7;
 
 interface PPFRow { year: number; contribution: number; opening: number; interest: number; closing: number; }
 
-function computePPF(annualContribution: number, rate: number, years: number): PPFRow[] {
+function computePPF(perPeriodContribution: number, depositsPerYear: number, rate: number, years: number): PPFRow[] {
     // PPF: monthly interest on minimum balance between 5th and month-end,
-    // compounded annually (credited March 31). Assumes deposit at start of April.
+    // compounded annually (credited March 31). Deposits land at the start of
+    // their due month — monthly: every month; quarterly: months 1,4,7,10;
+    // half-yearly: 1,7; yearly: month 1 (April).
     const monthlyRate = rate / 100 / 12;
+    const gapMonths = 12 / depositsPerYear;
     const rows: PPFRow[] = [];
     let balance = 0;
     for (let y = 1; y <= years; y++) {
         const opening = balance;
-        balance += annualContribution;
+        let yearContribution = 0;
         let yearInterest = 0;
         for (let m = 0; m < 12; m++) {
+            if (m % gapMonths === 0) {
+                balance += perPeriodContribution;
+                yearContribution += perPeriodContribution;
+            }
             yearInterest += balance * monthlyRate;
         }
         balance += yearInterest;
-        rows.push({ year: y, contribution: annualContribution, opening, interest: Math.round(yearInterest), closing: Math.round(balance) });
+        rows.push({ year: y, contribution: yearContribution, opening, interest: Math.round(yearInterest), closing: Math.round(balance) });
     }
     return rows;
 }
@@ -86,7 +93,8 @@ export default function AdvancedPPFCalculator() {
 
     const maxPerPeriod = Math.floor(PPF_MAX_INVEST / freqFactor);
 
-    const schedule = useMemo(() => computePPF(annualContribution, rate, years), [annualContribution, rate, years]);
+    // Per-period deposit derived from the capped annual total (₹1.5L cap stays annual)
+    const schedule = useMemo(() => computePPF(annualContribution / freqFactor, freqFactor, rate, years), [annualContribution, freqFactor, rate, years]);
 
     const totalInvested = annualContribution * years;
     const maturityValue = schedule.length > 0 ? schedule[schedule.length - 1].closing : 0;

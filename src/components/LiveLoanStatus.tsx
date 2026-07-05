@@ -7,10 +7,14 @@ import { formatINR } from '../utils/calculations';
 import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import { saveLoan as saveLoanToStorage, deleteLoan as deleteLoanFromStorage, getAllLoans, generateLoanId, type SavedLoan, type LoanType } from '../utils/loanStorage';
+import { parseLocalDate } from '../utils/dateUtils';
 
 function fmtDate(dateStr: string, locale: string = 'en-IN'): string {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+    // Parse YYYY-MM-DD as a LOCAL date — new Date('YYYY-MM-DD') is parsed as
+    // UTC midnight and can display the previous day in negative-UTC timezones.
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? parseLocalDate(dateStr) : new Date(dateStr);
+    return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 const LOAN_CALC_TYPES = new Set([
@@ -210,12 +214,12 @@ export default function LiveLoanStatus({ profile, loanCategory = 'home_loan', tr
                     <div className="p-3 rounded-xl text-center" style={{ backgroundColor: '#3B82F615', border: '1px solid #3B82F630' }}>
                         <p className="text-[9px] uppercase font-bold text-blue-500 mb-1">{t('liveStatus.principalLabel')}</p>
                         <p className="text-sm font-black text-blue-500">{formatINR(status.principalPaidSoFar)}</p>
-                        <p className="text-[9px] mt-0.5" style={{ color: c.textSecondary }}>{t('liveStatus.percentOfEmis', { percent: (status.principalPaidSoFar / status.totalPaidSoFar * 100).toFixed(0) })}</p>
+                        <p className="text-[9px] mt-0.5" style={{ color: c.textSecondary }}>{t('liveStatus.percentOfEmis', { percent: (status.totalPaidSoFar > 0 ? (status.principalPaidSoFar / status.totalPaidSoFar * 100) : 0).toFixed(0) })}</p>
                     </div>
                     <div className="p-3 rounded-xl text-center" style={{ backgroundColor: '#F59E0B15', border: '1px solid #F59E0B30' }}>
                         <p className="text-[9px] uppercase font-bold text-amber-500 mb-1">{t('liveStatus.interestLabel')}</p>
                         <p className="text-sm font-black text-amber-500">{formatINR(status.interestPaidSoFar)}</p>
-                        <p className="text-[9px] mt-0.5" style={{ color: c.textSecondary }}>{t('liveStatus.percentOfEmis', { percent: (status.interestPaidSoFar / status.totalPaidSoFar * 100).toFixed(0) })}</p>
+                        <p className="text-[9px] mt-0.5" style={{ color: c.textSecondary }}>{t('liveStatus.percentOfEmis', { percent: (status.totalPaidSoFar > 0 ? (status.interestPaidSoFar / status.totalPaidSoFar * 100) : 0).toFixed(0) })}</p>
                     </div>
                 </div>
             </div>

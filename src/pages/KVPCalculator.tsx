@@ -71,9 +71,11 @@ export default function KVPCalculator() {
         // Premature encashment values (after lock-in) every 6 months
         // KVP compounds annually; convert months to fractional years for value
         const premature: { months: number; value: number; penalty: string }[] = [];
+        // Below 30 months is the statutory lock-in: encashment is not possible at all
+        // (except death/court order) — no penalty haircut applies once past it.
         for (let m = PREMATURE_LOCK; m < doublingMonths; m += 6) {
             const fv = investment * Math.pow(1 + rate / 100, m / 12);
-            premature.push({ months: m, value: fv, penalty: m < 36 ? 'penalty' : 'none' });
+            premature.push({ months: m, value: fv, penalty: m < PREMATURE_LOCK ? 'locked' : 'none' });
         }
 
         // Effective annual return (CAGR)
@@ -81,14 +83,16 @@ export default function KVPCalculator() {
         const totalInterest = maturity - investment;
 
         // Tax Impact (Taxed under IFOS)
+        // KVP interest is taxed annually on accrual, not as a lump sum at maturity
+        const avgAnnualInterest = totalInterest / doublingYearsTotal;
         const taxImpact = calculateAssetTax({
             annualIncome,
             regime: taxRegime,
-            assetInterest: totalInterest,
+            assetInterest: avgAnnualInterest,
             deduction80c: 0 // No 80C for KVP
         });
 
-        const taxLiable = Math.max(0, taxImpact.taxPayableOnAsset);
+        const taxLiable = Math.max(0, taxImpact.taxPayableOnAsset) * doublingYearsTotal;
         const postTaxMaturity = maturity - taxLiable;
         const postTaxCAGR = (Math.pow(postTaxMaturity / investment, 1 / doublingYearsTotal) - 1) * 100;
 
@@ -486,7 +490,7 @@ export default function KVPCalculator() {
                                                         <div key={row.months} className={`grid grid-cols-3 px-3 py-2 ${i % 2 === 0 ? 'bg-background' : 'bg-card'}`}>
                                                             <p className="text-foreground text-[10px]">{Math.floor(row.months / 12)}y {row.months % 12 ? (row.months % 12) + 'm' : ''}</p>
                                                             <p className="text-foreground text-[10px] font-semibold">{fmtINR(row.value)}</p>
-                                                            <p className={`text-[10px] ${row.penalty === 'none' ? 'text-brand-green' : 'text-amber-500'}`}>{row.penalty === 'none' ? t('kvp.noPenalty') : t('kvp.penaltyApprox')}</p>
+                                                            <p className={`text-[10px] ${row.penalty === 'none' ? 'text-brand-green' : 'text-amber-500'}`}>{row.penalty === 'none' ? t('kvp.noPenalty') : row.penalty === 'locked' ? t('kvp.locked', 'Locked (min 2.5 yrs)') : t('kvp.penaltyApprox')}</p>
                                                         </div>
                                                     ))}
                                                 </div>

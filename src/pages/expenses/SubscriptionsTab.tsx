@@ -9,7 +9,7 @@ import { useBudgetTrackerStore, Subscription, EXPENSE_CATEGORIES } from '../../s
 import { getCategoryDisplayName } from '../../utils/categoryUtils';
 import BottomSheet from '../../components/BottomSheet';
 import DateInput from '../../components/DateInput';
-import { todayStr } from '../../utils/dateUtils';
+import { todayStr, parseLocalDate } from '../../utils/dateUtils';
 // Bridge to expenseStorage: the actual monthly income lives in the Budget
 // object saved per month by BudgetTab. useBudgetTrackerStore.monthlyIncome
 // is a legacy field that most users never populate, so the subscription
@@ -68,7 +68,9 @@ function toMonthlyEquivalent(amount: number, cycle: BillingCycle): number {
 function getDaysUntil(dateStr: string): number {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-    const due = new Date(dateStr);
+    // parseLocalDate for YYYY-MM-DD so timezone-negative users don't see
+    // the due date shifted back a day (new Date('YYYY-MM-DD') is UTC).
+    const due = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? parseLocalDate(dateStr) : new Date(dateStr);
     due.setHours(0, 0, 0, 0);
     return Math.ceil((due.getTime() - now.getTime()) / (1000 * 3600 * 24));
 }

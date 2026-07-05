@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post Office TD Calculator 2026 — FD Rates 6.9% to 7.5%</title>
+  <meta name="description" content="Post Office Time Deposit calculator — 6.9% to 7.5% rates (Q2 FY 2026-27), quarterly compounding. ₹1 lakh for 5 years grows to ₹1,44,995. 80C on 5-year TD." />
+  <link rel="canonical" href="https://fincalix.com/post-office-td" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/post-office-td" />
+  <meta property="og:title" content="Post Office TD Calculator 2026 — FD Rates 6.9% to 7.5%" />
+  <meta property="og:description" content="Post Office Time Deposit at 6.9%–7.5% (Q2 FY 2026-27) with quarterly compounding. ₹1 lakh @ 7.5% for 5 years = ₹1,44,995. Free in the FinCalix app, offline." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Post Office TD Calculator", "item": "https://fincalix.com/post-office-td" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What are Post Office Time Deposit rates in 2026?",
+            "acceptedAnswer": { "@type": "Answer", "text": "For Q2 FY 2026-27 (July–September 2026): 1 year 6.9%, 2 years 7.0%, 3 years 7.1% and 5 years 7.5% — unchanged for the 9th consecutive quarter. Interest compounds quarterly and is paid annually." }
+          },
+          {
+            "@type": "Question",
+            "name": "How is Post Office TD maturity calculated?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Maturity = P × (1 + r/400)^(4t), where r is the annual rate and t the tenure in years, because interest compounds quarterly. ₹1,00,000 in a 5-year TD at 7.5% grows to ₹1,44,995." }
+          },
+          {
+            "@type": "Question",
+            "name": "Does the 5-year Post Office TD qualify for 80C?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Only the 5-year Time Deposit qualifies for Section 80C (old regime) up to ₹1.5 lakh, like a bank tax-saver FD. The 1, 2 and 3-year TDs have no tax benefit. Interest on all tenures is taxable." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is a Post Office TD safer than a bank FD?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Post Office TDs carry a full sovereign guarantee from the Government of India with no upper cap, whereas bank deposits are insured by DICGC only up to ₹5 lakh per bank per depositor." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input, .calc select { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>Post Office Time Deposit Calculator — 6.9% to 7.5% (2026)</h1>
+    <p class="sub">Post Office TDs (the post-office fixed deposit) pay 6.9%–7.5% depending on tenure — rates unchanged for Q2 FY 2026-27 (July 2026). Interest compounds quarterly; the 5-year TD is 80C-eligible.</p>
+
+    <div class="card calc">
+      <label for="amt">Deposit amount (₹, minimum ₹1,000)</label>
+      <input id="amt" type="number" inputmode="numeric" value="100000" min="1000" />
+      <label for="tenure">Tenure (rate applied automatically)</label>
+      <select id="tenure">
+        <option value="1">1 year — 6.9%</option>
+        <option value="2">2 years — 7.0%</option>
+        <option value="3">3 years — 7.1%</option>
+        <option value="5" selected>5 years — 7.5% (80C eligible)</option>
+      </select>
+      <button onclick="calc()">Calculate TD Maturity</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How Post Office TD maturity is calculated</h2>
+    <p>Interest compounds quarterly at the tenure's rate.</p>
+    <div class="formula">Maturity = P × (1 + r ÷ 400)^(4 × t)<br/>₹1,00,000 at 7.5% for 5 years = 1,00,000 × (1.01875)²⁰ = ₹1,44,995</div>
+
+    <h2>Maturity of ₹1,00,000 by tenure (Q2 FY 2026-27 rates)</h2>
+    <table>
+      <tr><th>Tenure</th><th>Rate</th><th>Maturity value</th><th>Interest earned</th></tr>
+      <tr><td>1 year</td><td>6.9%</td><td>₹1,07,081</td><td>₹7,081</td></tr>
+      <tr><td>2 years</td><td>7.0%</td><td>₹1,14,888</td><td>₹14,888</td></tr>
+      <tr><td>3 years</td><td>7.1%</td><td>₹1,23,508</td><td>₹23,508</td></tr>
+      <tr><td>5 years</td><td>7.5%</td><td>₹1,44,995</td><td>₹44,995</td></tr>
+    </table>
+    <p>A larger example: ₹5,00,000 in the 5-year TD at 7.5% grows to ₹7,24,974.</p>
+
+    <h2>Post Office TD rules at a glance (July 2026)</h2>
+    <table>
+      <tr><th>Feature</th><th>Detail</th></tr>
+      <tr><td>Rates</td><td>1 yr 6.9% · 2 yr 7.0% · 3 yr 7.1% · 5 yr 7.5% (unchanged 9 quarters)</td></tr>
+      <tr><td>Compounding</td><td>Quarterly; interest payable annually</td></tr>
+      <tr><td>Investment</td><td>Minimum ₹1,000; no upper limit</td></tr>
+      <tr><td>Tax</td><td>Only the 5-year TD qualifies for 80C (old regime); interest taxable</td></tr>
+      <tr><td>Guarantee</td><td>Sovereign — Government of India small-savings scheme</td></tr>
+    </table>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>What are Post Office Time Deposit rates in 2026?</h3>
+      <p>For Q2 FY 2026-27 (July–September 2026): 1 year 6.9%, 2 years 7.0%, 3 years 7.1% and 5 years 7.5% — unchanged for the 9th consecutive quarter. Interest compounds quarterly and is paid annually.</p>
+      <h3>How is Post Office TD maturity calculated?</h3>
+      <p>Maturity = P × (1 + r/400)^(4t), where r is the annual rate and t the tenure in years, because interest compounds quarterly. ₹1,00,000 in a 5-year TD at 7.5% grows to ₹1,44,995.</p>
+      <h3>Does the 5-year Post Office TD qualify for 80C?</h3>
+      <p>Yes. Only the 5-year Time Deposit qualifies for Section 80C (old regime) up to ₹1.5 lakh, like a bank tax-saver FD. The 1, 2 and 3-year TDs have no tax benefit. Interest on all tenures is taxable.</p>
+      <h3>Is a Post Office TD safer than a bank FD?</h3>
+      <p>Post Office TDs carry a full sovereign guarantee from the Government of India with no upper cap, whereas bank deposits are insured by DICGC only up to ₹5 lakh per bank per depositor.</p>
+    </div>
+
+    <div class="install">
+      <h2>Compare TD, FD, NSC &amp; RD — free</h2>
+      <p>All deposit calculators with maturity schedules, tax notes &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+      <a href="/nsc">NSC Calculator</a>
+      <a href="/post-office-mis">Post Office MIS</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Post Office TD rates shown are as of July 2026 (Q2 FY 2026-27); the rate on your opening date stays fixed for the term. Verify with your post office. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var P = Math.max(0, parseFloat(document.getElementById('amt').value) || 0);
+      var t = parseInt(document.getElementById('tenure').value, 10);
+      var rates = { 1: 6.9, 2: 7.0, 3: 7.1, 5: 7.5 };
+      var r = rates[t];
+      var out = document.getElementById('out');
+      if (P <= 0 || !r) { out.style.display = 'none'; return; }
+      var maturity = P * Math.pow(1 + r / 400, 4 * t);
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      var c80 = t === 5 ? ' · 80C eligible (old regime)' : '';
+      out.innerHTML = '<strong>' + fmt(maturity) + ' at maturity</strong><small>Invested ' + fmt(P) + ' · Interest ' + fmt(maturity - P) + ' over ' + t + ' year(s) at ' + r + '% compounded quarterly' + c80 + '</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

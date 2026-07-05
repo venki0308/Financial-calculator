@@ -16,7 +16,8 @@ export interface TaxCalculationResult {
   taxSaved80C: number;
 }
 
-// FY 2025-26 (AY 2026-27) New Regime slabs — Budget 2025
+// New Regime slabs — set by Budget 2025 for FY 2025-26; unchanged by Budget 2026,
+// so also valid for FY 2026-27 (AY 2027-28 / Tax Year 2026-27 under the IT Act 2025).
 const NEW_REGIME_SLABS = [
   { limit: 400000, rate: 0 },
   { limit: 800000, rate: 0.05 },
@@ -35,46 +36,71 @@ const OLD_REGIME_SLABS = [
   { limit: Infinity, rate: 0.30 }
 ];
 
-function calculateTaxForIncome(income: number, regime: TaxRegime, deductions: number = 0): number {
-  let taxable = income;
-  let slabs = NEW_REGIME_SLABS;
-  let standardDeduction = 0;
-  let rebateLimit = 0;
-
-  if (regime === 'new') {
-    standardDeduction = 75000;
-    taxable = Math.max(0, taxable - standardDeduction);
-    slabs = NEW_REGIME_SLABS;
-    rebateLimit = 1200000; // 87A: full rebate if taxable income ≤ ₹12L (FY 2025-26)
-  } else {
-    standardDeduction = 50000;
-    taxable = Math.max(0, taxable - standardDeduction - deductions);
-    slabs = OLD_REGIME_SLABS;
-    rebateLimit = 500000;
-  }
-
+function slabTax(taxable: number, slabs: typeof NEW_REGIME_SLABS): number {
   let tax = 0;
   let prevLimit = 0;
-
   for (const slab of slabs) {
     if (taxable > prevLimit) {
-      const taxableInThisSlab = Math.min(taxable, slab.limit) - prevLimit;
-      tax += taxableInThisSlab * slab.rate;
+      tax += (Math.min(taxable, slab.limit) - prevLimit) * slab.rate;
       prevLimit = slab.limit;
     } else {
       break;
     }
   }
+  return tax;
+}
 
-  // Rebate u/s 87A with marginal relief. Without marginal relief, a user
-  // at ₹12.1L taxable would jump from ₹0 tax to ₹61,500 — a cliff of ₹61K
-  // on just ₹10K of income. Marginal relief caps the tax at the excess.
-  if (taxable <= rebateLimit) {
-    tax = 0;
+// Surcharge with marginal relief: tax + surcharge cannot exceed
+// (tax at the threshold, with the lower tier's surcharge) + (income above the threshold).
+// New regime surcharge is capped at 25%; old regime has the 37% tier above ₹5Cr.
+function surchargeWithRelief(tax: number, taxable: number, regime: TaxRegime, slabs: typeof NEW_REGIME_SLABS): number {
+  if (tax <= 0) return 0;
+  let rate = 0, threshold = 0, prevRate = 0;
+  if (regime === 'old' && taxable > 50000000) { rate = 0.37; threshold = 50000000; prevRate = 0.25; }
+  else if (taxable > 20000000) { rate = 0.25; threshold = 20000000; prevRate = 0.15; }
+  else if (taxable > 10000000) { rate = 0.15; threshold = 10000000; prevRate = 0.10; }
+  else if (taxable > 5000000)  { rate = 0.10; threshold = 5000000;  prevRate = 0;    }
+  else return 0;
+  const surcharge = tax * rate;
+  const maxTotal = slabTax(threshold, slabs) * (1 + prevRate) + (taxable - threshold);
+  return tax + surcharge > maxTotal ? Math.max(0, maxTotal - tax) : surcharge;
+}
+
+function calculateTaxForIncome(income: number, regime: TaxRegime, deductions: number = 0): number {
+  let taxable = income;
+  let slabs = NEW_REGIME_SLABS;
+
+  if (regime === 'new') {
+    taxable = Math.max(0, taxable - 75000); // standard deduction (new regime)
+    slabs = NEW_REGIME_SLABS;
   } else {
-    const excess = taxable - rebateLimit;
-    if (tax > excess) tax = excess;
+    taxable = Math.max(0, taxable - 50000 - deductions); // standard deduction (old regime)
+    slabs = OLD_REGIME_SLABS;
   }
+
+  let tax = slabTax(taxable, slabs);
+
+  // Rebate u/s 87A.
+  if (regime === 'new') {
+    // New regime: full rebate ≤ ₹12L taxable, with marginal relief above it.
+    // Without marginal relief, a user at ₹12.1L taxable would jump from ₹0
+    // tax to ₹61,500 — a cliff of ₹61K on just ₹10K of income.
+    const rebateLimit = 1200000;
+    if (taxable <= rebateLimit) {
+      tax = 0;
+    } else {
+      const excess = taxable - rebateLimit;
+      if (tax > excess) tax = excess;
+    }
+  } else if (taxable <= 500000) {
+    // Old regime: strict cliff — full rebate (max ₹12,500) at ≤ ₹5L, nothing
+    // above. Marginal relief on 87A exists only in the new regime.
+    tax = 0;
+  }
+
+  // Surcharge (with marginal relief) for incomes above ₹50L — previously
+  // omitted entirely, understating tax impact for high-income users.
+  tax += surchargeWithRelief(tax, taxable, regime, slabs);
 
   // Health and Education Cess
   if (tax > 0) {

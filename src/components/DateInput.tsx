@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { Capacitor } from '@capacitor/core';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useAppColors } from '../theme/useAppColors';
+import { parseLocalDate } from '../utils/dateUtils';
 
 /* ────────────────────────── constants ────────────────────────── */
 
@@ -175,8 +176,11 @@ function CalendarModal({ isDark, selected, initialYear, initialMonth, max, min, 
     const todayRing   = isDark ? '#6366f1' : '#818cf8'; // indigo
 
     /* ── derive max / min Date objects ──────────────────────────── */
-    const maxDate = max ? new Date(max) : null;
-    const minDate = min ? new Date(min) : null;
+    // YYYY-MM-DD must parse as LOCAL midnight — `new Date('YYYY-MM-DD')` is
+    // UTC-midnight and disables the boundary day itself in UTC-negative zones.
+    const toBoundary = (s: string) => (/^\d{4}-\d{2}-\d{2}$/.test(s) ? parseLocalDate(s) : new Date(s));
+    const maxDate = max ? toBoundary(max) : null;
+    const minDate = min ? toBoundary(min) : null;
 
     const isDisabled = useCallback((d: number) => {
         const check = new Date(year, month, d);

@@ -103,7 +103,8 @@ export default function GSTCalculator() {
     // For inclusive (reverse) mode the base is recovered by dividing by
     // (1 + (gst+cess)/100).
     const stdResult = useMemo(() => {
-        if (!stdAmount || !stdRate) return null;
+        // Allow the selectable 0% slab — only bail on a missing/invalid rate
+        if (!stdAmount || stdRate == null || Number.isNaN(stdRate)) return null;
         if (stdDirection === 'add') {
             const gst = stdAmount * (stdRate / 100);
             const cess = stdAmount * (cessRate / 100);
@@ -122,7 +123,8 @@ export default function GSTCalculator() {
 
     // ── Reverse calculation (explicit) ──
     const reverseResult = useMemo(() => {
-        if (!stdAmount || !stdRate) return null;
+        // Allow the selectable 0% slab — only bail on a missing/invalid rate
+        if (!stdAmount || stdRate == null || Number.isNaN(stdRate)) return null;
         const base = stdAmount / (1 + stdRate / 100);
         const gst = stdAmount - base;
         return { base, gst, cgst: isIGST ? 0 : gst / 2, sgst: isIGST ? 0 : gst / 2, igst: isIGST ? gst : 0, total: stdAmount };

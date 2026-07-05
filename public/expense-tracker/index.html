@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense Tracker App India — Free, Offline &amp; Private | FinCalix</title>
+  <meta name="description" content="Free expense tracker for India: daily to yearly tracking, budgets, subscription calendar, financial health score and PDF/Excel export. 100% offline and private." />
+  <link rel="canonical" href="https://fincalix.com/expense-tracker" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/expense-tracker" />
+  <meta property="og:title" content="Expense Tracker App India — Free, Offline &amp; Private" />
+  <meta property="og:description" content="Track daily spends, budgets and subscriptions with a financial health score — 100% offline, no data collected, in 6 Indian languages. Free on Google Play." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Expense Tracker", "item": "https://fincalix.com/expense-tracker" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is the FinCalix expense tracker really private?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. All your expense data is stored only on your phone — FinCalix collects no data, matching its Google Play data-safety declaration. There is no login, no account and no server. It works fully offline." }
+          },
+          {
+            "@type": "Question",
+            "name": "What can I track with the FinCalix expense tracker?",
+            "acceptedAnswer": { "@type": "Answer", "text": "You can log expenses and view them by day, week, month or year, set category budgets with progress alerts, manage recurring subscriptions on a calendar, and monitor a 0–100 financial health score that reflects your spending discipline." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I export my expense data?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. You can export your expense history and reports to PDF or Excel at any time — useful for reimbursements, tax records or your own analysis. Your data stays yours." }
+          },
+          {
+            "@type": "Question",
+            "name": "Which languages does FinCalix support?",
+            "acceptedAnswer": { "@type": "Answer", "text": "FinCalix works in 6 languages: English, Hindi, Telugu, Tamil, Kannada and Malayalam. The app is free with no ads and includes 45+ Indian financial calculators alongside the expense tracker." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>Expense Tracker — Free, Offline &amp; 100% Private</h1>
+    <p class="sub">Track every rupee without giving your data to anyone. FinCalix stores everything on your phone — no login, no account, no server, no ads — and works entirely offline.</p>
+
+    <div class="card">
+      <ul style="list-style:none;display:grid;gap:12px;">
+        <li><strong>📅 Daily, weekly, monthly &amp; yearly views</strong><br/>Log a spend in seconds and see where your money goes across any time frame.</li>
+        <li><strong>🎯 Category budgets</strong><br/>Set monthly limits per category and watch progress before you overshoot — not after.</li>
+        <li><strong>🔁 Subscription calendar</strong><br/>Every OTT, SaaS and recurring bill on one calendar, so renewals never surprise you.</li>
+        <li><strong>💯 Financial health score (0–100)</strong><br/>A single score that reflects your spending discipline, savings rate and budget adherence.</li>
+        <li><strong>📄 PDF &amp; Excel export</strong><br/>Export histories and reports anytime — for reimbursements, taxes or your own spreadsheets.</li>
+        <li><strong>🔒 100% offline &amp; private</strong><br/>No data collected — matching the app's Google Play data-safety declaration. Your data never leaves your phone.</li>
+        <li><strong>🌐 6 languages</strong><br/>English, Hindi, Telugu, Tamil, Kannada and Malayalam.</li>
+      </ul>
+    </div>
+
+    <h2>Why an offline expense tracker?</h2>
+    <p>Most expense apps ask you to sign in, sync your transactions to a server and monetize your patterns. FinCalix takes the opposite approach: everything is computed and stored locally. That means it opens instantly, works on flights and in low-network areas, and your financial life is never part of anyone's dataset.</p>
+
+    <h2>Everything in one app</h2>
+    <p>The expense tracker sits alongside <strong>45+ Indian calculators</strong> — EMI, SIP, income tax, FD, PPF, credit card payoff and more — so tracking and planning live in the same free app. See a heavy spending month? Jump straight into a budget or a goal SIP plan without switching apps.</p>
+
+    <h2>How the health score works</h2>
+    <p>The 0–100 financial health score summarizes your money habits: how consistently you stay within budgets, your savings rate and spending trends. It updates as you log expenses, giving you one number to improve month over month.</p>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>Is the FinCalix expense tracker really private?</h3>
+      <p>Yes. All your expense data is stored only on your phone — FinCalix collects no data, matching its Google Play data-safety declaration. There is no login, no account and no server. It works fully offline.</p>
+      <h3>What can I track with the FinCalix expense tracker?</h3>
+      <p>You can log expenses and view them by day, week, month or year, set category budgets with progress alerts, manage recurring subscriptions on a calendar, and monitor a 0–100 financial health score that reflects your spending discipline.</p>
+      <h3>Can I export my expense data?</h3>
+      <p>Yes. You can export your expense history and reports to PDF or Excel at any time — useful for reimbursements, tax records or your own analysis. Your data stays yours.</p>
+      <h3>Which languages does FinCalix support?</h3>
+      <p>FinCalix works in 6 languages: English, Hindi, Telugu, Tamil, Kannada and Malayalam. The app is free with no ads and includes 45+ Indian financial calculators alongside the expense tracker.</p>
+    </div>
+
+    <div class="install">
+      <h2>Start tracking in under a minute — free</h2>
+      <p>Expense tracking, budgets, subscriptions, health score &amp; PDF/Excel export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/hra">HRA Exemption</a>
+      <a href="/gst">GST Calculator</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Feature descriptions are current as of July 2026. FinCalix provides tools for personal planning and record-keeping. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+</body>
+</html>

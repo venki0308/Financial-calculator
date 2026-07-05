@@ -450,6 +450,20 @@ export async function exportToPDF(config: ExportConfig): Promise<void> {
     }
 }
 
+// Excel formula-injection guard (CWE-1236): user-entered text (e.g. a loan
+// nickname like "=HYPERLINK(...)") must not be interpreted as a formula when
+// the exported file is opened in Excel. Prefixing with ' renders it as text.
+// Defense-in-depth for '=' and '@' only; '+'/'-' are excluded because signed
+// amounts (e.g. "+₹1,200", "-3.2%") are legitimate in financial exports and
+// aoa_to_sheet stores strings as type-'s' cells Excel never evaluates.
+function sanitizeAoa(rows: (string | number)[][]): (string | number)[][] {
+    return rows.map(row =>
+        row.map(cell =>
+            typeof cell === 'string' && /^[=@\t\r]/.test(cell) ? `'${cell}` : cell
+        )
+    );
+}
+
 // ─── Public: exportToExcel ────────────────────────────────────────────────────
 
 /**
@@ -478,7 +492,7 @@ export async function exportToExcel(config: ExportConfig): Promise<void> {
             ['Metric', 'Value'],
             ...results.map(({ label, value }) => [label, value]),
         ];
-        const sheet1 = XLSX.utils.aoa_to_sheet(summaryData);
+        const sheet1 = XLSX.utils.aoa_to_sheet(sanitizeAoa(summaryData));
         sheet1['!cols'] = [{ wch: 38 }, { wch: 28 }];
         XLSX.utils.book_append_sheet(wb, sheet1, 'Summary');
 
@@ -488,7 +502,7 @@ export async function exportToExcel(config: ExportConfig): Promise<void> {
                 projectionColumns,
                 ...projectionRows,
             ];
-            const sheet2 = XLSX.utils.aoa_to_sheet(projData);
+            const sheet2 = XLSX.utils.aoa_to_sheet(sanitizeAoa(projData));
 
             // Auto-fit column widths
             sheet2['!cols'] = projectionColumns.map((h, colIdx) => {
@@ -507,7 +521,7 @@ export async function exportToExcel(config: ExportConfig): Promise<void> {
         if (config.additionalTables?.length) {
             for (const table of config.additionalTables) {
                 const tData: (string | number)[][] = [table.columns, ...table.rows];
-                const ws = XLSX.utils.aoa_to_sheet(tData);
+                const ws = XLSX.utils.aoa_to_sheet(sanitizeAoa(tData));
                 ws['!cols'] = table.columns.map((h, colIdx) => {
                     let maxLen = h.length;
                     table.rows.forEach(row => {

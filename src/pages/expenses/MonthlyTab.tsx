@@ -31,7 +31,7 @@ import {
   getHighestSpendingDay,
   getActiveDaysCount,
   calculatePercentChange,
-  getTotalActualBilledSubsInRange,
+  getUnloggedSubsForRange,
   calcPeriodChange,
   getTodayStr,
 } from '../../utils/expenseCalculations';
@@ -220,13 +220,14 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
   const todayISO = getTodayStr();
 
   const monthSubsBilled = useMemo(
-    () => getTotalActualBilledSubsInRange(
+    () => getUnloggedSubsForRange(
+      entries,
       subscriptions,
       monthRange.start,
       monthRange.end,
       todayISO,
     ),
-    [subscriptions, monthRange.start, monthRange.end, todayISO],
+    [entries, subscriptions, monthRange.start, monthRange.end, todayISO],
   );
   const monthSubsCount = useMemo(
     () => subscriptions.filter(s => s.isActive).length,
@@ -234,13 +235,14 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
   );
 
   const prevMonthSubsBilled = useMemo(
-    () => getTotalActualBilledSubsInRange(
+    () => getUnloggedSubsForRange(
+      prevEntries,
       subscriptions,
       prevMonthRange.start,
       prevMonthRange.end,
       todayISO,
     ),
-    [subscriptions, prevMonthRange.start, prevMonthRange.end, todayISO],
+    [prevEntries, subscriptions, prevMonthRange.start, prevMonthRange.end, todayISO],
   );
 
   // Canonical totals — these REPLACE summary.totalExpenses /

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumpsum Calculator — One-Time Investment Returns | FinCalix</title>
+  <meta name="description" content="Free lumpsum calculator for India. See how a one-time ₹1 lakh at 12% grows to ₹3,10,585 in 10 years with annual compounding. Instant future value, no login." />
+  <link rel="canonical" href="https://fincalix.com/lumpsum" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/lumpsum" />
+  <meta property="og:title" content="Lumpsum Calculator — One-Time Investment Returns" />
+  <meta property="og:description" content="Calculate the future value of a one-time investment. ₹1 lakh at 12% for 10 years grows to ₹3,10,585. Free in the FinCalix app — offline, no login." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Lumpsum Calculator", "item": "https://fincalix.com/lumpsum" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is lumpsum future value calculated?",
+            "acceptedAnswer": { "@type": "Answer", "text": "FV = P × (1 + r)^t, where P is the one-time investment, r is the annual return (as a decimal) and t is the number of years. A ₹1 lakh investment at 12% for 10 years grows to ₹3,10,585." }
+          },
+          {
+            "@type": "Question",
+            "name": "How much does 1 lakh grow in 10 years?",
+            "acceptedAnswer": { "@type": "Answer", "text": "It depends on the return: at 8% a ₹1 lakh lumpsum becomes ₹2,15,892, at 10% it becomes ₹2,59,374, at 12% it becomes ₹3,10,585 and at 15% it becomes ₹4,04,556 over 10 years." }
+          },
+          {
+            "@type": "Question",
+            "name": "Lumpsum or SIP — which is better?",
+            "acceptedAnswer": { "@type": "Answer", "text": "A lumpsum puts your full amount to work immediately, which wins when markets rise steadily. A SIP spreads purchases across months, reducing timing risk. Many investors park a lumpsum in a liquid fund and transfer it gradually via STP." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is the FinCalix lumpsum calculator free?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. FinCalix is a 100% free Android app with 45+ Indian financial calculators including lumpsum, SIP, STP and SWP with growth charts and PDF/Excel export. It works fully offline with no login and no ads." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>Lumpsum Calculator — One-Time Investment Returns</h1>
+    <p class="sub">Find the future value of a one-time investment with annual compounding. A ₹1 lakh lumpsum at 12% grows to ₹3,10,585 in 10 years — more than 3× your money.</p>
+
+    <div class="card calc">
+      <label for="amt">Investment amount (₹)</label>
+      <input id="amt" type="number" inputmode="numeric" value="100000" min="100" />
+      <label for="rate">Expected annual return (%)</label>
+      <input id="rate" type="number" inputmode="decimal" value="12" min="0" step="0.5" />
+      <label for="yrs">Investment period (years)</label>
+      <input id="yrs" type="number" inputmode="numeric" value="10" min="1" max="50" />
+      <button onclick="calc()">Calculate Future Value</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How lumpsum growth is calculated</h2>
+    <p>A one-time investment compounds on itself: each year's growth is earned on both the principal and all previous gains.</p>
+    <div class="formula">FV = P × (1 + r)<sup>t</sup><br/>P = investment &nbsp; r = annual return ÷ 100 &nbsp; t = years</div>
+
+    <h2>₹1 lakh at 12% — growth over time</h2>
+    <table>
+      <tr><th>Duration</th><th>Future value at 12%</th><th>Gain</th></tr>
+      <tr><td>5 years</td><td>₹1,76,234</td><td>₹76,234</td></tr>
+      <tr><td>10 years</td><td>₹3,10,585</td><td>₹2,10,585</td></tr>
+      <tr><td>15 years</td><td>₹5,47,357</td><td>₹4,47,357</td></tr>
+      <tr><td>20 years</td><td>₹9,64,629</td><td>₹8,64,629</td></tr>
+    </table>
+
+    <h2>₹1 lakh over 10 years — return sensitivity</h2>
+    <table>
+      <tr><th>Annual return</th><th>Future value</th></tr>
+      <tr><td>8%</td><td>₹2,15,892</td></tr>
+      <tr><td>10%</td><td>₹2,59,374</td></tr>
+      <tr><td>12%</td><td>₹3,10,585</td></tr>
+      <tr><td>15%</td><td>₹4,04,556</td></tr>
+    </table>
+    <p>A few percentage points compound into a huge difference: over 10 years the gap between 8% and 15% on the same ₹1 lakh is nearly ₹1.9 lakh.</p>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>How is lumpsum future value calculated?</h3>
+      <p>FV = P × (1 + r)^t, where P is the one-time investment, r is the annual return (as a decimal) and t is the number of years. A ₹1 lakh investment at 12% for 10 years grows to ₹3,10,585.</p>
+      <h3>How much does 1 lakh grow in 10 years?</h3>
+      <p>It depends on the return: at 8% a ₹1 lakh lumpsum becomes ₹2,15,892, at 10% it becomes ₹2,59,374, at 12% it becomes ₹3,10,585 and at 15% it becomes ₹4,04,556 over 10 years.</p>
+      <h3>Lumpsum or SIP — which is better?</h3>
+      <p>A lumpsum puts your full amount to work immediately, which wins when markets rise steadily. A SIP spreads purchases across months, reducing timing risk. Many investors park a lumpsum in a liquid fund and transfer it gradually via STP.</p>
+      <h3>Is the FinCalix lumpsum calculator free?</h3>
+      <p>Yes. FinCalix is a 100% free Android app with 45+ Indian financial calculators including lumpsum, SIP, STP and SWP with growth charts and PDF/Excel export. It works fully offline with no login and no ads.</p>
+    </div>
+
+    <div class="install">
+      <h2>Get the full investment toolkit — free</h2>
+      <p>Lumpsum, SIP, STP, SWP, goal planning, yearly growth charts &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/cagr">CAGR Calculator</a>
+      <a href="/swp">SWP Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Projections assume a constant annual return and are shown as of July 2026 for planning only. Market-linked investments carry risk. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var P = Math.max(0, parseFloat(document.getElementById('amt').value) || 0);
+      var annual = Math.max(0, parseFloat(document.getElementById('rate').value) || 0);
+      var t = Math.max(0, parseFloat(document.getElementById('yrs').value) || 0);
+      var out = document.getElementById('out');
+      if (P <= 0 || t <= 0) { out.style.display = 'none'; return; }
+      var fv = P * Math.pow(1 + annual / 100, t);
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      out.innerHTML = '<strong>' + fmt(fv) + ' future value</strong><small>Invested ' + fmt(P) + ' · Gain ' + fmt(fv - P) + ' over ' + t + ' years</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

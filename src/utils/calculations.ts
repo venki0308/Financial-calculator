@@ -130,14 +130,17 @@ export interface ForeclosureResult {
 
 /**
  * Calculate foreclosure details from amortization schedule.
+ * Returns null when monthsPaid is out of range for the schedule, so callers
+ * hide the card instead of rendering a fabricated all-zero "+₹0 beneficial"
+ * result (mirrors AdvancedMortgageCalculator's fcResult pattern).
  */
 export function calculateForeclosure(
     schedule: AmortizationRow[],
     monthsPaid: number,
     foreclosureChargePercent: number
-): ForeclosureResult {
+): ForeclosureResult | null {
     if (!schedule.length || monthsPaid < 1 || monthsPaid >= schedule.length) {
-        return { monthsPaid: 0, outstandingPrincipal: 0, totalInterestPaid: 0, interestSaved: 0, foreclosureCharge: 0, totalSettlement: 0, netBenefit: 0 };
+        return null;
     }
 
     const paidRow = schedule[monthsPaid - 1];

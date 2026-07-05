@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RD Calculator 2026 — Recurring Deposit Maturity | FinCalix</title>
+  <meta name="description" content="Free RD calculator for India. ₹5,000 a month at 6.7% for 5 years matures to ₹3,58,807. Post Office RD 6.7%, bank RD 6.5–7.0% in July 2026. Offline, no login." />
+  <link rel="canonical" href="https://fincalix.com/rd" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/rd" />
+  <meta property="og:title" content="RD Calculator 2026 — Recurring Deposit Maturity" />
+  <meta property="og:description" content="Calculate recurring deposit maturity with quarterly compounding. ₹5,000/month at 6.7% for 5 years = ₹3,58,807. Free in the FinCalix app — offline, no login." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "RD Calculator", "item": "https://fincalix.com/rd" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is RD maturity calculated?",
+            "acceptedAnswer": { "@type": "Answer", "text": "RD interest compounds quarterly. Each monthly deposit earns for the quarters remaining in the tenure: maturity is the sum of D × (1 + R ÷ 400)^q over all deposits, where q is the number of quarters that deposit stays invested. ₹5,000 a month at 6.7% for 5 years matures to about ₹3,58,807." }
+          },
+          {
+            "@type": "Question",
+            "name": "What are RD interest rates in India in July 2026?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The Post Office 5-year RD pays 6.7% (Q2 FY27 rate), while bank RDs typically pay about 6.5–7.0% depending on tenure, with senior citizens usually earning a small premium." }
+          },
+          {
+            "@type": "Question",
+            "name": "How much do I get if I deposit 5,000 monthly in RD for 5 years?",
+            "acceptedAnswer": { "@type": "Answer", "text": "You deposit ₹3,00,000 in total. At 6.5% the maturity is about ₹3,56,863, at 6.7% about ₹3,58,807 and at 7.0% about ₹3,61,746 — interest of roughly ₹57,000–₹62,000 over 5 years." }
+          },
+          {
+            "@type": "Question",
+            "name": "RD or SIP — which should I choose?",
+            "acceptedAnswer": { "@type": "Answer", "text": "An RD gives a guaranteed, fixed return (about 6.5–7% currently) and suits short-term goals where safety matters. A SIP in equity funds targets higher long-term returns but can fall in value. Many savers use RDs for near-term goals and SIPs for goals 5+ years away." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>RD Calculator — Recurring Deposit Maturity 2026</h1>
+    <p class="sub">Save a fixed amount every month and earn quarterly-compounded interest. Post Office RD pays 6.7% (Q2 FY27); bank RDs run about 6.5–7.0% as of July 2026.</p>
+
+    <div class="card calc">
+      <label for="amt">Monthly deposit (₹)</label>
+      <input id="amt" type="number" inputmode="numeric" value="5000" min="100" />
+      <label for="rate">Interest rate (% per year)</label>
+      <input id="rate" type="number" inputmode="decimal" value="6.7" min="0" step="0.05" />
+      <label for="yrs">Tenure (years)</label>
+      <input id="yrs" type="number" inputmode="decimal" value="5" min="0.5" step="0.5" max="10" />
+      <button onclick="calc()">Calculate Maturity</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How RD maturity is calculated</h2>
+    <p>RD interest compounds quarterly. Each monthly installment earns for the quarters remaining in the tenure — the first deposit compounds the longest, the last one the least.</p>
+    <div class="formula">Maturity = Σ D × (1 + R ÷ 400)<sup>q</sup> over all n deposits<br/>q = totalQuarters − floor((m − 1) ÷ 3) for deposit in month m &nbsp; totalQuarters = ceil(n ÷ 3)</div>
+
+    <h2>₹5,000 monthly RD for 5 years — rate comparison</h2>
+    <table>
+      <tr><th>Rate</th><th>Total deposited</th><th>Maturity value</th><th>Interest earned</th></tr>
+      <tr><td>6.50% (typical bank RD)</td><td>₹3,00,000</td><td>₹3,56,863</td><td>₹56,863</td></tr>
+      <tr><td>6.70% (Post Office RD, Q2 FY27)</td><td>₹3,00,000</td><td>₹3,58,807</td><td>₹58,807</td></tr>
+      <tr><td>7.00% (best bank RD)</td><td>₹3,00,000</td><td>₹3,61,746</td><td>₹61,746</td></tr>
+    </table>
+
+    <h2>₹5,000 monthly at 6.7% — growth by tenure</h2>
+    <table>
+      <tr><th>Tenure</th><th>Total deposited</th><th>Maturity value</th></tr>
+      <tr><td>1 year</td><td>₹60,000</td><td>₹62,555</td></tr>
+      <tr><td>2 years</td><td>₹1,20,000</td><td>₹1,29,408</td></tr>
+      <tr><td>3 years</td><td>₹1,80,000</td><td>₹2,00,853</td></tr>
+      <tr><td>5 years</td><td>₹3,00,000</td><td>₹3,58,807</td></tr>
+    </table>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>How is RD maturity calculated?</h3>
+      <p>RD interest compounds quarterly. Each monthly deposit earns for the quarters remaining in the tenure: maturity is the sum of D × (1 + R ÷ 400)^q over all deposits, where q is the number of quarters that deposit stays invested. ₹5,000 a month at 6.7% for 5 years matures to about ₹3,58,807.</p>
+      <h3>What are RD interest rates in India in July 2026?</h3>
+      <p>The Post Office 5-year RD pays 6.7% (Q2 FY27 rate), while bank RDs typically pay about 6.5–7.0% depending on tenure, with senior citizens usually earning a small premium.</p>
+      <h3>How much do I get if I deposit 5,000 monthly in RD for 5 years?</h3>
+      <p>You deposit ₹3,00,000 in total. At 6.5% the maturity is about ₹3,56,863, at 6.7% about ₹3,58,807 and at 7.0% about ₹3,61,746 — interest of roughly ₹57,000–₹62,000 over 5 years.</p>
+      <h3>RD or SIP — which should I choose?</h3>
+      <p>An RD gives a guaranteed, fixed return (about 6.5–7% currently) and suits short-term goals where safety matters. A SIP in equity funds targets higher long-term returns but can fall in value. Many savers use RDs for near-term goals and SIPs for goals 5+ years away.</p>
+    </div>
+
+    <div class="install">
+      <h2>Get the full savings toolkit — free</h2>
+      <p>RD, FD, Post Office schemes, goal planning, maturity tracking &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/lumpsum">Lumpsum Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/cagr">CAGR Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Rates shown are indicative as of July 2026 and change with bank and government policy. FinCalix provides estimates for planning — verify final figures with your bank or post office. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var D = Math.max(0, parseFloat(document.getElementById('amt').value) || 0);
+      var R = Math.max(0, parseFloat(document.getElementById('rate').value) || 0);
+      var n = Math.round(Math.max(0, parseFloat(document.getElementById('yrs').value) || 0) * 12);
+      var out = document.getElementById('out');
+      if (D <= 0 || n <= 0) { out.style.display = 'none'; return; }
+      var totalQuarters = Math.ceil(n / 3);
+      var value = 0;
+      for (var m = 1; m <= n; m++) {
+        var q = totalQuarters - Math.floor((m - 1) / 3);
+        value += D * Math.pow(1 + R / 400, q);
+      }
+      var deposited = D * n;
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      out.innerHTML = '<strong>' + fmt(value) + ' at maturity</strong><small>Deposited ' + fmt(deposited) + ' over ' + n + ' months · Interest earned ' + fmt(value - deposited) + ' (quarterly compounding)</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

@@ -41,6 +41,8 @@ export default function BreakEvenCalculator() {
 
     const result = useMemo(() => {
         const contribution = price - variable;
+        // Selling price must exceed variable cost, otherwise break-even is impossible
+        const neverBreaksEven = contribution <= 0;
         const breakEvenUnits = contribution > 0 ? Math.ceil(fixed / contribution) : 0;
         const breakEvenSales = breakEvenUnits * price;
         const marginPct = contribution > 0 ? ((contribution / price) * 100).toFixed(1) : '0';
@@ -56,7 +58,7 @@ export default function BreakEvenCalculator() {
             projection.push({ units: u, revenue, totalCost, profit });
         }
 
-        return { breakEvenUnits, breakEvenSales, contribution, marginPct, projection };
+        return { breakEvenUnits, breakEvenSales, contribution, marginPct, projection, neverBreaksEven };
     }, [fixed, price, variable]);
 
     // Revenue timeline chart
@@ -179,9 +181,15 @@ export default function BreakEvenCalculator() {
                 </div>
 
                 {/* Result Card */}
-                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/20">
-                    <p className="text-emerald-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">{t('breakeven.unitsToBreakEven')}</p>
-                    <p className="text-3xl font-black text-foreground mb-4">{result.breakEvenUnits.toLocaleString('en-IN')}</p>
+                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className={`p-5 rounded-2xl border ${result.neverBreaksEven ? 'bg-red-500/10 border-red-500/30' : 'bg-gradient-to-br from-green-600/20 to-emerald-600/20 border-green-500/20'}`}>
+                    {result.neverBreaksEven ? (
+                        <p className="text-red-500 font-bold text-sm mb-4">{t('breakeven.neverBreaksEven', 'Selling price must exceed variable cost — this business can never break even')}</p>
+                    ) : (
+                        <>
+                            <p className="text-emerald-300/60 text-[10px] font-bold uppercase tracking-wider mb-1">{t('breakeven.unitsToBreakEven')}</p>
+                            <p className="text-3xl font-black text-foreground mb-4">{result.breakEvenUnits.toLocaleString('en-IN')}</p>
+                        </>
+                    )}
                     <div className="grid grid-cols-2 gap-3">
                         <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('breakeven.breakEvenRevenue')}</p><p className="text-brand-green font-bold text-sm">{formatINR(result.breakEvenSales)}</p></div>
                         <div><p className="text-muted-foreground text-[10px] uppercase font-bold">{t('breakeven.marginPerUnit')}</p><p className="text-blue-400 font-bold text-sm">{formatINR(result.contribution)}</p></div>
@@ -247,7 +255,7 @@ export default function BreakEvenCalculator() {
                             <div className="rounded-2xl bg-card border border-border overflow-hidden">
                                 <div className="grid grid-cols-4 text-[9px] font-bold text-muted-foreground uppercase p-2 bg-slate-100 dark:bg-slate-800/50"><span>{t('breakeven.units')}</span><span>{t('breakeven.revenue')}</span><span>{t('breakeven.cost')}</span><span>{t('breakeven.profit')}</span></div>
                                 {result.projection.map((p, i) => (
-                                    <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${p.units === result.breakEvenUnits ? 'bg-green-500/10 border-l-2 border-green-500' : i % 2 === 0 ? 'bg-card' : 'bg-slate-100 dark:bg-slate-800/20'}`}>
+                                    <div key={i} className={`grid grid-cols-4 text-[10px] p-2 ${!result.neverBreaksEven && p.units === result.breakEvenUnits ? 'bg-green-500/10 border-l-2 border-green-500' : i % 2 === 0 ? 'bg-card' : 'bg-slate-100 dark:bg-slate-800/20'}`}>
                                         <span className="text-slate-600 dark:text-slate-300">{p.units}</span>
                                         <span className="text-blue-600 dark:text-blue-400">{formatINR(p.revenue)}</span>
                                         <span className="text-orange-600 dark:text-orange-400">{formatINR(p.totalCost)}</span>

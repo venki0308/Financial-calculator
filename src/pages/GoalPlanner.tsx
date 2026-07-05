@@ -88,7 +88,11 @@ export default function GoalPlanner() {
 
     const result = useMemo(() => {
         const targetFV = currentCost * Math.pow(1 + (inflationRate / 100), targetYears);
-        const remaining = Math.max(0, targetFV - currentSavings);
+        // Existing savings keep compounding at the expected return until the
+        // goal date — subtract their FUTURE value from the goal, not their
+        // face value (otherwise the recommended SIP is heavily overstated).
+        const savingsFV = currentSavings * Math.pow(1 + expectedReturn / 100, targetYears);
+        const remaining = Math.max(0, targetFV - savingsFV);
         const r = expectedReturn / 12 / 100;
         const n = targetYears * 12;
         const realRate = ((1 + expectedReturn / 100) / (1 + inflationRate / 100)) - 1;
@@ -150,15 +154,19 @@ export default function GoalPlanner() {
         }
     };
 
-    // Year-wise projection data
+    // Year-wise projection data — existing savings compound at the same
+    // monthly rate as the SIP (previously added flat, understating growth).
     const projection = useMemo(() => {
         const r = expectedReturn / 12 / 100;
         const data: { year: number; invested: number; value: number }[] = [];
         for (let yr = 1; yr <= targetYears; yr++) {
             const n = yr * 12;
             const invested = result.monthlySIP * n;
-            const value = result.monthlySIP * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
-            data.push({ year: yr, invested, value: value + currentSavings });
+            const sipValue = r === 0
+                ? invested
+                : result.monthlySIP * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
+            const savingsValue = currentSavings * Math.pow(1 + r, n);
+            data.push({ year: yr, invested, value: sipValue + savingsValue });
         }
         return data;
     }, [targetYears, expectedReturn, result.monthlySIP, currentSavings]);

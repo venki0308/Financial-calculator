@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Income Tax Calculator FY 2026-27 (AY 2027-28) — New Regime</title>
+  <meta name="description" content="Income tax calculator for FY 2026-27 (AY 2027-28) new regime. Zero tax up to ₹12.75 lakh salary with 87A rebate and ₹75,000 standard deduction. Free tool." />
+  <link rel="canonical" href="https://fincalix.com/income-tax" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/income-tax" />
+  <meta property="og:title" content="Income Tax Calculator FY 2026-27 (AY 2027-28) — New Regime" />
+  <meta property="og:description" content="Calculate your income tax for FY 2026-27 in seconds. New-regime slabs unchanged by Budget 2026 — zero tax up to ₹12.75L for salaried. Free in the FinCalix app." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Income Tax Calculator", "item": "https://fincalix.com/income-tax" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is income up to ₹12.75 lakh really tax-free in FY 2026-27?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes, for salaried taxpayers in the new regime. The ₹75,000 standard deduction brings a ₹12.75 lakh salary down to ₹12 lakh taxable income, and the Section 87A rebate wipes out tax on taxable income up to ₹12 lakh — so the final tax is zero." }
+          },
+          {
+            "@type": "Question",
+            "name": "Did Budget 2026 change the income tax slabs?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. Budget 2026 left the slabs unchanged for FY 2026-27 (AY 2027-28). New regime: 0–4L nil, 4–8L 5%, 8–12L 10%, 12–16L 15%, 16–20L 20%, 20–24L 25%, above 24L 30%, plus 4% cess." }
+          },
+          {
+            "@type": "Question",
+            "name": "What is marginal relief above ₹12 lakh taxable income?",
+            "acceptedAnswer": { "@type": "Answer", "text": "If your taxable income slightly exceeds ₹12 lakh, your tax is capped at the amount by which income exceeds ₹12 lakh. Example: at ₹12.25 lakh taxable, slab tax is ₹63,750 but marginal relief caps it at ₹25,000 (plus 4% cess = ₹26,000)." }
+          },
+          {
+            "@type": "Question",
+            "name": "What changes under the Income Tax Act 2025 from April 2026?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The Income Tax Act 2025, effective 1 April 2026, replaces the 1961 Act with simpler numbering and a single 'tax year' concept — for example 80C becomes Section 123. Slab rates, deduction amounts and rebates are identical; only section numbers change." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>Income Tax Calculator FY 2026-27 (AY 2027-28)</h1>
+    <p class="sub">Calculate your tax under the new regime — slabs unchanged by Budget 2026. Salaried taxpayers pay <strong>zero tax up to ₹12.75 lakh</strong> thanks to the ₹75,000 standard deduction and the Section 87A rebate up to ₹12 lakh taxable income.</p>
+
+    <div class="card calc">
+      <label for="sal">Annual gross salary (₹)</label>
+      <input id="sal" type="number" inputmode="numeric" value="1275000" min="0" />
+      <button onclick="calc()">Calculate Tax (New Regime)</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How the new-regime tax is calculated</h2>
+    <p>Taxable income = salary − ₹75,000 standard deduction. Tax is applied slab-by-slab; if taxable income is up to ₹12 lakh, the 87A rebate makes the tax zero. Slightly above ₹12 lakh, marginal relief caps the tax at the excess over ₹12 lakh. Health &amp; education cess of 4% applies on the final tax (surcharge applies from ₹50 lakh).</p>
+    <div class="formula">Taxable = max(0, Salary − 75,000)<br/>Tax = Σ slab amounts · 0 if Taxable ≤ 12,00,000<br/>Marginal relief: Tax = min(Tax, Taxable − 12,00,000) · Final = Tax × 1.04</div>
+
+    <h2>New regime slabs — FY 2026-27 (AY 2027-28), unchanged by Budget 2026</h2>
+    <table>
+      <tr><th>Taxable income</th><th>Rate</th></tr>
+      <tr><td>Up to ₹4,00,000</td><td>Nil</td></tr>
+      <tr><td>₹4,00,001 – ₹8,00,000</td><td>5%</td></tr>
+      <tr><td>₹8,00,001 – ₹12,00,000</td><td>10%</td></tr>
+      <tr><td>₹12,00,001 – ₹16,00,000</td><td>15%</td></tr>
+      <tr><td>₹16,00,001 – ₹20,00,000</td><td>20%</td></tr>
+      <tr><td>₹20,00,001 – ₹24,00,000</td><td>25%</td></tr>
+      <tr><td>Above ₹24,00,000</td><td>30%</td></tr>
+    </table>
+    <p>87A rebate → zero tax up to ₹12,00,000 taxable (₹12.75L salary). Standard deduction ₹75,000. Cess 4%; surcharge from ₹50 lakh.</p>
+
+    <h2>Old regime slabs (for comparison)</h2>
+    <table>
+      <tr><th>Taxable income</th><th>Rate</th></tr>
+      <tr><td>Up to ₹2,50,000</td><td>Nil</td></tr>
+      <tr><td>₹2,50,001 – ₹5,00,000</td><td>5%</td></tr>
+      <tr><td>₹5,00,001 – ₹10,00,000</td><td>20%</td></tr>
+      <tr><td>Above ₹10,00,000</td><td>30%</td></tr>
+    </table>
+    <p>Old regime keeps deductions (80C, 80D, HRA…), a ₹50,000 standard deduction and the 87A rebate only up to ₹5 lakh taxable income. Cess 4%.</p>
+
+    <h2>Example tax on salary — new regime, FY 2026-27</h2>
+    <table>
+      <tr><th>Gross salary</th><th>Taxable income</th><th>Tax incl. 4% cess</th><th>Effective rate</th></tr>
+      <tr><td>₹12,75,000</td><td>₹12,00,000</td><td>₹0 (87A rebate)</td><td>0%</td></tr>
+      <tr><td>₹13,00,000</td><td>₹12,25,000</td><td>₹26,000 (marginal relief)</td><td>2.0%</td></tr>
+      <tr><td>₹16,00,000</td><td>₹15,25,000</td><td>₹1,13,100</td><td>7.1%</td></tr>
+      <tr><td>₹20,00,000</td><td>₹19,25,000</td><td>₹1,92,400</td><td>9.6%</td></tr>
+      <tr><td>₹30,00,000</td><td>₹29,25,000</td><td>₹4,75,800</td><td>15.9%</td></tr>
+    </table>
+
+    <h2>Income Tax Act 2025 — what changes from 1 April 2026</h2>
+    <p>The Income Tax Act 2025 replaced the 1961 Act on 1 April 2026. It introduces a single "tax year" in place of previous year/assessment year and renumbers sections (80C → Section 123, etc.) — <strong>rates, deduction amounts and rebates are identical</strong>. Budget 2026 made no changes to the slabs for FY 2026-27.</p>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>Is income up to ₹12.75 lakh really tax-free in FY 2026-27?</h3>
+      <p>Yes, for salaried taxpayers in the new regime. The ₹75,000 standard deduction brings a ₹12.75 lakh salary down to ₹12 lakh taxable income, and the Section 87A rebate wipes out tax on taxable income up to ₹12 lakh — so the final tax is zero.</p>
+      <h3>Did Budget 2026 change the income tax slabs?</h3>
+      <p>No. Budget 2026 left the slabs unchanged for FY 2026-27 (AY 2027-28). New regime: 0–4L nil, 4–8L 5%, 8–12L 10%, 12–16L 15%, 16–20L 20%, 20–24L 25%, above 24L 30%, plus 4% cess.</p>
+      <h3>What is marginal relief above ₹12 lakh taxable income?</h3>
+      <p>If your taxable income slightly exceeds ₹12 lakh, your tax is capped at the amount by which income exceeds ₹12 lakh. Example: at ₹12.25 lakh taxable, slab tax is ₹63,750 but marginal relief caps it at ₹25,000 (plus 4% cess = ₹26,000).</p>
+      <h3>What changes under the Income Tax Act 2025 from April 2026?</h3>
+      <p>The Income Tax Act 2025, effective 1 April 2026, replaces the 1961 Act with simpler numbering and a single "tax year" concept — for example 80C becomes Section 123. Slab rates, deduction amounts and rebates are identical; only section numbers change.</p>
+    </div>
+
+    <div class="install">
+      <h2>Compare old vs new regime — free</h2>
+      <p>Full tax engine with both regimes, HRA, 80C/80D, surcharge &amp; PDF summary. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+      <a href="/hra">HRA Calculator</a>
+      <a href="/gratuity">Gratuity Calculator</a>
+      <a href="/nps">NPS Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Estimates cover salary income under the new regime with standard deduction only; surcharge above ₹50 lakh, other income and deductions are not modelled here. Figures per law applicable to FY 2026-27 as of July 2026. Consult a tax professional before filing. Not tax advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var sal = Math.max(0, parseFloat(document.getElementById('sal').value) || 0);
+      var out = document.getElementById('out');
+      var taxable = Math.max(0, sal - 75000);
+      var slabs = [[400000, 0], [800000, 0.05], [1200000, 0.10], [1600000, 0.15], [2000000, 0.20], [2400000, 0.25], [Infinity, 0.30]];
+      var tax = 0, prev = 0;
+      for (var s = 0; s < slabs.length; s++) {
+        var cap = slabs[s][0], rate = slabs[s][1];
+        if (taxable > prev) tax += (Math.min(taxable, cap) - prev) * rate;
+        prev = cap;
+        if (taxable <= cap) break;
+      }
+      if (taxable <= 1200000) { tax = 0; } else { tax = Math.min(tax, taxable - 1200000); }
+      var total = tax * 1.04;
+      var eff = sal > 0 ? (total / sal * 100) : 0;
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      var msg = total === 0 ? 'Zero tax — 87A rebate applies (taxable ≤ ₹12,00,000)' : 'Includes 4% cess';
+      out.innerHTML = '<strong>' + fmt(total) + ' tax for FY 2026-27</strong><small>Taxable income ' + fmt(taxable) + ' (after ₹75,000 standard deduction) · Effective rate ' + eff.toFixed(2) + '% · ' + msg + '</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

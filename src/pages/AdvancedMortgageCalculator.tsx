@@ -44,8 +44,11 @@ export default function AdvancedMortgageCalculator() {
     const [lastLoanStorageId, setLastLoanStorageId] = useState<string | null>(null);
 
     // ─── Input State ────────────────────────────────────────────────────────
-    const [propertyValue, setPropertyValue] = useState(10000000);
-    const [downPayment, setDownPayment] = useState(2000000);
+    // Loan amount is entered DIRECTLY (industry standard — Groww/HDFC/SBI/Axis all
+    // ask for the sanctioned amount). Property value is an OPTIONAL LTV check.
+    const [loanAmount, setLoanAmount] = useState(8000000);
+    const [propertyValue, setPropertyValue] = useState(0);
+    const [showLtvCheck, setShowLtvCheck] = useState(false);
     const [interestRate, setInterestRate] = useState(8.75);
     const [tenureYears, setTenureYears] = useState(20);
     const [monthlyIncome, setMonthlyIncome] = useState(150000);
@@ -84,8 +87,10 @@ export default function AdvancedMortgageCalculator() {
     const [wiTenure, setWiTenure] = useState(tenureYears);
 
     // ─── Computed Values ────────────────────────────────────────────────────
-    const loanAmount = Math.max(0, propertyValue - downPayment);
-    const ltv = calculateLTV(loanAmount, propertyValue);
+    // Down payment is now DERIVED (property value − loan amount) and only
+    // meaningful when the optional property value is provided.
+    const downPayment = propertyValue > 0 ? Math.max(0, propertyValue - loanAmount) : 0;
+    const ltv = propertyValue > 0 ? calculateLTV(loanAmount, propertyValue) : 0;
     // RBI tiered LTV based on property value: ≤₹30L → 90%, ₹30L–₹75L → 80%, >₹75L → 75%
     const maxLtv = propertyValue <= 3000000 ? 90 : propertyValue <= 7500000 ? 80 : 75;
     const months = tenureYears * 12;
@@ -209,7 +214,23 @@ export default function AdvancedMortgageCalculator() {
         const wiMonths = wiTenure * 12;
         const r = wiRate / 12 / 100;
         const wiEmi = r === 0 ? Math.ceil(loanAmount / wiMonths) : Math.ceil((loanAmount * r * Math.pow(1 + r, wiMonths)) / (Math.pow(1 + r, wiMonths) - 1));
-        const wiTotalPayment = wiEmi * wiMonths;
+        // Amortization-consistent total: simulate the balance monthly instead
+        // of the naive wiEmi × wiMonths (which overstates interest — the
+        // ceil'd EMI clears the loan early and the last payment is smaller).
+        // Mirrors calculateAdvancedMortgage's reconciliation. ≤360 iterations.
+        let wiBal = loanAmount;
+        let wiTotalPayment = 0;
+        for (let m = 1; m <= wiMonths && wiBal > 0.01; m++) {
+            const monthInterest = wiBal * r;
+            if (m === wiMonths || wiBal + monthInterest <= wiEmi) {
+                wiTotalPayment += wiBal + monthInterest; // final payment: remaining balance + interest
+                wiBal = 0;
+            } else {
+                wiTotalPayment += wiEmi;
+                wiBal = wiBal + monthInterest - wiEmi;
+            }
+        }
+        wiTotalPayment = Math.round(wiTotalPayment);
         const wiTotalInterest = wiTotalPayment - loanAmount;
         return {
             emi: wiEmi, totalInterest: wiTotalInterest, totalPayment: wiTotalPayment, months: wiMonths,
@@ -241,10 +262,12 @@ export default function AdvancedMortgageCalculator() {
         const affordStatus = emiRatio > 50 ? 'High Risk' : emiRatio > 40 ? 'Caution' : 'Safe';
 
         const inputs: ExportConfig['inputs'] = [
-            { label: 'Property Value', value: formatINR(propertyValue) },
-            { label: 'Down Payment', value: formatINR(downPayment) },
+            ...(propertyValue > 0 ? [
+                { label: 'Property Value', value: formatINR(propertyValue) },
+                { label: 'Down Payment', value: formatINR(downPayment) },
+            ] : []),
             { label: 'Loan Amount', value: formatINR(loanAmount) },
-            { label: 'LTV Ratio', value: `${ltv.toFixed(1)}% (RBI Max: ${maxLtv}%)` },
+            ...(propertyValue > 0 ? [{ label: 'LTV Ratio', value: `${ltv.toFixed(1)}% (RBI Max: ${maxLtv}%)` }] : []),
             { label: 'Interest Rate', value: `${interestRate}% p.a.` },
             { label: 'Tenure', value: `${tenureYears} Years (${months} Months)` },
             ...(monthlyIncome > 0 ? [{ label: 'Monthly Income', value: formatINR(monthlyIncome) }] : []),
@@ -484,39 +507,57 @@ export default function AdvancedMortgageCalculator() {
                         <h2 className="font-semibold text-lg">{t('mortgage.propertyLoanDetails')}</h2>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <NumberInput
-                            label={t('mortgage.propertyValue')}
-                            value={propertyValue}
-                            onChange={setPropertyValue}
-                            min={100000}
-                            max={500000000}
-                            step={100000}
-                            prefix="₹"
-                        />
-                        <NumberInput
-                            label={t('mortgage.downPayment')}
-                            value={downPayment}
-                            onChange={setDownPayment}
-                            min={0}
-                            max={propertyValue}
-                            step={100000}
-                            prefix="₹"
-                        />
-                    </div>
-                    
-                    <div className="p-4 rounded-xl flex flex-wrap justify-between items-center gap-4" style={{ backgroundColor: c.bg }}>
-                        <div>
-                            <p className="text-sm font-medium" style={{ color: c.textSecondary }}>{t('mortgage.loanAmount')}</p>
-                            <p className="text-2xl font-bold" style={{ color: c.text }}>{formatINR(loanAmount)}</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-sm font-medium" style={{ color: c.textSecondary }}>{t('mortgage.ltvLoanToValue')}</p>
-                            <p className={`text-xl font-bold ${ltv > maxLtv ? 'text-red-500' : 'text-emerald-500'}`}>
-                                {ltv.toFixed(1)}%
-                            </p>
-                            {ltv > maxLtv && <p className="text-xs mt-1 text-red-500">{t('mortgage.rbiMax', { maxLtv })}</p>}
-                        </div>
+                    <NumberInput
+                        label={t('mortgage.loanAmount')}
+                        value={loanAmount}
+                        onChange={setLoanAmount}
+                        min={100000}
+                        max={500000000}
+                        step={100000}
+                        prefix="₹"
+                        helperText={t('mortgage.loanAmountHelper')}
+                    />
+
+                    {/* Optional: LTV check against property value */}
+                    <div>
+                        <button onClick={() => setShowLtvCheck(v => !v)}
+                            className="flex items-center gap-1.5 text-sm font-medium transition-colors"
+                            style={{ color: showLtvCheck ? '#10B981' : c.textSecondary }}>
+                            {showLtvCheck ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            {t('mortgage.ltvCheckToggle')}
+                        </button>
+                        <AnimatePresence>
+                            {showLtvCheck && (
+                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                                    <div className="pt-4 space-y-4">
+                                        <NumberInput
+                                            label={t('mortgage.propertyValue')}
+                                            value={propertyValue}
+                                            onChange={setPropertyValue}
+                                            min={0}
+                                            max={500000000}
+                                            step={100000}
+                                            prefix="₹"
+                                        />
+                                        {propertyValue > 0 && (
+                                            <div className="p-4 rounded-xl flex flex-wrap justify-between items-center gap-4" style={{ backgroundColor: c.bg }}>
+                                                <div>
+                                                    <p className="text-sm font-medium" style={{ color: c.textSecondary }}>{t('mortgage.downPayment')}</p>
+                                                    <p className="text-xl font-bold" style={{ color: c.text }}>{formatINR(downPayment)}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-sm font-medium" style={{ color: c.textSecondary }}>{t('mortgage.ltvLoanToValue')}</p>
+                                                    <p className={`text-xl font-bold ${ltv > maxLtv ? 'text-red-500' : 'text-emerald-500'}`}>
+                                                        {ltv.toFixed(1)}%
+                                                    </p>
+                                                    {ltv > maxLtv && <p className="text-xs mt-1 text-red-500">{t('mortgage.rbiMax', { maxLtv })}</p>}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -528,7 +569,7 @@ export default function AdvancedMortgageCalculator() {
                             max={20}
                             step={0.1}
                             suffix="%"
-                            helperText="Typical range 8.5-9.5% (Apr 2026)"
+                            helperText="Typical range 7.25-8.7% (Jul 2026)"
                         />
                         <NumberInput
                             label={t('mortgage.tenureYears')}

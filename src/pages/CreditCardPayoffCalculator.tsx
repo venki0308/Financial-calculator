@@ -114,8 +114,11 @@ export default function CreditCardPayoffCalculator() {
   const totalBalance = activeInputs.reduce((s, c) => s + c.balance, 0);
   const totalLimit = useMemo(() => {
     if (inputTab === 'saved') return savedCards.filter(c => selectedIds.has(c.id)).reduce((s, c) => s + c.creditLimit, 0);
-    return totalBalance * 2; // estimate for manual entry
-  }, [inputTab, savedCards, selectedIds, totalBalance]);
+    // Manual entry has no credit-limit data — return 0 so the utilization
+    // gauge/advice stays hidden instead of fabricating a fixed 50% figure
+    // (the old `totalBalance * 2` estimate always produced exactly 50%).
+    return 0;
+  }, [inputTab, savedCards, selectedIds]);
   const overallUtil = totalLimit > 0 ? Math.round((totalBalance / totalLimit) * 100) : 0;
   const weightedAPR = totalBalance > 0 ? activeInputs.reduce((s, c) => s + c.apr * c.balance, 0) / totalBalance : 0;
   const hasCards = activeInputs.length > 0 && current.totalMonths > 0;

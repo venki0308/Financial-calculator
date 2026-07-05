@@ -247,36 +247,37 @@ const TZPickerSheet = memo(({
 });
 
 // ────────────────────────────────────────────────────────────────────────────
-// anchorToTimezone — bisection-based UTC anchoring (immune to DST gaps/folds)
-// Returns the UTC Date whose wall-clock reading in `iana` equals `targetH:targetM`
+// anchorToTimezone — deterministic UTC anchoring via offset refinement.
+// `baseUTC` encodes the desired wall-clock fields (source-TZ calendar date +
+// targetH:targetM) as if they were UTC. We find the real UTC instant whose
+// wall-clock reading in `iana` matches those fields by measuring the zone's
+// offset at a candidate instant and correcting (converges in 1-2 passes;
+// at a DST spring-forward gap the result shifts by the gap, which is the
+// standard, graceful behavior). Replaces a bisection search whose circular
+// diff used JS `%` on negatives (negative remainder → wrong search direction
+// → non-convergence → arbitrary times shown for Manual input).
 // ────────────────────────────────────────────────────────────────────────────
-function anchorToTimezone(baseUTC: number, iana: string, targetH: number, targetM: number): Date {
-    // We scan ±15h around the rough candidate to find exact match
-    const targetTotalMin = targetH * 60 + targetM;
-    let low = baseUTC - 15 * 3600000;
-    let high = baseUTC + 15 * 3600000;
-
-    const wallMin = (utcMs: number) => {
+function anchorToTimezone(baseUTC: number, iana: string): Date {
+    // Read the wall-clock fields in `iana` at a UTC instant, re-encoded as UTC ms
+    const wallAsUTC = (utcMs: number) => {
         const p = new Intl.DateTimeFormat('en-US', {
-            timeZone: iana, hour: '2-digit', minute: '2-digit', hour12: false,
+            timeZone: iana, year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
         }).formatToParts(new Date(utcMs));
-        const h = parseInt(p.find(x => x.type === 'hour')?.value || '0');
-        const m = parseInt(p.find(x => x.type === 'minute')?.value || '0');
+        const get = (t: string) => parseInt(p.find(x => x.type === t)?.value || '0');
+        const h = get('hour');
         // handle midnight 24:00 edge
-        return (h === 24 ? 0 : h) * 60 + m;
+        return Date.UTC(get('year'), get('month') - 1, get('day'), h === 24 ? 0 : h, get('minute'), get('second'));
     };
 
-    // Binary search with 60s precision
-    for (let i = 0; i < 30; i++) {
-        const mid = Math.floor((low + high) / 2);
-        const wm = wallMin(mid);
-        // Use signed distance on circular clock (mod 1440)
-        const diff = ((wm - targetTotalMin) + 720) % 1440 - 720;
-        if (Math.abs(diff) <= 1) return new Date(mid - (diff * 60000));
-        if (diff > 0) high = mid;
-        else low = mid;
+    let utc = baseUTC;
+    for (let i = 0; i < 3; i++) {
+        const offset = wallAsUTC(utc) - utc; // zone offset (ms) at this instant
+        const next = baseUTC - offset;
+        if (next === utc) break;
+        utc = next;
     }
-    return new Date(Math.floor((low + high) / 2));
+    return new Date(utc);
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -367,7 +368,7 @@ function CompareView() {
                 // Build rough UTC candidate
                 const roughUTC = Date.UTC(+y, +m - 1, +d, inputHour, inputMin, 0);
                 // Bisection-anchored: find exact UTC ms where srcTZ wall clock = inputHour:inputMin
-                ref = anchorToTimezone(roughUTC, srcTZ, inputHour, inputMin);
+                ref = anchorToTimezone(roughUTC, srcTZ);
             }
 
             const fmtTime = (iana: string) =>

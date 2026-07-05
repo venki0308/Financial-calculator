@@ -51,7 +51,7 @@ export const schemeCategories = [
     { name: 'Women', color: '#EC4899', count: 5 },
     { name: 'Education', color: '#3B82F6', count: 5 },
     { name: 'Farmers', color: '#10B981', count: 6 },
-    { name: 'MSME', color: '#F59E0B', count: 5 },
+    { name: 'MSME', color: '#F59E0B', count: 8 },
     { name: 'Senior Citizens', color: '#8B5CF6', count: 4 },
     { name: 'Insurance', color: '#EF4444', count: 3 },
     { name: 'Housing', color: '#F97316', count: 2 },
@@ -84,7 +84,7 @@ export const schemes: Scheme[] = [
         documents: ['Aadhaar Card (mandatory)', 'Bank account details', 'Land ownership records (verified by state government)'],
         howToApply: ['Visit pmkisan.gov.in', 'Click "New Farmer Registration"', 'Enter Aadhaar and land details', 'Verification done by state authorities'],
         notes: 'Income taxpayers and government pensioners are not eligible.',
-        launchYear: 2019, lastVerified: '2026-04-10',
+        launchYear: 2019, lastVerified: '2026-07-05',
         verifiedSource: 'pmkisan.gov.in', isActive: true,
     },
     {
@@ -179,7 +179,7 @@ export const schemes: Scheme[] = [
         benefits: ['Guaranteed pension ₹1,000–₹5,000/month after 60', 'Spouse gets pension on subscriber death', 'Nominee gets corpus on death of spouse', 'Tax benefit under Sec 80CCD / Sec 124 (ITA 2025)', 'Contribution depends on age and pension amount chosen'],
         documents: ['Aadhaar Card', 'Bank account passbook', 'Mobile number linked to Aadhaar'],
         howToApply: ['Visit any bank or post office', 'Fill APY form or apply via net banking', 'Choose monthly pension amount and contribution plan'],
-        launchYear: 2015, lastVerified: '2026-04-10',
+        launchYear: 2015, lastVerified: '2026-07-05',
         verifiedSource: 'www.npscra.proteantech.in', isActive: true,
     },
     {
@@ -212,7 +212,7 @@ export const schemes: Scheme[] = [
         documents: ['Aadhaar Card', 'PAN Card', 'Bank account details'],
         howToApply: ['Register at eNPS portal or through bank/post office', 'Choose pension fund manager and contribution amount'],
         notes: 'Includes Tier I (retirement) and Tier II (voluntary savings) accounts.',
-        launchYear: 2004, lastVerified: '2026-04-10',
+        launchYear: 2004, lastVerified: '2026-07-05',
         verifiedSource: 'www.npscra.proteantech.in', isActive: true,
     },
     {
@@ -227,7 +227,7 @@ export const schemes: Scheme[] = [
         benefits: ['Long-term retirement savings started in childhood', 'Account converts to regular NPS at age 18', 'Market-linked returns from early age', 'Minimum annual contribution: ₹1,000'],
         documents: ['Birth certificate of minor', 'Aadhaar of guardian', 'Bank account details'],
         howToApply: ['Open account through NPS portal or banks', 'Guardian manages account until minor turns 18'],
-        launchYear: 2024, lastVerified: '2026-04-10',
+        launchYear: 2024, lastVerified: '2026-07-05',
         verifiedSource: 'www.npscra.proteantech.in', isActive: true,
     },
 
@@ -246,7 +246,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹2 lakh life insurance cover', 'Premium ₹436 per year (auto-debited)', 'Coverage renewable every year', 'Nominee receives amount on death'],
         documents: ['Aadhaar Card', 'Bank account (auto-debit consent form)'],
         howToApply: ['Contact bank where savings account is held', 'Fill PMJJBY consent-cum-declaration form', 'Premium auto-debited on 31 May annually'],
-        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'jansuraksha.gov.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-07-05', verifiedSource: 'jansuraksha.gov.in', isActive: true,
     },
     {
         id: 'c-pmsby', name: 'PM Suraksha Bima Yojana', governmentLevel: 'central',
@@ -261,7 +261,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹2 lakh accidental death/total disability cover', '₹1 lakh partial disability cover', 'Premium only ₹20 per year'],
         documents: ['Aadhaar Card', 'Bank account (auto-debit consent)'],
         howToApply: ['Contact bank where savings account is held', 'Fill PMSBY consent form', 'Premium ₹20 auto-debited annually'],
-        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'jansuraksha.gov.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-07-05', verifiedSource: 'jansuraksha.gov.in', isActive: true,
     },
 
     // ── HOUSING ───────────────────────────────────────────────────────────────
@@ -273,11 +273,11 @@ export const schemes: Scheme[] = [
         ministry: 'Ministry of Housing and Urban Affairs',
         officialWebsite: 'https://pmaymis.gov.in',
         applicationType: 'Online Application' as ApplicationType,
-        eligibility: ['EWS: annual income up to ₹3 lakh', 'LIG: ₹3–6 lakh', 'MIG-I: ₹6–12 lakh', 'MIG-II: ₹12–18 lakh', 'Must not own pucca house anywhere in India'],
-        benefits: ['₹2.5 lakh capital assistance for EWS/LIG beneficiaries', 'Interest subsidy up to ₹1.80 lakh on home loans for MIG (CLSS revived under 2.0)', 'In-Situ Slum Redevelopment (ISSR) and Affordable Housing in Partnership (AHP)', 'Budget 2025-26 allocation: ₹30,170 crore'],
+        eligibility: ['EWS: annual income up to ₹3 lakh', 'LIG: ₹3–6 lakh', 'MIG: ₹6–9 lakh (PMAY-U 2.0 bands)', 'Must not own pucca house anywhere in India'],
+        benefits: ['₹2.5 lakh capital assistance for EWS/LIG beneficiaries', 'Interest Subsidy Scheme (ISS): 4% subsidy on first ₹8 lakh of loan — up to ₹1.80 lakh, paid in 5 annual instalments (house value up to ₹35 lakh)', 'In-Situ Slum Redevelopment (ISSR) and Affordable Housing in Partnership (AHP)', 'Valid for loans sanctioned from 1 Sep 2024 (scheme runs to Aug 2029)'],
         documents: ['Aadhaar Card', 'Income certificate', 'Property documents', 'Bank account passbook'],
         howToApply: ['Apply at pmaymis.gov.in', 'Or visit CSC / Urban Local Body (ULB)', 'Submit documents for verification'],
-        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'pmaymis.gov.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-07-05', verifiedSource: 'pmay-urban.gov.in', isActive: true,
     },
     {
         id: 'c-pmay-g', name: 'PM Awas Yojana Gramin', governmentLevel: 'central',
@@ -292,7 +292,7 @@ export const schemes: Scheme[] = [
         benefits: ['₹1.2 lakh (plain) / ₹1.3 lakh (hilly) for construction', '₹12,000 additional for toilet', 'MGNREGA wages for unskilled work'],
         documents: [],
         howToApply: ['Beneficiaries selected by Gram Sabha from SECC list', 'Contact Gram Panchayat for inclusion/grievance'],
-        launchYear: 2016, lastVerified: '2026-04-10', verifiedSource: 'pmayg.dord.gov.in', isActive: true,
+        launchYear: 2016, lastVerified: '2026-07-05', verifiedSource: 'pmayg.dord.gov.in', isActive: true,
     },
 
     // ── HEALTH ────────────────────────────────────────────────────────────────
@@ -368,7 +368,7 @@ export const schemes: Scheme[] = [
         benefits: ['Central subsidy up to ₹78,000 for rooftop solar', 'Up to 300 free units/month', 'Sell excess power to DISCOM', 'Long-term savings on electricity bills'],
         documents: ['Aadhaar Card', 'Recent electricity bill', 'Bank account passbook'],
         howToApply: ['Register at pmsuryaghar.gov.in', 'Apply through your DISCOM', 'Select approved vendor', 'Apply for subsidy post-installation'],
-        launchYear: 2024, lastVerified: '2026-04-10', verifiedSource: 'pmsuryaghar.gov.in', isActive: true,
+        launchYear: 2024, lastVerified: '2026-07-05', verifiedSource: 'pmsuryaghar.gov.in', isActive: true,
     },
 
     // ── BANKING / FINANCIAL INCLUSION ─────────────────────────────────────────
@@ -406,6 +406,57 @@ export const schemes: Scheme[] = [
     },
 
     {
+        id: 'c-udyam', name: 'Udyam Registration (MSME)', governmentLevel: 'central',
+        category: 'MSME', schemeCategory: 'Business Registration',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Free, paperless, Aadhaar-based registration that gives a business official MSME status. The Udyam certificate is the gateway to nearly every central MSME benefit — CGTMSE collateral-free loans, PMEGP subsidy, priority-sector lending, delayed-payment protection and government tender preferences.',
+        ministry: 'Ministry of Micro, Small & Medium Enterprises',
+        officialWebsite: 'https://udyamregistration.gov.in',
+        applicationType: 'Online Application' as ApplicationType,
+        benefitAmount: 'Free registration — gateway to all MSME schemes',
+        eligibility: ['Any proprietorship, partnership, LLP, company or HUF running a business', 'Micro: investment up to ₹2.5 crore & turnover up to ₹10 crore', 'Small: investment up to ₹25 crore & turnover up to ₹100 crore', 'Medium: investment up to ₹125 crore & turnover up to ₹500 crore (limits revised from 1 Apr 2025)'],
+        benefits: ['Official MSME certificate with lifetime validity — no renewal fee', 'Mandatory prerequisite for CGTMSE, PMEGP, CLCSS, NSIC and RAMP-linked schemes', 'Priority-sector bank lending and lower interest rates at many banks', 'Protection under MSMED Act — buyers must pay within 45 days', 'Preference in government tenders and exemption from some EMD deposits'],
+        documents: ['Aadhaar of proprietor/partner/director', 'PAN of business', 'GSTIN (if applicable)', 'Bank account details'],
+        howToApply: ['Visit udyamregistration.gov.in (no fee — beware of paid agent sites)', 'Verify with Aadhaar OTP', 'Enter PAN/GST details — investment & turnover auto-fetched', 'Udyam certificate issued instantly online'],
+        notes: 'Registration is completely free on the official portal. Revised (larger) classification limits effective 1 April 2025 let growing businesses retain MSME benefits longer.',
+        launchYear: 2020, lastVerified: '2026-07-05', verifiedSource: 'udyamregistration.gov.in', isActive: true,
+    },
+
+    {
+        id: 'c-cgtmse', name: 'CGTMSE — Collateral-Free MSME Credit Guarantee', governmentLevel: 'central',
+        category: 'MSME', schemeCategory: 'Credit Guarantee Scheme',
+        tags: ['Popular', 'Verified'], popular: true,
+        description: 'Credit Guarantee Fund Trust for Micro and Small Enterprises guarantees bank loans to MSEs so no collateral or third-party guarantee is needed. Budget 2025-26 doubled the guarantee ceiling from ₹5 crore to ₹10 crore (effective 1 April 2025).',
+        ministry: 'Ministry of Micro, Small & Medium Enterprises',
+        officialWebsite: 'https://www.cgtmse.in',
+        applicationType: 'Bank Application' as ApplicationType,
+        maxAmount: '₹10 crore guarantee cover',
+        eligibility: ['Micro and small enterprises with Udyam registration', 'New and existing units — manufacturing and services (retail & wholesale trade included)', 'Loan sanctioned by a CGTMSE member bank/NBFC'],
+        benefits: ['Collateral-free and third-party-guarantee-free loans up to ₹10 crore (raised from ₹5 crore, w.e.f. 1 Apr 2025)', 'Guarantee cover typically 75–85% of the sanctioned amount', 'Higher 85% cover and concessional fees for women, SC/ST, ZED-certified and transgender entrepreneurs', 'Reduced annual guarantee fees for loans up to ₹1 crore'],
+        documents: ['Udyam Registration certificate', 'Business plan / project report', 'PAN, Aadhaar & KYC of promoters', 'Bank loan application'],
+        howToApply: ['Apply for a business loan at any CGTMSE member bank or NBFC', 'Ask the bank to cover the loan under CGTMSE (bank applies on your behalf)', 'Bank sanctions the loan without collateral once guarantee is approved'],
+        notes: 'You apply through the lender, not CGTMSE directly. Guarantee fee (charged annually on outstanding) is usually passed on to the borrower.',
+        launchYear: 2000, lastVerified: '2026-07-05', verifiedSource: 'cgtmse.in', isActive: true,
+    },
+
+    {
+        id: 'c-mcgs-msme', name: 'Mutual Credit Guarantee Scheme (MCGS-MSME)', governmentLevel: 'central',
+        category: 'MSME', schemeCategory: 'Credit Guarantee Scheme',
+        tags: ['New 2025', 'Verified'], popular: false,
+        description: 'NCGTC-backed guarantee scheme (launched Jan 2025) giving 60% guarantee cover on loans up to ₹100 crore for MSMEs buying plant, machinery or equipment — aimed at manufacturing expansion. Revised in 2026 to further support MSME manufacturers and exporters.',
+        ministry: 'Ministry of Finance (NCGTC)',
+        officialWebsite: 'https://www.ncgtc.in',
+        applicationType: 'Bank Application' as ApplicationType,
+        maxAmount: '₹100 crore loan (60% guaranteed)',
+        eligibility: ['MSME with valid Udyam Registration Number', 'Loan for purchase of plant, machinery or equipment', 'Equipment/machinery cost at least 60% of project cost (reduced from 75%)', 'Not an NPA with any lender'],
+        benefits: ['60% guarantee cover to the lender on loans up to ₹100 crore', 'Enables large capex loans with reduced collateral demands', '5% upfront contribution now refundable — 1% returned per year from the 4th year onward', 'Repayment up to 8 years with 2-year moratorium on principal'],
+        documents: ['Udyam Registration certificate', 'Project report with machinery quotations', 'Financial statements', 'KYC of promoters'],
+        howToApply: ['Approach a scheduled bank/NBFC registered with NCGTC', 'Submit project proposal for equipment purchase', 'Lender obtains MCGS-MSME guarantee from NCGTC and sanctions the loan'],
+        notes: 'Complements CGTMSE: CGTMSE suits micro/small loans up to ₹10 crore; MCGS-MSME targets bigger manufacturing capex up to ₹100 crore. ECLGS 5.0 (approved May 2026) separately provides emergency credit support to MSMEs.',
+        launchYear: 2025, lastVerified: '2026-07-05', verifiedSource: 'ncgtc.in', isActive: true,
+    },
+
+    {
         id: 'c-pmvishwakarma', name: 'PM Vishwakarma Yojana', governmentLevel: 'central',
         category: 'MSME', schemeCategory: 'Skill Development Scheme',
         tags: ['New 2024', 'Popular', 'Verified'], popular: true,
@@ -418,7 +469,7 @@ export const schemes: Scheme[] = [
         benefits: ['PM Vishwakarma Certificate and ID card', 'Toolkit incentive ₹15,000', 'Skill training with ₹500/day stipend', 'Loan ₹1 lakh first tranche at 5% interest', 'Loan ₹2 lakh second tranche at 5% interest'],
         documents: ['Aadhaar Card', 'Bank account', 'Mobile number'],
         howToApply: ['Register at pmvishwakarma.gov.in', 'Gram Panchayat/ULB verifies', 'Attend skill training', 'Receive toolkit and loan'],
-        launchYear: 2023, lastVerified: '2026-04-10', verifiedSource: 'pmvishwakarma.gov.in', isActive: true,
+        launchYear: 2023, lastVerified: '2026-07-05', verifiedSource: 'pmvishwakarma.gov.in', isActive: true,
     },
     {
         id: 'c-pmsvanidhi', name: 'PM SVANidhi Scheme', governmentLevel: 'central',
@@ -539,7 +590,7 @@ export const schemes: Scheme[] = [
         benefits: ['Apply to multiple banks in one form', 'Compare loan offers', 'Track application status online'],
         documents: ['Aadhaar Card', 'Academic records', 'Admission letter', 'Income documents of co-applicant'],
         howToApply: ['Register at vidyalakshmi.co.in', 'Fill common education loan application', 'Apply to multiple banks simultaneously'],
-        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'pmvidyalaxmi.co.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-07-05', verifiedSource: 'pmvidyalaxmi.co.in', isActive: true,
     },
 
     // ── SKILL DEVELOPMENT ─────────────────────────────────────────────────────
@@ -612,10 +663,10 @@ export const schemes: Scheme[] = [
         interestRate: '8.2% p.a.',
         taxBenefit: 'EEE – Fully exempt under Sec 80C / Sec 123 (ITA 2025)',
         eligibility: ['Girl child below age 10', 'Max 2 accounts per family', 'Indian resident'],
-        benefits: ['Interest rate notified quarterly by Government of India (current ~8.2% p.a., Q1 2026-27)', 'Full EEE tax exemption', 'Partial withdrawal at 18 for education', 'Full maturity at 21'],
+        benefits: ['Interest rate notified quarterly by Government of India (current ~8.2% p.a., Q2 2026-27 (Jul–Sep 2026))', 'Full EEE tax exemption', 'Partial withdrawal at 18 for education', 'Full maturity at 21'],
         documents: ['Birth certificate of girl', 'Aadhaar of parent/guardian', 'Address proof'],
         howToApply: ['Open account at post office or authorised bank', 'Fill SSY form', 'Min deposit ₹250/year'],
-        launchYear: 2015, lastVerified: '2026-04-10', verifiedSource: 'nsiindia.gov.in', isActive: true,
+        launchYear: 2015, lastVerified: '2026-07-05', verifiedSource: 'nsiindia.gov.in', isActive: true,
     },
     {
         id: 'c-lakhpati', name: 'Lakhpati Didi Initiative', governmentLevel: 'central',
@@ -675,10 +726,10 @@ export const schemes: Scheme[] = [
         maxAmount: '₹30 lakh',
         taxBenefit: 'Sec 80C / Sec 123 (ITA 2025); interest taxable',
         eligibility: ['Age 60+', 'VRS/Superannuation retirees aged 55+', 'NRIs not eligible'],
-        benefits: ['Interest rate notified quarterly by Government of India (current ~8.2% p.a., Q1 2026-27)', 'Maximum deposit ₹30 lakh', '5-year tenure extendable by 3 years'],
+        benefits: ['Interest rate notified quarterly by Government of India (current ~8.2% p.a., Q2 2026-27 (Jul–Sep 2026))', 'Maximum deposit ₹30 lakh', '5-year tenure extendable by 3 years'],
         documents: ['Aadhaar Card', 'Age proof', 'Bank account'],
         howToApply: ['Visit post office or authorised bank', 'Fill SCSS opening form', 'Submit age proof and initial deposit'],
-        launchYear: 2004, lastVerified: '2026-04-10', verifiedSource: 'nsiindia.gov.in', isActive: true,
+        launchYear: 2004, lastVerified: '2026-07-05', verifiedSource: 'nsiindia.gov.in', isActive: true,
     },
 
     // ── YOUTH / STARTUP ───────────────────────────────────────────────────────

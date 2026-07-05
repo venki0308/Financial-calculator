@@ -301,7 +301,7 @@ function getInsights(type: string, inputs: Record<string, number>, results: Reco
                 const remaining = 3000000 - investment;
                 insights.push({ type: 'tip', text: t('insight.scssRoom', { remaining: formatINR(remaining) }) });
             }
-            if (annualInterest > 50000) {
+            if (annualInterest > 100000) {
                 insights.push({ type: 'warning', text: t('insight.scssTds') });
             } else {
                 insights.push({ type: 'positive', text: t('insight.scssNoTds') });

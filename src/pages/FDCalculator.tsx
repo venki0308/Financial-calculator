@@ -69,7 +69,7 @@ export default function FDCalculator() {
     // TDS Calculation: 10% TDS if annual interest exceeds threshold
     const tdsInfo = useMemo(() => {
         const annualInterest = result.interest / years;
-        const threshold = isSeniorCitizen ? 50000 : 40000; // Rs 50K for seniors, Rs 40K for others
+        const threshold = isSeniorCitizen ? 100000 : 50000; // Sec 194A FY 2026-27: Rs 1L for seniors, Rs 50K for others
         const isTdsApplicable = annualInterest > threshold;
         const annualTds = isTdsApplicable ? Math.round(annualInterest * 0.1) : 0;
         const totalTds = annualTds * years;

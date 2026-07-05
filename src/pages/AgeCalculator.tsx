@@ -7,6 +7,7 @@ import { AnalyticsService } from '../lib/analytics';
 import DateInput from '../components/DateInput';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { parseLocalDate } from '../utils/dateUtils';
 
 
 function getGeneration(year: number) {
@@ -59,7 +60,8 @@ export default function AgeCalculator() {
 
     const result = useMemo(() => {
         if (!birthDate) return null;
-        const bd = new Date(birthDate);
+        // Parse YYYY-MM-DD as local time — new Date('YYYY-MM-DD') parses as UTC and can shift the day
+        const bd = /^\d{4}-\d{2}-\d{2}$/.test(birthDate) ? parseLocalDate(birthDate) : new Date(birthDate);
         if (isNaN(bd.getTime()) || bd > today) return null;
 
         const age = calculateAge(bd, today);

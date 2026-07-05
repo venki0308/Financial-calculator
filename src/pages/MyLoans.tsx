@@ -71,7 +71,9 @@ const LOAN_TYPE_TO_CALC_TYPE: Record<LoanType, string> = {
 };
 
 function fmtDate(ts: number | string): string {
-    const d = typeof ts === 'number' ? new Date(ts) : new Date(ts);
+    // Parse YYYY-MM-DD as a LOCAL date — new Date('YYYY-MM-DD') is parsed as
+    // UTC midnight and can display the previous day in negative-UTC timezones.
+    const d = typeof ts === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(ts) ? parseLocalDate(ts) : new Date(ts);
     return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
@@ -160,6 +162,11 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 const principal = d.loanAmount || 0;
                 const monthlyInt = d.monthlyPayment || 0;
                 const totalInt = d.totalInterest || (monthlyInt * (d.tenureMonths || 0));
+                // Real elapsed-time progress (was hardcoded 100%, which showed
+                // fresh bullet loans as already complete). 0 when we can't tell.
+                const totalMonths = d.tenureMonths || 0;
+                const elapsedMonths = Math.floor(yearsSince(d.disbursementDate || d.startDate, totalMonths / 12) * 12);
+                const progress = totalMonths > 0 ? Math.min(100, Math.max(0, (elapsedMonths / totalMonths) * 100)) : 0;
                 return {
                     label1: t('myLoans.metricAmount'),
                     value1: formatINR(principal),
@@ -167,7 +174,7 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                     value2: formatINR(monthlyInt),
                     label3: t('myLoans.metricInterest'),
                     value3: formatINR(totalInt),
-                    progress: 100,
+                    progress,
                     statusText: `${d.goldWeight || 0}g ${d.purity || ''} · ${d.tierLtv || 75}% LTV`,
                 };
             }
@@ -180,11 +187,16 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
             const utilized = d.utilized || d.loanAmount || 0;
             const totalInterest = d.totalInterest || 0;
             const totalPayable = d.totalPayable ?? (utilized + totalInterest);
+            // Real elapsed-time progress over the utilization period (was
+            // hardcoded 100%, which showed fresh ODs as already complete).
+            const totalDays = d.days || 0;
+            const elapsedDays = Math.floor(yearsSince(d.startDate || d.disbursementDate, totalDays / 365.25) * 365.25);
+            const progress = totalDays > 0 ? Math.min(100, Math.max(0, (elapsedDays / totalDays) * 100)) : 0;
             return {
                 label1: t('myLoans.metricAmount'), value1: formatINR(utilized),
                 label2: t('myLoans.metricInterest'), value2: formatINR(totalInterest),
                 label3: t('myLoans.metricValue'), value3: formatINR(totalPayable),
-                progress: 100, statusText: `${d.days || 0}d @ ${d.rate || 0}%`,
+                progress, statusText: `${d.days || 0}d @ ${d.rate || 0}%`,
             };
         }
         if (isAnyLoanType(type)) {

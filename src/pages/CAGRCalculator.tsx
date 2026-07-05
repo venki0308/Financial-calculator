@@ -165,8 +165,8 @@ export default function CAGRCalculator() {
         const config: ExportConfig = {
             title: 'CAGR Calculator Report',
             inputs: [
-                { label: 'Initial Investment', value: `₹${initial.toLocaleString('en-IN')}` },
-                { label: 'Final Value', value: `₹${final.toLocaleString('en-IN')}` },
+                { label: 'Initial Investment', value: `₹${result.validInitial.toLocaleString('en-IN')}` },
+                { label: 'Final Value', value: `₹${result.validFinal.toLocaleString('en-IN')}` },
                 { label: 'Investment Period', value: `${years} years` },
             ],
             results: [
@@ -202,8 +202,8 @@ export default function CAGRCalculator() {
         const config: ExportConfig = {
             title: 'CAGR Calculator Report',
             inputs: [
-                { label: 'Initial Investment', value: `₹${initial.toLocaleString('en-IN')}` },
-                { label: 'Final Value', value: `₹${final.toLocaleString('en-IN')}` },
+                { label: 'Initial Investment', value: `₹${result.validInitial.toLocaleString('en-IN')}` },
+                { label: 'Final Value', value: `₹${result.validFinal.toLocaleString('en-IN')}` },
                 { label: 'Investment Period', value: `${years} years` },
             ],
             results: [

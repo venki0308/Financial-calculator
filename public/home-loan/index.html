@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home Loan EMI Calculator India 2026 — From 7.25% | FinCalix</title>
+  <meta name="description" content="Free home loan EMI calculator for India. Rates from 7.25% (SBI, Apr 2026), PMAY-U 2.0 subsidy and old-regime tax benefits explained. Free, offline, no login." />
+  <link rel="canonical" href="https://fincalix.com/home-loan" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/home-loan" />
+  <meta property="og:title" content="Home Loan EMI Calculator India 2026 — From 7.25%" />
+  <meta property="og:description" content="Calculate your home loan EMI with July 2026 rates (7.25%–8.7%), PMAY-U 2.0 subsidy and tax benefits. Free in the FinCalix app — offline, no login." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Home Loan EMI Calculator", "item": "https://fincalix.com/home-loan" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is home loan EMI calculated?",
+            "acceptedAnswer": { "@type": "Answer", "text": "EMI = P × r × (1+r)^n ÷ ((1+r)^n − 1), where P is the loan amount, r is the monthly rate (annual rate ÷ 12 ÷ 100) and n is the number of months. For a ₹40 lakh loan at 7.9% for 20 years, the EMI is ₹33,209." }
+          },
+          {
+            "@type": "Question",
+            "name": "What are home loan interest rates in India in July 2026?",
+            "acceptedAnswer": { "@type": "Answer", "text": "With the RBI repo rate held at 5.25% in the June 2026 MPC meeting, repo-linked home loans at major banks range roughly 7.25%–8.7% p.a. SBI's floor rate is 7.25% w.e.f. April 2026. The next MPC review is in August 2026." }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the PMAY-U 2.0 interest subsidy?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Under the PMAY-U 2.0 Interest Subsidy Scheme (ISS), eligible first-time urban homebuyers get a 4% interest subsidy on the first ₹8 lakh of the loan, capped at ₹1.8 lakh. Income eligibility: EWS up to ₹3 lakh, LIG up to ₹6 lakh and MIG up to ₹9 lakh annual household income." }
+          },
+          {
+            "@type": "Question",
+            "name": "What tax benefits do I get on a home loan?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Under the old tax regime you can claim up to ₹2 lakh a year on home loan interest under Section 24(b) for a self-occupied house, plus up to ₹1.5 lakh on principal repayment under Section 80C. These deductions are not available under the new regime." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>Home Loan EMI Calculator India 2026</h1>
+    <p class="sub">Calculate your exact home loan EMI with the reducing-balance formula Indian banks use. Repo-linked rates start at 7.25% p.a. as of July 2026 (RBI repo held at 5.25% in the June 2026 MPC).</p>
+
+    <div class="card calc">
+      <label for="amt">Loan amount (₹)</label>
+      <input id="amt" type="number" inputmode="numeric" value="4000000" min="1000" />
+      <label for="rate">Interest rate (% per year)</label>
+      <input id="rate" type="number" inputmode="decimal" value="7.9" min="0" step="0.05" />
+      <label for="yrs">Tenure (years)</label>
+      <input id="yrs" type="number" inputmode="numeric" value="20" min="1" max="40" />
+      <button onclick="calc()">Calculate EMI</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How home loan EMI is calculated</h2>
+    <p>Banks use the reducing-balance method. Each EMI first covers the month's interest on the outstanding principal; the remainder reduces the principal.</p>
+    <div class="formula">EMI = P × r × (1 + r)<sup>n</sup> ÷ ((1 + r)<sup>n</sup> − 1)<br/>P = loan amount &nbsp; r = annual rate ÷ 12 ÷ 100 &nbsp; n = months</div>
+
+    <h2>Example: ₹40 lakh home loan at July 2026 rates (20 years)</h2>
+    <table>
+      <tr><th>Interest rate</th><th>Monthly EMI</th><th>Total interest paid</th></tr>
+      <tr><td>7.25% (SBI floor, w.e.f. Apr 2026)</td><td>₹31,615</td><td>₹35,87,609</td></tr>
+      <tr><td>7.90%</td><td>₹33,209</td><td>₹39,70,182</td></tr>
+      <tr><td>8.25%</td><td>₹34,083</td><td>₹41,79,830</td></tr>
+      <tr><td>8.70%</td><td>₹35,221</td><td>₹44,53,020</td></tr>
+    </table>
+
+    <h2>How tenure changes your EMI — ₹40 lakh at 7.9%</h2>
+    <table>
+      <tr><th>Tenure</th><th>Monthly EMI</th><th>Total interest paid</th></tr>
+      <tr><td>10 years</td><td>₹48,320</td><td>₹17,98,392</td></tr>
+      <tr><td>15 years</td><td>₹37,996</td><td>₹28,39,194</td></tr>
+      <tr><td>20 years</td><td>₹33,209</td><td>₹39,70,182</td></tr>
+      <tr><td>25 years</td><td>₹30,608</td><td>₹51,82,442</td></tr>
+      <tr><td>30 years</td><td>₹29,072</td><td>₹64,65,998</td></tr>
+    </table>
+
+    <h2>PMAY-U 2.0 interest subsidy (ISS)</h2>
+    <p>First-time urban homebuyers can claim a <strong>4% interest subsidy on the first ₹8 lakh</strong> of an eligible home loan under PMAY-U 2.0, worth up to <strong>₹1.8 lakh</strong> credited against the loan.</p>
+    <table>
+      <tr><th>Category</th><th>Annual household income</th></tr>
+      <tr><td>EWS</td><td>Up to ₹3 lakh</td></tr>
+      <tr><td>LIG</td><td>Up to ₹6 lakh</td></tr>
+      <tr><td>MIG</td><td>Up to ₹9 lakh</td></tr>
+    </table>
+
+    <h2>Home loan tax benefits (old regime)</h2>
+    <p>Under the old tax regime, a self-occupied house gives you up to <strong>₹2 lakh a year</strong> on interest under <strong>Section 24(b)</strong> and up to <strong>₹1.5 lakh</strong> on principal repayment under <strong>Section 80C</strong>. Neither deduction is available in the new regime, so compare both regimes before filing.</p>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>How is home loan EMI calculated?</h3>
+      <p>EMI = P × r × (1+r)^n ÷ ((1+r)^n − 1), where P is the loan amount, r is the monthly rate (annual rate ÷ 12 ÷ 100) and n is the number of months. For a ₹40 lakh loan at 7.9% for 20 years, the EMI is ₹33,209.</p>
+      <h3>What are home loan interest rates in India in July 2026?</h3>
+      <p>With the RBI repo rate held at 5.25% in the June 2026 MPC meeting, repo-linked home loans at major banks range roughly 7.25%–8.7% p.a. SBI's floor rate is 7.25% w.e.f. April 2026. The next MPC review is in August 2026.</p>
+      <h3>What is the PMAY-U 2.0 interest subsidy?</h3>
+      <p>Under the PMAY-U 2.0 Interest Subsidy Scheme (ISS), eligible first-time urban homebuyers get a 4% interest subsidy on the first ₹8 lakh of the loan, capped at ₹1.8 lakh. Income eligibility: EWS up to ₹3 lakh, LIG up to ₹6 lakh and MIG up to ₹9 lakh annual household income.</p>
+      <h3>What tax benefits do I get on a home loan?</h3>
+      <p>Under the old tax regime you can claim up to ₹2 lakh a year on home loan interest under Section 24(b) for a self-occupied house, plus up to ₹1.5 lakh on principal repayment under Section 80C. These deductions are not available under the new regime.</p>
+    </div>
+
+    <div class="install">
+      <h2>Get the full home loan toolkit — free</h2>
+      <p>Amortization schedule, prepayment savings, loan comparison, live loan tracker &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/car-loan">Car Loan EMI</a>
+      <a href="/hra">HRA Exemption</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Rates shown are indicative market ranges as of July 2026 and change with bank policy. FinCalix provides estimates for planning — verify final figures with your lender. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var P = Math.max(0, parseFloat(document.getElementById('amt').value) || 0);
+      var annual = Math.max(0, parseFloat(document.getElementById('rate').value) || 0);
+      var n = Math.round(Math.max(0, parseFloat(document.getElementById('yrs').value) || 0) * 12);
+      var out = document.getElementById('out');
+      if (P <= 0 || n <= 0) { out.style.display = 'none'; return; }
+      var r = annual / 12 / 100;
+      var emi = r > 0 ? P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1) : P / n;
+      var total = emi * n;
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      out.innerHTML = '<strong>' + fmt(emi) + ' / month</strong><small>Total payment ' + fmt(total) + ' · Total interest ' + fmt(total - P) + ' over ' + n + ' months</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

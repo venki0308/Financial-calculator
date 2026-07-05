@@ -6,6 +6,20 @@ import { darkColors, lightColors } from '../theme/colors';
 // jsPDF (~250KB) + jspdf-autotable (~80KB) + xlsx (~430KB) are loaded only when
 // the user actually triggers an export. This keeps the initial bundle small.
 
+// Excel formula-injection guard (CWE-1236): user-entered text must not be
+// interpreted as a formula when the exported file is opened in Excel.
+// Defense-in-depth for '=' and '@' only; '+'/'-' are excluded because signed
+// amounts (e.g. "+₹1,200", "-3.2%") are legitimate in financial exports and
+// aoa_to_sheet stores strings as type-'s' cells Excel never evaluates.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function sanitizeAoa<T extends any[][]>(rows: T): T {
+    return rows.map(row =>
+        row.map(cell =>
+            typeof cell === 'string' && /^[=@\t\r]/.test(cell) ? `'${cell}` : cell
+        )
+    ) as T;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _jsPDFCached: any = null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -355,7 +369,7 @@ export const exportToExcel = async (
 
         const XLSX = await getXLSX();
         const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.aoa_to_sheet(allRows);
+        const ws = XLSX.utils.aoa_to_sheet(sanitizeAoa(allRows));
 
         // Auto column widths — all values are strings now so no type issues
         const colWidths: number[] = headers.map((h, i) => {
@@ -1183,7 +1197,7 @@ export const exportOverdraftExcel = async (data: OverdraftReportData): Promise<v
             ['Total Amount Payable (Rs.)', data.totalPayableAmount],
             ['Effective Cost (%)', data.effectiveCost.toFixed(2) + '%']
         ];
-        const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+        const wsSummary = XLSX.utils.aoa_to_sheet(sanitizeAoa(summaryData));
         XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
         // SHEET 2: Daily Interest Schedule
@@ -1194,7 +1208,7 @@ export const exportOverdraftExcel = async (data: OverdraftReportData): Promise<v
             if (data.isOverLimit) intOfDay += (data.excess * (data.rateNum + 2) / (365*100));
             scheduleData.push([`Day ${i}`, data.utilizedNum, Number(intOfDay.toFixed(2)), Number((intOfDay * i).toFixed(2))]);
         }
-        const wsSchedule = XLSX.utils.aoa_to_sheet(scheduleData);
+        const wsSchedule = XLSX.utils.aoa_to_sheet(sanitizeAoa(scheduleData));
         XLSX.utils.book_append_sheet(wb, wsSchedule, 'Interest Schedule');
 
         // SHEET 3: Pre-closure Analysis
@@ -1208,7 +1222,7 @@ export const exportOverdraftExcel = async (data: OverdraftReportData): Promise<v
             ['Accrued Interest (Rs.)', data.totalInterest],
             ['Total to Close OD (Rs.)', data.totalToClose]
         ];
-        const wsPreclosure = XLSX.utils.aoa_to_sheet(preclosureData);
+        const wsPreclosure = XLSX.utils.aoa_to_sheet(sanitizeAoa(preclosureData));
         XLSX.utils.book_append_sheet(wb, wsPreclosure, 'Pre-closure');
 
         const xlsxFilename = `FinCalix_Overdraft_${new Date().toISOString().slice(0, 10)}.xlsx`;
@@ -1620,7 +1634,7 @@ export const exportLoanExcel = async (data: LoanReportData): Promise<void> => {
             summaryRows.splice(9, 0, ['Effective Reducing Rate (approx. % p.a.)', +((rate * 1.83).toFixed(2))]);
         }
 
-        const ws1 = XLSX.utils.aoa_to_sheet(summaryRows);
+        const ws1 = XLSX.utils.aoa_to_sheet(sanitizeAoa(summaryRows));
         ws1['!cols'] = [{ wch: 38 }, { wch: 24 }];
         XLSX.utils.book_append_sheet(wb, ws1, 'Summary');
 
@@ -1634,7 +1648,7 @@ export const exportLoanExcel = async (data: LoanReportData): Promise<void> => {
             `Year ${r.year}`, round(r.opening), round(r.principalPaid),
             round(r.interestPaid), round(r.closing), round(r.cumInterest),
         ]);
-        const ws2 = XLSX.utils.aoa_to_sheet([yHeaders, ...yRows]);
+        const ws2 = XLSX.utils.aoa_to_sheet(sanitizeAoa([yHeaders, ...yRows]));
         ws2['!cols'] = yHeaders.map((h, i) => {
             let max = h.length;
             for (const row of yRows) max = Math.max(max, String(row[i]).length);
@@ -1648,7 +1662,7 @@ export const exportLoanExcel = async (data: LoanReportData): Promise<void> => {
             row.month, round(row.emi), round(row.principal),
             round(row.interest), round(row.closingBalance),
         ]);
-        const ws3 = XLSX.utils.aoa_to_sheet([aHeaders, ...aRows]);
+        const ws3 = XLSX.utils.aoa_to_sheet(sanitizeAoa([aHeaders, ...aRows]));
         ws3['!cols'] = aHeaders.map((h, i) => {
             let max = h.length;
             for (const row of aRows) max = Math.max(max, String(row[i]).length);

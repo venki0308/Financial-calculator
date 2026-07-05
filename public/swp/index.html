@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SWP Calculator — Systematic Withdrawal Plan India | FinCalix</title>
+  <meta name="description" content="Free SWP calculator for India. See how long a ₹50 lakh corpus lasts with monthly withdrawals — ₹30,000/month at 8% lasts 50+ years. Instant answer, no login." />
+  <link rel="canonical" href="https://fincalix.com/swp" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/swp" />
+  <meta property="og:title" content="SWP Calculator — Systematic Withdrawal Plan India" />
+  <meta property="og:description" content="How long will your corpus last? Simulate monthly withdrawals with growth. Free in the FinCalix app — offline, no login." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "SWP Calculator", "item": "https://fincalix.com/swp" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is a Systematic Withdrawal Plan (SWP)?",
+            "acceptedAnswer": { "@type": "Answer", "text": "An SWP redeems a fixed amount from your mutual fund corpus every month while the remaining balance stays invested and keeps growing. It is the mirror image of a SIP and is widely used to draw a monthly income in retirement." }
+          },
+          {
+            "@type": "Question",
+            "name": "How long will 50 lakh last with a 30,000 monthly withdrawal?",
+            "acceptedAnswer": { "@type": "Answer", "text": "At an assumed 8% annual return, a ₹50 lakh corpus generates about ₹33,333 of growth per month — more than the ₹30,000 withdrawal — so the corpus never depletes and lasts 50+ years. At ₹40,000 a month it lasts about 22 years 6 months, and at ₹50,000 about 13 years 10 months." }
+          },
+          {
+            "@type": "Question",
+            "name": "What is a safe SWP withdrawal rate?",
+            "acceptedAnswer": { "@type": "Answer", "text": "If your monthly withdrawal stays at or below the corpus's average monthly growth (corpus × annual return ÷ 12), the balance is sustained indefinitely in this model. For ₹50 lakh at 8%, that break-even is about ₹33,333 per month. Withdrawing more starts consuming principal." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is SWP better than a fixed deposit for monthly income?",
+            "acceptedAnswer": { "@type": "Answer", "text": "SWP from a mutual fund offers market-linked growth and flexible withdrawals, but returns are not guaranteed. An FD pays a fixed, guaranteed rate. Many retirees combine both — an FD for essential expenses and an SWP for growth. Compare both in the FinCalix app." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>SWP Calculator — Systematic Withdrawal Plan</h1>
+    <p class="sub">An SWP pays you a fixed amount every month while the rest of your corpus stays invested. Find out how long your money lasts — and the withdrawal level at which it never runs out.</p>
+
+    <div class="card calc">
+      <label for="amt">Corpus (₹)</label>
+      <input id="amt" type="number" inputmode="numeric" value="5000000" min="10000" />
+      <label for="wd">Monthly withdrawal (₹)</label>
+      <input id="wd" type="number" inputmode="numeric" value="30000" min="100" />
+      <label for="rate">Expected annual return (%)</label>
+      <input id="rate" type="number" inputmode="decimal" value="8" min="0" step="0.5" />
+      <button onclick="calc()">Calculate How Long It Lasts</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How the SWP simulation works</h2>
+    <p>Each month the remaining balance grows at the monthly rate, then the withdrawal is deducted. The simulation counts months until the balance hits zero (capped at 50 years).</p>
+    <div class="formula">balance = balance × (1 + r ÷ 12 ÷ 100) − W, repeated monthly<br/>r = annual return % &nbsp; W = monthly withdrawal</div>
+
+    <h2>₹50 lakh corpus at 8% — how long it lasts</h2>
+    <table>
+      <tr><th>Monthly withdrawal</th><th>Corpus lasts</th></tr>
+      <tr><td>₹25,000</td><td>50+ years (never depletes)</td></tr>
+      <tr><td>₹30,000</td><td>50+ years (never depletes)</td></tr>
+      <tr><td>₹35,000</td><td>38 years 3 months</td></tr>
+      <tr><td>₹40,000</td><td>22 years 6 months</td></tr>
+      <tr><td>₹50,000</td><td>13 years 10 months</td></tr>
+    </table>
+    <p>The break-even is the corpus's monthly growth: ₹50,00,000 × 8% ÷ 12 ≈ <strong>₹33,333</strong>. Withdraw less than that and the balance keeps growing; withdraw more and you start consuming principal — and depletion accelerates.</p>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>What is a Systematic Withdrawal Plan (SWP)?</h3>
+      <p>An SWP redeems a fixed amount from your mutual fund corpus every month while the remaining balance stays invested and keeps growing. It is the mirror image of a SIP and is widely used to draw a monthly income in retirement.</p>
+      <h3>How long will 50 lakh last with a 30,000 monthly withdrawal?</h3>
+      <p>At an assumed 8% annual return, a ₹50 lakh corpus generates about ₹33,333 of growth per month — more than the ₹30,000 withdrawal — so the corpus never depletes and lasts 50+ years. At ₹40,000 a month it lasts about 22 years 6 months, and at ₹50,000 about 13 years 10 months.</p>
+      <h3>What is a safe SWP withdrawal rate?</h3>
+      <p>If your monthly withdrawal stays at or below the corpus's average monthly growth (corpus × annual return ÷ 12), the balance is sustained indefinitely in this model. For ₹50 lakh at 8%, that break-even is about ₹33,333 per month. Withdrawing more starts consuming principal.</p>
+      <h3>Is SWP better than a fixed deposit for monthly income?</h3>
+      <p>SWP from a mutual fund offers market-linked growth and flexible withdrawals, but returns are not guaranteed. An FD pays a fixed, guaranteed rate. Many retirees combine both — an FD for essential expenses and an SWP for growth. Compare both in the FinCalix app.</p>
+    </div>
+
+    <div class="install">
+      <h2>Get the full retirement toolkit — free</h2>
+      <p>SWP, SIP, retirement goal planning, FD comparison, yearly balance charts &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/lumpsum">Lumpsum Calculator</a>
+      <a href="/cagr">CAGR Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Projections assume a constant annual return and are shown as of July 2026 for planning only. Actual fund returns vary month to month, which changes depletion timelines. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var corpus = Math.max(0, parseFloat(document.getElementById('amt').value) || 0);
+      var W = Math.max(0, parseFloat(document.getElementById('wd').value) || 0);
+      var annual = Math.max(0, parseFloat(document.getElementById('rate').value) || 0);
+      var out = document.getElementById('out');
+      if (corpus <= 0 || W <= 0) { out.style.display = 'none'; return; }
+      var r = annual / 12 / 100;
+      var bal = corpus, m = 0, depleted = false;
+      while (m < 600) {
+        bal = bal * (1 + r) - W;
+        m++;
+        if (bal <= 0) { depleted = true; break; }
+      }
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      if (!depleted) {
+        out.innerHTML = '<strong>Lasts 50+ years</strong><small>At ' + annual + '%, monthly growth on ' + fmt(corpus) + ' is about ' + fmt(corpus * r) + ' — your corpus is never depleted at ' + fmt(W) + '/month in this model.</small>';
+      } else {
+        var years = Math.floor(m / 12), months = m % 12;
+        out.innerHTML = '<strong>Lasts ' + years + ' year' + (years === 1 ? '' : 's') + (months > 0 ? ' ' + months + ' month' + (months === 1 ? '' : 's') : '') + '</strong><small>' + m + ' monthly withdrawals of ' + fmt(W) + ' (total ' + fmt(W * m) + ') from a ' + fmt(corpus) + ' corpus at ' + annual + '% p.a.</small>';
+      }
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

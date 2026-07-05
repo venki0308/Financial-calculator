@@ -24,7 +24,10 @@ import { toLocalDateStr, todayStr, parseLocalDate } from '../utils/dateUtils';
 
 function fmtDate(d: string | number): string {
     if (!d) return '—';
-    return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    // Parse YYYY-MM-DD as a LOCAL date — new Date('YYYY-MM-DD') is parsed as
+    // UTC midnight and can display the previous day in negative-UTC timezones.
+    const dt = typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) ? parseLocalDate(d) : new Date(d);
+    return dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 /**
@@ -149,6 +152,14 @@ export default function LoanDetail() {
             'Start Date': t('liveStatus.startDateRow'),
             'Years Elapsed': t('liveStatus.yearsElapsed'),
             'Months Elapsed': t('liveStatus.monthsElapsed'),
+            // NOTE: 'liveStatus.monthsRemaining' already exists in every locale as
+            // the interpolated "{{months}} months remaining" string, so reusing it
+            // here rendered a bare " months remaining". Unique key + EN fallback.
+            'Months Remaining': t('liveStatus.stpMonthsRemainingLabel', 'Months Remaining'),
+            'Transferred': t('liveStatus.transferred', 'Transferred'),
+            'Source Fund': t('liveStatus.sourceFund', 'Source Fund'),
+            'Target Fund': t('liveStatus.targetFund', 'Target Fund'),
+            'Transfer / Month': t('liveStatus.transferPerMonth', 'Transfer / Month'),
             'Rate': t('liveStatus.rateLabel'),
             'Mode': t('liveStatus.modeLabel'),
             'Total at Maturity': t('liveStatus.totalAtMaturity'),
@@ -287,6 +298,736 @@ export default function LoanDetail() {
     const [showYearlySummary, setShowYearlySummary] = useState(false);
     const [prepayAmount, setPrepayAmount] = useState(0);
 
+    // ─── Derived values used by the hooks below ───
+    // All hooks must run unconditionally in the same order on every render
+    // (Rules of Hooks), so these are computed before ANY early return and
+    // every hook below guards internally for the mode it doesn't apply to.
+    const d = profile?.profileData ?? {};
+    const typeLC = (profile?.calculatorType || '').toLowerCase().replace(/\s+calculator$/i, '').trim();
+    // Recognise all loan subtypes (Home, Car, Personal, Education, Gold,
+    // Two Wheeler, Business) — not just generic 'Loan EMI' / 'Mortgage'.
+    // Overdraft is a snapshot type and goes through a separate branch below.
+    const isLoan = !!profile && isAnyLoanCalcType(typeLC);
+
+    // Live loan status — recomputed every render exactly as the loan branch
+    // used to do inline. Stays null for investment-type trackers.
+    let loanStatus: ReturnType<typeof calculateLiveLoanStatus> | null = null;
+    if (isLoan) {
+        const loanProfile: LoanProfile = {
+            loanAmount: d.loanAmount, annualRate: d.annualRate, tenureMonths: d.tenureMonths,
+            emiAmount: d.emiAmount, disbursementDate: d.disbursementDate,
+            emiDueDay: d.emiDueDay || 5, loanType: d.loanType || 'floating',
+        };
+        loanStatus = calculateLiveLoanStatus(loanProfile);
+    }
+
+    // ─── Loan-branch hooks (guarded — cheap no-ops for investment trackers) ───
+    const maturityDate = useMemo(() => {
+        if (!isLoan) return '—';
+        // Parse YYYY-MM-DD locally so the maturity month doesn't shift a day
+        // back in negative-UTC timezones.
+        const dt = /^\d{4}-\d{2}-\d{2}$/.test(d.disbursementDate || '') ? parseLocalDate(d.disbursementDate) : new Date(d.disbursementDate);
+        dt.setMonth(dt.getMonth() + d.tenureMonths);
+        return fmtDate(toLocalDateStr(dt));
+    }, [isLoan, d]);
+
+    // Amortization schedule
+    const fullSchedule = useMemo(() => {
+        const rows: { month: number; date: string; emi: number; interest: number; principal: number; balance: number; isPaid: boolean; isNext: boolean }[] = [];
+        if (!isLoan) return rows;
+        const r = d.annualRate / 12 / 100;
+        let bal = d.loanAmount;
+        const disbDate = /^\d{4}-\d{2}-\d{2}$/.test(d.disbursementDate || '') ? parseLocalDate(d.disbursementDate) : new Date(d.disbursementDate);
+        const now = new Date(); now.setHours(0, 0, 0, 0);
+        for (let m = 1; m <= d.tenureMonths; m++) {
+            const emiDate = new Date(disbDate.getFullYear(), disbDate.getMonth() + m, d.emiDueDay || 5);
+            const intPart = Math.round(bal * r);
+            const prinPart = Math.min(d.emiAmount - intPart, bal);
+            bal = Math.max(0, bal - prinPart);
+            const isPaid = emiDate <= now;
+            const isNext = !isPaid && (rows.length === 0 || rows[rows.length - 1].isPaid);
+            rows.push({ month: m, date: toLocalDateStr(emiDate), emi: d.emiAmount, interest: intPart, principal: prinPart, balance: bal, isPaid, isNext });
+        }
+        return rows;
+    }, [isLoan, d]);
+
+    const yearlySummary = useMemo(() => {
+        const byYear: Record<number, { totalPaid: number; principal: number; interest: number; closingBal: number }> = {};
+        fullSchedule.forEach(row => {
+            const yr = new Date(row.date).getFullYear();
+            if (!byYear[yr]) byYear[yr] = { totalPaid: 0, principal: 0, interest: 0, closingBal: 0 };
+            byYear[yr].totalPaid += row.emi;
+            byYear[yr].principal += row.principal;
+            byYear[yr].interest += row.interest;
+            byYear[yr].closingBal = row.balance;
+        });
+        return Object.entries(byYear).map(([year, data]) => ({ year: Number(year), ...data }));
+    }, [fullSchedule]);
+
+    const visibleSchedule = useMemo(() => {
+        if (showAllFutureEmis) return fullSchedule;
+        const nextIdx = fullSchedule.findIndex(r => r.isNext);
+        if (nextIdx < 0) return fullSchedule.filter(r => r.isPaid);
+        return fullSchedule.slice(0, Math.min(nextIdx + 3, fullSchedule.length));
+    }, [fullSchedule, showAllFutureEmis]);
+
+    // Prepayment simulator
+    const prepayResult = useMemo(() => {
+        if (!isLoan || !loanStatus || prepayAmount <= 0) return null;
+        const r = d.annualRate / 12 / 100;
+        const newPrincipal = Math.max(0, loanStatus.principalOutstanding - prepayAmount);
+        if (newPrincipal <= 0) return { interestSaved: 0, monthsReduced: loanStatus.emisRemaining, newClosureDate: tl('Today') };
+        let bal = newPrincipal, newMonths = 0, newInterest = 0;
+        while (bal > 0 && newMonths < d.tenureMonths) {
+            const intPart = bal * r;
+            const prinPart = d.emiAmount - intPart;
+            if (prinPart <= 0) break;
+            bal = Math.max(0, bal - prinPart);
+            newInterest += intPart;
+            newMonths++;
+        }
+        const currentRemInt = (loanStatus.emisRemaining * d.emiAmount) - loanStatus.principalOutstanding;
+        const closureDate = new Date();
+        closureDate.setMonth(closureDate.getMonth() + newMonths);
+        return { interestSaved: Math.round(Math.max(0, currentRemInt - newInterest)), monthsReduced: Math.max(0, loanStatus.emisRemaining - newMonths), newClosureDate: fmtDate(toLocalDateStr(closureDate)) };
+    }, [prepayAmount, loanStatus, d, isLoan]);
+
+    // Normalize type matching (calculators save "SIP", "SSY", "PPF" etc.)
+    const mt = (...names: string[]) => names.some(n => typeLC === n.toLowerCase());
+
+    // Build year-wise growth table for compound-type investments
+    const yearWiseTable = useMemo((): { columns: string[]; rows: Array<Array<string | number>> } => {
+        if (!profile || isLoan) return { columns: [], rows: [] };
+        const rate = d.rate || d.annualRate || 7;
+        const startDate = d.openingDate || d.purchaseDate || d.startDate || '';
+        const startYear = startDate ? new Date(startDate).getFullYear() : new Date().getFullYear();
+
+        if (mt('ppf', 'ppf calculator')) {
+            const r = rate / 100;
+            const deposit = d.yearlyDeposit || 0;
+            const cols = [tl('Year'), tl('Deposit'), tl('Interest'), tl('Balance')];
+            const rows: Array<Array<string | number>> = [];
+            let bal = 0;
+            for (let y = 1; y <= 15; y++) {
+                const dep = y <= 15 ? deposit : 0;
+                bal += dep;
+                const interest = Math.round(bal * r);
+                bal += interest;
+                rows.push([startYear + y - 1, formatINR(dep), formatINR(interest), formatINR(Math.round(bal))]);
+            }
+            return { columns: cols, rows };
+        }
+        if (mt('ssy', 'ssy calculator')) {
+            const r = rate / 100;
+            const deposit = d.yearlyDeposit || 0;
+            const cols = [tl('Year'), tl('Deposit'), tl('Interest'), tl('Balance')];
+            const rows: Array<Array<string | number>> = [];
+            let bal = 0;
+            for (let y = 1; y <= 21; y++) {
+                const dep = y <= 15 ? deposit : 0;
+                bal += dep;
+                const interest = Math.round(bal * r);
+                bal += interest;
+                rows.push([startYear + y - 1, formatINR(dep), formatINR(interest), formatINR(Math.round(bal))]);
+            }
+            return { columns: cols, rows };
+        }
+        if (mt('nsc', 'nsc calculator')) {
+            const r = rate / 100;
+            const principal = d.principal || 0;
+            const cols = [tl('Year'), tl('Opening'), tl('Interest'), tl('Closing')];
+            const rows: Array<Array<string | number>> = [];
+            for (let y = 1; y <= 5; y++) {
+                const opening = principal * Math.pow(1 + r, y - 1);
+                const closing = principal * Math.pow(1 + r, y);
+                const interest = closing - opening;
+                rows.push([startYear + y - 1, formatINR(Math.round(opening)), formatINR(Math.round(interest)), formatINR(Math.round(closing))]);
+            }
+            return { columns: cols, rows };
+        }
+        if (mt('kvp', 'kvp calculator')) {
+            const r = rate / 100;
+            const principal = d.principal || 0;
+            const doublingYears = Math.ceil(Math.log(2) / Math.log(1 + r));
+            const cols = [tl('Year'), tl('Value'), tl('Gain'), tl('Growth %')];
+            const rows: Array<Array<string | number>> = [];
+            for (let y = 1; y <= doublingYears; y++) {
+                const val = principal * Math.pow(1 + r, y);
+                rows.push([startYear + y - 1, formatINR(Math.round(val)), formatINR(Math.round(val - principal)), `${((val / principal - 1) * 100).toFixed(1)}%`]);
+            }
+            return { columns: cols, rows };
+        }
+        if (mt('fd', 'fd calculator', 'potd', 'post office td')) {
+            const principal = d.principal || 0;
+            const freq = d.compoundingFreq || 4;
+            const tenureYears = Math.ceil((d.tenureMonths || 60) / 12);
+            const cols = [tl('Year'), tl('Value'), tl('Interest Earned'), tl('Growth %')];
+            const rows: Array<Array<string | number>> = [];
+            for (let y = 1; y <= tenureYears; y++) {
+                const val = principal * Math.pow(1 + (rate / 100) / freq, freq * y);
+                rows.push([startYear + y - 1, formatINR(Math.round(val)), formatINR(Math.round(val - principal)), `${((val / principal - 1) * 100).toFixed(1)}%`]);
+            }
+            return { columns: cols, rows };
+        }
+        if (mt('sip', 'sip calculator', 'goal planner', 'goal')) {
+            const monthly = d.monthlySip || d.monthlyAmount || 0;
+            const annualReturn = d.annualReturn || 12;
+            const r = annualReturn / 12 / 100;
+            const cols = [tl('Year'), tl('Invested'), tl('Value'), tl('Gain')];
+            const rows: Array<Array<string | number>> = [];
+            for (let y = 1; y <= 10; y++) {
+                const n = y * 12;
+                const invested = monthly * n;
+                const fv = r > 0 ? monthly * ((Math.pow(1 + r, n) - 1) / r) * (1 + r) : invested;
+                rows.push([startYear + y - 1, formatINR(invested), formatINR(Math.round(fv)), formatINR(Math.round(fv - invested))]);
+            }
+            return { columns: cols, rows };
+        }
+        if (mt('rd')) {
+            const monthly = d.monthlyDeposit || 0;
+            const tenureYears = Math.ceil((d.tenureMonths || 60) / 12);
+            const r = (d.annualRate || 5.8) / 400;
+            const cols = [tl('Year'), tl('Deposited'), tl('Value'), tl('Interest')];
+            const rows: Array<Array<string | number>> = [];
+            for (let y = 1; y <= tenureYears; y++) {
+                const n = y * 12;
+                const dep = monthly * n;
+                let val = 0;
+                for (let m = 1; m <= n; m++) {
+                    const qIdx = Math.floor((n - m) / 3);
+                    val += monthly * Math.pow(1 + r, qIdx);
+                }
+                rows.push([startYear + y - 1, formatINR(dep), formatINR(Math.round(val)), formatINR(Math.round(val - dep))]);
+            }
+            return { columns: cols, rows };
+        }
+        if (mt('pomis', 'post office mis')) {
+            const principal = d.principal || 0;
+            const monthlyIncome = Math.round(principal * rate / 100 / 12);
+            const cols = [tl('Year'), tl('Monthly Income'), tl('Total Received'), tl('Cumulative')];
+            const rows: Array<Array<string | number>> = [];
+            for (let y = 1; y <= 5; y++) {
+                const annualIncome = monthlyIncome * 12;
+                rows.push([startYear + y - 1, formatINR(monthlyIncome), formatINR(annualIncome), formatINR(annualIncome * y)]);
+            }
+            return { columns: cols, rows };
+        }
+        if (mt('scss', 'scss calculator')) {
+            const principal = d.principal || 0;
+            const quarterlyIncome = Math.round(principal * rate / 100 / 4);
+            const cols = [tl('Year'), tl('Quarterly Income'), tl('Annual Income'), tl('Cumulative')];
+            const rows: Array<Array<string | number>> = [];
+            for (let y = 1; y <= (d.tenure || 5); y++) {
+                const annual = quarterlyIncome * 4;
+                rows.push([startYear + y - 1, formatINR(quarterlyIncome), formatINR(annual), formatINR(annual * y)]);
+            }
+            return { columns: cols, rows };
+        }
+        return { columns: [], rows: [] };
+    }, [profile, d, typeLC, isLoan]);
+
+    // Summary metrics — now returns cards (3 hero colored boxes) + rows (details) + progress
+    type MetricCard = { label: string; value: string; color: string };
+    const investmentMetrics = useMemo((): { cards: MetricCard[]; rows: string[][]; progress: number; statusText: string; headline: string; headlineLabel: string } => {
+        const empty = { cards: [], rows: [], progress: 0, statusText: '—', headline: '—', headlineLabel: '' };
+        if (!profile || isLoan) return empty;
+        try {
+            if (mt('sip', 'sip calculator')) {
+                const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate });
+                return { cards: [{ label: tl('Invested'), value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Gain'), value: formatINR(s.wealthGained), color: '#F59E0B' }], rows: [[tl('Months Invested'), String(s.monthsInvested)], [tl('Return %'), `${s.returnPercent.toFixed(2)}%`], [tl('Running Since'), `${s.sipRunningYears}Y ${s.sipRunningMonths}M`], [tl('Monthly SIP'), formatINR(d.monthlySip || d.monthlyAmount || 0)], [tl('Expected Return'), `${d.annualReturn || 12}% p.a.`]], progress: Math.min(100, s.monthsInvested * 0.8), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
+            }
+            if (mt('fd', 'fd calculator', 'potd', 'post office td')) {
+                const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4 });
+                return { cards: [{ label: tl('Deposited'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.valueToday), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarnedToday), color: '#F59E0B' }], rows: [[tl('Days Invested'), String(s.daysInvested)], [tl('Daily Earning'), formatINR(s.dailyEarning)], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Maturity Value'), formatINR(s.maturityValue)], [tl('Days Remaining'), String(s.daysRemaining)], [tl('Interest Rate'), `${d.annualRate}% p.a.`], [tl('Premature Value'), formatINR(s.prematureValue)]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.valueToday), headlineLabel: tl('Value Today') };
+            }
+            if (mt('rd')) {
+                const s = calculateRdStatus({ monthlyDeposit: d.monthlyDeposit || 0, annualRate: d.annualRate || 5.8, tenureMonths: d.tenureMonths || 60, startDate: d.startDate });
+                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [[tl('Monthly Deposit'), formatINR(d.monthlyDeposit || 0)], [tl('Interest Rate'), `${d.annualRate || 5.8}% p.a.`], [tl('Tenure'), `${d.tenureMonths || 60} months`], [tl('Completion'), `${s.percentComplete.toFixed(1)}%`]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
+            }
+            if (mt('ppf', 'ppf calculator')) {
+                const s = calculatePpfStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 7.1, openingDate: d.openingDate || d.startDate });
+                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Balance'), value: formatINR(s.balanceToday), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [[tl('Year'), `${s.currentYear} of 15`], [tl('Yearly Deposit'), formatINR(d.yearlyDeposit || 0)], [tl('Rate'), `${d.rate || d.annualRate || 7.1}% p.a.`], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Maturity Value'), formatINR(s.maturityValue || 0)], [tl('Loan Eligible'), s.loanEligible ? `Yes — up to ${formatINR(s.loanAmount)}` : 'No (available yr 3-6)'], [tl('Withdrawal Eligible'), s.withdrawalEligible ? `Yes — up to ${formatINR(s.withdrawalAmount)}` : 'No (available after yr 7)']], progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: `Year ${s.currentYear}/15`, headline: formatINR(s.balanceToday), headlineLabel: tl('Current Balance') };
+            }
+            if (mt('ssy', 'ssy calculator')) {
+                const s = calculateSsyStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 8.2, openingDate: d.openingDate || d.startDate, girlDob: d.girlDob || d.openingDate || d.startDate });
+                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Balance'), value: formatINR(Math.round(s.balanceToday)), color: '#10B981' }, { label: tl('Interest'), value: formatINR(Math.round(s.interestEarned)), color: '#EC4899' }], rows: [[tl('Girl\'s Age'), `${s.girlAge} years`], [tl('Account Age'), `${s.accountAge} of 21 years`], [tl('Deposit Phase'), s.depositPhaseActive ? `Active (${s.depositYearsRemaining}yr left)` : 'Complete — interest compounding'], [tl('Yearly Deposit'), formatINR(d.yearlyDeposit || 0)], [tl('Rate'), `${d.rate || d.annualRate || 8.2}% p.a.`], [tl('Maturity Value'), formatINR(Math.round(s.maturityValue))], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Days to Maturity'), String(s.daysToMaturity)], [tl('Withdrawal'), s.withdrawalEligible ? `Eligible — up to ${formatINR(s.withdrawalAmount)}` : 'After girl turns 18']], progress: Math.min(100, (s.accountAge / 21) * 100), statusText: `Year ${s.accountAge}/21`, headline: formatINR(Math.round(s.balanceToday)), headlineLabel: tl('Current Balance') };
+            }
+            if (mt('nsc', 'nsc calculator')) {
+                const s = calculateNscStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.7, purchaseDate: d.purchaseDate || d.startDate });
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: tl('Interest'), value: formatINR(Math.round(s.interestEarned)), color: '#F59E0B' }], rows: [[tl('Years Completed'), `${s.yearsCompleted.toFixed(1)} of 5`], [tl('Rate'), `${d.rate || d.annualRate || 7.7}% p.a.`], [tl('Maturity Value'), formatINR(Math.round(s.maturityValue))], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Days Remaining'), String(s.daysToMaturity)], [tl('Sec 80C Eligible'), 'Yes — Interest reinvested']], progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: `${(Math.min(1, s.yearsCompleted / 5) * 100).toFixed(0)}% of 5yr`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: tl('Value Today') };
+            }
+            if (mt('kvp', 'kvp calculator')) {
+                const s = calculateKvpStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.5, purchaseDate: d.purchaseDate || d.startDate });
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: tl('Gain'), value: formatINR(Math.round(s.gainSoFar)), color: '#F59E0B' }], rows: [[tl('Progress to 2x'), `${s.progressToDoubling.toFixed(1)}%`], [tl('Rate'), `${d.rate || d.annualRate || 7.5}% p.a.`], [tl('Doubling Date'), fmtDate(s.doublingDate)], [tl('Days to Doubling'), String(s.daysToDoubling)], [tl('Maturity Amount'), formatINR(d.principal * 2)], [tl('Premature'), s.prematureEligible ? 'Eligible now' : `After ${fmtDate(s.prematureEligibleDate)}`]], progress: s.progressToDoubling, statusText: `${s.progressToDoubling.toFixed(0)}% to 2x`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: tl('Value Today') };
+            }
+            if (mt('pomis', 'post office mis')) {
+                const s = calculatePomisStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.4, startDate: d.startDate });
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Monthly Income'), value: formatINR(s.monthlyIncome), color: '#10B981' }, { label: tl('Total Earned'), value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [[tl('Payouts Received'), `${s.monthsCompleted} of 60`], [tl('Rate'), `${d.rate || d.annualRate || 7.4}% p.a.`], [tl('Total 5yr Income'), formatINR(s.monthlyIncome * 60)], [tl('Remaining Payouts'), `${60 - s.monthsCompleted}`], [tl('Maturity Date'), fmtDate(s.maturityDate)]], progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: `${s.monthsCompleted}/60 payouts`, headline: formatINR(s.monthlyIncome), headlineLabel: tl('Monthly Income') };
+            }
+            if (mt('scss', 'scss calculator')) {
+                const s = calculateScssStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 8.2, startDate: d.startDate, tenure: d.tenure || 5 });
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Quarterly'), value: formatINR(s.quarterlyIncome), color: '#10B981' }, { label: tl('Total Earned'), value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [[tl('Quarters Completed'), `${s.quartersCompleted} of 20`], [tl('Rate'), `${d.rate || d.annualRate || 8.2}% p.a.`], [tl('Annual Income'), formatINR(s.quarterlyIncome * 4)], [tl('Total 5yr Income'), formatINR(s.quarterlyIncome * 20)], [tl('Maturity Date'), fmtDate(s.maturityDate)]], progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: `${s.quartersCompleted}/20 qtrs`, headline: formatINR(s.quarterlyIncome), headlineLabel: tl('Quarterly Income') };
+            }
+            if (mt('goal planner', 'goal')) {
+                const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate, targetAmount: d.targetAmount });
+                return { cards: [{ label: tl('Invested'), value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: tl('Value'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Goal'), value: `${s.progressToGoal.toFixed(0)}%`, color: '#8B5CF6' }], rows: [[tl('Wealth Gained'), formatINR(s.wealthGained)], [tl('Target Amount'), d.targetAmount ? formatINR(d.targetAmount) : '—'], [tl('Goal Progress'), `${s.progressToGoal.toFixed(1)}%`]], progress: s.progressToGoal, statusText: `${s.progressToGoal.toFixed(0)}% to goal`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
+            }
+
+            // ── LIVE SNAPSHOT TRACKERS ──
+            // These calculators don't have a dedicated investment engine in
+            // investmentStatusEngine.ts, so we recompute "as of today" inline
+            // using elapsed time from the saved start date. Falls back to the
+            // saved snapshot when no start date exists (backwards compat).
+            if (mt('compound interest', 'ci')) {
+                const principal = d.principal || 0;
+                const rate = d.rate || 0;
+                const freq = d.freq || 12;
+                const totalYears = d.years || 0;
+                const elapsed = yearsSince(d.startDate, totalYears);
+                let valueToday: number;
+                let progress: number;
+                let statusText: string;
+                if (elapsed > 0 && rate > 0) {
+                    valueToday = principal * Math.pow(1 + (rate / 100) / freq, freq * elapsed);
+                    progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
+                    statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
+                } else {
+                    valueToday = d.maturity || 0;
+                    progress = 100;
+                    statusText = `${totalYears}Y @ ${rate}%`;
+                }
+                const interest = valueToday - principal;
+                const maturityAtEnd = principal * Math.pow(1 + (rate / 100) / freq, freq * totalYears);
+                return {
+                    cards: [
+                        { label: tl('Principal'), value: formatINR(principal), color: '#3B82F6' },
+                        { label: tl('Value Today'), value: formatINR(valueToday), color: '#10B981' },
+                        { label: tl('Interest'), value: formatINR(interest), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        [tl('Years Elapsed'), `${elapsed.toFixed(1)} of ${totalYears}`],
+                        [tl('Rate'), `${rate}% p.a.`],
+                        [tl('Compounding'), freq === 1 ? tl('Yearly') : freq === 2 ? tl('Half-yearly') : freq === 4 ? tl('Quarterly') : freq === 12 ? tl('Monthly') : `${freq}x/year`],
+                        [tl('Maturity Value'), formatINR(maturityAtEnd)],
+                    ],
+                    progress, statusText,
+                    headline: formatINR(valueToday),
+                    headlineLabel: tl('Value Today'),
+                };
+            }
+            if (mt('simple interest', 'si')) {
+                const principal = d.principal || 0;
+                const rate = d.rate || 0;
+                const totalMonths = d.tenureMonths || d.months || 0;
+                const elapsedY = yearsSince(d.startDate, totalMonths / 12);
+                const elapsedMonths = Math.floor(elapsedY * 12);
+                let interestSoFar: number;
+                let progress: number;
+                let statusText: string;
+                if (elapsedMonths > 0 && rate > 0) {
+                    interestSoFar = (principal * rate * elapsedMonths) / (12 * 100);
+                    progress = totalMonths > 0 ? Math.min(100, (elapsedMonths / totalMonths) * 100) : 100;
+                    statusText = `${elapsedMonths}M of ${totalMonths}M`;
+                } else {
+                    interestSoFar = d.interest || 0;
+                    progress = 100;
+                    statusText = `${totalMonths}M @ ${rate}%`;
+                }
+                const valueToday = principal + interestSoFar;
+                const totalAtEnd = principal + (principal * rate * totalMonths) / (12 * 100);
+                return {
+                    cards: [
+                        { label: tl('Principal'), value: formatINR(principal), color: '#3B82F6' },
+                        { label: tl('Interest'), value: formatINR(interestSoFar), color: '#F59E0B' },
+                        { label: tl('Value Today'), value: formatINR(valueToday), color: '#10B981' },
+                    ],
+                    rows: [
+                        [tl('Months Elapsed'), `${elapsedMonths} of ${totalMonths}`],
+                        [tl('Rate'), `${rate}% p.a.`],
+                        [tl('Mode'), d.mode || tl('Simple Interest')],
+                        [tl('Total at Maturity'), formatINR(totalAtEnd)],
+                    ],
+                    progress, statusText,
+                    headline: formatINR(valueToday),
+                    headlineLabel: tl('Value Today'),
+                };
+            }
+            // ── LUMPSUM (one-time investment, live tracker) ──
+            if (mt('lumpsum')) {
+                const principal = d.principal || 0;
+                const rate = d.rate || 0;
+                const totalYears = d.years || 0;
+                const elapsed = yearsSince(d.startDate, totalYears);
+                let valueToday: number;
+                let progress: number;
+                let statusText: string;
+                if (elapsed > 0 && rate > 0) {
+                    valueToday = principal * Math.pow(1 + rate / 100, elapsed);
+                    progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
+                    statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
+                } else {
+                    valueToday = d.maturity || d.fv || 0;
+                    progress = 100;
+                    statusText = `${totalYears}Y @ ${rate}%`;
+                }
+                const gain = valueToday - principal;
+                const maturityAtEnd = principal * Math.pow(1 + rate / 100, totalYears);
+                return {
+                    cards: [
+                        { label: tl('Invested'), value: formatINR(principal), color: '#3B82F6' },
+                        { label: tl('Value Today'), value: formatINR(valueToday), color: '#10B981' },
+                        { label: tl('Gain'), value: formatINR(gain), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        [tl('Years Elapsed'), `${elapsed.toFixed(1)} of ${totalYears}`],
+                        [tl('Rate'), `${rate}% p.a.`],
+                        [tl('Maturity Value'), formatINR(maturityAtEnd)],
+                        ...(d.inflation ? [[tl('Inflation'), `${d.inflation}% p.a.`]] : []),
+                    ],
+                    progress, statusText,
+                    headline: formatINR(valueToday),
+                    headlineLabel: tl('Value Today'),
+                };
+            }
+            // ── SWP (live month-by-month withdrawal sim) ──
+            if (mt('swp')) {
+                const corpus = d.totalInvestment || d.principal || 0;
+                const monthlyWithdrawal = d.monthlyWithdrawal || 0;
+                const rate = d.rate || 0;
+                const totalYears = d.years || 0;
+                const elapsedY = yearsSince(d.startDate, totalYears);
+                let withdrawnSoFar = 0;
+                let balanceToday = corpus;
+                let progress: number;
+                let statusText: string;
+                if (elapsedY > 0 && rate > 0 && monthlyWithdrawal > 0) {
+                    const elapsedMonths = Math.floor(elapsedY * 12);
+                    const r = rate / 12 / 100;
+                    let bal = corpus;
+                    let withdrawn = 0;
+                    for (let i = 0; i < elapsedMonths && bal > 0; i++) {
+                        bal = bal * (1 + r);
+                        if (bal >= monthlyWithdrawal) { bal -= monthlyWithdrawal; withdrawn += monthlyWithdrawal; }
+                        else { withdrawn += bal; bal = 0; }
+                    }
+                    withdrawnSoFar = withdrawn;
+                    balanceToday = bal;
+                    progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
+                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                } else {
+                    withdrawnSoFar = d.totalWithdrawn || 0;
+                    balanceToday = d.finalBalance || corpus;
+                    progress = 100;
+                    statusText = `${totalYears}Y @ ${rate}%`;
+                }
+                return {
+                    cards: [
+                        { label: tl('Corpus'), value: formatINR(corpus), color: '#3B82F6' },
+                        { label: tl('Balance Today'), value: formatINR(balanceToday), color: '#10B981' },
+                        { label: tl('Withdrawn'), value: formatINR(withdrawnSoFar), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        [tl('Monthly Withdrawal'), formatINR(monthlyWithdrawal)],
+                        [tl('Expected Return'), `${rate}% p.a.`],
+                    ],
+                    progress, statusText,
+                    headline: formatINR(balanceToday),
+                    headlineLabel: tl('Balance Today'),
+                };
+            }
+            // ── STP (systematic transfer plan — live month-by-month sim) ──
+            if (mt('stp')) {
+                const initial = d.initialAmount || 0;
+                const transferAmt = d.transferAmount || 0;
+                const sourceRate = d.sourceRate || 0;
+                const targetRate = d.targetRate || 0;
+                const totalMonths = d.durationMonths || 0;
+                const elapsedY = yearsSince(d.startDate, totalMonths / 12);
+                const elapsedMonths = Math.min(Math.floor(elapsedY * 12), totalMonths);
+                // Same month-by-month simulation as MyLoans' STP card: source
+                // grows at sourceRate, a fixed slice transfers each month,
+                // target compounds at targetRate.
+                let srcBal = initial;
+                let tgtVal = 0;
+                let transferred = 0;
+                const srcR = sourceRate / 12 / 100;
+                const tgtR = targetRate / 12 / 100;
+                for (let i = 0; i < elapsedMonths && srcBal > 0; i++) {
+                    srcBal *= (1 + srcR);
+                    const xfer = Math.min(transferAmt, srcBal);
+                    srcBal -= xfer;
+                    transferred += xfer;
+                    tgtVal = (tgtVal + xfer) * (1 + tgtR);
+                }
+                const totalPortfolio = srcBal + tgtVal;
+                const gain = totalPortfolio - initial;
+                const monthsRemaining = Math.max(0, totalMonths - elapsedMonths);
+                const progress = totalMonths > 0 ? Math.min(100, (elapsedMonths / totalMonths) * 100) : 100;
+                return {
+                    cards: [
+                        { label: tl('Invested'), value: formatINR(initial), color: '#3B82F6' },
+                        { label: tl('Transferred'), value: formatINR(Math.round(transferred)), color: '#8B5CF6' },
+                        { label: tl('Source Fund'), value: formatINR(Math.round(srcBal)), color: '#F59E0B' },
+                        { label: tl('Target Fund'), value: formatINR(Math.round(tgtVal)), color: '#10B981' },
+                        { label: tl('Gain'), value: formatINR(Math.round(gain)), color: '#06B6D4' },
+                        { label: tl('Months Remaining'), value: String(monthsRemaining), color: '#6366F1' },
+                    ],
+                    rows: [
+                        [tl('Months Elapsed'), `${elapsedMonths} of ${totalMonths}`],
+                        [tl('Transfer / Month'), formatINR(transferAmt)],
+                        [tl('Rate'), `${sourceRate}% → ${targetRate}% p.a.`],
+                        [tl('Maturity Value'), formatINR(Math.round(d.totalPortfolioValue || 0))],
+                    ],
+                    progress,
+                    statusText: `${elapsedMonths}M of ${totalMonths}M`,
+                    headline: formatINR(Math.round(totalPortfolio)),
+                    headlineLabel: tl('Total Value'),
+                };
+            }
+            // ── CAGR (snapshot — growth-rate calculation, no time elapsed math) ──
+            if (mt('cagr')) {
+                const initial = d.initialValue || d.principal || 0;
+                const final = d.finalValue || d.maturity || 0;
+                const cagr = d.cagr ?? 0;
+                const years = d.years || 0;
+                return {
+                    cards: [
+                        { label: tl('Initial'), value: formatINR(initial), color: '#3B82F6' },
+                        { label: tl('Final'), value: formatINR(final), color: '#10B981' },
+                        { label: tl('CAGR'), value: `${cagr.toFixed(2)}%`, color: '#F59E0B' },
+                    ],
+                    rows: [
+                        [tl('Period'), `${years} years`],
+                        [tl('Total Return'), `${(((final / Math.max(1, initial)) - 1) * 100).toFixed(2)}%`],
+                        [tl('Wealth Multiplier'), `${(final / Math.max(1, initial)).toFixed(2)}x`],
+                    ],
+                    progress: 100,
+                    statusText: `${years}Y @ ${cagr.toFixed(1)}%`,
+                    headline: `${cagr.toFixed(2)}%`,
+                    headlineLabel: tl('CAGR'),
+                };
+            }
+            // ── EPF (live month-by-month accumulation) ──
+            if (mt('epf')) {
+                const basic = d.basic || 0;
+                const empPct = d.empPct || 12;
+                const rate = d.rate || 8.25;
+                const totalYears = d.years || 0;
+                const elapsedY = yearsSince(d.startDate, totalYears);
+                let investedSoFar: number;
+                let corpusToday: number;
+                let progress: number;
+                let statusText: string;
+                if (elapsedY > 0 && basic > 0) {
+                    const monthlyContrib = basic * (empPct / 100) * 2;
+                    const elapsedMonths = Math.floor(elapsedY * 12);
+                    const r = rate / 12 / 100;
+                    let bal = 0;
+                    for (let i = 0; i < elapsedMonths; i++) {
+                        bal = bal * (1 + r) + monthlyContrib;
+                    }
+                    investedSoFar = monthlyContrib * elapsedMonths;
+                    corpusToday = bal;
+                    progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
+                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                } else {
+                    investedSoFar = d.totalInvested || 0;
+                    corpusToday = d.corpus || d.maturity || 0;
+                    progress = 100;
+                    statusText = `${totalYears}Y @ ${rate}%`;
+                }
+                const interestEarned = corpusToday - investedSoFar;
+                return {
+                    cards: [
+                        { label: tl('Invested'), value: formatINR(investedSoFar), color: '#3B82F6' },
+                        { label: tl('Corpus Today'), value: formatINR(corpusToday), color: '#10B981' },
+                        { label: tl('Interest'), value: formatINR(interestEarned), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        [tl('Basic Salary'), formatINR(basic)],
+                        [tl('Contribution'), `${empPct}% (emp + employer)`],
+                        [tl('EPF Rate'), `${rate}% p.a.`],
+                        ...(d.corpus ? [[tl('Projected Corpus'), formatINR(d.corpus)]] : []),
+                    ],
+                    progress, statusText,
+                    headline: formatINR(corpusToday),
+                    headlineLabel: tl('Corpus Today'),
+                };
+            }
+            // ── NPS (live month-by-month accumulation) ──
+            if (mt('nps')) {
+                const monthly = d.monthly || 0;
+                const rate = d.rate || 10;
+                const totalYears = d.years || 0;
+                const elapsedY = yearsSince(d.startDate, totalYears);
+                let investedSoFar: number;
+                let corpusToday: number;
+                let progress: number;
+                let statusText: string;
+                if (elapsedY > 0 && monthly > 0) {
+                    const elapsedMonths = Math.floor(elapsedY * 12);
+                    const r = rate / 12 / 100;
+                    let bal = 0;
+                    for (let i = 0; i < elapsedMonths; i++) {
+                        bal = bal * (1 + r) + monthly;
+                    }
+                    investedSoFar = monthly * elapsedMonths;
+                    corpusToday = bal;
+                    progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
+                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                } else {
+                    investedSoFar = d.totalInvested || 0;
+                    corpusToday = d.corpus || d.maturity || 0;
+                    progress = 100;
+                    statusText = `${totalYears}Y @ ${rate}%`;
+                }
+                return {
+                    cards: [
+                        { label: tl('Invested'), value: formatINR(investedSoFar), color: '#3B82F6' },
+                        { label: tl('Corpus Today'), value: formatINR(corpusToday), color: '#10B981' },
+                        { label: tl('Pension'), value: formatINR(d.monthlyPension || 0), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        [tl('Monthly Contribution'), formatINR(monthly)],
+                        [tl('Expected Return'), `${rate}% p.a.`],
+                        [tl('Annuity %'), `${d.annuityPct || 40}%`],
+                        ...(d.monthlyPension ? [[tl('Projected Pension'), formatINR(d.monthlyPension)]] : []),
+                    ],
+                    progress, statusText,
+                    headline: formatINR(corpusToday),
+                    headlineLabel: tl('Corpus Today'),
+                };
+            }
+            // ── GRATUITY (snapshot — payout is one-time at retirement) ──
+            if (mt('gratuity')) {
+                const lastSalary = d.lastSalary || 0;
+                const gratuity = d.gratuity || 0;
+                const yearsOfService = d.yearsOfService || 0;
+                return {
+                    cards: [
+                        { label: tl('Last Salary'), value: formatINR(lastSalary), color: '#3B82F6' },
+                        { label: tl('Gratuity'), value: formatINR(gratuity), color: '#10B981' },
+                        { label: tl('Net Payout'), value: formatINR(d.netGratuity || gratuity), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        [tl('Service Period'), `${yearsOfService} ${t('prag.years', 'years')}`],
+                        [tl('Employer Type'), d.employerType === 'Govt' ? tl('Government') : tl('Private')],
+                        [tl('Tax Exemption'), d.employerType === 'Govt' ? tl('Fully exempt') : `${t('liveStatus.upTo', 'Up to')} ₹25L`],
+                    ],
+                    progress: 100,
+                    statusText: `${yearsOfService}Y ${t('liveStatus.service', 'service')}`,
+                    headline: formatINR(gratuity),
+                    headlineLabel: tl('Gratuity Payout'),
+                };
+            }
+            // ── INSURANCE COMPARE (snapshot — comparison sample) ──
+            if (mt('insurance compare', 'insurance comparison')) {
+                const sumInsured = d.sumInsured || 0;
+                const premiumA = d.premiumA || 0;
+                const premiumB = d.premiumB || 0;
+                return {
+                    cards: [
+                        { label: tl('Cover'), value: formatINR(sumInsured), color: '#10B981' },
+                        { label: tl('Premium (min)'), value: formatINR(premiumA), color: '#3B82F6' },
+                        { label: tl('Premium (max)'), value: formatINR(premiumB), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        [tl('Type'), d.tab === 'life' ? t('liveStatus.lifeInsurance', 'Life Insurance') : t('liveStatus.healthInsurance', 'Health Insurance')],
+                        ...(d.members ? [[tl('Members'), String(d.members)]] : []),
+                        ...(d.cityType ? [[tl('City'), String(d.cityType)]] : []),
+                        [tl('Has PED'), d.hasPreExisting ? tl('Yes') : tl('No')],
+                    ],
+                    progress: 100,
+                    statusText: d.tab === 'life' ? t('liveStatus.lifeCompare', 'Life Compare') : t('liveStatus.healthCompare', 'Health Compare'),
+                    headline: formatINR(sumInsured),
+                    headlineLabel: tl('Sum Insured'),
+                };
+            }
+            if (mt('property')) {
+                const totalCost = d.totalCost || d.propertyValue || 0;
+                return {
+                    cards: [
+                        { label: tl('Total Cost'), value: formatINR(totalCost), color: '#F97316' },
+                        { label: tl('Type'), value: d.mode || '—', color: '#3B82F6' },
+                        { label: tl('Area'), value: d.area ? `${d.area} ${tl('sqft')}` : '—', color: '#10B981' },
+                    ],
+                    rows: [
+                        [tl('Property Type'), d.mode || '—'],
+                        [tl('Total Value'), formatINR(totalCost)],
+                        ...(d.area ? [[tl('Built-up Area'), `${d.area} ${tl('sqft')}`]] : []),
+                    ],
+                    progress: 100,
+                    statusText: d.mode || t('liveStatus.property', 'Property'),
+                    headline: formatINR(totalCost),
+                    headlineLabel: tl('Property Value'),
+                };
+            }
+            if (mt('insurance')) {
+                const sumInsured = d.sumInsured || 0;
+                const premiumMin = d.premiumMin || 0;
+                const premiumMax = d.premiumMax || premiumMin;
+                const isLife = d.tab === 'life';
+                return {
+                    cards: [
+                        { label: isLife ? tl('Cover') : tl('Sum Insured'), value: formatINR(sumInsured), color: '#10B981' },
+                        { label: tl('Premium (min)'), value: formatINR(premiumMin), color: '#3B82F6' },
+                        { label: tl('Premium (max)'), value: formatINR(premiumMax), color: '#F59E0B' },
+                    ],
+                    rows: [
+                        [tl('Type'), isLife ? t('liveStatus.termLife', 'Term Life Insurance') : t('liveStatus.healthInsurance', 'Health Insurance')],
+                        ...(isLife && d.age ? [[tl('Age at Purchase'), `${d.age} ${t('prag.years', 'years')}`]] : []),
+                        ...(d.tenure ? [[tl('Term'), `${d.tenure} ${t('prag.years', 'years')}`]] : []),
+                    ],
+                    progress: 100,
+                    statusText: isLife ? t('liveStatus.lifeCoverStatus', 'Life Cover') : t('liveStatus.healthCoverStatus', 'Health Cover'),
+                    headline: formatINR(sumInsured),
+                    headlineLabel: isLife ? tl('Life Cover') : tl('Sum Insured'),
+                };
+            }
+            if (mt('overdraft', 'od')) {
+                const utilized = d.utilized || d.loanAmount || 0;
+                const totalInterest = d.totalInterest || 0;
+                const totalPayable = d.totalPayable ?? (utilized + totalInterest);
+                return {
+                    cards: [
+                        { label: t('liveStatus.utilized', 'Utilized'), value: formatINR(utilized), color: '#EF4444' },
+                        { label: tl('Interest'), value: formatINR(totalInterest), color: '#F59E0B' },
+                        { label: tl('Total Payable'), value: formatINR(totalPayable), color: '#10B981' },
+                    ],
+                    rows: [
+                        [tl('Days Utilized'), String(d.days || 0)],
+                        [tl('Rate'), `${d.rate || 0}% p.a.`],
+                        [tl('Mode'), d.odType === 'business' ? t('od.typeBusiness', 'Business OD') : t('od.typePersonal', 'Personal OD')],
+                    ],
+                    progress: 100,
+                    statusText: `${d.days || 0}d @ ${d.rate || 0}%`,
+                    headline: formatINR(totalPayable),
+                    headlineLabel: tl('Total Payable'),
+                };
+            }
+        } catch { /* skip */ }
+        return empty;
+    }, [profile, d, typeLC, isLoan]);
+
+    // Inject a "Start Date" row at the top of the rows array if a start date
+    // exists in the saved profile data — works across every calculator type.
+    const investmentMetricsWithStartDate = useMemo(() => {
+        const startDate = getProfileStartDate(d);
+        if (!startDate) return investmentMetrics;
+        // Avoid double-injecting if a row labelled 'Start Date' already exists
+        const startDateLabel = tl('Start Date');
+        if (investmentMetrics.rows.some(r => r[0] === startDateLabel)) return investmentMetrics;
+        return {
+            ...investmentMetrics,
+            rows: [[startDateLabel, fmtDate(startDate)], ...investmentMetrics.rows],
+        };
+    }, [investmentMetrics, d]);
+
+    const [showYearTable, setShowYearTable] = useState(false);
+
     if (!profile) {
         return (
             <div className="min-h-dvh flex items-center justify-center" style={{ backgroundColor: c.bg }}>
@@ -299,13 +1040,6 @@ export default function LoanDetail() {
         );
     }
 
-    const d = profile.profileData;
-    const typeLC = profile.calculatorType.toLowerCase().replace(/\s+calculator$/i, '').trim();
-    // Recognise all loan subtypes (Home, Car, Personal, Education, Gold,
-    // Two Wheeler, Business) — not just generic 'Loan EMI' / 'Mortgage'.
-    // Overdraft is a snapshot type and goes through a separate branch below.
-    const isLoan = isAnyLoanCalcType(typeLC);
-
     const handleDelete = () => {
         removeProfile(profile.id);
         deleteLoanFromStorage(profile.id);
@@ -316,82 +1050,13 @@ export default function LoanDetail() {
     // LOAN DETAIL
     // ═══════════════════════════════════════════════════════════════
     if (isLoan) {
-        const loanProfile: LoanProfile = {
-            loanAmount: d.loanAmount, annualRate: d.annualRate, tenureMonths: d.tenureMonths,
-            emiAmount: d.emiAmount, disbursementDate: d.disbursementDate,
-            emiDueDay: d.emiDueDay || 5, loanType: d.loanType || 'floating',
-        };
-        const status = calculateLiveLoanStatus(loanProfile);
+        // loanStatus is always non-null when isLoan (computed above, before
+        // any early return, so the hooks above run unconditionally).
+        const status = loanStatus!;
         const isFloating = d.loanType === 'floating';
         const interestPct = d.emiAmount > 0 ? (status.nextEmiInterest / d.emiAmount) * 100 : 0;
         const principalPct = 100 - interestPct;
         const principalRepaidPct = ((d.loanAmount - status.principalOutstanding) / d.loanAmount) * 100;
-
-        const maturityDate = useMemo(() => {
-            const dt = new Date(d.disbursementDate);
-            dt.setMonth(dt.getMonth() + d.tenureMonths);
-            return fmtDate(toLocalDateStr(dt));
-        }, [d]);
-
-        // Amortization schedule
-        const fullSchedule = useMemo(() => {
-            const r = d.annualRate / 12 / 100;
-            const rows: { month: number; date: string; emi: number; interest: number; principal: number; balance: number; isPaid: boolean; isNext: boolean }[] = [];
-            let bal = d.loanAmount;
-            const disbDate = new Date(d.disbursementDate);
-            const now = new Date(); now.setHours(0, 0, 0, 0);
-            for (let m = 1; m <= d.tenureMonths; m++) {
-                const emiDate = new Date(disbDate.getFullYear(), disbDate.getMonth() + m, d.emiDueDay || 5);
-                const intPart = Math.round(bal * r);
-                const prinPart = Math.min(d.emiAmount - intPart, bal);
-                bal = Math.max(0, bal - prinPart);
-                const isPaid = emiDate <= now;
-                const isNext = !isPaid && (rows.length === 0 || rows[rows.length - 1].isPaid);
-                rows.push({ month: m, date: toLocalDateStr(emiDate), emi: d.emiAmount, interest: intPart, principal: prinPart, balance: bal, isPaid, isNext });
-            }
-            return rows;
-        }, [d]);
-
-        const yearlySummary = useMemo(() => {
-            const byYear: Record<number, { totalPaid: number; principal: number; interest: number; closingBal: number }> = {};
-            fullSchedule.forEach(row => {
-                const yr = new Date(row.date).getFullYear();
-                if (!byYear[yr]) byYear[yr] = { totalPaid: 0, principal: 0, interest: 0, closingBal: 0 };
-                byYear[yr].totalPaid += row.emi;
-                byYear[yr].principal += row.principal;
-                byYear[yr].interest += row.interest;
-                byYear[yr].closingBal = row.balance;
-            });
-            return Object.entries(byYear).map(([year, data]) => ({ year: Number(year), ...data }));
-        }, [fullSchedule]);
-
-        const visibleSchedule = useMemo(() => {
-            if (showAllFutureEmis) return fullSchedule;
-            const nextIdx = fullSchedule.findIndex(r => r.isNext);
-            if (nextIdx < 0) return fullSchedule.filter(r => r.isPaid);
-            return fullSchedule.slice(0, Math.min(nextIdx + 3, fullSchedule.length));
-        }, [fullSchedule, showAllFutureEmis]);
-
-        // Prepayment simulator
-        const prepayResult = useMemo(() => {
-            if (prepayAmount <= 0) return null;
-            const r = d.annualRate / 12 / 100;
-            const newPrincipal = Math.max(0, status.principalOutstanding - prepayAmount);
-            if (newPrincipal <= 0) return { interestSaved: 0, monthsReduced: status.emisRemaining, newClosureDate: tl('Today') };
-            let bal = newPrincipal, newMonths = 0, newInterest = 0;
-            while (bal > 0 && newMonths < d.tenureMonths) {
-                const intPart = bal * r;
-                const prinPart = d.emiAmount - intPart;
-                if (prinPart <= 0) break;
-                bal = Math.max(0, bal - prinPart);
-                newInterest += intPart;
-                newMonths++;
-            }
-            const currentRemInt = (status.emisRemaining * d.emiAmount) - status.principalOutstanding;
-            const closureDate = new Date();
-            closureDate.setMonth(closureDate.getMonth() + newMonths);
-            return { interestSaved: Math.round(Math.max(0, currentRemInt - newInterest)), monthsReduced: Math.max(0, status.emisRemaining - newMonths), newClosureDate: fmtDate(toLocalDateStr(closureDate)) };
-        }, [prepayAmount, status, d]);
 
         // Build the shared config once so PDF and Excel stay in lock-step.
         const buildLoanExportConfig = (): ExportConfig => {
@@ -648,590 +1313,6 @@ export default function LoanDetail() {
         );
     }
 
-    // Normalize type matching (calculators save "SIP", "SSY", "PPF" etc.)
-    const mt = (...names: string[]) => names.some(n => typeLC === n.toLowerCase());
-
-    // Build year-wise growth table for compound-type investments
-    const yearWiseTable = useMemo((): { columns: string[]; rows: Array<Array<string | number>> } => {
-        const rate = d.rate || d.annualRate || 7;
-        const startDate = d.openingDate || d.purchaseDate || d.startDate || '';
-        const startYear = startDate ? new Date(startDate).getFullYear() : new Date().getFullYear();
-
-        if (mt('ppf', 'ppf calculator')) {
-            const r = rate / 100;
-            const deposit = d.yearlyDeposit || 0;
-            const cols = [tl('Year'), tl('Deposit'), tl('Interest'), tl('Balance')];
-            const rows: Array<Array<string | number>> = [];
-            let bal = 0;
-            for (let y = 1; y <= 15; y++) {
-                const dep = y <= 15 ? deposit : 0;
-                bal += dep;
-                const interest = Math.round(bal * r);
-                bal += interest;
-                rows.push([startYear + y - 1, formatINR(dep), formatINR(interest), formatINR(Math.round(bal))]);
-            }
-            return { columns: cols, rows };
-        }
-        if (mt('ssy', 'ssy calculator')) {
-            const r = rate / 100;
-            const deposit = d.yearlyDeposit || 0;
-            const cols = [tl('Year'), tl('Deposit'), tl('Interest'), tl('Balance')];
-            const rows: Array<Array<string | number>> = [];
-            let bal = 0;
-            for (let y = 1; y <= 21; y++) {
-                const dep = y <= 15 ? deposit : 0;
-                bal += dep;
-                const interest = Math.round(bal * r);
-                bal += interest;
-                rows.push([startYear + y - 1, formatINR(dep), formatINR(interest), formatINR(Math.round(bal))]);
-            }
-            return { columns: cols, rows };
-        }
-        if (mt('nsc', 'nsc calculator')) {
-            const r = rate / 100;
-            const principal = d.principal || 0;
-            const cols = [tl('Year'), tl('Opening'), tl('Interest'), tl('Closing')];
-            const rows: Array<Array<string | number>> = [];
-            for (let y = 1; y <= 5; y++) {
-                const opening = principal * Math.pow(1 + r, y - 1);
-                const closing = principal * Math.pow(1 + r, y);
-                const interest = closing - opening;
-                rows.push([startYear + y - 1, formatINR(Math.round(opening)), formatINR(Math.round(interest)), formatINR(Math.round(closing))]);
-            }
-            return { columns: cols, rows };
-        }
-        if (mt('kvp', 'kvp calculator')) {
-            const r = rate / 100;
-            const principal = d.principal || 0;
-            const doublingYears = Math.ceil(Math.log(2) / Math.log(1 + r));
-            const cols = [tl('Year'), tl('Value'), tl('Gain'), tl('Growth %')];
-            const rows: Array<Array<string | number>> = [];
-            for (let y = 1; y <= doublingYears; y++) {
-                const val = principal * Math.pow(1 + r, y);
-                rows.push([startYear + y - 1, formatINR(Math.round(val)), formatINR(Math.round(val - principal)), `${((val / principal - 1) * 100).toFixed(1)}%`]);
-            }
-            return { columns: cols, rows };
-        }
-        if (mt('fd', 'fd calculator', 'potd', 'post office td')) {
-            const principal = d.principal || 0;
-            const freq = d.compoundingFreq || 4;
-            const tenureYears = Math.ceil((d.tenureMonths || 60) / 12);
-            const cols = [tl('Year'), tl('Value'), tl('Interest Earned'), tl('Growth %')];
-            const rows: Array<Array<string | number>> = [];
-            for (let y = 1; y <= tenureYears; y++) {
-                const val = principal * Math.pow(1 + (rate / 100) / freq, freq * y);
-                rows.push([startYear + y - 1, formatINR(Math.round(val)), formatINR(Math.round(val - principal)), `${((val / principal - 1) * 100).toFixed(1)}%`]);
-            }
-            return { columns: cols, rows };
-        }
-        if (mt('sip', 'sip calculator', 'goal planner', 'goal')) {
-            const monthly = d.monthlySip || d.monthlyAmount || 0;
-            const annualReturn = d.annualReturn || 12;
-            const r = annualReturn / 12 / 100;
-            const cols = [tl('Year'), tl('Invested'), tl('Value'), tl('Gain')];
-            const rows: Array<Array<string | number>> = [];
-            for (let y = 1; y <= 10; y++) {
-                const n = y * 12;
-                const invested = monthly * n;
-                const fv = r > 0 ? monthly * ((Math.pow(1 + r, n) - 1) / r) * (1 + r) : invested;
-                rows.push([startYear + y - 1, formatINR(invested), formatINR(Math.round(fv)), formatINR(Math.round(fv - invested))]);
-            }
-            return { columns: cols, rows };
-        }
-        if (mt('rd')) {
-            const monthly = d.monthlyDeposit || 0;
-            const tenureYears = Math.ceil((d.tenureMonths || 60) / 12);
-            const r = (d.annualRate || 5.8) / 400;
-            const cols = [tl('Year'), tl('Deposited'), tl('Value'), tl('Interest')];
-            const rows: Array<Array<string | number>> = [];
-            for (let y = 1; y <= tenureYears; y++) {
-                const n = y * 12;
-                const dep = monthly * n;
-                let val = 0;
-                for (let m = 1; m <= n; m++) {
-                    const qIdx = Math.floor((n - m) / 3);
-                    val += monthly * Math.pow(1 + r, qIdx);
-                }
-                rows.push([startYear + y - 1, formatINR(dep), formatINR(Math.round(val)), formatINR(Math.round(val - dep))]);
-            }
-            return { columns: cols, rows };
-        }
-        if (mt('pomis', 'post office mis')) {
-            const principal = d.principal || 0;
-            const monthlyIncome = Math.round(principal * rate / 100 / 12);
-            const cols = [tl('Year'), tl('Monthly Income'), tl('Total Received'), tl('Cumulative')];
-            const rows: Array<Array<string | number>> = [];
-            for (let y = 1; y <= 5; y++) {
-                const annualIncome = monthlyIncome * 12;
-                rows.push([startYear + y - 1, formatINR(monthlyIncome), formatINR(annualIncome), formatINR(annualIncome * y)]);
-            }
-            return { columns: cols, rows };
-        }
-        if (mt('scss', 'scss calculator')) {
-            const principal = d.principal || 0;
-            const quarterlyIncome = Math.round(principal * rate / 100 / 4);
-            const cols = [tl('Year'), tl('Quarterly Income'), tl('Annual Income'), tl('Cumulative')];
-            const rows: Array<Array<string | number>> = [];
-            for (let y = 1; y <= (d.tenure || 5); y++) {
-                const annual = quarterlyIncome * 4;
-                rows.push([startYear + y - 1, formatINR(quarterlyIncome), formatINR(annual), formatINR(annual * y)]);
-            }
-            return { columns: cols, rows };
-        }
-        return { columns: [], rows: [] };
-    }, [d, typeLC]);
-
-    // Summary metrics — now returns cards (3 hero colored boxes) + rows (details) + progress
-    type MetricCard = { label: string; value: string; color: string };
-    const investmentMetrics = useMemo((): { cards: MetricCard[]; rows: string[][]; progress: number; statusText: string; headline: string; headlineLabel: string } => {
-        const empty = { cards: [], rows: [], progress: 0, statusText: '—', headline: '—', headlineLabel: '' };
-        try {
-            if (mt('sip', 'sip calculator')) {
-                const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate });
-                return { cards: [{ label: tl('Invested'), value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Gain'), value: formatINR(s.wealthGained), color: '#F59E0B' }], rows: [[tl('Months Invested'), String(s.monthsInvested)], [tl('Return %'), `${s.returnPercent.toFixed(2)}%`], [tl('Running Since'), `${s.sipRunningYears}Y ${s.sipRunningMonths}M`], [tl('Monthly SIP'), formatINR(d.monthlySip || d.monthlyAmount || 0)], [tl('Expected Return'), `${d.annualReturn || 12}% p.a.`]], progress: Math.min(100, s.monthsInvested * 0.8), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
-            }
-            if (mt('fd', 'fd calculator', 'potd', 'post office td')) {
-                const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4 });
-                return { cards: [{ label: tl('Deposited'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.valueToday), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarnedToday), color: '#F59E0B' }], rows: [[tl('Days Invested'), String(s.daysInvested)], [tl('Daily Earning'), formatINR(s.dailyEarning)], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Maturity Value'), formatINR(s.maturityValue)], [tl('Days Remaining'), String(s.daysRemaining)], [tl('Interest Rate'), `${d.annualRate}% p.a.`], [tl('Premature Value'), formatINR(s.prematureValue)]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.valueToday), headlineLabel: tl('Value Today') };
-            }
-            if (mt('rd')) {
-                const s = calculateRdStatus({ monthlyDeposit: d.monthlyDeposit || 0, annualRate: d.annualRate || 5.8, tenureMonths: d.tenureMonths || 60, startDate: d.startDate });
-                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [[tl('Monthly Deposit'), formatINR(d.monthlyDeposit || 0)], [tl('Interest Rate'), `${d.annualRate || 5.8}% p.a.`], [tl('Tenure'), `${d.tenureMonths || 60} months`], [tl('Completion'), `${s.percentComplete.toFixed(1)}%`]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
-            }
-            if (mt('ppf', 'ppf calculator')) {
-                const s = calculatePpfStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 7.1, openingDate: d.openingDate || d.startDate });
-                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Balance'), value: formatINR(s.balanceToday), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [[tl('Year'), `${s.currentYear} of 15`], [tl('Yearly Deposit'), formatINR(d.yearlyDeposit || 0)], [tl('Rate'), `${d.rate || d.annualRate || 7.1}% p.a.`], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Maturity Value'), formatINR(s.maturityValue || 0)], [tl('Loan Eligible'), s.loanEligible ? `Yes — up to ${formatINR(s.loanAmount)}` : 'No (available yr 3-6)'], [tl('Withdrawal Eligible'), s.withdrawalEligible ? `Yes — up to ${formatINR(s.withdrawalAmount)}` : 'No (available after yr 7)']], progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: `Year ${s.currentYear}/15`, headline: formatINR(s.balanceToday), headlineLabel: tl('Current Balance') };
-            }
-            if (mt('ssy', 'ssy calculator')) {
-                const s = calculateSsyStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 8.2, openingDate: d.openingDate || d.startDate, girlDob: d.girlDob || d.openingDate || d.startDate });
-                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Balance'), value: formatINR(Math.round(s.balanceToday)), color: '#10B981' }, { label: tl('Interest'), value: formatINR(Math.round(s.interestEarned)), color: '#EC4899' }], rows: [[tl('Girl\'s Age'), `${s.girlAge} years`], [tl('Account Age'), `${s.accountAge} of 21 years`], [tl('Deposit Phase'), s.depositPhaseActive ? `Active (${s.depositYearsRemaining}yr left)` : 'Complete — interest compounding'], [tl('Yearly Deposit'), formatINR(d.yearlyDeposit || 0)], [tl('Rate'), `${d.rate || d.annualRate || 8.2}% p.a.`], [tl('Maturity Value'), formatINR(Math.round(s.maturityValue))], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Days to Maturity'), String(s.daysToMaturity)], [tl('Withdrawal'), s.withdrawalEligible ? `Eligible — up to ${formatINR(s.withdrawalAmount)}` : 'After girl turns 18']], progress: Math.min(100, (s.accountAge / 21) * 100), statusText: `Year ${s.accountAge}/21`, headline: formatINR(Math.round(s.balanceToday)), headlineLabel: tl('Current Balance') };
-            }
-            if (mt('nsc', 'nsc calculator')) {
-                const s = calculateNscStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.7, purchaseDate: d.purchaseDate || d.startDate });
-                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: tl('Interest'), value: formatINR(Math.round(s.interestEarned)), color: '#F59E0B' }], rows: [[tl('Years Completed'), `${s.yearsCompleted.toFixed(1)} of 5`], [tl('Rate'), `${d.rate || d.annualRate || 7.7}% p.a.`], [tl('Maturity Value'), formatINR(Math.round(s.maturityValue))], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Days Remaining'), String(s.daysToMaturity)], [tl('Sec 80C Eligible'), 'Yes — Interest reinvested']], progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: `${(Math.min(1, s.yearsCompleted / 5) * 100).toFixed(0)}% of 5yr`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: tl('Value Today') };
-            }
-            if (mt('kvp', 'kvp calculator')) {
-                const s = calculateKvpStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.5, purchaseDate: d.purchaseDate || d.startDate });
-                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: tl('Gain'), value: formatINR(Math.round(s.gainSoFar)), color: '#F59E0B' }], rows: [[tl('Progress to 2x'), `${s.progressToDoubling.toFixed(1)}%`], [tl('Rate'), `${d.rate || d.annualRate || 7.5}% p.a.`], [tl('Doubling Date'), fmtDate(s.doublingDate)], [tl('Days to Doubling'), String(s.daysToDoubling)], [tl('Maturity Amount'), formatINR(d.principal * 2)], [tl('Premature'), s.prematureEligible ? 'Eligible now' : `After ${fmtDate(s.prematureEligibleDate)}`]], progress: s.progressToDoubling, statusText: `${s.progressToDoubling.toFixed(0)}% to 2x`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: tl('Value Today') };
-            }
-            if (mt('pomis', 'post office mis')) {
-                const s = calculatePomisStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.4, startDate: d.startDate });
-                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Monthly Income'), value: formatINR(s.monthlyIncome), color: '#10B981' }, { label: tl('Total Earned'), value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [[tl('Payouts Received'), `${s.monthsCompleted} of 60`], [tl('Rate'), `${d.rate || d.annualRate || 7.4}% p.a.`], [tl('Total 5yr Income'), formatINR(s.monthlyIncome * 60)], [tl('Remaining Payouts'), `${60 - s.monthsCompleted}`], [tl('Maturity Date'), fmtDate(s.maturityDate)]], progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: `${s.monthsCompleted}/60 payouts`, headline: formatINR(s.monthlyIncome), headlineLabel: tl('Monthly Income') };
-            }
-            if (mt('scss', 'scss calculator')) {
-                const s = calculateScssStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 8.2, startDate: d.startDate, tenure: d.tenure || 5 });
-                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Quarterly'), value: formatINR(s.quarterlyIncome), color: '#10B981' }, { label: tl('Total Earned'), value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [[tl('Quarters Completed'), `${s.quartersCompleted} of 20`], [tl('Rate'), `${d.rate || d.annualRate || 8.2}% p.a.`], [tl('Annual Income'), formatINR(s.quarterlyIncome * 4)], [tl('Total 5yr Income'), formatINR(s.quarterlyIncome * 20)], [tl('Maturity Date'), fmtDate(s.maturityDate)]], progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: `${s.quartersCompleted}/20 qtrs`, headline: formatINR(s.quarterlyIncome), headlineLabel: tl('Quarterly Income') };
-            }
-            if (mt('goal planner', 'goal')) {
-                const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate, targetAmount: d.targetAmount });
-                return { cards: [{ label: tl('Invested'), value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: tl('Value'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Goal'), value: `${s.progressToGoal.toFixed(0)}%`, color: '#8B5CF6' }], rows: [[tl('Wealth Gained'), formatINR(s.wealthGained)], [tl('Target Amount'), d.targetAmount ? formatINR(d.targetAmount) : '—'], [tl('Goal Progress'), `${s.progressToGoal.toFixed(1)}%`]], progress: s.progressToGoal, statusText: `${s.progressToGoal.toFixed(0)}% to goal`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
-            }
-
-            // ── LIVE SNAPSHOT TRACKERS ──
-            // These calculators don't have a dedicated investment engine in
-            // investmentStatusEngine.ts, so we recompute "as of today" inline
-            // using elapsed time from the saved start date. Falls back to the
-            // saved snapshot when no start date exists (backwards compat).
-            if (mt('compound interest', 'ci')) {
-                const principal = d.principal || 0;
-                const rate = d.rate || 0;
-                const freq = d.freq || 12;
-                const totalYears = d.years || 0;
-                const elapsed = yearsSince(d.startDate, totalYears);
-                let valueToday: number;
-                let progress: number;
-                let statusText: string;
-                if (elapsed > 0 && rate > 0) {
-                    valueToday = principal * Math.pow(1 + (rate / 100) / freq, freq * elapsed);
-                    progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
-                    statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
-                } else {
-                    valueToday = d.maturity || 0;
-                    progress = 100;
-                    statusText = `${totalYears}Y @ ${rate}%`;
-                }
-                const interest = valueToday - principal;
-                const maturityAtEnd = principal * Math.pow(1 + (rate / 100) / freq, freq * totalYears);
-                return {
-                    cards: [
-                        { label: tl('Principal'), value: formatINR(principal), color: '#3B82F6' },
-                        { label: tl('Value Today'), value: formatINR(valueToday), color: '#10B981' },
-                        { label: tl('Interest'), value: formatINR(interest), color: '#F59E0B' },
-                    ],
-                    rows: [
-                        [tl('Years Elapsed'), `${elapsed.toFixed(1)} of ${totalYears}`],
-                        [tl('Rate'), `${rate}% p.a.`],
-                        [tl('Compounding'), freq === 1 ? tl('Yearly') : freq === 2 ? tl('Half-yearly') : freq === 4 ? tl('Quarterly') : freq === 12 ? tl('Monthly') : `${freq}x/year`],
-                        [tl('Maturity Value'), formatINR(maturityAtEnd)],
-                    ],
-                    progress, statusText,
-                    headline: formatINR(valueToday),
-                    headlineLabel: tl('Value Today'),
-                };
-            }
-            if (mt('simple interest', 'si')) {
-                const principal = d.principal || 0;
-                const rate = d.rate || 0;
-                const totalMonths = d.tenureMonths || d.months || 0;
-                const elapsedY = yearsSince(d.startDate, totalMonths / 12);
-                const elapsedMonths = Math.floor(elapsedY * 12);
-                let interestSoFar: number;
-                let progress: number;
-                let statusText: string;
-                if (elapsedMonths > 0 && rate > 0) {
-                    interestSoFar = (principal * rate * elapsedMonths) / (12 * 100);
-                    progress = totalMonths > 0 ? Math.min(100, (elapsedMonths / totalMonths) * 100) : 100;
-                    statusText = `${elapsedMonths}M of ${totalMonths}M`;
-                } else {
-                    interestSoFar = d.interest || 0;
-                    progress = 100;
-                    statusText = `${totalMonths}M @ ${rate}%`;
-                }
-                const valueToday = principal + interestSoFar;
-                const totalAtEnd = principal + (principal * rate * totalMonths) / (12 * 100);
-                return {
-                    cards: [
-                        { label: tl('Principal'), value: formatINR(principal), color: '#3B82F6' },
-                        { label: tl('Interest'), value: formatINR(interestSoFar), color: '#F59E0B' },
-                        { label: tl('Value Today'), value: formatINR(valueToday), color: '#10B981' },
-                    ],
-                    rows: [
-                        [tl('Months Elapsed'), `${elapsedMonths} of ${totalMonths}`],
-                        [tl('Rate'), `${rate}% p.a.`],
-                        [tl('Mode'), d.mode || tl('Simple Interest')],
-                        [tl('Total at Maturity'), formatINR(totalAtEnd)],
-                    ],
-                    progress, statusText,
-                    headline: formatINR(valueToday),
-                    headlineLabel: tl('Value Today'),
-                };
-            }
-            // ── LUMPSUM (one-time investment, live tracker) ──
-            if (mt('lumpsum')) {
-                const principal = d.principal || 0;
-                const rate = d.rate || 0;
-                const totalYears = d.years || 0;
-                const elapsed = yearsSince(d.startDate, totalYears);
-                let valueToday: number;
-                let progress: number;
-                let statusText: string;
-                if (elapsed > 0 && rate > 0) {
-                    valueToday = principal * Math.pow(1 + rate / 100, elapsed);
-                    progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
-                    statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
-                } else {
-                    valueToday = d.maturity || d.fv || 0;
-                    progress = 100;
-                    statusText = `${totalYears}Y @ ${rate}%`;
-                }
-                const gain = valueToday - principal;
-                const maturityAtEnd = principal * Math.pow(1 + rate / 100, totalYears);
-                return {
-                    cards: [
-                        { label: tl('Invested'), value: formatINR(principal), color: '#3B82F6' },
-                        { label: tl('Value Today'), value: formatINR(valueToday), color: '#10B981' },
-                        { label: tl('Gain'), value: formatINR(gain), color: '#F59E0B' },
-                    ],
-                    rows: [
-                        [tl('Years Elapsed'), `${elapsed.toFixed(1)} of ${totalYears}`],
-                        [tl('Rate'), `${rate}% p.a.`],
-                        [tl('Maturity Value'), formatINR(maturityAtEnd)],
-                        ...(d.inflation ? [[tl('Inflation'), `${d.inflation}% p.a.`]] : []),
-                    ],
-                    progress, statusText,
-                    headline: formatINR(valueToday),
-                    headlineLabel: tl('Value Today'),
-                };
-            }
-            // ── SWP (live month-by-month withdrawal sim) ──
-            if (mt('swp')) {
-                const corpus = d.totalInvestment || d.principal || 0;
-                const monthlyWithdrawal = d.monthlyWithdrawal || 0;
-                const rate = d.rate || 0;
-                const totalYears = d.years || 0;
-                const elapsedY = yearsSince(d.startDate, totalYears);
-                let withdrawnSoFar = 0;
-                let balanceToday = corpus;
-                let progress: number;
-                let statusText: string;
-                if (elapsedY > 0 && rate > 0 && monthlyWithdrawal > 0) {
-                    const elapsedMonths = Math.floor(elapsedY * 12);
-                    const r = rate / 12 / 100;
-                    let bal = corpus;
-                    let withdrawn = 0;
-                    for (let i = 0; i < elapsedMonths && bal > 0; i++) {
-                        bal = bal * (1 + r);
-                        if (bal >= monthlyWithdrawal) { bal -= monthlyWithdrawal; withdrawn += monthlyWithdrawal; }
-                        else { withdrawn += bal; bal = 0; }
-                    }
-                    withdrawnSoFar = withdrawn;
-                    balanceToday = bal;
-                    progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
-                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
-                } else {
-                    withdrawnSoFar = d.totalWithdrawn || 0;
-                    balanceToday = d.finalBalance || corpus;
-                    progress = 100;
-                    statusText = `${totalYears}Y @ ${rate}%`;
-                }
-                return {
-                    cards: [
-                        { label: tl('Corpus'), value: formatINR(corpus), color: '#3B82F6' },
-                        { label: tl('Balance Today'), value: formatINR(balanceToday), color: '#10B981' },
-                        { label: tl('Withdrawn'), value: formatINR(withdrawnSoFar), color: '#F59E0B' },
-                    ],
-                    rows: [
-                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
-                        [tl('Monthly Withdrawal'), formatINR(monthlyWithdrawal)],
-                        [tl('Expected Return'), `${rate}% p.a.`],
-                    ],
-                    progress, statusText,
-                    headline: formatINR(balanceToday),
-                    headlineLabel: tl('Balance Today'),
-                };
-            }
-            // ── CAGR (snapshot — growth-rate calculation, no time elapsed math) ──
-            if (mt('cagr')) {
-                const initial = d.initialValue || d.principal || 0;
-                const final = d.finalValue || d.maturity || 0;
-                const cagr = d.cagr ?? 0;
-                const years = d.years || 0;
-                return {
-                    cards: [
-                        { label: tl('Initial'), value: formatINR(initial), color: '#3B82F6' },
-                        { label: tl('Final'), value: formatINR(final), color: '#10B981' },
-                        { label: tl('CAGR'), value: `${cagr.toFixed(2)}%`, color: '#F59E0B' },
-                    ],
-                    rows: [
-                        [tl('Period'), `${years} years`],
-                        [tl('Total Return'), `${(((final / Math.max(1, initial)) - 1) * 100).toFixed(2)}%`],
-                        [tl('Wealth Multiplier'), `${(final / Math.max(1, initial)).toFixed(2)}x`],
-                    ],
-                    progress: 100,
-                    statusText: `${years}Y @ ${cagr.toFixed(1)}%`,
-                    headline: `${cagr.toFixed(2)}%`,
-                    headlineLabel: tl('CAGR'),
-                };
-            }
-            // ── EPF (live month-by-month accumulation) ──
-            if (mt('epf')) {
-                const basic = d.basic || 0;
-                const empPct = d.empPct || 12;
-                const rate = d.rate || 8.25;
-                const totalYears = d.years || 0;
-                const elapsedY = yearsSince(d.startDate, totalYears);
-                let investedSoFar: number;
-                let corpusToday: number;
-                let progress: number;
-                let statusText: string;
-                if (elapsedY > 0 && basic > 0) {
-                    const monthlyContrib = basic * (empPct / 100) * 2;
-                    const elapsedMonths = Math.floor(elapsedY * 12);
-                    const r = rate / 12 / 100;
-                    let bal = 0;
-                    for (let i = 0; i < elapsedMonths; i++) {
-                        bal = bal * (1 + r) + monthlyContrib;
-                    }
-                    investedSoFar = monthlyContrib * elapsedMonths;
-                    corpusToday = bal;
-                    progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
-                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
-                } else {
-                    investedSoFar = d.totalInvested || 0;
-                    corpusToday = d.corpus || d.maturity || 0;
-                    progress = 100;
-                    statusText = `${totalYears}Y @ ${rate}%`;
-                }
-                const interestEarned = corpusToday - investedSoFar;
-                return {
-                    cards: [
-                        { label: tl('Invested'), value: formatINR(investedSoFar), color: '#3B82F6' },
-                        { label: tl('Corpus Today'), value: formatINR(corpusToday), color: '#10B981' },
-                        { label: tl('Interest'), value: formatINR(interestEarned), color: '#F59E0B' },
-                    ],
-                    rows: [
-                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
-                        [tl('Basic Salary'), formatINR(basic)],
-                        [tl('Contribution'), `${empPct}% (emp + employer)`],
-                        [tl('EPF Rate'), `${rate}% p.a.`],
-                        ...(d.corpus ? [[tl('Projected Corpus'), formatINR(d.corpus)]] : []),
-                    ],
-                    progress, statusText,
-                    headline: formatINR(corpusToday),
-                    headlineLabel: tl('Corpus Today'),
-                };
-            }
-            // ── NPS (live month-by-month accumulation) ──
-            if (mt('nps')) {
-                const monthly = d.monthly || 0;
-                const rate = d.rate || 10;
-                const totalYears = d.years || 0;
-                const elapsedY = yearsSince(d.startDate, totalYears);
-                let investedSoFar: number;
-                let corpusToday: number;
-                let progress: number;
-                let statusText: string;
-                if (elapsedY > 0 && monthly > 0) {
-                    const elapsedMonths = Math.floor(elapsedY * 12);
-                    const r = rate / 12 / 100;
-                    let bal = 0;
-                    for (let i = 0; i < elapsedMonths; i++) {
-                        bal = bal * (1 + r) + monthly;
-                    }
-                    investedSoFar = monthly * elapsedMonths;
-                    corpusToday = bal;
-                    progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
-                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
-                } else {
-                    investedSoFar = d.totalInvested || 0;
-                    corpusToday = d.corpus || d.maturity || 0;
-                    progress = 100;
-                    statusText = `${totalYears}Y @ ${rate}%`;
-                }
-                return {
-                    cards: [
-                        { label: tl('Invested'), value: formatINR(investedSoFar), color: '#3B82F6' },
-                        { label: tl('Corpus Today'), value: formatINR(corpusToday), color: '#10B981' },
-                        { label: tl('Pension'), value: formatINR(d.monthlyPension || 0), color: '#F59E0B' },
-                    ],
-                    rows: [
-                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
-                        [tl('Monthly Contribution'), formatINR(monthly)],
-                        [tl('Expected Return'), `${rate}% p.a.`],
-                        [tl('Annuity %'), `${d.annuityPct || 40}%`],
-                        ...(d.monthlyPension ? [[tl('Projected Pension'), formatINR(d.monthlyPension)]] : []),
-                    ],
-                    progress, statusText,
-                    headline: formatINR(corpusToday),
-                    headlineLabel: tl('Corpus Today'),
-                };
-            }
-            // ── GRATUITY (snapshot — payout is one-time at retirement) ──
-            if (mt('gratuity')) {
-                const lastSalary = d.lastSalary || 0;
-                const gratuity = d.gratuity || 0;
-                const yearsOfService = d.yearsOfService || 0;
-                return {
-                    cards: [
-                        { label: tl('Last Salary'), value: formatINR(lastSalary), color: '#3B82F6' },
-                        { label: tl('Gratuity'), value: formatINR(gratuity), color: '#10B981' },
-                        { label: tl('Net Payout'), value: formatINR(d.netGratuity || gratuity), color: '#F59E0B' },
-                    ],
-                    rows: [
-                        [tl('Service Period'), `${yearsOfService} ${t('prag.years', 'years')}`],
-                        [tl('Employer Type'), d.employerType === 'Govt' ? tl('Government') : tl('Private')],
-                        [tl('Tax Exemption'), d.employerType === 'Govt' ? tl('Fully exempt') : `${t('liveStatus.upTo', 'Up to')} ₹25L`],
-                    ],
-                    progress: 100,
-                    statusText: `${yearsOfService}Y ${t('liveStatus.service', 'service')}`,
-                    headline: formatINR(gratuity),
-                    headlineLabel: tl('Gratuity Payout'),
-                };
-            }
-            // ── INSURANCE COMPARE (snapshot — comparison sample) ──
-            if (mt('insurance compare', 'insurance comparison')) {
-                const sumInsured = d.sumInsured || 0;
-                const premiumA = d.premiumA || 0;
-                const premiumB = d.premiumB || 0;
-                return {
-                    cards: [
-                        { label: tl('Cover'), value: formatINR(sumInsured), color: '#10B981' },
-                        { label: tl('Premium (min)'), value: formatINR(premiumA), color: '#3B82F6' },
-                        { label: tl('Premium (max)'), value: formatINR(premiumB), color: '#F59E0B' },
-                    ],
-                    rows: [
-                        [tl('Type'), d.tab === 'life' ? t('liveStatus.lifeInsurance', 'Life Insurance') : t('liveStatus.healthInsurance', 'Health Insurance')],
-                        ...(d.members ? [[tl('Members'), String(d.members)]] : []),
-                        ...(d.cityType ? [[tl('City'), String(d.cityType)]] : []),
-                        [tl('Has PED'), d.hasPreExisting ? tl('Yes') : tl('No')],
-                    ],
-                    progress: 100,
-                    statusText: d.tab === 'life' ? t('liveStatus.lifeCompare', 'Life Compare') : t('liveStatus.healthCompare', 'Health Compare'),
-                    headline: formatINR(sumInsured),
-                    headlineLabel: tl('Sum Insured'),
-                };
-            }
-            if (mt('property')) {
-                const totalCost = d.totalCost || d.propertyValue || 0;
-                return {
-                    cards: [
-                        { label: tl('Total Cost'), value: formatINR(totalCost), color: '#F97316' },
-                        { label: tl('Type'), value: d.mode || '—', color: '#3B82F6' },
-                        { label: tl('Area'), value: d.area ? `${d.area} ${tl('sqft')}` : '—', color: '#10B981' },
-                    ],
-                    rows: [
-                        [tl('Property Type'), d.mode || '—'],
-                        [tl('Total Value'), formatINR(totalCost)],
-                        ...(d.area ? [[tl('Built-up Area'), `${d.area} ${tl('sqft')}`]] : []),
-                    ],
-                    progress: 100,
-                    statusText: d.mode || t('liveStatus.property', 'Property'),
-                    headline: formatINR(totalCost),
-                    headlineLabel: tl('Property Value'),
-                };
-            }
-            if (mt('insurance')) {
-                const sumInsured = d.sumInsured || 0;
-                const premiumMin = d.premiumMin || 0;
-                const premiumMax = d.premiumMax || premiumMin;
-                const isLife = d.tab === 'life';
-                return {
-                    cards: [
-                        { label: isLife ? tl('Cover') : tl('Sum Insured'), value: formatINR(sumInsured), color: '#10B981' },
-                        { label: tl('Premium (min)'), value: formatINR(premiumMin), color: '#3B82F6' },
-                        { label: tl('Premium (max)'), value: formatINR(premiumMax), color: '#F59E0B' },
-                    ],
-                    rows: [
-                        [tl('Type'), isLife ? t('liveStatus.termLife', 'Term Life Insurance') : t('liveStatus.healthInsurance', 'Health Insurance')],
-                        ...(isLife && d.age ? [[tl('Age at Purchase'), `${d.age} ${t('prag.years', 'years')}`]] : []),
-                        ...(d.tenure ? [[tl('Term'), `${d.tenure} ${t('prag.years', 'years')}`]] : []),
-                    ],
-                    progress: 100,
-                    statusText: isLife ? t('liveStatus.lifeCoverStatus', 'Life Cover') : t('liveStatus.healthCoverStatus', 'Health Cover'),
-                    headline: formatINR(sumInsured),
-                    headlineLabel: isLife ? tl('Life Cover') : tl('Sum Insured'),
-                };
-            }
-            if (mt('overdraft', 'od')) {
-                const utilized = d.utilized || d.loanAmount || 0;
-                const totalInterest = d.totalInterest || 0;
-                const totalPayable = d.totalPayable ?? (utilized + totalInterest);
-                return {
-                    cards: [
-                        { label: t('liveStatus.utilized', 'Utilized'), value: formatINR(utilized), color: '#EF4444' },
-                        { label: tl('Interest'), value: formatINR(totalInterest), color: '#F59E0B' },
-                        { label: tl('Total Payable'), value: formatINR(totalPayable), color: '#10B981' },
-                    ],
-                    rows: [
-                        [tl('Days Utilized'), String(d.days || 0)],
-                        [tl('Rate'), `${d.rate || 0}% p.a.`],
-                        [tl('Mode'), d.odType === 'business' ? t('od.typeBusiness', 'Business OD') : t('od.typePersonal', 'Personal OD')],
-                    ],
-                    progress: 100,
-                    statusText: `${d.days || 0}d @ ${d.rate || 0}%`,
-                    headline: formatINR(totalPayable),
-                    headlineLabel: tl('Total Payable'),
-                };
-            }
-        } catch { /* skip */ }
-        return empty;
-    }, [profile, d, typeLC]);
-
-    // Inject a "Start Date" row at the top of the rows array if a start date
-    // exists in the saved profile data — works across every calculator type.
-    const investmentMetricsWithStartDate = useMemo(() => {
-        const startDate = getProfileStartDate(d);
-        if (!startDate) return investmentMetrics;
-        // Avoid double-injecting if a row labelled 'Start Date' already exists
-        const startDateLabel = tl('Start Date');
-        if (investmentMetrics.rows.some(r => r[0] === startDateLabel)) return investmentMetrics;
-        return {
-            ...investmentMetrics,
-            rows: [[startDateLabel, fmtDate(startDate)], ...investmentMetrics.rows],
-        };
-    }, [investmentMetrics, d]);
-
-    const [showYearTable, setShowYearTable] = useState(false);
 
     // Shared config for investment tracker exports — PDF and Excel read from
     // the same source so the numbers in both files never drift apart.

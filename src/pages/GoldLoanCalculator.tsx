@@ -228,15 +228,23 @@ export default function GoldLoanCalculator() {
         if (mode === 'byWeight') {
             return Math.round(goldWeight * goldRate24K * purityFactor);
         }
-        // Mode B: reverse calculation needs the user's loan need
-        // We'll compute required gold below; for "valuation" display we still
-        // need the gold needed to match loanAmountNeeded at max LTV.
-        // First-pass: assume 85% LTV to find required value, then settle tier.
-        const requiredValueAt85 = loanAmountNeeded / 0.85;
-        const tier = computeTieredLTV(requiredValueAt85);
-        // Use the LTV of the tier the loan falls into to compute exact value needed
-        const requiredValueExact = loanAmountNeeded / (tier.ltv / 100);
-        return Math.round(requiredValueExact);
+        // Mode B: reverse calculation needs the user's loan need.
+        // Find the smallest gold value that is SELF-CONSISTENT with
+        // computeTieredLTV: try tiers from highest LTV (smallest required
+        // gold) downward and accept the first candidate that, fed forward
+        // through computeTieredLTV, still yields maxLoan >= the requirement.
+        // The old single-guess approach (loan / 0.85 → tier → loan / tierLtv)
+        // could land in a lower tier when re-verified, leaving a shortfall
+        // of up to ~₹31k just above the ₹5L boundary.
+        for (const tierLtv of [85, 80, 75]) {
+            const candidateValue = Math.ceil(loanAmountNeeded / (tierLtv / 100));
+            if (computeTieredLTV(candidateValue).maxLoan >= loanAmountNeeded) {
+                return candidateValue;
+            }
+        }
+        // Unreachable: the 75% candidate always satisfies the check above
+        // (its forward LTV is >= 75%), kept as a safe fallback.
+        return Math.ceil(loanAmountNeeded / 0.75);
     }, [mode, goldWeight, goldRate24K, purityFactor, loanAmountNeeded]);
 
     /** RBI 2026 tier outcome */
@@ -838,7 +846,7 @@ export default function GoldLoanCalculator() {
                             {(tierResult.ltv >= 80 || interestRate > 18 || tenureMonths <= 3) && (
                                 <div className="p-4 rounded-2xl border-2 border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 space-y-2">
                                     <div className="flex items-center gap-2"><Info className="w-4 h-4 text-red-500" /><h3 className="text-sm font-bold text-red-600">{t('goldLoan.riskAlerts', 'Gold Loan Risk Alerts')}</h3></div>
-                                    {tierResult.ltv >= 80 && <p className="text-[11px] text-red-600 dark:text-red-400">🔴 <strong>{t('goldLoan.auctionRisk', 'Auction Risk')}:</strong> {t('goldLoan.auctionRiskDesc', { ltv: tierResult.ltv, drop: tierResult.ltv > 0 ? Math.round((1 - 75 / tierResult.ltv) * 100) : 0, defaultValue: 'At {{ltv}}% LTV, a {{drop}}% gold price drop triggers margin call. Lender can auction your gold after due notice.' })}</p>}
+                                    {tierResult.ltv >= 80 && <p className="text-[11px] text-red-600 dark:text-red-400">🔴 <strong>{t('goldLoan.auctionRisk', 'Auction Risk')}:</strong> {t('goldLoan.auctionRiskDesc', { ltv: tierResult.ltv, drop: Math.max(0, Math.round((1 - tierResult.ltv / 100) * 100)), defaultValue: "At {{ltv}}% LTV, a {{drop}}% gold price drop would make your loan exceed your gold's value. Lender can auction your gold after due notice." })}</p>}
                                     {interestRate > 18 && <p className="text-[11px] text-red-600 dark:text-red-400">🔴 <strong>{t('goldLoan.highInterest', 'High Interest')} ({interestRate}%):</strong> {t('goldLoan.highInterestDesc', 'NBFCs charge 14-26%. Consider banks for lower rates if you qualify.')}</p>}
                                     {tenureMonths <= 3 && <p className="text-[11px] text-amber-600 dark:text-amber-400">🟡 <strong>{t('goldLoan.shortTenure', 'Short Tenure Pressure')}:</strong> {t('goldLoan.shortTenureDesc', { months: tenureMonths, amount: repaymentMode === 'emi' ? formatINR(emiResult?.emi || 0) : formatINR(loanAmount), defaultValue: '{{months}}-month tenure. Ensure repayment capacity for {{amount}}.' })}</p>}
                                 </div>

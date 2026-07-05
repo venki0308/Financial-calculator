@@ -52,7 +52,8 @@ export default function EPFCalculator() {
 
     // 1. CORE CALCULATION
     const result = useMemo(() => {
-        const years = Math.max(retireAge - age, 1);
+        // 0 when age >= retireAge — yields an empty schedule instead of inventing a fictitious year
+        const years = Math.max(retireAge - age, 0);
         let balance = 0;
         let totalEmp = 0;
         let totalEmployer = 0;
@@ -130,7 +131,7 @@ export default function EPFCalculator() {
 
     // 2. WHAT-IF SIMULATOR
     const whatIf = useMemo(() => {
-        const simYears = Math.max(whatIfRetire - age, 1);
+        const simYears = Math.max(whatIfRetire - age, 0);
         let simBalance = 0;
         let simSalary = basic;
 
@@ -317,14 +318,14 @@ export default function EPFCalculator() {
                         <div>
                             <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('epf.currentAge')}</label>
                             <div className="relative">
-                                <input type="number" value={age} onChange={e => setAge(Number(e.target.value)||0)} className={inputCls + " pr-8 bg-muted/30 focus:bg-card"} />
+                                <input type="number" min={18} max={70} value={age} onChange={e => setAge(Number(e.target.value)||0)} className={inputCls + " pr-8 bg-muted/30 focus:bg-card"} />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-bold">{t('epf.yrs')}</span>
                             </div>
                         </div>
                         <div>
                             <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('epf.retirementAge')}</label>
                             <div className="relative">
-                                <input type="number" value={retireAge} onChange={e => setRetireAge(Number(e.target.value)||0)} className={inputCls + " pr-8 bg-muted/30 focus:bg-card"} />
+                                <input type="number" min={45} max={70} value={retireAge} onChange={e => setRetireAge(Number(e.target.value)||0)} className={inputCls + " pr-8 bg-muted/30 focus:bg-card"} />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-bold">{t('epf.yrs')}</span>
                             </div>
                         </div>
@@ -372,6 +373,13 @@ export default function EPFCalculator() {
                 </div>
 
                 {/* 2. RESULTS HERO */}
+                {result.years === 0 && (
+                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                        <p className="text-amber-500 text-[10px] font-bold">
+                            {t('epf.pastRetirementNote', 'Current age is at or beyond retirement age — nothing left to project')}
+                        </p>
+                    </div>
+                )}
                 <motion.div layout className="p-6 rounded-3xl bg-card border border-border shadow-sm">
                     <div className="flex justify-between items-start mb-4">
                         <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold">{t('epf.projectedCorpus')}</p>
@@ -434,7 +442,8 @@ export default function EPFCalculator() {
                         startDate={joiningDate}
                         totalYears={result.years}
                         rate={rate}
-                        monthlyContribution={basic * (totalEmpPct / 100) * 2}
+                        // Employee share + employer EPF share (12% minus EPS portion), matching the schedule's formula
+                        monthlyContribution={basic * (totalEmpPct / 100) + (basic * 0.12 - Math.min(basic * 0.0833, 15000 * 0.0833))}
                         projectedMaturity={result.corpus}
                         label={t('epf.liveTracker', 'Live EPF Tracker')}
                     />

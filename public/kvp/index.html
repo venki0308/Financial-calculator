@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KVP Calculator 2026 — 7.5%, Money Doubles in 115 Months</title>
+  <meta name="description" content="Kisan Vikas Patra calculator at 7.5% (Q2 FY 2026-27) — money doubles in 115 months. Check your KVP value for any period. Free, works offline, no login." />
+  <link rel="canonical" href="https://fincalix.com/kvp" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/kvp" />
+  <meta property="og:title" content="KVP Calculator 2026 — 7.5%, Money Doubles in 115 Months" />
+  <meta property="og:description" content="Kisan Vikas Patra at 7.5% p.a. (Q2 FY 2026-27) doubles your money in 115 months (9 years 7 months). ₹1 lakh becomes ₹2 lakh. Free in the FinCalix app." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "KVP Calculator", "item": "https://fincalix.com/kvp" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "In how many months does KVP double the money?",
+            "acceptedAnswer": { "@type": "Answer", "text": "At the current 7.5% rate (Q2 FY 2026-27), Kisan Vikas Patra doubles your investment in 115 months — 9 years and 7 months. ₹1,00,000 becomes ₹2,00,000 at maturity." }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the KVP interest rate in 2026?",
+            "acceptedAnswer": { "@type": "Answer", "text": "KVP earns 7.5% per annum compounded annually for Q2 FY 2026-27 (July–September 2026), unchanged for the 9th consecutive quarter. The doubling period of 115 months is set from this rate." }
+          },
+          {
+            "@type": "Question",
+            "name": "Does KVP give any tax benefit?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. KVP has no 80C benefit and the interest is fully taxable at your slab rate. Its appeal is the sovereign guarantee and the certainty of doubling in 115 months — for tax savings, NSC or PPF are better choices." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I withdraw KVP before maturity?",
+            "acceptedAnswer": { "@type": "Answer", "text": "KVP can be encashed after a lock-in of 2 years 6 months, at values notified in the scheme table. Premature encashment earns less than the full doubling value." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>KVP Calculator — 7.5%, Doubles in 115 Months (2026)</h1>
+    <p class="sub">Kisan Vikas Patra earns 7.5% p.a. compounded annually — unchanged for Q2 FY 2026-27 (July 2026) — and doubles your money in 115 months (9 years 7 months). Check the value of your KVP for any holding period.</p>
+
+    <div class="card calc">
+      <label for="amt">Investment amount (₹, minimum ₹1,000)</label>
+      <input id="amt" type="number" inputmode="numeric" value="100000" min="1000" />
+      <label for="mos">Holding period (months, maturity = 115)</label>
+      <input id="mos" type="number" inputmode="numeric" value="115" min="1" max="115" />
+      <label for="rate">Interest rate (% per year, fixed by Govt.)</label>
+      <input id="rate" type="number" value="7.5" readonly />
+      <button onclick="calc()">Calculate KVP Value</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How KVP value is calculated</h2>
+    <p>KVP compounds at 7.5% per year. The scheme is defined so that the certificate exactly doubles at maturity after 115 months.</p>
+    <div class="formula">Value ≈ P × (1.075)^(months ÷ 12)<br/>At 115 months: P × 1.075^9.583 ≈ 2 × P (doubling per scheme table)</div>
+
+    <h2>Value of ₹1,00,000 in KVP at 7.5%</h2>
+    <table>
+      <tr><th>Holding period</th><th>Approximate value</th></tr>
+      <tr><td>12 months (1 year)</td><td>₹1,07,500</td></tr>
+      <tr><td>60 months (5 years)</td><td>₹1,43,563</td></tr>
+      <tr><td>115 months (maturity)</td><td>₹2,00,000 (doubled per scheme; formula ≈ ₹1,99,985)</td></tr>
+    </table>
+
+    <h2>KVP rules at a glance (July 2026, Q2 FY 2026-27)</h2>
+    <table>
+      <tr><th>Feature</th><th>Detail</th></tr>
+      <tr><td>Interest rate</td><td>7.5% p.a., compounded annually (unchanged 9 quarters)</td></tr>
+      <tr><td>Maturity</td><td>115 months — investment doubles</td></tr>
+      <tr><td>Investment</td><td>Minimum ₹1,000 (multiples of ₹100); no upper limit</td></tr>
+      <tr><td>Lock-in</td><td>Encashable after 2 years 6 months at notified values</td></tr>
+      <tr><td>Tax</td><td>No 80C benefit; interest taxable at slab rate</td></tr>
+      <tr><td>Guarantee</td><td>Sovereign — Government of India small-savings scheme</td></tr>
+    </table>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>In how many months does KVP double the money?</h3>
+      <p>At the current 7.5% rate (Q2 FY 2026-27), Kisan Vikas Patra doubles your investment in 115 months — 9 years and 7 months. ₹1,00,000 becomes ₹2,00,000 at maturity.</p>
+      <h3>What is the KVP interest rate in 2026?</h3>
+      <p>KVP earns 7.5% per annum compounded annually for Q2 FY 2026-27 (July–September 2026), unchanged for the 9th consecutive quarter. The doubling period of 115 months is set from this rate.</p>
+      <h3>Does KVP give any tax benefit?</h3>
+      <p>No. KVP has no 80C benefit and the interest is fully taxable at your slab rate. Its appeal is the sovereign guarantee and the certainty of doubling in 115 months — for tax savings, NSC or PPF are better choices.</p>
+      <h3>Can I withdraw KVP before maturity?</h3>
+      <p>KVP can be encashed after a lock-in of 2 years 6 months, at values notified in the scheme table. Premature encashment earns less than the full doubling value.</p>
+    </div>
+
+    <div class="install">
+      <h2>Compare KVP, NSC &amp; FD — free</h2>
+      <p>Doubling-time comparisons, maturity schedules &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+      <a href="/nsc">NSC Calculator</a>
+      <a href="/post-office-mis">Post Office MIS</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>KVP rate of 7.5% and the 115-month doubling period are as of July 2026 (Q2 FY 2026-27); intermediate values shown use the compounding formula and are indicative — encashment values follow the official scheme table. Verify with your post office. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var P = Math.max(0, parseFloat(document.getElementById('amt').value) || 0);
+      var months = Math.round(Math.max(0, parseFloat(document.getElementById('mos').value) || 0));
+      var out = document.getElementById('out');
+      if (P <= 0 || months <= 0) { out.style.display = 'none'; return; }
+      var val = P * Math.pow(1.075, months / 12);
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      var note = months >= 115 ? ' — doubled at maturity (115 months)' : '';
+      out.innerHTML = '<strong>' + fmt(val) + ' after ' + months + ' months</strong><small>Invested ' + fmt(P) + ' · Growth ' + fmt(val - P) + ' at 7.5% compounded annually' + note + '</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

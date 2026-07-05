@@ -129,24 +129,27 @@ export default function SalaryHikeCalculator() {
         else if (computedHikePct >= bench.avg * 0.7) benchStatus = t('sh.benchBelowAvg');
         else benchStatus = t('sh.benchSignificantlyBelow');
 
+        // Projection covers EXACTLY the selected period, starting from the
+        // hiked (new) salary in month 1 and compounding the same hike once a
+        // year thereafter ("constant hike rate" — see projectionDisclaimer).
+        // Cumulative is a true running total across the whole period (it
+        // previously reset to 0 every 12 months, which made the PDF's
+        // Cumulative Earnings column collapse at months 13/25).
         const projection: { month: number; salary: number; cumulative: number; year: number; isNewYear: boolean }[] = [];
         let cumulative = 0;
-        const yearsToProject = periodUnit === 'years' ? period : Math.ceil(period / 12);
-        const maxYears = Math.max(yearsToProject + 1, 2);
+        const totalMonths = periodUnit === 'years' ? period * 12 : period;
 
-        for (let yr = 1; yr <= maxYears; yr++) {
-            cumulative = 0;
-            const monthlySalary = yr === 1 ? currentMonthly : (currentSalary * Math.pow(1 + computedHikePct / 100, yr - 1)) / 12;
-            for (let m = 1; m <= 12; m++) {
-                cumulative += monthlySalary;
-                projection.push({
-                    month: (yr - 1) * 12 + m,
-                    salary: Math.round(monthlySalary),
-                    cumulative: Math.round(cumulative),
-                    year: yr,
-                    isNewYear: m === 1 && yr > 1,
-                });
-            }
+        for (let m = 1; m <= totalMonths; m++) {
+            const yr = Math.floor((m - 1) / 12) + 1;
+            const monthlySalary = (computedNewSalary * Math.pow(1 + computedHikePct / 100, yr - 1)) / 12;
+            cumulative += monthlySalary;
+            projection.push({
+                month: m,
+                salary: Math.round(monthlySalary),
+                cumulative: Math.round(cumulative),
+                year: yr,
+                isNewYear: m % 12 === 1 && yr > 1,
+            });
         }
 
         return {
@@ -199,12 +202,14 @@ export default function SalaryHikeCalculator() {
         const varAt100 = currentVariableTarget;
         const varAt120 = currentVariableTarget * 1.2;
 
+        // Exactly the selected number of years (was period + 1, so "2 years"
+        // rendered 3 rows). Year 1 = CTC after THIS hike; later years compound
+        // the same hike rates annually, consistent with the salary projection.
         const ctcProjection: { year: number; fixed: number; variableTarget: number; variablePayout: number; totalCTC: number }[] = [];
-        const yearsToProject = periodUnit === 'years' ? period : Math.ceil(period / 12);
-        const maxYears = Math.max(yearsToProject + 1, 2);
-        for (let yr = 1; yr <= maxYears; yr++) {
-            const yFixed = yr === 1 ? currentFixed : currentFixed * Math.pow(1 + fixedHikePct / 100, yr - 1);
-            const yVarTarget = yr === 1 ? currentVariableTarget : currentVariableTarget * Math.pow(1 + effVariableHike / 100, yr - 1);
+        const yearsToProject = Math.max(1, periodUnit === 'years' ? period : Math.ceil(period / 12));
+        for (let yr = 1; yr <= yearsToProject; yr++) {
+            const yFixed = currentFixed * Math.pow(1 + fixedHikePct / 100, yr);
+            const yVarTarget = currentVariableTarget * Math.pow(1 + effVariableHike / 100, yr);
             const yVarPayout = yVarTarget * achPct;
             const yTotalCTC = yFixed + yVarTarget;
             ctcProjection.push({ year: yr, fixed: Math.round(yFixed), variableTarget: Math.round(yVarTarget), variablePayout: Math.round(yVarPayout), totalCTC: Math.round(yTotalCTC) });

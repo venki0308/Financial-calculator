@@ -116,6 +116,10 @@ const CibilProfileSetup          = lr(() => import('./pages/CibilProfileSetup'))
 const MyLoans                    = lr(() => import('./pages/MyLoans'));
 const LoanDetail                 = lr(() => import('./pages/LoanDetail'));
 
+// Business Tracker — lazy loaded with retry
+const BusinessTracker            = lr(() => import('./pages/business/BusinessTracker'));
+const BusinessDetail             = lr(() => import('./pages/business/BusinessDetail'));
+
 // Support Pages — lazy loaded with retry
 const PrivacyPolicy              = lr(() => import('./pages/PrivacyPolicy'));
 const TermsOfService             = lr(() => import('./pages/TermsOfService'));
@@ -179,6 +183,24 @@ function AppContent() {
     // don't start with /calculator/, like /two-wheeler-loan and /gold-loan).
     useTrackCalculator();
     const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Navigate to the route carried by a tapped native notification.
+    // NotificationScheduler's tap listener writes the route to localStorage
+    // ('fincalix_pending_nav') and fires 'fincalix:notification-nav'. The
+    // mount-time consume covers cold starts; the event covers warm taps.
+    useEffect(() => {
+        const consumePendingNav = () => {
+            const route = localStorage.getItem('fincalix_pending_nav');
+            if (route) {
+                localStorage.removeItem('fincalix_pending_nav');
+                navigate(route);
+            }
+        };
+        consumePendingNav();
+        window.addEventListener('fincalix:notification-nav', consumePendingNav);
+        return () => window.removeEventListener('fincalix:notification-nav', consumePendingNav);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
@@ -423,6 +445,8 @@ function AppContent() {
                         <Route path="/insurance-compare" element={<InsuranceCompare />} />
                         <Route path="/my-loans" element={<MyLoans />} />
                         <Route path="/my-loans/:loanId" element={<LoanDetail />} />
+                        <Route path="/business-tracker" element={<BusinessTracker />} />
+                        <Route path="/business-tracker/:bizId" element={<BusinessDetail />} />
                         {/* /calculator/ppf-advanced kept as redirect to canonical /calculator/ppf
                             so any existing bookmarks / shared links don't 404. */}
                         <Route path="/calculator/ppf-advanced" element={<Navigate to="/calculator/ppf" replace />} />

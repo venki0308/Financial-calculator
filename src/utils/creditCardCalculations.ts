@@ -67,7 +67,8 @@ export function getMinimumDue(balance: number, annualRate: number): number {
   const monthlyInterest = balance * (annualRate / 100) / 12;
   const option1 = balance * 0.05; // 5% of balance (RBI standard)
   const option2 = monthlyInterest + (balance * 0.01); // interest + 1% principal
-  return Math.max(Math.ceil(Math.max(option1, option2)), 200); // ₹200 floor per industry standard
+  // ₹200 floor per industry standard — but never more than the balance itself
+  return Math.min(Math.max(Math.ceil(Math.max(option1, option2)), 200), Math.ceil(balance));
 }
 
 // ─── Payoff Months ───────────────────────────────────────────────────────────
@@ -428,8 +429,16 @@ export function generateInsights(cards: CCCard[]): CCInsight[] {
 
 export function getDaysUntilDue(dueDay: number): number {
   const today = new Date();
-  const thisMonth = new Date(today.getFullYear(), today.getMonth(), dueDay);
-  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, dueDay);
+  // Normalize to local midnight so the comparison is calendar-day based:
+  // on the due day itself this returns 0 (otherwise the time-of-day made
+  // `thisMonth >= today` false and the due day skipped to next month).
+  today.setHours(0, 0, 0, 0);
+  // Clamp the due day to each candidate month's last day (e.g. dueDay 31
+  // in February → Feb 28/29) so the date never overflows into next month.
+  const thisMonthLastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const thisMonth = new Date(today.getFullYear(), today.getMonth(), Math.min(dueDay, thisMonthLastDay));
+  const nextMonthLastDay = new Date(today.getFullYear(), today.getMonth() + 2, 0).getDate();
+  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, Math.min(dueDay, nextMonthLastDay));
   const target = thisMonth >= today ? thisMonth : nextMonth;
   return Math.ceil((target.getTime() - today.getTime()) / 86400000);
 }

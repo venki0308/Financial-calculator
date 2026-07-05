@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EMI Calculator — Home, Car & Personal Loan EMI Online (2026) | FinCalix</title>
+  <meta name="description" content="Free EMI calculator for India. Calculate home loan, car loan & personal loan EMI instantly with the 2026 formula. Home loans from 7.25% (repo 5.25%). No login, works offline in the FinCalix app." />
+  <link rel="canonical" href="https://fincalix.com/emi" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/emi" />
+  <meta property="og:title" content="EMI Calculator — Home, Car & Personal Loan EMI Online (2026)" />
+  <meta property="og:description" content="Calculate your loan EMI instantly. Amortization-accurate, updated for July 2026 interest rates. Free in the FinCalix app — offline, no login." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "EMI Calculator", "item": "https://fincalix.com/emi" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is loan EMI calculated?",
+            "acceptedAnswer": { "@type": "Answer", "text": "EMI = P × r × (1+r)^n ÷ ((1+r)^n − 1), where P is the loan amount, r is the monthly interest rate (annual rate ÷ 12 ÷ 100) and n is the number of monthly installments. For a ₹10 lakh loan at 9% for 20 years, the EMI is ₹8,997." }
+          },
+          {
+            "@type": "Question",
+            "name": "What are home loan interest rates in India in July 2026?",
+            "acceptedAnswer": { "@type": "Answer", "text": "With the RBI repo rate at 5.25% (held in the June 2026 MPC), repo-linked home loans at top banks start around 7.25%–8.7% p.a. — SBI from 7.25% w.e.f. April 2026. Car loans range roughly 8.5–10.5% and personal loans 10–24% depending on your credit score." }
+          },
+          {
+            "@type": "Question",
+            "name": "Does paying more than the EMI reduce my interest?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Part-prepayments go directly toward the principal, so every future EMI carries less interest. RBI rules prohibit foreclosure charges on floating-rate loans for individual borrowers, so prepaying a floating-rate home loan is free." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is the FinCalix EMI calculator free?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. FinCalix is a 100% free Android app with 45+ Indian financial calculators including EMI with full amortization schedule, prepayment analysis and PDF/Excel export. It works fully offline with no login and no ads." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>EMI Calculator — Home, Car &amp; Personal Loan (2026)</h1>
+    <p class="sub">Calculate your exact monthly EMI with the standard reducing-balance formula used by Indian banks. Updated for July 2026 rates — repo-linked home loans now start at 7.25% p.a.</p>
+
+    <div class="card calc">
+      <label for="amt">Loan amount (₹)</label>
+      <input id="amt" type="number" inputmode="numeric" value="1000000" min="1000" />
+      <label for="rate">Interest rate (% per year)</label>
+      <input id="rate" type="number" inputmode="decimal" value="8.5" min="0" step="0.05" />
+      <label for="yrs">Tenure (years)</label>
+      <input id="yrs" type="number" inputmode="numeric" value="20" min="1" max="40" />
+      <button onclick="calc()">Calculate EMI</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How EMI is calculated</h2>
+    <p>Banks use the reducing-balance method. Each EMI first covers the month's interest on the outstanding principal; the remainder reduces the principal.</p>
+    <div class="formula">EMI = P × r × (1 + r)<sup>n</sup> ÷ ((1 + r)<sup>n</sup> − 1)<br/>P = loan amount &nbsp; r = annual rate ÷ 12 ÷ 100 &nbsp; n = months</div>
+
+    <h2>Example: ₹10 lakh loan at different rates (20 years)</h2>
+    <table>
+      <tr><th>Interest rate</th><th>Monthly EMI</th><th>Total interest paid</th></tr>
+      <tr><td>7.25% (best home loan, Jul 2026)</td><td>₹7,904</td><td>₹8,96,882</td></tr>
+      <tr><td>8.50%</td><td>₹8,678</td><td>₹10,82,776</td></tr>
+      <tr><td>9.00%</td><td>₹8,997</td><td>₹11,59,342</td></tr>
+      <tr><td>10.50%</td><td>₹9,984</td><td>₹13,96,116</td></tr>
+    </table>
+
+    <h2>Current loan interest rates in India (July 2026)</h2>
+    <p>With the RBI repo rate held at <strong>5.25%</strong> in the June 2026 MPC meeting:</p>
+    <table>
+      <tr><th>Loan type</th><th>Typical rate range</th></tr>
+      <tr><td>Home loan (repo-linked)</td><td>7.25% – 8.7% (SBI from 7.25%)</td></tr>
+      <tr><td>Car loan (new)</td><td>8.5% – 10.5%</td></tr>
+      <tr><td>Two-wheeler loan</td><td>10% – 14%</td></tr>
+      <tr><td>Gold loan</td><td>8.5% – 14% (banks)</td></tr>
+      <tr><td>Personal loan</td><td>10% – 24% (CIBIL-dependent)</td></tr>
+    </table>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>Does a higher CIBIL score lower my EMI?</h3>
+      <p>Yes. Banks price loans by credit tier — a 750+ score can get home loans near the advertised floor rate, while lower scores pay 1–2% more. The FinCalix app includes a free CIBIL-based rate simulator.</p>
+      <h3>Is prepaying a floating-rate loan free?</h3>
+      <p>Yes — RBI prohibits foreclosure/prepayment charges on floating-rate loans to individual borrowers. Fixed-rate loans may carry a charge of 2–4%.</p>
+      <h3>Should I pick a longer tenure for a smaller EMI?</h3>
+      <p>A longer tenure lowers the EMI but sharply raises total interest: ₹10L at 9% costs ₹5.6L interest over 10 years but ₹11.6L over 20 years. Choose the shortest tenure whose EMI fits your budget (banks cap EMIs near 50% of take-home pay).</p>
+    </div>
+
+    <div class="install">
+      <h2>Get the full EMI toolkit — free</h2>
+      <p>Amortization schedule, prepayment savings, loan comparison, live loan tracker &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/home-loan">Home Loan EMI</a>
+      <a href="/car-loan">Car Loan EMI</a>
+      <a href="/personal-loan">Personal Loan EMI</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Rates shown are indicative market ranges as of July 2026 and change with bank policy. FinCalix provides estimates for planning — verify final figures with your lender. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var P = Math.max(0, parseFloat(document.getElementById('amt').value) || 0);
+      var annual = Math.max(0, parseFloat(document.getElementById('rate').value) || 0);
+      var n = Math.round(Math.max(0, parseFloat(document.getElementById('yrs').value) || 0) * 12);
+      var out = document.getElementById('out');
+      if (P <= 0 || n <= 0) { out.style.display = 'none'; return; }
+      var r = annual / 12 / 100;
+      var emi = r > 0 ? P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1) : P / n;
+      var total = emi * n;
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      out.innerHTML = '<strong>' + fmt(emi) + ' / month</strong><small>Total payment ' + fmt(total) + ' · Total interest ' + fmt(total - P) + ' over ' + n + ' months</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

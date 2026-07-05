@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useNotificationStore } from './useNotificationStore';
+import { parseLocalDate } from '../utils/dateUtils';
+
+// Entry dates may be plain 'YYYY-MM-DD' or full ISO datetimes. Parse the
+// former with parseLocalDate so timezone-negative users don't see entries
+// shifted back a day (new Date('YYYY-MM-DD') parses as UTC midnight).
+const parseEntryDate = (str: string): Date =>
+    /^\d{4}-\d{2}-\d{2}$/.test(str) ? parseLocalDate(str) : new Date(str);
 
 export interface BudgetCategory {
     id: string;
@@ -344,15 +351,15 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
 
             getEntriesByMonth: (year, month) => {
                 return get().entries.filter((e) => {
-                    const d = new Date(e.date);
+                    const d = parseEntryDate(e.date);
                     return d.getFullYear() === year && (d.getMonth() + 1) === month;
                 });
             },
 
             getEntriesByDate: (dateStr) => {
                 return get().entries.filter((e) => {
-                    const d = new Date(e.date);
-                    const target = new Date(dateStr);
+                    const d = parseEntryDate(e.date);
+                    const target = parseEntryDate(dateStr);
                     return d.getFullYear() === target.getFullYear() &&
                         d.getMonth() === target.getMonth() &&
                         d.getDate() === target.getDate();

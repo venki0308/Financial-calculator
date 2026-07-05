@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe, Search, X, Shield, Bike, Gem, CreditCard } from 'lucide-react';
+import { Bell, ChevronRight, Calculator, PieChart, Star, History as HistoryIcon, Bookmark, Wallet, TrendingUp, FileText, Percent, PiggyBank, Landmark, Clock, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, LayoutGrid, RefreshCcw, Building2, Car, Receipt, Sparkles, GitCompare, Calendar, Globe, Search, X, Shield, Bike, Gem, CreditCard, Store } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
@@ -115,15 +115,15 @@ export default function Home() {
         const q = searchQuery.toLowerCase();
         
         const calcResults = allCalcs.filter(c => {
-            const label = t(c.nameKey) === c.nameKey ? c.nameKey : t(c.nameKey);
-            const desc = t(c.descKey) === c.descKey ? c.descKey : t(c.descKey);
-            return label.toLowerCase().includes(q) || 
+            const label = t(c.nameKey);
+            const desc = t(c.descKey);
+            return label.toLowerCase().includes(q) ||
                    desc.toLowerCase().includes(q) ||
                    c.keywords?.some(kw => kw.toLowerCase().includes(q));
         }).map(c => ({
             type: 'calculator',
-            title: t(c.nameKey) === c.nameKey ? c.nameKey : t(c.nameKey),
-            subtitle: t(c.descKey) === c.descKey ? c.descKey : t(c.descKey),
+            title: t(c.nameKey),
+            subtitle: t(c.descKey),
             icon: c.icon,
             color: c.color,
             path: c.path,
@@ -172,7 +172,8 @@ export default function Home() {
             const budgetFixed = budget?.fixedExpenses.reduce((s, f) => s + f.amount, 0) ?? 0;
             const entries = getEntriesForMonth(now.getFullYear(), now.getMonth() + 1);
             const summary = calculateSummary(entries);
-            return Math.max(0, fallbackIncome - budgetFixed - summary.totalExpenses);
+            // Can go negative when the user has overspent — show the real number
+            return fallbackIncome - budgetFixed - summary.totalExpenses;
         }
         return 0;
     }, [monthlyIncome]);
@@ -269,9 +270,9 @@ export default function Home() {
                                     {searchResults.calcOnly.length > 0 && (
                                         <div>
                                             <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-indigo-500">{t('nav.calculate')}</p>
-                                            {searchResults.calcOnly.map((result: any, i: number) => (
+                                            {searchResults.calcOnly.map((result: any) => (
                                                 <button
-                                                    key={i}
+                                                    key={result.path}
                                                     onClick={() => { setIsSearching(false); setSearchQuery(''); navigate(result.path); }}
                                                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-card border-border transition-colors text-left"
                                                 >
@@ -290,9 +291,9 @@ export default function Home() {
                                     {searchResults.schemeResults.length > 0 && (
                                         <div>
                                             <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-violet-500">{t('home.govSchemes')}</p>
-                                            {searchResults.schemeResults.map((result: any, i: number) => (
+                                            {searchResults.schemeResults.map((result: any) => (
                                                 <button
-                                                    key={i}
+                                                    key={result.path}
                                                     onClick={() => { setIsSearching(false); setSearchQuery(''); navigate(result.path); }}
                                                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-card border-border transition-colors text-left"
                                                 >
@@ -314,9 +315,9 @@ export default function Home() {
                                     {searchResults.utilityResults.length > 0 && (
                                         <div>
                                             <p className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-500">{t('home.toolsUtilities')}</p>
-                                            {searchResults.utilityResults.map((result: any, i: number) => (
+                                            {searchResults.utilityResults.map((result: any) => (
                                                 <button
-                                                    key={i}
+                                                    key={result.path}
                                                     onClick={() => { setIsSearching(false); setSearchQuery(''); navigate(result.path); }}
                                                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-card border-border transition-colors text-left"
                                                 >
@@ -483,6 +484,25 @@ export default function Home() {
                 <div>
                     <h3 className="text-foreground font-bold text-sm">{t('myLoans.title')}</h3>
                     <p className="text-foreground/60 text-[10px] mt-0.5">{t('myLoans.homeDesc')}</p>
+                </div>
+                <ChevronRight size={18} className="text-foreground/40 ml-auto flex-shrink-0" />
+            </motion.button>
+
+            {/* Business Tracker */}
+            <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/business-tracker')}
+                className="w-full mb-4 p-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 border border-emerald-400/30 shadow-lg text-left flex items-center gap-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.37 }}
+            >
+                <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <Store size={22} className="text-foreground" />
+                </div>
+                <div>
+                    <h3 className="text-foreground font-bold text-sm">{t('biz.title', 'Business Tracker')}</h3>
+                    <p className="text-foreground/60 text-[10px] mt-0.5">{t('biz.homeDesc', 'Daily income & expenses for your business')}</p>
                 </div>
                 <ChevronRight size={18} className="text-foreground/40 ml-auto flex-shrink-0" />
             </motion.button>

@@ -13,7 +13,7 @@ import {
   fmtPct,
   MONTH_NAMES,
   calculatePercentChange,
-  getTotalActualBilledSubsInRange,
+  getUnloggedSubsForRange,
   getTodayStr,
   calcSafeSavingsRate,
   type PeriodSummary,
@@ -86,7 +86,7 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
       const startISO = `${yearRange.year}-${String(month).padStart(2, '0')}-01`;
       const lastDay = new Date(yearRange.year, month, 0).getDate();
       const endISO = `${yearRange.year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
-      const subsBilled = getTotalActualBilledSubsInRange(subscriptions, startISO, endISO, todayISO);
+      const subsBilled = getUnloggedSubsForRange(entries, subscriptions, startISO, endISO, todayISO);
       // Augment the summary so downstream renderers (bars, totals,
       // savings rate) all see the canonical figure without further
       // changes. Build a NEW summary object — never mutate the
@@ -104,7 +104,7 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
       };
       const hasData = entries.length > 0 || subsBilled > 0;
       const hasIncome = summary.totalIncome > 0;
-      return { month, summary: augmentedSummary, hasData, hasIncome, isFuture };
+      return { month, summary: augmentedSummary, subsBilled, hasData, hasIncome, isFuture };
     });
   }, [yearRange.year, isCurrentYear, currentMonth, refreshKey, subscriptions, todayISO]);
 
@@ -132,14 +132,11 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
   // mirrors the Annual PDF generator and prevents the
   // "category total ≠ headline total" mismatch.
   const topCategories = useMemo(() => {
-    const startISO = `${yearRange.year}-01-01`;
-    const endISO = `${yearRange.year}-12-31`;
-    const annualSubsBilled = getTotalActualBilledSubsInRange(
-      subscriptions,
-      startISO,
-      endISO,
-      todayISO,
-    );
+    // Sum the per-month unlogged values (same granularity as the
+    // headline, which sums twelve per-month calls) — a single
+    // year-range call pools logged coverage across months and drifts
+    // from the headline total.
+    const annualSubsBilled = monthlySummaries.reduce((s, m) => s + m.subsBilled, 0);
 
     const merged: CategoryTotal[] = yearSummary.expenseByCategory.map(c => ({ ...c }));
     if (annualSubsBilled > 0) {
@@ -178,7 +175,7 @@ export default function YearlyTab({ refreshKey = 0 }: YearlyTabProps) {
       })
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 10);
-  }, [yearSummary, yearRange.year, subscriptions, todayISO]);
+  }, [yearSummary, monthlySummaries]);
 
   // ── Monthly savings rates for trend ──
   // BUG 5.2 fix: include `hasIncome` flag so months with 0 income

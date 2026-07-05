@@ -93,8 +93,10 @@ export default function LumpsumCalculator() {
         const gap = targetAmount - result.fv;
 
         return {
-            requiredYears: reqYears > 0 ? reqYears : 0,
-            requiredRate: reqRate > 0 ? reqRate : 0,
+            // Finite guard: at 0% return the target is never reached, so show 0
+            // (rendered as "—"-equivalent) instead of a literal "Infinity yrs".
+            requiredYears: Number.isFinite(reqYears) && reqYears > 0 ? reqYears : 0,
+            requiredRate: Number.isFinite(reqRate) && reqRate > 0 ? reqRate : 0,
             gap,
             achievable: gap <= 0
         };

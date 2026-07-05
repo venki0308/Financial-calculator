@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NSC Calculator 2026 — 7.7% Interest & 5-Year Maturity</title>
+  <meta name="description" content="NSC calculator at 7.7% (Q2 FY 2026-27). ₹1 lakh grows to ₹1,44,903 in 5 years with annual compounding. 80C benefit, post-office guaranteed. Free, no login." />
+  <link rel="canonical" href="https://fincalix.com/nsc" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/nsc" />
+  <meta property="og:title" content="NSC Calculator 2026 — 7.7% Interest & 5-Year Maturity" />
+  <meta property="og:description" content="Calculate National Savings Certificate maturity at 7.7% p.a. (Q2 FY 2026-27). ₹1 lakh becomes ₹1,44,903 in 5 years. Free in the FinCalix app, offline." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "NSC Calculator", "item": "https://fincalix.com/nsc" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the NSC interest rate in 2026?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The National Savings Certificate earns 7.7% per annum for Q2 FY 2026-27 (July–September 2026), compounded annually and paid at maturity after 5 years. The rate is unchanged for the 9th consecutive quarter." }
+          },
+          {
+            "@type": "Question",
+            "name": "How much does ₹1 lakh in NSC become in 5 years?",
+            "acceptedAnswer": { "@type": "Answer", "text": "₹1,00,000 invested in NSC at 7.7% grows to ₹1,44,903 at maturity after 5 years — ₹44,903 of interest, using the formula P × (1.077)^5." }
+          },
+          {
+            "@type": "Question",
+            "name": "Does NSC qualify for Section 80C?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. NSC deposits up to ₹1.5 lakh qualify for 80C in the old regime. Interest accrued each year (except the final year) is deemed reinvested and also qualifies for 80C. Interest is taxable; there is no TDS on NSC." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is NSC better than a 5-year bank FD?",
+            "acceptedAnswer": { "@type": "Answer", "text": "NSC at 7.7% currently beats the 5-year Post Office Time Deposit at 7.5% and most bank tax-saver FDs. NSC is sovereign-guaranteed and has no TDS, but the money is locked for the full 5 years except in limited cases." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>NSC Calculator — 7.7% Interest, 5-Year Maturity (2026)</h1>
+    <p class="sub">Calculate your National Savings Certificate maturity value at 7.7% p.a. — unchanged for Q2 FY 2026-27 (July 2026). Interest compounds annually and is paid with the principal after 5 years, backed by the Government of India.</p>
+
+    <div class="card calc">
+      <label for="amt">Investment amount (₹, minimum ₹1,000)</label>
+      <input id="amt" type="number" inputmode="numeric" value="100000" min="1000" />
+      <label for="rate">Interest rate (% per year, fixed by Govt.)</label>
+      <input id="rate" type="number" value="7.7" readonly />
+      <button onclick="calc()">Calculate NSC Maturity</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How NSC maturity is calculated</h2>
+    <p>NSC interest compounds once a year at 7.7% and the entire amount is paid out at the end of the 5-year term.</p>
+    <div class="formula">Maturity = P × (1.077)⁵<br/>₹1,00,000 × 1.077⁵ = ₹1,44,903</div>
+
+    <h2>NSC maturity value at 7.7% (5 years)</h2>
+    <table>
+      <tr><th>Investment</th><th>Maturity value</th><th>Interest earned</th></tr>
+      <tr><td>₹50,000</td><td>₹72,452</td><td>₹22,452</td></tr>
+      <tr><td>₹1,00,000</td><td>₹1,44,903</td><td>₹44,903</td></tr>
+      <tr><td>₹1,50,000</td><td>₹2,17,355</td><td>₹67,355</td></tr>
+      <tr><td>₹5,00,000</td><td>₹7,24,517</td><td>₹2,24,517</td></tr>
+    </table>
+
+    <h2>NSC rules at a glance (July 2026, Q2 FY 2026-27)</h2>
+    <table>
+      <tr><th>Feature</th><th>Detail</th></tr>
+      <tr><td>Interest rate</td><td>7.7% p.a., compounded annually, paid at maturity (unchanged 9 quarters)</td></tr>
+      <tr><td>Tenure</td><td>5 years, fixed</td></tr>
+      <tr><td>Investment</td><td>Minimum ₹1,000 (multiples of ₹100); no upper limit</td></tr>
+      <tr><td>Tax</td><td>80C up to ₹1.5L (old regime); accrued interest re-qualifies for 80C; no TDS</td></tr>
+      <tr><td>Guarantee</td><td>Sovereign — Government of India small-savings scheme</td></tr>
+    </table>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>What is the NSC interest rate in 2026?</h3>
+      <p>The National Savings Certificate earns 7.7% per annum for Q2 FY 2026-27 (July–September 2026), compounded annually and paid at maturity after 5 years. The rate is unchanged for the 9th consecutive quarter.</p>
+      <h3>How much does ₹1 lakh in NSC become in 5 years?</h3>
+      <p>₹1,00,000 invested in NSC at 7.7% grows to ₹1,44,903 at maturity after 5 years — ₹44,903 of interest, using the formula P × (1.077)^5.</p>
+      <h3>Does NSC qualify for Section 80C?</h3>
+      <p>Yes. NSC deposits up to ₹1.5 lakh qualify for 80C in the old regime. Interest accrued each year (except the final year) is deemed reinvested and also qualifies for 80C. Interest is taxable; there is no TDS on NSC.</p>
+      <h3>Is NSC better than a 5-year bank FD?</h3>
+      <p>NSC at 7.7% currently beats the 5-year Post Office Time Deposit at 7.5% and most bank tax-saver FDs. NSC is sovereign-guaranteed and has no TDS, but the money is locked for the full 5 years except in limited cases.</p>
+    </div>
+
+    <div class="install">
+      <h2>Compare NSC, FD &amp; KVP — free</h2>
+      <p>Side-by-side small-savings comparison, maturity schedules &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+      <a href="/kvp">KVP Calculator</a>
+      <a href="/post-office-td">Post Office TD</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>NSC rate of 7.7% is as of July 2026 (Q2 FY 2026-27); the rate applicable on your purchase date stays fixed for the full 5 years. Verify with your post office. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var P = Math.max(0, parseFloat(document.getElementById('amt').value) || 0);
+      var out = document.getElementById('out');
+      if (P <= 0) { out.style.display = 'none'; return; }
+      var maturity = P * Math.pow(1.077, 5);
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      out.innerHTML = '<strong>' + fmt(maturity) + ' at maturity</strong><small>Invested ' + fmt(P) + ' · Interest ' + fmt(maturity - P) + ' over 5 years at 7.7% compounded annually</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

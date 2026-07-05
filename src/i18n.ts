@@ -32,7 +32,13 @@ if (savedLang !== 'en' && localeLoaders[savedLang]) {
     localeLoaders[savedLang]()
         .then((mod) => {
             i18n.addResourceBundle(savedLang, 'translation', mod.default, true, true);
-            i18n.changeLanguage(savedLang);
+            // Only apply if the user hasn't manually switched language while
+            // this boot-time fetch was in flight (slow networks) — otherwise
+            // this would silently revert their explicit choice.
+            const currentSaved = localStorage.getItem('language') || 'en';
+            if (currentSaved === savedLang && i18n.language !== savedLang) {
+                i18n.changeLanguage(savedLang);
+            }
         })
         .catch((err) => {
             console.warn(`Failed to load locale ${savedLang}:`, err);

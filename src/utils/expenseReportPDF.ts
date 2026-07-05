@@ -28,12 +28,14 @@ import {
     MONTH_NAMES,
     getTodayStr,
     getSubscriptionMonthlyTotal,
-    getTotalActualBilledSubsInRange,
+    getUnloggedSubsForRange,
+    filterUncoveredSubBillings,
     buildSubscriptionEntriesForRange,
     formatPeriodChange,
 } from './expenseCalculations';
 import { getCategoryById } from './expenseStorage';
 import { getUtilization, getDaysUntilDue, type CCCard } from './creditCardCalculations';
+import { parseLocalDate } from './dateUtils';
 
 /** Loose subscription shape used for richer PDF rows (name, billing cycle,
  *  next renewal). The SubscriptionInput contract above is enough for
@@ -1033,10 +1035,13 @@ export async function generateDailyPDF(data: DailyReportData): Promise<void> {
         if (checkableCategories.length > 0) {
             yPos = drawSectionHeader(doc, 'Budget Check', yPos);
 
-            // For a daily view, budget limits are monthly — show daily share of monthly limit
+            // For a daily view, budget limits are monthly — show daily share of monthly limit.
+            // parseLocalDate for YYYY-MM-DD so timezone-negative users don't
+            // get the previous month (new Date('YYYY-MM-DD') is UTC midnight).
+            const reportDate = /^\d{4}-\d{2}-\d{2}$/.test(data.date) ? parseLocalDate(data.date) : new Date(data.date);
             const daysInMonth = new Date(
-                new Date(data.date).getFullYear(),
-                new Date(data.date).getMonth() + 1,
+                reportDate.getFullYear(),
+                reportDate.getMonth() + 1,
                 0,
             ).getDate();
 
@@ -1143,8 +1148,11 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
     // all use the canonical figure — they no longer drift below the
     // headline when a sub billing lands inside the week.
     const weeklySubsForCalc = data.subscriptions ?? [];
-    const weekSubBillings = buildSubscriptionEntriesForRange(
-        weeklySubsForCalc, data.startDate, data.endDate, today,
+    // Skip billings already covered by manually-logged 'subscription'
+    // entries so the merged log doesn't double-count the same charge.
+    const weekSubBillings = filterUncoveredSubBillings(
+        buildSubscriptionEntriesForRange(weeklySubsForCalc, data.startDate, data.endDate, today),
+        data.entries, data.startDate, data.endDate,
     );
     const weekSubEntries: Entry[] = weekSubBillings.map(s => ({
         id: s.id,
@@ -1163,7 +1171,8 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
     const summary = calculateSummary(mergedWeekEntries);
     const weekSubsBilled = weekSubBillings.reduce((s, e) => s + e.amount, 0);
     const prevWeekSubsBilled = data.prevWeekEntries
-        ? getTotalActualBilledSubsInRange(
+        ? getUnloggedSubsForRange(
+            data.prevWeekEntries,
             weeklySubsForCalc,
             // Estimate prev week as 7 days before start (the caller
             // doesn't pass prev range explicitly).
@@ -1455,16 +1464,19 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     const monthStartISO = `${data.year}-${String(data.month).padStart(2, '0')}-01`;
     const monthLastDayNum = new Date(data.year, data.month, 0).getDate();
     const monthEndISO = `${data.year}-${String(data.month).padStart(2, '0')}-${String(monthLastDayNum).padStart(2, '0')}`;
-    const subsMonthBilled = getTotalActualBilledSubsInRange(subs, monthStartISO, monthEndISO, todayForMonth);
     // Also keep the forward-looking monthly equivalent for the
     // "Subscription Commitments" reference table later in the report.
     const subsMonthlyTotal = getSubscriptionMonthlyTotal(subs);
     const activeSubs = subs.filter(s => s.isActive);
 
-    // Build synthetic Entry rows for the merged transaction log
-    const monthSubBillings = buildSubscriptionEntriesForRange(
-        subs, monthStartISO, monthEndISO, todayForMonth,
+    // Build synthetic Entry rows for the merged transaction log —
+    // billings already covered by manually-logged 'subscription' entries
+    // are skipped so the merged totals don't double-count the charge.
+    const monthSubBillings = filterUncoveredSubBillings(
+        buildSubscriptionEntriesForRange(subs, monthStartISO, monthEndISO, todayForMonth),
+        data.entries, monthStartISO, monthEndISO,
     );
+    const subsMonthBilled = monthSubBillings.reduce((s, b) => s + b.amount, 0);
     const monthSubEntries: Entry[] = monthSubBillings.map(s => ({
         id: s.id,
         type: 'expense',
@@ -2219,7 +2231,7 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
         // gates each candidate billing on the sub's effective start date,
         // so months before the sub existed return 0 instead of phantom
         // backwards-projected billings.
-        const monthSubsBilled = getTotalActualBilledSubsInRange(annualSubs, startISO, endISO, today);
+        const monthSubsBilled = getUnloggedSubsForRange(mEntries, annualSubs, startISO, endISO, today);
         aISub += monthSubsBilled;
         const augmentedExp = mSum.totalExpenses + monthSubsBilled;
         const augmentedNet = mSum.totalIncome - augmentedExp;
@@ -2352,14 +2364,26 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
     // for the whole year. Both the category breakdown and the Top 10
     // expenses table consume this same list, so the two views are
     // guaranteed to agree on what billed.
-    const annualStartISO = `${data.year}-01-01`;
-    const annualEndISO = `${data.year}-12-31`;
-    const subBillingEntries = buildSubscriptionEntriesForRange(
-        annualSubs,
-        annualStartISO,
-        annualEndISO,
-        today,
-    );
+    // Built MONTH BY MONTH and filtered against that month's logged
+    // 'subscription' entries — the same per-month granularity the
+    // headline (monthSubsBilled via getUnloggedSubsForRange) uses — so
+    // sum(subBillingEntries) === aISub and the category-table invariant
+    // below holds. A single year-range filter would pool coverage across
+    // months and drift from the per-month headline figures.
+    const subBillingEntries: ReturnType<typeof buildSubscriptionEntriesForRange> = [];
+    for (let m = 1; m <= lastMonthToShow; m++) {
+        const monthStr = `${data.year}-${String(m).padStart(2, '0')}`;
+        const mStartISO = `${monthStr}-01`;
+        const mLastDay = new Date(data.year, m, 0).getDate();
+        const mEndISO = `${monthStr}-${String(mLastDay).padStart(2, '0')}`;
+        const mEntries = data.entries.filter((e) => e.date.startsWith(monthStr));
+        subBillingEntries.push(...filterUncoveredSubBillings(
+            buildSubscriptionEntriesForRange(annualSubs, mStartISO, mEndISO, today),
+            mEntries,
+            mStartISO,
+            mEndISO,
+        ));
+    }
 
     // ── SECTION 2: TOP SPENDING CATEGORIES ──────────────────────────────
     // Bug 2 fix: merge synthetic subscription billings into the category

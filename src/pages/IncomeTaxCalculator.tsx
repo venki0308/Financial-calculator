@@ -87,21 +87,28 @@ function applyRebate87A(tax: number, taxableIncome: number, regime: 'old' | 'new
         const excess = taxableIncome - threshold;
         return Math.min(tax, excess);
     } else {
-        const threshold = 500000;
-        if (taxableIncome <= threshold) return 0;
-        const excess = taxableIncome - threshold;
-        return Math.min(tax, excess);
+        // Old-regime 87A is a strict cliff: full rebate (max ₹12,500) at taxable
+        // income ≤ ₹5L, nothing above it. Marginal relief on the 87A rebate exists
+        // ONLY in the new regime (introduced by Budget 2023 for 115BAC).
+        return taxableIncome <= 500000 ? 0 : tax;
     }
 }
 
-// Surcharge calculation — old regime has 37% tier (>₹5Cr); new regime capped at 25%
-function computeSurcharge(tax: number, taxableIncome: number, regime: 'old' | 'new'): number {
+// Surcharge with marginal relief — old regime has 37% tier (>₹5Cr); new regime capped at 25%.
+// Marginal relief (law-mandated): tax + surcharge cannot exceed
+// (tax at the threshold, with the lower tier's surcharge) + (income above the threshold).
+function computeSurcharge(tax: number, taxableIncome: number, regime: 'old' | 'new', slabs: typeof OLD_REGIME): number {
     if (tax <= 0) return 0;
-    if (regime === 'old' && taxableIncome > 50000000) return tax * 0.37; // >₹5Cr (old only): 37%
-    if (taxableIncome > 20000000) return tax * 0.25; // >₹2Cr: 25%
-    if (taxableIncome > 10000000) return tax * 0.15; // >₹1Cr: 15%
-    if (taxableIncome > 5000000)  return tax * 0.10; // >₹50L: 10%
-    return 0;
+    let rate = 0, threshold = 0, prevRate = 0;
+    if (regime === 'old' && taxableIncome > 50000000) { rate = 0.37; threshold = 50000000; prevRate = 0.25; } // >₹5Cr (old only)
+    else if (taxableIncome > 20000000) { rate = 0.25; threshold = 20000000; prevRate = 0.15; } // >₹2Cr
+    else if (taxableIncome > 10000000) { rate = 0.15; threshold = 10000000; prevRate = 0.10; } // >₹1Cr
+    else if (taxableIncome > 5000000)  { rate = 0.10; threshold = 5000000;  prevRate = 0;    } // >₹50L
+    else return 0;
+    const surcharge = tax * rate;
+    const taxAtThreshold = computeSlabTax(threshold, slabs);
+    const maxTotal = taxAtThreshold * (1 + prevRate) + (taxableIncome - threshold);
+    return tax + surcharge > maxTotal ? Math.max(0, maxTotal - tax) : surcharge;
 }
 
 const fmt = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
@@ -291,7 +298,10 @@ export default function IncomeTaxCalculator() {
         const childEduExempt = Math.min(num('childEducationAllowance') * multiplier, 2400);
         const childHostelExempt = Math.min(num('childHostelAllowance') * multiplier, 7200);
         // Employee PF counts toward 80C; Professional Tax is deductible under Sec 16(iii)
-        const employeePF = num('employeePF') * multiplier;
+        // In CTC mode the payroll PF field isn't shown — use the auto-derived annual employee PF (12% of basic, capped ₹21,600/yr)
+        const employeePF = inputMode === 'ctc'
+            ? Math.min(num('ctcAmount') * 0.4 * 0.12, 21600)
+            : num('employeePF') * multiplier;
         const profTax = num('professionalTax') * multiplier;
         const total80C = Math.min(num('section80C') + employeePF, 150000);
         return (
@@ -307,7 +317,7 @@ export default function IncomeTaxCalculator() {
             childEduExempt +
             childHostelExempt
         );
-    }, [inputs, num, hraExemption, multiplier]);
+    }, [inputs, num, hraExemption, multiplier, inputMode]);
 
     // ─── Select correct slab table based on FY ─────────────────────────────────
     const NEW_REGIME = fy === '2026-27' ? NEW_REGIME_2026_27 : NEW_REGIME_2025_26;
@@ -326,7 +336,7 @@ export default function IncomeTaxCalculator() {
     const newTaxableIncome = Math.max(0, grossSalary - newStdDed);
     const newRawTax = computeSlabTax(newTaxableIncome, NEW_REGIME);
     const newAfterRebate = applyRebate87A(newRawTax, newTaxableIncome, 'new', fy);
-    const newSurcharge = computeSurcharge(newAfterRebate, newTaxableIncome, 'new');
+    const newSurcharge = computeSurcharge(newAfterRebate, newTaxableIncome, 'new', NEW_REGIME);
     const newTaxAfterSurcharge = newAfterRebate + newSurcharge;
     const newCess = newTaxAfterSurcharge * 0.04;
     const newTotalTax = newTaxAfterSurcharge + newCess;
@@ -335,7 +345,7 @@ export default function IncomeTaxCalculator() {
     const oldTaxableIncome = Math.max(0, grossSalary - oldDeductions);
     const oldRawTax = computeSlabTax(oldTaxableIncome, OLD_REGIME_ACTIVE);
     const oldAfterRebate = applyRebate87A(oldRawTax, oldTaxableIncome, 'old', fy);
-    const oldSurcharge = computeSurcharge(oldAfterRebate, oldTaxableIncome, 'old');
+    const oldSurcharge = computeSurcharge(oldAfterRebate, oldTaxableIncome, 'old', OLD_REGIME_ACTIVE);
     const oldTaxAfterSurcharge = oldAfterRebate + oldSurcharge;
     const oldCess = oldTaxAfterSurcharge * 0.04;
     const oldTotalTax = oldTaxAfterSurcharge + oldCess;

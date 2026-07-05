@@ -59,8 +59,8 @@ export default function SCSSCalculator() {
         const totalInterest = annualInterest * tenure;
         const maturityAmount = investment + totalInterest;
 
-        // TDS: 10% if annual interest > ₹50,000 (senior citizens)
-        const tdsApplicable = annualInterest > 50000;
+        // TDS: 10% if annual interest > ₹1,00,000 (Sec 194A senior-citizen threshold, FY 2026-27)
+        const tdsApplicable = annualInterest > 100000;
         const annualTDS = tdsApplicable ? annualInterest * 0.10 : 0;
         const netAnnualIncome = annualInterest - annualTDS;
         const netQuarterlyIncome = netAnnualIncome / 4;

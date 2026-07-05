@@ -31,7 +31,10 @@ export default function NumberInput({ label, value, onChange, min, max, prefix, 
 
     const handleBlur = () => {
         setFocused(false);
-        let v = parseFloat(rawValue) || min;
+        // NaN check (not `|| min`): a typed "0" is falsy but is a valid number
+        // and must go through the normal min/max clamp, not be treated as empty.
+        const p = parseFloat(rawValue);
+        let v = Number.isNaN(p) ? min : p;
         v = Math.max(min, Math.min(max, v));
         setRawValue(v.toString());
         onChange(v);

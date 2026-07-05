@@ -22,6 +22,9 @@ const fmtINR = (v: number) => formatINR(Math.round(v));
 
 const ITEMS_PER_PAGE = 10;
 
+// Eligible at 4 years 240 days per Payment of Gratuity Act 1972 (court rulings).
+const ELIGIBILITY_YEARS = 4 + 240 / 365;
+
 export default function GratuityCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -49,12 +52,8 @@ export default function GratuityCalculator() {
 
     const result = useMemo(() => {
         // Formula: (Last Drawn Salary × 15 × Years of Service) / 26
-        // Eligible at 4 years 240 days per Payment of Gratuity Act 1972.
         // Rounding rule per the Act: any fractional period of 6 months or more
-        // is treated as a full year. Less than 6 months is dropped. We do NOT
-        // round 4y 240d up to 5y — that inflates payout by ~7%; the user is
-        // eligible but is only paid for the years they actually completed.
-        const ELIGIBILITY_YEARS = 4 + 240 / 365;
+        // is treated as a full year; less than 6 months is dropped.
         const isEligible = years >= ELIGIBILITY_YEARS;
         // For payout, apply the half-year rounding rule. For someone at 4y 240d
         // (eligibility crossed but service < 5y), round up to 5 because the
@@ -79,7 +78,7 @@ export default function GratuityCalculator() {
         // Service Milestones / Year-wise impact
         const yearWiseData = Array.from({ length: Math.ceil(years) }, (_, i) => {
             const yr = i + 1;
-            const eligible = yr >= 5; // Year table shows strict 5 for simplicity or we can show 4.5
+            const eligible = yr >= ELIGIBILITY_YEARS;
             const amt = eligible ? (salary * 15 * yr) / 26 : 0;
             return { year: yr, gratuity: amt, eligible };
         });
@@ -339,7 +338,7 @@ export default function GratuityCalculator() {
                         anchorDate={joiningDate}
                         headline={fmtINR(result.gratuity)}
                         headlineLabel={t('gratuity.estimatedGratuity', 'Estimated Gratuity')}
-                        subtitle={t('gratuity.snapshotSubtitle', 'Tax-free up to ₹25L for private employees')}
+                        subtitle={t('gratuity.snapshotSubtitle', 'Tax-free up to ₹20L for private employees')}
                         metrics={[
                             { label: t('gratuity.lastSalary', 'Last Salary'), value: fmtINR(salary), tone: 'investment' },
                             { label: t('gratuity.servicePeriod', 'Service'), value: `${years}y`, tone: 'neutral' },
@@ -448,7 +447,7 @@ export default function GratuityCalculator() {
                                             {!result.isEligible && (
                                                 <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 flex gap-3">
                                                     <Info size={16} className="text-orange-500 shrink-0" />
-                                                    <p className="text-xs font-medium text-orange-600 dark:text-orange-400">{t('gratuity.completeMoreYears', { years: Math.max(0, 4.5 - years).toFixed(1) })}</p>
+                                                    <p className="text-xs font-medium text-orange-600 dark:text-orange-400">{t('gratuity.completeMoreYears', { years: Math.max(0, ELIGIBILITY_YEARS - years).toFixed(1) })}</p>
                                                 </div>
                                             )}
                                             {result.isEligible && result.taxableGratuity === 0 && (

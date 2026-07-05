@@ -150,7 +150,7 @@ export default function PropertyCalculator() {
     const [ryMaintenance, setRyMaintenance] = useState('');
     const [ryVacancy, setRyVacancy] = useState('1'); // months vacant per year
     const [ryResult, setRyResult] = useState<{
-        annualRent: number; grossYield: number; netYield: number; paybackYears: number;
+        annualRent: number; grossYield: number; netYield: number; paybackYears: number | null;
     } | null>(null);
 
     // ── Appreciation Forecast ─────────────────────────────────────────────────
@@ -267,9 +267,11 @@ export default function PropertyCalculator() {
         const annualRent = mr * (12 - Number(ryVacancy || 0));
         const annualMaint = Number(ryMaintenance || 0) * 12;
         const grossYield = (mr * 12 / pv) * 100;
-        const netYield = ((annualRent - annualMaint) / pv) * 100;
-        const paybackYears = pv / (annualRent - annualMaint);
-        setRyResult({ annualRent, grossYield, netYield, paybackYears: Math.max(0, paybackYears) });
+        const netCashFlow = annualRent - annualMaint;
+        const netYield = (netCashFlow / pv) * 100;
+        // Negative/zero net cash flow — the property never pays back from rent; null renders as "—"
+        const paybackYears = netCashFlow > 0 ? pv / netCashFlow : null;
+        setRyResult({ annualRent, grossYield, netYield, paybackYears });
     };
 
     const calculateAppreciation = () => {
@@ -416,7 +418,7 @@ export default function PropertyCalculator() {
                 { label: t('property.annualRentIncome'), value: fmt(ryResult.annualRent) },
                 { label: t('property.grossYield'), value: `${ryResult.grossYield.toFixed(2)}%` },
                 { label: t('property.netYield'), value: `${ryResult.netYield.toFixed(2)}%` },
-                { label: t('property.paybackPeriod'), value: `${ryResult.paybackYears.toFixed(1)} ${t('property.years')}` },
+                { label: t('property.paybackPeriod'), value: ryResult.paybackYears !== null ? `${ryResult.paybackYears.toFixed(1)} ${t('property.years')}` : '—' },
             ],
             projectionTitle: t('property.rentalYieldSummary'),
             projectionColumns: [t('property.metric'), t('property.value')],
@@ -424,7 +426,7 @@ export default function PropertyCalculator() {
                 [t('property.annualRentIncome'), fmt(ryResult.annualRent)],
                 [t('property.grossYield'), `${ryResult.grossYield.toFixed(2)}%`],
                 [t('property.netYield'), `${ryResult.netYield.toFixed(2)}%`],
-                [t('property.paybackPeriod'), `${ryResult.paybackYears.toFixed(1)} ${t('property.years')}`],
+                [t('property.paybackPeriod'), ryResult.paybackYears !== null ? `${ryResult.paybackYears.toFixed(1)} ${t('property.years')}` : '—'],
             ],
             filename: `FinCalix_Rental_Yield_Report_${tag}`,
         }, xFmt);
@@ -1131,7 +1133,7 @@ export default function PropertyCalculator() {
                                             { label: t('property.annualRentIncome'), value: fmt(ryResult.annualRent), color: 'text-brand-green' },
                                             { label: t('property.grossYield'), value: `${ryResult.grossYield.toFixed(2)}%`, color: 'text-blue-400' },
                                             { label: t('property.netYield'), value: `${ryResult.netYield.toFixed(2)}%`, color: 'text-brand-gold' },
-                                            { label: t('property.paybackPeriod'), value: `${ryResult.paybackYears.toFixed(1)} ${t('property.yrs')}`, color: 'text-brand-purple' },
+                                            { label: t('property.paybackPeriod'), value: ryResult.paybackYears !== null ? `${ryResult.paybackYears.toFixed(1)} ${t('property.yrs')}` : '—', color: 'text-brand-purple' },
                                         ].map(s => (
                                             <div key={s.label} className="text-center p-3 rounded-xl bg-slate-100 dark:bg-slate-800/30">
                                                 <p className="text-muted-foreground text-[9px] uppercase font-bold">{s.label}</p>
@@ -1139,6 +1141,11 @@ export default function PropertyCalculator() {
                                             </div>
                                         ))}
                                     </div>
+                                    {ryResult.paybackYears === null && (
+                                        <p className="text-red-400 text-[10px] font-medium text-center">
+                                            {t('property.negativeCashFlowNote', 'Maintenance exceeds rental income — negative cash flow, so the property never pays back from rent alone.')}
+                                        </p>
+                                    )}
                                     <div className="grid grid-cols-2 gap-2">
                                         <button onClick={handleRentalYieldPDF}
                                             className="py-3 rounded-xl bg-brand-green/10 border border-brand-green/30 text-brand-green text-xs font-bold flex items-center justify-center gap-1.5">

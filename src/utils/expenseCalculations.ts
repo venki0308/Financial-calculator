@@ -559,8 +559,79 @@ export const getCanonicalExpensesForRange = (
   const loggedTotal = entries
     .filter(e => e.type === 'expense' && e.date >= startISO && e.date <= endISO)
     .reduce((sum, e) => sum + e.amount, 0);
+  return loggedTotal + getUnloggedSubsForRange(entries, subscriptions, startISO, endISO, asOfISO);
+};
+
+/** Subscription billings in range NOT already covered by a manually-logged
+ *  'subscription'-category expense entry. Every surface that shows
+ *  "logged + recurring subscriptions" must add THIS (not the raw billed
+ *  total) on top of logged entries, otherwise a user who logs the actual
+ *  Netflix debit AND tracks Netflix in the Subscriptions tab gets the
+ *  charge counted twice. */
+export const getUnloggedSubsForRange = (
+  entries: Entry[],
+  subscriptions: BillingDateSubscription[],
+  startISO: string,
+  endISO: string,
+  asOfISO: string = getTodayStr(),
+): number => {
   const subsTotal = getTotalActualBilledSubsInRange(subscriptions, startISO, endISO, asOfISO);
-  return loggedTotal + subsTotal;
+  const loggedSubsTotal = entries
+    .filter(e => e.type === 'expense' && e.category === 'subscription'
+      && e.date >= startISO && e.date <= endISO)
+    .reduce((sum, e) => sum + e.amount, 0);
+  return Math.max(0, subsTotal - loggedSubsTotal);
+};
+
+/** Drop synthetic subscription billings already covered by manually-logged
+ *  'subscription'-category expense entries in the same range (FIFO by
+ *  amount). Used by the PDF generators that MERGE synthetic billing rows
+ *  into the transaction log before computing totals — without this, a
+ *  logged Netflix debit + its scheduled billing both land in the merged
+ *  list and every derived figure double-counts. */
+export const filterUncoveredSubBillings = <T extends { amount: number; date?: string }>(
+  billings: T[],
+  entries: Entry[],
+  startISO: string,
+  endISO: string,
+): T[] => {
+  // Multiset (array) of logged 'subscription'-entry amounts in range.
+  const available: number[] = entries
+    .filter(e => e.type === 'expense' && e.category === 'subscription'
+      && e.date >= startISO && e.date <= endISO)
+    .map(e => e.amount);
+
+  // Deterministic processing order: by date, then amount.
+  const ordered = [...billings].sort((a, b) => {
+    const d = (a.date ?? '').localeCompare(b.date ?? '');
+    return d !== 0 ? d : a.amount - b.amount;
+  });
+
+  // Pass 1 — exact-amount matching: a billing whose amount exactly matches
+  // an available logged amount is dropped and that amount consumed. This
+  // stops a pooled total from suppressing the wrong sub (e.g. a logged
+  // Netflix ₹649 must not swallow Spotify ₹119).
+  const remaining: T[] = [];
+  for (const b of ordered) {
+    const idx = available.indexOf(b.amount);
+    if (idx !== -1) { available.splice(idx, 1); continue; }
+    remaining.push(b);
+  }
+
+  // Pass 2 — the leftover covered total partially REDUCES remaining
+  // billings in order (never drops a whole billing on partial coverage,
+  // so totals stay in sync with getUnloggedSubsForRange). Inputs are
+  // never mutated — reduced billings are pushed as copies.
+  let covered = available.reduce((s, a) => s + a, 0);
+  const out: T[] = [];
+  for (const b of remaining) {
+    if (covered <= 0) { out.push(b); continue; }
+    const consumed = Math.min(covered, b.amount);
+    covered -= consumed;
+    const reduced = b.amount - consumed;
+    if (reduced > 0) out.push({ ...b, amount: reduced } as T);
+  }
+  return out;
 };
 
 /** Active days in a range — count of UNIQUE dates that have at least

@@ -194,6 +194,62 @@ const goalDue = 5000000 * (12 / 12 / 100) / ((Math.pow(1.01, 120) - 1) * 1.01);
 check('Goal SIP (annuity-due)', 21532, goalDue, 100);
 
 // ──────────────────────────────────────────────────────────────
+// 2R — RD Live Status (investmentStatusEngine.calculateRdStatus convention)
+// Independent re-implementation: a deposit made in quarter q earns
+// (currentQIdx − depositQIdx, +1 at a quarter-end) credited quarters at r/4.
+console.log('\n2R. RD Live Status (₹1K/mo @ 8% for 12m)');
+function rdStatusCurrentValue(P, annualRate, tenureMonths, monthsInvested) {
+  const r = annualRate / 400; // quarterly rate
+  const currentQIdx = monthsInvested > 0 ? Math.floor((monthsInvested - 1) / 3) : 0;
+  const isQEnd = monthsInvested > 0 && (monthsInvested % 3 === 0 || monthsInvested === tenureMonths);
+  let v = 0;
+  for (let i = 1; i <= monthsInvested; i++) {
+    const depositQIdx = Math.floor((i - 1) / 3);
+    v += P * Math.pow(1 + r, currentQIdx - depositQIdx + (isQEnd ? 1 : 0));
+  }
+  return v;
+}
+function rdStatusMaturity(P, annualRate, tenureMonths) {
+  const r = annualRate / 400;
+  const totalQ = Math.ceil(tenureMonths / 3);
+  let v = 0;
+  for (let i = 1; i <= tenureMonths; i++) {
+    v += P * Math.pow(1 + r, totalQ - Math.floor((i - 1) / 3));
+  }
+  return v;
+}
+// Hand-derived: after 3 deposits (a quarter-end) all three deposits sit in
+// quarter 0 with exactly 1 credited quarter each → 3 × 1000 × 1.02 = 3060.00
+check('RD status value after 3 deposits (quarter-end)', 3060.0, rdStatusCurrentValue(1000, 8, 12, 3), 0.01);
+// Internal consistency: at month == tenure the live value must equal the
+// maturity formula (hand-derived: both = 12612.12)
+check('RD status at tenure equals maturity formula',
+  rdStatusMaturity(1000, 8, 12), rdStatusCurrentValue(1000, 8, 12, 12), 0.01);
+
+// ──────────────────────────────────────────────────────────────
+// 2S — SIP months-to-goal (investmentStatusEngine.calculateSipStatus solve)
+// Independent closed-form: n = log((target+P)/(current+P)) / log(1+r),
+// P = sip·(1+r)/r  (annuity-due; existing corpus keeps compounding).
+console.log('\n2S. SIP months-to-goal (₹10L target, ₹2L corpus, ₹10K/mo @ 12%)');
+function sipMonthsToGoal(target, current, sip, annualRate) {
+  const r = annualRate / 12 / 100;
+  const p = sip * (1 + r) / r;
+  return Math.log((target + p) / (current + p)) / Math.log(1 + r);
+}
+function sipFvAfter(current, sip, annualRate, n) {
+  const r = annualRate / 12 / 100;
+  return current * Math.pow(1 + r, n) + sip * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+}
+const nGoal = sipMonthsToGoal(1000000, 200000, 10000, 12);
+// The closed form must reproduce itself: FV at the exact (unrounded) n
+// equals the target (hand-derived n = 51.0048)
+check('SIP goal closed form reproduces target', 1000000, sipFvAfter(200000, 10000, 12, nGoal), 1);
+check('SIP months-to-goal (engine uses ceil → 52)', 52, Math.ceil(nGoal), 0);
+// Monotonicity: a larger current corpus needs fewer months (n(3L) = 43.02)
+const nGoalRicher = sipMonthsToGoal(1000000, 300000, 10000, 12);
+check('SIP months-to-goal decreases as corpus grows', 1, nGoalRicher < nGoal ? 1 : 0, 0);
+
+// ──────────────────────────────────────────────────────────────
 // FINAL REPORT
 // ──────────────────────────────────────────────────────────────
 console.log('\n═══════════════════════════════════════════════════════════════');

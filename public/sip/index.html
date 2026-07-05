@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIP Calculator — Mutual Fund SIP Returns Online | FinCalix</title>
+  <meta name="description" content="Free SIP calculator for Indian mutual funds. See how ₹5,000 a month at 12% grows to ₹11.6 lakh in 10 years. Instant corpus, invested amount and gains. No login." />
+  <link rel="canonical" href="https://fincalix.com/sip" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/sip" />
+  <meta property="og:title" content="SIP Calculator — Mutual Fund SIP Returns Online" />
+  <meta property="og:description" content="Calculate your SIP corpus instantly. ₹5,000/month at 12% for 10 years grows to ₹11,61,695. Free in the FinCalix app — offline, no login." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "SIP Calculator", "item": "https://fincalix.com/sip" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is SIP return calculated?",
+            "acceptedAnswer": { "@type": "Answer", "text": "SIP maturity uses the future value of an annuity-due: FV = P × ((1+i)^n − 1) ÷ i × (1+i), where P is the monthly investment, i is the monthly rate (annual return ÷ 12 ÷ 100) and n is the number of monthly installments." }
+          },
+          {
+            "@type": "Question",
+            "name": "How much will a 5,000 rupee monthly SIP grow in 10 years?",
+            "acceptedAnswer": { "@type": "Answer", "text": "At an assumed 12% annual return, a ₹5,000 monthly SIP grows to ₹11,61,695 in 10 years. You invest ₹6,00,000 and the remaining ₹5,61,695 comes from compounding." }
+          },
+          {
+            "@type": "Question",
+            "name": "Why do longer SIPs grow disproportionately faster?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Compounding accelerates with time. At 12%, a ₹5,000 monthly SIP reaches ₹11,61,695 in 10 years, ₹25,22,880 in 15 years and ₹49,95,740 in 20 years — doubling the tenure from 10 to 20 years multiplies the corpus more than 4 times." }
+          },
+          {
+            "@type": "Question",
+            "name": "Are SIP returns guaranteed?",
+            "acceptedAnswer": { "@type": "Answer", "text": "No. SIP is a way of investing in mutual funds, not a product with fixed returns. The 12% used in examples is an assumption for planning; actual equity fund returns vary with the market. Calculators show projections, not promises." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>SIP Calculator — Mutual Fund SIP Returns</h1>
+    <p class="sub">See what your monthly SIP grows into with the standard annuity-due formula used across the mutual fund industry. ₹5,000 a month at 12% becomes ₹11,61,695 in 10 years.</p>
+
+    <div class="card calc">
+      <label for="amt">Monthly investment (₹)</label>
+      <input id="amt" type="number" inputmode="numeric" value="5000" min="100" />
+      <label for="rate">Expected annual return (%)</label>
+      <input id="rate" type="number" inputmode="decimal" value="12" min="0" step="0.5" />
+      <label for="yrs">Investment period (years)</label>
+      <input id="yrs" type="number" inputmode="numeric" value="10" min="1" max="40" />
+      <button onclick="calc()">Calculate SIP Returns</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How SIP returns are calculated</h2>
+    <p>SIP maturity is the future value of an annuity-due — each installment is assumed invested at the start of the month and compounds monthly until the end of the tenure.</p>
+    <div class="formula">FV = P × ((1 + i)<sup>n</sup> − 1) ÷ i × (1 + i)<br/>P = monthly amount &nbsp; i = annual return ÷ 12 ÷ 100 &nbsp; n = months</div>
+
+    <h2>₹5,000 monthly SIP at 12% — the power of time</h2>
+    <table>
+      <tr><th>Duration</th><th>Amount invested</th><th>Corpus at 12%</th><th>Wealth gained</th></tr>
+      <tr><td>10 years</td><td>₹6,00,000</td><td>₹11,61,695</td><td>₹5,61,695</td></tr>
+      <tr><td>15 years</td><td>₹9,00,000</td><td>₹25,22,880</td><td>₹16,22,880</td></tr>
+      <tr><td>20 years</td><td>₹12,00,000</td><td>₹49,95,740</td><td>₹37,95,740</td></tr>
+    </table>
+    <p>Notice the curve: the second decade adds far more than the first. From year 10 to year 20 you invest only ₹6,00,000 more, but the corpus jumps by over ₹38 lakh.</p>
+
+    <h2>Different monthly amounts — 10 years at 12%</h2>
+    <table>
+      <tr><th>Monthly SIP</th><th>Amount invested</th><th>Corpus at 12%</th></tr>
+      <tr><td>₹1,000</td><td>₹1,20,000</td><td>₹2,32,339</td></tr>
+      <tr><td>₹5,000</td><td>₹6,00,000</td><td>₹11,61,695</td></tr>
+      <tr><td>₹10,000</td><td>₹12,00,000</td><td>₹23,23,391</td></tr>
+      <tr><td>₹25,000</td><td>₹30,00,000</td><td>₹58,08,477</td></tr>
+    </table>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>How is SIP return calculated?</h3>
+      <p>SIP maturity uses the future value of an annuity-due: FV = P × ((1+i)^n − 1) ÷ i × (1+i), where P is the monthly investment, i is the monthly rate (annual return ÷ 12 ÷ 100) and n is the number of monthly installments.</p>
+      <h3>How much will a 5,000 rupee monthly SIP grow in 10 years?</h3>
+      <p>At an assumed 12% annual return, a ₹5,000 monthly SIP grows to ₹11,61,695 in 10 years. You invest ₹6,00,000 and the remaining ₹5,61,695 comes from compounding.</p>
+      <h3>Why do longer SIPs grow disproportionately faster?</h3>
+      <p>Compounding accelerates with time. At 12%, a ₹5,000 monthly SIP reaches ₹11,61,695 in 10 years, ₹25,22,880 in 15 years and ₹49,95,740 in 20 years — doubling the tenure from 10 to 20 years multiplies the corpus more than 4 times.</p>
+      <h3>Are SIP returns guaranteed?</h3>
+      <p>No. SIP is a way of investing in mutual funds, not a product with fixed returns. The 12% used in examples is an assumption for planning; actual equity fund returns vary with the market. Calculators show projections, not promises.</p>
+    </div>
+
+    <div class="install">
+      <h2>Get the full SIP toolkit — free</h2>
+      <p>Step-up SIP, goal SIP, SIP vs lumpsum comparison, yearly growth charts &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/lumpsum">Lumpsum Calculator</a>
+      <a href="/swp">SWP Calculator</a>
+      <a href="/cagr">CAGR Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Projections assume a constant annual return and are shown as of July 2026 for planning only. Mutual fund investments are subject to market risks. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var P = Math.max(0, parseFloat(document.getElementById('amt').value) || 0);
+      var annual = Math.max(0, parseFloat(document.getElementById('rate').value) || 0);
+      var n = Math.round(Math.max(0, parseFloat(document.getElementById('yrs').value) || 0) * 12);
+      var out = document.getElementById('out');
+      if (P <= 0 || n <= 0) { out.style.display = 'none'; return; }
+      var i = annual / 12 / 100;
+      var fv = i > 0 ? P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i) : P * n;
+      var invested = P * n;
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      out.innerHTML = '<strong>' + fmt(fv) + ' corpus</strong><small>Invested ' + fmt(invested) + ' · Wealth gained ' + fmt(fv - invested) + ' over ' + n + ' months</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

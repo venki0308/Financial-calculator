@@ -28,15 +28,19 @@ import { useTranslation } from 'react-i18next';
 import { BarChart3, Banknote, Target, Calendar, TrendingUp } from 'lucide-react';
 import { useAppColors } from '../theme/useAppColors';
 import { formatINR } from '../utils/calculations';
+import { parseLocalDate } from '../utils/dateUtils';
 
 function fmtDate(dateStr: string): string {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    // Parse YYYY-MM-DD as a LOCAL date — new Date('YYYY-MM-DD') is parsed as
+    // UTC midnight and can display the previous day in negative-UTC timezones.
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? parseLocalDate(dateStr) : new Date(dateStr);
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function yearsBetween(start: string, end: Date = new Date()): number {
     if (!start) return 0;
-    const s = new Date(start).getTime();
+    const s = (/^\d{4}-\d{2}-\d{2}$/.test(start) ? parseLocalDate(start) : new Date(start)).getTime();
     if (isNaN(s)) return 0;
     const diff = end.getTime() - s;
     if (diff <= 0) return 0;
@@ -158,7 +162,8 @@ export default function LiveInvestmentTracker(props: Props) {
             const r = rate / 12 / 100;
             let bal = 0;
             for (let i = 0; i < elapsedMonths; i++) {
-                bal = bal * (1 + r) + monthlyContribution;
+                // Annuity-due (contribution at start of month), matching calculateSIP/EPF/NPS conventions
+                bal = (bal + monthlyContribution) * (1 + r);
             }
             investedSoFar = monthlyContribution * elapsedMonths;
             valueToday = bal;
@@ -166,7 +171,7 @@ export default function LiveInvestmentTracker(props: Props) {
             const totalMonths = Math.floor(totalYears * 12);
             let projBal = 0;
             for (let i = 0; i < totalMonths; i++) {
-                projBal = projBal * (1 + r) + monthlyContribution;
+                projBal = (projBal + monthlyContribution) * (1 + r);
             }
             projectedFinal = projectedMaturity ?? projBal;
         } else if (mode === 'swp') {

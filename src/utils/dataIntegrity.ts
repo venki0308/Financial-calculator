@@ -20,6 +20,8 @@ const STORAGE_KEYS = {
     budgets: 'fincalix_budgets',
     loans: 'fincalix_my_loans',
     creditCards: 'fincalix_credit_cards',
+    businesses: 'fincalix_businesses',
+    businessEntries: 'fincalix_business_entries',
 } as const;
 
 // ── Validators ─────────────────────────────────────────────
@@ -69,6 +71,35 @@ const isValidCreditCard = (c: unknown): c is Record<string, unknown> => {
         typeof x.annualInterestRate === 'number' && Number.isFinite(x.annualInterestRate) && x.annualInterestRate >= 0 &&
         typeof x.statementDate === 'number' && x.statementDate >= 1 && x.statementDate <= 31 &&
         typeof x.dueDate === 'number' && x.dueDate >= 1 && x.dueDate <= 31
+    );
+};
+
+// Business Tracker (businessStorage.ts) — Business + BizEntry shapes
+const isValidBusiness = (b: unknown): b is Record<string, unknown> => {
+    if (!b || typeof b !== 'object') return false;
+    const x = b as Record<string, unknown>;
+    return (
+        typeof x.id === 'string' &&
+        typeof x.name === 'string' && x.name.length > 0 &&
+        typeof x.type === 'string' &&
+        typeof x.emoji === 'string' &&
+        // Both business pages sort with createdAt.localeCompare — must be a string
+        typeof x.createdAt === 'string'
+    );
+};
+
+const isValidBizEntry = (e: unknown): e is Record<string, unknown> => {
+    if (!e || typeof e !== 'object') return false;
+    const x = e as Record<string, unknown>;
+    return (
+        typeof x.id === 'string' &&
+        typeof x.businessId === 'string' &&
+        typeof x.amount === 'number' && Number.isFinite(x.amount) && x.amount >= 0 &&
+        typeof x.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x.date) &&
+        typeof x.category === 'string' &&
+        ['income', 'expense'].includes(x.type as string) &&
+        // BusinessDetail sorts entries with createdAt.localeCompare — must be a string
+        typeof x.createdAt === 'string'
     );
 };
 
@@ -160,6 +191,12 @@ export function runDataIntegrityCheck(): IntegrityReport {
         // NaN limits, corrupt dates, and missing required fields before
         // the Credit Card Manager tries to render them.
         validateStore(STORAGE_KEYS.creditCards, isValidCreditCard, report, 'creditCards');
+
+        // Business Tracker — businesses + their daily income/expense entries.
+        // Same array-of-objects pattern; catches missing ids, NaN amounts and
+        // malformed dates before BusinessTracker/BusinessDetail render them.
+        validateStore(STORAGE_KEYS.businesses, isValidBusiness, report, 'businesses');
+        validateStore(STORAGE_KEYS.businessEntries, isValidBizEntry, report, 'businessEntries');
     } catch (err) {
         report.issues.push(`Integrity check failed: ${(err as Error).message}`);
     }

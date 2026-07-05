@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EPF Calculator 2026 — 8.25% Interest, Retirement Corpus</title>
+  <meta name="description" content="Free EPF calculator at 8.25% interest (FY 2025-26). Project your provident fund retirement corpus with salary growth and employer share. Offline, no login." />
+  <link rel="canonical" href="https://fincalix.com/epf" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/epf" />
+  <meta property="og:title" content="EPF Calculator 2026 — 8.25% Interest, Retirement Corpus" />
+  <meta property="og:description" content="Estimate your EPF corpus at 8.25% (FY 2025-26, 3rd year unchanged). ₹30,000 basic with 5% raises grows to ~₹99.7 lakh by 58. Free in the FinCalix app." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "EPF Calculator", "item": "https://fincalix.com/epf" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the EPF interest rate for FY 2025-26?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The EPF interest rate for FY 2025-26 is 8.25%, recommended by the CBT in March 2026 and ratified by the Finance Ministry in June 2026. This is the third consecutive year at 8.25%." }
+          },
+          {
+            "@type": "Question",
+            "name": "How much goes into my EPF every month?",
+            "acceptedAnswer": { "@type": "Answer", "text": "You contribute 12% of basic+DA. Your employer also contributes 12%, split into 3.67% to EPF and 8.33% to EPS (pension), with EPS capped at the ₹15,000 wage ceiling — a maximum of ₹1,250 per month. On ₹30,000 basic, the simplified EPF credit is about ₹4,701 per month (12% + 3.67%)." }
+          },
+          {
+            "@type": "Question",
+            "name": "What changed under the EPF Scheme 2026?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The EPF Scheme 2026, in force from 29 June 2026, simplifies withdrawals into 3 categories, raises the auto-settlement limit to ₹5 lakh, and targets claim settlement in about 3 days." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is EPF interest tax-free?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Interest on employee contributions up to ₹2.5 lakh per year is tax-free; interest on contributions above that is taxable. Withdrawal after 5 years of continuous service is tax-free. Your own 12% contribution qualifies for 80C in the old regime." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>EPF Calculator — 8.25% Interest, Retirement Corpus (2026)</h1>
+    <p class="sub">Project your Employees' Provident Fund corpus at 8.25% — the FY 2025-26 rate recommended by the CBT in March 2026 and ratified in June 2026, the third consecutive year at 8.25%.</p>
+
+    <div class="card calc">
+      <label for="basic">Monthly basic + DA (₹)</label>
+      <input id="basic" type="number" inputmode="numeric" value="30000" min="1000" />
+      <label for="age">Your current age (years)</label>
+      <input id="age" type="number" inputmode="numeric" value="30" min="18" max="57" />
+      <label for="ret">Retirement age (years)</label>
+      <input id="ret" type="number" inputmode="numeric" value="58" min="45" max="60" />
+      <label for="incr">Expected annual salary increment (%)</label>
+      <input id="incr" type="number" inputmode="decimal" value="5" min="0" max="20" step="0.5" />
+      <label for="rate">EPF interest rate (% per year, FY 2025-26)</label>
+      <input id="rate" type="number" value="8.25" readonly />
+      <button onclick="calc()">Calculate EPF Corpus</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How the EPF contribution works</h2>
+    <p>You contribute 12% of basic+DA every month. Your employer contributes another 12%, split as 3.67% to your EPF account and 8.33% to EPS (pension) — with EPS capped at the ₹15,000 wage ceiling, i.e. a maximum of ₹1,250/month. This calculator uses the simplified split below, so results are labelled <strong>approximate</strong>; if your basic exceeds ₹15,000, your actual employer EPF credit (12% of basic minus the fixed ₹1,250 EPS share) is higher, so your real corpus can be larger.</p>
+    <div class="formula">Monthly EPF credit ≈ Basic × 12% (you) + Basic × 3.67% (employer)<br/>compounded at 8.25% ÷ 12 monthly · salary grows by your increment % each year</div>
+    <p>Example: on ₹30,000 basic+DA, the simplified monthly EPF credit is <strong>₹4,701</strong> (₹3,600 + ₹1,101), while ₹1,250 goes to EPS.</p>
+
+    <h2>Approximate EPF corpus at 8.25% (with 5% yearly increment)</h2>
+    <table>
+      <tr><th>Basic + DA today</th><th>Age → Retirement</th><th>Approx. corpus</th></tr>
+      <tr><td>₹15,000</td><td>33 → 58 (25 yrs)</td><td>₹36,31,324</td></tr>
+      <tr><td>₹30,000</td><td>30 → 58 (28 yrs)</td><td>₹99,73,110</td></tr>
+      <tr><td>₹50,000</td><td>28 → 58 (30 yrs)</td><td>₹2,04,10,240</td></tr>
+    </table>
+    <p>Without any salary increment, ₹30,000 basic over 28 years still builds about ₹61,50,690 — the increment is what pushes the corpus near ₹1 crore.</p>
+
+    <h2>EPF rules at a glance (July 2026)</h2>
+    <table>
+      <tr><th>Feature</th><th>Detail</th></tr>
+      <tr><td>Interest rate</td><td>8.25% for FY 2025-26 (3rd year unchanged)</td></tr>
+      <tr><td>Employee share</td><td>12% of basic + DA</td></tr>
+      <tr><td>Employer share</td><td>12% — 3.67% to EPF + 8.33% to EPS (EPS capped at ₹15,000 ceiling = ₹1,250/mo)</td></tr>
+      <tr><td>EPF Scheme 2026</td><td>In force 29 Jun 2026 — withdrawals simplified to 3 categories, auto-settlement up to ₹5 lakh, ~3-day claims</td></tr>
+      <tr><td>Tax</td><td>80C on your 12% (old regime); withdrawal tax-free after 5 years' service</td></tr>
+    </table>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>What is the EPF interest rate for FY 2025-26?</h3>
+      <p>The EPF interest rate for FY 2025-26 is 8.25%, recommended by the CBT in March 2026 and ratified by the Finance Ministry in June 2026. This is the third consecutive year at 8.25%.</p>
+      <h3>How much goes into my EPF every month?</h3>
+      <p>You contribute 12% of basic+DA. Your employer also contributes 12%, split into 3.67% to EPF and 8.33% to EPS (pension), with EPS capped at the ₹15,000 wage ceiling — a maximum of ₹1,250 per month. On ₹30,000 basic, the simplified EPF credit is about ₹4,701 per month (12% + 3.67%).</p>
+      <h3>What changed under the EPF Scheme 2026?</h3>
+      <p>The EPF Scheme 2026, in force from 29 June 2026, simplifies withdrawals into 3 categories, raises the auto-settlement limit to ₹5 lakh, and targets claim settlement in about 3 days.</p>
+      <h3>Is EPF interest tax-free?</h3>
+      <p>Interest on employee contributions up to ₹2.5 lakh per year is tax-free; interest on contributions above that is taxable. Withdrawal after 5 years of continuous service is tax-free. Your own 12% contribution qualifies for 80C in the old regime.</p>
+    </div>
+
+    <div class="install">
+      <h2>Plan your full retirement — free</h2>
+      <p>EPF projection with VPF, NPS &amp; gratuity side by side, year-wise growth &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+      <a href="/nps">NPS Calculator</a>
+      <a href="/gratuity">Gratuity Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>EPF rate of 8.25% applies to FY 2025-26 as ratified in June 2026; future years are declared annually by the EPFO. Projections are approximate and use a simplified employer split. Verify with your EPFO passbook. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var basic = Math.max(0, parseFloat(document.getElementById('basic').value) || 0);
+      var age = Math.round(Math.max(0, parseFloat(document.getElementById('age').value) || 0));
+      var ret = Math.round(Math.max(0, parseFloat(document.getElementById('ret').value) || 0));
+      var incr = Math.max(0, parseFloat(document.getElementById('incr').value) || 0);
+      var out = document.getElementById('out');
+      var years = ret - age;
+      if (basic <= 0 || years <= 0) { out.style.display = 'none'; return; }
+      var i = 0.0825 / 12;
+      var bal = 0, sal = basic, contributed = 0;
+      for (var y = 0; y < years; y++) {
+        var c = sal * 0.12 + sal * 0.0367;
+        for (var m = 0; m < 12; m++) { bal = bal * (1 + i) + c; contributed += c; }
+        sal = sal * (1 + incr / 100);
+      }
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      out.innerHTML = '<strong>' + fmt(bal) + ' approx. at age ' + ret + '</strong><small>Approximate — total contributions ' + fmt(contributed) + ' · interest ' + fmt(bal - contributed) + ' over ' + years + ' years at 8.25%</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

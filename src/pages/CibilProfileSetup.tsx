@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Check, Trash2, Plus, TrendingUp, ExternalLink } from 'lucide-react';
@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import NumberInput from '../components/NumberInput';
 import { useCibil } from '../context/CibilContext';
-import { getCibilTier, CIBIL_RANGES, LOAN_CIBIL_RATES } from '../data/cibilData';
+import { getCibilTier, getTierId, CIBIL_RANGES, LOAN_CIBIL_RATES } from '../data/cibilData';
 import { getCibilColor, type CibilProfile, clearCibilProfile } from '../utils/cibilProfile';
 import { formatINR, calculateReducingEMI } from '../utils/calculations';
 import { AnalyticsService } from '../lib/analytics';
@@ -38,6 +38,13 @@ export default function CibilProfileSetup() {
     const [saved, setSaved] = useState(false);
     const [showExitModal, setShowExitModal] = useState(false);
 
+    // Post-save navigation timer — cleared on unmount so we never navigate
+    // from a component that's already gone (stale navigation).
+    const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => () => {
+        if (navTimerRef.current) clearTimeout(navTimerRef.current);
+    }, []);
+
     const openCibilWebsite = () => {
         window.open('https://www.cibil.com', '_blank', 'noopener,noreferrer');
         setShowExitModal(false);
@@ -62,7 +69,7 @@ export default function CibilProfileSetup() {
         return types.map(lt => {
             const cfg = LOAN_CIBIL_RATES[lt.key];
             if (!cfg) return { ...lt, min: 0, max: 0 };
-            const tierId = isNTC ? 'nh' : (effectiveScore && effectiveScore >= 780 ? 'excellent' : effectiveScore && effectiveScore >= 750 ? 'very_good' : effectiveScore && effectiveScore >= 700 ? 'good' : effectiveScore && effectiveScore >= 650 ? 'average' : 'poor');
+            const tierId = isNTC ? 'nh' : getTierId(effectiveScore || 0);
             const rates = cfg.rates[tierId] || cfg.rates['good'];
             return { ...lt, min: rates.min, max: rates.max };
         });
@@ -73,8 +80,8 @@ export default function CibilProfileSetup() {
         if (isNTC || !effectiveScore) return null;
         const avgScore = 650; // baseline
         const avgTier = 'average';
-        const userTier = effectiveScore >= 780 ? 'excellent' : effectiveScore >= 750 ? 'very_good' : effectiveScore >= 700 ? 'good' : effectiveScore >= 650 ? 'average' : 'poor';
-        if (userTier === 'poor' || userTier === 'average') return null;
+        const userTier = getTierId(effectiveScore);
+        if (userTier === 'very_poor' || userTier === 'poor' || userTier === 'average') return null;
 
         const homeCfg = LOAN_CIBIL_RATES['home_loan'];
         const carCfg = LOAN_CIBIL_RATES['car_loan'];
@@ -95,18 +102,33 @@ export default function CibilProfileSetup() {
     }, [effectiveScore, isNTC, homeValue, carValue]);
 
     const handleSave = () => {
+        // Append today's score to history — but if the last entry is already
+        // from today, replace it instead of appending (repeated saves on the
+        // same day shouldn't spam duplicates). Cap at the most recent 50.
+        const today = todayStr();
+        let updatedHistory = [...history];
+        if (!isNTC && score) {
+            const last = updatedHistory[updatedHistory.length - 1];
+            if (last && last.date === today) {
+                updatedHistory[updatedHistory.length - 1] = { score, date: today };
+            } else {
+                updatedHistory.push({ score, date: today });
+            }
+        }
+        updatedHistory = updatedHistory.slice(-50);
+
         const p: CibilProfile = {
             score: isNTC ? null : score,
             isNTC,
             lastUpdated: new Date().toISOString(),
             employmentType: empType as any,
             gender: gender as any,
-            history: isNTC ? [] : [...history, ...(score ? [{ score, date: todayStr() }] : [])],
+            history: isNTC ? [] : updatedHistory,
             isSimulated: true,
         };
         save(p);
         setSaved(true);
-        setTimeout(() => navigate(-1), 1200);
+        navTimerRef.current = setTimeout(() => navigate(-1), 1200);
     };
 
     const handleClear = () => {

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppColors } from '../theme/useAppColors';
 import { Clock, AlertTriangle, Lightbulb, Save, Check, Trash2 } from 'lucide-react';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
-import { todayStr } from '../utils/dateUtils';
+import { todayStr, parseLocalDate } from '../utils/dateUtils';
 
 interface MetricCardProps {
     label: string;
@@ -36,7 +36,10 @@ const COLOR_MAP = {
 
 function fmtDate(dateStr: string): string {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    // Parse YYYY-MM-DD as a LOCAL date — new Date('YYYY-MM-DD') is parsed as
+    // UTC midnight and can display the previous day in negative-UTC timezones.
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? parseLocalDate(dateStr) : new Date(dateStr);
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function LiveStatusCard({ title, subtitle, startDate, metrics, progressPercent, progressLabel, insightText, warningText, children, calculatorType, profileData }: LiveStatusCardProps) {

@@ -41,9 +41,10 @@ export default function Layout() {
                         const calcSubPages = ['/two-wheeler-loan', '/gold-loan', '/cibil-score', '/cibil-profile'];
                         const isActive = location.pathname === to ||
                 (to !== '/' && location.pathname.startsWith(to)) ||
-                (to === '/' && homeSubPages.includes(location.pathname)) ||
+                (to === '/' && (homeSubPages.includes(location.pathname) || location.pathname.startsWith('/my-loans') || location.pathname.startsWith('/business-tracker'))) ||
                 (to === '/calculators' && (location.pathname.startsWith('/calculator/') || location.pathname.startsWith('/insurance') || calcSubPages.includes(location.pathname))) ||
-                (to === '/schemes' && location.pathname.startsWith('/scheme/'));
+                (to === '/schemes' && location.pathname.startsWith('/scheme/')) ||
+                (to === '/profile' && (location.pathname === '/settings' || location.pathname === '/about'));
                         return (
                             <NavLink key={to} to={to} className="flex flex-col items-center gap-1 py-1 px-3">
                                 <motion.div

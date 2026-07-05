@@ -2,11 +2,18 @@
  * investmentStatusEngine.ts — Live status engines for SIP, FD, RD, PPF, SSY, NSC, KVP, POMIS, POTD, SCSS
  */
 
-import { toLocalDateStr } from './dateUtils';
+import { toLocalDateStr, parseLocalDate } from './dateUtils';
 
 // ─── Helpers ───────────────────────────────────────────
 function daysBetween(a: Date, b: Date): number {
     return Math.max(0, Math.floor((b.getTime() - a.getTime()) / (86400000)));
+}
+// YYYY-MM-DD must be parsed as LOCAL midnight — `new Date('YYYY-MM-DD')` is UTC-midnight,
+// which lands on the previous local day for UTC-negative timezones (same fix as loanStatusEngine).
+function parseDateInput(s: string): Date {
+    const d = /^\d{4}-\d{2}-\d{2}$/.test(s) ? parseLocalDate(s) : new Date(s);
+    d.setHours(0, 0, 0, 0);
+    return d;
 }
 function monthsBetween(a: Date, b: Date): number {
     return (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
@@ -44,7 +51,7 @@ export interface SipStatus {
 
 export function calculateSipStatus(input: SipStatusInput): SipStatus {
     const t = today();
-    const start = new Date(input.startDate); start.setHours(0, 0, 0, 0);
+    const start = parseDateInput(input.startDate);
     // First SIP installment is in the starting month itself, so add 1.
     // E.g. start Dec 5 → today Apr 13 = invested in Dec,Jan,Feb,Mar,Apr = 5
     const raw = monthsBetween(start, t);
@@ -63,8 +70,11 @@ export function calculateSipStatus(input: SipStatusInput): SipStatus {
     const progressToGoal = target > 0 ? Math.min(100, (currentValue / target) * 100) : 0;
     let monthsToGoal = 0;
     if (target > currentValue && r > 0 && input.monthlySip > 0) {
-        const remaining = target - currentValue;
-        monthsToGoal = Math.ceil(Math.log((remaining * r / input.monthlySip) + 1) / Math.log(1 + r));
+        // Solve currentValue·(1+r)^n + SIP·[((1+r)^n − 1)/r]·(1+r) = target for n,
+        // so the already-invested corpus keeps compounding toward the goal too
+        // (annuity-due, consistent with the currentValue formula above).
+        const p = input.monthlySip * (1 + r) / r;
+        monthsToGoal = Math.ceil(Math.log((target + p) / (currentValue + p)) / Math.log(1 + r));
     }
     const expectedGoalDate = target > 0 ? fmtISO(addMonths(t, monthsToGoal)) : '';
     return {
@@ -103,7 +113,7 @@ export interface FdStatus {
 
 export function calculateFdStatus(input: FdStatusInput): FdStatus {
     const t = today();
-    const start = new Date(input.startDate); start.setHours(0, 0, 0, 0);
+    const start = parseDateInput(input.startDate);
     const matDate = addMonths(start, input.tenureMonths);
     const totalDays = daysBetween(start, matDate);
     const daysInvested = daysBetween(start, t);
@@ -152,7 +162,7 @@ export interface RdStatus {
 
 export function calculateRdStatus(input: RdStatusInput): RdStatus {
     const t = today();
-    const start = new Date(input.startDate); start.setHours(0, 0, 0, 0);
+    const start = parseDateInput(input.startDate);
     // monthsBetween gives the gap (Dec→Apr = 4), but the first deposit
     // happens in the starting month itself, so add 1 to include it.
     // E.g. start Dec 2 → today Apr 13 = deposits in Dec,Jan,Feb,Mar,Apr = 5
@@ -161,12 +171,17 @@ export function calculateRdStatus(input: RdStatusInput): RdStatus {
     const totalDeposited = monthsInvested * input.monthlyDeposit;
     const r = input.annualRate / 400; // quarterly rate
     const totalQ = Math.ceil(input.tenureMonths / 3);
-    // Current value using quarterly compounding
+    // Current value: each deposit compounds only for the quarters ELAPSED since its
+    // deposit quarter (interest credited at quarter-end) — same convention as the
+    // schedule in RDCalculator.tsx. (Previously this wrongly used quarters remaining
+    // to maturity, overstating today's value.)
+    const currentQIdx = monthsInvested > 0 ? Math.floor((monthsInvested - 1) / 3) : 0;
+    const isQEnd = monthsInvested > 0 && (monthsInvested % 3 === 0 || monthsInvested === input.tenureMonths);
     let currentValue = 0;
     for (let i = 1; i <= monthsInvested; i++) {
-        const qIdx = Math.floor((i - 1) / 3);
-        const qRemaining = totalQ - qIdx;
-        currentValue += input.monthlyDeposit * Math.pow(1 + r, Math.min(qRemaining, totalQ));
+        const depositQIdx = Math.floor((i - 1) / 3);
+        const completedQ = currentQIdx - depositQIdx + (isQEnd ? 1 : 0);
+        currentValue += input.monthlyDeposit * Math.pow(1 + r, completedQ);
     }
     // Full maturity
     let maturityValue = 0;
@@ -208,7 +223,7 @@ export interface PpfStatus {
 
 export function calculatePpfStatus(input: PpfStatusInput): PpfStatus {
     const t = today();
-    const open = new Date(input.openingDate); open.setHours(0, 0, 0, 0);
+    const open = parseDateInput(input.openingDate);
     const yearsCompleted = Math.floor(monthsBetween(open, t) / 12);
     const currentYear = Math.min(15, yearsCompleted + 1);
     const matDate = new Date(open); matDate.setFullYear(matDate.getFullYear() + 15);
@@ -273,8 +288,8 @@ export interface SsyStatus {
 
 export function calculateSsyStatus(input: SsyStatusInput): SsyStatus {
     const t = today();
-    const open = new Date(input.openingDate); open.setHours(0, 0, 0, 0);
-    const dob = new Date(input.girlDob); dob.setHours(0, 0, 0, 0);
+    const open = parseDateInput(input.openingDate);
+    const dob = parseDateInput(input.girlDob);
     const girlAge = Math.floor(monthsBetween(dob, t) / 12);
     const accountAge = Math.floor(monthsBetween(open, t) / 12);
     const depositPhaseActive = accountAge < 15;
@@ -333,7 +348,7 @@ export interface NscStatus {
 
 export function calculateNscStatus(input: NscStatusInput): NscStatus {
     const t = today();
-    const purch = new Date(input.purchaseDate); purch.setHours(0, 0, 0, 0);
+    const purch = parseDateInput(input.purchaseDate);
     const totalMonths = monthsBetween(purch, t);
     const yearsCompleted = Math.min(5, Math.floor(totalMonths / 12));
     const monthsInCurrentYear = totalMonths - yearsCompleted * 12;
@@ -375,7 +390,7 @@ export interface KvpStatus {
 
 export function calculateKvpStatus(input: KvpStatusInput): KvpStatus {
     const t = today();
-    const purch = new Date(input.purchaseDate); purch.setHours(0, 0, 0, 0);
+    const purch = parseDateInput(input.purchaseDate);
     const monthsElapsed = monthsBetween(purch, t);
     const r = input.rate / 100;
     const doublingMonths = Math.ceil(Math.log(2) / Math.log(1 + r) * 12);
@@ -412,7 +427,7 @@ export interface PomisStatus {
 
 export function calculatePomisStatus(input: PomisStatusInput): PomisStatus {
     const t = today();
-    const start = new Date(input.startDate); start.setHours(0, 0, 0, 0);
+    const start = parseDateInput(input.startDate);
     const monthsCompleted = Math.min(60, Math.max(0, monthsBetween(start, t)));
     const monthlyIncome = Math.round(input.principal * input.rate / 100 / 12);
     return {
@@ -443,7 +458,7 @@ export interface ScssStatus {
 
 export function calculateScssStatus(input: ScssStatusInput): ScssStatus {
     const t = today();
-    const start = new Date(input.startDate); start.setHours(0, 0, 0, 0);
+    const start = parseDateInput(input.startDate);
     const totalMonths = input.tenure * 12;
     const monthsCompleted = Math.min(totalMonths, Math.max(0, monthsBetween(start, t)));
     const quartersCompleted = Math.floor(monthsCompleted / 3);

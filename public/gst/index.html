@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GST Calculator India — Add &amp; Remove GST (5%, 18%, 40%) | FinCalix</title>
+  <meta name="description" content="Free GST calculator for India's GST 2.0 slabs — 5%, 18% and 40%. Add GST to a base price or extract GST from an inclusive amount instantly. Offline, no login." />
+  <link rel="canonical" href="https://fincalix.com/gst" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/gst" />
+  <meta property="og:title" content="GST Calculator India — Add &amp; Remove GST (5%, 18%, 40%)" />
+  <meta property="og:description" content="Calculate GST both ways under the GST 2.0 slabs (5%, 18%, 40%). Free in the FinCalix app — offline, no login." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "GST Calculator", "item": "https://fincalix.com/gst" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What are the GST slabs in India now?",
+            "acceptedAnswer": { "@type": "Answer", "text": "GST 2.0, effective 22 September 2025, rationalized the earlier multi-slab structure into two main rates — 5% and 18% — plus a 40% demerit rate on select goods such as tobacco, pan masala and luxury items." }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I add GST to a price?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Multiply the base amount by (1 + rate ÷ 100). Adding 18% GST to ₹10,000 gives ₹11,800 — the GST component is ₹1,800. At 5% the total is ₹10,500 and at 40% it is ₹14,000." }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I remove GST from an inclusive amount?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Divide the inclusive amount by (1 + rate ÷ 100). If ₹10,000 already includes 18% GST, the base price is ₹8,474.58 and the GST portion is ₹1,525.42. At 5% the base is ₹9,523.81." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is GST charged on credit card fees?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. Credit card charges — annual fees, interest, late payment fees and EMI processing charges — attract 18% GST. A ₹500 late fee actually costs you ₹590 after GST." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>GST Calculator India — Add or Remove GST</h1>
+    <p class="sub">GST 2.0 (in force since 22 September 2025) rationalized India's slabs to 5% and 18%, with a 40% demerit rate on select goods. Calculate GST both ways — add it to a base price or extract it from an inclusive amount.</p>
+
+    <div class="card calc">
+      <label for="amt">Amount (₹)</label>
+      <input id="amt" type="number" inputmode="decimal" value="10000" min="1" />
+      <label for="rate">GST rate (%)</label>
+      <select id="rate" style="width:100%;padding:11px 12px;font-size:16px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);">
+        <option value="5">5% — merit rate (essentials)</option>
+        <option value="18" selected>18% — standard rate</option>
+        <option value="40">40% — demerit rate</option>
+      </select>
+      <button onclick="calc()">Calculate GST</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How GST is calculated</h2>
+    <p>Adding GST scales the base price up; removing GST works backwards from an inclusive price — a common need when invoices show only the final amount.</p>
+    <div class="formula">Add GST: total = amount × (1 + r ÷ 100)<br/>Remove GST: base = amount ÷ (1 + r ÷ 100)</div>
+
+    <h2>₹10,000 at each GST 2.0 slab</h2>
+    <table>
+      <tr><th>Rate</th><th>Add GST: tax / total</th><th>Remove GST: base / tax inside</th></tr>
+      <tr><td>5%</td><td>₹500 / ₹10,500</td><td>₹9,523.81 / ₹476.19</td></tr>
+      <tr><td>18%</td><td>₹1,800 / ₹11,800</td><td>₹8,474.58 / ₹1,525.42</td></tr>
+      <tr><td>40%</td><td>₹4,000 / ₹14,000</td><td>₹7,142.86 / ₹2,857.14</td></tr>
+    </table>
+
+    <h2>GST 2.0 — what changed on 22 September 2025</h2>
+    <p>The GST 2.0 reform collapsed the earlier multi-slab structure into two main rates — <strong>5%</strong> for merit/essential goods and <strong>18%</strong> as the standard rate — plus a <strong>40% demerit rate</strong> on select items like tobacco, pan masala and luxury goods. Most everyday services, electronics and financial charges fall under 18%. Notably, all <strong>credit card charges</strong> (annual fees, interest, late fees) attract 18% GST.</p>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>What are the GST slabs in India now?</h3>
+      <p>GST 2.0, effective 22 September 2025, rationalized the earlier multi-slab structure into two main rates — 5% and 18% — plus a 40% demerit rate on select goods such as tobacco, pan masala and luxury items.</p>
+      <h3>How do I add GST to a price?</h3>
+      <p>Multiply the base amount by (1 + rate ÷ 100). Adding 18% GST to ₹10,000 gives ₹11,800 — the GST component is ₹1,800. At 5% the total is ₹10,500 and at 40% it is ₹14,000.</p>
+      <h3>How do I remove GST from an inclusive amount?</h3>
+      <p>Divide the inclusive amount by (1 + rate ÷ 100). If ₹10,000 already includes 18% GST, the base price is ₹8,474.58 and the GST portion is ₹1,525.42. At 5% the base is ₹9,523.81.</p>
+      <h3>Is GST charged on credit card fees?</h3>
+      <p>Yes. Credit card charges — annual fees, interest, late payment fees and EMI processing charges — attract 18% GST. A ₹500 late fee actually costs you ₹590 after GST.</p>
+    </div>
+
+    <div class="install">
+      <h2>Get the full business toolkit — free</h2>
+      <p>GST both ways, invoicing math, credit card cost analysis, expense tracking &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/hra">HRA Exemption</a>
+      <a href="/expense-tracker">Expense Tracker</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>GST rates shown reflect the GST 2.0 structure as of July 2026 and may change with GST Council decisions. Verify the applicable rate for your goods or services. Not tax advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var amt = Math.max(0, parseFloat(document.getElementById('amt').value) || 0);
+      var r = parseFloat(document.getElementById('rate').value) || 0;
+      var out = document.getElementById('out');
+      if (amt <= 0 || r <= 0) { out.style.display = 'none'; return; }
+      var addTotal = amt * (1 + r / 100);
+      var addTax = addTotal - amt;
+      var base = amt / (1 + r / 100);
+      var removeTax = amt - base;
+      var fmt = function (x) { return '₹' + x.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+      out.innerHTML = '<strong>' + fmt(addTotal) + ' with ' + r + '% GST added</strong><small>Add GST: ' + fmt(amt) + ' + ' + fmt(addTax) + ' tax = ' + fmt(addTotal) + '<br/>Remove GST: if ' + fmt(amt) + ' is GST-inclusive, base price is ' + fmt(base) + ' and GST inside is ' + fmt(removeTax) + '</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

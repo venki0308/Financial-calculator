@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gratuity Calculator 2026 — Formula, ₹20 Lakh Tax Exemption</title>
+  <meta name="description" content="Gratuity calculator using the (15/26) formula. ₹50,000 basic+DA and 10 years of service = ₹2,88,462. Tax-free up to ₹20 lakh. Check eligibility rules. Free." />
+  <link rel="canonical" href="https://fincalix.com/gratuity" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/gratuity" />
+  <meta property="og:title" content="Gratuity Calculator 2026 — Formula, ₹20 Lakh Tax Exemption" />
+  <meta property="og:description" content="Calculate gratuity with the (15/26) × salary × years formula. Tax-free up to ₹20 lakh in the private sector. Free in the FinCalix app — offline, no login." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Gratuity Calculator", "item": "https://fincalix.com/gratuity" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How is gratuity calculated in India?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Gratuity = (15/26) × last drawn monthly salary (basic + DA) × completed years of service. Service of 6 months or more in the final year rounds up to a full year. For ₹50,000 basic+DA and 10 years, gratuity is ₹2,88,462." }
+          },
+          {
+            "@type": "Question",
+            "name": "How much gratuity is tax-free?",
+            "acceptedAnswer": { "@type": "Answer", "text": "For private-sector employees covered by the Payment of Gratuity Act, gratuity is tax-free up to ₹20 lakh (lifetime aggregate). Any amount above that is taxed as salary. Government employees' gratuity is fully exempt." }
+          },
+          {
+            "@type": "Question",
+            "name": "Am I eligible for gratuity after 4 years and 240 days?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The Act requires 5 years of continuous service, but several court rulings have held that 4 years and 240 days counts as 5 years for eligibility. The 5-year condition is waived entirely in case of death or disablement." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is gratuity paid on basic salary or gross salary?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Gratuity is calculated only on last drawn basic salary plus dearness allowance (DA) — not on gross salary, HRA or other allowances." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>Gratuity Calculator — Formula &amp; ₹20L Tax Exemption (2026)</h1>
+    <p class="sub">Calculate your gratuity with the statutory (15/26) formula under the Payment of Gratuity Act. Tax-free up to ₹20 lakh for private-sector employees; eligibility from 5 years of service (4 years 240 days per court rulings).</p>
+
+    <div class="card calc">
+      <label for="sal">Last drawn monthly basic + DA (₹)</label>
+      <input id="sal" type="number" inputmode="numeric" value="50000" min="1000" />
+      <label for="yrs">Years of service (≥6 months rounds up)</label>
+      <input id="yrs" type="number" inputmode="decimal" value="10" min="1" max="50" step="0.5" />
+      <button onclick="calc()">Calculate Gratuity</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How gratuity is calculated</h2>
+    <p>For employees covered by the Payment of Gratuity Act, 15 days' wages (out of a 26-working-day month) are paid for every completed year of service, based on the last drawn basic + DA. Six months or more in the final year rounds up to a full year.</p>
+    <div class="formula">Gratuity = (15 ÷ 26) × last drawn (Basic + DA) × completed years<br/>(15 ÷ 26) × 50,000 × 10 = ₹2,88,462</div>
+
+    <h2>Example gratuity amounts</h2>
+    <table>
+      <tr><th>Last drawn basic + DA</th><th>Years of service</th><th>Gratuity</th></tr>
+      <tr><td>₹30,000</td><td>7</td><td>₹1,21,154</td></tr>
+      <tr><td>₹50,000</td><td>10</td><td>₹2,88,462</td></tr>
+      <tr><td>₹75,000</td><td>15</td><td>₹6,49,038</td></tr>
+      <tr><td>₹1,00,000</td><td>20</td><td>₹11,53,846</td></tr>
+    </table>
+
+    <h2>Gratuity rules at a glance (July 2026)</h2>
+    <table>
+      <tr><th>Feature</th><th>Detail</th></tr>
+      <tr><td>Formula</td><td>(15/26) × last drawn basic+DA × completed years (≥6 months rounds up)</td></tr>
+      <tr><td>Eligibility</td><td>5 years' continuous service (4 years 240 days per court rulings); waived on death/disablement</td></tr>
+      <tr><td>Tax exemption</td><td>Up to ₹20 lakh lifetime for private sector; fully exempt for government employees</td></tr>
+      <tr><td>Salary base</td><td>Basic + DA only — excludes HRA and other allowances</td></tr>
+      <tr><td>Payment deadline</td><td>Employer must pay within 30 days of it becoming due</td></tr>
+    </table>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>How is gratuity calculated in India?</h3>
+      <p>Gratuity = (15/26) × last drawn monthly salary (basic + DA) × completed years of service. Service of 6 months or more in the final year rounds up to a full year. For ₹50,000 basic+DA and 10 years, gratuity is ₹2,88,462.</p>
+      <h3>How much gratuity is tax-free?</h3>
+      <p>For private-sector employees covered by the Payment of Gratuity Act, gratuity is tax-free up to ₹20 lakh (lifetime aggregate). Any amount above that is taxed as salary. Government employees' gratuity is fully exempt.</p>
+      <h3>Am I eligible for gratuity after 4 years and 240 days?</h3>
+      <p>The Act requires 5 years of continuous service, but several court rulings have held that 4 years and 240 days counts as 5 years for eligibility. The 5-year condition is waived entirely in case of death or disablement.</p>
+      <h3>Is gratuity paid on basic salary or gross salary?</h3>
+      <p>Gratuity is calculated only on last drawn basic salary plus dearness allowance (DA) — not on gross salary, HRA or other allowances.</p>
+    </div>
+
+    <div class="install">
+      <h2>Plan your exit benefits — free</h2>
+      <p>Gratuity, EPF, leave encashment &amp; tax impact in one place, with PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+      <a href="/epf">EPF Calculator</a>
+      <a href="/nps">NPS Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Calculation follows the Payment of Gratuity Act formula for covered establishments as of July 2026; employers may pay more, and uncovered establishments use a (15/30) basis. Verify with your HR policy. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var sal = Math.max(0, parseFloat(document.getElementById('sal').value) || 0);
+      var yrsRaw = Math.max(0, parseFloat(document.getElementById('yrs').value) || 0);
+      var out = document.getElementById('out');
+      if (sal <= 0 || yrsRaw <= 0) { out.style.display = 'none'; return; }
+      var years = Math.floor(yrsRaw) + ((yrsRaw - Math.floor(yrsRaw)) >= 0.5 ? 1 : 0);
+      var g = (15 / 26) * sal * years;
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      var taxNote = g > 2000000 ? 'Amount above ₹20,00,000 is taxable as salary (private sector).' : 'Fully tax-free — within the ₹20 lakh exemption (private sector).';
+      out.innerHTML = '<strong>' + fmt(g) + ' gratuity</strong><small>(15/26) × ' + fmt(sal) + ' × ' + years + ' completed years · ' + taxNote + '</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

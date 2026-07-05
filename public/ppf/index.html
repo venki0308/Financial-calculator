@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PPF Calculator 2026 — 7.1% Interest, Maturity & Tax Free</title>
+  <meta name="description" content="Free PPF calculator at the current 7.1% rate (Q2 FY 2026-27). ₹1.5 lakh/year for 15 years grows to ₹40.68 lakh, fully tax-free EEE. No login, works offline." />
+  <link rel="canonical" href="https://fincalix.com/ppf" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/ppf" />
+  <meta property="og:title" content="PPF Calculator 2026 — 7.1% Interest, Maturity & Tax Free" />
+  <meta property="og:description" content="Calculate your PPF maturity at 7.1% p.a. (Q2 FY 2026-27). ₹1.5L/year for 15 years grows to ₹40,68,209 — tax-free. Free in the FinCalix app, offline, no login." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "PPF Calculator", "item": "https://fincalix.com/ppf" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the PPF interest rate in 2026?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The Public Provident Fund earns 7.1% per annum for Q2 FY 2026-27 (July–September 2026), compounded annually. The government has kept small-savings rates unchanged for the 9th consecutive quarter." }
+          },
+          {
+            "@type": "Question",
+            "name": "How much will ₹1.5 lakh per year in PPF become in 15 years?",
+            "acceptedAnswer": { "@type": "Answer", "text": "At 7.1% with annual compounding, depositing ₹1,50,000 every year for 15 years grows to ₹40,68,209 at maturity — ₹22,50,000 invested plus ₹18,18,209 tax-free interest." }
+          },
+          {
+            "@type": "Question",
+            "name": "Is PPF completely tax-free?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. PPF has EEE (Exempt-Exempt-Exempt) status: deposits qualify for Section 80C deduction up to ₹1.5 lakh (old regime), the interest earned is tax-free, and the maturity amount is tax-free. Under the Income Tax Act 2025 (effective 1 April 2026), 80C is renumbered but the benefit amounts are identical." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I extend my PPF account after 15 years?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Yes. After the 15-year lock-in you can extend in blocks of 5 years, with or without fresh deposits. ₹1.5L/year continued to 20 years grows to about ₹66.58 lakh and to about ₹1.03 crore at 25 years at 7.1%." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>PPF Calculator — 7.1% Interest, Tax-Free Maturity (2026)</h1>
+    <p class="sub">Calculate your Public Provident Fund maturity value at the current 7.1% p.a. rate — unchanged for Q2 FY 2026-27 (July 2026), the 9th consecutive quarter. Deposits, interest and maturity are all tax-free (EEE).</p>
+
+    <div class="card calc">
+      <label for="dep">Yearly deposit (₹500 – ₹1,50,000)</label>
+      <input id="dep" type="number" inputmode="numeric" value="150000" min="500" max="150000" />
+      <label for="rate">Interest rate (% per year, fixed by Govt.)</label>
+      <input id="rate" type="number" value="7.1" readonly />
+      <label for="yrs">Investment period (years)</label>
+      <input id="yrs" type="number" inputmode="numeric" value="15" min="15" max="50" />
+      <button onclick="calc()">Calculate PPF Maturity</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>How PPF interest is calculated</h2>
+    <p>PPF compounds annually. Each year's closing balance is the opening balance plus your deposit, grown at 7.1%. (Officially, interest accrues monthly on the lowest balance between the 5th and month-end — deposit before the 5th of April to earn interest on the full year's deposit.)</p>
+    <div class="formula">Balance<sub>year</sub> = (Balance<sub>year−1</sub> + Deposit) × 1.071<br/>repeated for each year of the 15-year term</div>
+
+    <h2>PPF maturity value at 7.1% (deposit made every year)</h2>
+    <table>
+      <tr><th>Yearly deposit</th><th>Period</th><th>Total invested</th><th>Maturity value</th><th>Tax-free interest</th></tr>
+      <tr><td>₹50,000</td><td>15 years</td><td>₹7,50,000</td><td>₹13,56,070</td><td>₹6,06,070</td></tr>
+      <tr><td>₹1,00,000</td><td>15 years</td><td>₹15,00,000</td><td>₹27,12,139</td><td>₹12,12,139</td></tr>
+      <tr><td>₹1,50,000</td><td>15 years</td><td>₹22,50,000</td><td>₹40,68,209</td><td>₹18,18,209</td></tr>
+      <tr><td>₹1,50,000</td><td>20 years (ext.)</td><td>₹30,00,000</td><td>₹66,58,288</td><td>₹36,58,288</td></tr>
+      <tr><td>₹1,50,000</td><td>25 years (ext.)</td><td>₹37,50,000</td><td>₹1,03,08,015</td><td>₹65,58,015</td></tr>
+    </table>
+
+    <h2>PPF rules at a glance (July 2026, Q2 FY 2026-27)</h2>
+    <table>
+      <tr><th>Feature</th><th>Detail</th></tr>
+      <tr><td>Interest rate</td><td>7.1% p.a., compounded annually (unchanged 9 quarters)</td></tr>
+      <tr><td>Deposit limit</td><td>₹500 minimum – ₹1,50,000 maximum per financial year</td></tr>
+      <tr><td>Lock-in</td><td>15 years; extendable in 5-year blocks</td></tr>
+      <tr><td>Tax status</td><td>EEE — 80C deduction (old regime), tax-free interest &amp; maturity</td></tr>
+      <tr><td>Partial withdrawal</td><td>Allowed from year 7; loan facility years 3–6</td></tr>
+    </table>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>What is the PPF interest rate in 2026?</h3>
+      <p>The Public Provident Fund earns 7.1% per annum for Q2 FY 2026-27 (July–September 2026), compounded annually. The government has kept small-savings rates unchanged for the 9th consecutive quarter.</p>
+      <h3>How much will ₹1.5 lakh per year in PPF become in 15 years?</h3>
+      <p>At 7.1% with annual compounding, depositing ₹1,50,000 every year for 15 years grows to ₹40,68,209 at maturity — ₹22,50,000 invested plus ₹18,18,209 tax-free interest.</p>
+      <h3>Is PPF completely tax-free?</h3>
+      <p>Yes. PPF has EEE (Exempt-Exempt-Exempt) status: deposits qualify for Section 80C deduction up to ₹1.5 lakh (old regime), the interest earned is tax-free, and the maturity amount is tax-free. Under the Income Tax Act 2025 (effective 1 April 2026), 80C is renumbered but the benefit amounts are identical.</p>
+      <h3>Can I extend my PPF account after 15 years?</h3>
+      <p>Yes. After the 15-year lock-in you can extend in blocks of 5 years, with or without fresh deposits. ₹1.5L/year continued to 20 years grows to about ₹66.58 lakh and to about ₹1.03 crore at 25 years at 7.1%.</p>
+    </div>
+
+    <div class="install">
+      <h2>Get the full PPF planner — free</h2>
+      <p>Year-by-year PPF schedule, extension planning, 80C tracker &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/emi">EMI Calculator</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/sukanya-samriddhi">Sukanya Samriddhi</a>
+      <a href="/nsc">NSC Calculator</a>
+      <a href="/epf">EPF Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>PPF rate of 7.1% is as of July 2026 (Q2 FY 2026-27) and is reset quarterly by the Government of India. FinCalix provides estimates for planning — verify with your bank or post office. Not financial advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var D = Math.max(0, parseFloat(document.getElementById('dep').value) || 0);
+      var yrs = Math.round(Math.max(0, parseFloat(document.getElementById('yrs').value) || 0));
+      var out = document.getElementById('out');
+      if (D <= 0 || yrs <= 0) { out.style.display = 'none'; return; }
+      var bal = 0;
+      for (var y = 0; y < yrs; y++) { bal = (bal + D) * 1.071; }
+      var invested = D * yrs;
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      out.innerHTML = '<strong>' + fmt(bal) + ' at maturity</strong><small>Invested ' + fmt(invested) + ' · Tax-free interest ' + fmt(bal - invested) + ' over ' + yrs + ' years at 7.1%</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

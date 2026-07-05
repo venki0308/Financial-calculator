@@ -10,7 +10,7 @@ import { getEntriesForDateRange, getCategoryById, deleteEntriesInRange } from '.
 import {
   calculateSummary, getWeekRange, fmtINR, fmtPct,
   formatFullDate, DAY_NAMES,
-  getTotalActualBilledSubsInRange,
+  getUnloggedSubsForRange,
   buildSubscriptionEntriesForRange,
   calcPeriodChange,
   getTodayStr,
@@ -134,12 +134,12 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
     [subscriptions, week.start, week.end, todayISO],
   );
   const weekSubsBilled = useMemo(
-    () => getTotalActualBilledSubsInRange(subscriptions, week.start, week.end, todayISO),
-    [subscriptions, week.start, week.end, todayISO],
+    () => getUnloggedSubsForRange(weekEntries, subscriptions, week.start, week.end, todayISO),
+    [weekEntries, subscriptions, week.start, week.end, todayISO],
   );
   const prevWeekSubsBilled = useMemo(
-    () => getTotalActualBilledSubsInRange(subscriptions, prevWeek.start, prevWeek.end, todayISO),
-    [subscriptions, prevWeek.start, prevWeek.end, todayISO],
+    () => getUnloggedSubsForRange(prevWeekEntries, subscriptions, prevWeek.start, prevWeek.end, todayISO),
+    [prevWeekEntries, subscriptions, prevWeek.start, prevWeek.end, todayISO],
   );
 
   /* ── canonical totals (logged + subs) ── */
