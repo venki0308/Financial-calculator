@@ -146,6 +146,7 @@ const PdfActionSheet             = lazy(() => lazyRetry(() => import('./componen
 
 // Web legal pages — lazy loaded with retry
 const WebPrivacyPolicy           = lr(() => import('./pages/legal/PrivacyPolicy'));
+const NotFound                   = lr(() => import('./pages/NotFound'));
 const WebAbout                   = lr(() => import('./pages/legal/About'));
 const WebDataPrivacy             = lr(() => import('./pages/legal/DataPrivacy'));
 const WebTermsOfService          = lr(() => import('./pages/legal/TermsOfService'));
@@ -530,7 +531,9 @@ export default function App() {
                     <Route path="/about" element={<WebAbout />} />
                     <Route path="/data-privacy" element={<WebDataPrivacy />} />
                     <Route path="/terms-of-service" element={<WebTermsOfService />} />
-                    <Route path="*" element={<WebLandingPage />} />
+                    {/* Real 404 (noindex) — rendering the homepage for every
+                        unknown URL was a soft-404 duplicate-content surface. */}
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </Suspense>
         </BrowserRouter>

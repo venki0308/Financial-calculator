@@ -52,10 +52,14 @@ export interface SipStatus {
 export function calculateSipStatus(input: SipStatusInput): SipStatus {
     const t = today();
     const start = parseDateInput(input.startDate);
-    // First SIP installment is in the starting month itself, so add 1.
-    // E.g. start Dec 5 → today Apr 13 = invested in Dec,Jan,Feb,Mar,Apr = 5
+    // First SIP installment is in the starting month itself. The current
+    // month's installment only counts once its debit day has actually
+    // arrived (start Jul 25, today Jul 18 → 0 installments, not 1).
+    // Debit day clamps to short months (start on the 31st debits Feb 28).
     const raw = monthsBetween(start, t);
-    const monthsInvested = Math.max(0, raw >= 0 ? raw + 1 : 0);
+    const lastDayThisMonth = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
+    const debitDay = Math.min(start.getDate(), lastDayThisMonth);
+    const monthsInvested = Math.max(0, raw >= 0 ? raw + (t.getDate() >= debitDay ? 1 : 0) : 0);
     const totalInvested = monthsInvested * input.monthlySip;
     const r = input.annualReturn / 12 / 100;
     let currentValue = 0;
@@ -116,7 +120,10 @@ export function calculateFdStatus(input: FdStatusInput): FdStatus {
     const start = parseDateInput(input.startDate);
     const matDate = addMonths(start, input.tenureMonths);
     const totalDays = daysBetween(start, matDate);
-    const daysInvested = daysBetween(start, t);
+    // Cap at maturity: a matured FD stops compounding — without the cap a
+    // 12-month FD viewed 2 years later showed valueToday > maturityValue
+    // and percentComplete > 100%.
+    const daysInvested = Math.min(Math.max(0, daysBetween(start, t)), totalDays);
     const daysRemaining = Math.max(0, daysBetween(t, matDate));
     const freq = input.compoundingFreq || 4;
     const periodsElapsed = daysInvested / (365 / freq);
@@ -163,11 +170,14 @@ export interface RdStatus {
 export function calculateRdStatus(input: RdStatusInput): RdStatus {
     const t = today();
     const start = parseDateInput(input.startDate);
-    // monthsBetween gives the gap (Dec→Apr = 4), but the first deposit
-    // happens in the starting month itself, so add 1 to include it.
-    // E.g. start Dec 2 → today Apr 13 = deposits in Dec,Jan,Feb,Mar,Apr = 5
+    // monthsBetween gives the gap (Dec→Apr = 4); the first deposit happens
+    // in the starting month itself, but the current month's deposit only
+    // counts once its day has arrived (start on the 25th, today the 18th →
+    // this month not yet deposited). Deposit day clamps to short months.
     const rawMonths = monthsBetween(start, t);
-    const monthsInvested = Math.min(input.tenureMonths, Math.max(0, rawMonths >= 0 ? rawMonths + 1 : 0));
+    const lastDayThisMonth = new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate();
+    const depositDay = Math.min(start.getDate(), lastDayThisMonth);
+    const monthsInvested = Math.min(input.tenureMonths, Math.max(0, rawMonths >= 0 ? rawMonths + (t.getDate() >= depositDay ? 1 : 0) : 0));
     const totalDeposited = monthsInvested * input.monthlyDeposit;
     const r = input.annualRate / 400; // quarterly rate
     const totalQ = Math.ceil(input.tenureMonths / 3);
@@ -239,7 +249,19 @@ export function calculatePpfStatus(input: PpfStatusInput): PpfStatus {
         balance += yearInt;
         yearEndBalances.push(balance);
     }
-    const totalDeposited = Math.min(yearsCompleted, 15) * input.yearlyDeposit;
+    // In-progress year: PPF deposits are conventionally made at the start of
+    // the account year (before the 5th for full interest), so the current
+    // year's deposit counts from the year's first month with interest for
+    // the months elapsed so far. Without this the first ~12 months showed
+    // totalDeposited = 0 and balanceToday = 0 despite money in the account.
+    const monthsIntoYear = Math.max(0, monthsBetween(open, t) - yearsCompleted * 12);
+    let depositYears = Math.min(yearsCompleted, 15);
+    if (yearsCompleted < 15) {
+        balance += input.yearlyDeposit;
+        for (let m = 0; m < monthsIntoYear; m++) { balance += balance * monthlyRate; }
+        depositYears += 1;
+    }
+    const totalDeposited = depositYears * input.yearlyDeposit;
     const interestEarned = balance - totalDeposited;
     // Full 15 year maturity
     let mat = 0;
@@ -308,7 +330,19 @@ export function calculateSsyStatus(input: SsyStatusInput): SsyStatus {
         for (let m = 0; m < 12; m++) { yearInt += balance * monthlyRate; }
         balance += yearInt;
     }
-    const totalDeposited = Math.min(accountAge, investYears) * input.yearlyDeposit;
+    // In-progress year: count the current year's deposit (deposit phase only)
+    // with interest for the months elapsed, so a freshly opened account
+    // doesn't show ₹0 deposited/balance for its entire first year.
+    const monthsIntoYear = Math.max(0, monthsBetween(open, t) - accountAge * 12);
+    let depositYears = Math.min(accountAge, investYears);
+    if (accountAge < maturityYears) {
+        if (accountAge < investYears) {
+            balance += input.yearlyDeposit;
+            depositYears += 1;
+        }
+        for (let m = 0; m < monthsIntoYear; m++) { balance += balance * monthlyRate; }
+    }
+    const totalDeposited = depositYears * input.yearlyDeposit;
     const interestEarned = balance - totalDeposited;
     let mat = 0;
     for (let y = 1; y <= maturityYears; y++) {
@@ -349,7 +383,9 @@ export interface NscStatus {
 export function calculateNscStatus(input: NscStatusInput): NscStatus {
     const t = today();
     const purch = parseDateInput(input.purchaseDate);
-    const totalMonths = monthsBetween(purch, t);
+    // Cap at the 5-year term: a matured NSC stops compounding (without the
+    // cap, a 2019 certificate viewed in 2026 kept growing past maturity).
+    const totalMonths = Math.min(60, Math.max(0, monthsBetween(purch, t)));
     const yearsCompleted = Math.min(5, Math.floor(totalMonths / 12));
     const monthsInCurrentYear = totalMonths - yearsCompleted * 12;
     const matDate = new Date(purch); matDate.setFullYear(matDate.getFullYear() + 5);
@@ -396,8 +432,10 @@ export function calculateKvpStatus(input: KvpStatusInput): KvpStatus {
     const doublingMonths = Math.ceil(Math.log(2) / Math.log(1 + r) * 12);
     const doublingDate = fmtISO(addMonths(purch, doublingMonths));
     const daysToDoubling = Math.max(0, daysBetween(t, addMonths(purch, doublingMonths)));
-    const yearsElapsed = monthsElapsed / 12;
-    const valueToday = input.principal * Math.pow(1 + r, yearsElapsed);
+    // Cap at doubling: the certificate matures once the money doubles —
+    // value must not keep compounding past 2x.
+    const yearsElapsed = Math.min(monthsElapsed, doublingMonths) / 12;
+    const valueToday = Math.min(input.principal * 2, input.principal * Math.pow(1 + r, yearsElapsed));
     const prematureEligibleDate = fmtISO(addMonths(purch, 30)); // 2.5 years
     return {
         monthsElapsed, doublingMonths, doublingDate, daysToDoubling,

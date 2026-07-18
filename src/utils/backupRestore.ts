@@ -34,6 +34,11 @@ export const BACKUP_KEYS: readonly string[] = [
     'fincalix_businesses',
     'fincalix_business_entries',
     'fincalix_recurring',
+    // Settings/preferences that change how money data is interpreted —
+    // missing these silently changed budget windows on a migrated phone.
+    'fincalix_month_start_day',    // salary-cycle month start (1-28)
+    'fincalix_entry_prefs',        // AddEntrySheet sticky defaults
+    'fincalix_cc_payoff_strategy', // chosen payoff strategy
     'fincalix_cibil_profile',
     'fincalix_property_data',
     'fincalix_world_clocks',
@@ -72,8 +77,10 @@ export interface BackupEnvelope {
 
 export interface ExportResult {
     fileName: string;
-    /** 'documents' = saved on device (native), 'download' = browser download */
-    location: 'documents' | 'download';
+    /** 'documents' = saved on device (native), 'download' = browser download,
+     *  'cache' = Documents was not writable (permission denied on Android ≤12)
+     *  and the file landed in app cache — reachable only via the Share sheet. */
+    location: 'documents' | 'download' | 'cache';
 }
 
 export interface ImportResult {
@@ -121,7 +128,17 @@ export async function exportBackup(mode: ExportMode = 'share'): Promise<ExportRe
 
     if (Capacitor.isNativePlatform()) {
         const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
+        // Android ≤12 needs the storage permission for Documents writes
+        // (Android 13+ auto-grants). Without this every Documents write was
+        // silently permission-denied on older phones.
+        try {
+            const st = await Filesystem.checkPermissions();
+            if (st.publicStorage !== 'granted') {
+                await Filesystem.requestPermissions();
+            }
+        } catch { /* API unavailable — attempt the write anyway */ }
         let uri: string;
+        let landedIn: 'documents' | 'cache' = 'documents';
         try {
             const result = await Filesystem.writeFile({
                 path: fileName,
@@ -132,8 +149,8 @@ export async function exportBackup(mode: ExportMode = 'share'): Promise<ExportRe
             });
             uri = result.uri;
         } catch {
-            // Documents can be restricted on some Android versions — fall back
-            // to app cache; the Share sheet below still lets the user save it.
+            // Documents restricted (permission denied) — fall back to app
+            // cache; the Share sheet below still lets the user save it.
             const result = await Filesystem.writeFile({
                 path: fileName,
                 data: json,
@@ -142,8 +159,12 @@ export async function exportBackup(mode: ExportMode = 'share'): Promise<ExportRe
                 recursive: true,
             });
             uri = result.uri;
+            landedIn = 'cache';
         }
-        if (mode === 'share') {
+        // If the file could only be written to cache, the user can't browse
+        // to it — open the Share sheet regardless of mode so they can still
+        // save it somewhere reachable.
+        if (mode === 'share' || landedIn === 'cache') {
             try {
                 const { Share } = await import('@capacitor/share');
                 const can = await Share.canShare();
@@ -158,7 +179,7 @@ export async function exportBackup(mode: ExportMode = 'share'): Promise<ExportRe
                 // Share dismissed or unavailable — file is already written.
             }
         }
-        return { fileName, location: 'documents' };
+        return { fileName, location: landedIn };
     }
 
     // Web: blob download
@@ -217,6 +238,16 @@ export async function runAutoBackup(): Promise<void> {
         if (localStorage.getItem(AUTO_BACKUP_LAST_KEY) === today) return; // once per day
 
         const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
+        // Never prompt for permission from a silent background task — if
+        // Documents isn't writable (Android ≤12 without the grant), skip
+        // quietly; the next manual export will trigger the permission ask.
+        try {
+            const st = await Filesystem.checkPermissions();
+            if (st.publicStorage !== 'granted') {
+                console.warn('[FinCalix] auto-backup skipped: storage permission not granted');
+                return;
+            }
+        } catch { /* API unavailable — attempt the write */ }
         const json = JSON.stringify(buildEnvelope());
         const fileName = `auto-backup-${today.replace(/-/g, '')}.json`;
         await Filesystem.writeFile({

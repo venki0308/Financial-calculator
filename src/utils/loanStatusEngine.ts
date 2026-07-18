@@ -57,6 +57,24 @@ export function calculateLiveLoanStatus(profile: LoanProfile): LiveLoanStatus {
     const disbDate = parseLocalDate(profile.disbursementDate);
     disbDate.setHours(0, 0, 0, 0);
 
+    // Corrupt/zero profiles (tampered import, legacy bug): no EMI dates can
+    // exist, and the fully-paid branch below would crash on emiDates[-1].
+    // Return the safe "not started" shape instead.
+    if (profile.tenureMonths <= 0 || profile.loanAmount <= 0) {
+        return {
+            today: fmtISO(today), emisPaid: 0, emisRemaining: 0,
+            nextEmiDate: '', daysToNextEmi: 0, lastEmiDate: '',
+            principalOutstanding: Math.max(0, profile.loanAmount), daysSinceLastEmi: 0,
+            interestAccruedToday: 0, exactPayoffToday: Math.max(0, profile.loanAmount),
+            foreclosureCharge: 0, totalSettlementToday: Math.max(0, profile.loanAmount),
+            percentComplete: 0, principalPaidSoFar: 0, interestPaidSoFar: 0,
+            totalPaidSoFar: 0, interestSavedIfCloseToday: 0,
+            nextEmiInterest: 0, nextEmiPrincipal: 0,
+            dailyInterest: 0, hourlyInterest: 0,
+            loanNotStarted: true, loanFullyPaid: false,
+        };
+    }
+
     const monthlyRate = profile.annualRate / 12 / 100;
     const dailyRate = profile.annualRate / 365 / 100;
 

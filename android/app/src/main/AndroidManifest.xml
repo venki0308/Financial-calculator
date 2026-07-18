@@ -32,4 +32,10 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Storage permission for backup writes to Documents on Android 7-12
+         (API <= 32). Android 13+ needs no permission for Documents via the
+         Capacitor Filesystem plugin, hence maxSdkVersion. Without these,
+         auto-backup and Download-to-phone silently failed on older phones. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
 </manifest>

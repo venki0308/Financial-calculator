@@ -251,7 +251,7 @@ function emptyResults(): PRAGResults {
         targetAllocation: { ...empty },
         rebalancingActions: [],
         portfolioHealthScore: 0,
-        healthGrade: 'Poor',
+        healthGrade: 'prag.gradePoor',
         currentExpectedReturn: 0,
         targetExpectedReturn: 0,
         currentVolatility: 0,

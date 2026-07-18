@@ -32,7 +32,16 @@ import {
     filterUncoveredSubBillings,
     buildSubscriptionEntriesForRange,
     formatPeriodChange,
+    getEffectiveNextDue,
 } from './expenseCalculations';
+
+/** Display-side "next renewal": nextDueDate is set once by the user and
+ *  never auto-advanced, so roll it forward to the first billing on/after
+ *  today before showing it anywhere. */
+function effectiveRenewalLabel(sub: PDFSubscription, fromISO: string): string {
+    const d = getEffectiveNextDue(sub, fromISO);
+    return d ? shortDate(d) : '—';
+}
 import { getCategoryById } from './expenseStorage';
 import { getUtilization, getDaysUntilDue, type CCCard } from './creditCardCalculations';
 import { parseLocalDate } from './dateUtils';
@@ -1394,7 +1403,7 @@ export async function generateDailyPDF(data: DailyReportData): Promise<void> {
     // Surfaces any subscription whose nextDueDate matches this report's
     // date — so the daily PDF is honest about tomorrow-morning's auto-debits.
     const dailySubs = (data.subscriptions ?? []).filter(sub =>
-        sub.isActive && sub.nextDueDate === data.date
+        sub.isActive && getEffectiveNextDue(sub, data.date) === data.date
     );
     if (dailySubs.length > 0) {
         yPos = drawSectionHeader(doc, 'Subscriptions Renewing Today', yPos);
@@ -1481,9 +1490,8 @@ export async function generateDailyPDF(data: DailyReportData): Promise<void> {
             const cycleLabel = sub.billingCycle === 'quarterly' ? 'Quarterly'
                 : sub.billingCycle === 'yearly' ? 'Yearly'
                 : 'Monthly';
-            const billsOn = sub.nextDueDate
-                ? `Next: ${shortDate(sub.nextDueDate)}`
-                : '—';
+            const nextDue = getEffectiveNextDue(sub, data.date);
+            const billsOn = nextDue ? `Next: ${shortDate(nextDue)}` : '—';
             return [sub.name, cycleLabel, formatINR(sub.amount), formatINR(monthly), billsOn];
         });
         const monthlyTotal = allActiveSubsForDay.reduce((sum, s) => {
@@ -1780,12 +1788,11 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
     // Shows every active subscription whose nextDueDate falls inside the
     // week's [startDate, endDate] window. We don't project future cycles —
     // that's the monthly PDF's job.
-    const weeklySubs = (data.subscriptions ?? []).filter(sub =>
-        sub.isActive
-        && sub.nextDueDate
-        && sub.nextDueDate >= data.startDate
-        && sub.nextDueDate <= data.endDate
-    );
+    const weeklySubs = (data.subscriptions ?? []).filter(sub => {
+        if (!sub.isActive) return false;
+        const due = getEffectiveNextDue(sub, data.startDate);
+        return !!due && due <= data.endDate;
+    });
     if (weeklySubs.length > 0) {
         yPos = drawSectionHeader(doc, 'Subscriptions Renewing This Week', yPos);
         const wsBody: (string | number)[][] = weeklySubs.map(sub => [
@@ -2032,9 +2039,9 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         if (plannedIncome > 0 || plannedFixed > 0 || plannedCategoryLimits > 0 || plannedInvestments > 0) {
             yPos = drawSectionHeader(doc, l('budgetPlanVsActual', `${data.monthLabel} Budget Plan vs Actual`).replace('{{month}}', data.monthLabel), yPos);
 
-            const varianceLabel = (planned: number, actual: number, isIncome: boolean): string => {
+            const varianceLabel = (planned: number, actual: number, isIncome: boolean, zeroLabel?: string): string => {
                 if (planned > 0 && actual === 0) {
-                    return isIncome ? l('noIncomeLogged', 'No income logged') : l('noSpendingLogged', 'No spending logged');
+                    return zeroLabel ?? (isIncome ? l('noIncomeLogged', 'No income logged') : l('noSpendingLogged', 'No spending logged'));
                 }
                 const diff = actual - planned;
                 if (diff === 0) return l('onPlan', 'On plan');
@@ -2051,7 +2058,9 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
                 body: [
                     [l('income', 'Income'), formatINR(plannedIncome), formatINR(summary.totalIncome), varianceLabel(plannedIncome, summary.totalIncome, true)],
                     [l('fixedCategoryBudgets', 'Fixed + Category Budgets'), formatINR(plannedExpenses), formatINR(actualExpensesWithSubs), varianceLabel(plannedExpenses, actualExpensesWithSubs, false)],
-                    [l('investments', 'Investments'), formatINR(plannedInvestments), formatINR(summary.totalInvestments), varianceLabel(plannedInvestments, summary.totalInvestments, true)],
+                    // "More invested than planned" is good (isIncome direction),
+                    // but the zero-actual message must not say "No income logged".
+                    [l('investments', 'Investments'), formatINR(plannedInvestments), formatINR(summary.totalInvestments), varianceLabel(plannedInvestments, summary.totalInvestments, true, 'No investments logged')],
                     [l('estNetSavings', 'Est. / Net Savings'), formatINR(estSavings), formatINR(effectiveNetSavings), varianceLabel(estSavings, effectiveNetSavings, true)],
                 ],
                 startY: yPos,
@@ -2230,8 +2239,11 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
 
     // ── NEW SECTION: 50/30/20 RULE ANALYSIS ────────────────────────────
     if (summary.totalIncome > 0 || effectiveExpenses > 0) {
-        const NEEDS_CATS = new Set(['rent_housing', 'emi_loan', 'utilities_bills', 'insurance', 'groceries', 'health_medical']);
-        const WANTS_CATS = new Set(['food_dining', 'shopping', 'entertainment', 'travel', 'personal_care', 'subscriptions']);
+        // Category ids must match DEFAULT_EXPENSE_CATEGORIES exactly —
+        // 'utilities' / 'health' / 'subscription' (singular), not the
+        // display-name-like variants that silently matched nothing.
+        const NEEDS_CATS = new Set(['rent_housing', 'emi_loan', 'utilities', 'insurance', 'groceries', 'health']);
+        const WANTS_CATS = new Set(['food_dining', 'shopping', 'entertainment', 'travel', 'personal_care', 'subscription']);
         let needsActual = 0, wantsActual = 0;
         summary.expenseByCategory.forEach(c => {
             if (NEEDS_CATS.has(c.categoryId)) needsActual += c.amount;
@@ -2358,7 +2370,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
                 formatINR(w.net),
             ];
         });
-        wBody.push([l('total', 'TOTAL'), '', formatINR(wI), formatINR(wE), formatINR(wIn), formatINR(wI - wE)]);
+        wBody.push([l('total', 'TOTAL'), '', formatINR(wI), formatINR(wE), formatINR(wIn), formatINR(wI - wE - wIn)]);
 
         table(doc, autoTable, {
             head: [[l('week', 'Week'), l('period', 'Period'), l('income', 'Income'), l('expenses', 'Expenses'), l('investments', 'Investments'), l('net', 'Net')]],
@@ -2485,7 +2497,7 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
             const monthly = sub.billingCycle === 'quarterly' ? sub.amount / 3
                 : sub.billingCycle === 'yearly' ? sub.amount / 12
                 : sub.amount;
-            const renewalLabel = sub.nextDueDate ? shortDate(sub.nextDueDate) : '—';
+            const renewalLabel = effectiveRenewalLabel(sub, getTodayStr());
             return [sub.name, cycleLabel(sub.billingCycle), formatINR(sub.amount), formatINR(monthly), renewalLabel];
         });
         subsBody.push([l('total', 'TOTAL'), '', '', formatINR(subsMonthlyTotal), `${formatINR(subsMonthlyTotal * 12)} ${l('perYear', '/ yr')}`]);
@@ -2986,7 +2998,7 @@ export async function generateAllCategoriesPDF(data: AllCategoriesReportData): P
             const cycle = sub.billingCycle === 'quarterly' ? 'Quarterly'
                 : sub.billingCycle === 'yearly' ? 'Yearly' : 'Monthly';
             return [s(sub.name), cycle, formatINR(sub.amount), formatINR(monthly),
-                sub.nextDueDate ? shortDate(sub.nextDueDate) : '—'];
+                effectiveRenewalLabel(sub, getTodayStr())];
         });
         const subMonthlyTotal = activeSubs.reduce((sum, sub) =>
             sum + (sub.billingCycle === 'quarterly' ? sub.amount / 3
@@ -3162,7 +3174,7 @@ export async function generateAppSectionPDF(data: AppSectionReportData): Promise
                 const cycle = s2.billingCycle === 'quarterly' ? 'Quarterly'
                     : s2.billingCycle === 'yearly' ? 'Yearly' : 'Monthly';
                 return [s(s2.name), cycle, formatINR(s2.amount), formatINR(monthly),
-                    s2.nextDueDate ? shortDate(s2.nextDueDate) : '—'];
+                    effectiveRenewalLabel(s2, getTodayStr())];
             });
             subBody.push(['TOTAL', '', '', formatINR(monthlyTotal), '/ month']);
             table(doc, autoTable, {
@@ -3285,6 +3297,7 @@ export async function generateAppSectionPDF(data: AppSectionReportData): Promise
             yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
         }
         // Card balances are a live snapshot, not a period aggregate.
+        yPos = ensureRoom(doc, yPos, 10);
         doc.setFontSize(7.5);
         doc.setTextColor(...MUTED);
         doc.text('Card balances are a snapshot as of the report date.', 15, yPos);
@@ -4517,8 +4530,10 @@ export function buildExpenseCSV(entries: Entry[]): string {
             e.type,
             categoryName(e.category),
             e.description || '',
-            // Raw number — spreadsheets will treat as numeric
-            Math.round(e.amount),
+            // Raw number — spreadsheets will treat as numeric. Keep paise:
+            // the CSV is the accountant's raw dump and must sum to the app's
+            // exact totals (entries allow 2 decimals).
+            Math.round(e.amount * 100) / 100,
             e.paymentMethod,
             e.accountId || '',
             e.createdAt || '',

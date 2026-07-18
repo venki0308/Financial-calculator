@@ -108,7 +108,14 @@ export default function TransactionSearch({ refreshKey = 0, onEditEntry, onClose
       .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
   }, [allEntries, query, typeFilter, range, minAmount, maxAmount, catById, t]);
 
-  const matchedTotal = useMemo(() => matched.reduce((s, e) => s + e.amount, 0), [matched]);
+  // Net of matched entries per the app's money model: income − expenses −
+  // investments, transfers excluded. (Blindly summing amounts added income
+  // to expenses and counted transfers, showing a meaningless "total".)
+  const matchedTotal = useMemo(() => matched.reduce((s, e) => {
+    if (e.type === 'income') return s + e.amount;
+    if (e.type === 'expense' || e.type === 'investment') return s - e.amount;
+    return s; // transfer — excluded from all totals
+  }, 0), [matched]);
 
   // Group the first MAX_RENDERED_ROWS by date (already sorted date-desc).
   const grouped = useMemo(() => {
@@ -264,7 +271,7 @@ export default function TransactionSearch({ refreshKey = 0, onEditEntry, onClose
           {t('expenses.searchResultCount', '{{count}} matching entries', { count: matched.length })}
         </span>
         <span className="text-[11px] font-bold" style={{ color: et.textSecondary }}>
-          {t('expenses.searchTotalLabel', 'Total')}: {fmtINR(matchedTotal)}
+          {t('expenses.searchNetLabel', 'Net')}: {matchedTotal >= 0 ? '+' : ''}{fmtINR(matchedTotal)}
         </span>
       </div>
 

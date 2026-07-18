@@ -171,12 +171,24 @@ export interface PayoffResult {
   totalPaid: number;
   payoffOrder: Array<{ id: string; name: string; month: number; interest: number }>;
   schedule: PayoffMonthRow[];
+  /** True when the 600-month simulation cap was hit with balance remaining
+   *  (budget below interest accrual) — the debt never pays off at this rate. */
+  neverPaysOff?: boolean;
 }
 
 function runPayoffStrategy(
   cards: PayoffCardInput[],
   monthlyBudget: number,
-  sortFn: (a: PayoffCardInput, b: PayoffCardInput) => number
+  sortFn: (a: PayoffCardInput, b: PayoffCardInput) => number,
+  opts?: {
+    /** 'priority' (default): surplus goes to the sortFn-priority card.
+     *  'proportional': surplus is split across cards by balance share —
+     *  the actual "Equal" strategy semantics. */
+    distribute?: 'priority' | 'proportional';
+    /** Pay ONLY each month's dynamic minimum due — never route surplus.
+     *  monthlyBudget is ignored (used only to pass the >0 guard). */
+    minimumOnly?: boolean;
+  },
 ): PayoffResult {
   if (cards.length === 0 || monthlyBudget <= 0) {
     return { strategy: '', totalMonths: 0, totalInterest: 0, totalPaid: 0, payoffOrder: [], schedule: [] };
@@ -185,7 +197,6 @@ function runPayoffStrategy(
   // Clone balances
   const bals: Record<string, number> = {};
   const rates: Record<string, number> = {};
-  const mins: Record<string, number> = {};
   const names: Record<string, string> = {};
   const active = new Set<string>();
 
@@ -193,7 +204,6 @@ function runPayoffStrategy(
     if (c.balance > 0) {
       bals[c.id] = c.balance;
       rates[c.id] = c.apr;
-      mins[c.id] = c.minDue;
       names[c.id] = c.name;
       active.add(c.id);
     }
@@ -231,17 +241,37 @@ function runPayoffStrategy(
       budget -= minPay;
     }
 
-    // 3. Apply extra to priority card
-    if (budget > 0) {
-      for (const c of sorted) {
-        if (!active.has(c.id)) continue;
-        const extra = Math.min(budget, bals[c.id]);
-        if (extra > 0) {
-          payments[c.id] = (payments[c.id] || 0) + extra;
-          bals[c.id] -= extra;
-          budget -= extra;
+    // 3. Apply surplus — skipped entirely in minimum-only mode
+    if (!opts?.minimumOnly && budget > 0) {
+      if (opts?.distribute === 'proportional') {
+        // Equal strategy: split the surplus across all active cards in
+        // proportion to their current balances.
+        const totalBal = [...active].reduce((s, id) => s + bals[id], 0);
+        if (totalBal > 0) {
+          const surplus = budget;
+          for (const id of active) {
+            const share = Math.min(bals[id], surplus * (bals[id] / totalBal), budget);
+            if (share > 0) {
+              payments[id] = (payments[id] || 0) + share;
+              bals[id] -= share;
+              budget -= share;
+            }
+          }
         }
-        if (budget <= 0) break;
+      }
+      // Priority mode, plus any proportional residue left by clamping:
+      // goes to the sortFn-priority card(s).
+      if (budget > 0.005) {
+        for (const c of sorted) {
+          if (!active.has(c.id)) continue;
+          const extra = Math.min(budget, bals[c.id]);
+          if (extra > 0) {
+            payments[c.id] = (payments[c.id] || 0) + extra;
+            bals[c.id] -= extra;
+            budget -= extra;
+          }
+          if (budget <= 0) break;
+        }
       }
     }
 
@@ -279,6 +309,7 @@ function runPayoffStrategy(
     totalPaid: Math.round(totalPaid),
     payoffOrder,
     schedule,
+    neverPaysOff: active.size > 0,
   };
 }
 
@@ -304,22 +335,22 @@ export function calculateHybrid(cards: PayoffCardInput[], budget: number): Payof
 }
 
 export function calculateEqual(cards: PayoffCardInput[], budget: number): PayoffResult {
-  // For equal distribution, modify mins proportionally — clamp to budget
-  const totalBalance = cards.reduce((s, c) => s + c.balance, 0);
-  if (totalBalance <= 0) return { strategy: 'equal', totalMonths: 0, totalInterest: 0, totalPaid: 0, payoffOrder: [], schedule: [] };
-  const rawMins = cards.map(c => Math.max(c.minDue, Math.round(budget * (c.balance / totalBalance))));
-  const rawTotal = rawMins.reduce((s, v) => s + v, 0);
-  // Normalize so total doesn't exceed budget
-  const scale = rawTotal > budget ? budget / rawTotal : 1;
-  const adjusted = cards.map((c, i) => ({ ...c, minDue: Math.round(rawMins[i] * scale) }));
-  const result = runPayoffStrategy(adjusted, budget, (a, b) => b.apr - a.apr);
+  // True equal distribution: after minimums, the surplus is split across
+  // cards in proportion to their balances (the old minDue-override approach
+  // was silently ignored by the simulator, making "equal" identical to
+  // avalanche).
+  const result = runPayoffStrategy(cards, budget, (a, b) => b.apr - a.apr, { distribute: 'proportional' });
   result.strategy = 'equal';
   return result;
 }
 
 export function calculateMinimumOnly(cards: PayoffCardInput[]): PayoffResult {
+  // True minimum-only behavior: pay each month's dynamically recalculated
+  // minimum due and NOTHING more (the old version routed the gap between
+  // the static and dynamic minimum as a prepayment, paying off far faster
+  // than real minimum-payment behavior).
   const totalMin = cards.reduce((s, c) => s + c.minDue, 0);
-  const result = runPayoffStrategy(cards, totalMin, (a, b) => b.apr - a.apr);
+  const result = runPayoffStrategy(cards, Math.max(1, totalMin), (a, b) => b.apr - a.apr, { minimumOnly: true });
   result.strategy = 'minimum';
   return result;
 }

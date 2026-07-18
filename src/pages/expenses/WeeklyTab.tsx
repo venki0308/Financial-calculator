@@ -12,6 +12,7 @@ import {
   formatFullDate, DAY_NAMES,
   getUnloggedSubsForRange,
   buildSubscriptionEntriesForRange,
+  filterUncoveredSubBillings,
   calcPeriodChange,
   getTodayStr,
 } from '../../utils/expenseCalculations';
@@ -128,10 +129,19 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
   /** Synthetic Entry-shaped objects for every sub billing in [week.start, week.end].
    *  These are merged into the day-by-day chart and the "All Entries" log so the
    *  user sees recurring subs inline with their manually logged entries. Only
-   *  billings on-or-before today are included (upcoming subs are skipped). */
+   *  billings on-or-before today are included (upcoming subs are skipped).
+   *  filterUncoveredSubBillings drops billings the user ALSO logged manually
+   *  as a 'subscription'-category expense — without it the chart and entry
+   *  list double-counted those while the deduped headline total didn't,
+   *  making the tab internally inconsistent. */
   const weekSubEntries = useMemo(
-    () => buildSubscriptionEntriesForRange(subscriptions, week.start, week.end, todayISO),
-    [subscriptions, week.start, week.end, todayISO],
+    () => filterUncoveredSubBillings(
+      buildSubscriptionEntriesForRange(subscriptions, week.start, week.end, todayISO),
+      weekEntries,
+      week.start,
+      week.end,
+    ),
+    [subscriptions, week.start, week.end, todayISO, weekEntries],
   );
   const weekSubsBilled = useMemo(
     () => getUnloggedSubsForRange(weekEntries, subscriptions, week.start, week.end, todayISO),

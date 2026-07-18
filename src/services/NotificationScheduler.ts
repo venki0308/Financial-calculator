@@ -86,7 +86,16 @@ function checkEMIReminders() {
             });
         });
     } else if ([1, 5, 15].includes(dayOfMonth)) {
-        // Fallback generic reminder if no custom ones matched today
+        // Fallback generic reminder — ONLY for users who actually track a
+        // loan. A SIP-only user must not get "EMI due" alerts for debts
+        // they don't have.
+        let hasLoans = false;
+        try {
+            const raw = localStorage.getItem('fincalix_my_loans');
+            const parsed = raw ? JSON.parse(raw) : null;
+            hasLoans = Array.isArray(parsed) && parsed.length > 0;
+        } catch { /* corrupt data → treat as no loans */ }
+        if (!hasLoans) return;
         addNotif({
             type: 'emi_reminder',
             title: '💳 EMI Reminder',
@@ -181,7 +190,10 @@ function checkTaxAlerts() {
 
 function checkSavingsInsight() {
     if (!useSettingsStore.getState().notifications.calcReminders) return;
-    const savedCalcs = localStorage.getItem('fincalix-calculator-store');
+    // The store persists to 'calculator-storage'; 'fincalix-calculator-store'
+    // is the pre-rename legacy key — accept either so post-rename installs
+    // still get the tip.
+    const savedCalcs = localStorage.getItem('calculator-storage') || localStorage.getItem('fincalix-calculator-store');
     if (!savedCalcs) return;
 
     addNotif({
@@ -195,7 +207,18 @@ function checkSavingsInsight() {
 
 async function checkDailyQuote() {
     const settings = useSettingsStore.getState();
-    if (!settings.notifications.dailyQuotes) return;
+    if (!settings.notifications.dailyQuotes) {
+        // Toggle OFF must also cancel the already-scheduled 14-day batch —
+        // otherwise quotes keep firing for up to two weeks after disabling.
+        if (Capacitor.isNativePlatform()) {
+            try {
+                const pending = await LocalNotifications.getPending();
+                const quoteIds = pending.notifications.filter(n => n.id >= 1000 && n.id < 1100).map(n => ({ id: n.id }));
+                if (quoteIds.length > 0) await LocalNotifications.cancel({ notifications: quoteIds });
+            } catch { /* nothing scheduled / no permission — fine */ }
+        }
+        return;
+    }
 
     // Accept both locale codes ('en','hi') and legacy display names ('English','Hindi')
     const langMap: Record<string, 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml'> = {
@@ -231,7 +254,11 @@ async function checkDailyQuote() {
                     const quote = dailyQuotes[quoteIndex];
 
                     notifications.push({
-                        id: 1000 + quoteIndex,
+                        // id by batch offset (1000..1013), NOT quote index —
+                        // dayOfYear % 60 restarts at the year boundary, so a
+                        // late-December batch produced duplicate ids and
+                        // silently overwrote some days' quotes.
+                        id: 1000 + i,
                         title: '💡 FinCalix Daily Quote',
                         body: String(quote[langKey]),
                         schedule: { at: targetDate }

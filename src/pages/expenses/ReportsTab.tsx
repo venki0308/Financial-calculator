@@ -115,8 +115,12 @@ export default function ReportsTab() {
     setRefreshKey((k) => k + 1);
   }, []);
 
-  const currentEntries = useMemo(() => getEntriesForMonth(currentMonth.year, currentMonth.month), [currentMonth.year, currentMonth.month, refreshKey]);
-  const prevEntries = useMemo(() => getEntriesForMonth(prevMonth.year, prevMonth.month), [prevMonth.year, prevMonth.month, refreshKey]);
+  // Range-based fetch (NOT calendar getEntriesForMonth): getMonthRange is
+  // salary-cycle aware, so for month-start-day > 1 users the overview must
+  // use the same 5th-to-4th window the Monthly/Budget tabs use — otherwise
+  // health score, insights and MoM comparisons disagree with those tabs.
+  const currentEntries = useMemo(() => getEntriesForDateRange(currentMonth.start, currentMonth.end), [currentMonth.start, currentMonth.end, refreshKey]);
+  const prevEntries = useMemo(() => getEntriesForDateRange(prevMonth.start, prevMonth.end), [prevMonth.start, prevMonth.end, refreshKey]);
   const allEntries = useMemo(() => getAllEntries(), [refreshKey]);
   const accounts = useMemo(() => getAllAccounts(), [refreshKey]);
   const loans = useMemo(() => getAllLoans(), [refreshKey]);
@@ -167,7 +171,8 @@ export default function ReportsTab() {
     const snapshots: MonthSnapshot[] = [];
     for (let i = 0; i < 6; i++) {
       const range = getMonthRange(-i);
-      const entries = getEntriesForMonth(range.year, range.month);
+      // Range-based for salary-cycle correctness (see note above).
+      const entries = getEntriesForDateRange(range.start, range.end);
       const summary = calculateSummary(entries);
       snapshots.push({
         month: range.monthStr,
@@ -718,8 +723,8 @@ export default function ReportsTab() {
       subtitle: new Date(reportDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
       icon: Calendar,
       tint: { bg: isDark ? 'rgba(59,130,246,0.1)' : '#EFF6FF', border: isDark ? 'rgba(59,130,246,0.2)' : '#BFDBFE', accent: '#3b82f6' },
-      onPrev: () => { const d = new Date(reportDate); d.setDate(d.getDate() - 1); setReportDate(toLocalDateStr(d)); },
-      onNext: () => { const d = new Date(reportDate); d.setDate(d.getDate() + 1); if (d <= new Date()) setReportDate(toLocalDateStr(d)); },
+      onPrev: () => { const d = new Date(reportDate + 'T00:00:00'); d.setDate(d.getDate() - 1); setReportDate(toLocalDateStr(d)); },
+      onNext: () => { const d = new Date(reportDate + 'T00:00:00'); d.setDate(d.getDate() + 1); if (d <= new Date()) setReportDate(toLocalDateStr(d)); },
     },
     {
       type: 'weekly' as const,

@@ -546,17 +546,40 @@ export const getSubBillingDatesInRange = (
   const stepMonths = cycleMonths(sub.billingCycle);
   const dates: string[] = [];
 
-  // Walk forward from firstBilling, one cycle at a time, collecting
-  // every date that lands inside the requested range.
-  let cursor = firstBilling;
+  // Walk forward from firstBilling, one cycle at a time. Each date is
+  // computed from the ORIGINAL anchor by index (addMonthsISO(first, n*step)),
+  // never by re-stepping the previous clamped date — stepping Jan 31 →
+  // Feb 28 → then +1 month from the 28th would drift the billing day to
+  // the 28th permanently.
   let safety = 0;
+  let cursor = firstBilling;
   while (cursor <= endISO && safety < 240) {
     if (cursor >= startISO) dates.push(cursor);
-    cursor = addMonthsISO(cursor, stepMonths);
     safety++;
+    cursor = addMonthsISO(firstBilling, stepMonths * safety);
   }
 
   return dates;
+};
+
+/** The first billing date on or after `fromISO` for this sub — the TRUE
+ *  "next renewal" for display. `nextDueDate` is set once by the user and
+ *  never auto-advanced, so past-dated subs would otherwise show a stale
+ *  renewal date forever. Returns null for inactive/dateless subs. */
+export const getEffectiveNextDue = (
+  sub: BillingDateSubscription,
+  fromISO: string,
+): string | null => {
+  if (!sub.isActive || !sub.nextDueDate) return null;
+  const first = getSubFirstBillingISO(sub);
+  if (!first) return null;
+  if (first >= fromISO) return first;
+  const stepMonths = cycleMonths(sub.billingCycle);
+  for (let i = 1; i <= 240; i++) {
+    const d = addMonthsISO(first, stepMonths * i);
+    if (d >= fromISO) return d;
+  }
+  return null;
 };
 
 /** Sum the cash actually billed (or projected to bill) for a single sub
@@ -969,7 +992,7 @@ export const calculateFinancialHealth = (
 ): FinancialHealthScore => {
   const { totalIncome, totalExpenses, totalInvestments, savingsRate, investmentRate } = summary;
 
-  // 1. Savings Score (0–25) — target ≥20% savings rate
+  // 1. Savings Score (0–25) — full 25 points at a 30% savings rate
   const savingsScore = Math.min(25, Math.round((Math.max(0, savingsRate) / 30) * 25));
 
   // 2. Debt Score (0–25) — EMI-to-income ratio (lower = better)
@@ -986,7 +1009,7 @@ export const calculateFinancialHealth = (
     ? Math.round(17 - ((debtToIncomeRatio - 30) / 20) * 12)
     : Math.max(0, Math.round(5 - ((debtToIncomeRatio - 50) / 50) * 5));
 
-  // 3. Investment Score (0–25) — target ≥15% of income
+  // 3. Investment Score (0–25) — full 25 points at a 20% investment rate
   const investmentScore = Math.min(25, Math.round((Math.max(0, investmentRate) / 20) * 25));
 
   // 4. Budget Adherence Score (0–25)
@@ -1112,20 +1135,22 @@ const countEmisPaid = (disbursementDate: string, emiDueDay: number, tenureMonths
   const now = new Date();
   if (now < disb) return 0;
 
+  // Each EMI month is derived from an INDEX off the disbursement month, never
+  // by advancing a cursor that sits on day 29-31 (setMonth on Jan 31 lands in
+  // March, silently skipping February and undercounting EMIs for due-days
+  // 29-31). First EMI = disbursement month + 1, on emiDueDay clamped to the
+  // month's length — same convention as loanStatusEngine.
   let count = 0;
-  // First EMI is one month after disbursement, on emiDueDay (clamped to month length)
-  const cursor = new Date(disb.getFullYear(), disb.getMonth() + 1, 1);
-  for (let i = 0; i < tenureMonths; i++) {
-    const lastDay = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0).getDate();
-    cursor.setDate(Math.min(emiDueDay, lastDay));
-    if (cursor <= now) {
+  const baseY = disb.getFullYear();
+  const baseM = disb.getMonth();
+  for (let i = 1; i <= tenureMonths; i++) {
+    const lastDay = new Date(baseY, baseM + i + 1, 0).getDate();
+    const due = new Date(baseY, baseM + i, Math.min(emiDueDay, lastDay));
+    if (due <= now) {
       count++;
     } else {
       break;
     }
-    // Advance to next month
-    cursor.setMonth(cursor.getMonth() + 1);
-    cursor.setDate(1);
   }
   return count;
 };

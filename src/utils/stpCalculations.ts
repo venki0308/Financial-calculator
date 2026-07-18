@@ -110,9 +110,9 @@ export function calculateSTP(inputs: STPInputs): STPResults {
         } else if (stpType === 'flex') {
             const base = flexBaseAmount || transferAmount;
             const mult = flexMultiplier || 1.5;
-            // Flex STP: alternate between base and boosted amount
-            // In real markets, fund houses increase STP when P/E drops
-            // We simulate: odd installments = normal, even = boosted (averaging effect)
+            // Flex STP: periodically boosted transfers (simulating fund houses
+            // increasing STP when valuations dip). Every 3rd installment is
+            // boosted to the multiplier; the rest stay at base.
             transfer = i % 3 === 0 ? base * mult : base;
         } else {
             transfer = transferAmount;

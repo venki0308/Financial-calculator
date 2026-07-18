@@ -121,6 +121,21 @@ export default function LegalLayout({
             document.head.appendChild(link);
         }
         document.title = `${title} — FinCalix`;
+        // Per-route canonical + meta description. Without this, every legal
+        // page shipped the homepage's <head> including canonical
+        // "https://fincalix.com" — telling Google these sitemap-listed URLs
+        // are duplicates of the homepage. Restore on unmount so SPA
+        // navigation back to the landing page keeps its own tags.
+        const canonicalEl = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+        const prevCanonical = canonicalEl?.getAttribute('href') ?? null;
+        canonicalEl?.setAttribute('href', `https://fincalix.com${window.location.pathname}`);
+        const descEl = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+        const prevDesc = descEl?.getAttribute('content') ?? null;
+        descEl?.setAttribute('content', `${title} — FinCalix, India's private offline financial calculator and expense tracker app. All data stays on your device.`);
+        return () => {
+            if (prevCanonical) canonicalEl?.setAttribute('href', prevCanonical);
+            if (prevDesc) descEl?.setAttribute('content', prevDesc);
+        };
     }, [title]);
 
     return (

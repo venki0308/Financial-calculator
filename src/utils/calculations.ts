@@ -251,11 +251,13 @@ export function formatINR(v: number): string {
 export function formatINRShort(v: number): string {
     const sym = '₹';
     const abs = Math.abs(Math.round(v));
-    if (abs >= 10000000) {
+    // Promote to the next unit when 1-decimal rounding would hit 100
+    // (99,99,999 must render ₹1Cr, not ₹100.0L; 99,950 → ₹1L, not ₹100.0K).
+    if (abs >= 10000000 || Math.round(abs / 100000) >= 100) {
         const cr = abs / 10000000;
         return `${sym}${cr % 1 === 0 ? cr.toFixed(0) : cr.toFixed(1)}Cr`;
     }
-    if (abs >= 100000) {
+    if (abs >= 100000 || Math.round(abs / 1000) >= 100) {
         const lakh = abs / 100000;
         return `${sym}${lakh % 1 === 0 ? lakh.toFixed(0) : lakh.toFixed(1)}L`;
     }

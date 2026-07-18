@@ -90,6 +90,8 @@ export default function Settings() {
             const result = await exportBackup(mode);
             showToast(result.location === 'documents'
                 ? t('settings.backupSavedNative', 'Backup saved: {{file}}', { file: result.fileName })
+                : result.location === 'cache'
+                ? t('settings.backupSavedCache', 'Storage not accessible — use the Share sheet to save {{file}}', { file: result.fileName })
                 : t('settings.backupSavedWeb', 'Backup downloaded: {{file}}', { file: result.fileName }));
         } catch (e) {
             console.error('Backup export failed:', e);
@@ -185,10 +187,22 @@ export default function Settings() {
             'fincalix_scheduler_last_run',
             'fincalix_notif_perm_requested',
             'fincalix_pending_nav',
+            // Preferences that survive a clear looked like ghost data from
+            // the previous owner — wipe them too.
+            'fincalix_month_start_day',
+            'fincalix_entry_prefs',
+            'fincalix_cc_payoff_strategy',
+            'fincalix_auto_backup_last',
             // Dev access (only meaningful in dev builds)
             'fincalix_dev_access',
         ];
         storeKeys.forEach((key) => localStorage.removeItem(key));
+        // dataIntegrity writes timestamped *_corrupted_backup_* copies that
+        // no list can enumerate — sweep them by prefix pattern.
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key && key.includes('_corrupted_backup_')) localStorage.removeItem(key);
+        }
         setShowClearConfirm(false);
         setShowClearConfirmFinal(false);
         // Reload the page to reset all in-memory state
