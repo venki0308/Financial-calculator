@@ -42,6 +42,15 @@ export const getAllLoans = (): SavedLoan[] => {
     } catch { return []; }
 };
 
+/** Fire-and-forget native reminder re-sync so a just-saved loan gets its
+ *  EMI reminders NOW instead of on the next app launch. Dynamic import
+ *  avoids a static cycle (NotificationScheduler imports getAllLoans). */
+const refreshNativeReminders = (): void => {
+    void import('../services/NotificationScheduler')
+        .then(m => m.NotificationScheduler.refreshReminders())
+        .catch(() => { /* scheduler unavailable (tests/web) — next launch covers it */ });
+};
+
 export const saveLoan = (loan: SavedLoan): void => {
     const loans = getAllLoans();
     const index = loans.findIndex(l => l.id === loan.id);
@@ -56,6 +65,7 @@ export const saveLoan = (loan: SavedLoan): void => {
         // QuotaExceededError — localStorage is full
         console.warn('[LoanStorage] localStorage full, cannot save loan');
     }
+    refreshNativeReminders();
 };
 
 export const deleteLoan = (id: string): void => {
@@ -65,6 +75,7 @@ export const deleteLoan = (id: string): void => {
     } catch {
         console.warn('[LoanStorage] localStorage full, cannot update loans');
     }
+    refreshNativeReminders();
 };
 
 export const getLoanById = (id: string): SavedLoan | null => {

@@ -575,10 +575,15 @@ async function ensureNativeNotificationsReady(): Promise<boolean> {
     try {
         let perm = await LocalNotifications.checkPermissions();
         if (perm.display === 'prompt' || perm.display === 'prompt-with-rationale') {
-            if (!localStorage.getItem(PERM_REQUESTED_KEY)) {
-                localStorage.setItem(PERM_REQUESTED_KEY, '1');
-                perm = await LocalNotifications.requestPermissions();
-            }
+            // Request whenever the OS still reports 'prompt' — a state that
+            // means the system dialog CAN be shown. The old one-shot
+            // PERM_REQUESTED_KEY gate permanently disabled every native
+            // notification when the first dialog was dismissed (or fired at
+            // a bad cold-boot moment): state stayed 'prompt' but we never
+            // asked again. A real denial reports 'denied', which we honor —
+            // the OS blocks re-prompting after that anyway.
+            localStorage.setItem(PERM_REQUESTED_KEY, '1');
+            perm = await LocalNotifications.requestPermissions();
         }
         return perm.display === 'granted';
     } catch {
@@ -729,6 +734,28 @@ async function scheduleDailyLogReminders(): Promise<void> {
 }
 
 export const NotificationScheduler = {
+    /**
+     * Re-sync the native 7-day reminder window + evening log reminders NOW.
+     * Called after a loan/card/subscription is saved so the user doesn't
+     * have to relaunch the app before the new reminders exist. No-op on web
+     * or when notification permission isn't granted.
+     */
+    async refreshReminders(): Promise<void> {
+        if (!Capacitor.isNativePlatform()) return;
+        try {
+            const granted = await ensureNativeNotificationsReady();
+            // checkDailyQuote self-gates on its toggle AND handles the
+            // toggle-off cancellation — run it even when permission is
+            // missing so a disable still clears any stale pending batch.
+            try { await checkDailyQuote(); } catch { /* isolated */ }
+            if (!granted) return;
+            await scheduleUpcomingNativeReminders();
+            await scheduleDailyLogReminders();
+        } catch (e) {
+            console.error('Reminder refresh failed', e);
+        }
+    },
+
     initialize() {
         // Always seed for first-time users
         seedInitialNotifications();

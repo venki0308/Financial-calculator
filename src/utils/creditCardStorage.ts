@@ -27,6 +27,15 @@ export function getCreditCardById(id: string): CCCard | null {
 
 // ─── Write ───────────────────────────────────────────────────────────────────
 
+/** Fire-and-forget native reminder re-sync so a just-saved card gets its
+ *  due-date reminders NOW instead of on the next app launch. Dynamic import
+ *  avoids a static cycle (NotificationScheduler imports getAllCreditCards). */
+function refreshNativeReminders(): void {
+  void import('../services/NotificationScheduler')
+    .then(m => m.NotificationScheduler.refreshReminders())
+    .catch(() => { /* scheduler unavailable — next launch covers it */ });
+}
+
 export function saveCreditCard(card: CCCard): void {
   const all = getAllRaw();
   const idx = all.findIndex(c => c.id === card.id);
@@ -41,6 +50,7 @@ export function saveCreditCard(card: CCCard): void {
   } catch {
     console.warn('[CCStorage] localStorage full');
   }
+  refreshNativeReminders();
 }
 
 export function deleteCreditCard(id: string): void {
@@ -54,6 +64,7 @@ export function deleteCreditCard(id: string): void {
     } catch {
       console.warn('[CCStorage] localStorage full');
     }
+    refreshNativeReminders();
   }
 }
 

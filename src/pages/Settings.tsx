@@ -448,6 +448,12 @@ export default function Settings() {
                                     // never re-enable the bell-only toggles.
                                     if (!granted && (key === 'dailyQuotes' || key === 'logReminder')) setNotification(key, false);
                                 }
+                                // Apply immediately — previously nothing was (re)scheduled
+                                // until the NEXT app launch, so an enabled toggle looked
+                                // dead for a day and a disabled one kept firing.
+                                void import('../services/NotificationScheduler')
+                                    .then(m => m.NotificationScheduler.refreshReminders())
+                                    .catch(() => { /* next launch covers it */ });
                             }} className={`w-12 h-7 rounded-full p-0.5 transition-colors flex-shrink-0 ${notifications[key] ? 'bg-brand-green' : 'bg-slate-600'}`}>
                                 <motion.div layout className={`w-6 h-6 rounded-full bg-white shadow-md ${notifications[key] ? 'ml-auto' : 'ml-0'}`} />
                             </button>
