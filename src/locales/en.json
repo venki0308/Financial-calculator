@@ -575,6 +575,7 @@
         "incomeSourceLabel": "Income Source",
         "investedAmount": "Invested {{amount}} ({{pct}} of income)",
         "expensesLabel": "Expenses",
+        "appSections": "App Sections",
         "downloadAllCategories": "All Categories - One Report",
         "investmentsLabel": "Investments",
         "categoryReport": "Category Report",

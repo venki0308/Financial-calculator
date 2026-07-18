@@ -41,6 +41,7 @@ import {
   generateExpenseCSV,
   generateCategoryPDF,
   generateAllCategoriesPDF,
+  generateAppSectionPDF,
 } from '../../utils/expenseReportPDF';
 import { getEnglishT } from '../../utils/exportReport';
 import type { PDFSubscription } from '../../utils/expenseReportPDF';
@@ -51,7 +52,7 @@ import type { PDFSubscription } from '../../utils/expenseReportPDF';
 import { useBudgetTrackerStore } from '../../store/useBudgetTrackerStore';
 import { getAllCreditCards } from '../../utils/creditCardStorage';
 import { getAllRules } from '../../utils/recurringStorage';
-import { getAllBusinesses, getAllBizEntries, BUSINESS_TYPE_META } from '../../utils/businessStorage';
+import { getAllBusinesses, getAllBizEntries, getBizCategoryById, BUSINESS_TYPE_META } from '../../utils/businessStorage';
 import { getCategoryById } from '../../utils/expenseStorage';
 import SVGPieChart from '../../components/charts/SVGPieChart';
 import HealthScoreGauge from '../../components/charts/HealthScoreGauge';
@@ -87,6 +88,11 @@ export default function ReportsTab() {
   // category's transactions for the selected month.
   const [catReportMonthOffset, setCatReportMonthOffset] = useState(0);
   const [reportCategoryId, setReportCategoryId] = useState('');
+  // Period for the category/app-section reports (daily/weekly/monthly/annual)
+  const [catPeriod, setCatPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'annual'>('monthly');
+  const [catReportDate, setCatReportDate] = useState(getTodayStr());
+  const [catWeekOffset, setCatWeekOffset] = useState(0);
+  const [catYearOffset, setCatYearOffset] = useState(0);
   const [activeSection, setActiveSection] = useState<ReportSection>('overview');
 
   // Custom date range
@@ -184,6 +190,47 @@ export default function ReportsTab() {
   const selectedWeek = getWeekRange(reportWeekOffset);
   const selectedYear = getYearRange(reportYearOffset);
   const selectedCatMonth = getMonthRange(catReportMonthOffset);
+
+  // Selected range for the category/app-section reports, per period type.
+  const catRange = useMemo(() => {
+    if (catPeriod === 'daily') {
+      const label = new Date(catReportDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      return { periodType: 'daily' as const, startDate: catReportDate, endDate: catReportDate, label, monthStr: '' };
+    }
+    if (catPeriod === 'weekly') {
+      const w = getWeekRange(catWeekOffset);
+      return { periodType: 'weekly' as const, startDate: w.start, endDate: w.end, label: w.label, monthStr: '' };
+    }
+    if (catPeriod === 'annual') {
+      const yr = getYearRange(catYearOffset);
+      return { periodType: 'annual' as const, startDate: yr.start, endDate: yr.end, label: String(yr.year), monthStr: '' };
+    }
+    return {
+      periodType: 'monthly' as const,
+      startDate: selectedCatMonth.start,
+      endDate: selectedCatMonth.end,
+      label: selectedCatMonth.label,
+      monthStr: selectedCatMonth.monthStr,
+    };
+  }, [catPeriod, catReportDate, catWeekOffset, catYearOffset, selectedCatMonth.start, selectedCatMonth.end, selectedCatMonth.label, selectedCatMonth.monthStr]);
+
+  const catNavPrev = () => {
+    if (catPeriod === 'daily') { const d = new Date(catReportDate + 'T00:00:00'); d.setDate(d.getDate() - 1); setCatReportDate(toLocalDateStr(d)); }
+    else if (catPeriod === 'weekly') setCatWeekOffset(o => o - 1);
+    else if (catPeriod === 'annual') setCatYearOffset(o => o - 1);
+    else setCatReportMonthOffset(o => o - 1);
+  };
+  const catNavNextDisabled = catPeriod === 'daily' ? catReportDate >= getTodayStr()
+    : catPeriod === 'weekly' ? catWeekOffset >= 0
+    : catPeriod === 'annual' ? catYearOffset >= 0
+    : catReportMonthOffset >= 0;
+  const catNavNext = () => {
+    if (catNavNextDisabled) return;
+    if (catPeriod === 'daily') { const d = new Date(catReportDate + 'T00:00:00'); d.setDate(d.getDate() + 1); setCatReportDate(toLocalDateStr(d)); }
+    else if (catPeriod === 'weekly') setCatWeekOffset(o => o + 1);
+    else if (catPeriod === 'annual') setCatYearOffset(o => o + 1);
+    else setCatReportMonthOffset(o => o + 1);
+  };
 
   // Active categories for the category-report picker, expenses first.
   const reportCategories = useMemo(() => {
@@ -499,23 +546,68 @@ export default function ReportsTab() {
   // Category report — only the selected category's transactions for the
   // selected month (user feedback: statistics alone weren't enough; picking
   // a category must export just that category's expenses).
+  // Shared builders for the app-section report data (subscriptions /
+  // recurring / cards / business) over the currently selected range.
+  const buildRecurringForReport = () => getAllRules()
+    .filter(r => r.isActive)
+    .map(r => ({
+      label: r.note?.trim() || getCategoryById(r.category)?.name || r.category,
+      type: (r.type === 'income' ? 'income' : 'expense') as 'income' | 'expense',
+      frequency: r.frequency,
+      amount: r.amount,
+      nextDueDate: r.nextDueDate,
+    }));
+
+  const buildBusinessEntriesForReport = () => {
+    const inRange = getAllBizEntries().filter(e => e.date >= catRange.startDate && e.date <= catRange.endDate);
+    return getAllBusinesses().map(b => ({
+      name: b.name,
+      typeLabel: BUSINESS_TYPE_META[b.type]?.label ?? b.type,
+      entries: inRange.filter(e => e.businessId === b.id).map(e => ({
+        date: e.date,
+        type: e.type,
+        categoryLabel: getBizCategoryById(e.category)?.label ?? e.category,
+        note: e.note,
+        amount: e.amount,
+      })),
+    }));
+  };
+
   const handleGenerateCategory = async () => {
-    if (!selectedReportCategory) return;
+    if (!reportCategoryId) return;
     setGenerating('category');
     try {
-      const entries = getEntriesForMonth(selectedCatMonth.year, selectedCatMonth.month);
-      const monthBudget = getBudgetForMonth(selectedCatMonth.monthStr);
+      // App-section reports (Subscriptions / Recurring / Cards / Business)
+      if (reportCategoryId.startsWith('special:')) {
+        const kind = reportCategoryId.slice('special:'.length) as 'subscriptions' | 'recurring' | 'cards' | 'business';
+        await generateAppSectionPDF({
+          kind,
+          periodType: catRange.periodType,
+          periodLabel: catRange.label,
+          startDate: catRange.startDate,
+          endDate: catRange.endDate,
+          subscriptions: pdfSubscriptions,
+          recurring: buildRecurringForReport(),
+          recurringEntries: getEntriesForDateRange(catRange.startDate, catRange.endDate).filter(e => !!e.recurringId),
+          creditCards: getAllCreditCards().filter(c => c.isActive),
+          businesses: buildBusinessEntriesForReport(),
+        });
+        return;
+      }
+      if (!selectedReportCategory) return;
+      const entries = getEntriesForDateRange(catRange.startDate, catRange.endDate);
       await generateCategoryPDF({
-        year: selectedCatMonth.year,
-        month: selectedCatMonth.month,
-        monthLabel: selectedCatMonth.label,
+        periodType: catRange.periodType,
+        periodLabel: catRange.label,
+        startDate: catRange.startDate,
+        endDate: catRange.endDate,
         category: {
           id: selectedReportCategory.id,
           name: selectedReportCategory.name,
           type: selectedReportCategory.type,
         },
         entries,
-        budget: monthBudget,
+        budget: catRange.periodType === 'monthly' ? getBudgetForMonth(catRange.monthStr) : undefined,
       });
     } catch (err) {
       console.error('Category report generation failed:', err);
@@ -529,46 +621,30 @@ export default function ReportsTab() {
   const handleGenerateAllCategories = async () => {
     setGenerating('allcats');
     try {
-      const entries = getEntriesForMonth(selectedCatMonth.year, selectedCatMonth.month);
-      const monthBudget = getBudgetForMonth(selectedCatMonth.monthStr);
+      const entries = getEntriesForDateRange(catRange.startDate, catRange.endDate);
 
-      // Other money surfaces (user feedback): recurring rules, businesses
-      // for the selected month, cards + accounts + subscriptions.
-      const recurring = getAllRules()
-        .filter(r => r.isActive)
-        .map(r => ({
-          label: r.note?.trim() || getCategoryById(r.category)?.name || r.category,
-          type: (r.type === 'income' ? 'income' : 'expense') as 'income' | 'expense',
-          frequency: r.frequency,
-          amount: r.amount,
-          nextDueDate: r.nextDueDate,
-        }));
-
-      const monthStart = `${selectedCatMonth.monthStr}-01`;
-      const lastDay = new Date(selectedCatMonth.year, selectedCatMonth.month, 0).getDate();
-      const monthEnd = `${selectedCatMonth.monthStr}-${String(lastDay).padStart(2, '0')}`;
-      const bizEntries = getAllBizEntries().filter(e => e.date >= monthStart && e.date <= monthEnd);
-      const businesses = getAllBusinesses().map(b => {
-        const mine = bizEntries.filter(e => e.businessId === b.id);
-        return {
+      // Business totals for the selected range.
+      const businesses = buildBusinessEntriesForReport()
+        .map(b => ({
           name: b.name,
-          typeLabel: BUSINESS_TYPE_META[b.type]?.label ?? b.type,
-          income: mine.filter(e => e.type === 'income').reduce((s, e) => s + e.amount, 0),
-          expenses: mine.filter(e => e.type === 'expense').reduce((s, e) => s + e.amount, 0),
-        };
-      }).filter(b => b.income > 0 || b.expenses > 0);
+          typeLabel: b.typeLabel,
+          income: b.entries.filter(e => e.type === 'income').reduce((s, e) => s + e.amount, 0),
+          expenses: b.entries.filter(e => e.type === 'expense').reduce((s, e) => s + e.amount, 0),
+        }))
+        .filter(b => b.income > 0 || b.expenses > 0);
 
       await generateAllCategoriesPDF({
-        year: selectedCatMonth.year,
-        month: selectedCatMonth.month,
-        monthLabel: selectedCatMonth.label,
+        periodType: catRange.periodType,
+        periodLabel: catRange.label,
+        startDate: catRange.startDate,
+        endDate: catRange.endDate,
         entries,
-        budget: monthBudget,
+        budget: catRange.periodType === 'monthly' ? getBudgetForMonth(catRange.monthStr) : undefined,
         categories: reportCategories.map(c => ({ id: c.id, name: c.name, type: c.type, color: c.color })),
         subscriptions: pdfSubscriptions,
         creditCards: getAllCreditCards().filter(c => c.isActive),
         accounts: getAllAccounts(),
-        recurring,
+        recurring: buildRecurringForReport(),
         businesses,
       });
     } catch (err) {
@@ -1356,18 +1432,40 @@ export default function ReportsTab() {
                 {t('expenses.categoryReportDesc', 'Pick one category and download a monthly report with only that category\'s transactions')}
               </p>
 
-              {/* Month selector */}
+              {/* Period pills — daily / weekly / monthly / annual */}
+              <div className="flex rounded-xl p-1 gap-1 mb-3" style={{ backgroundColor: theme.bgPrimary }}>
+                {([
+                  { id: 'daily' as const, label: t('biz.period.daily', 'Daily') },
+                  { id: 'weekly' as const, label: t('biz.period.weekly', 'Weekly') },
+                  { id: 'monthly' as const, label: t('biz.period.monthly', 'Monthly') },
+                  { id: 'annual' as const, label: t('biz.period.yearly', 'Yearly') },
+                ]).map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setCatPeriod(p.id)}
+                    className="flex-1 py-1.5 rounded-lg text-[10px] font-bold transition-all"
+                    style={{
+                      backgroundColor: catPeriod === p.id ? '#0891b2' : 'transparent',
+                      color: catPeriod === p.id ? '#ffffff' : theme.textMuted,
+                    }}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Period selector (prev / label / next) */}
               <div className="flex items-center justify-between mb-3 rounded-xl px-3 py-2"
                 style={{ backgroundColor: theme.bgPrimary, border: `1px solid ${theme.borderSubtle}` }}>
-                <button onClick={() => setCatReportMonthOffset(o => o - 1)}
+                <button onClick={catNavPrev}
                   className="w-7 h-7 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: '#0891b215' }}>
                   <ChevronLeft size={14} style={{ color: '#0891b2' }} />
                 </button>
-                <span className="text-xs font-bold" style={{ color: theme.textPrimary }}>{selectedCatMonth.label}</span>
-                <button onClick={() => { if (catReportMonthOffset < 0) setCatReportMonthOffset(o => o + 1); }}
+                <span className="text-xs font-bold" style={{ color: theme.textPrimary }}>{catRange.label}</span>
+                <button onClick={catNavNext}
                   className="w-7 h-7 rounded-full flex items-center justify-center disabled:opacity-40"
-                  disabled={catReportMonthOffset >= 0}
+                  disabled={catNavNextDisabled}
                   style={{ backgroundColor: '#0891b215' }}>
                   <ChevronRight size={14} style={{ color: '#0891b2' }} />
                 </button>
@@ -1385,6 +1483,12 @@ export default function ReportsTab() {
                 }}
               >
                 <option value="">{t('expenses.chooseCategory', 'Choose a category...')}</option>
+                <optgroup label={t('expenses.appSections', 'App Sections')}>
+                  <option value="special:subscriptions">{'\u{1F501}'} {t('expenses.subscriptions', 'Subscriptions')}</option>
+                  <option value="special:recurring">{'\u{1F504}'} {t('recurring.title', 'Recurring Transactions')}</option>
+                  <option value="special:cards">{'\u{1F4B3}'} {t('expenses.creditCards', 'Credit Cards')}</option>
+                  <option value="special:business">{'\u{1F3EA}'} {t('biz.title', 'Business Tracker')}</option>
+                </optgroup>
                 <optgroup label={t('expenses.expensesLabel', 'Expenses')}>
                   {reportCategories.filter(c => c.type === 'expense').map(c => (
                     <option key={c.id} value={c.id}>{c.icon} {c.name}</option>

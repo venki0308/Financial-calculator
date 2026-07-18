@@ -2644,14 +2644,18 @@ function paymentLabel(method: string): string {
     return PAYMENT_LABELS[method] ?? (method ? method.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—');
 }
 
+export type ReportPeriodType = 'daily' | 'weekly' | 'monthly' | 'annual';
+
 export interface CategoryReportData {
-    year: number;
-    month: number;             // 1-12
-    monthLabel: string;        // "July 2026"
+    periodType: ReportPeriodType;
+    periodLabel: string;       // "18 Jul 2026" | "14 Jul — 20 Jul 2026" | "July 2026" | "2026"
+    startDate: string;         // YYYY-MM-DD inclusive
+    endDate: string;           // YYYY-MM-DD inclusive
     category: { id: string; name: string; type: EntryType };
-    /** ALL entries for the month (unfiltered) — needed for share-of-total. */
+    /** ALL entries within [startDate, endDate] (unfiltered) — for share-of-total. */
     entries: Entry[];
-    budget?: Budget;           // for the category's monthly limit (if set)
+    /** Monthly period only — used for the category limit check. */
+    budget?: Budget;
 }
 
 /**
@@ -2675,19 +2679,19 @@ function renderCategorySection(
         .sort((a, b) => a.date.localeCompare(b.date) || (a.createdAt || '').localeCompare(b.createdAt || ''));
     const catTotal = catEntries.reduce((sum, e) => sum + e.amount, 0);
 
-    // Share of the month's total for the same entry type (e.g. Food as % of
-    // all July expenses). Guard against divide-by-zero on empty months.
+    // Share of the period's total for the same entry type (e.g. Food as % of
+    // all expenses in the range). Guard against divide-by-zero on empty ranges.
     const monthTypeTotal = data.entries
         .filter(e => e.type === catType)
         .reduce((sum, e) => sum + e.amount, 0);
     const sharePct = monthTypeTotal > 0 ? (catTotal / monthTypeTotal) * 100 : 0;
 
-    // Daily average: current calendar month → days elapsed so far; past
-    // months → full month length.
-    const daysInMonth = new Date(data.year, data.month, 0).getDate();
+    // Daily average: days elapsed inside the range, capped at today for
+    // still-running periods (current month/week/year).
     const today = getTodayStr();
-    const isCurrentMonth = today.slice(0, 7) === `${data.year}-${String(data.month).padStart(2, '0')}`;
-    const daysForAvg = isCurrentMonth ? Math.max(1, Number(today.slice(8, 10))) : daysInMonth;
+    const effEnd = data.endDate < today ? data.endDate : today;
+    const daysForAvg = Math.max(1, Math.round(
+        (new Date(effEnd + 'T00:00:00').getTime() - new Date(data.startDate + 'T00:00:00').getTime()) / 86400000) + 1);
 
     const typeNoun = catType === 'income' ? 'Income' : catType === 'investment' ? 'Invested' : 'Spent';
     const tone: 'expense' | 'income' | 'investment' =
@@ -2705,8 +2709,9 @@ function renderCategorySection(
         { label: 'Average / Transaction', value: formatINR(catEntries.length > 0 ? catTotal / catEntries.length : 0), tone: 'neutral' },
     ], yPos);
 
-    // ── BUDGET CHECK (expense categories with a monthly limit) ──────────
-    const limit = catType === 'expense'
+    // ── BUDGET CHECK (expense categories with a monthly limit; the check
+    // only makes sense against a monthly period) ────────────────────────
+    const limit = catType === 'expense' && data.periodType === 'monthly'
         ? data.budget?.categoryLimits.find(cl => cl.categoryId === data.category.id && cl.monthlyLimit > 0)
         : undefined;
     if (limit) {
@@ -2730,26 +2735,49 @@ function renderCategorySection(
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
     }
 
-    // ── DAILY PATTERN (bars) ────────────────────────────────────────────
-    if (catEntries.length > 0) {
-        const daysInMo = new Date(data.year, data.month, 0).getDate();
-        const dayTotals = new Array<number>(daysInMo).fill(0);
-        for (const e of catEntries) {
-            const d = Number(e.date.slice(8, 10));
-            if (d >= 1 && d <= daysInMo) dayTotals[d - 1] += e.amount;
-        }
+    // ── SPENDING PATTERN (bars adapt to the period) ─────────────────────
+    if (catEntries.length > 0 && data.periodType !== 'daily') {
         const toneColor = catType === 'income' ? INCOME : catType === 'investment' ? INVESTMENT : EXPENSE;
-        yPos = drawBarTrend(doc,
-            Array.from({ length: daysInMo }, (_, i) => String(i + 1)),
-            [{ values: dayTotals, color: toneColor }],
-            yPos,
-            { title: `When You ${catType === 'income' ? 'Earned' : 'Spent'} - Day by Day` });
+        const verb = catType === 'income' ? 'Earned' : 'Spent';
+        if (data.periodType === 'annual') {
+            const monthTotals = new Array<number>(12).fill(0);
+            for (const e of catEntries) {
+                const m = Number(e.date.slice(5, 7));
+                if (m >= 1 && m <= 12) monthTotals[m - 1] += e.amount;
+            }
+            yPos = drawBarTrend(doc, [...MONTH_NAMES],
+                [{ values: monthTotals, color: toneColor }],
+                yPos,
+                { title: `When You ${verb} - Month by Month` });
+        } else {
+            // weekly/monthly: one bar per day of the range
+            const days: string[] = [];
+            const totalsByDay = new Map<string, number>();
+            const cursor = new Date(data.startDate + 'T00:00:00');
+            for (let i = 0; i < 370; i++) {
+                const iso = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`;
+                days.push(iso);
+                totalsByDay.set(iso, 0);
+                if (iso >= data.endDate) break;
+                cursor.setDate(cursor.getDate() + 1);
+            }
+            for (const e of catEntries) {
+                if (totalsByDay.has(e.date)) totalsByDay.set(e.date, (totalsByDay.get(e.date) ?? 0) + e.amount);
+            }
+            const labels = days.map(iso => days.length <= 10 ? shortDate(iso) : String(Number(iso.slice(8, 10))));
+            yPos = drawBarTrend(doc, labels,
+                [{ values: days.map(iso => totalsByDay.get(iso) ?? 0), color: toneColor }],
+                yPos,
+                { title: `When You ${verb} - Day by Day` });
+        }
     }
 
-    // ── WEEK-BY-WEEK SUBTOTALS ──────────────────────────────────────────
-    if (catEntries.length > 0) {
+    // ── WEEK-BY-WEEK (monthly) / MONTH-BY-MONTH (annual) SUBTOTALS ──────
+    if (catEntries.length > 0 && data.periodType === 'monthly') {
         yPos = drawSectionHeader(doc, 'Week-by-Week Summary', yPos);
-        const weeks = buildWeeklyBreakdown(catEntries, data.year, data.month);
+        const y0 = Number(data.startDate.slice(0, 4));
+        const m0 = Number(data.startDate.slice(5, 7));
+        const weeks = buildWeeklyBreakdown(catEntries, y0, m0, { start: data.startDate, end: data.endDate });
         const weekBody: (string | number)[][] = weeks.map(w => {
             const amt = catType === 'income' ? w.income : catType === 'investment' ? w.investments : w.expenses;
             const count = catEntries.filter(e => e.date >= w.startDate && e.date <= w.endDate).length;
@@ -2767,14 +2795,43 @@ function renderCategorySection(
             columnStyles: { 3: { halign: 'right' } },
         });
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    } else if (catEntries.length > 0 && data.periodType === 'annual') {
+        yPos = drawSectionHeader(doc, 'Month-by-Month Summary', yPos);
+        const byMonth = new Map<string, { total: number; count: number }>();
+        for (const e of catEntries) {
+            const k = e.date.slice(0, 7);
+            const cur = byMonth.get(k) ?? { total: 0, count: 0 };
+            cur.total += e.amount;
+            cur.count += 1;
+            byMonth.set(k, cur);
+        }
+        const moBody: (string | number)[][] = [...byMonth.entries()]
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([k, v]) => [
+                `${MONTH_NAMES[Number(k.slice(5, 7)) - 1]} ${k.slice(0, 4)}`,
+                entriesLabel(v.count),
+                formatINR(v.total),
+            ]);
+        moBody.push(['TOTAL', entriesLabel(catEntries.length), formatINR(catTotal)]);
+        table(doc, autoTable, {
+            head: [['Month', 'Entries', 'Amount']],
+            body: moBody,
+            startY: yPos,
+            headerHook,
+            keepTogether: moBody.length <= 13,
+            amountColIdx: 2,
+            amountTone: tone,
+            columnStyles: { 2: { halign: 'right' } },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
     }
 
     // ── FULL TRANSACTION LOG (only this category) ───────────────────────
-    yPos = drawSectionHeader(doc, `All ${s(catName)} Transactions - ${data.monthLabel}`, yPos);
+    yPos = drawSectionHeader(doc, `All ${s(catName)} Transactions - ${s(data.periodLabel)}`, yPos);
     if (catEntries.length === 0) {
         table(doc, autoTable, {
             head: [['Date', 'Description', 'Payment', 'Amount']],
-            body: [['—', `No ${s(catName)} transactions recorded this month`, '—', '—']],
+            body: [['—', `No ${s(catName)} transactions recorded in this period`, '—', '—']],
             startY: yPos,
             headerHook,
         });
@@ -2807,7 +2864,7 @@ export async function generateCategoryPDF(data: CategoryReportData): Promise<voi
 
     const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
     const reportType = 'Category Report';
-    const periodLabel = `${s(data.category.name)} - ${data.monthLabel}`;
+    const periodLabel = `${s(data.category.name)} - ${s(data.periodLabel)}`;
 
     setReportContext(doc, reportType, periodLabel);
     drawHeader(doc, reportType, periodLabel);
@@ -2818,7 +2875,7 @@ export async function generateCategoryPDF(data: CategoryReportData): Promise<voi
     drawDisclaimerBlock(doc, yPos);
     drawFooters(doc);
     const safeCat = data.category.name.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Category';
-    await savePDF(doc, `FinCalix_${safeCat}_${monShortYear(data.year, data.month)}.pdf`);
+    await savePDF(doc, `FinCalix_${safeCat}_${data.periodType}_${dateTagFromStr(data.startDate)}.pdf`);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2830,11 +2887,13 @@ export async function generateCategoryPDF(data: CategoryReportData): Promise<voi
 // category mini-report (stats, budget check, daily bars, transactions).
 
 export interface AllCategoriesReportData {
-    year: number;
-    month: number;             // 1-12
-    monthLabel: string;        // "July 2026"
-    /** ALL entries for the month (unfiltered). */
+    periodType: ReportPeriodType;
+    periodLabel: string;       // "18 Jul 2026" | "14 Jul — 20 Jul 2026" | "July 2026" | "2026"
+    startDate: string;         // YYYY-MM-DD inclusive
+    endDate: string;           // YYYY-MM-DD inclusive
+    /** ALL entries within [startDate, endDate] (unfiltered). */
     entries: Entry[];
+    /** Monthly period only — used for per-category limit checks. */
     budget?: Budget;
     /** Active categories (id, name, type, color) — pass getAllCategories(). */
     categories: Array<{ id: string; name: string; type: EntryType; color?: string }>;
@@ -2844,7 +2903,7 @@ export interface AllCategoriesReportData {
     creditCards?: CCCard[];
     accounts?: BankAccount[];
     recurring?: Array<{ label: string; type: 'expense' | 'income'; frequency: string; amount: number; nextDueDate: string }>;
-    /** Per-business totals for THIS month. */
+    /** Per-business totals for the selected period. */
     businesses?: Array<{ name: string; typeLabel: string; income: number; expenses: number }>;
 }
 
@@ -2854,7 +2913,7 @@ export async function generateAllCategoriesPDF(data: AllCategoriesReportData): P
 
     const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
     const reportType = 'Category-wise Report';
-    const periodLabel = data.monthLabel;
+    const periodLabel = data.periodLabel;
 
     setReportContext(doc, reportType, periodLabel);
     drawHeader(doc, reportType, periodLabel);
@@ -2987,7 +3046,7 @@ export async function generateAllCategoriesPDF(data: AllCategoriesReportData): P
     }
 
     if (data.businesses && data.businesses.length > 0) {
-        yPos = drawSectionHeader(doc, `Business Tracker - ${data.monthLabel}`, yPos);
+        yPos = drawSectionHeader(doc, `Business Tracker - ${s(data.periodLabel)}`, yPos);
         const bizBody: (string | number)[][] = data.businesses.map(b =>
             [s(b.name), s(b.typeLabel), formatINR(b.income), formatINR(b.expenses), formatINR(b.income - b.expenses)]);
         const bI = data.businesses.reduce((sum, b) => sum + b.income, 0);
@@ -3013,9 +3072,10 @@ export async function generateAllCategoriesPDF(data: AllCategoriesReportData): P
         let y = 36;
         y = drawSectionHeader(doc, `${s(c.cat.name)} (${typeLabel(c.cat.type)})`, y);
         renderCategorySection(doc, autoTable, headerHook, {
-            year: data.year,
-            month: data.month,
-            monthLabel: data.monthLabel,
+            periodType: data.periodType,
+            periodLabel: data.periodLabel,
+            startDate: data.startDate,
+            endDate: data.endDate,
             category: { id: c.cat.id, name: c.cat.name, type: c.cat.type },
             entries: data.entries,
             budget: data.budget,
@@ -3024,7 +3084,273 @@ export async function generateAllCategoriesPDF(data: AllCategoriesReportData): P
 
     drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 10);
     drawFooters(doc);
-    await savePDF(doc, `FinCalix_All_Categories_${monShortYear(data.year, data.month)}.pdf`);
+    await savePDF(doc, `FinCalix_All_Categories_${data.periodType}_${dateTagFromStr(data.startDate)}.pdf`);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 3D. APP-SECTION REPORTS — Subscriptions / Recurring / Cards / Business
+// ═══════════════════════════════════════════════════════════════════════════
+// User feedback: the Budget-tab money surfaces must be downloadable from the
+// category picker too. Each kind gets its own focused PDF over the selected
+// period.
+
+export interface AppSectionReportData {
+    kind: 'subscriptions' | 'recurring' | 'cards' | 'business';
+    periodType: ReportPeriodType;
+    periodLabel: string;
+    startDate: string;         // YYYY-MM-DD inclusive
+    endDate: string;           // YYYY-MM-DD inclusive
+    subscriptions?: PDFSubscription[];
+    /** Recurring rules + the auto-logged entries in range (entries with recurringId). */
+    recurring?: Array<{ label: string; type: 'expense' | 'income'; frequency: string; amount: number; nextDueDate: string }>;
+    recurringEntries?: Entry[];
+    creditCards?: CCCard[];
+    /** One item per business with its entries inside the range. */
+    businesses?: Array<{ name: string; typeLabel: string; entries: BusinessReportEntry[] }>;
+}
+
+const SECTION_TITLES: Record<AppSectionReportData['kind'], string> = {
+    subscriptions: 'Subscriptions Report',
+    recurring: 'Recurring Transactions Report',
+    cards: 'Credit Cards Report',
+    business: 'Business Tracker Report',
+};
+
+export async function generateAppSectionPDF(data: AppSectionReportData): Promise<void> {
+    const { jsPDF, autoTable } = await getJsPDF();
+    await yieldToUI();
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const reportType = SECTION_TITLES[data.kind];
+    const periodLabel = data.periodLabel;
+
+    setReportContext(doc, reportType, periodLabel);
+    drawHeader(doc, reportType, periodLabel);
+    const headerHook = makeHeaderHook(doc, reportType, periodLabel);
+
+    let yPos = 36;
+
+    if (data.kind === 'subscriptions') {
+        const subs = (data.subscriptions ?? []).filter(s2 => s2.isActive);
+        const monthlyTotal = subs.reduce((sum, s2) =>
+            sum + (s2.billingCycle === 'quarterly' ? s2.amount / 3
+                : s2.billingCycle === 'yearly' ? s2.amount / 12 : s2.amount), 0);
+        const billings = buildSubscriptionEntriesForRange(
+            data.subscriptions ?? [], data.startDate, data.endDate, getTodayStr());
+        const billedTotal = billings.reduce((sum, b) => sum + b.amount, 0);
+
+        yPos = drawStatBoxes(doc, [
+            { label: 'Active Subscriptions', value: String(subs.length), tone: 'neutral' },
+            { label: 'Monthly Commitment', value: formatINR(monthlyTotal), tone: 'expense' },
+            { label: 'Billed This Period', value: formatINR(billedTotal), tone: 'expense' },
+        ], yPos);
+
+        if (subs.length > 0) {
+            yPos = drawHBarList(doc,
+                subs.map(s2 => ({
+                    label: s2.name,
+                    value: s2.billingCycle === 'quarterly' ? s2.amount / 3
+                        : s2.billingCycle === 'yearly' ? s2.amount / 12 : s2.amount,
+                })),
+                yPos,
+                { title: 'Monthly Cost by Service', maxRows: 12 });
+
+            yPos = drawSectionHeader(doc, 'All Active Subscriptions', yPos);
+            const subBody: (string | number)[][] = subs.map(s2 => {
+                const monthly = s2.billingCycle === 'quarterly' ? s2.amount / 3
+                    : s2.billingCycle === 'yearly' ? s2.amount / 12 : s2.amount;
+                const cycle = s2.billingCycle === 'quarterly' ? 'Quarterly'
+                    : s2.billingCycle === 'yearly' ? 'Yearly' : 'Monthly';
+                return [s(s2.name), cycle, formatINR(s2.amount), formatINR(monthly),
+                    s2.nextDueDate ? shortDate(s2.nextDueDate) : '—'];
+            });
+            subBody.push(['TOTAL', '', '', formatINR(monthlyTotal), '/ month']);
+            table(doc, autoTable, {
+                head: [['Service', 'Cycle', 'Billed', 'Monthly Equiv.', 'Next Renewal']],
+                body: subBody,
+                startY: yPos,
+                headerHook,
+                columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' } },
+            });
+            yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+        }
+
+        yPos = drawSectionHeader(doc, `Billings in ${s(data.periodLabel)}`, yPos);
+        if (billings.length === 0) {
+            table(doc, autoTable, {
+                head: [['Date', 'Subscription', 'Amount']],
+                body: [['—', 'No subscription billings in this period', '—']],
+                startY: yPos, headerHook,
+            });
+        } else {
+            const bBody: (string | number)[][] = billings
+                .sort((a, b) => a.date.localeCompare(b.date))
+                .map(b => [shortDate(b.date), s(b.description), formatINR(b.amount)]);
+            bBody.push(['TOTAL', '', formatINR(billedTotal)]);
+            table(doc, autoTable, {
+                head: [['Date', 'Subscription', 'Amount']],
+                body: bBody,
+                startY: yPos,
+                headerHook,
+                amountColIdx: 2,
+                amountTone: 'expense',
+                columnStyles: { 2: { halign: 'right' } },
+            });
+        }
+    }
+
+    if (data.kind === 'recurring') {
+        const rules = data.recurring ?? [];
+        const logged = (data.recurringEntries ?? [])
+            .sort((a, b) => a.date.localeCompare(b.date));
+        const loggedExpense = logged.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.amount, 0);
+        const loggedIncome = logged.filter(e => e.type === 'income').reduce((sum, e) => sum + e.amount, 0);
+
+        yPos = drawStatBoxes(doc, [
+            { label: 'Active Rules', value: String(rules.length), tone: 'neutral' },
+            { label: 'Auto-logged Income', value: formatINR(loggedIncome), tone: 'income' },
+            { label: 'Auto-logged Expenses', value: formatINR(loggedExpense), tone: 'expense' },
+        ], yPos);
+
+        yPos = drawSectionHeader(doc, 'Recurring Rules', yPos);
+        if (rules.length === 0) {
+            table(doc, autoTable, {
+                head: [['Name', 'Type', 'Frequency', 'Amount', 'Next Due']],
+                body: [['—', '—', '—', 'No recurring rules set up', '—']],
+                startY: yPos, headerHook,
+            });
+        } else {
+            table(doc, autoTable, {
+                head: [['Name', 'Type', 'Frequency', 'Amount', 'Next Due']],
+                body: rules.map(r => [
+                    s(r.label),
+                    r.type === 'income' ? 'Income' : 'Expense',
+                    s(r.frequency.charAt(0).toUpperCase() + r.frequency.slice(1)),
+                    formatINR(r.amount),
+                    r.nextDueDate ? shortDate(r.nextDueDate) : '—',
+                ]),
+                startY: yPos,
+                headerHook,
+                amountColIdx: 3,
+                typeColIdx: 1,
+                columnStyles: { 3: { halign: 'right' } },
+            });
+        }
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+
+        yPos = drawSectionHeader(doc, `Auto-logged Entries - ${s(data.periodLabel)}`, yPos);
+        if (logged.length === 0) {
+            table(doc, autoTable, {
+                head: [['Date', 'Category', 'Type', 'Description', 'Amount']],
+                body: [['—', '—', '—', 'No auto-logged entries in this period', '—']],
+                startY: yPos, headerHook,
+            });
+        } else {
+            table(doc, autoTable, {
+                head: [['Date', 'Category', 'Type', 'Description', 'Amount']],
+                body: logged.slice(0, MAX_TX_ROWS).map(e => [
+                    shortDate(e.date),
+                    categoryName(e.category),
+                    typeLabel(e.type),
+                    descriptionFor(e),
+                    formatINR(e.amount),
+                ]),
+                startY: yPos,
+                headerHook,
+                amountColIdx: 4,
+                typeColIdx: 2,
+                columnStyles: { 4: { halign: 'right' } },
+            });
+        }
+    }
+
+    if (data.kind === 'cards') {
+        const cards = data.creditCards ?? [];
+        const totalLimit = cards.reduce((sum, c) => sum + c.creditLimit, 0);
+        const totalOut = cards.reduce((sum, c) => sum + c.currentBalance, 0);
+        yPos = drawStatBoxes(doc, [
+            { label: 'Active Cards', value: String(cards.length), tone: 'neutral' },
+            { label: 'Total Outstanding', value: formatINR(totalOut), tone: 'expense' },
+            { label: 'Overall Utilization', value: totalLimit > 0 ? `${((totalOut / totalLimit) * 100).toFixed(1)}%` : '—', tone: 'neutral' },
+        ], yPos);
+        if (cards.length > 0) {
+            yPos = drawCreditCardSection(doc, autoTable, cards, yPos, headerHook);
+        } else {
+            yPos = drawSectionHeader(doc, 'Credit Cards', yPos);
+            table(doc, autoTable, {
+                head: [['Card', 'Limit', 'Outstanding']],
+                body: [['No credit cards added', '—', '—']],
+                startY: yPos, headerHook,
+            });
+            yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+        }
+        // Card balances are a live snapshot, not a period aggregate.
+        doc.setFontSize(7.5);
+        doc.setTextColor(...MUTED);
+        doc.text('Card balances are a snapshot as of the report date.', 15, yPos);
+        doc.setFontSize(10);
+        doc.setTextColor(...TEXT);
+        yPos += 6;
+    }
+
+    if (data.kind === 'business') {
+        const bizList = data.businesses ?? [];
+        const totI = bizList.reduce((sum, b) => sum + b.entries.filter(e => e.type === 'income').reduce((x, e) => x + e.amount, 0), 0);
+        const totE = bizList.reduce((sum, b) => sum + b.entries.filter(e => e.type === 'expense').reduce((x, e) => x + e.amount, 0), 0);
+        yPos = drawStatBoxes(doc, [
+            { label: 'Total Income', value: formatINR(totI), tone: 'income' },
+            { label: 'Total Expenses', value: formatINR(totE), tone: 'expense' },
+            { label: 'Net Profit', value: formatINR(totI - totE), tone: totI - totE >= 0 ? 'income' : 'expense' },
+        ], yPos);
+
+        if (bizList.length === 0) {
+            yPos = drawSectionHeader(doc, 'Businesses', yPos);
+            table(doc, autoTable, {
+                head: [['Business', 'Income', 'Expenses', 'Net']],
+                body: [['No businesses added yet', '—', '—', '—']],
+                startY: yPos, headerHook,
+            });
+        }
+
+        for (const b of bizList) {
+            const bI = b.entries.filter(e => e.type === 'income').reduce((x, e) => x + e.amount, 0);
+            const bE = b.entries.filter(e => e.type === 'expense').reduce((x, e) => x + e.amount, 0);
+            yPos = drawSectionHeader(doc, `${s(b.name)} (${s(b.typeLabel)}) - Net ${formatINR(bI - bE)}`, yPos);
+            if (b.entries.length === 0) {
+                table(doc, autoTable, {
+                    head: [['Date', 'Type', 'Category', 'Note', 'Amount']],
+                    body: [['—', '—', '—', 'No entries in this period', '—']],
+                    startY: yPos, headerHook,
+                });
+            } else {
+                const txBody: (string | number)[][] = [...b.entries]
+                    .sort((a2, b2) => a2.date.localeCompare(b2.date))
+                    .slice(0, MAX_TX_ROWS)
+                    .map(e => [
+                        shortDate(e.date),
+                        e.type === 'income' ? 'Income' : 'Expense',
+                        s(e.categoryLabel),
+                        s(e.note || '—'),
+                        formatINR(e.amount),
+                    ]);
+                txBody.push(['TOTAL', '', '', '', formatINR(bI - bE)]);
+                table(doc, autoTable, {
+                    head: [['Date', 'Type', 'Category', 'Note', 'Amount']],
+                    body: txBody,
+                    startY: yPos,
+                    headerHook,
+                    amountColIdx: 4,
+                    typeColIdx: 1,
+                    columnStyles: { 4: { halign: 'right' } },
+                });
+            }
+            yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+        }
+    }
+
+    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable?.finalY ? (doc as PDFDoc).lastAutoTable.finalY + 8 : yPos + 8);
+    drawFooters(doc);
+    await savePDF(doc, `FinCalix_${SECTION_TITLES[data.kind].replace(/\s+/g, '_')}_${dateTagFromStr(data.startDate)}.pdf`);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
