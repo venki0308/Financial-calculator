@@ -7,7 +7,7 @@ import { useAppColors } from '../theme/useAppColors';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { calculateReducingEMI, formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, emiMonthLabel, emiYearRange, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
@@ -20,7 +20,7 @@ import CibilBadge from '../components/CibilBadge';
 import { useCibil } from '../context/CibilContext';
 import DateInput from '../components/DateInput';
 import LiveLoanStatus from '../components/LiveLoanStatus';
-import type { LoanProfile } from '../utils/loanStatusEngine';
+import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
 import SaveNameDialog from '../components/SaveNameDialog';
 
 export default function TwoWheelerLoanCalculator() {
@@ -326,12 +326,34 @@ export default function TwoWheelerLoanCalculator() {
             ],
             projectionTitle: 'Year-wise Amortization',
             projectionColumns: ['Year', 'Principal', 'Interest', 'Balance'],
-            projectionRows: yearWise.map(r => [r.year, formatINR(r.principal), formatINR(r.interest), formatINR(r.balance)]),
-            additionalTables: result?.schedule ? [{
-                title: 'Month-wise Amortization',
-                columns: ['Month', 'EMI', 'Principal', 'Interest', 'Balance'],
-                rows: result.schedule.map(r => [r.month, formatINR(r.emi), formatINR(r.principal), formatINR(r.interest), formatINR(r.closingBalance)]),
-            }] : [],
+            projectionRows: yearWise.map(r => [`${r.year} (${emiYearRange(loanStartDate, r.year)})`, formatINR(r.principal), formatINR(r.interest), formatINR(r.balance)]),
+            additionalTables: [
+                // "How much have I paid till last month?" — only when the user
+                // picked a disbursement date. Same engine as the live tracker.
+                ...((): NonNullable<ExportConfig['additionalTables']> => {
+                    if (!loanProfile) return [];
+                    const ls = calculateLiveLoanStatus(loanProfile);
+                    if (ls.loanNotStarted || ls.emisPaid === 0) return [];
+                    return [{
+                        title: `Loan Progress Till Date (as of ${new Date().toLocaleDateString('en-IN')})`,
+                        columns: ['Metric', 'Value'],
+                        rows: [
+                            ['EMIs Paid So Far', `${ls.emisPaid} of ${tenureMonths}`],
+                            ['Total Paid So Far', formatINR(ls.totalPaidSoFar)],
+                            ['Principal Repaid', formatINR(ls.principalPaidSoFar)],
+                            ['Interest Paid So Far', formatINR(ls.interestPaidSoFar)],
+                            ['Outstanding Balance', formatINR(ls.principalOutstanding)],
+                            ['Loan Completed', `${ls.percentComplete.toFixed(1)}%`],
+                            ['Next EMI Date', ls.nextEmiDate],
+                        ],
+                    }];
+                })(),
+                ...(result?.schedule ? [{
+                    title: 'Month-wise Amortization',
+                    columns: ['Month', 'EMI', 'Principal', 'Interest', 'Balance'],
+                    rows: result.schedule.map(r => [`${r.month} - ${emiMonthLabel(loanStartDate, r.month)}`, formatINR(r.emi), formatINR(r.principal), formatINR(r.interest), formatINR(r.closingBalance)]),
+                }] : []),
+            ],
             filename: `FinCalix_TwoWheeler_${tag}`,
         };
     };

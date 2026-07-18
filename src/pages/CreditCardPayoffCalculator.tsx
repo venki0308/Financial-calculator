@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatINR } from '../utils/calculations';
-import { exportToPDF, exportToExcel, type ExportConfig, dateTag } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, emiMonthLabel, type ExportConfig, dateTag } from '../utils/exportReport';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { useCibil } from '../context/CibilContext';
@@ -190,7 +190,7 @@ export default function CreditCardPayoffCalculator() {
       projectionTitle: 'Month-by-Month Schedule',
       projectionColumns: ['Month', 'Total Paid', 'Interest', 'Balance', 'Card Cleared'],
       projectionRows: current.schedule.map(r => [
-        `M${r.month}`, `INR ${r.totalPaid.toLocaleString('en-IN')}`,
+        `${r.month} - ${emiMonthLabel(undefined, r.month)}`, `INR ${r.totalPaid.toLocaleString('en-IN')}`,
         `INR ${r.totalInterest.toLocaleString('en-IN')}`, `INR ${r.totalBalance.toLocaleString('en-IN')}`,
         r.cardCleared ? activeInputs.find(c => c.id === r.cardCleared)?.name || '' : '',
       ]),
@@ -199,7 +199,7 @@ export default function CreditCardPayoffCalculator() {
         columns: ['Card', 'Balance', 'APR', 'Payoff Month', 'Interest Paid'],
         rows: current.payoffOrder.map(p => {
           const card = activeInputs.find(c => c.id === p.id);
-          return [p.name, `INR ${(card?.balance || 0).toLocaleString('en-IN')}`, `${card?.apr || 0}%`, `M${p.month}`, `INR ${p.interest.toLocaleString('en-IN')}`];
+          return [p.name, `INR ${(card?.balance || 0).toLocaleString('en-IN')}`, `${card?.apr || 0}%`, emiMonthLabel(undefined, p.month), `INR ${p.interest.toLocaleString('en-IN')}`];
         }),
       }],
       filename: `FinCalix_CC_Payoff_${tag}`,

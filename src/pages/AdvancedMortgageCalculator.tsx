@@ -21,7 +21,7 @@ import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import { useCibil } from '../context/CibilContext';
 import { saveLoan as saveLoanToStorage, deleteLoan as deleteLoanFromStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
-import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, dateTag, emiMonthLabel, emiYearRange, type ExportConfig } from '../utils/exportReport';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
@@ -315,7 +315,7 @@ export default function AdvancedMortgageCalculator() {
         });
 
         const yearlyRows = Array.from(yearlyMap.entries()).map(([yr, d]) => [
-            yr,
+            `${yr} (${emiYearRange(loanStartDate, yr)})`,
             forExcel ? Math.round(d.totalPaid) : formatINR(d.totalPaid),
             forExcel ? Math.round(d.principal) : formatINR(d.principal),
             forExcel ? Math.round(d.interest) : formatINR(d.interest),
@@ -323,7 +323,7 @@ export default function AdvancedMortgageCalculator() {
         ]);
 
         const taxRows = result.taxBenefits.schedule.map(tb => [
-            tb.year,
+            `${tb.year} (${emiYearRange(loanStartDate, tb.year)})`,
             forExcel ? tb.principal : formatINR(tb.principal),
             forExcel ? tb.interest : formatINR(tb.interest),
             forExcel ? tb.deduction80C : formatINR(tb.deduction80C),
@@ -346,13 +346,34 @@ export default function AdvancedMortgageCalculator() {
             projectionTitle: 'EMI Schedule',
             projectionColumns: ['Month', 'Payment', 'Principal', 'Interest', 'Balance'],
             projectionRows: result.schedule.map(r => [
-                r.month,
+                `${r.month} - ${emiMonthLabel(loanStartDate, r.month)}`,
                 forExcel ? Math.round(r.emi) : formatINR(r.emi),
                 forExcel ? Math.round(r.principal) : formatINR(r.principal),
                 forExcel ? Math.round(r.interest) : formatINR(r.interest),
                 forExcel ? Math.round(r.closingBalance) : formatINR(r.closingBalance),
             ]),
             additionalTables: [
+                // "How much have I paid till last month?" — only when the user
+                // entered a disbursement date. Same engine as the in-app Live
+                // Status card, so PDF and app always agree.
+                ...((): NonNullable<ExportConfig['additionalTables']> => {
+                    if (!loanProfile) return [];
+                    const ls = calculateLiveLoanStatus(loanProfile);
+                    if (ls.loanNotStarted || ls.emisPaid === 0) return [];
+                    return [{
+                        title: `Loan Progress Till Date (as of ${new Date().toLocaleDateString('en-IN')})`,
+                        columns: ['Metric', 'Value'],
+                        rows: [
+                            ['EMIs Paid So Far', `${ls.emisPaid} of ${months}`],
+                            ['Total Paid So Far', formatINR(ls.totalPaidSoFar)],
+                            ['Principal Repaid', formatINR(ls.principalPaidSoFar)],
+                            ['Interest Paid So Far', formatINR(ls.interestPaidSoFar)],
+                            ['Outstanding Balance', formatINR(ls.principalOutstanding)],
+                            ['Loan Completed', `${ls.percentComplete.toFixed(1)}%`],
+                            ['Next EMI Date', ls.nextEmiDate],
+                        ],
+                    }];
+                })(),
                 {
                     title: 'Yearly Summary',
                     columns: ['Year', 'Total Paid', 'Principal', 'Interest', 'Balance'],

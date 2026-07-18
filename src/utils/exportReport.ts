@@ -83,6 +83,35 @@ export function dateTag(): string {
     return `${dd}${mm}${yyyy}`;
 }
 
+// ─── EMI schedule calendar labels ────────────────────────────────────────────
+// User feedback: schedule tables showed only "Month 1, 2, 3..." — no way to
+// tell WHICH calendar month an EMI falls in. Convention matches
+// loanStatusEngine: EMI #n is due in (disbursement month + n). When no
+// disbursement date was entered, we anchor on today, i.e. "if the loan
+// started today, EMI 1 falls next month".
+
+const MONTHS_SHORT_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function anchorDate(anchorDateStr?: string): Date {
+    if (anchorDateStr && /^\d{4}-\d{2}-\d{2}$/.test(anchorDateStr)) {
+        const [y, m, d] = anchorDateStr.split('-').map(Number);
+        return new Date(y, m - 1, d); // local midnight — never new Date('YYYY-MM-DD') (UTC shift)
+    }
+    return new Date();
+}
+
+/** "Jun 2026" for EMI #n (1-based) given the loan start (disbursement) date. */
+export function emiMonthLabel(anchorDateStr: string | undefined, emiNumber: number): string {
+    const base = anchorDate(anchorDateStr);
+    const d = new Date(base.getFullYear(), base.getMonth() + emiNumber, 1);
+    return `${MONTHS_SHORT_EN[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/** "Jun 2026 - May 2027" for loan year #n (1-based, 12 EMIs per year). */
+export function emiYearRange(anchorDateStr: string | undefined, yearNumber: number): string {
+    return `${emiMonthLabel(anchorDateStr, (yearNumber - 1) * 12 + 1)} - ${emiMonthLabel(anchorDateStr, yearNumber * 12)}`;
+}
+
 // ─── PDF helpers ──────────────────────────────────────────────────────────────
 
 /** Sanitize a cell value for jsPDF (strip emoji, replace ₹ with INR, strip non-Latin scripts) */

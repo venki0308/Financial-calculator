@@ -27,7 +27,7 @@ import {
     LOAN_TYPE_CONFIGS, type AmortizationRow, type ForeclosureResult, type PrepaymentInsight,
 } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
+import { exportToPDF, exportToExcel, dateTag, emiMonthLabel, emiYearRange, type ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import CibilBadge from '../components/CibilBadge';
@@ -325,9 +325,11 @@ export default function EMICalculator() {
         const dt = new Date();
         const tag = `${String(dt.getDate()).padStart(2,'0')}${String(dt.getMonth()+1).padStart(2,'0')}${dt.getFullYear()}`;
 
-        // Build yearly breakdown from monthly schedule
+        // Build yearly breakdown from monthly schedule — with real calendar
+        // ranges ("Year 1 (Aug 2026 - Jul 2027)") anchored on the disbursement
+        // date when entered, else today.
         const schedule = result.schedule || [];
-        const yearlyRows: Array<[number, string, string, string]> = [];
+        const yearlyRows: Array<[string, string, string, string]> = [];
         for (let y = 1; y <= Math.ceil(months / 12); y++) {
             const monthSlice = schedule.filter((r: any) => r.month > (y-1)*12 && r.month <= y*12);
             if (monthSlice.length === 0) continue;
@@ -335,7 +337,7 @@ export default function EMICalculator() {
             const intPaid = monthSlice.reduce((s: number, r: any) => s + r.interest, 0);
             const closing = monthSlice[monthSlice.length - 1]?.closingBalance ?? 0;
             yearlyRows.push([
-                y,
+                `${y} (${emiYearRange(loanStartDate, y)})`,
                 `INR ${Math.round(princPaid).toLocaleString('en-IN')}`,
                 `INR ${Math.round(intPaid).toLocaleString('en-IN')}`,
                 `INR ${Math.round(closing).toLocaleString('en-IN')}`,
@@ -367,13 +369,20 @@ export default function EMICalculator() {
             projectionTitle: 'Amortization Schedule',
             projectionColumns: ['Month', 'EMI (INR)', 'Principal (INR)', 'Interest (INR)', 'Balance (INR)'],
             projectionRows: schedule.map((r: any) => [
-                r.month,
+                `${r.month} - ${emiMonthLabel(loanStartDate, r.month)}`,
                 Math.round(r.emi),
                 Math.round(r.principal),
                 Math.round(r.interest),
                 Math.round(r.closingBalance),
             ]),
-            additionalTables: buildExtraTables(),
+            additionalTables: [
+                ...(yearlyRows.length > 0 ? [{
+                    title: 'Year-wise Summary',
+                    columns: ['Year', 'Principal Paid', 'Interest Paid', 'Closing Balance'],
+                    rows: yearlyRows as (string | number)[][],
+                }] : []),
+                ...(buildExtraTables() ?? []),
+            ],
             filename: `FinCalix_${loanType.replace(/\s+/g,'')}_Report_${tag}`,
         };
         await exportToPDF(config);
@@ -401,7 +410,7 @@ export default function EMICalculator() {
             projectionTitle: 'Amortization Schedule',
             projectionColumns: ['Month', 'EMI', 'Principal (INR)', 'Interest (INR)', 'Outstanding Balance'],
             projectionRows: schedule.map((r: any) => [
-                r.month,
+                `${r.month} - ${emiMonthLabel(loanStartDate, r.month)}`,
                 Math.round(r.emi),
                 Math.round(r.principal),
                 Math.round(r.interest),
