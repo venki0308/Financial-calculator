@@ -17,7 +17,8 @@ import {
 import { useExpenseTheme } from '../../theme/expenseTheme';
 import { fmtINR, formatFullDate, getWeekRange, getMonthRange, getYearRange, MONTH_NAMES } from '../../utils/expenseCalculations';
 import { todayStr, shiftLocalDate, parseLocalDate } from '../../utils/dateUtils';
-import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../../utils/exportReport';
+import { exportToExcel, dateTag, type ExportConfig } from '../../utils/exportReport';
+import { generateBusinessPDF } from '../../utils/expenseReportPDF';
 import {
   type BizEntry, type BizEntryType,
   BIZ_EXPENSE_CATEGORIES, BIZ_INCOME_CATEGORIES,
@@ -227,9 +228,26 @@ export default function BusinessDetail() {
     };
   };
 
+  // PDF now uses the styled business report (stat cards, earnings-vs-spending
+  // bars, category donut) instead of the generic calculator export. Labels are
+  // forced English — jsPDF Helvetica cannot render Indian scripts.
   const handleExportPDF = () => {
-    const cfg = buildExportConfig();
-    if (cfg) void exportToPDF(cfg);
+    if (!business) return;
+    const englishPeriod = period.charAt(0).toUpperCase() + period.slice(1);
+    void generateBusinessPDF({
+      businessName: business.name,
+      businessTypeLabel: BUSINESS_TYPE_META[business.type]?.label ?? business.type,
+      periodName: englishPeriod,
+      rangeLabel: range.label,
+      isYearly: period === 'yearly',
+      entries: entries.map(e => ({
+        date: e.date,
+        type: e.type,
+        categoryLabel: getBizCategoryById(e.category)?.label ?? e.category,
+        note: e.note,
+        amount: e.amount,
+      })),
+    });
   };
   const handleExportExcel = () => {
     const cfg = buildExportConfig();

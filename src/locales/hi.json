@@ -572,6 +572,7 @@
     "noDataYear": "इस वर्ष के लिए कोई डेटा नहीं",
     "incomeLabel": "आय",
     "expensesLabel": "खर्च",
+    "downloadAllCategories": "सभी श्रेणियां - एक रिपोर्ट",
     "investmentsLabel": "निवेश",
     "categoryReport": "श्रेणी रिपोर्ट",
     "categoryReportDesc": "एक श्रेणी चुनें और केवल उसी श्रेणी के लेन-देन वाली मासिक रिपोर्ट डाउनलोड करें",

@@ -641,6 +641,398 @@ function ensureRoom(doc: PDFDoc, yPos: number, needed: number): number {
     return yPos;
 }
 
+// ─── VECTOR CHARTS ─────────────────────────────────────────────────────────
+// Drawn natively with jsPDF primitives (rects / triangles / circles) — no
+// canvas, no images, works offline and renders crisp at any zoom. Research
+// on best-in-market trackers (Money Manager, Spendee, Money Lover) and bank
+// statements: users understand donut = "where money went", bars = "when",
+// progress bars = "vs budget". Every chart also keeps a numeric label so the
+// report works in black-and-white printouts too.
+
+/** '#f97316' → [249,115,22]; falls back to MUTED for bad input. */
+function hexToRgb(hex: string | undefined): [number, number, number] {
+    if (!hex) return MUTED;
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+    if (!m) return MUTED;
+    const n = parseInt(m[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/** Distinct fallback palette for series without their own color. */
+const CHART_PALETTE: [number, number, number][] = [
+    [249, 115, 22], [59, 130, 246], [16, 185, 129], [168, 85, 247],
+    [236, 72, 153], [234, 179, 8], [6, 182, 212], [239, 68, 68],
+    [132, 204, 22], [99, 102, 241], [244, 114, 182], [20, 184, 166],
+];
+
+/**
+ * Donut chart with a side legend. Segments are drawn as 2° filled triangle
+ * fans, then the middle is punched out with a white circle (standard jsPDF
+ * approach — there is no native filled-arc primitive).
+ *
+ * items: pre-sorted descending; anything beyond 8 is merged into "Others".
+ * Returns yPos after the chart block.
+ */
+function drawDonutChart(
+    doc: PDFDoc,
+    items: Array<{ label: string; value: number; colorHex?: string }>,
+    opts: { title?: string; centerLabel: string; centerValue: string },
+    yPos: number,
+): number {
+    const positive = items.filter(i => i.value > 0);
+    if (positive.length === 0) return yPos;
+
+    const blockH = 58;
+    let y = ensureRoom(doc, yPos, blockH + (opts.title ? 10 : 0));
+    if (opts.title) y = drawSectionHeader(doc, opts.title, y);
+
+    // Merge tail into "Others" so the legend stays readable
+    const MAX_SEGS = 8;
+    const shown = positive.slice(0, MAX_SEGS - 1);
+    const rest = positive.slice(MAX_SEGS - 1);
+    if (rest.length === 1) shown.push(rest[0]);
+    else if (rest.length > 1) shown.push({ label: 'Others', value: rest.reduce((s2, i) => s2 + i.value, 0) });
+
+    const total = shown.reduce((s2, i) => s2 + i.value, 0);
+    const cx = 15 + 27;            // donut center x (left column)
+    const cy = y + 27;
+    const R = 24;                  // outer radius (mm)
+    const HOLE = 13.5;             // inner radius
+
+    let angle = -90;               // start at 12 o'clock
+    shown.forEach((seg, idx) => {
+        const sweep = (seg.value / total) * 360;
+        const color = seg.colorHex ? hexToRgb(seg.colorHex) : CHART_PALETTE[idx % CHART_PALETTE.length];
+        doc.setFillColor(...color);
+        const STEP = 2;
+        for (let a = angle; a < angle + sweep; a += STEP) {
+            const a2 = Math.min(a + STEP, angle + sweep);
+            const r1 = (a * Math.PI) / 180;
+            const r2 = (a2 * Math.PI) / 180;
+            doc.triangle(
+                cx, cy,
+                cx + R * Math.cos(r1), cy + R * Math.sin(r1),
+                cx + R * Math.cos(r2), cy + R * Math.sin(r2),
+                'F',
+            );
+        }
+        angle += sweep;
+    });
+
+    // Punch the hole + center text
+    doc.setFillColor(255, 255, 255);
+    doc.circle(cx, cy, HOLE, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(...TEXT);
+    doc.text(s(opts.centerValue), cx, cy + 0.5, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(...MUTED);
+    doc.text(s(opts.centerLabel.toUpperCase()), cx, cy + 5, { align: 'center' });
+
+    // Legend (right column): color chip, label, value, pct
+    const legendX = cx + R + 12;
+    const pw = doc.internal.pageSize.getWidth();
+    const rowH = Math.min(6.5, (R * 2) / Math.max(shown.length, 1));
+    let ly = cy - ((shown.length - 1) * rowH) / 2 - 1;
+    shown.forEach((seg, idx) => {
+        const color = seg.colorHex ? hexToRgb(seg.colorHex) : CHART_PALETTE[idx % CHART_PALETTE.length];
+        doc.setFillColor(...color);
+        doc.roundedRect(legendX, ly - 2.2, 3.2, 3.2, 0.8, 0.8, 'F');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...TEXT);
+        const pct = ((seg.value / total) * 100).toFixed(1);
+        const label = s(seg.label);
+        const maxLabelW = pw - 15 - legendX - 48;
+        const clipped = doc.getTextWidth(label) > maxLabelW
+            ? label.slice(0, Math.max(4, Math.floor(label.length * (maxLabelW / doc.getTextWidth(label))) - 2)) + '..'
+            : label;
+        doc.text(clipped, legendX + 5.5, ly + 0.5);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${formatINR(seg.value)}  (${pct}%)`, pw - 15, ly + 0.5, { align: 'right' });
+        ly += rowH;
+    });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(...TEXT);
+    return y + blockH;
+}
+
+/**
+ * Ranked horizontal bars — one row per item: label, tinted bar scaled to the
+ * max value, bold amount + share on the right. The clearest "top categories"
+ * visual for print (beats a donut once there are >6 slices).
+ * Returns yPos after the block. Paginates row-by-row.
+ */
+function drawHBarList(
+    doc: PDFDoc,
+    items: Array<{ label: string; value: number; colorHex?: string; suffix?: string }>,
+    yPos: number,
+    opts?: { title?: string; maxRows?: number },
+): number {
+    const rows = items.filter(i => i.value > 0).slice(0, opts?.maxRows ?? 12);
+    if (rows.length === 0) return yPos;
+
+    let y = yPos;
+    if (opts?.title) y = drawSectionHeader(doc, opts.title, y);
+    const pw = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const labelW = 46;
+    const valueW = 44;
+    const barX = margin + labelW;
+    const barMaxW = pw - margin - valueW - barX;
+    const max = Math.max(...rows.map(r => r.value));
+    const rowH = 8.5;
+
+    rows.forEach((r, idx) => {
+        y = ensureRoom(doc, y, rowH + 2);
+        const color = r.colorHex ? hexToRgb(r.colorHex) : CHART_PALETTE[idx % CHART_PALETTE.length];
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...TEXT);
+        const label = s(r.label);
+        const clipped = doc.getTextWidth(label) > labelW - 3
+            ? label.slice(0, Math.max(4, Math.floor(label.length * ((labelW - 5) / doc.getTextWidth(label))))) + '..'
+            : label;
+        doc.text(clipped, margin, y + 3.6);
+
+        // Track + bar
+        doc.setFillColor(241, 245, 249);
+        doc.roundedRect(barX, y, barMaxW, 5, 1.2, 1.2, 'F');
+        const w = Math.max(1.5, (r.value / max) * barMaxW);
+        doc.setFillColor(...color);
+        doc.roundedRect(barX, y, w, 5, 1.2, 1.2, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...TEXT);
+        doc.text(`${formatINR(r.value)}${r.suffix ? ` ${s(r.suffix)}` : ''}`, pw - margin, y + 3.6, { align: 'right' });
+        y += rowH;
+    });
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    return y + 4;
+}
+
+/**
+ * Vertical bar chart for time series. Two modes:
+ *  - single series (values) tinted by `tone`
+ *  - paired series (values + values2): green vs red side-by-side per label
+ *    (the classic income-vs-expense view users know from bank apps)
+ * Value labels are drawn on top of bars when they fit; x labels are thinned
+ * automatically when there are many bars (e.g. 31 days).
+ * Returns yPos after the chart.
+ */
+function drawBarTrend(
+    doc: PDFDoc,
+    labels: string[],
+    series: Array<{ values: number[]; color: [number, number, number] }>,
+    yPos: number,
+    opts?: { title?: string; height?: number },
+): number {
+    const n = labels.length;
+    if (n === 0 || series.length === 0) return yPos;
+    const H = opts?.height ?? 34;
+    let y = ensureRoom(doc, yPos, H + 14 + (opts?.title ? 10 : 0));
+    if (opts?.title) y = drawSectionHeader(doc, opts.title, y);
+
+    const pw = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const chartW = pw - margin * 2;
+    const max = Math.max(1, ...series.flatMap(s2 => s2.values));
+    const groupW = chartW / n;
+    const barW = Math.min(8, (groupW * 0.72) / series.length);
+    const baseY = y + H;
+
+    // Baseline
+    doc.setDrawColor(...BORDER);
+    doc.setLineWidth(0.25);
+    doc.line(margin, baseY, pw - margin, baseY);
+
+    const labelEvery = n > 20 ? Math.ceil(n / 10) : n > 12 ? 2 : 1;
+    const showValues = n * series.length <= 16;
+
+    labels.forEach((lab, i) => {
+        const groupCenter = margin + groupW * i + groupW / 2;
+        const groupLeft = groupCenter - (barW * series.length) / 2;
+        series.forEach((s2, si) => {
+            const v = s2.values[i] ?? 0;
+            if (v > 0) {
+                const h = Math.max(0.8, (v / max) * (H - 6));
+                doc.setFillColor(...s2.color);
+                doc.roundedRect(groupLeft + si * barW, baseY - h, barW - 0.6, h, 0.6, 0.6, 'F');
+                if (showValues) {
+                    doc.setFontSize(6);
+                    doc.setTextColor(...MUTED);
+                    doc.text(
+                        s(v >= 100000 ? `${(v / 100000).toFixed(1)}L` : v >= 1000 ? `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : String(Math.round(v))),
+                        groupLeft + si * barW + (barW - 0.6) / 2,
+                        baseY - h - 1.2,
+                        { align: 'center' },
+                    );
+                }
+            }
+        });
+        if (i % labelEvery === 0) {
+            doc.setFontSize(6.5);
+            doc.setTextColor(...MUTED);
+            doc.text(s(lab), groupCenter, baseY + 3.6, { align: 'center' });
+        }
+    });
+
+    doc.setFontSize(10);
+    doc.setTextColor(...TEXT);
+    return baseY + 8;
+}
+
+/**
+ * Budget progress bars: one row per category limit — spent vs limit with a
+ * green/amber/red fill and an over-limit marker. The single most requested
+ * "can I still spend?" visual in budgeting apps.
+ */
+function drawBudgetBars(
+    doc: PDFDoc,
+    items: Array<{ label: string; spent: number; limit: number }>,
+    yPos: number,
+    opts?: { title?: string },
+): number {
+    const rows = items.filter(i => i.limit > 0);
+    if (rows.length === 0) return yPos;
+    let y = yPos;
+    if (opts?.title) y = drawSectionHeader(doc, opts.title, y);
+
+    const pw = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const labelW = 46;
+    const valueW = 52;
+    const barX = margin + labelW;
+    const barMaxW = pw - margin - valueW - barX;
+    const rowH = 9.5;
+
+    rows.forEach((r) => {
+        y = ensureRoom(doc, y, rowH + 2);
+        const ratio = r.spent / r.limit;
+        const color: [number, number, number] =
+            ratio > 1 ? EXPENSE : ratio > 0.8 ? [245, 158, 11] : INCOME;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...TEXT);
+        const label = s(r.label);
+        const clipped = doc.getTextWidth(label) > labelW - 3
+            ? label.slice(0, Math.max(4, Math.floor(label.length * ((labelW - 5) / doc.getTextWidth(label))))) + '..'
+            : label;
+        doc.text(clipped, margin, y + 3.6);
+
+        doc.setFillColor(241, 245, 249);
+        doc.roundedRect(barX, y, barMaxW, 5, 1.2, 1.2, 'F');
+        const w = Math.max(1.5, Math.min(1, ratio) * barMaxW);
+        doc.setFillColor(...color);
+        doc.roundedRect(barX, y, w, 5, 1.2, 1.2, 'F');
+        // Percent inside the track when it fits
+        doc.setFontSize(6.5);
+        doc.setTextColor(...(ratio > 0.25 ? HEADER_TEXT : MUTED));
+        doc.text(`${Math.round(ratio * 100)}%`, barX + (ratio > 0.25 ? Math.min(w, barMaxW) - 1.5 : w + 1.5), y + 3.5, { align: ratio > 0.25 ? 'right' : 'left' });
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(...color);
+        doc.text(`${formatINR(r.spent)} / ${formatINR(r.limit)}`, pw - margin, y + 3.6, { align: 'right' });
+        y += rowH;
+    });
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...TEXT);
+    return y + 4;
+}
+
+/**
+ * Calendar heatmap of daily spending — a month grid where darker cells mean
+ * more spent that day. Research: instantly understood ("darker = spent more"),
+ * spots salary-day/weekend/festival spikes, and almost no competitor ships it
+ * in an export. Monday-first to match the app's week convention.
+ */
+function drawCalendarHeatmap(
+    doc: PDFDoc,
+    year: number,
+    month: number,           // 1-12
+    dayTotals: number[],     // index 0 = day 1
+    yPos: number,
+    opts?: { title?: string },
+): number {
+    const daysInMo = new Date(year, month, 0).getDate();
+    const firstDow = (new Date(year, month - 1, 1).getDay() + 6) % 7; // 0 = Monday
+    const weeks = Math.ceil((firstDow + daysInMo) / 7);
+
+    const cellW = 11.5, cellH = 8, gap = 1.2;
+    const gridW = 7 * cellW + 6 * gap;
+    const blockH = 6 + weeks * (cellH + gap) + 8;
+    let y = ensureRoom(doc, yPos, blockH + (opts?.title ? 10 : 0));
+    if (opts?.title) y = drawSectionHeader(doc, opts.title, y);
+
+    const pw = doc.internal.pageSize.getWidth();
+    const gridX = (pw - gridW) / 2;
+    const max = Math.max(...dayTotals, 1);
+
+    // Weekday header row
+    const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    doc.setFontSize(6.5);
+    doc.setTextColor(...MUTED);
+    DOW.forEach((d2, i) => {
+        doc.text(d2, gridX + i * (cellW + gap) + cellW / 2, y + 3, { align: 'center' });
+    });
+    y += 5.5;
+
+    for (let day = 1; day <= daysInMo; day++) {
+        const slot = firstDow + day - 1;
+        const col = slot % 7;
+        const row = Math.floor(slot / 7);
+        const x = gridX + col * (cellW + gap);
+        const cy = y + row * (cellH + gap);
+        const v = dayTotals[day - 1] ?? 0;
+
+        if (v > 0) {
+            // Blend white → EXPENSE red by intensity (min 12% so small spends show)
+            const t = 0.12 + 0.88 * (v / max);
+            doc.setFillColor(
+                Math.round(255 - (255 - EXPENSE[0]) * t),
+                Math.round(255 - (255 - EXPENSE[1]) * t),
+                Math.round(255 - (255 - EXPENSE[2]) * t),
+            );
+            doc.roundedRect(x, cy, cellW, cellH, 1, 1, 'F');
+        } else {
+            doc.setFillColor(248, 250, 252);
+            doc.setDrawColor(...BORDER);
+            doc.setLineWidth(0.15);
+            doc.roundedRect(x, cy, cellW, cellH, 1, 1, 'FD');
+        }
+
+        doc.setFontSize(5.5);
+        doc.setTextColor(...(v > max * 0.55 ? HEADER_TEXT : MUTED));
+        doc.text(String(day), x + 1.4, cy + 3);
+        if (v > 0) {
+            doc.setFontSize(5.5);
+            doc.setTextColor(...(v > max * 0.55 ? HEADER_TEXT : TEXT));
+            const label = v >= 100000 ? `${(v / 100000).toFixed(1)}L` : v >= 1000 ? `${Math.round(v / 1000)}k` : String(Math.round(v));
+            doc.text(label, x + cellW - 1.2, cy + cellH - 1.6, { align: 'right' });
+        }
+    }
+
+    y += weeks * (cellH + gap) + 3;
+    doc.setFontSize(6.5);
+    doc.setTextColor(...MUTED);
+    doc.text('Darker = more spent that day', pw / 2, y, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setTextColor(...TEXT);
+    return y + 6;
+}
+
 /**
  * Draws the full disclaimer block at the end of a report.
  * Renders as a bordered box with purple-tinted background, bold title,
@@ -976,9 +1368,12 @@ export async function generateDailyPDF(data: DailyReportData): Promise<void> {
     }
     yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
 
-    // ── SECTION 2: SPENDING BY CATEGORY ─────────────────────────────────
+    // ── SECTION 2: SPENDING BY CATEGORY (donut + detail table) ──────────
     if (summary.expenseByCategory.length > 0) {
-        yPos = drawSectionHeader(doc, 'Spending by Category', yPos);
+        yPos = drawDonutChart(doc,
+            summary.expenseByCategory.map(c => ({ label: c.categoryName, value: c.amount, colorHex: c.categoryColor })),
+            { title: 'Where Your Money Went Today', centerLabel: 'Spent', centerValue: formatINR(summary.totalExpenses) },
+            yPos);
         const catBody: (string | number)[][] = summary.expenseByCategory.map((c) => [
             c.categoryName,
             formatINR(c.amount),
@@ -1238,7 +1633,16 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
         { label: weekChange ? 'vs Last Week' : 'Entries', value: weekChange || String(summary.entryCount), tone: 'neutral' },
     ], yPos);
 
-    // ── SECTION 1: DAY-BY-DAY ───────────────────────────────────────────
+    // ── SECTION 1: DAY-BY-DAY (income vs spending bars + table) ─────────
+    yPos = drawBarTrend(doc,
+        daysInWeek.map(d => d.dayName.slice(0, 3)),
+        [
+            { values: daysInWeek.map(d => dailyMap.get(d.date)?.income ?? 0), color: INCOME },
+            { values: daysInWeek.map(d => dailyMap.get(d.date)?.expenses ?? 0), color: EXPENSE },
+        ],
+        yPos,
+        { title: 'Income vs Spending - Day by Day' });
+
     yPos = drawSectionHeader(doc, `Day-by-Day Summary - ${data.rangeLabel}`, yPos);
 
     let totalI = 0, totalE = 0, totalIn = 0;
@@ -1328,8 +1732,12 @@ export async function generateWeeklyPDF(data: WeeklyReportData): Promise<void> {
     }
     yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
 
-    // ── SECTION 3: SPENDING BY CATEGORY ─────────────────────────────────
+    // ── SECTION 3: SPENDING BY CATEGORY (ranked bars + detail table) ────
     if (summary.expenseByCategory.length > 0) {
+        yPos = drawHBarList(doc,
+            summary.expenseByCategory.map(c => ({ label: c.categoryName, value: c.amount, colorHex: c.categoryColor })),
+            yPos,
+            { title: 'Top Spending Categories', maxRows: 8 });
         yPos = drawSectionHeader(doc, 'Weekly Spending by Category', yPos);
         const catBody: (string | number)[][] = summary.expenseByCategory.map((c) => [
             c.categoryName,
@@ -1542,6 +1950,29 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     yPos = barY + barH + 6;
     doc.setTextColor(...TEXT);
     doc.setFont('helvetica', 'normal');
+
+    // ── VISUAL DASHBOARD: daily trend + category donut ──────────────────
+    // "How did I spend this month?" answered before a single table: bars
+    // show WHEN money left, the donut shows WHERE it went.
+    {
+        const daysInMo = new Date(data.year, data.month, 0).getDate();
+        const dayTotals = new Array<number>(daysInMo).fill(0);
+        for (const e of data.entries) {
+            if (e.type !== 'expense') continue;
+            const d = Number(e.date.slice(8, 10));
+            if (d >= 1 && d <= daysInMo) dayTotals[d - 1] += e.amount;
+        }
+        if (dayTotals.some(v => v > 0)) {
+            yPos = drawCalendarHeatmap(doc, data.year, data.month, dayTotals, yPos,
+                { title: 'Daily Spending Calendar' });
+        }
+        if (summary.expenseByCategory.length > 0) {
+            yPos = drawDonutChart(doc,
+                summary.expenseByCategory.map(c => ({ label: c.categoryName, value: c.amount, colorHex: c.categoryColor })),
+                { title: 'Where Your Money Went', centerLabel: 'Spent', centerValue: formatINR(summary.totalExpenses) },
+                yPos);
+        }
+    }
 
     // ── SECTION 1: CASH FLOW (ACTUAL — what was logged) ─────────────────
     yPos = drawSectionHeader(doc, l('cashFlowActual', `${data.monthLabel} Cash Flow (Actual)`).replace('{{month}}', data.monthLabel), yPos);
@@ -1906,6 +2337,14 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
     const visibleWeeks = allWeeks.filter((w) => w.startDate <= today);
 
     if (visibleWeeks.length > 0) {
+        yPos = drawBarTrend(doc,
+            visibleWeeks.map(w => `Wk ${w.weekNumber}`),
+            [
+                { values: visibleWeeks.map(w => w.income), color: INCOME },
+                { values: visibleWeeks.map(w => w.expenses), color: EXPENSE },
+            ],
+            yPos,
+            { title: 'Income vs Spending - Week by Week' });
         yPos = drawSectionHeader(doc, l('weekByWeekSummary', 'Week-by-Week Summary'), yPos);
         let wI = 0, wE = 0, wIn = 0;
         const wBody: (string | number)[][] = visibleWeeks.map((w) => {
@@ -2067,8 +2506,18 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
         yPos = drawCreditCardSection(doc, autoTable, data.creditCards, yPos, headerHook);
     }
 
-    // ── SECTION 7: BUDGET PERFORMANCE ───────────────────────────────────
+    // ── SECTION 7: BUDGET PERFORMANCE (progress bars + detail table) ────
     if (data.budget && data.budget.categoryLimits.length > 0) {
+        yPos = drawBudgetBars(doc,
+            data.budget.categoryLimits
+                .filter(cl => cl.monthlyLimit > 0)
+                .map(cl => ({
+                    label: getCategoryById(cl.categoryId)?.name ?? cl.categoryId,
+                    spent: summary.expenseByCategory.find(c => c.categoryId === cl.categoryId)?.amount ?? 0,
+                    limit: cl.monthlyLimit,
+                })),
+            yPos,
+            { title: 'Budget Health at a Glance' });
         yPos = drawSectionHeader(doc, l('budgetVsActual', 'Budget vs Actual'), yPos);
         let totalLimit = 0, totalSpent = 0;
         const budgetBody: (string | number)[][] = data.budget.categoryLimits.map((cl) => {
@@ -2205,21 +2654,21 @@ export interface CategoryReportData {
     budget?: Budget;           // for the category's monthly limit (if set)
 }
 
-export async function generateCategoryPDF(data: CategoryReportData): Promise<void> {
-    const { jsPDF, autoTable } = await getJsPDF();
-    await yieldToUI();
-
-    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+/**
+ * Renders one category's full mini-report (stat boxes, budget check, daily
+ * bars, week-by-week, transaction log) starting at yPos. Shared by the
+ * single-category PDF and the all-categories PDF (one section per category).
+ * Returns yPos after the last table.
+ */
+function renderCategorySection(
+    doc: PDFDoc,
+    autoTable: AutoTable,
+    headerHook: CellHook,
+    data: CategoryReportData,
+    startY: number,
+): number {
+    let yPos = startY;
     const catName = data.category.name;
-    const reportType = 'Category Report';
-    const periodLabel = `${s(catName)} - ${data.monthLabel}`;
-
-    setReportContext(doc, reportType, periodLabel);
-    drawHeader(doc, reportType, periodLabel);
-    const headerHook = makeHeaderHook(doc, reportType, periodLabel);
-
-    let yPos = 36;
-
     const catType = data.category.type;
     const catEntries = data.entries
         .filter(e => e.category === data.category.id && e.type === catType)
@@ -2281,6 +2730,22 @@ export async function generateCategoryPDF(data: CategoryReportData): Promise<voi
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
     }
 
+    // ── DAILY PATTERN (bars) ────────────────────────────────────────────
+    if (catEntries.length > 0) {
+        const daysInMo = new Date(data.year, data.month, 0).getDate();
+        const dayTotals = new Array<number>(daysInMo).fill(0);
+        for (const e of catEntries) {
+            const d = Number(e.date.slice(8, 10));
+            if (d >= 1 && d <= daysInMo) dayTotals[d - 1] += e.amount;
+        }
+        const toneColor = catType === 'income' ? INCOME : catType === 'investment' ? INVESTMENT : EXPENSE;
+        yPos = drawBarTrend(doc,
+            Array.from({ length: daysInMo }, (_, i) => String(i + 1)),
+            [{ values: dayTotals, color: toneColor }],
+            yPos,
+            { title: `When You ${catType === 'income' ? 'Earned' : 'Spent'} - Day by Day` });
+    }
+
     // ── WEEK-BY-WEEK SUBTOTALS ──────────────────────────────────────────
     if (catEntries.length > 0) {
         yPos = drawSectionHeader(doc, 'Week-by-Week Summary', yPos);
@@ -2333,10 +2798,133 @@ export async function generateCategoryPDF(data: CategoryReportData): Promise<voi
         });
     }
 
-    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
+    return (doc as PDFDoc).lastAutoTable.finalY + 10;
+}
+
+export async function generateCategoryPDF(data: CategoryReportData): Promise<void> {
+    const { jsPDF, autoTable } = await getJsPDF();
+    await yieldToUI();
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const reportType = 'Category Report';
+    const periodLabel = `${s(data.category.name)} - ${data.monthLabel}`;
+
+    setReportContext(doc, reportType, periodLabel);
+    drawHeader(doc, reportType, periodLabel);
+    const headerHook = makeHeaderHook(doc, reportType, periodLabel);
+
+    const yPos = renderCategorySection(doc, autoTable, headerHook, data, 36);
+
+    drawDisclaimerBlock(doc, yPos);
     drawFooters(doc);
-    const safeCat = catName.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Category';
+    const safeCat = data.category.name.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Category';
     await savePDF(doc, `FinCalix_${safeCat}_${monShortYear(data.year, data.month)}.pdf`);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 3C. ALL-CATEGORIES REPORT — one section per category, one download
+// ═══════════════════════════════════════════════════════════════════════════
+// User feedback: "category wise reports download and every category should be
+// one report" — a single PDF where page 1 is the overview (donut + ranked
+// bars) and every category that has activity gets its OWN page with the full
+// category mini-report (stats, budget check, daily bars, transactions).
+
+export interface AllCategoriesReportData {
+    year: number;
+    month: number;             // 1-12
+    monthLabel: string;        // "July 2026"
+    /** ALL entries for the month (unfiltered). */
+    entries: Entry[];
+    budget?: Budget;
+    /** Active categories (id, name, type, color) — pass getAllCategories(). */
+    categories: Array<{ id: string; name: string; type: EntryType; color?: string }>;
+}
+
+export async function generateAllCategoriesPDF(data: AllCategoriesReportData): Promise<void> {
+    const { jsPDF, autoTable } = await getJsPDF();
+    await yieldToUI();
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const reportType = 'Category-wise Report';
+    const periodLabel = data.monthLabel;
+
+    setReportContext(doc, reportType, periodLabel);
+    drawHeader(doc, reportType, periodLabel);
+    const headerHook = makeHeaderHook(doc, reportType, periodLabel);
+
+    let yPos = 36;
+
+    // Categories that actually have activity this month, expenses first —
+    // each becomes its own page below.
+    const ORDER: Record<string, number> = { expense: 0, income: 1, investment: 2 };
+    const active = data.categories
+        .map(c => {
+            const catEntries = data.entries.filter(e => e.category === c.id && e.type === c.type);
+            return { cat: c, count: catEntries.length, total: catEntries.reduce((s2, e) => s2 + e.amount, 0) };
+        })
+        .filter(c => c.count > 0 && c.cat.type !== 'transfer')
+        .sort((a, b) => (ORDER[a.cat.type] ?? 9) - (ORDER[b.cat.type] ?? 9) || b.total - a.total);
+
+    const expenseCats = active.filter(c => c.cat.type === 'expense');
+    const totalExpenses = expenseCats.reduce((s2, c) => s2 + c.total, 0);
+    const totalIncome = active.filter(c => c.cat.type === 'income').reduce((s2, c) => s2 + c.total, 0);
+
+    // ── PAGE 1: OVERVIEW ────────────────────────────────────────────────
+    yPos = drawStatBoxes(doc, [
+        { label: 'Total Income', value: formatINR(totalIncome), tone: 'income' },
+        { label: 'Total Spent', value: formatINR(totalExpenses), tone: 'expense' },
+        { label: 'Categories Used', value: String(active.length), tone: 'neutral' },
+    ], yPos);
+
+    if (expenseCats.length > 0) {
+        yPos = drawDonutChart(doc,
+            expenseCats.map(c => ({ label: c.cat.name, value: c.total, colorHex: c.cat.color })),
+            { title: 'Where Your Money Went', centerLabel: 'Spent', centerValue: formatINR(totalExpenses) },
+            yPos);
+        yPos = drawHBarList(doc,
+            expenseCats.map(c => ({ label: c.cat.name, value: c.total, colorHex: c.cat.color })),
+            yPos,
+            { title: 'All Spending Categories - Ranked', maxRows: 20 });
+    }
+
+    // Index table: category → total → page number (filled after layout).
+    yPos = drawSectionHeader(doc, 'Report Contents', yPos);
+    const indexBody = active.map((c, i) => [
+        String(i + 1),
+        c.cat.name,
+        typeLabel(c.cat.type),
+        entriesLabel(c.count),
+        formatINR(c.total),
+    ]);
+    table(doc, autoTable, {
+        head: [['#', 'Category', 'Type', 'Entries', 'Total']],
+        body: indexBody,
+        startY: yPos,
+        headerHook,
+        columnStyles: { 0: { halign: 'center', cellWidth: 10 }, 4: { halign: 'right' } },
+    });
+
+    // ── ONE PAGE PER CATEGORY ───────────────────────────────────────────
+    for (const c of active) {
+        doc.addPage();
+        // Same label as the page-header hook: the hook re-draws headers on
+        // pages it hasn't seen, so identical content keeps that idempotent.
+        drawHeader(doc, reportType, periodLabel);
+        let y = 36;
+        y = drawSectionHeader(doc, `${s(c.cat.name)} (${typeLabel(c.cat.type)})`, y);
+        renderCategorySection(doc, autoTable, headerHook, {
+            year: data.year,
+            month: data.month,
+            monthLabel: data.monthLabel,
+            category: { id: c.cat.id, name: c.cat.name, type: c.cat.type },
+            entries: data.entries,
+            budget: data.budget,
+        }, y);
+    }
+
+    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 10);
+    drawFooters(doc);
+    await savePDF(doc, `FinCalix_All_Categories_${monShortYear(data.year, data.month)}.pdf`);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2490,6 +3078,22 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
     doc.setTextColor(...TEXT);
     doc.setFont('helvetica', 'normal');
 
+    // Month-by-month income vs spending bars — the YNAB-style "year at a
+    // glance" view, drawn before the detail table.
+    {
+        const withData = monthRows.filter(r => r.hasAnyData);
+        if (withData.length > 0) {
+            yPos = drawBarTrend(doc,
+                monthRows.map(r => r.label.slice(0, 3)),
+                [
+                    { values: monthRows.map(r => r.inc), color: INCOME },
+                    { values: monthRows.map(r => r.exp), color: EXPENSE },
+                ],
+                yPos,
+                { title: 'Income vs Spending - Month by Month', height: 40 });
+        }
+    }
+
     yPos = drawSectionHeader(doc, 'Month-by-Month Breakdown', yPos);
 
     // Bug 3 + Bug 5: render "—" for the savings-rate cell when income
@@ -2604,6 +3208,10 @@ export async function generateAnnualPDF(data: AnnualReportData): Promise<void> {
     }
 
     if (mergedCats.length > 0) {
+        yPos = drawDonutChart(doc,
+            mergedCats.map(c => ({ label: c.name, value: c.amount, colorHex: getCategoryById(c.id)?.color })),
+            { title: 'Where Your Money Went This Year', centerLabel: 'Spent', centerValue: formatINR(annualCanonExpenses) },
+            yPos);
         yPos = drawSectionHeader(doc, 'Annual Spending by Category', yPos);
         const denom = annualCanonExpenses > 0 ? annualCanonExpenses : 1;
         const catBody: (string | number)[][] = mergedCats.map((c, i) => [
@@ -2832,8 +3440,19 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
     });
     yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
 
-    // ── DAY-BY-DAY SUMMARY ──────────────────────────────────────────────
+    // ── DAY-BY-DAY SUMMARY (bars + table) ───────────────────────────────
     if (summary.dailyTotals.length > 0) {
+        // Bars only when the range is short enough to stay readable
+        if (summary.dailyTotals.length <= 45) {
+            yPos = drawBarTrend(doc,
+                summary.dailyTotals.map(d => shortDate(d.date)),
+                [
+                    { values: summary.dailyTotals.map(d => d.income), color: INCOME },
+                    { values: summary.dailyTotals.map(d => d.expenses), color: EXPENSE },
+                ],
+                yPos,
+                { title: 'Income vs Spending - Day by Day' });
+        }
         yPos = drawSectionHeader(doc, 'Day-by-Day Summary', yPos);
         let dI = 0, dE = 0, dIn = 0;
         const dayBody: (string | number)[][] = summary.dailyTotals.map((d) => {
@@ -2861,8 +3480,12 @@ export async function generateCustomPDF(data: CustomReportData): Promise<void> {
         yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
     }
 
-    // ── SPENDING BY CATEGORY ────────────────────────────────────────────
+    // ── SPENDING BY CATEGORY (donut + table) ────────────────────────────
     if (summary.expenseByCategory.length > 0) {
+        yPos = drawDonutChart(doc,
+            summary.expenseByCategory.map(c => ({ label: c.categoryName, value: c.amount, colorHex: c.categoryColor })),
+            { title: 'Where Your Money Went', centerLabel: 'Spent', centerValue: formatINR(summary.totalExpenses) },
+            yPos);
         yPos = drawSectionHeader(doc, 'Spending by Category', yPos);
         const catBody: (string | number)[][] = summary.expenseByCategory.map((c, i) => [
             i + 1,
@@ -3231,6 +3854,196 @@ export const addPageHeaderFooter = {
 // Amount column is RAW number (no currency prefix) so spreadsheets can sum it.
 // Type column is the literal "expense" / "income" / "investment" so users can
 // filter or pivot. Date is YYYY-MM-DD (ISO) for sortability.
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 7. BUSINESS REPORT (Business Tracker)
+// ═══════════════════════════════════════════════════════════════════════════
+// Replaces the generic calculator-style exportToPDF for businesses with the
+// same visual design language as the expense reports: stat cards, income vs
+// expense bars, category donut, then detail tables. The caller (Business
+// Detail page) resolves category ids to display labels before passing data.
+
+export interface BusinessReportEntry {
+    date: string;              // YYYY-MM-DD
+    type: 'income' | 'expense';
+    categoryLabel: string;     // already resolved to display text
+    note?: string;
+    amount: number;
+}
+
+export interface BusinessReportData {
+    businessName: string;
+    businessTypeLabel: string;
+    periodName: string;        // "Daily" | "Weekly" | "Monthly" | "Yearly"
+    rangeLabel: string;        // "1 Jul - 31 Jul 2026"
+    entries: BusinessReportEntry[];
+    /** For yearly reports: month-wise rollup labels like "Jul 2026". */
+    isYearly?: boolean;
+}
+
+export async function generateBusinessPDF(data: BusinessReportData): Promise<void> {
+    const { jsPDF, autoTable } = await getJsPDF();
+    await yieldToUI();
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const reportType = `${s(data.businessName)} - Business Report`;
+    const periodLabel = `${data.periodName} (${s(data.rangeLabel)})`;
+
+    setReportContext(doc, reportType, periodLabel);
+    drawHeader(doc, reportType, periodLabel);
+    const headerHook = makeHeaderHook(doc, reportType, periodLabel);
+
+    let yPos = 36;
+
+    const income = data.entries.filter(e => e.type === 'income').reduce((s2, e) => s2 + e.amount, 0);
+    const expenses = data.entries.filter(e => e.type === 'expense').reduce((s2, e) => s2 + e.amount, 0);
+    const net = income - expenses;
+    const margin = income > 0 ? (net / income) * 100 : null;
+
+    // ── STAT CARDS ──────────────────────────────────────────────────────
+    yPos = drawStatBoxes(doc, [
+        { label: 'Total Income', value: formatINR(income), tone: 'income' },
+        { label: 'Total Expenses', value: formatINR(expenses), tone: 'expense' },
+        { label: 'Net Profit', value: formatINR(net), tone: net >= 0 ? 'income' : 'expense' },
+    ], yPos);
+
+    const activeDates = [...new Set(data.entries.map(e => e.date))].sort();
+    yPos = drawStatBoxes(doc, [
+        { label: 'Profit Margin', value: margin === null ? 'N/A' : `${margin.toFixed(1)}%`, tone: margin !== null && margin >= 0 ? 'income' : 'expense' },
+        { label: 'Active Days', value: String(activeDates.length), tone: 'neutral' },
+        { label: 'Avg Daily Profit', value: formatINR(activeDates.length > 0 ? net / activeDates.length : 0), tone: 'neutral' },
+    ], yPos);
+
+    // ── EARNINGS vs SPENDING TREND ──────────────────────────────────────
+    // Yearly → by month; other periods → by day (when readable).
+    if (data.isYearly) {
+        const byMonth = new Map<string, { income: number; expenses: number }>();
+        for (const e of data.entries) {
+            const key = e.date.slice(0, 7);
+            if (!byMonth.has(key)) byMonth.set(key, { income: 0, expenses: 0 });
+            const m = byMonth.get(key)!;
+            if (e.type === 'income') m.income += e.amount; else m.expenses += e.amount;
+        }
+        const months = [...byMonth.keys()].sort();
+        if (months.length > 1) {
+            yPos = drawBarTrend(doc,
+                months.map(k => MONTH_NAMES[Number(k.slice(5, 7)) - 1]),
+                [
+                    { values: months.map(k => byMonth.get(k)!.income), color: INCOME },
+                    { values: months.map(k => byMonth.get(k)!.expenses), color: EXPENSE },
+                ],
+                yPos,
+                { title: 'Earnings vs Spending - Month by Month', height: 40 });
+        }
+    } else if (activeDates.length > 1 && activeDates.length <= 45) {
+        const byDay = new Map<string, { income: number; expenses: number }>();
+        for (const d of activeDates) byDay.set(d, { income: 0, expenses: 0 });
+        for (const e of data.entries) {
+            const m = byDay.get(e.date)!;
+            if (e.type === 'income') m.income += e.amount; else m.expenses += e.amount;
+        }
+        yPos = drawBarTrend(doc,
+            activeDates.map(d => shortDate(d)),
+            [
+                { values: activeDates.map(d => byDay.get(d)!.income), color: INCOME },
+                { values: activeDates.map(d => byDay.get(d)!.expenses), color: EXPENSE },
+            ],
+            yPos,
+            { title: 'Earnings vs Spending - Day by Day' });
+    }
+
+    // ── EXPENSES BY CATEGORY (donut + ranked bars) ──────────────────────
+    const expByCat = new Map<string, number>();
+    for (const e of data.entries) {
+        if (e.type !== 'expense') continue;
+        expByCat.set(e.categoryLabel, (expByCat.get(e.categoryLabel) ?? 0) + e.amount);
+    }
+    const catRows = [...expByCat.entries()]
+        .map(([label, value]) => ({ label, value }))
+        .sort((a, b) => b.value - a.value);
+    if (catRows.length > 0) {
+        yPos = drawDonutChart(doc, catRows,
+            { title: 'Business Expenses by Category', centerLabel: 'Spent', centerValue: formatINR(expenses) },
+            yPos);
+    }
+
+    // ── INCOME SOURCES ──────────────────────────────────────────────────
+    const incByCat = new Map<string, number>();
+    for (const e of data.entries) {
+        if (e.type !== 'income') continue;
+        incByCat.set(e.categoryLabel, (incByCat.get(e.categoryLabel) ?? 0) + e.amount);
+    }
+    const incRows = [...incByCat.entries()]
+        .map(([label, value]) => ({ label, value, colorHex: '#22c55e' }))
+        .sort((a, b) => b.value - a.value);
+    if (incRows.length > 0) {
+        yPos = drawHBarList(doc, incRows, yPos, { title: 'Income Sources', maxRows: 10 });
+    }
+
+    // ── DAY-WISE / MONTH-WISE SUMMARY TABLE ─────────────────────────────
+    if (activeDates.length > 0) {
+        const rollupKey = data.isYearly ? (d: string) => d.slice(0, 7) : (d: string) => d;
+        const rollupLabel = data.isYearly
+            ? (k: string) => `${MONTH_NAMES[Number(k.slice(5, 7)) - 1]} ${k.slice(0, 4)}`
+            : (k: string) => fullDate(k);
+        const rollup = new Map<string, { income: number; expenses: number }>();
+        for (const e of data.entries) {
+            const k = rollupKey(e.date);
+            if (!rollup.has(k)) rollup.set(k, { income: 0, expenses: 0 });
+            const m = rollup.get(k)!;
+            if (e.type === 'income') m.income += e.amount; else m.expenses += e.amount;
+        }
+        yPos = drawSectionHeader(doc, data.isYearly ? 'Month-wise Summary' : 'Day-wise Summary', yPos);
+        const rollBody: (string | number)[][] = [...rollup.entries()]
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([k, v]) => [rollupLabel(k), formatINR(v.income), formatINR(v.expenses), formatINR(v.income - v.expenses)]);
+        rollBody.push(['TOTAL', formatINR(income), formatINR(expenses), formatINR(net)]);
+        table(doc, autoTable, {
+            head: [[data.isYearly ? 'Month' : 'Date', 'Income', 'Expenses', 'Net Profit']],
+            body: rollBody,
+            startY: yPos,
+            headerHook,
+            columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    }
+
+    // ── TRANSACTION LOG ─────────────────────────────────────────────────
+    yPos = drawSectionHeader(doc, 'All Transactions', yPos);
+    if (data.entries.length === 0) {
+        table(doc, autoTable, {
+            head: [['Date', 'Type', 'Category', 'Note', 'Amount']],
+            body: [['—', '—', '—', 'No entries recorded for this period', '—']],
+            startY: yPos,
+            headerHook,
+        });
+    } else {
+        const sorted = [...data.entries].sort((a, b) => a.date.localeCompare(b.date));
+        const trimmed = sorted.slice(0, MAX_TX_ROWS);
+        const txBody = trimmed.map(e => [
+            shortDate(e.date),
+            e.type === 'income' ? 'Income' : 'Expense',
+            s(e.categoryLabel),
+            s(e.note || '—'),
+            formatINR(e.amount),
+        ]);
+        txBody.push(['TOTAL', '', '', sorted.length > MAX_TX_ROWS ? `(first ${MAX_TX_ROWS} of ${sorted.length})` : '', formatINR(net)]);
+        table(doc, autoTable, {
+            head: [['Date', 'Type', 'Category', 'Note', 'Amount']],
+            body: txBody,
+            startY: yPos,
+            headerHook,
+            amountColIdx: 4,
+            typeColIdx: 1,
+            columnStyles: { 4: { halign: 'right' } },
+        });
+    }
+
+    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
+    drawFooters(doc);
+    const safeName = data.businessName.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Business';
+    await savePDF(doc, `FinCalix_Business_${safeName}_${data.periodName}_${dateTag()}.pdf`);
+}
 
 export interface CSVExportData {
     /** Pretty label for the date range — used in the filename */

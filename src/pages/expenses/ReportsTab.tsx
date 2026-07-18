@@ -40,6 +40,7 @@ import {
   generateHealthReportPDF,
   generateExpenseCSV,
   generateCategoryPDF,
+  generateAllCategoriesPDF,
 } from '../../utils/expenseReportPDF';
 import { getEnglishT } from '../../utils/exportReport';
 import type { PDFSubscription } from '../../utils/expenseReportPDF';
@@ -515,6 +516,28 @@ export default function ReportsTab() {
       });
     } catch (err) {
       console.error('Category report generation failed:', err);
+    } finally {
+      setGenerating(null);
+    }
+  };
+
+  // All-categories report — one PDF, overview page + one page per category
+  // that has activity in the selected month.
+  const handleGenerateAllCategories = async () => {
+    setGenerating('allcats');
+    try {
+      const entries = getEntriesForMonth(selectedCatMonth.year, selectedCatMonth.month);
+      const monthBudget = getBudgetForMonth(selectedCatMonth.monthStr);
+      await generateAllCategoriesPDF({
+        year: selectedCatMonth.year,
+        month: selectedCatMonth.month,
+        monthLabel: selectedCatMonth.label,
+        entries,
+        budget: monthBudget,
+        categories: reportCategories.map(c => ({ id: c.id, name: c.name, type: c.type, color: c.color })),
+      });
+    } catch (err) {
+      console.error('All-categories report generation failed:', err);
     } finally {
       setGenerating(null);
     }
@@ -1360,6 +1383,29 @@ export default function ReportsTab() {
                   <>
                     <Download size={14} />
                     {t('expenses.downloadCategoryReport', 'Download Category Report')}
+                  </>
+                )}
+              </button>
+
+              {/* All categories in one PDF — overview + one page per category */}
+              <button
+                onClick={handleGenerateAllCategories}
+                disabled={generating !== null}
+                className="w-full mt-2 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                style={{
+                  backgroundColor: theme.bgCard,
+                  color: '#0891b2',
+                  border: '1.5px solid #0891b250',
+                }}
+              >
+                {generating === 'allcats' ? (
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                    <Download size={14} />
+                  </motion.div>
+                ) : (
+                  <>
+                    <Download size={14} />
+                    {t('expenses.downloadAllCategories', 'All Categories - One Report')}
                   </>
                 )}
               </button>
