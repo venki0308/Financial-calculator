@@ -2175,6 +2175,171 @@ export async function generateMonthlyPDF(data: MonthlyReportData): Promise<void>
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// 3B. CATEGORY REPORT (single category, one month)
+// ═══════════════════════════════════════════════════════════════════════════
+// User-requested (Telugu feedback): "monthly report export chesinapudu naku
+// category wise report kavali... edaina category select chesthe only aa
+// category expenses ravali" — the full monthly PDF only shows category
+// STATISTICS; picking a category must export ONLY that category's
+// transactions. `entries` is the FULL month's entry list (unfiltered) so the
+// report can show the category's share of total spending; filtering to the
+// selected category happens here.
+
+const PAYMENT_LABELS: Record<string, string> = {
+    cash: 'Cash', upi: 'UPI', card: 'Card', credit_card: 'Credit Card',
+    debit_card: 'Debit Card', netbanking: 'Net Banking', bank_transfer: 'Bank Transfer',
+    wallet: 'Wallet', auto_debit: 'Auto Debit', cheque: 'Cheque', other: 'Other',
+};
+
+function paymentLabel(method: string): string {
+    return PAYMENT_LABELS[method] ?? (method ? method.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—');
+}
+
+export interface CategoryReportData {
+    year: number;
+    month: number;             // 1-12
+    monthLabel: string;        // "July 2026"
+    category: { id: string; name: string; type: EntryType };
+    /** ALL entries for the month (unfiltered) — needed for share-of-total. */
+    entries: Entry[];
+    budget?: Budget;           // for the category's monthly limit (if set)
+}
+
+export async function generateCategoryPDF(data: CategoryReportData): Promise<void> {
+    const { jsPDF, autoTable } = await getJsPDF();
+    await yieldToUI();
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const catName = data.category.name;
+    const reportType = 'Category Report';
+    const periodLabel = `${s(catName)} - ${data.monthLabel}`;
+
+    setReportContext(doc, reportType, periodLabel);
+    drawHeader(doc, reportType, periodLabel);
+    const headerHook = makeHeaderHook(doc, reportType, periodLabel);
+
+    let yPos = 36;
+
+    const catType = data.category.type;
+    const catEntries = data.entries
+        .filter(e => e.category === data.category.id && e.type === catType)
+        .sort((a, b) => a.date.localeCompare(b.date) || (a.createdAt || '').localeCompare(b.createdAt || ''));
+    const catTotal = catEntries.reduce((sum, e) => sum + e.amount, 0);
+
+    // Share of the month's total for the same entry type (e.g. Food as % of
+    // all July expenses). Guard against divide-by-zero on empty months.
+    const monthTypeTotal = data.entries
+        .filter(e => e.type === catType)
+        .reduce((sum, e) => sum + e.amount, 0);
+    const sharePct = monthTypeTotal > 0 ? (catTotal / monthTypeTotal) * 100 : 0;
+
+    // Daily average: current calendar month → days elapsed so far; past
+    // months → full month length.
+    const daysInMonth = new Date(data.year, data.month, 0).getDate();
+    const today = getTodayStr();
+    const isCurrentMonth = today.slice(0, 7) === `${data.year}-${String(data.month).padStart(2, '0')}`;
+    const daysForAvg = isCurrentMonth ? Math.max(1, Number(today.slice(8, 10))) : daysInMonth;
+
+    const typeNoun = catType === 'income' ? 'Income' : catType === 'investment' ? 'Invested' : 'Spent';
+    const tone: 'expense' | 'income' | 'investment' =
+        catType === 'income' ? 'income' : catType === 'investment' ? 'investment' : 'expense';
+
+    // ── SUMMARY BANNER ──────────────────────────────────────────────────
+    yPos = drawStatBoxes(doc, [
+        { label: `Total ${typeNoun}`, value: formatINR(catTotal), tone },
+        { label: 'Transactions', value: String(catEntries.length), tone: 'neutral' },
+        { label: `Share of ${catType === 'expense' ? 'Expenses' : catType === 'income' ? 'Income' : 'Investments'}`, value: `${sharePct.toFixed(1)}%`, tone: 'neutral' },
+    ], yPos);
+    yPos = drawStatBoxes(doc, [
+        { label: 'Daily Average', value: formatINR(catTotal / daysForAvg), tone: 'neutral' },
+        { label: 'Highest Single', value: formatINR(catEntries.reduce((m, e) => Math.max(m, e.amount), 0)), tone: 'neutral' },
+        { label: 'Average / Transaction', value: formatINR(catEntries.length > 0 ? catTotal / catEntries.length : 0), tone: 'neutral' },
+    ], yPos);
+
+    // ── BUDGET CHECK (expense categories with a monthly limit) ──────────
+    const limit = catType === 'expense'
+        ? data.budget?.categoryLimits.find(cl => cl.categoryId === data.category.id && cl.monthlyLimit > 0)
+        : undefined;
+    if (limit) {
+        yPos = drawSectionHeader(doc, 'Budget Check', yPos);
+        const remaining = limit.monthlyLimit - catTotal;
+        const status = catTotal === 0 ? 'No Activity' : catTotal > limit.monthlyLimit ? 'Over Budget' : 'Within Budget';
+        table(doc, autoTable, {
+            head: [['Monthly Limit', 'Spent', 'Remaining', 'Used %', 'Status']],
+            body: [[
+                formatINR(limit.monthlyLimit),
+                formatINR(catTotal),
+                formatINR(remaining),
+                `${limit.monthlyLimit > 0 ? ((catTotal / limit.monthlyLimit) * 100).toFixed(1) : '0.0'}%`,
+                status,
+            ]],
+            startY: yPos,
+            headerHook,
+            keepTogether: true,
+            columnStyles: { 0: { halign: 'right' }, 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    }
+
+    // ── WEEK-BY-WEEK SUBTOTALS ──────────────────────────────────────────
+    if (catEntries.length > 0) {
+        yPos = drawSectionHeader(doc, 'Week-by-Week Summary', yPos);
+        const weeks = buildWeeklyBreakdown(catEntries, data.year, data.month);
+        const weekBody: (string | number)[][] = weeks.map(w => {
+            const amt = catType === 'income' ? w.income : catType === 'investment' ? w.investments : w.expenses;
+            const count = catEntries.filter(e => e.date >= w.startDate && e.date <= w.endDate).length;
+            return [`Week ${w.weekNumber}`, s(w.label), entriesLabel(count), formatINR(amt)];
+        });
+        weekBody.push(['TOTAL', '', entriesLabel(catEntries.length), formatINR(catTotal)]);
+        table(doc, autoTable, {
+            head: [['Week', 'Period', 'Entries', 'Amount']],
+            body: weekBody,
+            startY: yPos,
+            headerHook,
+            keepTogether: true,
+            amountColIdx: 3,
+            amountTone: tone,
+            columnStyles: { 3: { halign: 'right' } },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    }
+
+    // ── FULL TRANSACTION LOG (only this category) ───────────────────────
+    yPos = drawSectionHeader(doc, `All ${s(catName)} Transactions - ${data.monthLabel}`, yPos);
+    if (catEntries.length === 0) {
+        table(doc, autoTable, {
+            head: [['Date', 'Description', 'Payment', 'Amount']],
+            body: [['—', `No ${s(catName)} transactions recorded this month`, '—', '—']],
+            startY: yPos,
+            headerHook,
+        });
+    } else {
+        const txBody = catEntries.slice(0, MAX_TX_ROWS).map(e => [
+            shortDate(e.date),
+            s(descriptionFor(e)),
+            paymentLabel(e.paymentMethod),
+            formatINR(e.amount),
+        ]);
+        // Totals always reflect the FULL set even if rows are capped.
+        txBody.push(['TOTAL', catEntries.length > MAX_TX_ROWS ? `(showing first ${MAX_TX_ROWS} of ${catEntries.length})` : '', '', formatINR(catTotal)]);
+        table(doc, autoTable, {
+            head: [['Date', 'Description', 'Payment', 'Amount']],
+            body: txBody,
+            startY: yPos,
+            headerHook,
+            amountColIdx: 3,
+            amountTone: tone,
+            columnStyles: { 0: { cellWidth: 22 }, 3: { halign: 'right', cellWidth: 30 } },
+        });
+    }
+
+    drawDisclaimerBlock(doc, (doc as PDFDoc).lastAutoTable.finalY + 8);
+    drawFooters(doc);
+    const safeCat = catName.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Category';
+    await savePDF(doc, `FinCalix_${safeCat}_${monShortYear(data.year, data.month)}.pdf`);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // 4. ANNUAL REPORT
 // ═══════════════════════════════════════════════════════════════════════════
 

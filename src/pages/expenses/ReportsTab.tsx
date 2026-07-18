@@ -13,6 +13,7 @@ import {
   getBudgetForMonth,
   getAllAccounts,
   getAllEntries,
+  getAllCategories,
 } from '../../utils/expenseStorage';
 import { getAllLoans } from '../../utils/loanStorage';
 import { toLocalDateStr } from '../../utils/dateUtils';
@@ -38,6 +39,7 @@ import {
   generateCustomPDF,
   generateHealthReportPDF,
   generateExpenseCSV,
+  generateCategoryPDF,
 } from '../../utils/expenseReportPDF';
 import { getEnglishT } from '../../utils/exportReport';
 import type { PDFSubscription } from '../../utils/expenseReportPDF';
@@ -77,6 +79,10 @@ export default function ReportsTab() {
   const [reportYearOffset, setReportYearOffset] = useState(0);
   const [reportWeekOffset, setReportWeekOffset] = useState(0);
   const [reportDate, setReportDate] = useState(getTodayStr());
+  // Category report (user feedback): pick ONE category → PDF with only that
+  // category's transactions for the selected month.
+  const [catReportMonthOffset, setCatReportMonthOffset] = useState(0);
+  const [reportCategoryId, setReportCategoryId] = useState('');
   const [activeSection, setActiveSection] = useState<ReportSection>('overview');
 
   // Custom date range
@@ -173,6 +179,15 @@ export default function ReportsTab() {
   const selectedMonth = getMonthRange(reportMonthOffset);
   const selectedWeek = getWeekRange(reportWeekOffset);
   const selectedYear = getYearRange(reportYearOffset);
+  const selectedCatMonth = getMonthRange(catReportMonthOffset);
+
+  // Active categories for the category-report picker, expenses first.
+  const reportCategories = useMemo(() => {
+    const all = getAllCategories().filter(c => c.isActive);
+    const order: Record<string, number> = { expense: 0, income: 1, investment: 2, transfer: 3 };
+    return all.sort((a, b) => (order[a.type] ?? 9) - (order[b.type] ?? 9) || a.name.localeCompare(b.name));
+  }, [refreshKey]);
+  const selectedReportCategory = reportCategories.find(c => c.id === reportCategoryId);
 
   // Custom range data + summary
   const customRangeEntries = useMemo(
@@ -472,6 +487,34 @@ export default function ReportsTab() {
       });
     } catch (err) {
       console.error('CSV generation failed:', err);
+    } finally {
+      setGenerating(null);
+    }
+  };
+
+  // Category report — only the selected category's transactions for the
+  // selected month (user feedback: statistics alone weren't enough; picking
+  // a category must export just that category's expenses).
+  const handleGenerateCategory = async () => {
+    if (!selectedReportCategory) return;
+    setGenerating('category');
+    try {
+      const entries = getEntriesForMonth(selectedCatMonth.year, selectedCatMonth.month);
+      const monthBudget = getBudgetForMonth(selectedCatMonth.monthStr);
+      await generateCategoryPDF({
+        year: selectedCatMonth.year,
+        month: selectedCatMonth.month,
+        monthLabel: selectedCatMonth.label,
+        category: {
+          id: selectedReportCategory.id,
+          name: selectedReportCategory.name,
+          type: selectedReportCategory.type,
+        },
+        entries,
+        budget: monthBudget,
+      });
+    } catch (err) {
+      console.error('Category report generation failed:', err);
     } finally {
       setGenerating(null);
     }
@@ -1236,6 +1279,90 @@ export default function ReportsTab() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* ═══ CATEGORY REPORT CARD ═══ */}
+            <div
+              className="rounded-2xl p-4"
+              style={{
+                backgroundColor: theme.bgCard,
+                boxShadow: theme.shadowSoft,
+                border: `1px solid ${theme.borderSubtle}`,
+              }}
+            >
+              <h3 className="text-sm font-bold mb-1 flex items-center gap-2" style={{ color: theme.textPrimary }}>
+                <PieChart size={16} style={{ color: '#0891b2' }} />
+                {t('expenses.categoryReport', 'Category Report')}
+              </h3>
+              <p className="text-[11px] mb-4" style={{ color: theme.textSecondary }}>
+                {t('expenses.categoryReportDesc', 'Pick one category and download a monthly report with only that category\'s transactions')}
+              </p>
+
+              {/* Month selector */}
+              <div className="flex items-center justify-between mb-3 rounded-xl px-3 py-2"
+                style={{ backgroundColor: theme.bgPrimary, border: `1px solid ${theme.borderSubtle}` }}>
+                <button onClick={() => setCatReportMonthOffset(o => o - 1)}
+                  className="w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: '#0891b215' }}>
+                  <ChevronLeft size={14} style={{ color: '#0891b2' }} />
+                </button>
+                <span className="text-xs font-bold" style={{ color: theme.textPrimary }}>{selectedCatMonth.label}</span>
+                <button onClick={() => { if (catReportMonthOffset < 0) setCatReportMonthOffset(o => o + 1); }}
+                  className="w-7 h-7 rounded-full flex items-center justify-center disabled:opacity-40"
+                  disabled={catReportMonthOffset >= 0}
+                  style={{ backgroundColor: '#0891b215' }}>
+                  <ChevronRight size={14} style={{ color: '#0891b2' }} />
+                </button>
+              </div>
+
+              {/* Category picker */}
+              <select
+                value={reportCategoryId}
+                onChange={e => setReportCategoryId(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl text-xs font-semibold mb-3 focus:outline-none"
+                style={{
+                  backgroundColor: theme.bgPrimary,
+                  border: `1.5px solid ${theme.borderSubtle}`,
+                  color: reportCategoryId ? theme.textPrimary : theme.textMuted,
+                }}
+              >
+                <option value="">{t('expenses.chooseCategory', 'Choose a category...')}</option>
+                <optgroup label={t('expenses.expensesLabel', 'Expenses')}>
+                  {reportCategories.filter(c => c.type === 'expense').map(c => (
+                    <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                  ))}
+                </optgroup>
+                <optgroup label={t('expenses.incomeLabel', 'Income')}>
+                  {reportCategories.filter(c => c.type === 'income').map(c => (
+                    <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                  ))}
+                </optgroup>
+                {reportCategories.some(c => c.type === 'investment') && (
+                  <optgroup label={t('expenses.investmentsLabel', 'Investments')}>
+                    {reportCategories.filter(c => c.type === 'investment').map(c => (
+                      <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
+
+              <button
+                onClick={handleGenerateCategory}
+                disabled={generating !== null || !reportCategoryId}
+                className="w-full py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                style={{ backgroundColor: '#0891b2' }}
+              >
+                {generating === 'category' ? (
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                    <Download size={14} />
+                  </motion.div>
+                ) : (
+                  <>
+                    <Download size={14} />
+                    {t('expenses.downloadCategoryReport', 'Download Category Report')}
+                  </>
+                )}
+              </button>
             </div>
 
             {/* ═══ CUSTOM DATE RANGE CARD ═══ */}
