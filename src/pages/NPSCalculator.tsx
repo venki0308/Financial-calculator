@@ -426,7 +426,7 @@ export default function NPSCalculator() {
                                     { title: t('nps.taxFreeLumpsumTitle'), desc: t('nps.taxFreeLumpsumDesc') },
                                     {
                                         title: t('nps.phasedLumpsumTitle', 'Phased withdrawal — heads up'),
-                                        desc: t('nps.phasedLumpsumDesc', 'The 60% lump-sum is tax-free only when taken at retirement (one-shot or via SLW until age 75). Pre-retirement partial withdrawals (Tier-1) are tax-free up to 25% of own contribution. Annuity payouts are fully taxable as income.'),
+                                        desc: t('nps.phasedLumpsumDesc', 'The 60% lump-sum is tax-free only when taken at retirement (one-shot or via SLW until age 85 per PFRDA 2026 rules). Pre-retirement partial withdrawals (Tier-1) are tax-free up to 25% of own contribution. Annuity payouts are fully taxable as income.'),
                                     },
                                     { title: t('nps.totalPotentialSavingTitle'), desc: t('nps.totalPotentialSavingDesc', { amount: Math.min(monthly * 12, 200000).toLocaleString('en-IN') }) },
                                 ].map((item, i) => (

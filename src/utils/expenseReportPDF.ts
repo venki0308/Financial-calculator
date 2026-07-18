@@ -2838,6 +2838,14 @@ export interface AllCategoriesReportData {
     budget?: Budget;
     /** Active categories (id, name, type, color) — pass getAllCategories(). */
     categories: Array<{ id: string; name: string; type: EntryType; color?: string }>;
+    // ── Other money surfaces (user feedback: subscriptions, recurring,
+    // cards, accounts and business tracker were missing from this report) ──
+    subscriptions?: PDFSubscription[];
+    creditCards?: CCCard[];
+    accounts?: BankAccount[];
+    recurring?: Array<{ label: string; type: 'expense' | 'income'; frequency: string; amount: number; nextDueDate: string }>;
+    /** Per-business totals for THIS month. */
+    businesses?: Array<{ name: string; typeLabel: string; income: number; expenses: number }>;
 }
 
 export async function generateAllCategoriesPDF(data: AllCategoriesReportData): Promise<void> {
@@ -2903,6 +2911,98 @@ export async function generateAllCategoriesPDF(data: AllCategoriesReportData): P
         headerHook,
         columnStyles: { 0: { halign: 'center', cellWidth: 10 }, 4: { halign: 'right' } },
     });
+    yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+
+    // ── OTHER MONEY COMMITMENTS (overview-level, not per-category) ──────
+    // Subscriptions, recurring rules, credit cards, account balances and
+    // business tracker — everything else the user manages in the app.
+
+    const activeSubs = (data.subscriptions ?? []).filter(s2 => s2.isActive);
+    if (activeSubs.length > 0) {
+        yPos = drawSectionHeader(doc, 'Subscriptions', yPos);
+        const subBody: (string | number)[][] = activeSubs.map(sub => {
+            const monthly = sub.billingCycle === 'quarterly' ? sub.amount / 3
+                : sub.billingCycle === 'yearly' ? sub.amount / 12
+                : sub.amount;
+            const cycle = sub.billingCycle === 'quarterly' ? 'Quarterly'
+                : sub.billingCycle === 'yearly' ? 'Yearly' : 'Monthly';
+            return [s(sub.name), cycle, formatINR(sub.amount), formatINR(monthly),
+                sub.nextDueDate ? shortDate(sub.nextDueDate) : '—'];
+        });
+        const subMonthlyTotal = activeSubs.reduce((sum, sub) =>
+            sum + (sub.billingCycle === 'quarterly' ? sub.amount / 3
+                : sub.billingCycle === 'yearly' ? sub.amount / 12 : sub.amount), 0);
+        subBody.push(['TOTAL', '', '', formatINR(subMonthlyTotal), '/ month']);
+        table(doc, autoTable, {
+            head: [['Service', 'Cycle', 'Billed', 'Monthly Equiv.', 'Next Renewal']],
+            body: subBody,
+            startY: yPos,
+            headerHook,
+            keepTogether: subBody.length <= 10,
+            columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' } },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    }
+
+    if (data.recurring && data.recurring.length > 0) {
+        yPos = drawSectionHeader(doc, 'Recurring Transactions (auto-logged)', yPos);
+        const recBody: (string | number)[][] = data.recurring.map(r => [
+            s(r.label),
+            r.type === 'income' ? 'Income' : 'Expense',
+            s(r.frequency.charAt(0).toUpperCase() + r.frequency.slice(1)),
+            formatINR(r.amount),
+            r.nextDueDate ? shortDate(r.nextDueDate) : '—',
+        ]);
+        table(doc, autoTable, {
+            head: [['Name', 'Type', 'Frequency', 'Amount', 'Next Due']],
+            body: recBody,
+            startY: yPos,
+            headerHook,
+            keepTogether: recBody.length <= 10,
+            amountColIdx: 3,
+            typeColIdx: 1,
+            columnStyles: { 3: { halign: 'right' } },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    }
+
+    if (data.creditCards && data.creditCards.length > 0) {
+        yPos = drawCreditCardSection(doc, autoTable, data.creditCards, yPos, headerHook);
+    }
+
+    if (data.accounts && data.accounts.length > 0) {
+        yPos = drawSectionHeader(doc, 'Account Balances Snapshot', yPos);
+        const accBody: (string | number)[][] = data.accounts.map(a =>
+            [s(a.name), s(a.bankName || '—'), s(a.accountType), formatINR(a.manualBalance)]);
+        accBody.push(['TOTAL', '', '', formatINR(data.accounts.reduce((sum, a) => sum + a.manualBalance, 0))]);
+        table(doc, autoTable, {
+            head: [['Account', 'Bank', 'Type', 'Balance']],
+            body: accBody,
+            startY: yPos,
+            headerHook,
+            keepTogether: accBody.length <= 10,
+            columnStyles: { 3: { halign: 'right' } },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    }
+
+    if (data.businesses && data.businesses.length > 0) {
+        yPos = drawSectionHeader(doc, `Business Tracker - ${data.monthLabel}`, yPos);
+        const bizBody: (string | number)[][] = data.businesses.map(b =>
+            [s(b.name), s(b.typeLabel), formatINR(b.income), formatINR(b.expenses), formatINR(b.income - b.expenses)]);
+        const bI = data.businesses.reduce((sum, b) => sum + b.income, 0);
+        const bE = data.businesses.reduce((sum, b) => sum + b.expenses, 0);
+        bizBody.push(['TOTAL', '', formatINR(bI), formatINR(bE), formatINR(bI - bE)]);
+        table(doc, autoTable, {
+            head: [['Business', 'Type', 'Income', 'Expenses', 'Net Profit']],
+            body: bizBody,
+            startY: yPos,
+            headerHook,
+            keepTogether: bizBody.length <= 10,
+            columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+        });
+        yPos = (doc as PDFDoc).lastAutoTable.finalY + 10;
+    }
 
     // ── ONE PAGE PER CATEGORY ───────────────────────────────────────────
     for (const c of active) {

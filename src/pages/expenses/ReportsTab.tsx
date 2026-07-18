@@ -50,6 +50,9 @@ import type { PDFSubscription } from '../../utils/expenseReportPDF';
 // understated monthly outflow by however much the user had in active subs.
 import { useBudgetTrackerStore } from '../../store/useBudgetTrackerStore';
 import { getAllCreditCards } from '../../utils/creditCardStorage';
+import { getAllRules } from '../../utils/recurringStorage';
+import { getAllBusinesses, getAllBizEntries, BUSINESS_TYPE_META } from '../../utils/businessStorage';
+import { getCategoryById } from '../../utils/expenseStorage';
 import SVGPieChart from '../../components/charts/SVGPieChart';
 import HealthScoreGauge from '../../components/charts/HealthScoreGauge';
 
@@ -528,6 +531,33 @@ export default function ReportsTab() {
     try {
       const entries = getEntriesForMonth(selectedCatMonth.year, selectedCatMonth.month);
       const monthBudget = getBudgetForMonth(selectedCatMonth.monthStr);
+
+      // Other money surfaces (user feedback): recurring rules, businesses
+      // for the selected month, cards + accounts + subscriptions.
+      const recurring = getAllRules()
+        .filter(r => r.isActive)
+        .map(r => ({
+          label: r.note?.trim() || getCategoryById(r.category)?.name || r.category,
+          type: (r.type === 'income' ? 'income' : 'expense') as 'income' | 'expense',
+          frequency: r.frequency,
+          amount: r.amount,
+          nextDueDate: r.nextDueDate,
+        }));
+
+      const monthStart = `${selectedCatMonth.monthStr}-01`;
+      const lastDay = new Date(selectedCatMonth.year, selectedCatMonth.month, 0).getDate();
+      const monthEnd = `${selectedCatMonth.monthStr}-${String(lastDay).padStart(2, '0')}`;
+      const bizEntries = getAllBizEntries().filter(e => e.date >= monthStart && e.date <= monthEnd);
+      const businesses = getAllBusinesses().map(b => {
+        const mine = bizEntries.filter(e => e.businessId === b.id);
+        return {
+          name: b.name,
+          typeLabel: BUSINESS_TYPE_META[b.type]?.label ?? b.type,
+          income: mine.filter(e => e.type === 'income').reduce((s, e) => s + e.amount, 0),
+          expenses: mine.filter(e => e.type === 'expense').reduce((s, e) => s + e.amount, 0),
+        };
+      }).filter(b => b.income > 0 || b.expenses > 0);
+
       await generateAllCategoriesPDF({
         year: selectedCatMonth.year,
         month: selectedCatMonth.month,
@@ -535,6 +565,11 @@ export default function ReportsTab() {
         entries,
         budget: monthBudget,
         categories: reportCategories.map(c => ({ id: c.id, name: c.name, type: c.type, color: c.color })),
+        subscriptions: pdfSubscriptions,
+        creditCards: getAllCreditCards().filter(c => c.isActive),
+        accounts: getAllAccounts(),
+        recurring,
+        businesses,
       });
     } catch (err) {
       console.error('All-categories report generation failed:', err);
