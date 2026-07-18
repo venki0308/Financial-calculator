@@ -147,17 +147,23 @@ export default function Profile() {
                 </button>
             )}
 
-            {/* Stats */}
+            {/* Stats — tappable: each tile opens its list (previously dead
+                taps, inconsistent with every other card on this screen) */}
             <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
-                    { label: t('profile.saved'), value: savedCount },
-                    { label: t('profile.bookmarks'), value: bookmarkCount },
-                    { label: t('profile.history'), value: historyCount },
+                    { label: t('profile.saved'), value: savedCount, path: '/profile/saved' },
+                    { label: t('profile.bookmarks'), value: bookmarkCount, path: '/profile/bookmarks' },
+                    { label: t('profile.history'), value: historyCount, path: '/profile/history' },
                 ].map((s) => (
-                    <div key={s.label} className="p-4 rounded-2xl bg-card border border-border text-center">
+                    <motion.button
+                        key={s.label}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => navigate(s.path)}
+                        className="p-4 rounded-2xl bg-card border border-border text-center"
+                    >
                         <p className="text-2xl font-bold text-foreground">{s.value}</p>
                         <p className="text-muted-foreground text-xs mt-1">{s.label}</p>
-                    </div>
+                    </motion.button>
                 ))}
             </div>
 
