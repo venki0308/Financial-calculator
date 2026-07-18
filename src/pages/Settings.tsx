@@ -13,7 +13,7 @@ import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { APP_VERSION } from '../config/app';
 import { useAppColors } from '../theme/useAppColors';
-import { exportBackup, importBackup, snapshotBackup, isAutoBackupEnabled, AUTO_BACKUP_ENABLED_KEY, AUTO_BACKUP_LAST_KEY } from '../utils/backupRestore';
+import { exportBackup, importBackup, snapshotBackup } from '../utils/backupRestore';
 
 // Minimal toast (same pattern as exportReport/PdfActionSheet)
 function showToast(message: string, isError = false) {
@@ -58,15 +58,6 @@ export default function Settings() {
     const [showExportChoice, setShowExportChoice] = useState(false);
     const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
     const importInputRef = useRef<HTMLInputElement>(null);
-    // Automatic daily backup (native): '1'/absent = ON, '0' = OFF.
-    // Device-local preference — deliberately not part of BACKUP_KEYS.
-    const [autoBackupOn, setAutoBackupOn] = useState(() => isAutoBackupEnabled());
-    const lastAutoBackup = localStorage.getItem(AUTO_BACKUP_LAST_KEY);
-    const toggleAutoBackup = () => {
-        const next = !autoBackupOn;
-        setAutoBackupOn(next);
-        localStorage.setItem(AUTO_BACKUP_ENABLED_KEY, next ? '1' : '0');
-    };
     const c = useAppColors();
 
     const currentLang = languages.find(l => i18n.language.startsWith(l.code)) || languages[0];
@@ -349,26 +340,9 @@ export default function Settings() {
                         <ChevronRight size={16} className="text-muted-foreground" />
                     </button>
                     <input ref={importInputRef} type="file" accept="application/json,.json" className="hidden" onChange={handleImportFileSelected} />
-                    {Capacitor.isNativePlatform() && (
-                        <>
-                            <div className="h-px bg-border mx-4" />
-                            <div className="w-full flex items-center gap-4 p-4">
-                                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                                    <Download size={20} className="text-purple-500" />
-                                </div>
-                                <div className="flex-1 text-left">
-                                    <p className="text-foreground font-medium text-sm">{t('settings.autoBackup', 'Automatic daily backup')}</p>
-                                    <p className="text-muted-foreground text-xs">{t('settings.autoBackupDesc', 'Keeps the last 7 days in Documents/FinCalix — restorable via Import App Data')}</p>
-                                    {lastAutoBackup && (
-                                        <p className="text-muted-foreground text-[10px] mt-0.5">{t('settings.lastAutoBackup', 'Last auto-backup: {{date}}', { date: lastAutoBackup })}</p>
-                                    )}
-                                </div>
-                                <button onClick={toggleAutoBackup} className={`w-12 h-7 rounded-full p-0.5 transition-colors flex-shrink-0 ${autoBackupOn ? 'bg-brand-green' : 'bg-slate-600'}`}>
-                                    <motion.div layout className={`w-6 h-6 rounded-full bg-white shadow-md ${autoBackupOn ? 'ml-auto' : 'ml-0'}`} />
-                                </button>
-                            </div>
-                        </>
-                    )}
+                    {/* Automatic daily backup toggle removed (user feedback):
+                        it read as cloud data collection. Manual Export/Import
+                        covers migration; the pre-delete safety snapshot stays. */}
                 </div>
 
                 {/* Data Management */}
@@ -495,7 +469,7 @@ export default function Settings() {
                                     <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center"><AlertTriangle size={32} className="text-red-500" /></div>
                                 </div>
                                 <h3 style={{ color: c.text }} className="text-xl font-bold text-center mb-2">{t('settings.clearDataFinalTitle', 'Delete everything permanently?')}</h3>
-                                <p style={{ color: c.textSecondary }} className="text-center text-sm mb-6">{t('settings.clearDataFinalBody', 'This erases all expenses, budgets, loans, credit cards, businesses, saved calculations and settings. This cannot be undone. Consider exporting a backup first. Note: automatic backups in Documents/FinCalix are kept as a safety net and can be restored via Import App Data.')}</p>
+                                <p style={{ color: c.textSecondary }} className="text-center text-sm mb-6">{t('settings.clearDataFinalBody', 'This erases all expenses, budgets, loans, credit cards, businesses, saved calculations and settings. This cannot be undone. Consider exporting a backup first. Note: a one-time safety copy is saved to Documents/FinCalix on this phone before deletion — restorable via Import App Data.')}</p>
                                 <div className="flex gap-3">
                                     <button onClick={() => setShowClearConfirmFinal(false)} style={{ backgroundColor: c.inputBg, color: c.text, borderColor: c.border }} className="flex-1 py-3 rounded-xl font-semibold text-sm border-2">{t('settings.clearDataCancel')}</button>
                                     <button onClick={handleClearData} className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold text-sm border-2 border-red-500">{t('settings.clearDataFinalConfirm', 'Yes, delete everything')}</button>

@@ -204,17 +204,10 @@ function AppContent() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Automatic daily backup (native only, throttled to once/day inside
-    // runAutoBackup). Delayed ~5s so it never competes with app startup;
-    // dynamically imported so backup code stays off the critical path.
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            import('./utils/backupRestore')
-                .then(({ runAutoBackup }) => runAutoBackup())
-                .catch((e) => console.warn('[FinCalix] auto-backup skipped', e));
-        }, 5000);
-        return () => clearTimeout(timer);
-    }, []);
+    // NOTE: the automatic daily backup boot task was removed on user
+    // feedback — silent background file writes read as "cloud data
+    // collection". Backup is now strictly user-initiated (Export/Import in
+    // Settings) plus the disclosed pre-delete/pre-import safety snapshot.
 
     useEffect(() => {
         document.documentElement.classList.toggle('dark', darkMode);
