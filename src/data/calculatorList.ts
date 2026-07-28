@@ -13,6 +13,7 @@ export interface CalcItem {
 export const allCalcs: CalcItem[] = [
     // Tax & Salary
     { nameKey: 'calculators.incomeTax.name', descKey: 'calculators.incomeTax.desc', icon: FileText, color: '#F59E0B', path: '/calculator/income-tax', category: 'taxSalary', keywords: ['tax', 'income', 'salary'] },
+    { nameKey: 'calculators.form16Tax.name', descKey: 'calculators.form16Tax.desc', icon: FileText, color: '#EF4444', path: '/calculator/form16-tax', category: 'taxSalary', keywords: ['form 16', 'form16', 'itr', 'refund', 'tds', 'payable', 'job', 'switch', 'multiple', 'employer', 'filing', 'tax'] },
     { nameKey: 'calculators.salaryHike.name', descKey: 'calculators.salaryHike.desc', icon: ArrowUpRight, color: '#10B981', path: '/calculator/salary-hike', category: 'taxSalary', keywords: ['hike', 'appraisal', 'increment', 'salary'] },
     { nameKey: 'calculators.hra.name', descKey: 'calculators.hra.desc', icon: GraduationCap, color: '#F59E0B', path: '/calculator/hra', category: 'taxSalary', keywords: ['hra', 'house', 'rent', 'allowance'] },
 

@@ -49,8 +49,10 @@ function estimateTaxOnIncome(annual: number): number {
         tax += taxable * slab.rate;
         prev = slab.upto;
     }
-    // Rebate u/s 87A: no tax if taxable income (after std ded, already deducted by caller) ≤ 12L
+    // Rebate u/s 87A: nil ≤ ₹12L taxable; marginal relief just above caps the
+    // tax at the income exceeding ₹12L (prevents the ₹0→₹63K cliff at the limit).
     if (annual <= 1200000) return 0;
+    tax = Math.min(tax, annual - 1200000);
     return tax * 1.04; // + 4% cess
 }
 
@@ -194,7 +196,9 @@ export default function SalaryHikeCalculator() {
         const basic = newFixed * 0.5;
         const pfAnnual = basic * 0.12;
         const profTaxAnnual = 200 * 12;
-        const estimatedTakeHomeAnnual = newFixed - pfAnnual - profTaxAnnual;
+        // Income tax was previously ignored here — a ₹30L CTC showed ~95% in-hand.
+        const estIncomeTax = estimateTaxOnIncome(Math.max(0, newFixed - 75000));
+        const estimatedTakeHomeAnnual = newFixed - pfAnnual - profTaxAnnual - estIncomeTax;
         const estimatedTakeHomeMonthly = estimatedTakeHomeAnnual / 12;
         const inHandPct = newCTC > 0 ? (estimatedTakeHomeAnnual / newCTC) * 100 : 0;
 

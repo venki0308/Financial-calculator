@@ -41,7 +41,7 @@ export function triggerCalcNotification(data: CalcNotifData) {
             break;
         case 'tax_reminder':
             title = `Tax Filing Season — ${data.metadata.monthYear}`;
-            body = `FY 2026-27 ends March 31. Check your tax liability and complete Sec 80C / 123 investments.`;
+            body = `The financial year ends March 31. Check your tax liability and complete Sec 80C investments in time.`;
             icon = '📋';
             category = 'reminder';
             actionRoute = '/calculator/income-tax';

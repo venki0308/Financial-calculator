@@ -18,6 +18,7 @@ import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
 import { getAllLoans } from '../utils/loanStorage';
 import { parseLocalDate } from '../utils/dateUtils';
 import { getEntriesForDate } from '../utils/expenseStorage';
+import { getEffectiveNextDue } from '../utils/expenseCalculations';
 
 const LAST_RUN_KEY = 'fincalix_scheduler_last_run';
 const MIN_INTERVAL_MS = 23 * 60 * 60 * 1000; // 23 hours
@@ -145,19 +146,35 @@ function checkTaxAlerts() {
             icon: '⚠️',
             route: '/calculator/income-tax',
         });
-    } else if (month === 9) {
+    } else if (month === 6 && day <= 15) {
         addNotif({
             type: 'tax_alert',
-            title: '📋 Advance Tax (Sep)',
-            body: '2nd installment of advance tax is due by September 15. Use our Income Tax calculator to estimate.',
+            title: '📋 Advance Tax (Jun)',
+            body: '1st installment of advance tax (15%) is due by June 15. Use our Income Tax calculator to estimate.',
             icon: '📋',
             route: '/calculator/income-tax',
         });
-    } else if (month === 12) {
+    } else if (month === 9 && day <= 15) {
+        addNotif({
+            type: 'tax_alert',
+            title: '📋 Advance Tax (Sep)',
+            body: '2nd installment of advance tax (45% cumulative) is due by September 15. Use our Income Tax calculator to estimate.',
+            icon: '📋',
+            route: '/calculator/income-tax',
+        });
+    } else if (month === 12 && day <= 15) {
         addNotif({
             type: 'tax_alert',
             title: '📋 Advance Tax (Dec)',
-            body: '3rd installment of advance tax is due by December 15. Check your liability now.',
+            body: '3rd installment of advance tax (75% cumulative) is due by December 15. Check your liability now.',
+            icon: '📋',
+            route: '/calculator/income-tax',
+        });
+    } else if (month === 3 && day <= 15) {
+        addNotif({
+            type: 'tax_alert',
+            title: '📋 Advance Tax (Mar)',
+            body: 'Final installment of advance tax (100%) is due by March 15. Clear it to avoid interest u/s 234C.',
             icon: '📋',
             route: '/calculator/income-tax',
         });
@@ -165,23 +182,23 @@ function checkTaxAlerts() {
         addNotif({
             type: 'tax_alert',
             title: '📁 ITR Filing Reminder',
-            body: 'ITR-1 & ITR-2 deadline: July 31. ITR-3 & ITR-4 (business/profession) deadline: August 31. File early to avoid penalties.',
+            body: 'ITR deadline for non-audit taxpayers (ITR-1 to ITR-4): July 31. Audit cases: October 31. File early to avoid penalties.',
             icon: '📁',
             route: '/calculator/income-tax',
         });
     } else if (month === 8) {
         addNotif({
             type: 'tax_alert',
-            title: '📁 ITR-3 & ITR-4 Deadline',
-            body: 'Last date to file ITR-3 & ITR-4 (business/profession income) is August 31. Avoid ₹5,000 late filing fee.',
+            title: '📁 Missed July 31? File Belated ITR',
+            body: 'If you missed the July 31 deadline, you can still file a belated return until December 31 (late fee u/s 234F up to ₹5,000). Audit cases are due October 31.',
             icon: '📁',
             route: '/calculator/income-tax',
         });
     } else if (month === 4 && day <= 7) {
         addNotif({
             type: 'tax_alert',
-            title: '🎯 New Financial Year 2026-27',
-            body: 'FY 2026-27 has begun! Key changes: New Income Tax Act 2025 in effect, zero tax up to ₹12L (New Regime), HRA 50% rule now covers 8 cities, NPS employer deduction 14% for all. Update your tax plan now.',
+            title: '🎯 New Financial Year Begins',
+            body: 'A new financial year has begun! Zero tax up to ₹12L taxable (New Regime) and 14% employer NPS deduction u/s 80CCD(2) for all. Update your tax plan now.',
             icon: '🎯',
             route: '/calculator/income-tax',
         });
@@ -346,11 +363,13 @@ function checkCreditCardBills() {
             const daysUntil = getDaysUntilDue(card.dueDate);
             const name = card.cardName || card.bankName || 'Credit Card';
             const bal = card.currentBalance.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
-            if (daysUntil <= 0) {
+            if (daysUntil === 0) {
+                // getDaysUntilDue() returns 0 on the due day and rolls to next
+                // month after it — it is never negative, so 0 means "due today".
                 addNotif({
                     type: 'cc_overdue',
-                    title: `🔴 ${name} — Payment Overdue`,
-                    body: `Outstanding: ${bal}. Pay immediately to avoid late fees and CIBIL impact.`,
+                    title: `🔴 ${name} — Payment Due TODAY`,
+                    body: `Outstanding: ${bal}. Pay today to avoid late fees, interest and CIBIL impact.`,
                     icon: '🔴',
                     route: '/expenses',
                     itemId: card.id,
@@ -383,9 +402,14 @@ function checkSubscriptionRenewals() {
     try {
         const subs = useBudgetTrackerStore.getState().subscriptions;
         const today = new Date();
+        const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         for (const sub of subs) {
             if (!sub.isActive || !sub.nextDueDate) continue;
-            const due = parseLocalDate(sub.nextDueDate);
+            // nextDueDate is set once and never auto-advanced — resolve the TRUE
+            // next renewal, else reminders die after the first billing cycle.
+            const effectiveDue = getEffectiveNextDue(sub, todayISO);
+            if (!effectiveDue) continue;
+            const due = parseLocalDate(effectiveDue);
             const diffDays = Math.ceil((due.getTime() - today.getTime()) / 86400000);
             if (diffDays >= 0 && diffDays <= 3) {
                 const amt = sub.amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
@@ -630,7 +654,10 @@ function buildUpcomingReminders(): LocalNotificationSchema[] {
     try {
         for (const sub of useBudgetTrackerStore.getState().subscriptions) {
             if (!sub.isActive || !sub.nextDueDate) continue;
-            const due = parseLocalDate(sub.nextDueDate);
+            const nowISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const effectiveDue = getEffectiveNextDue(sub, nowISO);
+            if (!effectiveDue) continue;
+            const due = parseLocalDate(effectiveDue);
             const amt = sub.amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
             push('sub_pre', sub.id, at9AM(addDays(due, -1)),
                 `🔁 ${sub.name} — Renews tomorrow`,
@@ -733,14 +760,26 @@ async function scheduleDailyLogReminders(): Promise<void> {
     }
 }
 
+// Guard so toggle-mashing doesn't re-run the bell sweep more than once per 15 min
+let lastBellRefreshAt = 0;
+
 export const NotificationScheduler = {
     /**
      * Re-sync the native 7-day reminder window + evening log reminders NOW.
      * Called after a loan/card/subscription is saved so the user doesn't
-     * have to relaunch the app before the new reminders exist. No-op on web
-     * or when notification permission isn't granted.
+     * have to relaunch the app before the new reminders exist.
      */
     async refreshReminders(): Promise<void> {
+        // In-app bell checks normally run once per ~23h at launch. If a toggle
+        // was OFF at that moment every checker returned early — so flipping it
+        // ON later showed nothing until tomorrow. Re-run them here; the store
+        // dedupes same-day per item, so repeats are safe.
+        if (Date.now() - lastBellRefreshAt > 15 * 60 * 1000) {
+            lastBellRefreshAt = Date.now();
+            for (const fn of [checkEMIReminders, checkSIPReminders, checkTaxAlerts, checkCreditCardBills, checkSubscriptionRenewals, checkLoanPayments]) {
+                try { fn(); } catch { /* isolated */ }
+            }
+        }
         if (!Capacitor.isNativePlatform()) return;
         try {
             const granted = await ensureNativeNotificationsReady();

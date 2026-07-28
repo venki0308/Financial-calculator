@@ -32,6 +32,10 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 13+ (API 33) runtime notification permission. targetSdk is 36:
+         without this declaration the OS silently denies requestPermissions()
+         and NO local notification can ever be shown on modern Android. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Storage permission for backup writes to Documents on Android 7-12
          (API <= 32). Android 13+ needs no permission for Documents via the
          Capacitor Filesystem plugin, hence maxSdkVersion. Without these,

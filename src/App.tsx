@@ -71,6 +71,7 @@ const SIPCalculator              = lr(() => import('./pages/SIPCalculator'));
 const FDCalculator               = lr(() => import('./pages/FDCalculator'));
 const CompoundInterestCalculator = lr(() => import('./pages/CompoundInterestCalculator'));
 const IncomeTaxCalculator        = lr(() => import('./pages/IncomeTaxCalculator'));
+const Form16TaxCalculator        = lr(() => import('./pages/Form16TaxCalculator'));
 const SalaryHikeCalculator       = lr(() => import('./pages/SalaryHikeCalculator'));
 const HRACalculator              = lr(() => import('./pages/HRACalculator'));
 const RDCalculator               = lr(() => import('./pages/RDCalculator'));
@@ -419,6 +420,7 @@ function AppContent() {
                         <Route path="/calculator/fixed-deposit" element={<FDCalculator />} />
                         <Route path="/calculator/compound-interest" element={<CompoundInterestCalculator />} />
                         <Route path="/calculator/income-tax" element={<IncomeTaxCalculator />} />
+                        <Route path="/calculator/form16-tax" element={<Form16TaxCalculator />} />
                         <Route path="/calculator/salary-hike" element={<SalaryHikeCalculator />} />
                         <Route path="/calculator/hra" element={<HRACalculator />} />
                         <Route path="/calculator/recurring-deposit" element={<RDCalculator />} />

@@ -112,6 +112,9 @@ function computeSurcharge(tax: number, taxableIncome: number, regime: 'old' | 'n
 }
 
 const fmt = (n: number) => `₹${Math.round(n).toLocaleString('en-IN')}`;
+// Sec 288A: taxable income rounds to the nearest ₹10 (keeps this page consistent
+// with the Form 16 Tax Calculator for identical inputs)
+const r10 = (n: number) => Math.round(n / 10) * 10;
 
 type Inputs = Record<string, string>;
 
@@ -223,6 +226,7 @@ export default function IncomeTaxCalculator() {
         professionalTax: '',
         esi: '',
         npsEmployee: '',
+        employerNps: '',
         // CTC fields
         ctcAmount: '',
         employerPF: '',
@@ -308,7 +312,7 @@ export default function IncomeTaxCalculator() {
             stdDed +
             profTax + // Sec 16(iii) — Professional Tax deduction
             total80C +
-            Math.min(num('section80D'), 25000) +
+            Math.min(num('section80D'), ageCategory === 'below_60' ? 25000 : 50000) +
             Math.min(num('section80CCD'), 50000) +
             num('section80E') +
             num('section80G') +
@@ -317,7 +321,7 @@ export default function IncomeTaxCalculator() {
             childEduExempt +
             childHostelExempt
         );
-    }, [inputs, num, hraExemption, multiplier, inputMode]);
+    }, [inputs, num, hraExemption, multiplier, inputMode, ageCategory]);
 
     // ─── Select correct slab table based on FY ─────────────────────────────────
     const NEW_REGIME = fy === '2026-27' ? NEW_REGIME_2026_27 : NEW_REGIME_2025_26;
@@ -332,8 +336,16 @@ export default function IncomeTaxCalculator() {
     const newStdDed = 75000; // Same for both years
     const oldStdDed = 50000;
 
+    // Employer NPS u/s 80CCD(2) — the one deduction allowed in BOTH regimes.
+    // Uniform from FY 2025-26 (Budget 2024): 14% of Basic+DA in the new regime
+    // (govt + private alike); 10% for non-govt employees in the old regime.
+    const basicDAAnnual = inputMode === 'ctc' ? num('ctcAmount') * 0.4 : (num('basicSalary') + num('da')) * multiplier;
+    const employerNpsAnnual = num('employerNps') * (inputMode === 'ctc' ? 1 : multiplier);
+    const employerNps80CCD2New = basicDAAnnual > 0 ? Math.min(employerNpsAnnual, 0.14 * basicDAAnnual) : employerNpsAnnual;
+    const employerNps80CCD2Old = basicDAAnnual > 0 ? Math.min(employerNpsAnnual, 0.10 * basicDAAnnual) : employerNpsAnnual;
+
     // ─── Compute Both Regimes ─────────────────────────────────────────────────
-    const newTaxableIncome = Math.max(0, grossSalary - newStdDed);
+    const newTaxableIncome = r10(Math.max(0, grossSalary - newStdDed - employerNps80CCD2New));
     const newRawTax = computeSlabTax(newTaxableIncome, NEW_REGIME);
     const newAfterRebate = applyRebate87A(newRawTax, newTaxableIncome, 'new', fy);
     const newSurcharge = computeSurcharge(newAfterRebate, newTaxableIncome, 'new', NEW_REGIME);
@@ -342,7 +354,7 @@ export default function IncomeTaxCalculator() {
     const newTotalTax = newTaxAfterSurcharge + newCess;
     const newNoTax = newTaxableIncome <= 1200000; // Full rebate ≤ ₹12L applies for both FY 2025-26 and 2026-27
 
-    const oldTaxableIncome = Math.max(0, grossSalary - oldDeductions);
+    const oldTaxableIncome = r10(Math.max(0, grossSalary - oldDeductions - employerNps80CCD2Old));
     const oldRawTax = computeSlabTax(oldTaxableIncome, OLD_REGIME_ACTIVE);
     const oldAfterRebate = applyRebate87A(oldRawTax, oldTaxableIncome, 'old', fy);
     const oldSurcharge = computeSurcharge(oldAfterRebate, oldTaxableIncome, 'old', OLD_REGIME_ACTIVE);
@@ -351,7 +363,7 @@ export default function IncomeTaxCalculator() {
     const oldTotalTax = oldTaxAfterSurcharge + oldCess;
 
     // Active regime values
-    const activeDeductions = regime === 'new' ? newStdDed : oldDeductions;
+    const activeDeductions = regime === 'new' ? newStdDed + employerNps80CCD2New : oldDeductions + employerNps80CCD2Old;
     const activeTaxableIncome = regime === 'new' ? newTaxableIncome : oldTaxableIncome;
     const activeRawTax = regime === 'new' ? newRawTax : oldRawTax;
     const activeAfterRebate = regime === 'new' ? newAfterRebate : oldAfterRebate;
@@ -361,7 +373,8 @@ export default function IncomeTaxCalculator() {
     const activeSlabs = regime === 'new' ? NEW_REGIME : OLD_REGIME_ACTIVE;
 
     const monthlyTax = activeTotalTax / 12;
-    const netAnnual = grossSalary - activeTotalTax;
+    // Take-home must reflect payroll outflows (PF/PT/ESI/NPS) too, not just tax.
+    const netAnnual = grossSalary - payrollDeductions.total - activeTotalTax;
     const monthlyTakeHome = netAnnual / 12;
     const effectiveRate = grossSalary > 0 ? (activeTotalTax / grossSalary) * 100 : 0;
 
@@ -422,6 +435,7 @@ export default function IncomeTaxCalculator() {
                 { label: 'Other Income (Annual)', value: fmt(num('otherIncome') * multiplier) },
             );
         }
+        if (employerNpsAnnual > 0) inputFields.push({ label: 'Employer NPS u/s 80CCD(2) (deducted, capped)', value: fmt(regime === 'new' ? employerNps80CCD2New : employerNps80CCD2Old) });
         if (num('variablePay') > 0) inputFields.push({ label: 'Variable Pay / Performance Bonus', value: fmt(num('variablePay') * (inputMode === 'ctc' ? 1 : multiplier)) });
         if (num('annualBonus') > 0) inputFields.push({ label: 'Annual Bonus / Ex-Gratia', value: fmt(num('annualBonus') * (inputMode === 'ctc' ? 1 : multiplier)) });
         inputFields.push({ label: 'Gross Annual Income', value: fmt(grossSalary) });
@@ -468,7 +482,7 @@ export default function IncomeTaxCalculator() {
         }
 
         return {
-            title: 'Income Tax Calculator Report (FY 2026-27)',
+            title: `Income Tax Calculator Report (FY ${fy})`,
             subtitle: `Tax Regime: ${regime === 'old' ? 'Old Regime' : 'New Regime'}`,
             inputs: inputFields,
             results: resultFields,
@@ -520,6 +534,9 @@ export default function IncomeTaxCalculator() {
                                 <p className="text-emerald-300 text-xs font-bold">{t('tax.budgetUpdate')}</p>
                                 <p className="text-emerald-400/80 text-[10px] mt-0.5 leading-relaxed">
                                     {t('tax.budgetUpdateDesc')}
+                                </p>
+                                <p className="text-blue-500 dark:text-blue-400/90 text-[10px] mt-1.5 leading-relaxed">
+                                    {t('jobTax.newActNote', 'FY 2026-27 falls under the new Income-tax Act, 2025 ("Tax Year 2026-27"). Rates are unchanged — only section numbers change: 87A→156, 234A/B/C→423/424/425, 288A/288B→516. Every figure here stays identical.')}
                                 </p>
                             </div>
                         </div>
@@ -617,6 +634,7 @@ export default function IncomeTaxCalculator() {
                         )}
                         <InputRow label={t('tax.variablePay')} k="variablePay" value={inputs.variablePay} onChange={set} hint={t('tax.variablePayHint')} />
                         <InputRow label={t('tax.annualBonus')} k="annualBonus" value={inputs.annualBonus} onChange={set} hint={t('tax.annualBonusHint')} />
+                        <InputRow label={t('tax.employerNps', 'Employer NPS — 80CCD(2)')} k="employerNps" value={inputs.employerNps} onChange={set} hint={t('tax.employerNpsHint', "Employer's contribution to your NPS, if included in the gross salary above (shows in Form 16). Deductible in BOTH regimes — up to 14% of Basic+DA (new) / 10% (old, non-govt).")} />
                         <InputRow label={t('tax.otherIncome')} k="otherIncome" value={inputs.otherIncome} onChange={set} />
                     </div>
                 ) : (
@@ -646,6 +664,7 @@ export default function IncomeTaxCalculator() {
                                 <InputRow label={t('tax.professionalTax')} k="professionalTax" value={inputs.professionalTax} onChange={set} hint={t('tax.professionalTaxHint')} />
                                 <InputRow label={t('tax.esi')} k="esi" value={inputs.esi} onChange={set} hint={t('tax.esiHint')} />
                                 <InputRow label={t('tax.npsEmployee')} k="npsEmployee" value={inputs.npsEmployee} onChange={set} hint={t('tax.npsHint')} />
+                                <InputRow label={t('tax.employerNps', 'Employer NPS — 80CCD(2)')} k="employerNps" value={inputs.employerNps} onChange={set} hint={t('tax.employerNpsHint', "Employer's contribution to your NPS, if included in the gross salary above (shows in Form 16). Deductible in BOTH regimes — up to 14% of Basic+DA (new) / 10% (old, non-govt).")} />
                                 {payrollDeductions.total > 0 && (
                                     <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-xl p-3 flex justify-between">
                                         <span className="text-blue-600 dark:text-blue-400 text-xs font-semibold">{t('tax.totalPayrollDeductions')}</span>
@@ -675,6 +694,12 @@ export default function IncomeTaxCalculator() {
                             <span className="text-muted-foreground dark:text-muted-foreground text-xs">{t('tax.standardDeduction')}</span>
                             <span className="font-bold text-blue-500 text-sm">-{fmt(regime === 'new' ? newStdDed : 50000)}</span>
                         </div>
+                        {(regime === 'new' ? employerNps80CCD2New : employerNps80CCD2Old) > 0 && (
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground dark:text-muted-foreground text-xs">{t('tax.employerNps80ccd2Row', 'Employer NPS 80CCD(2)')}</span>
+                                <span className="font-bold text-blue-500 text-sm">-{fmt(regime === 'new' ? employerNps80CCD2New : employerNps80CCD2Old)}</span>
+                            </div>
+                        )}
                         <div className="border-t border-slate-100 dark:border-white/10 pt-2 flex justify-between items-center">
                             <span className="text-slate-700 dark:text-foreground text-xs font-bold">{t('tax.taxableIncome')}</span>
                             <span className="font-extrabold text-brand-purple text-base">{fmt(activeTaxableIncome)}</span>
@@ -728,7 +753,12 @@ export default function IncomeTaxCalculator() {
                             </CollapsibleSection>
 
                             <CollapsibleSection title={t('tax.insuranceMedical')}>
-                                <InputRow label={t('tax.sec80D')} k="section80D" value={inputs.section80D} onChange={set} hint={t('tax.sec80DHint')} warning={getWarning('section80D', inputs.section80D, t)} />
+                                <InputRow label={t('tax.sec80D')} k="section80D" value={inputs.section80D} onChange={set} hint={t('tax.sec80DHint')} warning={(() => {
+                                    // 80D self-limit is age-aware: ₹25K below 60, ₹50K for senior/super-senior
+                                    const lim80D = ageCategory === 'below_60' ? 25000 : 50000;
+                                    const v = num('section80D');
+                                    return v > lim80D ? t('tax.warningExceeded', { value: fmt(v), label: t('tax.warningLabelSec80D'), limit: fmt(lim80D) }) : undefined;
+                                })()} />
                             </CollapsibleSection>
 
                             <CollapsibleSection title={t('tax.additionalDeductions')}>
@@ -799,7 +829,7 @@ export default function IncomeTaxCalculator() {
                             <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-3">{t('tax.stepByStepBreakdown')}</h3>
                             {[
                                 { label: t('tax.grossAnnualIncome'), val: grossSalary, color: 'text-brand-green' },
-                                { label: `${t('tax.less')}: ${regime === 'new' ? t('tax.standardDeduction') : t('tax.totalDeductions')}`, val: -activeDeductions, color: 'text-blue-400' },
+                                { label: (regime === 'new' && employerNps80CCD2New > 0) ? t('tax.lessStdDedNps', 'Less: Std deduction + employer NPS 80CCD(2)') : `${t('tax.less')}: ${regime === 'new' ? t('tax.standardDeduction') : t('tax.totalDeductions')}`, val: -activeDeductions, color: 'text-blue-400' },
                                 { label: t('tax.taxableIncome'), val: activeTaxableIncome, color: 'text-brand-purple', bold: true },
                                 { label: t('tax.incomeTaxSlabWise'), val: activeRawTax, color: 'text-muted-foreground' },
                                 ...(activeRawTax !== activeAfterRebate ? [{ label: t('tax.lessRebate87A'), val: -(activeRawTax - activeAfterRebate), color: 'text-emerald-500' }] : []),

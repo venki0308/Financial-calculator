@@ -7,11 +7,11 @@ import { formatINR } from '../utils/calculations';
  * Compact post-tax preview surfaced on investment calculators (SIP, Lumpsum,
  * Compound Interest, etc.). Shows the user what their pre-tax projection
  * actually looks like after Indian capital-gains tax — defaulting to the
- * equity LTCG rule (10% above ₹1L gain after 12 months) but letting them
- * switch to debt (slab rate, no indexation post Apr 2023).
+ * equity LTCG rule (12.5% above ₹1.25L gain after 12 months, post 23-Jul-2024)
+ * but letting them switch to debt (slab rate, no indexation post Apr 2023).
  *
  * SEBI / AMC best-practice: never show only pre-tax wealth. Showing both
- * "Pre-tax" and "After 10% LTCG" lets users compare apples-to-apples
+ * "Pre-tax" and "After 12.5% LTCG" lets users compare apples-to-apples
  * against tax-advantaged products (PPF, EPF, ULIP) where the gross IS
  * the take-home.
  */
@@ -69,7 +69,7 @@ export default function PostTaxBanner({ invested, grossMaturity, fmt }: Props) {
                         <p className="text-sm font-black text-foreground">
                             {format(postTax)}
                             <span className="text-[10px] text-muted-foreground font-normal ml-1.5">
-                                ({assetClass === 'equity' ? t('common.equityLtcg', 'Equity LTCG') : t('common.debtSlab', `Debt @ ${slab}%`)})
+                                ({assetClass === 'equity' ? t('common.equityLtcg', 'Equity LTCG') : t('common.debtSlab', 'Debt @ {{slab}}%', { slab })})
                             </span>
                         </p>
                     </div>

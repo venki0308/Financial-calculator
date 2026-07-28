@@ -376,7 +376,9 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
             addSubscription: (sub) => set((s) => {
                 // Stamp createdAt at save time so billing-date projection
                 // never walks backward into months before the sub existed.
-                const todayISO = new Date().toISOString().slice(0, 10);
+                // LOCAL date, not toISOString() (UTC) — after 18:30 IST the UTC
+                // date is tomorrow, which silently dropped today's billing.
+                const todayISO = new Date().toLocaleDateString('en-CA');
                 return {
                     subscriptions: [
                         ...s.subscriptions,

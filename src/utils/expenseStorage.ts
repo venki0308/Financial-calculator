@@ -236,8 +236,20 @@ export const migrateFromOldStore = (): boolean => {
     }));
 
     localStorage.setItem(ENTRIES_KEY, JSON.stringify(migrated));
-    // Migration complete — drop the legacy key so it doesn't waste storage forever.
-    localStorage.removeItem('budget-tracker-storage');
+    // Migration moves ONLY entries. 'budget-tracker-storage' is still the LIVE
+    // persist key of useBudgetTrackerStore (subscriptions, netWorthHistory,
+    // monthlyBalances, savingsGoal) — removing it would destroy that data.
+    // Write the envelope back with entries emptied; keep everything else.
+    try {
+      const rawEnvelope = localStorage.getItem('budget-tracker-storage');
+      if (rawEnvelope) {
+        const envelope = JSON.parse(rawEnvelope);
+        if (envelope?.state) {
+          envelope.state.entries = [];
+          localStorage.setItem('budget-tracker-storage', JSON.stringify(envelope));
+        }
+      }
+    } catch { /* leave the envelope untouched rather than risk data loss */ }
     return true;
   } catch {
     return false;

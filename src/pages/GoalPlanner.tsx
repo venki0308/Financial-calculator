@@ -136,7 +136,7 @@ export default function GoalPlanner() {
                 annualReturn: expectedReturn,
                 targetAmount: result.targetFV,
                 totalInvestment: result.totalInvested,
-                startDate: goalStartDate || new Date().toISOString().slice(0, 10),
+                startDate: goalStartDate || new Date().toLocaleDateString('en-CA'), // local date, not UTC
             },
             createdAt: Date.now(),
             updatedAt: Date.now(),

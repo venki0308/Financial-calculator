@@ -434,7 +434,7 @@ export default function TwoWheelerLoanCalculator() {
                                     <div className="flex items-start gap-2 p-2 rounded-lg" style={{ backgroundColor: '#EF444415', border: '1px solid #EF444430' }}>
                                         <Info className="w-3 h-3 mt-0.5 text-red-500 flex-shrink-0" />
                                         <p className="text-[10px] text-red-600 dark:text-red-400 leading-snug">
-                                            {t('tw.subsidyExpired', `PM E-DRIVE subsidy ended on ${EV_SUBSIDY.validUntil}. The amount above is shown for reference only — confirm latest scheme details with your dealer.`)}
+                                            {t('tw.subsidyExpired', 'PM E-DRIVE subsidy ended on {{date}}. The amount above is shown for reference only — confirm latest scheme details with your dealer.', { date: EV_SUBSIDY.validUntil })}
                                         </p>
                                     </div>
                                 );
@@ -444,7 +444,7 @@ export default function TwoWheelerLoanCalculator() {
                                     <div className="flex items-start gap-2 p-2 rounded-lg" style={{ backgroundColor: '#F59E0B15', border: '1px solid #F59E0B30' }}>
                                         <Info className="w-3 h-3 mt-0.5 text-amber-500 flex-shrink-0" />
                                         <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-snug">
-                                            {t('tw.subsidyExpiringSoon', `Heads up: PM E-DRIVE expires in ${daysLeft} days (${EV_SUBSIDY.validUntil}). If you plan to buy after that, the subsidy may no longer apply.`)}
+                                            {t('tw.subsidyExpiringSoon', 'Heads up: PM E-DRIVE expires in {{days}} days ({{date}}). If you plan to buy after that, the subsidy may no longer apply.', { days: daysLeft, date: EV_SUBSIDY.validUntil })}
                                         </p>
                                     </div>
                                 );
@@ -456,7 +456,7 @@ export default function TwoWheelerLoanCalculator() {
                             <div className="flex items-start gap-2 p-2 rounded-lg" style={{ backgroundColor: '#F59E0B15', border: '1px solid #F59E0B30' }}>
                                 <Info className="w-3 h-3 mt-0.5 text-amber-500 flex-shrink-0" />
                                 <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-snug">
-                                    {t('tw.subsidyCapExceeded', `PM E-DRIVE subsidy is only available on EVs priced at or below ₹${(EV_SUBSIDY.priceCapExFactory / 100000).toFixed(1)}L ex-factory. Your bike exceeds this cap, so no central subsidy applies.`)}
+                                    {t('tw.subsidyCapExceeded', 'PM E-DRIVE subsidy is only available on EVs priced at or below ₹{{cap}}L ex-factory. Your bike exceeds this cap, so no central subsidy applies.', { cap: (EV_SUBSIDY.priceCapExFactory / 100000).toFixed(1) })}
                                 </p>
                             </div>
                         )}

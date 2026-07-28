@@ -445,7 +445,9 @@ export async function exportToPDF(config: ExportConfig): Promise<void> {
                     theme: 'striped',
                     headStyles: { fillColor: [13, 59, 46], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
                     alternateRowStyles: { fillColor: [240, 253, 244] },
-                    styles: { fontSize: 7.5, cellPadding: 1.5, overflow: 'hidden' },
+                    // linebreak, not hidden — long cells (e.g. disclaimer notes)
+                    // must wrap onto extra lines instead of being truncated.
+                    styles: { fontSize: 7.5, cellPadding: 1.5, overflow: 'linebreak' },
                     columnStyles: aDef,
                     margin: { left: 14, right: 14 },
                     didDrawPage: (d: any) => {

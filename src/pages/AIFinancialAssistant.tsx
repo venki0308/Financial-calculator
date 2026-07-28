@@ -74,24 +74,27 @@ export default function AIFinancialAssistant() {
     const plan = useMemo((): FinancialPlan | null => {
         if (!showResults || selectedGoals.length === 0) return null;
 
-        // ── Rough India income-tax estimate (FY 2024-25 new regime) ──────────
+        // ── Rough India income-tax estimate (new regime, FY 2025-26 onwards) ──
         const annualGross = salary * 12;
         const estimateAnnualTax = (gross: number): number => {
+            const taxable = Math.max(0, gross - 75000); // standard deduction u/s 16(ia)
             const slabs = [
-                { upto: 300000, rate: 0 },
-                { upto: 700000, rate: 0.05 },
-                { upto: 1000000, rate: 0.10 },
-                { upto: 1200000, rate: 0.15 },
-                { upto: 1500000, rate: 0.20 },
+                { upto: 400000, rate: 0 },
+                { upto: 800000, rate: 0.05 },
+                { upto: 1200000, rate: 0.10 },
+                { upto: 1600000, rate: 0.15 },
+                { upto: 2000000, rate: 0.20 },
+                { upto: 2400000, rate: 0.25 },
                 { upto: Infinity, rate: 0.30 },
             ];
             let tax = 0; let prev = 0;
             for (const slab of slabs) {
-                if (gross <= prev) break;
-                const taxable = Math.min(gross, slab.upto) - prev;
-                tax += taxable * slab.rate;
+                if (taxable <= prev) break;
+                tax += (Math.min(taxable, slab.upto) - prev) * slab.rate;
                 prev = slab.upto;
             }
+            // Rebate u/s 87A: nil tax up to ₹12L taxable, marginal relief above
+            tax = taxable <= 1200000 ? 0 : Math.min(tax, taxable - 1200000);
             // Add 4% cess
             return Math.round(tax * 1.04);
         };

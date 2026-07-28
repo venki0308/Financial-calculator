@@ -20,6 +20,7 @@ const calcCatalog: Record<string, { icon: React.ElementType; color: string; labe
     '/calculator/sip': { icon: Percent, color: '#3B82F6', label: 'SIP Calculator' },
     '/calculator/fixed-deposit': { icon: PiggyBank, color: '#F59E0B', label: 'FD Calculator' },
     '/calculator/income-tax': { icon: FileText, color: '#F59E0B', label: 'Income Tax' },
+    '/calculator/form16-tax': { icon: FileText, color: '#EF4444', label: 'calculators.form16Tax.name' },
     '/calculator/salary-hike': { icon: ArrowUpRight, color: '#10B981', label: 'calculators.salaryHike.name' },
     '/calculator/hra': { icon: GraduationCap, color: '#F59E0B', label: 'HRA Calculator' },
     '/calculator/recurring-deposit': { icon: Clock, color: '#3B82F6', label: 'RD Calculator' },

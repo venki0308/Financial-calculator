@@ -61,7 +61,10 @@ export default function GratuityCalculator() {
         const fullYears = Math.floor(years);
         const fraction = years - fullYears;
         const payoutYears = fraction >= 0.5 ? fullYears + 1 : fullYears;
-        const gratuity = isEligible ? (salary * 15 * payoutYears) / 26 : 0;
+        // Payment of Gratuity Act ceiling: statutory payout caps at ₹20L for
+        // non-Govt employees (anything beyond is voluntary ex-gratia).
+        const formulaGratuity = isEligible ? (salary * 15 * payoutYears) / 26 : 0;
+        const gratuity = employerType === 'Govt' ? formulaGratuity : Math.min(formulaGratuity, 2000000);
         const exemptionLimit = employerType === 'Govt' ? Infinity : 2000000; // Govt fully exempt; Private: Rs 20L per Income Tax Act s.10(10)
         const taxableGratuity = Math.max(0, gratuity - exemptionLimit);
         

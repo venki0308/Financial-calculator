@@ -70,12 +70,15 @@ export default function SSYCalculator() {
             const deposit = i <= investYears ? effectiveAnnual : 0;
             cumDeposit += deposit;
 
-            // Simulate 12 months: deposit added at start of April (month 1)
+            // Simulate 12 months. Yearly mode: single deposit on April 1.
+            // Monthly mode: each deposit lands in ITS OWN month — lumping all
+            // 12 into April overstated maturity by ~5% of total interest.
             let yearInterest = 0;
             for (let m = 1; m <= 12; m++) {
-                // Deposit credited at month 1 (April)
-                if (m === 1) balance += deposit;
-                // Monthly interest on current balance
+                if (i <= investYears) {
+                    if (depositMode === 'monthly') balance += monthly;
+                    else if (m === 1) balance += deposit;
+                }
                 const mInt = balance * monthlyRate;
                 yearInterest += mInt;
             }
@@ -109,7 +112,7 @@ export default function SSYCalculator() {
             withdrawalAt18Year: withdrawalAt18 ? withdrawalAt18.year : null,
             withdrawalAmount,
         };
-    }, [effectiveAnnual, rate, childAge]);
+    }, [effectiveAnnual, depositMode, monthly, rate, childAge]);
 
     const ssyStatus = useMemo(() => {
         if (!ssyOpenDate || !girlDob) return null;

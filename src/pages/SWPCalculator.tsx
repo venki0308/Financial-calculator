@@ -107,7 +107,8 @@ export default function SWPCalculator() {
         }
 
         const finalBalance = currentBalance;
-        const swr = (withdrawal * 12 / principal) * 100;
+        // Guard the division — a cleared principal input otherwise renders "Infinity%"
+        const swr = principal > 0 ? (withdrawal * 12 / principal) * 100 : 0;
 
         // SWR Risk: <4% = Low, 4-6% = Moderate, >6% = High
         let swrRisk = t('swp.riskLow'); let swrColor = 'text-brand-green'; let swrBg = 'bg-brand-green/10 border-brand-green/20';

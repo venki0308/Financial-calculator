@@ -5,6 +5,7 @@ export interface TaxCalculationParams {
   regime: TaxRegime;
   assetInterest: number;
   deduction80c?: number; // Max 1.5L applied in old regime
+  ageCategory?: AgeCategory; // old-regime senior slabs (default below_60)
 }
 
 export interface TaxCalculationResult {
@@ -28,13 +29,28 @@ const NEW_REGIME_SLABS = [
   { limit: Infinity, rate: 0.30 }
 ];
 
-// Old Regime slabs (unchanged)
-const OLD_REGIME_SLABS = [
-  { limit: 250000, rate: 0 },
-  { limit: 500000, rate: 0.05 },
-  { limit: 1000000, rate: 0.20 },
-  { limit: Infinity, rate: 0.30 }
-];
+export type AgeCategory = 'below_60' | 'senior' | 'super_senior';
+
+// Old Regime slabs — basic exemption rises for seniors (₹3L) and super seniors (₹5L)
+const OLD_REGIME_SLABS: Record<AgeCategory, typeof NEW_REGIME_SLABS> = {
+  below_60: [
+    { limit: 250000, rate: 0 },
+    { limit: 500000, rate: 0.05 },
+    { limit: 1000000, rate: 0.20 },
+    { limit: Infinity, rate: 0.30 }
+  ],
+  senior: [
+    { limit: 300000, rate: 0 },
+    { limit: 500000, rate: 0.05 },
+    { limit: 1000000, rate: 0.20 },
+    { limit: Infinity, rate: 0.30 }
+  ],
+  super_senior: [
+    { limit: 500000, rate: 0 },
+    { limit: 1000000, rate: 0.20 },
+    { limit: Infinity, rate: 0.30 }
+  ]
+};
 
 function slabTax(taxable: number, slabs: typeof NEW_REGIME_SLABS): number {
   let tax = 0;
@@ -66,7 +82,7 @@ function surchargeWithRelief(tax: number, taxable: number, regime: TaxRegime, sl
   return tax + surcharge > maxTotal ? Math.max(0, maxTotal - tax) : surcharge;
 }
 
-function calculateTaxForIncome(income: number, regime: TaxRegime, deductions: number = 0): number {
+function calculateTaxForIncome(income: number, regime: TaxRegime, deductions: number = 0, ageCategory: AgeCategory = 'below_60'): number {
   let taxable = income;
   let slabs = NEW_REGIME_SLABS;
 
@@ -75,7 +91,7 @@ function calculateTaxForIncome(income: number, regime: TaxRegime, deductions: nu
     slabs = NEW_REGIME_SLABS;
   } else {
     taxable = Math.max(0, taxable - 50000 - deductions); // standard deduction (old regime)
-    slabs = OLD_REGIME_SLABS;
+    slabs = OLD_REGIME_SLABS[ageCategory];
   }
 
   let tax = slabTax(taxable, slabs);
@@ -124,15 +140,15 @@ export function calculateAssetTax(params: TaxCalculationParams): TaxCalculationR
   const actual80C = Math.min(150000, params.deduction80c || 0);
 
   // Scenario 1: Base tax without the asset
-  const baseTax = calculateTaxForIncome(params.annualIncome, params.regime, 0);
+  const baseTax = calculateTaxForIncome(params.annualIncome, params.regime, 0, params.ageCategory);
 
   // Scenario 2: With the asset
   const incomeWithAsset = params.annualIncome + params.assetInterest;
   // Apply 80C deduction ONLY in the Old Regime
   const appliedDeductions = params.regime === 'old' ? actual80C : 0;
   
-  const newTaxWithout80C = calculateTaxForIncome(incomeWithAsset, params.regime, 0);
-  const newTax = calculateTaxForIncome(incomeWithAsset, params.regime, appliedDeductions);
+  const newTaxWithout80C = calculateTaxForIncome(incomeWithAsset, params.regime, 0, params.ageCategory);
+  const newTax = calculateTaxForIncome(incomeWithAsset, params.regime, appliedDeductions, params.ageCategory);
 
   // Tax saved specifically from 80C
   const taxSaved80C = newTaxWithout80C - newTax;

@@ -31,6 +31,7 @@ const ROUTE_NAMES: Record<string, string> = {
     '/calculator/fixed-deposit': 'FD Calculator',
     '/calculator/compound-interest': 'Compound Interest Calculator',
     '/calculator/income-tax': 'Income Tax Calculator',
+    '/calculator/form16-tax': 'Form 16 Tax Calculator',
     '/calculator/salary-hike': 'Salary Hike Calculator',
     '/calculator/hra': 'HRA Calculator',
     '/calculator/recurring-deposit': 'RD Calculator',

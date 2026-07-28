@@ -62,28 +62,23 @@ export default function RDCalculator() {
         const r = (effectiveRate || 0) / 400; // quarterly rate (annual / 4 / 100)
         const validMonths = Math.max(1, months || 1);
         const validMonthly = Math.max(1, monthly || 0);
-        const totalQuarters = Math.ceil(validMonths / 3);
-
-        // Maturity: each deposit in quarter q earns (totalQuarters - q) whole quarters
+        // Maturity per India Post convention: the deposit made in month i compounds
+        // quarterly for the (validMonths - i + 1) months it actually stays invested
+        // — i.e. (1+r)^(remainingMonths/3). The old whole-quarter version credited
+        // months 2-3 deposits with interest from before the money existed.
         let maturity = 0;
         for (let i = 1; i <= validMonths; i++) {
-            const depositQIdx = Math.floor((i - 1) / 3);
-            maturity += validMonthly * Math.pow(1 + r, totalQuarters - depositQIdx);
+            maturity += validMonthly * Math.pow(1 + r, (validMonths - i + 1) / 3);
         }
 
-        // Schedule: balance shown after each month, with interest credited at quarter-end
+        // Schedule: balance shown after each month with the same month-accurate accrual
         const schedule: { month: number; deposit: number; interestEarned: number; cumInterest: number; balance: number }[] = [];
         let prevCumInterest = 0;
 
         for (let i = 1; i <= validMonths; i++) {
-            const currentQIdx = Math.floor((i - 1) / 3);
-            const isQEnd = (i % 3 === 0) || (i === validMonths); // quarter-end or last month
-
             let balance = 0;
             for (let j = 1; j <= i; j++) {
-                const depositQIdx = Math.floor((j - 1) / 3);
-                const completedQ = currentQIdx - depositQIdx + (isQEnd ? 1 : 0);
-                balance += validMonthly * Math.pow(1 + r, completedQ);
+                balance += validMonthly * Math.pow(1 + r, (i - j + 1) / 3);
             }
 
             const cumInterest = Math.max(0, balance - validMonthly * i);
@@ -119,12 +114,10 @@ export default function RDCalculator() {
         const extraM = Math.max(100, whatIfExtra || 0);
         const newMonthly = result.validMonthly + extraM;
         const r = (effectiveRate || 0) / 400;
-        const totalQuarters = Math.ceil(result.validMonths / 3);
 
         let newMaturity = 0;
         for (let i = 1; i <= result.validMonths; i++) {
-            const depositQIdx = Math.floor((i - 1) / 3);
-            newMaturity += newMonthly * Math.pow(1 + r, totalQuarters - depositQIdx);
+            newMaturity += newMonthly * Math.pow(1 + r, (result.validMonths - i + 1) / 3);
         }
 
         const addedWealth = newMaturity - result.maturity;
@@ -293,7 +286,7 @@ export default function RDCalculator() {
                                 <input type="number" step="0.1" value={rate} onChange={e => setRate(Number(e.target.value)||0)} className={inputCls + " pr-7 bg-muted/30 focus:bg-card"} />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
                             </div>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">Typical range 6.5-7.0% (Apr 2026)</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">Typical range 6.5-7.0% (Jul 2026)</p>
                         </div>
                         <div>
                             <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('rd.timePeriod')}</label>
