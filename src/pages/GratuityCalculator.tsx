@@ -38,6 +38,14 @@ export default function GratuityCalculator() {
     const [years, setYears] = useState(10);
     const [yearsInput, setYearsInput] = useState('10');
     const [employerType, setEmployerType] = useState<'Private' | 'Govt'>('Private');
+    // Labour Codes (in force 21 Nov 2025): exits on/after that date compute
+    // gratuity under the Code on Social Security 2020 — the Sec 2(88)
+    // "wages" definition floors the base at 50% of total remuneration when
+    // excluded allowances exceed half of gross. Default ON (today > cutover).
+    const [newCode, setNewCode] = useState(true);
+    const [grossMonthly, setGrossMonthly] = useState(0);
+    // Fixed-term employees: gratuity after just 1 year, pro-rata (CoSS).
+    const [isFTE, setIsFTE] = useState(false);
     const [annualIncome, setAnnualIncome] = useState(1500000);
     const [taxRegime, setTaxRegime] = useState<'new' | 'old'>('new');
     const [salaryHike, setSalaryHike] = useState(5);
@@ -51,19 +59,29 @@ export default function GratuityCalculator() {
     const [currentPage, setCurrentPage] = useState(0);
 
     const result = useMemo(() => {
-        // Formula: (Last Drawn Salary × 15 × Years of Service) / 26
-        // Rounding rule per the Act: any fractional period of 6 months or more
-        // is treated as a full year; less than 6 months is dropped.
-        const isEligible = years >= ELIGIBILITY_YEARS;
+        // Formula: (wage base × 15 × Years of Service) / 26
+        // Rounding rule: any fractional period of 6 months or more is a full
+        // year; less than 6 months is dropped (unchanged under the Code).
+        //
+        // Wage base: Basic+DA under the 1972 Act; for exits on/after
+        // 21 Nov 2025 the CoSS Sec 2(88) definition floors it at 50% of
+        // total remuneration when allowances exceed half of gross.
+        const wageBase = newCode && grossMonthly > 0
+            ? Math.max(salary, grossMonthly * 0.5)
+            : salary;
+        const floorApplied = wageBase > salary;
+        // Eligibility: regular employees 5 years (4y 240d per court rulings);
+        // fixed-term employees 1 year pro-rata under the Code.
+        const isEligible = isFTE ? years >= 1 : years >= ELIGIBILITY_YEARS;
         // For payout, apply the half-year rounding rule. For someone at 4y 240d
         // (eligibility crossed but service < 5y), round up to 5 because the
         // Act treats their final year as a full one once 240 days are crossed.
         const fullYears = Math.floor(years);
         const fraction = years - fullYears;
         const payoutYears = fraction >= 0.5 ? fullYears + 1 : fullYears;
-        // Payment of Gratuity Act ceiling: statutory payout caps at ₹20L for
-        // non-Govt employees (anything beyond is voluntary ex-gratia).
-        const formulaGratuity = isEligible ? (salary * 15 * payoutYears) / 26 : 0;
+        // Statutory ceiling: payout caps at ₹20L for non-Govt employees
+        // (anything beyond is voluntary ex-gratia).
+        const formulaGratuity = isEligible ? (wageBase * 15 * payoutYears) / 26 : 0;
         const gratuity = employerType === 'Govt' ? formulaGratuity : Math.min(formulaGratuity, 2000000);
         const exemptionLimit = employerType === 'Govt' ? Infinity : 2000000; // Govt fully exempt; Private: Rs 20L per Income Tax Act s.10(10)
         const taxableGratuity = Math.max(0, gratuity - exemptionLimit);
@@ -81,20 +99,20 @@ export default function GratuityCalculator() {
         // Service Milestones / Year-wise impact
         const yearWiseData = Array.from({ length: Math.ceil(years) }, (_, i) => {
             const yr = i + 1;
-            const eligible = yr >= ELIGIBILITY_YEARS;
-            const amt = eligible ? (salary * 15 * yr) / 26 : 0;
+            const eligible = isFTE ? yr >= 1 : yr >= ELIGIBILITY_YEARS;
+            const amt = eligible ? (wageBase * 15 * yr) / 26 : 0;
             return { year: yr, gratuity: amt, eligible };
         });
 
         // Future Projection — apply the same Act-aligned half-year rounding
         // rule as the headline calculation, so the projection card stays
         // consistent with what the user sees up top.
-        const projectedSalary = salary * Math.pow(1 + salaryHike / 100, projectionYears);
+        const projectedSalary = wageBase * Math.pow(1 + salaryHike / 100, projectionYears);
         const projectedTotalYears = years + projectionYears;
         const projectedFullYears = Math.floor(projectedTotalYears);
         const projectedFraction = projectedTotalYears - projectedFullYears;
         const projectedPayoutYears = projectedFraction >= 0.5 ? projectedFullYears + 1 : projectedFullYears;
-        const projectedGratuity = projectedTotalYears >= ELIGIBILITY_YEARS
+        const projectedGratuity = projectedTotalYears >= (isFTE ? 1 : ELIGIBILITY_YEARS)
             ? (projectedSalary * 15 * projectedPayoutYears) / 26
             : 0;
 
@@ -110,12 +128,14 @@ export default function GratuityCalculator() {
         
         const riskConfig = DecisionEngine.getRiskConfig('Gratuity');
 
-        return { 
-            gratuity, exemptionLimit, taxableGratuity, estimatedTax, netGratuity, 
+        return {
+            gratuity, exemptionLimit, taxableGratuity, estimatedTax, netGratuity,
             isEligible, yearWiseData, projectedSalary, projectedTotalYears, projectedGratuity,
-            taxDetails, recommendation, riskConfig
+            taxDetails, recommendation, riskConfig, wageBase, floorApplied
         };
-    }, [salary, years, annualIncome, taxRegime, salaryHike, projectionYears]);
+        // employerType was missing from the deps — switching Private/Govt
+        // didn't recompute the cap until another input changed.
+    }, [salary, years, annualIncome, taxRegime, salaryHike, projectionYears, employerType, newCode, grossMonthly, isFTE]);
 
     const suggestedName = `Gratuity — ${formatINR(salary)} × ${years}Y`;
 
@@ -297,6 +317,42 @@ export default function GratuityCalculator() {
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
                             <input type="number" value={salary} onChange={e => setSalary(Number(e.target.value) || 0)} className={inputCls + " pl-8"} />
+                        </div>
+                    </div>
+
+                    {/* New Labour Code (in force 21 Nov 2025) — 50% wage floor */}
+                    <div className="rounded-xl border border-slate-200 dark:border-white/10 p-3 space-y-2.5">
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="flex-1">
+                                <p className="text-foreground text-xs font-semibold">{t('gratuity.newCodeToggle', 'Leaving on/after 21 Nov 2025 (new Labour Code)')}</p>
+                                <p className="text-muted-foreground text-[10px] mt-0.5">{t('gratuity.newCodeDesc', 'Exits after this date use the Code on Social Security: the gratuity base is at least 50% of your total monthly salary when Basic+DA is below half of gross.')}</p>
+                            </div>
+                            <button onClick={() => setNewCode(v => !v)} className={`w-11 h-6 rounded-full p-0.5 transition-colors flex-shrink-0 ${newCode ? 'bg-brand-green' : 'bg-slate-400 dark:bg-slate-600'}`}>
+                                <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${newCode ? 'translate-x-5' : ''}`} />
+                            </button>
+                        </div>
+                        {newCode && (
+                            <div>
+                                <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('gratuity.grossMonthly', 'Total monthly gross salary (optional)')}</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₹</span>
+                                    <input type="number" value={grossMonthly || ''} placeholder="0" onChange={e => setGrossMonthly(Number(e.target.value) || 0)} className={inputCls + " pl-8"} />
+                                </div>
+                                {result.floorApplied && (
+                                    <p className="text-emerald-600 dark:text-emerald-400 text-[10px] mt-1 font-medium">
+                                        {t('gratuity.floorNote', 'New-Code wage floor applied: base raised to {{base}} (50% of gross) since Basic+DA is below half of your total salary.', { base: fmtINR(result.wageBase) })}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                        <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-white/10">
+                            <div className="flex-1">
+                                <p className="text-foreground text-xs font-semibold">{t('gratuity.fteToggle', 'Fixed-term contract employee')}</p>
+                                <p className="text-muted-foreground text-[10px] mt-0.5">{t('gratuity.fteDesc', 'Under the new Code, fixed-term employees get gratuity after just 1 year of service (no 5-year wait).')}</p>
+                            </div>
+                            <button onClick={() => setIsFTE(v => !v)} className={`w-11 h-6 rounded-full p-0.5 transition-colors flex-shrink-0 ${isFTE ? 'bg-brand-green' : 'bg-slate-400 dark:bg-slate-600'}`}>
+                                <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${isFTE ? 'translate-x-5' : ''}`} />
+                            </button>
                         </div>
                     </div>
                     <div>
