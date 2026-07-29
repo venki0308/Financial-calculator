@@ -525,6 +525,37 @@ export default function Form16TaxCalculator() {
                             </div>
                         </motion.div>
 
+                        {/* Next steps — mirrors the notes CPC prints on the 143(1)
+                            intimation, so the number above becomes an action. */}
+                        <div className="p-4 rounded-2xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10">
+                            <h3 className="font-bold text-slate-900 dark:text-foreground text-sm mb-2">
+                                {result.balancePayable < 0
+                                    ? t('jobTax.refundStepsTitle', 'How your refund of {{amt}} reaches you', { amt: fmt(result.balancePayable) })
+                                    : result.balancePayable > 0
+                                    ? t('jobTax.payStepsTitle', 'How to pay the balance of {{amt}}', { amt: fmt(result.balancePayable) })
+                                    : t('jobTax.nilStepsTitle', 'Fully settled — one thing left')}
+                            </h3>
+                            <ul className="space-y-1.5">
+                                {(result.balancePayable < 0 ? [
+                                    t('jobTax.refundStep1', 'File your ITR by {{due}} and e-verify it — the refund is processed only after filing.', { due: DUE_DATES[fy] }),
+                                    t('jobTax.refundStep2', 'Pre-validate & nominate your bank account on the e-filing portal (My Profile) — refunds are paid by SBI only into a pre-validated account, usually within 15 days of the 143(1) intimation.'),
+                                    t('jobTax.refundStep3', 'Keep PAN linked with Aadhaar — refunds are withheld for inoperative PANs (rule 114AAA).'),
+                                    t('jobTax.refundStep4', 'Interest u/s 244A (0.5% per month) is added automatically when the refund is 10% or more of your total tax.'),
+                                ] : result.balancePayable > 0 ? [
+                                    t('jobTax.payStep1', 'Pay BEFORE filing: e-filing portal → e-Pay Tax → challan ITNS 280 → "Self-Assessment Tax (300)".'),
+                                    t('jobTax.payStep2', 'Enter the challan details (BSR code + serial no.) in the "Taxes Paid" section of your ITR so the payment is credited.'),
+                                    t('jobTax.payStep3', 'Pay and file by {{due}} to avoid interest u/s 234A/B/C and the ₹5,000 late-filing fee u/s 234F (₹1,000 if income ≤ ₹5L).', { due: DUE_DATES[fy] }),
+                                ] : [
+                                    t('jobTax.nilStep1', 'Your TDS exactly covers the liability — but you must still file the ITR by {{due}}. Not filing attracts the 234F fee even with zero balance.', { due: DUE_DATES[fy] }),
+                                ]).map((step, i) => (
+                                    <li key={i} className="flex items-start gap-2">
+                                        <span className="text-brand-purple font-bold text-xs mt-0.5">{i + 1}.</span>
+                                        <span className="text-muted-foreground text-[11px] leading-relaxed">{step}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
                         {/* Statement of Income (CA-style) */}
                         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-1">
                             <div className="flex items-center gap-2 mb-2">
