@@ -15,6 +15,7 @@ import RiskCategoryTags from '../components/RiskCategoryTags';
 import TaxInputGroup from '../components/TaxInputGroup';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
+import DateInput from '../components/DateInput';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
@@ -35,6 +36,13 @@ export default function GratuityCalculator() {
     const [salary, setSalary] = useState(50000);
     const [years, setYears] = useState(10);
     const [yearsInput, setYearsInput] = useState('10');
+    // Joining/leaving dates (user feedback + market research): people know
+    // "I joined 20 Mar 2017", not "8.5 years". Dates auto-compute tenure
+    // with the Act's rounding rule and auto-detect which law applies
+    // (old Act vs Labour Code by the 21 Nov 2025 leaving date).
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const [joinDate, setJoinDate] = useState('');
+    const [leaveDate, setLeaveDate] = useState('');
     const [employerType, setEmployerType] = useState<'Private' | 'Govt'>('Private');
     // Labour Codes (in force 21 Nov 2025): exits on/after that date compute
     // gratuity under the Code on Social Security 2020 — the Sec 2(88)
@@ -54,6 +62,39 @@ export default function GratuityCalculator() {
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
     const [showNameDialog, setShowNameDialog] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
+
+    // Auto-derive tenure + applicable law whenever dates are set. The years
+    // field stays usable for people who prefer typing a number directly.
+    useEffect(() => {
+        if (!joinDate) return;
+        const end = leaveDate || todayIso;
+        const j = new Date(joinDate + 'T00:00:00');
+        const l = new Date(end + 'T00:00:00');
+        if (!(l > j)) return;
+        const yrs = Math.round(((l.getTime() - j.getTime()) / 86400000 / 365.25) * 100) / 100;
+        setYears(yrs);
+        setYearsInput(String(yrs));
+        // Exits on/after 21 Nov 2025 fall under the Code on Social Security.
+        setNewCode(end >= '2025-11-21');
+        setCurrentPage(0);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [joinDate, leaveDate]);
+
+    // Human-readable service breakdown for the transparency note.
+    const serviceLabel = useMemo(() => {
+        if (!joinDate) return null;
+        const end = leaveDate || todayIso;
+        const j = new Date(joinDate + 'T00:00:00');
+        const l = new Date(end + 'T00:00:00');
+        if (!(l > j)) return null;
+        let months = (l.getFullYear() - j.getFullYear()) * 12 + (l.getMonth() - j.getMonth());
+        if (l.getDate() < j.getDate()) months -= 1;
+        const y = Math.floor(months / 12);
+        const m = months % 12;
+        const counted = m >= 6 ? y + 1 : y;
+        return { y, m, counted };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [joinDate, leaveDate]);
 
     const result = useMemo(() => {
         // Formula: (wage base × 15 × Years of Service) / 26
@@ -158,7 +199,7 @@ export default function GratuityCalculator() {
                 gratuity: Math.round(result.gratuity),
                 netGratuity: Math.round(result.netGratuity),
                 employerType,
-                startDate: new Date().toISOString().slice(0, 10),
+                startDate: joinDate || new Date().toISOString().slice(0, 10),
             },
             createdAt: Date.now(),
             updatedAt: Date.now(),
@@ -352,11 +393,31 @@ export default function GratuityCalculator() {
                             </button>
                         </div>
                     </div>
+                    {/* Service period by DATES — people know "I joined
+                        20 Mar 2017", not "8.5 years". Dates auto-compute
+                        tenure with the 6-month rounding rule and auto-pick
+                        old Act vs Labour Code from the leaving date. */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('gratuity.joinDate', 'Date of joining')}</label>
+                            <DateInput value={joinDate} onChange={setJoinDate} max={todayIso} className={inputCls + " text-left"} />
+                        </div>
+                        <div>
+                            <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('gratuity.leaveDate', 'Date of leaving')}</label>
+                            <DateInput value={leaveDate} onChange={setLeaveDate} className={inputCls + " text-left"} />
+                            <p className="text-[10px] text-muted-foreground mt-1">{t('gratuity.leaveDateHint', 'Leave empty for "as of today"')}</p>
+                        </div>
+                    </div>
+                    {serviceLabel && (
+                        <p className="text-[11px] font-medium text-brand-blue -mt-1">
+                            {t('gratuity.serviceComputed', 'Service: {{y}}y {{m}}m — counts as {{counted}} years for gratuity (6+ months rounds up)', serviceLabel)}
+                        </p>
+                    )}
                     <div>
                         <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('gratuity.yearsOfService')}</label>
-                        <p className="text-muted-foreground text-[10px] mb-1">{t('gratuity.yearsNote')}</p>
+                        <p className="text-muted-foreground text-[10px] mb-1">{joinDate ? t('gratuity.yearsAuto', 'Auto-calculated from your dates — clear the joining date to type manually') : t('gratuity.yearsNote')}</p>
                         <div className="relative">
-                            <input type="text" inputMode="decimal" value={yearsInput} onChange={e => {
+                            <input type="text" inputMode="decimal" value={yearsInput} disabled={!!joinDate} onChange={e => {
                                 const v = e.target.value;
                                 if (/^\d*\.?\d*$/.test(v)) {
                                     setYearsInput(v);
@@ -364,17 +425,14 @@ export default function GratuityCalculator() {
                                     if (!isNaN(num) && num >= 0.5) { setYears(num); setCurrentPage(0); }
                                 }
                             }} onBlur={() => {
+                                if (joinDate) return;
                                 const num = Math.max(0.5, parseFloat(yearsInput) || 1);
                                 setYears(num);
                                 setYearsInput(String(num));
-                            }} className={inputCls + " pr-16"} />
+                            }} className={inputCls + " pr-16" + (joinDate ? " opacity-60" : "")} />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{t('gratuity.years')}</span>
                         </div>
                     </div>
-                    {/* "Investment Date" input removed (user feedback): a
-                        gratuity payout has no investment date — the field
-                        only fed the optional tracker snapshot and confused
-                        users. Saves anchor on today's date instead. */}
                 </div>
 
                 {/* Saved confirmation + view in My Loans */}
