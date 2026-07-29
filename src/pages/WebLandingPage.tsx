@@ -78,7 +78,7 @@ const FEATURES = [
   { icon:'💰', name:'PPF Calculator',        desc:'Public Provident Fund growth',      cat:'retirement'  },
   { icon:'🏛️', name:'NPS Calculator',       desc:'National pension system corpus',    cat:'retirement'  },
   { icon:'🧓', name:'EPF Calculator',        desc:'Employee Provident Fund growth',    cat:'retirement'  },
-  { icon:'🎁', name:'Gratuity Calculator',   desc:'Retirement gratuity estimator',    cat:'retirement'  },
+  { icon:'🎁', name:'Gratuity Calculator',   desc:'Gratuity payout & tax exemption',  cat:'tax'         },
   // ── Post Office Schemes ──
   { icon:'👧', name:'Sukanya Samriddhi',     desc:'Girl child savings scheme',         cat:'postoffice'  },
   { icon:'🏅', name:'NSC Calculator',        desc:'National savings certificate',      cat:'postoffice'  },

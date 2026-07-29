@@ -16,6 +16,7 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.form16Tax.name', descKey: 'calculators.form16Tax.desc', icon: FileText, color: '#EF4444', path: '/calculator/form16-tax', category: 'taxSalary', keywords: ['form 16', 'form16', 'itr', 'refund', 'tds', 'payable', 'job', 'switch', 'multiple', 'employer', 'filing', 'tax'] },
     { nameKey: 'calculators.salaryHike.name', descKey: 'calculators.salaryHike.desc', icon: ArrowUpRight, color: '#10B981', path: '/calculator/salary-hike', category: 'taxSalary', keywords: ['hike', 'appraisal', 'increment', 'salary'] },
     { nameKey: 'calculators.hra.name', descKey: 'calculators.hra.desc', icon: GraduationCap, color: '#F59E0B', path: '/calculator/hra', category: 'taxSalary', keywords: ['hra', 'house', 'rent', 'allowance'] },
+    { nameKey: 'calculators.gratuity.name', descKey: 'calculators.gratuity.desc', icon: DollarSign, color: '#8B5CF6', path: '/calculator/gratuity', category: 'taxSalary', keywords: ['gratuity', 'salary', 'employee', 'resignation', 'retirement', 'labour code', 'tax free'] },
 
     // Loans
     { nameKey: 'calculators.advancedMortgage.name', descKey: 'calculators.advancedMortgage.desc', icon: Landmark, color: '#3B82F6', path: '/calculator/mortgage-calculator', category: 'loans', keywords: ['mortgage', 'home', 'loan', 'prepayment', 'tax', '80c', '24'] },
@@ -45,7 +46,6 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.epf.name', descKey: 'calculators.epf.desc', icon: Wallet, color: '#F59E0B', path: '/calculator/epf', category: 'retirement', keywords: ['epf', 'pf', 'provident', 'fund', 'employee'] },
     { nameKey: 'calculators.nps.name', descKey: 'calculators.nps.desc', icon: LayoutGrid, color: '#3B82F6', path: '/calculator/nps', category: 'retirement', keywords: ['nps', 'national', 'pension', 'system'] },
     { nameKey: 'calculators.ppf.name', descKey: 'calculators.ppf.desc', icon: Landmark, color: '#10B981', path: '/calculator/ppf', category: 'retirement', keywords: ['ppf', 'public', 'provident', 'fund', 'tax', 'saving', 'monthly', 'quarterly', 'yearly'] },
-    { nameKey: 'calculators.gratuity.name', descKey: 'calculators.gratuity.desc', icon: DollarSign, color: '#8B5CF6', path: '/calculator/gratuity', category: 'retirement', keywords: ['gratuity', 'retirement', 'employee', 'bonus'] },
 
     // Post Office
     { nameKey: 'calculators.ssy.name', descKey: 'calculators.ssy.desc', icon: Heart, color: '#EF4444', path: '/calculator/sukanya-samriddhi', category: 'postOffice', keywords: ['ssy', 'sukanya', 'samriddhi', 'yojana', 'girl'] },
