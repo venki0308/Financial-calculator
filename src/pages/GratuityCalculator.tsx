@@ -8,8 +8,6 @@ import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, getEnglishT } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
-import DateInput from '../components/DateInput';
-import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
 import SaveNameDialog from '../components/SaveNameDialog';
 import { calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
@@ -54,7 +52,6 @@ export default function GratuityCalculator() {
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [saved, setSaved] = useState(false);
     const [lastSavedId, setLastSavedId] = useState<string | null>(null);
-    const [joiningDate, setJoiningDate] = useState('');
     const [showNameDialog, setShowNameDialog] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
 
@@ -161,7 +158,7 @@ export default function GratuityCalculator() {
                 gratuity: Math.round(result.gratuity),
                 netGratuity: Math.round(result.netGratuity),
                 employerType,
-                startDate: joiningDate || new Date().toISOString().slice(0, 10),
+                startDate: new Date().toISOString().slice(0, 10),
             },
             createdAt: Date.now(),
             updatedAt: Date.now(),
@@ -374,43 +371,11 @@ export default function GratuityCalculator() {
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{t('gratuity.years')}</span>
                         </div>
                     </div>
-                    {/* Joining Date — feeds the My Loans / Trackers card */}
-                    <div>
-                        <label className="text-muted-foreground text-xs font-medium mb-1 block">
-                            {t('common.investmentDate', 'Investment Date (optional)')}
-                        </label>
-                        <DateInput
-                            value={joiningDate}
-                            onChange={setJoiningDate}
-                            max={new Date().toISOString().slice(0, 10)}
-                            className={inputCls + " text-left"}
-                        />
-                        <p className="text-[10px] text-muted-foreground mt-1">
-                            {t('common.investmentDateHint', 'Used for tracking in My Loans')}
-                        </p>
-                    </div>
+                    {/* "Investment Date" input removed (user feedback): a
+                        gratuity payout has no investment date — the field
+                        only fed the optional tracker snapshot and confused
+                        users. Saves anchor on today's date instead. */}
                 </div>
-
-                {/* GRATUITY SNAPSHOT — appears the moment user picks a date */}
-                {joiningDate && result.isEligible && (
-                    <SnapshotPreviewCard
-                        anchorDate={joiningDate}
-                        headline={fmtINR(result.gratuity)}
-                        headlineLabel={t('gratuity.estimatedGratuity', 'Estimated Gratuity')}
-                        subtitle={t('gratuity.snapshotSubtitle', 'Tax-free up to ₹20L for private employees')}
-                        metrics={[
-                            { label: t('gratuity.lastSalary', 'Last Salary'), value: fmtINR(salary), tone: 'investment' },
-                            { label: t('gratuity.servicePeriod', 'Service'), value: `${years}y`, tone: 'neutral' },
-                            { label: t('gratuity.netPayout', 'Net Payout'), value: fmtINR(result.netGratuity), tone: 'income' },
-                        ]}
-                        notes={[
-                            { label: t('gratuity.taxableAmount', 'Taxable amount'), value: fmtINR(result.taxableGratuity) },
-                            { label: t('gratuity.estimatedTax', 'Estimated tax'), value: fmtINR(result.estimatedTax) },
-                            { label: t('gratuity.employerType', 'Employer type'), value: employerType },
-                        ]}
-                        label={t('gratuity.snapshotTitle', 'Gratuity Snapshot')}
-                    />
-                )}
 
                 {/* Saved confirmation + view in My Loans */}
                 {saved && (
