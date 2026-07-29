@@ -113,6 +113,7 @@ export default function Form16TaxCalculator() {
     ]);
     const [savingsInterest, setSavingsInterest] = useState('');
     const [otherInterest, setOtherInterest] = useState('');
+    const [tdsOther, setTdsOther] = useState('');
     const [advanceTax, setAdvanceTax] = useState('');
     const [sec80C, setSec80C] = useState('');
     const [sec80D, setSec80D] = useState('');
@@ -150,12 +151,12 @@ export default function Form16TaxCalculator() {
 
     const baseParams = useMemo(() => ({
         employers: employers.map(toEngineInput),
-        otherIncome: { savingsInterest: n(savingsInterest), otherInterest: n(otherInterest) },
+        otherIncome: { savingsInterest: n(savingsInterest), otherInterest: n(otherInterest), tdsOtherIncome: n(tdsOther) },
         fy,
         ageCategory,
         oldDeductions: { section80C: n(sec80C), section80D: n(sec80D), section80CCD1B: n(sec80CCD1B), housePropertyLoss: n(housePropLoss) },
         advanceTaxPaid: n(advanceTax),
-    }), [employers, toEngineInput, savingsInterest, otherInterest, fy, ageCategory, sec80C, sec80D, sec80CCD1B, housePropLoss, advanceTax]);
+    }), [employers, toEngineInput, savingsInterest, otherInterest, tdsOther, fy, ageCategory, sec80C, sec80D, sec80CCD1B, housePropLoss, advanceTax]);
 
     const newResult = useMemo(() => calculateJobSwitchTax({ ...baseParams, regime: 'new' }), [baseParams]);
     const oldResult = useMemo(() => calculateJobSwitchTax({ ...baseParams, regime: 'old' }), [baseParams]);
@@ -452,6 +453,12 @@ export default function Form16TaxCalculator() {
                     <p className="text-muted-foreground text-[10px] -mt-1.5 leading-relaxed">{t('jobTax.aisHint', 'Tip: open AIS on the e-filing portal — it already lists your savings/FD interest and dividends. Copy the amounts from there so nothing is missed.')}</p>
                     <InputRow label={t('jobTax.savingsInterest', 'Savings account interest')} value={savingsInterest} onChange={setSavingsInterest} hint={regime === 'old' ? t('jobTax.savingsInterestHint', '80TTA deduction up to ₹10,000 applied automatically') : undefined} />
                     <InputRow label={t('jobTax.otherInterest', 'FD/RD interest & other income')} value={otherInterest} onChange={setOtherInterest} />
+                    <InputRow
+                        label={t('jobTax.tdsOther', 'TDS on interest — deducted by bank')}
+                        value={tdsOther}
+                        onChange={setTdsOther}
+                        hint={t('jobTax.tdsOtherHint', 'Banks cut ~10% TDS on FD interest — see "TDS other than salary" in Form 26AS/AIS. Counts toward your refund.')}
+                    />
                     <InputRow label={t('jobTax.advanceTax', 'Advance / self-assessment tax already paid')} value={advanceTax} onChange={setAdvanceTax} />
                 </div>
 

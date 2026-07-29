@@ -37,6 +37,10 @@ export interface OtherIncomeInput {
     savingsInterest: number;
     /** FD/RD interest and any other "Income from other sources" */
     otherInterest: number;
+    /** TDS already deducted on the above by banks (Form 26AS/AIS —
+     *  "TDS other than salary"). Missing this is the #1 cause of wrong
+     *  refund estimates: banks cut 10% on FD interest above the limit. */
+    tdsOtherIncome?: number;
 }
 
 export interface OldRegimeDeductions {
@@ -371,7 +375,8 @@ export function calculateJobSwitchTax(p: JobSwitchTaxParams): JobSwitchTaxResult
     // 288B's nearest-₹10 rounding applies to the NET payable/refundable below.
     const totalTaxLiability = Math.round(taxAfterRebate + surcharge + cess);
 
-    const totalTDS = p.employers.reduce((s, e) => s + e.tdsDeducted, 0);
+    const totalTDS = p.employers.reduce((s, e) => s + e.tdsDeducted, 0)
+        + Math.max(0, p.otherIncome.tdsOtherIncome ?? 0);
     const balancePayable = roundTo10(totalTaxLiability - totalTDS - p.advanceTaxPaid);
 
     const multiEmployerTrap =
