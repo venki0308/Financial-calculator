@@ -41,8 +41,15 @@ export interface OtherIncomeInput {
 
 export interface OldRegimeDeductions {
     section80C: number;     // cap 1.5L
-    section80D: number;     // cap 25K (non-senior self)
+    /** Deductible 80D from Form 16 Part B row 10(g). Cap 1L total: self
+     *  25K (50K senior) + parents 25K (50K senior) — the employer has
+     *  already validated the per-head split, so we only guard the max. */
+    section80D: number;
     section80CCD1B: number; // cap 50K
+    /** Loss from house property set off against salary (Form 16 Part B
+     *  row 7(a), shown negative there — pass as a POSITIVE number).
+     *  Set-off capped at 2L u/s 71(3A). Old regime only. */
+    housePropertyLoss?: number;
 }
 
 export interface JobSwitchTaxParams {
@@ -334,12 +341,20 @@ export function calculateJobSwitchTax(p: JobSwitchTaxParams): JobSwitchTaxResult
     const salaryIncome = Math.max(0, totalSalary - Math.min(totalSalary, stdDed) - professionalTaxDeduction);
 
     const otherIncomeTotal = p.otherIncome.savingsInterest + p.otherIncome.otherInterest;
-    const grossTotalIncome = salaryIncome + otherIncomeTotal;
+    // House-property loss (home-loan interest on self-occupied / let-out
+    // loss): set-off against other heads capped at 2L u/s 71(3A). The new
+    // regime disallows this set-off entirely.
+    const housePropertySetOff = regime === 'old'
+        ? Math.min(Math.max(0, p.oldDeductions.housePropertyLoss ?? 0), 200000)
+        : 0;
+    const grossTotalIncome = Math.max(0, salaryIncome + otherIncomeTotal - housePropertySetOff);
 
     const deduction80TTA = regime === 'old' ? Math.min(p.otherIncome.savingsInterest, 10000) : 0;
     const chapterVIA = regime === 'old'
         ? Math.min(p.oldDeductions.section80C, 150000)
-          + Math.min(p.oldDeductions.section80D, p.ageCategory === 'below_60' ? 25000 : 50000)
+          // 80D: Form 16 already shows the employer-validated deductible;
+          // guard only the legal maximum (self 25/50K + senior parents 50K).
+          + Math.min(p.oldDeductions.section80D, 100000)
           + Math.min(p.oldDeductions.section80CCD1B, 50000)
           + deduction80TTA
         : 0;

@@ -117,6 +117,7 @@ export default function Form16TaxCalculator() {
     const [sec80C, setSec80C] = useState('');
     const [sec80D, setSec80D] = useState('');
     const [sec80CCD1B, setSec80CCD1B] = useState('');
+    const [housePropLoss, setHousePropLoss] = useState('');
     const [paymentDate, setPaymentDate] = useState(todayISO());
     const [filingDate, setFilingDate] = useState(todayISO());
     // Optional — printed on the exported statement only; never leaves the device
@@ -152,9 +153,9 @@ export default function Form16TaxCalculator() {
         otherIncome: { savingsInterest: n(savingsInterest), otherInterest: n(otherInterest) },
         fy,
         ageCategory,
-        oldDeductions: { section80C: n(sec80C), section80D: n(sec80D), section80CCD1B: n(sec80CCD1B) },
+        oldDeductions: { section80C: n(sec80C), section80D: n(sec80D), section80CCD1B: n(sec80CCD1B), housePropertyLoss: n(housePropLoss) },
         advanceTaxPaid: n(advanceTax),
-    }), [employers, toEngineInput, savingsInterest, otherInterest, fy, ageCategory, sec80C, sec80D, sec80CCD1B, advanceTax]);
+    }), [employers, toEngineInput, savingsInterest, otherInterest, fy, ageCategory, sec80C, sec80D, sec80CCD1B, housePropLoss, advanceTax]);
 
     const newResult = useMemo(() => calculateJobSwitchTax({ ...baseParams, regime: 'new' }), [baseParams]);
     const oldResult = useMemo(() => calculateJobSwitchTax({ ...baseParams, regime: 'old' }), [baseParams]);
@@ -459,8 +460,14 @@ export default function Form16TaxCalculator() {
                     <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
                         <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">{t('jobTax.deductionsTitle', 'Deductions — Chapter VI-A (Old Regime)')}</h3>
                         <InputRow label={t('tax.sec80C', 'Section 80C (max ₹1.5L)')} value={sec80C} onChange={setSec80C} />
-                        <InputRow label={t('tax.sec80D', 'Section 80D — Health insurance')} value={sec80D} onChange={setSec80D} hint={t('jobTax.sec80DHint', 'Cap ₹25,000 (₹50,000 for senior citizens)')} />
+                        <InputRow label={t('tax.sec80D', 'Section 80D — Health insurance')} value={sec80D} onChange={setSec80D} hint={t('jobTax.sec80DHint2', 'Enter the deductible amount from Form 16 row 10(g) — self ₹25K (₹50K senior) + parents up to ₹50K; max ₹1L')} />
                         <InputRow label={t('jobTax.sec80CCD1B', 'Section 80CCD(1B) — NPS (max ₹50K)')} value={sec80CCD1B} onChange={setSec80CCD1B} />
+                        <InputRow
+                            label={t('jobTax.housePropLoss', 'Home loan interest / house property loss (max ₹2L)')}
+                            value={housePropLoss}
+                            onChange={setHousePropLoss}
+                            hint={t('jobTax.housePropLossHint', 'Form 16 Part B row 7(a) shows this as a negative figure — enter it as a positive number. Old regime only.')}
+                        />
                     </div>
                 )}
 
