@@ -36,7 +36,7 @@ export default function FDCalculator() {
     const navigate = useNavigate();
     const { addSaved, removeSaved, savedCalculations } = useCalculatorStore();
     const [principal, setPrincipal] = useState(100000);
-    const [rate, setRate] = useState(7.0);
+    const [rate, setRate] = useState(6.5);
     const [years, setYears] = useState(5);
     const [compounding, setCompounding] = useState<number>(4);
     const [inflation, setInflation] = useState(5); // RBI FY 2025-26 CPI ~4.8%

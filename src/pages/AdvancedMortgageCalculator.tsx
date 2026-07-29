@@ -49,7 +49,7 @@ export default function AdvancedMortgageCalculator() {
     const [loanAmount, setLoanAmount] = useState(8000000);
     const [propertyValue, setPropertyValue] = useState(0);
     const [showLtvCheck, setShowLtvCheck] = useState(false);
-    const [interestRate, setInterestRate] = useState(8.75);
+    const [interestRate, setInterestRate] = useState(8.0);
     const [tenureYears, setTenureYears] = useState(20);
     const [monthlyIncome, setMonthlyIncome] = useState(150000);
     const [loanRateType, setLoanRateType] = useState<'floating' | 'fixed'>('floating');

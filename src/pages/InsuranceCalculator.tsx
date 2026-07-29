@@ -1089,7 +1089,7 @@ export default function InsuranceCalculator() {
                         • Parents (60+): additional up to ₹50,000
                       Total max possible = ₹1,00,000 (senior self + senior parents).
                       Health insurance premium GST EXEMPT since 22 Sep 2025 (per
-                      55th GST Council). We compute the *eligible cap*, not the
+                      56th GST Council). We compute the *eligible cap*, not the
                       actual premium paid, and let the user see how much of that
                       cap they are fully utilising. */}
                   {(() => {
@@ -1579,15 +1579,15 @@ export default function InsuranceCalculator() {
                 {t('ins.life.premiumNote')}
               </p>
               {/* GST disclosure for life term insurance.
-                  IRDAI rule: 18% GST on first-year premium, 1.8% on renewals.
-                  Many users assume the quoted premium is final — make this
-                  explicit so they can budget for the year-1 vs renewal split. */}
-              <div className="mt-3 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/15">
-                <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 mb-0.5">
-                  💡 {t('ins.life.gstNoteTitle', 'GST is extra')}
+                  Individual life (term/endowment/ULIP) and health premiums are
+                  GST-exempt since 22 Sep 2025 (56th GST Council / GST 2.0).
+                  Employer group covers and motor policies still attract 18%. */}
+              <div className="mt-3 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/15">
+                <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 mb-0.5">
+                  ✅ {t('ins.life.gstNoteTitle', 'No GST on term premiums')}
                 </p>
-                <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80 leading-snug">
-                  {t('ins.life.gstNoteBody', 'Add 18% GST in year 1 and 1.8% on renewals. A ₹{{premium}} term premium is actually ₹{{withGst}} in year 1.', { premium: fmt(termRange.lo), withGst: fmt(Math.round(termRange.lo * 1.18)) })}
+                <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 leading-snug">
+                  {t('ins.life.gstNoteBody', 'Individual term life premiums are GST-exempt since 22 Sep 2025 (56th GST Council). The quoted premium is what you pay — employer group covers still attract 18% GST.')}
                 </p>
               </div>
               {/* Section 10(10D) — death benefit and (for term) any maturity benefit

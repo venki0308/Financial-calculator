@@ -118,7 +118,26 @@ export default function SWPCalculator() {
         // Inflation adjusted final withdrawal
         const realWithdrawalValueAtEnd = withdrawal / Math.pow(1 + (inflation / 100), years);
 
-        return { finalBalance, totalWithdrawn, yearlySchedule, depletionMonth, depletionYear, swr, swrRisk, swrColor, swrBg, realWithdrawalValueAtEnd };
+        // True corpus longevity — simulate PAST the chosen tenure (up to 100
+        // years) to answer "how long will it actually last?", which the
+        // tenure-bound loop above can't. Perpetual when the very first month's
+        // growth already covers the payout (balance never declines).
+        const perpetual = withdrawal <= 0 || principal * r >= withdrawal;
+        let longevityMonths: number | null = null;
+        if (!perpetual) {
+            let bal = principal;
+            for (let m = 1; m <= 1200; m++) {
+                bal = bal * (1 + r) - withdrawal;
+                if (bal <= 0) { longevityMonths = m; break; }
+            }
+        }
+        const now = new Date();
+        const depletionDate = longevityMonths !== null
+            ? new Date(now.getFullYear(), now.getMonth() + longevityMonths, 1)
+                .toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+            : null;
+
+        return { finalBalance, totalWithdrawn, yearlySchedule, depletionMonth, depletionYear, swr, swrRisk, swrColor, swrBg, realWithdrawalValueAtEnd, perpetual, longevityMonths, depletionDate };
     }, [principal, withdrawal, rate, years, inflation, t]);
 
 
@@ -458,10 +477,22 @@ export default function SWPCalculator() {
                                         <div className={`p-4 rounded-2xl border text-center ${result.depletionMonth ? 'bg-red-500/10 border-red-500/20' : 'bg-brand-green/10 border-brand-green/20'}`}>
                                             <p className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>{t('swp.corpusLifespan')}</p>
                                             <p className={`font-black text-xl mb-1 ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>
-                                                {result.depletionMonth ? `${(result.depletionMonth/12).toFixed(1)}y` : `${years}y+`}
+                                                {result.depletionMonth
+                                                    ? `${(result.depletionMonth/12).toFixed(1)}y`
+                                                    : result.perpetual
+                                                        ? '∞'
+                                                        : result.longevityMonths !== null
+                                                            ? `${(result.longevityMonths/12).toFixed(1)}y`
+                                                            : '100y+'}
                                             </p>
                                             <p className={`text-[9px] leading-tight px-1 font-bold ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>
-                                                {result.depletionMonth ? t('swp.depletesEarly') : t('swp.sustainable')}
+                                                {result.depletionMonth
+                                                    ? `${t('swp.depletesEarly')}${result.depletionDate ? ` · ~${result.depletionDate}` : ''}`
+                                                    : result.perpetual
+                                                        ? t('swp.perpetualNote', 'Growth outpaces withdrawals — never runs out at this rate')
+                                                        : result.depletionDate
+                                                            ? t('swp.lastsTill', 'Outlives your {{years}}y plan — lasts till ~{{date}}', { years, date: result.depletionDate })
+                                                            : t('swp.sustainable')}
                                             </p>
                                         </div>
                                     </div>

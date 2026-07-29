@@ -384,6 +384,35 @@ export default function IncomeTaxCalculator() {
     const maxTax = Math.max(oldTotalTax, newTotalTax, 1);
     const bothZero = oldTotalTax === 0 && newTotalTax === 0;
 
+    // ─── Break-even deductions ────────────────────────────────────────────────
+    // Smallest total old-regime deduction (incl. ₹50K std deduction + HRA +
+    // 80C/80D/…) at which old-regime tax matches the new regime. Old-regime tax
+    // is non-increasing in deductions, so bisection converges. Answers the real
+    // user question: "is collecting proofs even worth it?"
+    const breakEvenDeductions = useMemo(() => {
+        if (grossSalary <= 0) return null;
+        const oldTaxFor = (ded: number) => {
+            const ti = r10(Math.max(0, grossSalary - ded - employerNps80CCD2Old));
+            const raw = computeSlabTax(ti, OLD_REGIME_ACTIVE);
+            const afterRebate = applyRebate87A(raw, ti, 'old', fy);
+            const withSurcharge = afterRebate + computeSurcharge(afterRebate, ti, 'old', OLD_REGIME_ACTIVE);
+            return withSurcharge * 1.04;
+        };
+        if (oldTaxFor(0) <= newTotalTax) return 0;
+        if (oldTaxFor(grossSalary) > newTotalTax) return null; // old can never catch up
+        let lo = 0, hi = grossSalary;
+        for (let i = 0; i < 40; i++) {
+            const mid = (lo + hi) / 2;
+            if (oldTaxFor(mid) <= newTotalTax) hi = mid; else lo = mid;
+        }
+        return Math.ceil(hi / 1000) * 1000;
+    }, [grossSalary, employerNps80CCD2Old, OLD_REGIME_ACTIVE, fy, newTotalTax]);
+
+    // ₹12L-cliff marginal relief (new regime): true when 87A relief is actively
+    // capping the tax at "income above ₹12L" instead of the full slab tax.
+    const inReliefZone = newTaxableIncome > 1200000 && newAfterRebate < newRawTax;
+    const reliefSaved = inReliefZone ? newRawTax - newAfterRebate : 0;
+
     // ─── Regime Explanation ───────────────────────────────────────────────────
     useHistoryTracker('Income Tax Calculator', { regime, fy }, { netAnnual: netAnnual }, activeTotalTax);
 
@@ -958,6 +987,35 @@ export default function IncomeTaxCalculator() {
                                     </>
                                 )}
                             </div>
+
+                            {/* Break-even deductions — "is collecting proofs worth it?" */}
+                            {!bothZero && grossSalary > 0 && (
+                                <div className="p-3.5 rounded-xl bg-sky-50 dark:bg-sky-900/10 border border-sky-200 dark:border-sky-700/30">
+                                    <p className="text-[10px] uppercase font-bold tracking-wider text-sky-700 dark:text-sky-400 mb-1">{t('tax.breakEvenTitle', 'Regime break-even point')}</p>
+                                    <p className="text-xs text-sky-800 dark:text-sky-300 leading-relaxed">
+                                        {breakEvenDeductions === null
+                                            ? t('tax.breakEvenNever', 'At your income, the New regime stays cheaper no matter how many deductions you claim — skip the proof collection.')
+                                            : breakEvenDeductions === 0
+                                                ? t('tax.breakEvenAlways', 'At your income, the Old regime is cheaper even with zero deductions.')
+                                                : t('tax.breakEvenAt', 'Old regime beats New only if your total deductions (₹50K standard deduction + HRA + 80C + 80D + home-loan interest…) exceed {{amount}}. You currently have {{current}}.', { amount: fmt(breakEvenDeductions), current: fmt(oldDeductions) })}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* ₹12L marginal-relief zone callout (new regime) */}
+                            {inReliefZone && (
+                                <div className="p-3.5 rounded-xl bg-violet-50 dark:bg-violet-900/10 border border-violet-200 dark:border-violet-700/30">
+                                    <p className="text-[10px] uppercase font-bold tracking-wider text-violet-700 dark:text-violet-400 mb-1">{t('tax.marginalReliefTitle', '₹12L marginal relief is protecting you')}</p>
+                                    <p className="text-xs text-violet-800 dark:text-violet-300 leading-relaxed">
+                                        {t('tax.marginalReliefBody', 'Your new-regime taxable income is {{excess}} above the ₹12L rebate limit, so Section 87A marginal relief caps your tax at {{capped}} instead of the full slab tax of {{full}} — a saving of {{saved}} (plus cess).', {
+                                            excess: fmt(newTaxableIncome - 1200000),
+                                            capped: fmt(newAfterRebate),
+                                            full: fmt(newRawTax),
+                                            saved: fmt(reliefSaved),
+                                        })}
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Tax-Saving Suggestions */}

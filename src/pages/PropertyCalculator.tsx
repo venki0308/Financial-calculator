@@ -133,7 +133,7 @@ export default function PropertyCalculator() {
 
     // ── Home Loan EMI ─────────────────────────────────────────────────────────
     const [loanAmt, setLoanAmt] = useState('');
-    const [loanRate, setLoanRate] = useState('8.5');
+    const [loanRate, setLoanRate] = useState('8');
     const [loanTenure, setLoanTenure] = useState('20');
     const [emiResult, setEmiResult] = useState<{
         emi: number; totalInterest: number; totalPayment: number;
