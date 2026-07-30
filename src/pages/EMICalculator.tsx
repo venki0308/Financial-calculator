@@ -78,6 +78,12 @@ export default function EMICalculator() {
     const [foreclosureMonths, setForeclosureMonths] = useState(24);
     const [foreclosureChargePercent, setForeclosureChargePercent] = useState(2);
 
+    // Part-payment what-if state
+    const [showPrepay, setShowPrepay] = useState(false);
+    const [prepayAmount, setPrepayAmount] = useState(200000);
+    const [prepayMonth, setPrepayMonth] = useState(12);
+    const [prepayMode, setPrepayMode] = useState<'tenure' | 'emi'>('tenure');
+
     // Reminder state
     const [enableReminder, setEnableReminder] = useState(false);
     const [reminderDate, setReminderDate] = useState(5);
@@ -122,6 +128,50 @@ export default function EMICalculator() {
         if (method !== 'reducing' || !result.emi) return null;
         return calculatePrepaymentSavings(principal, rate, months, result.emi);
     }, [principal, rate, months, result.emi, method]);
+
+    // ─── Part-Payment What-If ──────────────────────────────────────────
+    // One lump-sum part-payment at month M, with the banker's choice both
+    // ways: keep the EMI and finish early (reduce tenure) vs keep the tenure
+    // and lower the EMI. Reduce-tenure always saves more interest — showing
+    // both makes that visible instead of asserting it.
+    const prepayResult = useMemo(() => {
+        if (!showPrepay || method !== 'reducing' || result.emi <= 0 || prepayAmount <= 0 || rate <= 0) return null;
+        const r = rate / 12 / 100;
+        const n = months;
+        const emi = result.emi;
+        const m = Math.min(Math.max(1, prepayMonth), n - 1);
+        let bal = principal, interestPre = 0;
+        for (let i = 1; i <= m; i++) {
+            const int = bal * r;
+            interestPre += int;
+            bal = bal + int - emi;
+        }
+        if (bal <= prepayAmount) return { clearsLoan: true as const, outstanding: Math.round(bal), month: m };
+        const balAfter = bal - prepayAmount;
+
+        // Reduce tenure: same EMI on the lower balance
+        let bT = balAfter, intT = 0, k = 0;
+        while (bT > 0.5 && k < n * 2) {
+            const int = bT * r;
+            intT += int;
+            bT = bT + int - emi;
+            k++;
+        }
+        const tenureMonthsNew = m + k;
+
+        // Reduce EMI: same remaining tenure, re-amortized EMI
+        const rem = n - m;
+        const pow = Math.pow(1 + r, rem);
+        const newEmi = balAfter * r * pow / (pow - 1);
+        const intE = newEmi * rem - balAfter;
+
+        return {
+            clearsLoan: false as const,
+            month: m,
+            tenure: { monthsSaved: n - tenureMonthsNew, interestSaved: Math.round(result.totalInterest - (interestPre + intT)) },
+            emiMode: { emiDrop: Math.round(emi - newEmi), newEmi: Math.round(newEmi), interestSaved: Math.round(result.totalInterest - (interestPre + intE)) },
+        };
+    }, [showPrepay, method, result.emi, result.totalInterest, principal, rate, months, prepayAmount, prepayMonth]);
 
     // ─── Live Loan Profile ─────────────────────────────────────────────
     const loanProfile = useMemo<LoanProfile | null>(() => {
@@ -672,6 +722,96 @@ export default function EMICalculator() {
                                                     <ChevronRight size={14} />
                                                 </button>
                                             </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                )}
+
+                {/* ── Part-Payment What-If ────────────────────────── */}
+                {method === 'reducing' && result.emi > 0 && months > 1 && (
+                    <div className="mb-4">
+                        <button onClick={() => setShowPrepay(!showPrepay)}
+                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
+                            <TrendingDown size={16} />
+                            {showPrepay ? t('emi.hide') : t('emi.prepayWhatIf', 'Part-Payment What-If')}
+                            {showPrepay ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+
+                        <AnimatePresence>
+                            {showPrepay && (
+                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                                    <div className="bg-white dark:bg-card border border-slate-200 dark:border-border rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none">
+                                        <h3 className="text-slate-800 dark:text-foreground font-bold text-sm flex items-center gap-2">
+                                            <TrendingDown size={16} className="text-emerald-600 dark:text-emerald-400" />
+                                            {t('emi.prepayTitle', 'What if I make a part-payment?')}
+                                        </h3>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <NumberInput label={t('emi.prepayAmount', 'Part-payment amount')} value={prepayAmount}
+                                                onChange={setPrepayAmount} min={1000} max={principal} prefix="₹" />
+                                            <NumberInput label={t('emi.prepayMonth', 'Paid in month')} value={prepayMonth}
+                                                onChange={(v) => setPrepayMonth(Math.min(Math.max(1, v), months - 1))}
+                                                min={1} max={months - 1} suffix=" mo" />
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground -mt-1">
+                                            {t('emi.prepayRbiNote', 'RBI: banks cannot charge foreclosure/part-payment fees on floating-rate loans to individuals.')}
+                                        </p>
+
+                                        {prepayResult && prepayResult.clearsLoan && (
+                                            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20">
+                                                <p className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+                                                    {t('emi.prepayClearsLoan', 'By month {{month}} the outstanding is only {{outstanding}} — this part-payment would close the loan entirely. Use the Foreclosure Simulator below for the exact settlement.', { month: prepayResult.month, outstanding: formatINR(prepayResult.outstanding) })}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {prepayResult && !prepayResult.clearsLoan && (
+                                            <>
+                                                {/* Strategy toggle */}
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {([
+                                                        { key: 'tenure' as const, label: t('emi.prepayReduceTenure', 'Reduce Tenure') },
+                                                        { key: 'emi' as const, label: t('emi.prepayReduceEmi', 'Reduce EMI') },
+                                                    ]).map(opt => (
+                                                        <button key={opt.key} onClick={() => setPrepayMode(opt.key)}
+                                                            className={`py-2.5 rounded-xl text-xs font-bold border transition-colors ${prepayMode === opt.key
+                                                                ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+                                                                : 'border-slate-200 dark:border-border text-muted-foreground'}`}>
+                                                            {opt.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                {prepayMode === 'tenure' ? (
+                                                    <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 border border-emerald-200 dark:border-emerald-500/30 text-center">
+                                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">{t('emi.prepayKeepEmi', 'Same EMI, loan ends early')}</p>
+                                                        <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                                                            {Math.floor(prepayResult.tenure.monthsSaved / 12) > 0 ? `${Math.floor(prepayResult.tenure.monthsSaved / 12)}y ` : ''}{prepayResult.tenure.monthsSaved % 12}m {t('emi.prepayEarlier', 'earlier')}
+                                                        </p>
+                                                        <p className="text-slate-700 dark:text-foreground text-xs mt-1 font-medium">
+                                                            {t('emi.prepayInterestSaved', 'Interest saved')}: <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatINR(prepayResult.tenure.interestSaved)}</span>
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="p-4 rounded-xl bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-sky-500/10 dark:to-indigo-500/10 border border-sky-200 dark:border-sky-500/30 text-center">
+                                                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">{t('emi.prepayKeepTenure', 'Same tenure, lighter EMI')}</p>
+                                                        <p className="text-xl font-bold text-sky-600 dark:text-sky-400">
+                                                            {formatINR(prepayResult.emiMode.newEmi)}<span className="text-xs font-medium text-muted-foreground">/mo (−{formatINR(prepayResult.emiMode.emiDrop)})</span>
+                                                        </p>
+                                                        <p className="text-slate-700 dark:text-foreground text-xs mt-1 font-medium">
+                                                            {t('emi.prepayInterestSaved', 'Interest saved')}: <span className="font-bold text-sky-600 dark:text-sky-400">{formatINR(prepayResult.emiMode.interestSaved)}</span>
+                                                        </p>
+                                                    </div>
+                                                )}
+
+                                                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                                                    {t('emi.prepayVerdict', 'Reduce Tenure saves {{extra}} more interest than Reduce EMI — choose Reduce EMI only if you need the monthly relief.', { extra: formatINR(Math.max(0, prepayResult.tenure.interestSaved - prepayResult.emiMode.interestSaved)) })}
+                                                </p>
+                                            </>
                                         )}
                                     </div>
                                 </motion.div>
