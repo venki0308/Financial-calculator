@@ -4,12 +4,12 @@
 
 ## App Name (50 chars max)
 ```
-FinCalix – Financial Calculator
+FinCalix: EMI, Tax & SIP Calculator App India 2026
 ```
 
 ## Short Description (80 chars max)
 ```
-India's smartest financial calculator. Tax, EMI, SIP, FD & more. 100% free.
+Free Financial Calculator India: Income Tax FY 2026-27, EMI, SIP, FD, PPF & GST
 ```
 
 ## Full Description (4000 chars max)

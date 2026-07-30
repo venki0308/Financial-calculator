@@ -1026,7 +1026,7 @@ function Footer() {
             <p style={headStyle}>ABOUT</p>
             <p style={{ color: 'rgba(255,255,255,.65)', fontSize: '14px' }}>Made with ❤️ in India</p>
             <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '13px', marginTop: '4px' }}>Hyderabad, Telangana, India</p>
-            <div style={{ display: 'inline-flex', marginTop: '16px', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.15)', borderRadius: '100px', padding: '4px 12px', color: 'rgba(255,255,255,.6)', fontSize: '12px' }}>✦ v1.2.6</div>
+            <div style={{ display: 'inline-flex', marginTop: '16px', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.15)', borderRadius: '100px', padding: '4px 12px', color: 'rgba(255,255,255,.6)', fontSize: '12px' }}>✦ v1.2.7</div>
           </div>
         </div>
 
