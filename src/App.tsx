@@ -481,6 +481,33 @@ function AppContent() {
                         <Route path="/calculator/credit-card-interest" element={<CreditCardInterestCalculator />} />
                         <Route path="/calculator/credit-card-compare" element={<CreditCardCompare />} />
                         <Route path="/dev/validator" element={<ValidatorPage />} />
+
+                        {/* Sitemap short URL aliases — ensures Googlebot and direct links resolve cleanly */}
+                        <Route path="/emi" element={<Navigate to="/calculator/loan-emi" replace />} />
+                        <Route path="/home-loan" element={<Navigate to="/calculator/loan-emi" replace />} />
+                        <Route path="/car-loan" element={<Navigate to="/calculator/car-loan" replace />} />
+                        <Route path="/personal-loan" element={<Navigate to="/calculator/personal-loan" replace />} />
+                        <Route path="/sip" element={<Navigate to="/calculator/sip" replace />} />
+                        <Route path="/lumpsum" element={<Navigate to="/calculator/lumpsum" replace />} />
+                        <Route path="/swp" element={<Navigate to="/calculator/swp" replace />} />
+                        <Route path="/cagr" element={<Navigate to="/calculator/cagr" replace />} />
+                        <Route path="/fd" element={<Navigate to="/calculator/fixed-deposit" replace />} />
+                        <Route path="/rd" element={<Navigate to="/calculator/recurring-deposit" replace />} />
+                        <Route path="/ppf" element={<Navigate to="/calculator/ppf" replace />} />
+                        <Route path="/epf" element={<Navigate to="/calculator/epf" replace />} />
+                        <Route path="/nps" element={<Navigate to="/calculator/nps" replace />} />
+                        <Route path="/gratuity" element={<Navigate to="/calculator/gratuity" replace />} />
+                        <Route path="/sukanya-samriddhi" element={<Navigate to="/calculator/sukanya-samriddhi" replace />} />
+                        <Route path="/nsc" element={<Navigate to="/calculator/nsc" replace />} />
+                        <Route path="/kvp" element={<Navigate to="/calculator/kvp" replace />} />
+                        <Route path="/post-office-mis" element={<Navigate to="/calculator/post-office-mis" replace />} />
+                        <Route path="/post-office-td" element={<Navigate to="/calculator/post-office-td" replace />} />
+                        <Route path="/scss" element={<Navigate to="/calculator/senior-citizen-savings" replace />} />
+                        <Route path="/income-tax" element={<Navigate to="/calculator/income-tax" replace />} />
+                        <Route path="/hra" element={<Navigate to="/calculator/hra" replace />} />
+                        <Route path="/gst" element={<Navigate to="/calculator/gst" replace />} />
+                        <Route path="/expense-tracker" element={<Navigate to="/expenses" replace />} />
+                        <Route path="/atal-pension" element={<Navigate to="/schemes" replace />} />
                     </Route>
 
                     <Route path="*" element={<Navigate to="/" replace />} />
@@ -492,8 +519,7 @@ function AppContent() {
 
 export default function App() {
     // Web preview escape hatch: ?dev=true unlocks the in-browser web app shell
-    // (same UI as the native app). Persisted to localStorage so it survives
-    // reloads. Visitors land on the marketing site by default.
+    // (same UI as the native app). Persisted to localStorage so it survives reloads.
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('dev') === 'true') {
         localStorage.setItem('fincalix_dev_access', 'true');
@@ -501,36 +527,35 @@ export default function App() {
         localStorage.removeItem('fincalix_dev_access');
     }
     const isDevMode = localStorage.getItem('fincalix_dev_access') === 'true';
+    const isNative = Capacitor.isNativePlatform();
 
-    // CASE 1: Native Android/iOS → always show full app
-    // CASE 2: Browser with dev mode → show full app for testing
-    if (Capacitor.isNativePlatform() || isDevMode) {
-        return (
-            <ErrorBoundary>
-                <CibilProvider>
-                    <BrowserRouter>
-                        <AppContent />
-                    </BrowserRouter>
-                </CibilProvider>
-            </ErrorBoundary>
-        );
-    }
-
-    // CASE 3: Regular browser visitor → landing page + legal routes only
     return (
-        <BrowserRouter>
-            <Suspense fallback={LazyFallback}>
-                <Routes>
-                    <Route path="/" element={<WebLandingPage />} />
-                    <Route path="/privacy-policy" element={<WebPrivacyPolicy />} />
-                    <Route path="/about" element={<WebAbout />} />
-                    <Route path="/data-privacy" element={<WebDataPrivacy />} />
-                    <Route path="/terms-of-service" element={<WebTermsOfService />} />
-                    {/* Real 404 (noindex) — rendering the homepage for every
-                        unknown URL was a soft-404 duplicate-content surface. */}
-                    <Route path="*" element={<NotFound />} />
-                </Routes>
-            </Suspense>
-        </BrowserRouter>
+        <ErrorBoundary>
+            <CibilProvider>
+                <BrowserRouter>
+                    <Suspense fallback={LazyFallback}>
+                        <Routes>
+                            {/* Landing page for web root visitors */}
+                            {!isNative && !isDevMode && (
+                                <Route path="/" element={<WebLandingPage />} />
+                            )}
+
+                            {/* Web Legal pages */}
+                            {!isNative && (
+                                <>
+                                    <Route path="/privacy-policy" element={<WebPrivacyPolicy />} />
+                                    <Route path="/about" element={<WebAbout />} />
+                                    <Route path="/data-privacy" element={<WebDataPrivacy />} />
+                                    <Route path="/terms-of-service" element={<WebTermsOfService />} />
+                                </>
+                            )}
+
+                            {/* Full App Routes — accessible to Native, Dev Mode, AND Organic Web Search Visitors */}
+                            <Route path="*" element={<AppContent />} />
+                        </Routes>
+                    </Suspense>
+                </BrowserRouter>
+            </CibilProvider>
+        </ErrorBoundary>
     );
 }

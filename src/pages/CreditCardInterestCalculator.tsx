@@ -116,7 +116,7 @@ export default function CreditCardInterestCalculator() {
         if (balance <= 0) return [];
         const r = rate / 100 / 12;
         const paymentLevels = [
-            { label: 'Min Due (5%)', pct: 0.05 },
+            { label: 'Fixed 5% of Today\'s Balance', pct: 0.05 },
             { label: '10% of Balance', pct: 0.10 },
             { label: '25% of Balance', pct: 0.25 },
             { label: 'Full Statement', pct: 1.0 },
@@ -135,6 +135,27 @@ export default function CreditCardInterestCalculator() {
             }
             return { label, payment, months: m, totalInterest: Math.round(totalInt), totalPaid: Math.round(balance + totalInt) };
         });
+    }, [balance, rate, includeGST]);
+
+    // ── The Minimum-Due Trap ──
+    // Banks bill the minimum as a % of CURRENT outstanding (≈5%, ₹200 floor),
+    // so the payment shrinks with the balance and barely dents principal —
+    // unlike the fixed-payment rows in debtTimeline above. This simulates the
+    // real billing behaviour to show the true cost of "just paying min due".
+    const minDueTrap = useMemo(() => {
+        if (balance <= 0 || rate <= 0) return null;
+        const r = rate / 100 / 12;
+        let bal = balance, totalInt = 0, m = 0;
+        while (bal > 0.5 && m < 1200) {
+            const interest = bal * r;
+            const gst = includeGST ? interest * 0.18 : 0;
+            const payment = Math.max(bal * 0.05, 200);
+            totalInt += interest + gst;
+            bal = bal + interest + gst - payment;
+            if (payment <= interest + gst && bal >= balance) return { months: Infinity, totalInterest: Infinity, neverEnds: true };
+            m++;
+        }
+        return { months: m, totalInterest: Math.round(totalInt), neverEnds: m >= 1200 };
     }, [balance, rate, includeGST]);
 
     // ── Loan Alternative Comparison ──
@@ -453,6 +474,44 @@ export default function CreditCardInterestCalculator() {
                                 </p>
                             </div>
                         ))}
+                    </div>
+                )}
+
+                {/* ── The Minimum-Due Trap ── */}
+                {balance > 0 && minDueTrap && (
+                    <div className="rounded-3xl border border-red-500/25 bg-red-500/5 p-5">
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="p-1.5 bg-red-500/10 rounded-lg"><TrendingUp size={16} className="text-red-500 rotate-180" /></div>
+                            <span className="text-foreground font-bold text-sm">{t('ccInterest.minDueTrapTitle', 'The Minimum-Due Trap')}</span>
+                        </div>
+                        {minDueTrap.neverEnds || minDueTrap.months === Infinity ? (
+                            <p className="text-xs text-red-600 dark:text-red-400 leading-relaxed font-medium">
+                                {t('ccInterest.minDueTrapNever', 'At this rate, paying only the minimum due never clears this balance — the minimum shrinks with the balance while interest keeps compounding. Pay a fixed amount instead.')}
+                            </p>
+                        ) : (
+                            <>
+                                <div className="flex items-baseline gap-2 mb-2">
+                                    <span className="text-2xl font-black text-red-500">
+                                        {minDueTrap.months >= 12
+                                            ? `${Math.floor(minDueTrap.months / 12)}y ${minDueTrap.months % 12}m`
+                                            : `${minDueTrap.months} mo`}
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{t('ccInterest.minDueTrapToClear', 'to become debt-free')}</span>
+                                </div>
+                                <p className="text-xs text-foreground leading-relaxed mb-2">
+                                    {t('ccInterest.minDueTrapBody', 'Paying only the minimum due (5% of outstanding, min ₹200) on your {{balance}} balance costs {{interest}} in interest — the minimum shrinks every month, so it barely touches the principal.', { balance: fmtINR(balance), interest: fmtINR(minDueTrap.totalInterest) })}
+                                </p>
+                                {debtTimeline.length > 0 && debtTimeline[0].months < minDueTrap.months && (
+                                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium leading-relaxed">
+                                        {t('ccInterest.minDueTrapFix', 'Keep paying today\'s {{payment}} every month instead (don\'t let it shrink): debt-free in {{months}} months and {{saved}} of interest saved.', {
+                                            payment: fmtINR(debtTimeline[0].payment),
+                                            months: debtTimeline[0].months,
+                                            saved: fmtINR(Math.max(0, minDueTrap.totalInterest - debtTimeline[0].totalInterest)),
+                                        })}
+                                    </p>
+                                )}
+                            </>
+                        )}
                     </div>
                 )}
 

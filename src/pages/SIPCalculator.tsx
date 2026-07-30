@@ -107,6 +107,19 @@ export default function SIPCalculator() {
     // ---- Basic SIP calculation ----
     const basicResult = useMemo(() => calculateSIP(monthly, rate, years), [monthly, rate, years]);
 
+    // ---- Cost of delay ----
+    // Same monthly SIP and the SAME end date, just started 1/3/5 years late —
+    // the corpus permanently given up by waiting. AMC-class feature
+    // (Motilal Oswal / DSP have it; no broker app does).
+    const costOfDelay = useMemo(() =>
+        [1, 3, 5]
+            .filter(d => d < years)
+            .map(d => ({
+                delayYears: d,
+                lost: Math.max(0, Math.round(basicResult.futureValue - calculateSIP(monthly, rate, years - d).futureValue)),
+            })),
+        [monthly, rate, years, basicResult]);
+
     // Removed automatic notification trigger
 
 
@@ -538,6 +551,29 @@ export default function SIPCalculator() {
                         }}
                         resultLabel={t('sip.futureValue')}
                     />
+                )}
+
+                {/* ── Cost of Delay ── */}
+                {activeTab === 'basic' && costOfDelay.length > 0 && basicResult.futureValue > 0 && (
+                    <div className="rounded-3xl border border-amber-500/25 bg-amber-500/5 p-5 mt-4">
+                        <div className="flex items-center gap-2 mb-1.5">
+                            <div className="p-1.5 bg-amber-500/10 rounded-lg"><TrendingUp size={16} className="text-amber-500" /></div>
+                            <span className="text-foreground font-bold text-sm">{t('sip.costOfDelayTitle', 'The Cost of Waiting')}</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mb-3 leading-relaxed">
+                            {t('sip.costOfDelayDesc', 'Same {{monthly}}/month SIP, same end date — started late. The corpus you give up never comes back:', { monthly: formatINR(monthly) })}
+                        </p>
+                        <div className={`grid gap-2 ${costOfDelay.length === 3 ? 'grid-cols-3' : costOfDelay.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                            {costOfDelay.map(d => (
+                                <div key={d.delayYears} className="p-3 rounded-xl bg-card border border-border/60 text-center">
+                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">
+                                        {t('sip.costOfDelayStart', 'Start {{n}}y late', { n: d.delayYears })}
+                                    </p>
+                                    <p className="text-sm font-black text-amber-600 dark:text-amber-400">-{formatINR(d.lost)}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 )}
 
                 <div className="grid grid-cols-3 gap-3 mb-5 mt-4">

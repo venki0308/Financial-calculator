@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useScrollToTop } from '../hooks/useScrollToTop';
 
+import { Capacitor } from '@capacitor/core';
+import { Download } from 'lucide-react';
+
 export default function Layout() {
     const location = useLocation();
     const { t } = useTranslation();
@@ -28,8 +31,29 @@ export default function Layout() {
         { to: '/profile', icon: User, label: t('nav.profile') },
     ];
 
+    const isWeb = !Capacitor.isNativePlatform();
+
     return (
         <div className="flex flex-col min-h-dvh app-container">
+            {/* Sticky Web-to-App Install Banner for Search Engine Visitors */}
+            {isWeb && (
+                <div className="sticky top-0 z-[10000] bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-4 py-2 text-xs font-medium flex items-center justify-between shadow-md">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                        <span className="text-base flex-shrink-0">📲</span>
+                        <span className="truncate"><strong>FinCalix App</strong>: 45+ Tools, 0 Ads & 100% Offline</span>
+                    </div>
+                    <a
+                        href="https://play.google.com/store/apps/details?id=com.fincalix.app"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-white text-emerald-800 px-3 py-1.5 rounded-full font-bold text-xs hover:bg-emerald-50 transition-colors shadow-sm flex items-center gap-1.5 flex-shrink-0 ml-2"
+                    >
+                        <Download size={13} />
+                        Get App
+                    </a>
+                </div>
+            )}
+
             <main className="flex-1 pb-safe-nav overflow-y-auto">
                 <Outlet />
             </main>
