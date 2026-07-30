@@ -44,6 +44,7 @@ import {
   generateAppSectionPDF,
 } from '../../utils/expenseReportPDF';
 import { getEnglishT } from '../../utils/exportReport';
+import { exportToExcel } from '../../utils/exportUtils';
 import type { PDFSubscription } from '../../utils/expenseReportPDF';
 // Subscriptions live in a separate Zustand store from the main expense
 // entries. They must be forwarded to every PDF generator so recurring
@@ -543,6 +544,40 @@ export default function ReportsTab() {
       });
     } catch (err) {
       console.error('CSV generation failed:', err);
+    } finally {
+      setGenerating(null);
+    }
+  };
+
+  // Excel export — same raw dump as CSV but as .xlsx via the shared
+  // exportToExcel helper (already used by calculators + Business Tracker;
+  // personal reports previously had no Excel option at all). Expense amounts
+  // are negative so a plain column sum in Excel gives the net figure.
+  const handleGenerateExcel = async () => {
+    setGenerating('excel');
+    try {
+      if (customStart > customEnd) {
+        console.warn('Invalid range: start > end');
+        return;
+      }
+      const entries = getEntriesForDateRange(customStart, customEnd)
+        .slice()
+        .sort((a, b) => a.date.localeCompare(b.date));
+      const typeLabel = (ty: string) => ty.charAt(0).toUpperCase() + ty.slice(1);
+      await exportToExcel(
+        ['Date', 'Type', 'Category', 'Description', 'Payment Method', 'Amount (Rs)'],
+        entries.map(e => [
+          e.date,
+          typeLabel(e.type),
+          getCategoryById(e.category)?.name ?? e.category,
+          e.description ?? '',
+          e.paymentMethod ?? '',
+          e.type === 'expense' ? -e.amount : e.amount,
+        ]),
+        `FinCalix_Expenses_${customStart}_to_${customEnd}`,
+      );
+    } catch (err) {
+      console.error('Excel generation failed:', err);
     } finally {
       setGenerating(null);
     }
@@ -1746,6 +1781,28 @@ export default function ReportsTab() {
                     <>
                       <Download size={14} />
                       CSV
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleGenerateExcel}
+                  disabled={generating !== null || customStart > customEnd}
+                  className="flex-1 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                  style={{
+                    backgroundColor: theme.bgCard,
+                    color: theme.accentIncome,
+                    border: `1.5px solid ${theme.accentIncome}50`,
+                  }}
+                  title={t('expenses.downloadExcel', 'Download Excel')}
+                >
+                  {generating === 'excel' ? (
+                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
+                      <Download size={14} />
+                    </motion.div>
+                  ) : (
+                    <>
+                      <Download size={14} />
+                      Excel
                     </>
                   )}
                 </button>

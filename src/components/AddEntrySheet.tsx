@@ -7,9 +7,10 @@ import { motion } from 'framer-motion';
 import { X, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useExpenseTheme } from '../theme/expenseTheme';
-import type { Entry, EntryType, PaymentMethod } from '../types/expense';
+import type { Category, Entry, EntryType, PaymentMethod } from '../types/expense';
 import { PAYMENT_METHOD_LABELS } from '../types/expense';
-import { saveEntry, createEntry, deleteEntry, getAllCategories, getAllAccounts } from '../utils/expenseStorage';
+import { saveEntry, createEntry, deleteEntry, getAllCategories, getAllAccounts, saveCustomCategory } from '../utils/expenseStorage';
+import { checkBudgetAlerts } from '../utils/budgetAlerts';
 import { getAllCreditCards } from '../utils/creditCardStorage';
 import { getTodayStr } from '../utils/expenseCalculations';
 
@@ -89,7 +90,8 @@ interface Props {
 export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose }: Props) {
   const { t } = useTranslation();
   const et = useExpenseTheme();
-  const categories = useMemo(() => getAllCategories(), []);
+  // State (not memo) so creating a custom category refreshes the pills in place.
+  const [categories, setCategories] = useState<Category[]>(() => getAllCategories());
   const isEditMode = !!editEntry;
 
   // Sticky smart defaults — read once per sheet open (mount).
@@ -173,6 +175,35 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
 
   // Inline confirmation state for the in-sheet delete button
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Inline "new category" mini-form (persists via saveCustomCategory, which
+  // previously had no UI caller at all).
+  const [showNewCat, setShowNewCat] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatIcon, setNewCatIcon] = useState('🏷️');
+  const NEW_CAT_ICONS = ['🏷️', '🛒', '🍽️', '🚌', '🎮', '🐾', '👶', '🏥', '🎁', '📚', '💼', '🧾'];
+
+  const handleCreateCategory = () => {
+    const name = newCatName.trim();
+    if (!name || name.length > 24 || entryType === 'transfer') return;
+    if (categories.some(c => c.type === entryType && c.isActive && c.name.toLowerCase() === name.toLowerCase())) return;
+    const palette = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#EF4444', '#F97316'];
+    const color = palette[Math.abs([...name].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) | 0, 7)) % palette.length];
+    const cat: Category = {
+      id: `custom_${Date.now()}`,
+      name,
+      icon: newCatIcon,
+      type: entryType,
+      color,
+      isCustom: true,
+      isActive: true,
+    };
+    saveCustomCategory(cat);
+    setCategories(getAllCategories());
+    setCategoryId(cat.id);
+    setShowNewCat(false);
+    setNewCatName('');
+  };
 
   const typeCats = useMemo(
     () => categories.filter(cat => cat.type === entryType && cat.isActive),
@@ -259,6 +290,9 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
         recurrence: 'none',
       });
       saveEntry(entry);
+      // Live overspend check (80%/100% overall, 100% category limit) — the
+      // old alert path in useBudgetTrackerStore.addEntry had no callers.
+      checkBudgetAlerts(entry);
     }
 
     // Persist sticky smart defaults for this type (Feature B).
@@ -461,7 +495,57 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
                     </motion.button>
                   );
                 })}
+                {/* "+ New" custom-category pill */}
+                <motion.button
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => setShowNewCat(p => !p)}
+                  className="flex items-center justify-center gap-1.5 px-2.5 py-2 transition-all"
+                  style={{
+                    borderRadius: 999,
+                    backgroundColor: showNewCat ? et.textPrimary : 'transparent',
+                    color: showNewCat ? et.bgCard : et.textMuted,
+                    border: `1.5px dashed ${et.borderSubtle}`,
+                  }}
+                >
+                  <span style={{ fontSize: 14 }}>＋</span>
+                  <span className="text-[11px] font-semibold">{t('expenses.newCategory', 'New')}</span>
+                </motion.button>
               </div>
+
+              {/* Inline new-category form */}
+              {showNewCat && (
+                <div className="mt-2 p-3 rounded-xl space-y-2" style={{ backgroundColor: et.bgCard, border: `1.5px solid ${et.borderSubtle}` }}>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {NEW_CAT_ICONS.map(ic => (
+                      <button key={ic} onClick={() => setNewCatIcon(ic)}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
+                        style={{ backgroundColor: newCatIcon === ic ? et.textPrimary + '22' : 'transparent', border: `1px solid ${newCatIcon === ic ? et.textPrimary : et.borderSubtle}` }}>
+                        {ic}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newCatName}
+                      onChange={e => setNewCatName(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleCreateCategory(); }}
+                      maxLength={24}
+                      placeholder={t('expenses.newCategoryName', 'Category name')}
+                      className="flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none"
+                      style={{ backgroundColor: et.bgCardElevated, border: `1.5px solid ${et.borderSubtle}`, color: et.textPrimary }}
+                    />
+                    <button
+                      onClick={handleCreateCategory}
+                      disabled={!newCatName.trim()}
+                      className="px-4 py-2 rounded-lg text-xs font-bold disabled:opacity-40"
+                      style={{ backgroundColor: et.textPrimary, color: et.bgCard }}
+                    >
+                      {t('common.add', 'Add')}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
             )}
 
