@@ -17,7 +17,7 @@
     "recentCalculators": "Recent Calculators",
     "govSchemes": "Government Schemes",
     "explore": "Explore Central Government Schemes",
-    "new2026": "New 2026 Schemes",
+    "new2026": "48+ Verified Central Schemes",
     "stateWise": "Central Govt",
     "myBudget": "My Budget",
     "viewExpenses": "View Expenses",
@@ -1009,7 +1009,7 @@
     "appTypeService": "Access Service",
     "appTypeNoIndividual": "No Individual Application",
     "quarterlyNoteTitle": "Rates revised every quarter",
-    "quarterlyNoteBody": "PPF, SSY, NSC, KVP, POMIS, SCSS rates are notified by the Govt of India each quarter. Current rates are for Q2 2026-27 (Jul-Sep 2026). Verify the latest rate at indiapost.gov.in or rbi.gov.in before investing.",
+    "quarterlyNoteBody": "PPF, SSY, NSC, KVP, POMIS, SCSS rates are notified by the Govt of India each quarter. Current rates are for Q2 2026-27 (Jul-Sep 2026). Verify the latest rate at indiapost.gov.in or rbi.org.in before investing.",
     "apyCalcTitle": "APY contribution calculator",
     "apyCalcSubtitle": "Pick your age and the pension you want at 60. The chart shows the exact monthly deposit (PFRDA fixed table).",
     "apyEntryAge": "Your age now",
@@ -7412,8 +7412,8 @@
     "goldLoanTitle": "Gold Loan Rates — July 2026",
     "goldLoanBody": "Banks: 8.5–14% | NBFCs: 8–27%\n\nGold loans are collateral-backed so rates are lower than personal loans.\nRBI tiered LTV caps (from Apr 2026): 85% up to ₹2.5L, 80% for ₹2.5–5L, 75% above ₹5L.",
     "mclrWarning": "Your rate ({{rate}}%) may be MCLR-linked. Banks may raise MCLR due to funding pressure despite RBI's rate hold. Consider switching to a repo-linked loan.",
-    "repoStable": "Your loan is likely on a repo-linked rate. With RBI holding at 5.25%, your EMI is stable. Next RBI meeting: August 2026.",
-    "rateHoldGeneral": "RBI held repo rate at 5.25% (Jun 2026). No immediate rate changes expected. Next meeting: August 2026."
+    "repoStable": "Your loan is likely on a repo-linked rate. With RBI holding at 5.25% (reaffirmed 5 Aug 2026), your EMI is stable. Next RBI meeting: 5-7 Oct 2026.",
+    "rateHoldGeneral": "RBI held repo rate at 5.25% (Aug 2026, neutral stance). No immediate rate changes expected. Next meeting: 5-7 Oct 2026."
   },
   "pdfReport": {
     "monthlyFinancialReport": "Monthly Financial Report",

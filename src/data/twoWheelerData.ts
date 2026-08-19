@@ -49,13 +49,17 @@ export const CIBIL_TIERS = [
 
 export const EV_SUBSIDY = {
     schemeName: 'PM E-DRIVE Scheme',
-    validUntil: 'July 31, 2026',
+    // EXTENDED by MHI amendment notified 10 Aug 2026: e-2W incentives now run
+    // to 31 Mar 2028 (was 31 Jul 2026), outlay raised to ₹11,900 cr, subject
+    // to fund availability. Rates unchanged: ₹2,500/kWh, cap ₹5,000/vehicle,
+    // ex-factory price cap ₹1.5L.
+    validUntil: 'March 31, 2028',
     /** ISO date used for the "expires soon" / "expired" warning logic. */
-    validUntilDate: '2026-07-31',
+    validUntilDate: '2028-03-31',
     ratePerKwh: 2500,
     maxPerVehicle: 5000,
     priceCapExFactory: 150000,
-    note: 'Replaced FAME-II in Oct 2024. Deducted directly at dealership.',
+    note: 'Replaced FAME-II in Oct 2024. Deducted directly at dealership. Extended to Mar 2028 (Aug 2026 amendment), subject to fund availability.',
 };
 
 export const STATE_EV_BENEFITS: Record<string, string> = {

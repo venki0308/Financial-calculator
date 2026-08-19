@@ -62,10 +62,10 @@ const PURITY_OPTIONS: { id: Purity; label: string; factorText: string }[] = [
     { id: '18K', label: '18K', factorText: '75.0%' },
 ];
 
-// Default 24K rate (₹/g) — July 2026 IBJA reference (~₹14,422/g on 22 Jul 2026).
-// User-editable, no live API. Update this constant periodically as the floor
-// drifts; users can override per-calculation in the input field.
-const DEFAULT_GOLD_RATE_24K = 14422;
+// Default 24K rate (₹/g) — August 2026 reference (~₹15,450-15,500/g on
+// 19 Aug 2026, up ~7% in a month). User-editable, no live API. Update this
+// constant periodically as the floor drifts; users can override per-calculation.
+const DEFAULT_GOLD_RATE_24K = 15450;
 
 // RBI 2026 tier thresholds (in ₹) — effective April 1, 2026
 const TIER_85_MAX = 250000;   // ≤ ₹2.5L → 85% LTV, no credit check required

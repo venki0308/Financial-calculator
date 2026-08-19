@@ -16,7 +16,11 @@ export default function SchemeDetail() {
     const { t } = useTranslation();
     const { bookmarkedSchemes, addBookmark, removeBookmark } = useSchemeStore();
     const rawScheme = schemes.find((s) => s.id === id);
-    const scheme = rawScheme ? useTranslatedScheme(rawScheme) : undefined;
+    // Rules of Hooks: the hook must run unconditionally — calling it inside a
+    // ternary changed the hook count when navigating valid → invalid ids and
+    // crashed. Translate a stable fallback when the id is unknown, then drop it.
+    const translated = useTranslatedScheme(rawScheme ?? schemes[0]);
+    const scheme = rawScheme ? translated : undefined;
 
     useEffect(() => {
         if (rawScheme) {
