@@ -511,6 +511,17 @@ export default function Form16TaxCalculator() {
                             <p className="text-white/60 text-sm mt-1">
                                 {t('jobTax.heroSub', 'Liability {{liability}} − TDS & taxes paid {{tds}}', { liability: fmt(result.totalTaxLiability), tds: fmt(result.totalTDS + result.advanceTaxPaid) })}
                             </p>
+                            {/* CPC's ₹100 floor: refunds below ₹100 are never issued and
+                                demands below ₹100 are not collected — the 143(1) shows
+                                net 0. Without this note a ₹5 "Refund Due" is a promise
+                                the tax department will never keep. */}
+                            {result.balancePayable !== 0 && Math.abs(result.balancePayable) < 100 && (
+                                <p className="text-white/85 text-[11px] mt-2 leading-relaxed font-medium">
+                                    {result.balancePayable < 0
+                                        ? t('jobTax.tinyRefundNote', 'Note: CPC does not issue refunds below ₹100 — your 143(1) will show net ₹0. Effectively settled.')
+                                        : t('jobTax.tinyDemandNote', 'Note: demands below ₹100 are not collected by CPC — your 143(1) will show net ₹0. Effectively settled.')}
+                                </p>
+                            )}
                             <div className="grid grid-cols-3 gap-3 mt-4">
                                 {[
                                     { label: t('jobTax.totalIncomeShort', 'Total Income'), value: fmt(result.totalIncomeRounded) },
@@ -554,6 +565,11 @@ export default function Form16TaxCalculator() {
                                     </li>
                                 ))}
                             </ul>
+                            {/* Sec 234-I — new line item on AY 2026-27 intimations
+                                (fee for furnishing a revised return); window till 31 Mar. */}
+                            <p className="text-[10px] text-muted-foreground/80 mt-2.5 pt-2 border-t border-slate-100 dark:border-white/5 leading-relaxed">
+                                {t('jobTax.revisedFeeNote', 'Revising later? The revised-return window now runs till 31 March — and a fee u/s 234-I (a new line on 143(1) intimations from AY 2026-27) can apply to revised returns.')}
+                            </p>
                         </div>
 
                         {/* Statement of Income (CA-style) */}
