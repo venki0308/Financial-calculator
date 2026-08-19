@@ -3619,6 +3619,10 @@
     "saveHint": "Save calculations from any calculator to see them here",
     "calc": {
       "default": "Calculator",
+      "npsCalculator": "NPS Calculator",
+      "insuranceCalculator": "Insurance Calculator",
+      "insuranceCompare": "Insurance Compare",
+      "propertyCalculator": "Property Calculator",
       "emiCalculator": "EMI Calculator",
       "loanEmi": "Loan EMI",
       "sipCalculator": "SIP Calculator",

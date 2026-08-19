@@ -430,10 +430,22 @@ function checkLoanPayments() {
     if (!useSettingsStore.getState().notifications.calcReminders) return;
     try {
         const loans = getAllLoans().filter(l => l.isActive);
-        const dayOfMonth = new Date().getDate();
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        // Clamp a due day to the actual length of its month (31st → 30th/28th).
+        const dueIn = (y: number, m: number, d: number) =>
+            new Date(y, m, Math.min(d, new Date(y, m + 1, 0).getDate()));
         for (const loan of loans) {
             const dueDay = loan.emiDueDay || 1;
-            const diff = dueDay - dayOfMonth;
+            // Month-boundary-safe: the old `dueDay - today.getDate()` arithmetic
+            // could never fire for due days 1-3 while still in the previous
+            // month (e.g. Aug 31 vs due day 2 gave -29, not 2).
+            let due = dueIn(now.getFullYear(), now.getMonth(), dueDay);
+            if (due < startOfToday) due = dueIn(now.getFullYear(), now.getMonth() + 1, dueDay);
+            const diff = Math.round((due.getTime() - startOfToday.getTime()) / 86400000);
+            const yesterday = new Date(startOfToday.getTime() - 86400000);
+            const wasDueYesterday =
+                Math.min(dueDay, new Date(yesterday.getFullYear(), yesterday.getMonth() + 1, 0).getDate()) === yesterday.getDate();
             // Notify 3 days before, on due day, and 1 day after
             if (diff >= 0 && diff <= 3) {
                 const emi = loan.emiAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
@@ -446,7 +458,7 @@ function checkLoanPayments() {
                     route: '/my-loans',
                     itemId: loan.id,
                 });
-            } else if (diff === -1) {
+            } else if (wasDueYesterday) {
                 const emi = loan.emiAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
                 const name = loan.nickName || loan.loanType || 'Loan';
                 addNotif({

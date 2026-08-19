@@ -153,7 +153,13 @@ export default function AIFinancialAssistant() {
                     const affordability = Math.round(annualIncome * 5);
                     const recommendedEMI = Math.round(salary * 0.28);
                     const downPayment = Math.round(affordability * 0.2);
-                    const downPaymentYears = downPayment > savings ? Math.ceil((downPayment - savings) / (monthlySavings * 0.4) / 12) : 0;
+                    // Guard: expenses+EMI can equal/exceed salary, making
+                    // monthlySavings ≤ 0 → Infinity years. Fall back to a 10%
+                    // of-salary saving assumption so the plan stays finite.
+                    const savingCapacity = monthlySavings > 0 ? monthlySavings * 0.4 : salary * 0.1;
+                    const downPaymentYears = downPayment > savings
+                        ? Math.max(1, Math.ceil((downPayment - savings) / (savingCapacity * 12)))
+                        : 0;
                     monthlySIP = Math.round((downPayment - savings) > 0 ? (downPayment - savings) / (downPaymentYears * 12) : 0);
                     targetCorpus = downPayment;
                     timeline = downPaymentYears > 0 ? t('advisor.rec.yearsToSaveDownPayment', { years: downPaymentYears }) : t('advisor.rec.downPaymentReady');
@@ -178,8 +184,11 @@ export default function AIFinancialAssistant() {
                     break;
                 }
                 case 'retirement': {
-                    const retireAge = 60;
-                    const yearsToRetire = retireAge - age;
+                    // Guard: age input allows up to 70; at 60+ the "years to
+                    // retirement" hits 0/negative → division by zero in the SIP
+                    // solve. Clamp to a minimum 1-year horizon.
+                    const retireAge = Math.max(60, age + 1);
+                    const yearsToRetire = Math.max(1, retireAge - age);
                     const monthlyCorpus = expenses * 1.5;
                     const corpusNeeded = monthlyCorpus * 12 * 25;
                     monthlySIP = Math.round(sipForCorpus(corpusNeeded, yearsToRetire));

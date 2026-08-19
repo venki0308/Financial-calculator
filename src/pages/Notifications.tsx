@@ -27,6 +27,13 @@ const TYPE_META: Record<string, { emoji: string; color: string; bg: string }> = 
     daily_quote:     { emoji: '💡', color: '#8B5CF6', bg: 'bg-violet-50 dark:bg-violet-500/10' },
     ppf_reminder:    { emoji: '🛡️', color: '#10B981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
     tax_opportunity: { emoji: '💰', color: '#10B981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+    // Scheduler-emitted types that previously fell through to 'general'
+    cc_overdue:      { emoji: '🔴', color: '#EF4444', bg: 'bg-red-50 dark:bg-red-500/10' },
+    cc_due_urgent:   { emoji: '⚠️', color: '#F59E0B', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+    cc_due_soon:     { emoji: '💳', color: '#06B6D4', bg: 'bg-cyan-50 dark:bg-cyan-500/10' },
+    sub_renewal:     { emoji: '🔁', color: '#8B5CF6', bg: 'bg-violet-50 dark:bg-violet-500/10' },
+    loan_payment:    { emoji: '🏦', color: '#3B82F6', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    loan_overdue:    { emoji: '🔴', color: '#EF4444', bg: 'bg-red-50 dark:bg-red-500/10' },
     // System
     app_update:      { emoji: '🆕', color: '#6366F1', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
     general:         { emoji: '🔔', color: '#6B7280', bg: 'bg-slate-50 dark:bg-card border-border' },
@@ -100,7 +107,7 @@ function NotifCard({ n, onRead, onDismiss, onClick, t }: NotifCardProps) {
             </button>
             <button
                 onClick={onDismiss}
-                className="absolute top-2 right-2 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-90 transition-all"
                 aria-label={t('notif.dismiss')}
             >
                 <Trash2 size={12} className="text-muted-foreground" />

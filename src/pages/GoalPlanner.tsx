@@ -70,7 +70,7 @@ export default function GoalPlanner() {
         if (selectedGoal && currentCost > 0 && currentSavings >= currentCost) {
             if (notifiedGoalRef.current !== selectedGoal.id) {
                 useNotificationStore.getState().addNotification({
-                    type: 'saving_insight',
+                    type: 'savings_insight',
                     category: 'insight',
                     title: t('goal.goalReachedTitle'),
                     body: t('goal.goalReachedBody', { target: formatINR(currentCost), goalName: t(selectedGoal.labelKey) }),
