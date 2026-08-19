@@ -72,6 +72,8 @@ export default function AgeCalculator() {
     const [toYear, setToYear] = useState(String(today.getFullYear()));
     const [fromMonth, setFromMonth] = useState('1');
     const [toMonth, setToMonth] = useState('1');
+    const [fromDay, setFromDay] = useState('1');
+    const [toDay, setToDay] = useState('1');
     const monthName = (m1: number, style: 'short' | 'long' = 'short') =>
         new Date(2000, m1 - 1, 1).toLocaleDateString(i18n.language, { month: style });
 
@@ -108,30 +110,34 @@ export default function AgeCalculator() {
         };
     }, [ageYearsIn, ageMonthsIn]);
 
-    // Year+month → year+month gap, order-agnostic (2026→1990 works too).
+    // Full date → date gap, order-agnostic (2026→1990 works too).
+    // Reuses calculateAge, so years/months/days and day totals are EXACT
+    // calendar arithmetic, not averages.
     const yearsResult = useMemo(() => {
         const a = parseInt(fromYear, 10);
         const b = parseInt(toYear, 10);
         if (!Number.isFinite(a) || !Number.isFinite(b) || a < 1000 || b < 1000 || a > 3000 || b > 3000) return null;
         const am = Math.min(12, Math.max(1, parseInt(fromMonth, 10) || 1));
         const bm = Math.min(12, Math.max(1, parseInt(toMonth, 10) || 1));
-        // Work on a month timeline so the subtraction handles month borrow.
-        const t1 = a * 12 + (am - 1);
-        const t2 = b * 12 + (bm - 1);
-        const lo = Math.min(t1, t2), hi = Math.max(t1, t2);
-        const totalMonths = hi - lo;
-        const days = Math.round(totalMonths * 30.436875); // avg month length
+        const daysIn = (y: number, m1: number) => new Date(y, m1, 0).getDate();
+        // Clamp day to the month's length (31 → 30/28 where needed).
+        const ad = Math.min(daysIn(a, am), Math.max(1, parseInt(fromDay, 10) || 1));
+        const bd2 = Math.min(daysIn(b, bm), Math.max(1, parseInt(toDay, 10) || 1));
+        const d1 = new Date(a, am - 1, ad);
+        const d2 = new Date(b, bm - 1, bd2);
+        const [loD, hiD] = d1.getTime() <= d2.getTime() ? [d1, d2] : [d2, d1];
+        const gap = calculateAge(loD, hiD);
         return {
-            loYear: Math.floor(lo / 12), loMonth: (lo % 12) + 1,
-            hiYear: Math.floor(hi / 12), hiMonth: (hi % 12) + 1,
-            years: Math.floor(totalMonths / 12),
-            extraMonths: totalMonths % 12,
-            totalMonths,
-            weeks: Math.round(days / 7),
-            days,
-            gen: getGeneration(Math.floor(lo / 12)),
+            loD, hiD,
+            years: gap.years,
+            extraMonths: gap.months,
+            extraDays: gap.days,
+            totalMonths: gap.years * 12 + gap.months,
+            weeks: gap.totalWeeks,
+            days: gap.totalDays,
+            gen: getGeneration(loD.getFullYear()),
         };
-    }, [fromYear, toYear, fromMonth, toMonth]);
+    }, [fromYear, toYear, fromMonth, toMonth, fromDay, toDay]);
 
     const result = useMemo(() => {
         if (!birthDate) return null;
@@ -256,20 +262,28 @@ export default function AgeCalculator() {
                             <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{t('age.yearRange', 'From year → to year')}</label>
                             <div className="grid grid-cols-2 gap-3">
                                 {([
-                                    { y: fromYear, setY: setFromYear, m: fromMonth, setM: setFromMonth, ph: '1990' },
-                                    { y: toYear, setY: setToYear, m: toMonth, setM: setToMonth, ph: '2026' },
+                                    { y: fromYear, setY: setFromYear, m: fromMonth, setM: setFromMonth, d: fromDay, setD: setFromDay, ph: '1990' },
+                                    { y: toYear, setY: setToYear, m: toMonth, setM: setToMonth, d: toDay, setD: setToDay, ph: '2026' },
                                 ]).map((f, i) => (
                                     <div key={i} className="space-y-2">
                                         <input type="number" inputMode="numeric" min={1000} max={3000} value={f.y}
                                             onChange={e => f.setY(e.target.value)}
                                             placeholder={f.ph}
                                             className="w-full py-3 px-4 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-slate-900 dark:text-foreground text-lg font-semibold text-center focus:outline-none" />
-                                        <select value={f.m} onChange={e => f.setM(e.target.value)}
-                                            className="w-full py-2 px-3 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-slate-700 dark:text-foreground text-sm font-semibold text-center focus:outline-none">
-                                            {Array.from({ length: 12 }, (_, mi) => (
-                                                <option key={mi + 1} value={mi + 1}>{monthName(mi + 1, 'long')}</option>
-                                            ))}
-                                        </select>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <select value={f.m} onChange={e => f.setM(e.target.value)}
+                                                className="w-full py-2 px-2 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-slate-700 dark:text-foreground text-sm font-semibold text-center focus:outline-none">
+                                                {Array.from({ length: 12 }, (_, mi) => (
+                                                    <option key={mi + 1} value={mi + 1}>{monthName(mi + 1)}</option>
+                                                ))}
+                                            </select>
+                                            <select value={f.d} onChange={e => f.setD(e.target.value)}
+                                                className="w-full py-2 px-2 rounded-xl bg-slate-50 dark:bg-background border border-slate-200 dark:border-border text-slate-700 dark:text-foreground text-sm font-semibold text-center focus:outline-none">
+                                                {Array.from({ length: 31 }, (_, di) => (
+                                                    <option key={di + 1} value={di + 1}>{di + 1}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -278,15 +292,20 @@ export default function AgeCalculator() {
                         {yearsResult && (
                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
                                 <div className="p-5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-center shadow-lg">
-                                    <p className="text-violet-200 text-xs mb-1">{monthName(yearsResult.loMonth)} {yearsResult.loYear} → {monthName(yearsResult.hiMonth)} {yearsResult.hiYear}</p>
+                                    <p className="text-violet-200 text-xs mb-1">
+                                        {yearsResult.loD.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' })} → {yearsResult.hiD.toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </p>
                                     <p className="text-4xl font-bold">
                                         {yearsResult.years} <span className="text-xl font-medium text-violet-200">{t('age.years')}</span>
                                         {yearsResult.extraMonths > 0 && (
-                                            <> {yearsResult.extraMonths} <span className="text-xl font-medium text-violet-200">{t('age.monthsShort', 'months')}</span></>
+                                            <> {yearsResult.extraMonths}<span className="text-xl font-medium text-violet-200">{t('age.monthsAbbr', 'm')}</span></>
+                                        )}
+                                        {yearsResult.extraDays > 0 && (
+                                            <> {yearsResult.extraDays}<span className="text-xl font-medium text-violet-200">{t('age.daysAbbr', 'd')}</span></>
                                         )}
                                     </p>
                                     <p className="text-violet-200 text-sm mt-1">
-                                        {t('age.bornInTurns', 'Born in {{lo}}? You turn {{diff}} in {{hi}}.', { lo: yearsResult.loYear, diff: yearsResult.years, hi: yearsResult.hiYear })}
+                                        {t('age.bornInTurns', 'Born in {{lo}}? You turn {{diff}} in {{hi}}.', { lo: yearsResult.loD.getFullYear(), diff: yearsResult.years, hi: yearsResult.hiD.getFullYear() })}
                                     </p>
                                 </div>
                                 <div className="grid grid-cols-3 gap-3">
@@ -304,10 +323,10 @@ export default function AgeCalculator() {
                                 <div className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-sm dark:shadow-none text-center">
                                     <span className="text-3xl">{yearsResult.gen.emoji}</span>
                                     <p className={`text-lg font-bold mt-1 ${yearsResult.gen.color}`}>{t(yearsResult.gen.nameKey)}</p>
-                                    <p className="text-muted-foreground text-[10px] uppercase font-bold">{t('age.generationOfYear', '{{year}} generation', { year: yearsResult.loYear })}</p>
+                                    <p className="text-muted-foreground text-[10px] uppercase font-bold">{t('age.generationOfYear', '{{year}} generation', { year: yearsResult.loD.getFullYear() })}</p>
                                 </div>
                                 <p className="text-[11px] text-muted-foreground leading-relaxed px-1">
-                                    {t('age.yearGapNote', 'Counted from the 1st of each selected month. Weeks/days use the average month length (30.44 days).')}
+                                    {t('age.yearGapNote', 'Exact calendar difference between the two selected dates — day totals are precise, not averages.')}
                                 </p>
                             </motion.div>
                         )}
