@@ -630,6 +630,59 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
           </div>
         </div>
 
+        {/* Spending calendar heatmap — cycle-aware (works with custom month
+            start days), intensity = day's expense vs the cycle's peak day. */}
+        {(() => {
+          const byDay = new Map<string, number>();
+          for (const e of entries) {
+            if (e.type === 'expense') byDay.set(e.date, (byDay.get(e.date) || 0) + e.amount);
+          }
+          const days: { date: string; day: number; amt: number }[] = [];
+          const start = new Date(monthRange.start + 'T00:00:00');
+          const end = new Date(monthRange.end + 'T00:00:00');
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            days.push({ date: iso, day: d.getDate(), amt: byDay.get(iso) || 0 });
+          }
+          const max = Math.max(1, ...days.map(x => x.amt));
+          const todayIso = (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; })();
+          const peak = days.reduce((a, b) => (b.amt > a.amt ? b : a), days[0]);
+          return (
+            <div className="rounded-2xl p-4 border" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#fff', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
+              <p className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: textMuted }}>
+                {t('expenses.spendCalendar', 'Spending calendar')}
+              </p>
+              <div className="grid grid-cols-7 gap-1 mb-1">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((w, i) => (
+                  <span key={i} className="text-center text-[9px] font-bold" style={{ color: textMuted }}>{w}</span>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {Array.from({ length: start.getDay() }, (_, i) => <span key={`b${i}`} />)}
+                {days.map(d => (
+                  <div key={d.date}
+                    className={`aspect-square rounded-lg flex items-center justify-center text-[10px] font-semibold ${d.date === todayIso ? 'ring-2 ring-brand-purple' : ''}`}
+                    style={{
+                      backgroundColor: d.amt > 0 ? `rgba(239,68,68,${0.12 + 0.55 * (d.amt / max)})` : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
+                      color: d.amt / max > 0.55 ? '#fff' : undefined,
+                    }}
+                    title={`${d.date}: ₹${Math.round(d.amt).toLocaleString('en-IN')}`}>
+                    {d.day}
+                  </div>
+                ))}
+              </div>
+              {peak && peak.amt > 0 && (
+                <p className="text-[10px] mt-2.5 leading-relaxed" style={{ color: textMuted }}>
+                  {t('expenses.spendCalendarPeak', 'Heaviest day: {{date}} — ₹{{amt}}', {
+                    date: new Date(peak.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+                    amt: Math.round(peak.amt).toLocaleString('en-IN'),
+                  })}
+                </p>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Investments info line — BUG 10.3 fix: when income is 0,
             "0% of income" is misleading. Show "(income not logged)"
             instead so the user knows the percentage is undefined,

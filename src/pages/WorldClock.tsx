@@ -231,7 +231,7 @@ const TZPickerSheet = memo(({
             <div className="overflow-y-auto px-4 pb-6 space-y-1.5" style={{ maxHeight: '60vh' }}>
                 {filterZones(search).map(tz => (
                     <button
-                        key={tz.iana}
+                        key={`${tz.iana}-${tz.city}`}
                         onClick={() => { onChange(tz.iana); onClose(); setSearch(''); }}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
                             value === tz.iana ? 'bg-primary/10 border border-primary/30' : 'bg-background border border-border hover:border-primary/40'
@@ -1606,7 +1606,7 @@ export default function WorldClock() {
                                 style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }}
                             >
                                 {availableZones.map(tz => (
-                                    <LiveAddZoneItem key={tz.iana} tz={tz} onAdd={() => addZone(tz)} />
+                                    <LiveAddZoneItem key={`${tz.iana}-${tz.city}`} tz={tz} onAdd={() => addZone(tz)} />
                                 ))}
 
                                 {availableZones.length === 0 && (
