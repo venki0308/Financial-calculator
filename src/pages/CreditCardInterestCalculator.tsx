@@ -137,6 +137,19 @@ export default function CreditCardInterestCalculator() {
         });
     }, [balance, rate, includeGST]);
 
+    // ── Debt-free-by-target (reverse solve) ──
+    // "I want this cleared in N months → what do I pay?" Closed-form annuity
+    // payment on the effective monthly rate (interest + GST when enabled).
+    const [targetPayoffMonths, setTargetPayoffMonths] = useState(12);
+    const targetPayoff = useMemo(() => {
+        if (balance <= 0 || rate <= 0) return null;
+        const m = Math.max(1, Math.min(120, targetPayoffMonths));
+        const reff = (rate / 100 / 12) * (includeGST ? 1.18 : 1);
+        const pow = Math.pow(1 + reff, m);
+        const payment = balance * reff * pow / (pow - 1);
+        return { m, payment: Math.ceil(payment), totalInterest: Math.round(payment * m - balance) };
+    }, [balance, rate, includeGST, targetPayoffMonths]);
+
     // ── The Minimum-Due Trap ──
     // Banks bill the minimum as a % of CURRENT outstanding (≈5%, ₹200 floor),
     // so the payment shrinks with the balance and barely dents principal —
@@ -541,6 +554,30 @@ export default function CreditCardInterestCalculator() {
                                     </div>
                                 ))}
                             </div>
+
+                            {/* Reverse: pick a deadline → required fixed payment */}
+                            {targetPayoff && (
+                                <div className="mt-3 p-3 rounded-xl bg-indigo-500/5 border border-indigo-500/20">
+                                    <div className="flex items-center justify-between gap-3 mb-1.5">
+                                        <p className="text-xs font-bold text-foreground">{t('ccInterest.targetTitle', 'Debt-free in')}</p>
+                                        <div className="flex items-center gap-1.5 bg-card border border-border px-2 py-1 rounded-lg">
+                                            <input type="number" inputMode="numeric" min={1} max={120}
+                                                value={targetPayoffMonths}
+                                                onChange={e => setTargetPayoffMonths(Number(e.target.value) || 1)}
+                                                className="w-10 bg-transparent text-sm font-bold text-indigo-500 outline-none p-0 text-center" />
+                                            <span className="text-[10px] text-muted-foreground font-bold">{t('ccInterest.monthsShort', 'mo')}</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-foreground leading-relaxed">
+                                        {t('ccInterest.targetBody', 'Pay a fixed {{payment}}/month and this balance clears in {{m}} months, costing {{interest}} in interest{{gst}}.', {
+                                            payment: fmtINR(targetPayoff.payment),
+                                            m: targetPayoff.m,
+                                            interest: fmtINR(targetPayoff.totalInterest),
+                                            gst: includeGST ? ' + GST' : '',
+                                        })}
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

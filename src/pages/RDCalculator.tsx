@@ -32,6 +32,8 @@ export default function RDCalculator() {
 
     // Live Status
     const [rdStartDate, setRdStartDate] = useState('');
+    // Goal mode: target maturity → required monthly deposit (0 = default ₹5L)
+    const [goalAmount, setGoalAmount] = useState(0);
 
     const rdStatus = useMemo(() => {
         if (!rdStartDate) return null;
@@ -104,7 +106,11 @@ export default function RDCalculator() {
         const interestPct = maturity > 0 ? (totalInterest / maturity) * 100 : 0;
         const principalPct = maturity > 0 ? (invested / maturity) * 100 : 0;
 
-        return { maturity, invested, totalInterest, effectiveYield, realRate, purchasingPower, interestPct, principalPct, schedule, validMonths, validMonthly };
+        // Maturity is linear in the monthly deposit, so the reverse solve
+        // ("target amount → required deposit") is an exact division.
+        const maturityPerRupee = maturity / validMonthly;
+
+        return { maturity, invested, totalInterest, effectiveYield, realRate, purchasingPower, interestPct, principalPct, schedule, validMonths, validMonthly, maturityPerRupee };
     }, [monthly, effectiveRate, months, inflationRate]);
 
     useHistoryTracker('RD Calculator', { monthly, rate, months }, { invested: result.invested, interest: result.totalInterest }, result.maturity);
@@ -345,6 +351,32 @@ export default function RDCalculator() {
                         </div>
                     </div>
                 </motion.div>
+
+                {/* Goal mode — reverse solve: target maturity → required deposit */}
+                <div className="p-4 rounded-2xl bg-card border border-border shadow-sm">
+                    <p className="text-muted-foreground text-[11px] uppercase tracking-wider font-bold mb-2">
+                        {t('rd.goalModeTitle', 'Goal mode — how much should I deposit?')}
+                    </p>
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase block mb-1.5">{t('rd.goalTarget', 'Target maturity amount (₹)')}</label>
+                    <input
+                        type="number" inputMode="numeric" min={1000} max={100000000}
+                        value={goalAmount > 0 ? goalAmount : 500000}
+                        onChange={e => setGoalAmount(Math.max(0, Number(e.target.value) || 0))}
+                        className={inputCls}
+                    />
+                    {result.maturityPerRupee > 0 && (
+                        <div className="mt-3 p-3.5 rounded-xl bg-brand-blue/5 border border-brand-blue/20">
+                            <p className="text-xs text-foreground leading-relaxed">
+                                {t('rd.goalResult', 'To reach {{target}} in {{months}} months at {{rate}}%, deposit {{deposit}}/month.', {
+                                    target: fmtINR(goalAmount > 0 ? goalAmount : 500000),
+                                    months: result.validMonths,
+                                    rate: effectiveRate,
+                                    deposit: fmtINR(Math.ceil(((goalAmount > 0 ? goalAmount : 500000) / result.maturityPerRupee) / 100) * 100),
+                                })}
+                            </p>
+                        </div>
+                    )}
+                </div>
 
                 {/* SMART INSIGHT (Dynamic) */}
                 <div className={`p-4 rounded-2xl border flex items-start gap-3 ${insight.type === 'warn' ? 'bg-amber-500/10 border-amber-500/30' : insight.type === 'success' ? 'bg-brand-green/10 border-brand-green/30' : 'bg-brand-blue/10 border-brand-blue/30'}`}>
