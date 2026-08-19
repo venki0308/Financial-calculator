@@ -43,6 +43,10 @@ export default function ScientificCalculator() {
     const [expression, setExpression] = useState('');
     const [result, setResult] = useState('');
     const [isDeg, setIsDeg] = useState(true);
+    // Casio-style: last answer reusable in the next expression via the Ans key
+    const [lastAns, setLastAns] = useState('0');
+    // S⇔D: show the decimal result as its best-match fraction (Classwiz style)
+    const [asFraction, setAsFraction] = useState(false);
     const [isInverse, setIsInverse] = useState(false);
     const [isHyp, setIsHyp] = useState(false);
     const [memory, setMemory] = useState(0);
@@ -85,7 +89,8 @@ export default function ScientificCalculator() {
             let parsed = expr
                 .replace(/×/g, '*').replace(/÷/g, '/')
                 .replace(/π/g, 'Math.PI').replace(/\^/g, '**')
-                .replace(/mod/g, '%');
+                .replace(/mod/g, '%')
+                .replace(/Ans/g, `(${lastAns})`);
 
             parsed = parsed.replace(/pi/g, 'Math.PI');
 
@@ -109,6 +114,11 @@ export default function ScientificCalculator() {
                 .replace(/cbrt\(/g, 'Math.cbrt(').replace(/abs\(/g, 'Math.abs(')
                 .replace(/EXP\(/g, 'Math.exp(');
 
+            // Standalone Euler's e — the e button inserts a bare 'e', which the
+            // number parser couldn't read (every expression with e evaluated to
+            // Error). Guards keep 'Math.exp(' and other identifiers untouched.
+            parsed = parsed.replace(/(?<![A-Za-z.])e(?![A-Za-z(])/g, '(2.718281828459045)');
+
             parsed = parsed.replace(/(\d+(?:\.\d+)?)!/g, (_, num) => `factorial(${num})`);
 
             const nthRoot = (val: number, root: number) => {
@@ -125,6 +135,16 @@ export default function ScientificCalculator() {
               'Math.log10': Math.log10, 'Math.log2': Math.log2, 'Math.log': Math.log,
               'Math.sqrt': Math.sqrt, 'Math.cbrt': Math.cbrt, 'Math.abs': Math.abs,
               'Math.exp': Math.exp, 'factorial': factorial, 'nthRoot': nthRoot,
+              'nCr': (n: number, r: number) => {
+                n = Math.round(n); r = Math.round(r);
+                if (r < 0 || n < 0 || r > n) return NaN;
+                return Math.round(factorial(n) / (factorial(r) * factorial(n - r)));
+              },
+              'nPr': (n: number, r: number) => {
+                n = Math.round(n); r = Math.round(r);
+                if (r < 0 || n < 0 || r > n) return NaN;
+                return Math.round(factorial(n) / factorial(n - r));
+              },
             };
             let pos = 0;
             const peek = () => parsed[pos] || '';
@@ -217,9 +237,33 @@ export default function ScientificCalculator() {
         const res = evaluateExpression(expression);
         setResult(res);
         if (res !== 'Error') {
+            setLastAns(res);
+            setAsFraction(false);
             setHistory(h => [{ expression, result: res, ts: Date.now() }, ...h].slice(0, 10));
             AnalyticsService.trackCalculatorUsed('Scientific', {});
         }
+    };
+
+    // Best rational approximation via continued fractions — powers the Casio
+    // Classwiz-style S⇔D toggle. Returns null when the value has no "nice"
+    // fraction (keeps the decimal instead of showing 1234567/99991).
+    const toFraction = (x: number): string | null => {
+        if (!isFinite(x) || Number.isInteger(x)) return null;
+        const sign = x < 0 ? '-' : '';
+        const target = Math.abs(x);
+        let h1 = 1, h0 = 0, k1 = 0, k0 = 1, b = target;
+        for (let i = 0; i < 40; i++) {
+            const a = Math.floor(b);
+            [h1, h0] = [a * h1 + h0, h1];
+            [k1, k0] = [a * k1 + k0, k1];
+            if (k1 > 9999) return null;
+            if (Math.abs(target - h1 / k1) < 1e-11 * Math.max(1, target)) break;
+            const frac = b - a;
+            if (frac < 1e-12) break;
+            b = 1 / frac;
+        }
+        if (k1 <= 1 || Math.abs(target - h1 / k1) > 1e-9 * Math.max(1, target)) return null;
+        return `${sign}${h1}/${k1}`;
     };
 
     const handleClear = () => { setExpression(''); setResult(''); };
@@ -404,7 +448,7 @@ export default function ScientificCalculator() {
                             className="w-full text-right text-foreground text-5xl font-black overflow-x-auto whitespace-nowrap scrollbar-hide cursor-pointer tracking-tight"
                             onClick={() => result && copyText(result, 'result')}
                         >
-                            {result || ''}
+                            {(asFraction && result && toFraction(parseFloat(result))) || result || ''}
                             {result && (
                                 <span className="ml-2 text-brand-purple/80 align-middle">
                                     {copied === 'result' ? <Check size={18} className="inline opacity-80" /> : <Copy size={18} className="inline opacity-50 hover:opacity-100 transition-opacity" />}
@@ -478,6 +522,12 @@ export default function ScientificCalculator() {
                             <button className={fnCls} onClick={() => handleInput('^2')}>x²</button>
                             <button className={fnCls} onClick={() => handleInput('sqrt(')}>√</button>
                             <button className={fnCls} onClick={() => handleInput('abs(')}>|x|</button>
+
+                            <button className={fnCls} onClick={() => handleInput('nCr(')}>nCr</button>
+                            <button className={fnCls} onClick={() => handleInput('nPr(')}>nPr</button>
+                            <button className={fnCls} onClick={() => handleInput('Ans')}>Ans</button>
+                            <button className={togCls(asFraction)} onClick={() => setAsFraction(f => !f)}>S⇔D</button>
+                            <button className={fnCls} onClick={() => handleInput('10^(')}>10^x</button>
                         </div>
                     )}
 
