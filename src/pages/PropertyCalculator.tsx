@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Building2, MapPin, ArrowRightLeft, Copy, Check, Home, FileText, Info, Download, Landmark, ChevronDown, ChevronUp, Calculator, Save, Trash2 } from 'lucide-react';
@@ -845,6 +845,17 @@ export default function PropertyCalculator() {
                                                         <span className="text-brand-green font-bold text-sm">{fmt(flatResult.totalCost / Number(carpet))}/{t('property.sqft')}</span>
                                                     </div>
                                                 )}
+                                                {/* Loading truth check — RERA sells on carpet; typical loading 25-40% */}
+                                                {(() => {
+                                                    const loading = (Number(builtUp) - Number(carpet)) / Number(carpet) * 100;
+                                                    if (!Number.isFinite(loading) || loading < 0) return null;
+                                                    const high = loading > 40, ok = loading <= 30;
+                                                    return (
+                                                        <p className={`text-[10px] mt-1.5 leading-relaxed font-medium ${high ? 'text-red-500' : ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                                                            {t('property.loadingCheck', 'Loading: {{loading}}% — you pay for {{loading}}% more area than you get. Market range is 25-40% (RERA requires selling on carpet area).', { loading: loading.toFixed(0) })}
+                                                        </p>
+                                                    );
+                                                })()}
                                             </div>
                                         )}
 
@@ -1114,6 +1125,7 @@ export default function PropertyCalculator() {
                 {/* ── Rental Yield & Appreciation (hidden on Convert tab) ───────── */}
                 {mode !== 'convert' && (
                     <>
+                        <RentVsBuySection />
                         <div className="mt-6 bg-card border border-border rounded-2xl p-4 space-y-3">
                             <h3 className="font-bold text-foreground text-sm flex items-center gap-2">📊 {t('property.rentalYieldEstimation')}</h3>
                             <div className="grid grid-cols-2 gap-3">
@@ -1205,6 +1217,124 @@ export default function PropertyCalculator() {
 
 
 // ─── Stamp Duty Section ───────────────────────────────────────────────────────
+// ─── Rent vs Buy Analyzer ─────────────────────────────────────────────────────
+// The 2026 buyer's first question, and the one no Indian portal answers well.
+// Wealth comparison after H years: BUYER ends with (house value − loan balance)
+// having paid down payment + transaction costs + EMIs; RENTER invests the same
+// upfront money plus every month's (EMI − rent) difference at the investment
+// return, paying rent that inflates yearly. Break-even = first year the buyer's
+// net wealth overtakes the renter's portfolio.
+function RentVsBuySection() {
+    const { t } = useTranslation();
+    const [price, setPrice] = useState('6000000');
+    const [rent, setRent] = useState('18000');
+    const [downPct, setDownPct] = useState('20');
+    const [rvbRate, setRvbRate] = useState('7.5');
+    const [rvbTenure, setRvbTenure] = useState('20');
+    const [horizon, setHorizon] = useState('10');
+    const [appn, setAppn] = useState('6.5');
+    const [rentInfl, setRentInfl] = useState('5');
+    const [invReturn, setInvReturn] = useState('12');
+    const [txnPct, setTxnPct] = useState('8');
+
+    const res = useMemo(() => {
+        const P = Number(price), R0 = Number(rent);
+        if (!(P > 0) || !(R0 > 0)) return null;
+        const down = P * (Number(downPct) || 0) / 100;
+        const txn = P * (Number(txnPct) || 0) / 100;
+        const loan = Math.max(0, P - down);
+        const r = (Number(rvbRate) || 0) / 1200;
+        const n = Math.max(12, (Number(rvbTenure) || 20) * 12);
+        const pow = Math.pow(1 + r, n);
+        const emi = loan > 0 && r > 0 ? loan * r * pow / (pow - 1) : loan / n;
+        const H = Math.max(1, Math.min(30, Number(horizon) || 10));
+        const g = (Number(appn) || 0) / 100;
+        const ri = (Number(rentInfl) || 0) / 100;
+        const iv = (Number(invReturn) || 0) / 1200;
+
+        let bal = loan;
+        let portfolio = down + txn; // renter invests the buyer's upfront cash
+        let rentNow = R0;
+        let breakEvenYear: number | null = null;
+        for (let m = 1; m <= H * 12; m++) {
+            let outgoBuy = 0;
+            if (bal > 0.5) {
+                const int = bal * r;
+                bal = Math.max(0, bal + int - emi);
+                outgoBuy = emi;
+            }
+            portfolio = portfolio * (1 + iv) + (outgoBuy - rentNow);
+            if (m % 12 === 0) {
+                rentNow = rentNow * (1 + ri);
+                const wealthBuyY = P * Math.pow(1 + g, m / 12) - bal;
+                if (breakEvenYear === null && wealthBuyY > portfolio) breakEvenYear = m / 12;
+            }
+        }
+        const wealthBuy = Math.round(P * Math.pow(1 + g, H) - bal);
+        const wealthRent = Math.round(portfolio);
+        return {
+            emi: Math.round(emi), H, breakEvenYear, wealthBuy, wealthRent,
+            buyWins: wealthBuy > wealthRent, diff: Math.abs(wealthBuy - wealthRent),
+        };
+    }, [price, rent, downPct, rvbRate, rvbTenure, horizon, appn, rentInfl, invReturn, txnPct]);
+
+    return (
+        <div className="mt-6 bg-card border border-border rounded-2xl p-4 space-y-3">
+            <h3 className="font-bold text-foreground text-sm flex items-center gap-2">⚖️ {t('property.rvbTitle', 'Rent vs Buy — which builds more wealth?')}</h3>
+            <div className="grid grid-cols-2 gap-3">
+                <Field label={t('property.rvbPrice', 'Property price')} value={price} onChange={setPrice} prefix="₹" type="number" />
+                <Field label={t('property.rvbRent', 'Rent for a similar home')} value={rent} onChange={setRent} prefix="₹" type="number" suffix={t('property.perMonth', '/mo')} />
+                <Field label={t('property.rvbDown', 'Down payment')} value={downPct} onChange={setDownPct} suffix="%" type="number" />
+                <Field label={t('property.rvbHorizon', 'Compare over (years)')} value={horizon} onChange={setHorizon} type="number" />
+                <Field label={t('property.rvbLoanRate', 'Loan rate')} value={rvbRate} onChange={setRvbRate} suffix="%" type="number" />
+                <Field label={t('property.rvbTenure', 'Loan tenure (yrs)')} value={rvbTenure} onChange={setRvbTenure} type="number" />
+            </div>
+            {/* Assumptions — every number editable, nothing hidden */}
+            <div className="grid grid-cols-2 gap-3">
+                <Field label={t('property.rvbAppn', 'Price appreciation %/yr')} value={appn} onChange={setAppn} suffix="%" type="number" />
+                <Field label={t('property.rvbRentInfl', 'Rent increase %/yr')} value={rentInfl} onChange={setRentInfl} suffix="%" type="number" />
+                <Field label={t('property.rvbInv', 'Investment return %/yr')} value={invReturn} onChange={setInvReturn} suffix="%" type="number" />
+                <Field label={t('property.rvbTxn', 'Buying costs (stamp+reg+misc)')} value={txnPct} onChange={setTxnPct} suffix="%" type="number" />
+            </div>
+
+            {res && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2 pt-1">
+                    <div className={`p-4 rounded-xl text-center border ${res.buyWins ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-sky-500/10 border-sky-500/30'}`}>
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">
+                            {t('property.rvbVerdict', 'After {{h}} years', { h: res.H })}
+                        </p>
+                        <p className={`text-lg font-extrabold ${res.buyWins ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400'}`}>
+                            {res.buyWins
+                                ? t('property.rvbBuyWins', 'Buying builds {{diff}} more wealth', { diff: fmt(res.diff) })
+                                : t('property.rvbRentWins', 'Renting + investing stays {{diff}} ahead', { diff: fmt(res.diff) })}
+                        </p>
+                        <p className="text-muted-foreground text-[11px] mt-1">
+                            {res.breakEvenYear
+                                ? t('property.rvbBreakEven', 'Buying overtakes renting in year {{y}}', { y: res.breakEvenYear })
+                                : t('property.rvbNoBreakEven', 'Buying does not overtake renting within {{h}} years at these assumptions', { h: res.H })}
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-center">
+                            <p className="text-muted-foreground text-[9px] uppercase font-bold mb-1">{t('property.rvbBuyerWealth', 'Buyer net wealth')}</p>
+                            <p className="font-bold text-sm text-emerald-600 dark:text-emerald-400">{fmt(res.wealthBuy)}</p>
+                            <p className="text-[9px] text-muted-foreground mt-0.5">{t('property.rvbBuyerNote', 'home value − loan balance · EMI {{emi}}', { emi: fmt(res.emi) })}</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-sky-500/5 border border-sky-500/20 text-center">
+                            <p className="text-muted-foreground text-[9px] uppercase font-bold mb-1">{t('property.rvbRenterWealth', 'Renter portfolio')}</p>
+                            <p className="font-bold text-sm text-sky-600 dark:text-sky-400">{fmt(res.wealthRent)}</p>
+                            <p className="text-[9px] text-muted-foreground mt-0.5">{t('property.rvbRenterNote', 'down payment + monthly difference, invested')}</p>
+                        </div>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        {t('property.rvbAssumptions', 'The renter invests the down payment, buying costs and every month\'s (EMI − rent) difference at the investment return. Excludes owner maintenance/property tax and rental deposits — adjust the assumptions to your city (typical: appreciation 4-9%, rent rise ~5%, equity ~11-12%).')}
+                    </p>
+                </motion.div>
+            )}
+        </div>
+    );
+}
+
 function StampDutySection({
     sdValue, setSdValue,
     sdState, setSdState,
@@ -1223,14 +1353,27 @@ function StampDutySection({
     onDownloadPDF: () => void;
 }) {
     const { t } = useTranslation();
-    // When state changes, pre-fill the editable rate fields
-    const handleStateChange = (key: string) => {
-        setSdState(key);
+    // Woman-buyer concession: several states charge women a lower stamp %.
+    // Toggling re-applies the state's prefill with the delta subtracted, so
+    // the fields stay editable and transparent.
+    const [isWoman, setIsWoman] = useState(false);
+    const applyRates = (key: string, woman: boolean) => {
         const r = STATE_RATES[key];
-        setSdStampPct(r.stamp.toString());
+        const stamp = woman && r.womenStampDelta ? Math.max(0, r.stamp - r.womenStampDelta) : r.stamp;
+        setSdStampPct(stamp.toString());
         setSdRegPct(r.reg.toString());
         setSdTransferPct(r.transfer.toString());
     };
+    const handleStateChange = (key: string) => {
+        setSdState(key);
+        applyRates(key, isWoman);
+    };
+    const handleWomanToggle = () => {
+        const next = !isWoman;
+        setIsWoman(next);
+        applyRates(sdState, next);
+    };
+    const womenDelta = STATE_RATES[sdState]?.womenStampDelta;
 
     return (
         <div className="bg-card border border-border rounded-2xl p-4 space-y-3">
@@ -1249,6 +1392,10 @@ function StampDutySection({
             </div>
 
             <Field label={t('property.propertyValueRupees')} value={sdValue} onChange={setSdValue} type="number" prefix="₹" placeholder="e.g. 5000000" />
+            {/* Circle-rate basis — the legal base is max(deal value, circle rate) */}
+            <p className="text-[10px] text-muted-foreground leading-relaxed -mt-1">
+                {t('property.circleRateHint', 'Stamp duty is legally charged on the HIGHER of your deal value and the government circle/guidance value — enter the higher figure. If your deal price is >10% below circle rate, the gap is taxable for both sides (Sec 56(2)(x)/50C).')}
+            </p>
 
             {/* State selector */}
             <div>
@@ -1259,6 +1406,21 @@ function StampDutySection({
                         <option key={k} value={k}>{v.name}</option>
                     ))}
                 </select>
+            </div>
+
+            {/* Woman-buyer concession toggle */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-pink-500/5 border border-pink-500/20">
+                <div className="pr-2">
+                    <p className="text-foreground text-xs font-semibold">{t('property.womanBuyer', 'Woman buyer')}</p>
+                    <p className="text-[10px] text-muted-foreground leading-snug">
+                        {womenDelta
+                            ? t('property.womanBuyerHas', '{{state}} charges women {{delta}}% lower stamp duty (value caps may apply)', { state: STATE_RATES[sdState]?.name, delta: womenDelta })
+                            : t('property.womanBuyerNone', 'No gender concession in {{state}}', { state: STATE_RATES[sdState]?.name })}
+                    </p>
+                </div>
+                <button onClick={handleWomanToggle} className={`w-11 h-6 rounded-full p-0.5 transition-colors flex-shrink-0 ${isWoman ? 'bg-pink-500' : 'bg-muted-foreground/30'}`}>
+                    <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${isWoman ? 'translate-x-5' : ''}`} />
+                </button>
             </div>
 
             {/* Editable rate fields */}
@@ -1303,6 +1465,14 @@ function StampDutySection({
                         <span className="text-foreground text-sm font-bold">{t('property.totalRegistrationCost')}</span>
                         <span className="text-yellow-400 text-lg font-extrabold">₹{Math.round(sdResult.total).toLocaleString('en-IN')}</span>
                     </div>
+                    {/* TDS u/s 194-IA (Sec 393(1) under IT Act 2025) on ≥ ₹50L deals */}
+                    {Number(sdValue) >= 5000000 && (
+                        <div className="p-2.5 rounded-lg bg-sky-500/5 border border-sky-500/20">
+                            <p className="text-[10px] text-sky-700 dark:text-sky-400 leading-relaxed font-medium">
+                                {t('property.tdsNote', 'This deal is ≥ ₹50L: as the BUYER you must deduct {{tds}} (1% TDS u/s 194-IA — Sec 393(1) under the IT Act 2025) from payments to the seller and deposit it via Form 26QB within 30 days. TDS applies on the higher of deal value or stamp-duty value.', { tds: fmt(Math.round(Number(sdValue) * 0.01)) })}
+                            </p>
+                        </div>
+                    )}
                     <button onClick={onDownloadPDF}
                         className="w-full py-3 rounded-xl bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs font-bold flex items-center justify-center gap-2 mt-3">
                         {t('property.downloadStampDutyReport')}

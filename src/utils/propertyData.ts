@@ -16,19 +16,24 @@ export const UNIT_KEYS = Object.keys(UNIT_CONV);
 export const REF_UNITS = ['cent', 'gunta', 'ankanam', 'gajam', 'acre', 'ground', 'bigha', 'hectare'];
 
 // ─── Stamp Duty by state ─────────────────────────────────────────────────────
-export const STATE_RATES: Record<string, { name: string; stamp: number; reg: number; transfer: number }> = {
+// Verified Aug 2026. Notable: Karnataka registration DOUBLED 1%→2% w.e.f.
+// 31 Aug 2025 (first change since 2003) and stamp is 5% above ₹45L; Tamil Nadu
+// registration is 4% (7% + 4% = 11%, India's highest). womenStampDelta = %
+// SUBTRACTED from stamp when the buyer is a woman (well-attested states only;
+// several states have value caps — the UI notes this). All values user-editable.
+export const STATE_RATES: Record<string, { name: string; stamp: number; reg: number; transfer: number; womenStampDelta?: number }> = {
     telangana: { name: 'Telangana', stamp: 4, reg: 0.5, transfer: 1.5 },
     andhra: { name: 'Andhra Pradesh', stamp: 5, reg: 1, transfer: 1.5 },
-    karnataka: { name: 'Karnataka', stamp: 5.6, reg: 1, transfer: 0 },
-    tamilnadu: { name: 'Tamil Nadu', stamp: 7, reg: 1, transfer: 0 },
-    maharashtra: { name: 'Maharashtra', stamp: 5, reg: 1, transfer: 1 },
-    delhi: { name: 'Delhi', stamp: 6, reg: 1, transfer: 0 },
-    gujarat: { name: 'Gujarat', stamp: 4.9, reg: 1, transfer: 0 },
-    rajasthan: { name: 'Rajasthan', stamp: 6, reg: 1, transfer: 0 },
+    karnataka: { name: 'Karnataka', stamp: 5, reg: 2, transfer: 0 },
+    tamilnadu: { name: 'Tamil Nadu', stamp: 7, reg: 4, transfer: 0 },
+    maharashtra: { name: 'Maharashtra', stamp: 5, reg: 1, transfer: 1, womenStampDelta: 1 },
+    delhi: { name: 'Delhi', stamp: 6, reg: 1, transfer: 0, womenStampDelta: 2 },
+    gujarat: { name: 'Gujarat', stamp: 4.9, reg: 1, transfer: 0, womenStampDelta: 1.5 },
+    rajasthan: { name: 'Rajasthan', stamp: 6, reg: 1, transfer: 0, womenStampDelta: 1 },
     kerala: { name: 'Kerala', stamp: 8, reg: 2, transfer: 0 },
     westbengal: { name: 'West Bengal', stamp: 6, reg: 1, transfer: 0 },
-    uttarpradesh: { name: 'Uttar Pradesh', stamp: 7, reg: 1, transfer: 0 },
-    haryana: { name: 'Haryana', stamp: 7, reg: 1, transfer: 0 },
+    uttarpradesh: { name: 'Uttar Pradesh', stamp: 7, reg: 1, transfer: 0, womenStampDelta: 1 },
+    haryana: { name: 'Haryana', stamp: 7, reg: 1, transfer: 0, womenStampDelta: 2 },
     punjab: { name: 'Punjab', stamp: 7, reg: 1, transfer: 0 },
     madhyapradesh: { name: 'Madhya Pradesh', stamp: 7.5, reg: 1, transfer: 0 },
 };
