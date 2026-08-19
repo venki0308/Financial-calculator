@@ -18,9 +18,9 @@ const runExport = (cfg: ExportConfig, fmt: ExportFmt) =>
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 
-import { 
-    UNIT_CONV, UNIT_LABELS, UNIT_SHORT, UNIT_KEYS, REF_UNITS, 
-    STATE_RATES, CONSTRUCTION_GRADES, fmt, fmtArea, calcEMI, getAmortization 
+import {
+    UNIT_CONV, UNIT_LABELS, UNIT_SHORT, UNIT_KEYS, REF_UNITS, UNIT_VARIES,
+    STATE_RATES, CONSTRUCTION_GRADES, fmt, fmtArea, calcEMI, getAmortization
 } from '../utils/propertyData';
 
 const UNIT_SHORT_LABELS = UNIT_SHORT;
@@ -1036,7 +1036,7 @@ export default function PropertyCalculator() {
                                         <ArrowRightLeft size={15} className="text-brand-green" /> {t('property.unitConverter')}
                                     </h3>
                                     <Field label={t('property.value')} value={convVal} onChange={setConvVal} type="number" placeholder="e.g. 1" />
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-end">
                                         <div>
                                             <label className="text-xs text-muted-foreground mb-1 block">{t('property.from')}</label>
                                             <select value={fromUnit} onChange={e => setFromUnit(e.target.value)}
@@ -1044,6 +1044,13 @@ export default function PropertyCalculator() {
                                                 {UNIT_KEYS.map(u => <option key={u} value={u}>{UNIT_LABELS[u]}</option>)}
                                             </select>
                                         </div>
+                                        {/* Swap — the most-used action on any converter */}
+                                        <motion.button whileTap={{ scale: 0.9, rotate: 180 }}
+                                            onClick={() => { const f = fromUnit; setFromUnit(toUnit); setToUnit(f); }}
+                                            aria-label={t('property.swapUnits', 'Swap units')}
+                                            className="mb-0.5 p-3 rounded-xl bg-brand-green/10 border border-brand-green/30 text-brand-green">
+                                            <ArrowRightLeft size={16} />
+                                        </motion.button>
                                         <div>
                                             <label className="text-xs text-muted-foreground mb-1 block">{t('property.to')}</label>
                                             <select value={toUnit} onChange={e => setToUnit(e.target.value)}
@@ -1052,6 +1059,12 @@ export default function PropertyCalculator() {
                                             </select>
                                         </div>
                                     </div>
+                                    {/* State-variance warning when either side is bigha/katha */}
+                                    {(UNIT_VARIES[fromUnit] || UNIT_VARIES[toUnit]) && (
+                                        <p className="text-[10px] text-amber-600 dark:text-amber-400 leading-relaxed">
+                                            ⚠ {UNIT_VARIES[fromUnit] ? `${UNIT_LABELS[fromUnit]}: ${UNIT_VARIES[fromUnit]}` : `${UNIT_LABELS[toUnit]}: ${UNIT_VARIES[toUnit]}`}
+                                        </p>
+                                    )}
                                     {convVal && (
                                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                                             className="p-4 rounded-xl bg-gradient-to-r from-brand-green/10 to-brand-blue/10 border border-brand-green/30 text-center">
@@ -1084,7 +1097,7 @@ export default function PropertyCalculator() {
                                                     onClick={() => copyText(`1 ${UNIT_LABELS[u]} = ${sqftVal} ${t('property.sqft')}`, copyKey)}
                                                     className="w-full flex justify-between items-center py-3 border-b border-border last:border-0 text-left"
                                                 >
-                                                    <span className="text-muted-foreground text-sm">1 {UNIT_LABELS[u]}</span>
+                                                    <span className="text-muted-foreground text-sm">1 {UNIT_LABELS[u]}{UNIT_VARIES[u] ? ' *' : ''}</span>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-foreground text-sm font-semibold">{sqftVal} {t('property.sqft')}</span>
                                                         {copied === copyKey
@@ -1096,6 +1109,10 @@ export default function PropertyCalculator() {
                                             );
                                         })}
                                     </div>
+                                    {/* State-variance footnote for * marked units */}
+                                    <p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">
+                                        * {t('property.bighaVaries', 'Bigha')}: {UNIT_VARIES.bigha} · {t('property.kathaVaries', 'Katha')}: {UNIT_VARIES.katha}
+                                    </p>
                                 </div>
 
                                 {/* All conversions from sq.ft */}

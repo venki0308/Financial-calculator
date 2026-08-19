@@ -1,19 +1,33 @@
 // ─── Unit Conversions (all expressed as sq.ft per unit) ──────────────────────
+// Pan-India coverage: South (cent/gunta/ankanam/gajam/ground), North
+// (marla/kanal — Punjab, Haryana, J&K, HP standard 272.25/5,445), East
+// (katha/dismil — dismil = cent). Bigha and katha vary BY STATE; the values
+// here are the UP/Bihar "pucca" conventions and the UI shows a variance note
+// (see UNIT_VARIES): bigha ≈ 6,800 (UK) – 27,225 (RJ pucca); katha ≈ 720 (WB)
+// – 2,880 (Assam) sq.ft.
 export const UNIT_CONV: Record<string, number> = {
     sqft: 1, sqm: 10.7639, sqyard: 9, cent: 435.6, gunta: 1089,
-    ankanam: 72, gajam: 9, acre: 43560, ground: 2400, bigha: 27000, hectare: 107639,
+    ankanam: 72, gajam: 9, marla: 272.25, kanal: 5445, katha: 1361.25,
+    dismil: 435.6, acre: 43560, ground: 2400, bigha: 27000, hectare: 107639,
 };
 export const UNIT_LABELS: Record<string, string> = {
     sqft: 'Square Feet', sqm: 'Square Meter', sqyard: 'Square Yard', cent: 'Cent',
-    gunta: 'Gunta', ankanam: 'Ankanam', gajam: 'Gajam', acre: 'Acre',
+    gunta: 'Gunta', ankanam: 'Ankanam', gajam: 'Gajam', marla: 'Marla', kanal: 'Kanal',
+    katha: 'Katha', dismil: 'Dismil', acre: 'Acre',
     ground: 'Ground', bigha: 'Bigha', hectare: 'Hectare',
 };
 export const UNIT_SHORT: Record<string, string> = {
     sqft: 'Sq.ft', sqm: 'Sq.m', sqyard: 'Sq.yd', cent: 'Cent', gunta: 'Gunta',
-    ankanam: 'Ankanam', gajam: 'Gajam', acre: 'Acre', ground: 'Ground', bigha: 'Bigha', hectare: 'Hectare',
+    ankanam: 'Ankanam', gajam: 'Gajam', marla: 'Marla', kanal: 'Kanal', katha: 'Katha',
+    dismil: 'Dismil', acre: 'Acre', ground: 'Ground', bigha: 'Bigha', hectare: 'Hectare',
+};
+// Units whose size differs by state — UI renders a variance footnote for these.
+export const UNIT_VARIES: Record<string, string> = {
+    bigha: '≈6,800–27,225 sq.ft by state (shown: UP/Bihar pucca)',
+    katha: '≈720 (WB) – 2,880 (Assam) sq.ft by state (shown: Bihar)',
 };
 export const UNIT_KEYS = Object.keys(UNIT_CONV);
-export const REF_UNITS = ['cent', 'gunta', 'ankanam', 'gajam', 'acre', 'ground', 'bigha', 'hectare'];
+export const REF_UNITS = ['cent', 'gunta', 'ankanam', 'gajam', 'marla', 'kanal', 'katha', 'acre', 'ground', 'bigha', 'hectare'];
 
 // ─── Stamp Duty by state ─────────────────────────────────────────────────────
 // Verified Aug 2026. Notable: Karnataka registration DOUBLED 1%→2% w.e.f.
