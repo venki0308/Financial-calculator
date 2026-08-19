@@ -55,6 +55,9 @@ function getDeviceTimezone(): string {
 // abbreviation is available.
 function getDeviceZoneLabel(now: Date): string {
     const tz = getDeviceTimezone();
+    // Windows/older environments often report the legacy 'Asia/Calcutta' id;
+    // without this the fallback chip literally said "behind Calcutta".
+    if (tz === 'Asia/Calcutta' || tz === 'Asia/Kolkata') return 'IST';
     try {
         const abbr = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' })
             .formatToParts(now).find(p => p.type === 'timeZoneName')?.value;
@@ -768,7 +771,7 @@ const DEFAULT_CLOCKS: SavedClock[] = [
     },
     {
         id: 'clock_nyc_default',
-        cityName: 'New York (EST)',
+        cityName: 'New York',
         countryName: 'United States',
         timezone: 'America/New_York',
         addedAt: new Date().toISOString()

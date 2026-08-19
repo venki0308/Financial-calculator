@@ -110,7 +110,7 @@ export const WORLD_TIMEZONES: TimezoneInfo[] = [
     { iana: 'Europe/Tirane', city: 'Tirana', country: 'Albania', searchTerms: 'albania tirana al' },
 
     // ── AMERICAS ──
-    { iana: 'America/New_York', city: 'New York (EST)', country: 'United States', searchTerms: 'usa united states new york est eastern us' },
+    { iana: 'America/New_York', city: 'New York', country: 'United States', searchTerms: 'usa united states new york est edt eastern us' },
     { iana: 'America/Chicago', city: 'Chicago (CST)', country: 'United States', searchTerms: 'usa chicago cst central us' },
     { iana: 'America/Denver', city: 'Denver (MST)', country: 'United States', searchTerms: 'usa denver mst mountain us' },
     { iana: 'America/Los_Angeles', city: 'Los Angeles (PST)', country: 'United States', searchTerms: 'usa los angeles pst pacific california us' },
