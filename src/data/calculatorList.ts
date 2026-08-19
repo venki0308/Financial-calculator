@@ -1,4 +1,4 @@
-import { Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Bike, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare, Calendar, Globe, Shield, Gem } from 'lucide-react';
+import { Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Bike, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare, Calendar, Globe, Shield, Gem, Home } from 'lucide-react';
 
 export interface CalcItem { 
     nameKey: string; 
@@ -19,6 +19,7 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.gratuity.name', descKey: 'calculators.gratuity.desc', icon: DollarSign, color: '#8B5CF6', path: '/calculator/gratuity', category: 'taxSalary', keywords: ['gratuity', 'salary', 'employee', 'resignation', 'retirement', 'labour code', 'tax free'] },
 
     // Loans
+    { nameKey: 'calculators.homeLoan.name', descKey: 'calculators.homeLoan.desc', icon: Home, color: '#10B981', path: '/calculator/home-loan', category: 'loans', keywords: ['home', 'loan', 'house', 'emi', 'housing', 'gruha', 'flat', 'property'] },
     { nameKey: 'calculators.advancedMortgage.name', descKey: 'calculators.advancedMortgage.desc', icon: Landmark, color: '#3B82F6', path: '/calculator/mortgage-calculator', category: 'loans', keywords: ['mortgage', 'home', 'loan', 'prepayment', 'tax', '80c', '24'] },
     { nameKey: 'calculators.personalLoan.name', descKey: 'calculators.personalLoan.desc', icon: Calculator, color: '#8B5CF6', path: '/calculator/personal-loan', category: 'loans', keywords: ['personal', 'loan', 'finance', 'cash'] },
     { nameKey: 'calculators.educationLoan.name', descKey: 'calculators.educationLoan.desc', icon: GraduationCap, color: '#F59E0B', path: '/calculator/education-loan', category: 'loans', keywords: ['education', 'loan', 'student', 'study', 'college'] },

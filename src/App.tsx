@@ -451,6 +451,9 @@ function AppContent() {
                         <Route path="/calculator/mortgage-calculator" element={<AdvancedMortgageCalculator />} />
                         <Route path="/calculator/advanced-sip" element={<Navigate to="/calculator/sip" replace />} />
                         <Route path="/calculator/gst" element={<GSTCalculator />} />
+                        {/* /calculator/home-loan → EMICalculator defaults to the
+                            Home Loan type for any path that isn't car/personal/education */}
+                        <Route path="/calculator/home-loan" element={<EMICalculator />} />
                         <Route path="/calculator/car-loan" element={<EMICalculator />} />
                         <Route path="/calculator/personal-loan" element={<EMICalculator />} />
                         <Route path="/calculator/education-loan" element={<EMICalculator />} />

@@ -168,6 +168,10 @@
       "name": "Loan EMI",
       "desc": "Home, Car, Personal loans"
     },
+    "homeLoan": {
+      "name": "Home Loan Calculator",
+      "desc": "EMI, part-payment & foreclosure analysis"
+    },
     "sip": {
       "name": "SIP Calculator",
       "desc": "Mutual fund SIP"
