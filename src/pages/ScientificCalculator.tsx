@@ -266,6 +266,15 @@ export default function ScientificCalculator() {
         return `${sign}${h1}/${k1}`;
     };
 
+    // Live auto-calculation: evaluate as the user types; '=' just commits the
+    // answer to history/Ans. Incomplete expressions ('8*') evaluate to Error
+    // and simply show no preview.
+    const livePreview = (() => {
+        if (result || !expression) return '';
+        const r = evaluateExpression(expression);
+        return r === 'Error' ? '' : r;
+    })();
+
     const handleClear = () => { setExpression(''); setResult(''); };
     const handleBackspace = () => {
         if (result) { setExpression(result); setResult(''); }
@@ -448,7 +457,11 @@ export default function ScientificCalculator() {
                             className="w-full text-right text-foreground text-5xl font-black overflow-x-auto whitespace-nowrap scrollbar-hide cursor-pointer tracking-tight"
                             onClick={() => result && copyText(result, 'result')}
                         >
-                            {(asFraction && result && toFraction(parseFloat(result))) || result || ''}
+                            {result
+                                ? ((asFraction && toFraction(parseFloat(result))) || result)
+                                : livePreview
+                                    ? <span className="text-muted-foreground/50">{livePreview}</span>
+                                    : ''}
                             {result && (
                                 <span className="ml-2 text-brand-purple/80 align-middle">
                                     {copied === 'result' ? <Check size={18} className="inline opacity-80" /> : <Copy size={18} className="inline opacity-50 hover:opacity-100 transition-opacity" />}
@@ -526,7 +539,7 @@ export default function ScientificCalculator() {
                             <button className={fnCls} onClick={() => handleInput('nCr(')}>nCr</button>
                             <button className={fnCls} onClick={() => handleInput('nPr(')}>nPr</button>
                             <button className={fnCls} onClick={() => handleInput('Ans')}>Ans</button>
-                            <button className={togCls(asFraction)} onClick={() => setAsFraction(f => !f)}>S⇔D</button>
+                            <button className={togCls(asFraction)} onClick={() => setAsFraction(f => !f)}>F⇄D</button>
                             <button className={fnCls} onClick={() => handleInput('10^(')}>10^x</button>
                         </div>
                     )}
