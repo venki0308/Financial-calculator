@@ -137,7 +137,13 @@ export default function SWPCalculator() {
                 .toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
             : null;
 
-        return { finalBalance, totalWithdrawn, yearlySchedule, depletionMonth, depletionYear, swr, swrRisk, swrColor, swrBg, realWithdrawalValueAtEnd, perpetual, longevityMonths, depletionDate };
+        // Reverse solve (annuity formula): the max monthly withdrawal this
+        // corpus sustains for EXACTLY the chosen tenure — "how much CAN I take?"
+        const maxSustainableWithdrawal = n > 0
+            ? (r > 0 ? principal * r / (1 - Math.pow(1 + r, -n)) : principal / n)
+            : 0;
+
+        return { finalBalance, totalWithdrawn, yearlySchedule, depletionMonth, depletionYear, swr, swrRisk, swrColor, swrBg, realWithdrawalValueAtEnd, perpetual, longevityMonths, depletionDate, maxSustainableWithdrawal };
     }, [principal, withdrawal, rate, years, inflation, t]);
 
 
@@ -496,6 +502,23 @@ export default function SWPCalculator() {
                                             </p>
                                         </div>
                                     </div>
+
+                                    {/* Reverse solve: sustainable withdrawal for the exact tenure */}
+                                    {result.maxSustainableWithdrawal > 0 && (
+                                        <div className="p-3.5 rounded-2xl bg-brand-blue/5 border border-brand-blue/20">
+                                            <p className="text-[10px] uppercase font-bold tracking-wider text-brand-blue mb-1">
+                                                {t('swp.maxWithdrawalTitle', 'Max withdrawal for your {{years}}-year plan', { years })}
+                                            </p>
+                                            <p className="text-xs text-foreground leading-relaxed">
+                                                {t('swp.maxWithdrawalBody', 'At {{rate}}% returns, this corpus can pay up to {{max}}/month and land at exactly ₹0 after {{years}} years — you are withdrawing {{current}}/month.', {
+                                                    rate,
+                                                    max: formatINR(Math.floor(result.maxSustainableWithdrawal)),
+                                                    years,
+                                                    current: formatINR(withdrawal),
+                                                })}
+                                            </p>
+                                        </div>
+                                    )}
 
                                     {/* Inflation Adjusted Return */}
                                     <div className="bg-gradient-to-br from-background to-muted p-4 rounded-2xl border border-border space-y-3">

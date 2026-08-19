@@ -84,6 +84,13 @@ export default function EMICalculator() {
     const [prepayMonth, setPrepayMonth] = useState(12);
     const [prepayMode, setPrepayMode] = useState<'tenure' | 'emi'>('tenure');
 
+    // Pay-more / finish-early state (two directions: "I'll pay ₹X/month"
+    // and "I want to finish in N months → what EMI?")
+    const [showPayMore, setShowPayMore] = useState(false);
+    const [payMode, setPayMode] = useState<'higher' | 'target'>('higher');
+    const [higherEmi, setHigherEmi] = useState(0);      // 0 = use suggested
+    const [targetMonths, setTargetMonths] = useState(0); // 0 = use suggested
+
     // Reminder state
     const [enableReminder, setEnableReminder] = useState(false);
     const [reminderDate, setReminderDate] = useState(5);
@@ -172,6 +179,51 @@ export default function EMICalculator() {
             emiMode: { emiDrop: Math.round(emi - newEmi), newEmi: Math.round(newEmi), interestSaved: Math.round(result.totalInterest - (interestPre + intE)) },
         };
     }, [showPrepay, method, result.emi, result.totalInterest, principal, rate, months, prepayAmount, prepayMonth]);
+
+    // ─── Pay More, Finish Early ────────────────────────────────────────
+    // Direction 1 ('higher'): user names a bigger monthly payment → simulate
+    // to get the real payoff month (handles the final partial month), months
+    // saved, interest saved, and the calendar payoff date.
+    // Direction 2 ('target'): user names a finish line in months → closed-form
+    // re-amortized EMI for that tenure, plus the same savings readout.
+    const suggestedHigherEmi = result.emi > 0 ? Math.ceil((result.emi * 1.1) / 500) * 500 : 0;
+    const suggestedTargetMonths = Math.max(6, Math.round(months * 0.75));
+    const payMoreResult = useMemo(() => {
+        if (!showPayMore || method !== 'reducing' || result.emi <= 0 || rate <= 0 || months <= 1) return null;
+        const r = rate / 12 / 100;
+        const E0 = result.emi;
+        const payoffDate = (k: number) => {
+            const d = new Date();
+            return new Date(d.getFullYear(), d.getMonth() + k, 1)
+                .toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+        };
+        if (payMode === 'higher') {
+            const E = higherEmi > 0 ? higherEmi : suggestedHigherEmi;
+            if (E <= E0 || E <= principal * r) return { invalid: true as const };
+            let bal = principal, tot = 0, k = 0;
+            while (bal > 0.5 && k < months * 2) {
+                const int = bal * r;
+                tot += int;
+                bal = bal + int - E;
+                k++;
+            }
+            return {
+                invalid: false as const, mode: 'higher' as const,
+                newEmi: E, extra: E - E0, monthsNew: k, monthsSaved: months - k,
+                interestSaved: Math.round(result.totalInterest - tot),
+                payoff: payoffDate(k),
+            };
+        }
+        const m = Math.min(months - 1, Math.max(3, targetMonths > 0 ? targetMonths : suggestedTargetMonths));
+        const pow = Math.pow(1 + r, m);
+        const E = principal * r * pow / (pow - 1);
+        return {
+            invalid: false as const, mode: 'target' as const,
+            newEmi: Math.round(E), extra: Math.round(E - E0), monthsNew: m, monthsSaved: months - m,
+            interestSaved: Math.round(result.totalInterest - (E * m - principal)),
+            payoff: payoffDate(m),
+        };
+    }, [showPayMore, payMode, higherEmi, targetMonths, method, result.emi, result.totalInterest, principal, rate, months, suggestedHigherEmi, suggestedTargetMonths]);
 
     // ─── Live Loan Profile ─────────────────────────────────────────────
     const loanProfile = useMemo<LoanProfile | null>(() => {
@@ -722,6 +774,98 @@ export default function EMICalculator() {
                                                     <ChevronRight size={14} />
                                                 </button>
                                             </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                )}
+
+                {/* ── Pay More, Finish Early ──────────────────────── */}
+                {method === 'reducing' && result.emi > 0 && months > 1 && (
+                    <div className="mb-4">
+                        <button onClick={() => setShowPayMore(!showPayMore)}
+                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
+                            <TrendingDown size={16} />
+                            {showPayMore ? t('emi.hide') : t('emi.payMoreTitle', 'Pay More, Finish Early')}
+                            {showPayMore ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+
+                        <AnimatePresence>
+                            {showPayMore && (
+                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                                    <div className="bg-white dark:bg-card border border-slate-200 dark:border-border rounded-2xl p-4 space-y-3 shadow-sm dark:shadow-none">
+                                        {/* Direction toggle */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {([
+                                                { key: 'higher' as const, label: t('emi.payMoreModeHigher', 'I\'ll pay ₹X / month') },
+                                                { key: 'target' as const, label: t('emi.payMoreModeTarget', 'Finish in N months') },
+                                            ]).map(opt => (
+                                                <button key={opt.key} onClick={() => setPayMode(opt.key)}
+                                                    className={`py-2.5 rounded-xl text-xs font-bold border transition-colors ${payMode === opt.key
+                                                        ? 'bg-indigo-500/10 border-indigo-500/40 text-indigo-600 dark:text-indigo-400'
+                                                        : 'border-slate-200 dark:border-border text-muted-foreground'}`}>
+                                                    {opt.label}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        {payMode === 'higher' ? (
+                                            <NumberInput label={t('emi.payMoreNewEmi', 'Monthly payment (current EMI {{emi}})', { emi: formatINR(result.emi) })}
+                                                value={higherEmi > 0 ? higherEmi : suggestedHigherEmi}
+                                                onChange={setHigherEmi} min={0} max={principal} prefix="₹" />
+                                        ) : (
+                                            <NumberInput label={t('emi.payMoreTargetMonths', 'Debt-free in (current: {{m}} mo)', { m: months })}
+                                                value={targetMonths > 0 ? targetMonths : suggestedTargetMonths}
+                                                onChange={setTargetMonths} min={3} max={months - 1} suffix=" mo" />
+                                        )}
+
+                                        {payMoreResult && payMoreResult.invalid && (
+                                            <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                                                {t('emi.payMoreTooLow', 'Enter an amount above your current EMI to speed up the loan.')}
+                                            </p>
+                                        )}
+
+                                        {payMoreResult && !payMoreResult.invalid && (
+                                            <>
+                                                {/* Full structure: EMI, tenure, payoff date, savings */}
+                                                <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-500/10 dark:to-violet-500/10 border border-indigo-200 dark:border-indigo-500/30 text-center">
+                                                    <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-1">
+                                                        {payMoreResult.mode === 'higher'
+                                                            ? t('emi.payMoreResultHigher', 'Paying {{emi}}/mo (+{{extra}})', { emi: formatINR(payMoreResult.newEmi), extra: formatINR(payMoreResult.extra) })
+                                                            : t('emi.payMoreResultTarget', 'Required EMI (+{{extra}}/mo extra)', { extra: formatINR(payMoreResult.extra) })}
+                                                    </p>
+                                                    <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                                                        {payMoreResult.mode === 'target'
+                                                            ? formatINR(payMoreResult.newEmi)
+                                                            : `${Math.floor(payMoreResult.monthsNew / 12)}y ${payMoreResult.monthsNew % 12}m`}
+                                                    </p>
+                                                    <p className="text-slate-700 dark:text-foreground text-xs mt-1 font-medium">
+                                                        {t('emi.payMorePayoff', 'Debt-free by {{date}} — {{yrs}}y {{mos}}m earlier', {
+                                                            date: payMoreResult.payoff,
+                                                            yrs: Math.floor(payMoreResult.monthsSaved / 12),
+                                                            mos: payMoreResult.monthsSaved % 12,
+                                                        })}
+                                                    </p>
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-2">
+                                                    {[
+                                                        { label: t('emi.payMoreNewTenure', 'New tenure'), value: `${Math.floor(payMoreResult.monthsNew / 12)}y ${payMoreResult.monthsNew % 12}m`, color: 'text-slate-800 dark:text-foreground' },
+                                                        { label: t('emi.payMoreMonthsSaved', 'Months saved'), value: String(payMoreResult.monthsSaved), color: 'text-indigo-600 dark:text-indigo-400' },
+                                                        { label: t('emi.prepayInterestSaved', 'Interest saved'), value: formatINR(payMoreResult.interestSaved), color: 'text-emerald-600 dark:text-emerald-400' },
+                                                    ].map(item => (
+                                                        <div key={item.label} className="p-3 rounded-xl bg-muted/40 text-center">
+                                                            <p className="text-muted-foreground text-[9px] uppercase font-bold mb-1">{item.label}</p>
+                                                            <p className={`font-bold text-xs ${item.color}`}>{item.value}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                                                    {t('emi.payMoreNote', 'Ask your bank to increase the EMI standing instruction — RBI mandates zero charges for higher payments on floating-rate loans to individuals.')}
+                                                </p>
+                                            </>
                                         )}
                                     </div>
                                 </motion.div>
