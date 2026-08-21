@@ -140,6 +140,11 @@ export default function RecurringTransactions() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(blankForm());
   const [amountError, setAmountError] = useState(false);
+  // When creating a monthly rule whose anchor day has already passed this
+  // month (e.g. "Rent, day 1" created on the 22nd), also log THIS month's
+  // occurrence — otherwise Monthly/Yearly/Reports show nothing until next
+  // month while the autopilot card promises the amount. Default ON.
+  const [backfillThisMonth, setBackfillThisMonth] = useState(true);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // ── derived ────────────────────────────────────────────────
@@ -176,6 +181,7 @@ export default function RecurringTransactions() {
     }
     setForm(base);
     setAmountError(false);
+    setBackfillThisMonth(true);
     setSheetOpen(true);
   };
 
@@ -194,6 +200,7 @@ export default function RecurringTransactions() {
       isActive: rule.isActive,
     });
     setAmountError(false);
+    setBackfillThisMonth(true);
     setSheetOpen(true);
   };
 
@@ -212,7 +219,14 @@ export default function RecurringTransactions() {
       form.frequency === 'monthly' ? form.monthDay
       : form.frequency === 'weekly' ? form.weekDay
       : form.startDate.slice(5); // 'MM-DD'
-    const nextDueDate = computeFirstDue(form.startDate, form.frequency, form.monthDay, form.weekDay);
+    let nextDueDate = computeFirstDue(form.startDate, form.frequency, form.monthDay, form.weekDay);
+    // Backfill: start the rule from this month's already-passed anchor date —
+    // the materializer below logs that occurrence immediately and advances
+    // nextDueDate to the following month. Create-mode + monthly only.
+    if (!editingId && form.frequency === 'monthly' && backfillThisMonth) {
+      const thisMonthDue = addMonthsAnchoredISO(form.startDate, 0, form.monthDay);
+      if (thisMonthDue < form.startDate) nextDueDate = thisMonthDue;
+    }
 
     if (editingId) {
       const existing = rules.find(r => r.id === editingId);
@@ -738,6 +752,24 @@ export default function RecurringTransactions() {
                     >
                       {t('recurring.lastDay', 'Last day of month')}
                     </button>
+                    {/* Backfill toggle — only when this month's date already passed */}
+                    {!editingId && addMonthsAnchoredISO(todayStr(), 0, form.monthDay) < todayStr() && (
+                      <button
+                        onClick={() => setBackfillThisMonth(b => !b)}
+                        className="w-full flex items-center justify-between py-2.5 px-3 rounded-xl border mt-1"
+                        style={{ backgroundColor: theme.bgCard, borderColor: backfillThisMonth ? theme.accentInvestment : theme.borderSubtle }}
+                      >
+                        <span className="text-xs font-semibold text-left pr-2" style={{ color: theme.textSecondary }}>
+                          {t('recurring.backfillLabel', "Also log this month's {{date}} (already passed)", {
+                            date: parseLocalDate(addMonthsAnchoredISO(todayStr(), 0, form.monthDay)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+                          })}
+                        </span>
+                        <span className="w-10 h-6 rounded-full p-0.5 flex-shrink-0 transition-colors"
+                          style={{ backgroundColor: backfillThisMonth ? theme.accentInvestment : (theme.borderSubtle as string) }}>
+                          <span className={`block w-5 h-5 rounded-full bg-white shadow transition-transform ${backfillThisMonth ? 'translate-x-4' : ''}`} />
+                        </span>
+                      </button>
+                    )}
                   </div>
                 )}
 
