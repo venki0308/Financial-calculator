@@ -283,7 +283,9 @@ export default function RecurringTransactions() {
 
   return (
     <div className="min-h-screen pb-32" style={{ backgroundColor: theme.bgPrimary }}>
-      <div className="max-w-[428px] mx-auto px-4 pt-4 space-y-4">
+      {/* pt-14 = app-wide status-bar clearance (native WebView draws under
+          the Android status bar; pt-4 left the title colliding with it). */}
+      <div className="max-w-[428px] mx-auto px-4 pt-14 space-y-4">
 
         {/* ── Header ─────────────────────────────────────────── */}
         <div className="flex items-center gap-3">
@@ -527,8 +529,14 @@ export default function RecurringTransactions() {
             aria-label={t('recurring.addRule', 'Add Recurring')}
             whileTap={{ scale: 0.88 }}
             onClick={() => openAdd()}
-            className="fixed right-5 bottom-28 w-14 h-14 text-white rounded-2xl flex items-center justify-center shadow-xl z-[9000]"
-            style={{ backgroundColor: theme.accentInvestment }}
+            className="fixed right-5 w-14 h-14 text-white rounded-2xl flex items-center justify-center shadow-xl z-[9000]"
+            style={{
+              backgroundColor: theme.accentInvestment,
+              // Clear the bottom nav PLUS the device gesture-bar inset —
+              // a fixed 7rem left the FAB clipped behind the nav on phones
+              // with gesture navigation.
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 7rem)',
+            }}
           >
             <Plus size={26} strokeWidth={2.5} />
           </motion.button>
