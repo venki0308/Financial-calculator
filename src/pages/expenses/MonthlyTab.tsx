@@ -660,15 +660,22 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
               <div className="grid grid-cols-7 gap-1">
                 {Array.from({ length: start.getDay() }, (_, i) => <span key={`b${i}`} />)}
                 {days.map(d => (
-                  <div key={d.date}
-                    className={`aspect-square rounded-lg flex items-center justify-center text-[10px] font-semibold ${d.date === todayIso ? 'ring-2 ring-brand-purple' : ''}`}
+                  <button key={d.date}
+                    onClick={() => {
+                      // Jump to the Daily tab focused on this date. The tab
+                      // mounts fresh on switch, so a sessionStorage handoff is
+                      // enough — no changes to the tab-switch event contract.
+                      try { sessionStorage.setItem('fincalix_daily_jump_date', d.date); } catch { /* private mode */ }
+                      window.dispatchEvent(new CustomEvent('fincalix:switch-expense-tab', { detail: 'daily' }));
+                    }}
+                    className={`aspect-square rounded-lg flex items-center justify-center text-[10px] font-semibold active:scale-90 transition-transform ${d.date === todayIso ? 'ring-2 ring-brand-purple' : ''}`}
                     style={{
                       backgroundColor: d.amt > 0 ? `rgba(239,68,68,${0.12 + 0.55 * (d.amt / max)})` : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
                       color: d.amt / max > 0.55 ? '#fff' : undefined,
                     }}
                     title={`${d.date}: ₹${Math.round(d.amt).toLocaleString('en-IN')}`}>
                     {d.day}
-                  </div>
+                  </button>
                 ))}
               </div>
               {peak && peak.amt > 0 && (

@@ -93,7 +93,18 @@ export default function DailyTab() {
   const et = useExpenseTheme();
 
   /* ── state ── */
-  const [selectedDate, setSelectedDate] = useState(getTodayStr());
+  const [selectedDate, setSelectedDate] = useState(() => {
+    // One-shot handoff from the Monthly tab's spending calendar: tapping a
+    // day there switches to this tab focused on that date.
+    try {
+      const jump = sessionStorage.getItem('fincalix_daily_jump_date');
+      if (jump && /^\d{4}-\d{2}-\d{2}$/.test(jump)) {
+        sessionStorage.removeItem('fincalix_daily_jump_date');
+        return jump;
+      }
+    } catch { /* private mode */ }
+    return getTodayStr();
+  });
   const [subTab, setSubTab] = useState<SubTab>('all');
   const [showSheet, setShowSheet] = useState(false);
   // When set, the shared AddEntrySheet opens in EDIT mode pre-filled with this entry
