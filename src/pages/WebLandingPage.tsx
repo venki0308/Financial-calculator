@@ -8,7 +8,7 @@ const PLAY_BADGE_URL = 'https://play.google.com/intl/en_us/badges/static/images/
 // ── Data ──────────────────────────────────────────────────────────────────────
 const SCREENSHOTS = [
   { src: '/screenshots/screen1-home.webp',        caption: 'Home Dashboard'     },
-  { src: '/screenshots/screen2-calculators.webp', caption: '43+ Calculators'    },
+  { src: '/screenshots/screen2-calculators.webp', caption: '45+ Calculators'    },
   { src: '/screenshots/screen3-tax.webp',         caption: 'Income Tax 2026-27' },
   { src: '/screenshots/screen4-schemes.webp',     caption: 'Govt Schemes'       },
   { src: '/screenshots/screen5-expense.webp',     caption: 'Expense Tracker'    },
@@ -50,7 +50,8 @@ const FEATURES = [
   { icon:'🔄', name:'STP Calculator',        desc:'Systematic transfer plan',         cat:'investments' },
   { icon:'📊', name:'CAGR Calculator',       desc:'Compound annual growth rate',      cat:'investments' },
   { icon:'⚖️', name:'PRAG Rebalancer',      desc:'Portfolio asset rebalancer',       cat:'investments' },
-  { icon:'🏗️', name:'Property Calculator',  desc:'Stamp duty, EMI & flat cost',      cat:'investments' },
+  { icon:'🏗️', name:'Property Calculator',  desc:'Rent vs Buy, stamp duty & flat cost', cat:'investments' },
+  { icon:'🧾', name:'Form 16 Refund',        desc:'Know your ITR refund before filing', cat:'tax'        },
   // ── Loans ──
   { icon:'🏠', name:'Home Loan EMI',         desc:'Monthly instalment planner',        cat:'loans'       },
   { icon:'🚗', name:'Car Loan EMI',          desc:'Vehicle finance calculator',        cat:'loans'       },
@@ -107,7 +108,7 @@ const FAQS = [
   { q:'Is FinCalix really free?',
     a:'Yes, 100% free. No subscription, no premium plan, no login, no hidden charges. Download and start calculating immediately.' },
   { q:'Does it work without internet?',
-    a:'All 43+ calculators, expense tracker, and budget planner work completely offline after download. No internet needed.' },
+    a:'All 45+ calculators, expense tracker, and budget planner work completely offline after download. No internet needed.' },
   { q:'Is Income Tax updated for Budget 2026-27?',
     a:'Yes. Income Tax Calculator is updated with Budget 2026-27 — zero tax up to ₹12L under New Regime after standard deduction.' },
   { q:'Which languages are supported?',
@@ -119,7 +120,7 @@ const FAQS = [
   { q:'Is my financial data safe?',
     a:'Completely safe. We collect zero personal data. All your calculations and expense data stays only on your device.' },
   { q:'How many calculators does it have?',
-    a:'FinCalix has 43+ financial tools — SIP, Lumpsum, SWP, STP, CAGR, EMI, FD, RD, PPF, NPS, EPF, Gratuity, Income Tax, HRA, Salary Hike, GST, Gold Loan, Two-Wheeler Loan, Overdraft, Credit Card Payoff, Credit Card Interest, Credit Card Compare, CIBIL Score, Insurance, Advanced Mortgage, Post Office MIS, SCSS, Goal Planner, AI Smart Planner, Expense Tracker, Budget Tracker, World Clock and more.' },
+    a:'FinCalix has 45+ financial tools — Form 16 Refund, Rent vs Buy, SIP, Lumpsum, SWP, STP, CAGR, EMI, FD, RD, PPF, NPS, EPF, Gratuity, Income Tax, HRA, Salary Hike, GST, Gold Loan, Two-Wheeler Loan, Overdraft, Credit Card Payoff, Credit Card Interest, Credit Card Compare, CIBIL Score, Insurance, Advanced Mortgage, Post Office MIS, SCSS, Goal Planner, AI Smart Planner, Expense Tracker, Budget Tracker, World Clock and more.' },
 ];
 
 // ── Global CSS ────────────────────────────────────────────────────────────────
@@ -356,7 +357,7 @@ function HeroSection() {
           {/* badge */}
           <div className="fcl-hero-anim" style={{ animationDelay: '200ms', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#F0F7F4', border: '1px solid #B7E4C7', borderRadius: '100px', padding: '6px 14px', marginBottom: '20px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#52B788', flexShrink: 0, animation: 'dotPulse 2s infinite' }} />
-            <span style={{ color: '#2D6A4F', fontSize: '13px', fontWeight: 600 }}>Budget 2026-27 Updated · Zero tax up to ₹12L</span>
+            <span style={{ color: '#2D6A4F', fontSize: '13px', fontWeight: 600 }}>Budget 2026-27 · Zero tax up to ₹12L · Rates verified Aug 2026</span>
           </div>
 
           {/* H1 */}
@@ -377,7 +378,7 @@ function HeroSection() {
             fontSize: isMobile ? '16px' : '18px', color: '#6B7280', lineHeight: 1.6,
             maxWidth: isMobile ? '100%' : '480px', marginBottom: '24px',
           }}>
-            India's most complete financial calculator — SIP, EMI, Tax, PPF, NPS, Insurance, Mortgage, Gold Loan, Credit Card, CIBIL, Overdraft, Expense Tracker and 43+ tools. Free forever. Works offline. No login.
+            India's most complete financial calculator — Form 16 refund, Rent vs Buy, SIP, EMI, Tax, PPF, NPS, Insurance, Gold Loan, Credit Card, CIBIL, Expense Tracker and 45+ tools. Free forever. Works offline. No login.
           </p>
 
           {/* CTA */}
@@ -507,7 +508,7 @@ function HeroSection() {
               animation: 'float4 4.5s ease-in-out 1.5s infinite',
               minWidth: isMobile ? 'auto' : '120px', zIndex: 3,
             }}>
-              <div style={{ fontSize: isMobile ? '11px' : '13px', fontWeight: 700, color: '#0F1F18', whiteSpace: 'nowrap' }}>📊 43+ Tools</div>
+              <div style={{ fontSize: isMobile ? '11px' : '13px', fontWeight: 700, color: '#0F1F18', whiteSpace: 'nowrap' }}>📊 45+ Tools</div>
               <div style={{ fontSize: isMobile ? '10px' : '11px', color: '#6B7280', marginTop: '2px', whiteSpace: 'nowrap' }}>All Free</div>
             </div>
           </div>
@@ -521,8 +522,8 @@ function HeroSection() {
 // ── 03 STATS BAR ──────────────────────────────────────────────────────────────
 function StatsBar() {
   const stats = [
-    { num: 43, suffix: '+', label: 'Smart Calculators' },
-    { num: 45, suffix: '+', label: 'Govt Schemes'      },
+    { num: 45, suffix: '+', label: 'Smart Calculators' },
+    { num: 50, suffix: '',  label: 'Govt Schemes'      },
     { num: 6,  suffix: '',  label: 'Indian Languages'  },
     { num: 0,  suffix: '∞', label: 'Free Forever', special: true },
   ];
@@ -679,7 +680,7 @@ function FeaturesGrid() {
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <p style={{ color: '#2D6A4F', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '12px' }}>FEATURES</p>
             <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 800, color: '#0F1F18', letterSpacing: '-0.02em' }}>Everything You Need, Nothing You Don't</h2>
-            <p style={{ color: '#6B7280', fontSize: '16px', marginTop: '12px' }}>43+ tools built for Indian financial planning</p>
+            <p style={{ color: '#6B7280', fontSize: '16px', marginTop: '12px' }}>45+ tools built for Indian financial planning</p>
           </div>
         </Reveal>
 
@@ -743,7 +744,7 @@ function SchemesBanner() {
     <section style={{ background: '#1B3A2D', padding: '60px 0', overflow: 'hidden' }}>
       <Reveal>
         <p style={{ textAlign: 'center', color: '#F4C842', fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>DISCOVER</p>
-        <h2 style={{ textAlign: 'center', color: '#fff', fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '36px', padding: '0 24px' }}>45+ Government Schemes for You</h2>
+        <h2 style={{ textAlign: 'center', color: '#fff', fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '36px', padding: '0 24px' }}>50 Government Schemes for You</h2>
       </Reveal>
       <div style={{ overflow: 'hidden' }}>
         <div className="fcl-marquee-track" style={{ animation: 'marquee 30s linear infinite' }}>
@@ -876,7 +877,7 @@ function TrustSection() {
 function HowItWorks() {
   const steps = [
     { num: '01', title: 'Download Free', body: 'Get FinCalix from Play Store. No signup, no account. Takes 30 seconds.' },
-    { num: '02', title: 'Choose a Calculator', body: 'Pick from 43+ calculators or search any calculator instantly.' },
+    { num: '02', title: 'Choose a Calculator', body: 'Pick from 45+ calculators or search any calculator instantly.' },
     { num: '03', title: 'Get Instant Results', body: 'Accurate results with charts, comparisons and smart insights. Instantly.' },
   ];
   return (
