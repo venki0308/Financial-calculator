@@ -250,6 +250,36 @@ const nGoalRicher = sipMonthsToGoal(1000000, 300000, 10000, 12);
 check('SIP months-to-goal decreases as corpus grows', 1, nGoalRicher < nGoal ? 1 : 0, 0);
 
 // ──────────────────────────────────────────────────────────────
+// 2T — Capital Gains (CII indexation, equity LTCG/STCG) — FY 2026-27
+// ──────────────────────────────────────────────────────────────
+console.log('\n2T. Capital Gains (property ₹30L FY11 → ₹1.2cr FY27; equity LTCG/STCG)');
+const CII_QA = { '2010-11': 167, '2026-27': 384 };
+const idxCost = 3000000 * CII_QA['2026-27'] / CII_QA['2010-11'];
+check('CII indexed cost (₹30L, FY 2010-11 → 2026-27)', 6898204, idxCost, 1);
+const taxIdx = Math.max(0, 12000000 - idxCost) * 0.20;
+const taxFlat = (12000000 - 3000000) * 0.125;
+check('Property LTCG: 20% with indexation', 1020359, taxIdx, 1);
+check('Property LTCG: 12.5% without indexation', 1125000, taxFlat, 1);
+check('Grandfathered property pays the lower route + 4% cess', 1061174, Math.min(taxIdx, taxFlat) * 1.04, 1);
+check('Equity LTCG ₹5L: 12.5% above ₹1.25L exemption', 46875, (500000 - 125000) * 0.125, 1);
+check('Equity STCG ₹2L: flat 20%', 40000, 200000 * 0.20, 1);
+
+// ──────────────────────────────────────────────────────────────
+// 2U — LRS TCS (rates w.e.f. 1 Apr 2026)
+// ──────────────────────────────────────────────────────────────
+console.log('\n2U. LRS TCS (threshold ₹10L aggregate; tour 2% flat; edu/medical 2%; other 20%)');
+function lrsTcs(purpose, amount, already) {
+  if (purpose === 'eduLoan') return 0;
+  if (purpose === 'tour') return amount * 0.02;
+  const rate = purpose === 'eduMedical' ? 0.02 : 0.20;
+  return Math.max(0, amount - Math.max(0, 1000000 - already)) * rate;
+}
+check('LRS other: ₹6L already + ₹8L → 20% on ₹4L', 80000, lrsTcs('other', 800000, 600000), 1);
+check('LRS tour package ₹3L → 2% flat', 6000, lrsTcs('tour', 300000, 0), 1);
+check('LRS education ₹15L own funds → 2% on ₹5L', 10000, lrsTcs('eduMedical', 1500000, 0), 1);
+check('LRS education via bank loan → nil', 0, lrsTcs('eduLoan', 2500000, 0), 0);
+
+// ──────────────────────────────────────────────────────────────
 // FINAL REPORT
 // ──────────────────────────────────────────────────────────────
 console.log('\n═══════════════════════════════════════════════════════════════');

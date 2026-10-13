@@ -524,7 +524,6 @@ export default function CreditCardPayoffCalculator() {
             <div className="divide-y divide-gray-100 dark:divide-gray-800">
               {current.payoffOrder.map((p, i) => {
                 const card = activeInputs.find(c => c.id === p.id);
-                const cardUtil = card && totalLimit > 0 ? Math.round((card.balance / (totalLimit / activeInputs.length)) * 100) : 0;
                 return (
                   <div key={p.id} className="px-3 py-3 flex items-center gap-3">
                     <span className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 text-xs font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>

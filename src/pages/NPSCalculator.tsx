@@ -161,8 +161,8 @@ export default function NPSCalculator() {
                 { label: 'Total Corpus at Retirement', value: `INR ${Math.round(result.corpus).toLocaleString('en-IN')}` },
                 { label: 'Total Invested', value: `INR ${Math.round(result.invested).toLocaleString('en-IN')}` },
                 { label: 'Wealth Gained', value: `INR ${Math.round(result.wealthGained).toLocaleString('en-IN')}` },
-                { label: 'Lump Sum (60%)', value: `INR ${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
-                { label: 'Annuity Amount (40%)', value: `INR ${Math.round(result.annuity).toLocaleString('en-IN')}` },
+                { label: `Lump Sum (${100 - annuityPct}%)`, value: `INR ${Math.round(result.lumpsum).toLocaleString('en-IN')}` },
+                { label: `Annuity Amount (${annuityPct}%)`, value: `INR ${Math.round(result.annuity).toLocaleString('en-IN')}` },
                 { label: 'Est. Monthly Pension', value: `INR ${Math.round(result.monthlyPension).toLocaleString('en-IN')}` },
             ],
             chart: {
@@ -230,7 +230,7 @@ export default function NPSCalculator() {
                     <NumberInput label={t('nps.expectedReturn')} value={rate} onChange={setRate} min={4} max={14} suffix="%" step={0.5} />
                     <NumberInput label={t('nps.currentAge')} value={age} onChange={setAge} min={18} max={55} suffix={` ${t('nps.years')}`} />
                     <NumberInput label={t('nps.retirementAge')} value={retireAge} onChange={setRetireAge} min={55} max={70} suffix={` ${t('nps.years')}`} />
-                    <NumberInput label={t('nps.annuityPurchase')} value={annuityPct} onChange={setAnnuityPct} min={40} max={100} suffix="%" helperText={t('nps.annuityPurchaseHelper')} />
+                    <NumberInput label={t('nps.annuityPurchase')} value={annuityPct} onChange={setAnnuityPct} min={20} max={100} suffix="%" helperText={t('nps.annuityPurchaseHelper')} />
                     <NumberInput label={t('nps.annuityReturnRate')} value={annuityRate} onChange={setAnnuityRate} min={4} max={9} step={0.25} suffix="%" helperText={t('nps.annuityReturnHelper')} />
 
                     {/* PFRDA Active Choice — equity allocation cap.

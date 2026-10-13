@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, Shi
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
+import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
@@ -32,7 +33,7 @@ export default function KVPCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('KVP_Calculator'); }, []);
 
     const [investment, setInvestment] = useState(50000);
-    const [rate, setRate] = useState(7.5);
+    const [rate, setRate] = useState<number>(SMALL_SAVINGS.rates.kvp);
     const [annualIncome, setAnnualIncome] = useState(1200000);
     const [taxRegime, setTaxRegime] = useState<TaxRegime>('new');
     const [inflation, setInflation] = useState(5.0); // RBI FY 2025-26 CPI ~4.8%
@@ -294,7 +295,7 @@ export default function KVPCalculator() {
                     </div>
                     <div>
                         <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('kvp.interestRatePA')}</label>
-                        <p className="text-muted-foreground text-[10px] mb-1">{t('kvp.currentRate')}</p>
+                        <p className="text-muted-foreground text-[10px] mb-1">{t('kvp.currentRate', { rate: SMALL_SAVINGS.rates.kvp, quarter: SMALL_SAVINGS.label })}</p>
                         <div className="relative">
                             <input type="number" value={rate} step={0.1} onChange={e => setRate(Number(e.target.value) || 0)} className={inputCls + " pr-8"} />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>

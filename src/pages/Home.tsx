@@ -205,10 +205,11 @@ export default function Home() {
         });
 
         return recentPaths
-            .filter(path => calcCatalog[path])
+            .filter(path => calcCatalog[path] || allCalcs.some(c => c.path === path))
             .map(path => {
-                const info = calcCatalog[path];
                 const calcInList = allCalcs.find(c => c.path === path);
+                // Canonical list wins (icon, colour, i18n label); the local catalog only covers legacy alias paths
+                const info = calcInList ? { icon: calcInList.icon, color: calcInList.color, label: calcInList.nameKey } : calcCatalog[path];
                 const label = calcInList ? t(calcInList.nameKey as any) : (t(info.label as any) !== info.label ? t(info.label as any) : info.label);
                 return {
                     label,

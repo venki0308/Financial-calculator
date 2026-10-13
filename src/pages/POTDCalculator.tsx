@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, Shi
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
+import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, getEnglishT, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
@@ -22,10 +23,10 @@ const fmtINR = (v: number) => formatINR(Math.round(v));
 
 // Current Post Office TD Rates (Q1 FY 2026-27, April-June 2026)
 const TD_RATES: Record<string, number> = {
-    '1': 6.9,
-    '2': 7.0,
-    '3': 7.1,
-    '5': 7.5, // 5-year TD is eligible for 80C
+    '1': SMALL_SAVINGS.rates.td1y,
+    '2': SMALL_SAVINGS.rates.td2y,
+    '3': SMALL_SAVINGS.rates.td3y,
+    '5': SMALL_SAVINGS.rates.td5y, // 5-year TD is eligible for 80C / Sec 123
 };
 
 export default function POTDCalculator() {

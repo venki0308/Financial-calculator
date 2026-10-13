@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, 
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
+import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import DateInput from '../components/DateInput';
@@ -25,7 +26,7 @@ export default function RDCalculator() {
 
     // Base Inputs
     const [monthly, setMonthly] = useState(5000);
-    const [rate, setRate] = useState(6.7);
+    const [rate, setRate] = useState<number>(SMALL_SAVINGS.rates.rd5y);
     const [months, setMonths] = useState(12);
     const [isSeniorCitizen, setIsSeniorCitizen] = useState(false);
     const effectiveRate = isSeniorCitizen ? rate + 0.5 : rate;

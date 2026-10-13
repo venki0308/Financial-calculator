@@ -17,6 +17,8 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.salaryHike.name', descKey: 'calculators.salaryHike.desc', icon: ArrowUpRight, color: '#10B981', path: '/calculator/salary-hike', category: 'taxSalary', keywords: ['hike', 'appraisal', 'increment', 'salary'] },
     { nameKey: 'calculators.hra.name', descKey: 'calculators.hra.desc', icon: GraduationCap, color: '#F59E0B', path: '/calculator/hra', category: 'taxSalary', keywords: ['hra', 'house', 'rent', 'allowance'] },
     { nameKey: 'calculators.gratuity.name', descKey: 'calculators.gratuity.desc', icon: DollarSign, color: '#8B5CF6', path: '/calculator/gratuity', category: 'taxSalary', keywords: ['gratuity', 'salary', 'employee', 'resignation', 'retirement', 'labour code', 'tax free'] },
+    { nameKey: 'calculators.capitalGains.name', descKey: 'calculators.capitalGains.desc', icon: TrendingUp, color: '#EF4444', path: '/calculator/capital-gains', category: 'taxSalary', keywords: ['capital', 'gains', 'ltcg', 'stcg', 'cii', 'indexation', 'property', 'shares', 'equity', 'mutual fund', 'gold', 'sale', 'tax'] },
+    { nameKey: 'calculators.lrsTcs.name', descKey: 'calculators.lrsTcs.desc', icon: Globe, color: '#06B6D4', path: '/calculator/lrs-tcs', category: 'taxSalary', keywords: ['lrs', 'tcs', 'foreign', 'remittance', 'abroad', 'education', 'tour', 'forex', 'overseas', '206c'] },
 
     // Loans
     { nameKey: 'calculators.homeLoan.name', descKey: 'calculators.homeLoan.desc', icon: Home, color: '#10B981', path: '/calculator/home-loan', category: 'loans', keywords: ['home', 'loan', 'house', 'emi', 'housing', 'gruha', 'flat', 'property'] },

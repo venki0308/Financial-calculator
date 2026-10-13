@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, Shi
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
+import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, getEnglishT, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
@@ -29,14 +30,14 @@ export default function POMISCalculator() {
     useEffect(() => { AnalyticsService.trackScreen('POMIS_Calculator'); }, []);
 
     const [investment, setInvestment] = useState(450000);
-    const [rate, setRate] = useState(7.4);
+    const [rate, setRate] = useState<number>(SMALL_SAVINGS.rates.pomis);
     const [isJoint, setIsJoint] = useState(false);
     
     // Tax & Decision Engine states
     const [userIncome, setUserIncome] = useState(1200000);
     const [taxRegime, setTaxRegime] = useState<TaxRegime>('new');
     const [inflation, setInflation] = useState(5.0); // RBI FY 2025-26 CPI ~4.8%
-    const [reinvestRate, setReinvestRate] = useState(7.1);
+    const [reinvestRate, setReinvestRate] = useState<number>(SMALL_SAVINGS.rates.ppf);
     const [fdRate, setFdRate] = useState(7.0);
 
     const [showAdvanced, setShowAdvanced] = useState(false);
@@ -299,7 +300,7 @@ export default function POMISCalculator() {
                     </div>
                     <div>
                         <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('pomis.interestRate')}</label>
-                        <p className="text-muted-foreground text-[10px] mb-1">{t('pomis.currentRate')}</p>
+                        <p className="text-muted-foreground text-[10px] mb-1">{t('pomis.currentRate', { rate: SMALL_SAVINGS.rates.pomis, quarter: SMALL_SAVINGS.label })}</p>
                         <div className="relative">
                             <input type="number" value={rate} step={0.1} onChange={e => setRate(Number(e.target.value) || 0)} className={inputCls + " pr-8"} />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>

@@ -46,7 +46,8 @@ export interface LoanCibilConfig {
 }
 
 export const LOAN_CIBIL_RATES: Record<string, LoanCibilConfig> = {
-    // Updated April 2026: RBI repo rate held at 5.25%, banks tightening MCLR
+    // Updated Oct 2026: RBI repo rate hiked 25 bps to 5.50% on 7 Oct 2026 (calibrated tightening);
+    // bands below are pre-hike lender floors — EBLR-linked floors reprice ~0.25% up through Q3 FY27
     home_loan: {
         loanType: 'Home Loan', minBank: 700, minNBFC: 650, ideal: 760,
         rates: { nh: { min: 14, max: 16 }, very_poor: { min: 14, max: 16 }, poor: { min: 12, max: 14 }, average: { min: 10.5, max: 12 }, good: { min: 9.75, max: 10.5 }, very_good: { min: 9, max: 9.75 }, excellent: { min: 8.5, max: 9 } },

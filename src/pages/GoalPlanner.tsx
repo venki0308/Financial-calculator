@@ -91,7 +91,8 @@ export default function GoalPlanner() {
         // Existing savings keep compounding at the expected return until the
         // goal date — subtract their FUTURE value from the goal, not their
         // face value (otherwise the recommended SIP is heavily overstated).
-        const savingsFV = currentSavings * Math.pow(1 + expectedReturn / 100, targetYears);
+        // Monthly compounding — consistent with the SIP factor below and the year-wise projection
+        const savingsFV = currentSavings * Math.pow(1 + expectedReturn / 100 / 12, targetYears * 12);
         const remaining = Math.max(0, targetFV - savingsFV);
         const r = expectedReturn / 12 / 100;
         const n = targetYears * 12;

@@ -17,7 +17,7 @@
     "recentCalculators": "Recent Calculators",
     "govSchemes": "Government Schemes",
     "explore": "Explore Central Government Schemes",
-    "new2026": "48+ Verified Central Schemes",
+    "new2026": "50+ Verified Central Schemes",
     "stateWise": "Central Govt",
     "myBudget": "My Budget",
     "viewExpenses": "View Expenses",
@@ -139,13 +139,32 @@
     "roadmapStep5": "After filing — intimation u/s 143(1)",
     "roadmapStep5Detail": "CPC processes your return and emails an intimation u/s 143(1) comparing your figures with its records. TDS credit is granted strictly as per Form 26AS — employer-side mismatches surface here. Refunds are credited only after this processing; track under 'View Filed Returns' on the portal.",
     "aisHint": "Tip: open AIS on the e-filing portal — it already lists your savings/FD interest and dividends. Copy the amounts from there so nothing is missed.",
-    "newActNote": "FY 2026-27 falls under the new Income-tax Act, 2025 (\"Tax Year 2026-27\"). Rates are unchanged — only section numbers change: 87A→156, 234A/B/C→423/424/425, 288A/288B→516. Every figure here stays identical.",
+    "newActNote": "FY 2026-27 falls under the new Income-tax Act, 2025 (\"Tax Year 2026-27\"). Rates are unchanged — only section numbers change: 80C→123, 80D→126, 80CCD(1B)→124, 24(b)→22, 16(ia)→19, 87A→156, 115BAC→202, 234A/B/C→423/424/425, 288A/288B→516. Every figure here stays identical.",
     "regimeSaving": "{{regime}} regime saves you {{amount}}",
     "sec80DHint": "Cap ₹25,000 (₹50,000 for senior citizens)",
     "reportDetails": "Report details (optional)",
     "yourName": "Your name",
     "pan": "PAN",
-    "reportPrivacyHint": "Printed only on your downloaded statement — never leaves this device."
+    "reportPrivacyHint": "Printed only on your downloaded statement — never leaves this device.",
+    "housePropLoss": "Home loan interest / house property loss (max ₹2L)",
+    "housePropLossHint": "Form 16 Part B row 7(a) shows this as a negative figure — enter it as a positive number. Old regime only.",
+    "nilStep1": "Your TDS exactly covers the liability — but you must still file the ITR by {{due}}. Not filing attracts the 234F fee even with zero balance.",
+    "nilStepsTitle": "Fully settled — one thing left",
+    "payStep1": "Pay BEFORE filing: e-filing portal → e-Pay Tax → challan ITNS 280 → \"Self-Assessment Tax (300)\".",
+    "payStep2": "Enter the challan details (BSR code + serial no.) in the \"Taxes Paid\" section of your ITR so the payment is credited.",
+    "payStep3": "Pay and file by {{due}} to avoid interest u/s 234A/B/C and the ₹5,000 late-filing fee u/s 234F (₹1,000 if income ≤ ₹5L).",
+    "payStepsTitle": "How to pay the balance of {{amt}}",
+    "refundStep1": "File your ITR by {{due}} and e-verify it — the refund is processed only after filing.",
+    "refundStep2": "Pre-validate & nominate your bank account on the e-filing portal (My Profile) — refunds are paid by SBI only into a pre-validated account, usually within 15 days of the 143(1) intimation.",
+    "refundStep3": "Keep PAN linked with Aadhaar — refunds are withheld for inoperative PANs (rule 114AAA).",
+    "refundStep4": "Interest u/s 244A (0.5% per month) is added automatically when the refund is 10% or more of your total tax.",
+    "refundStepsTitle": "How your refund of {{amt}} reaches you",
+    "revisedFeeNote": "Revising later? The revised-return window now runs till 31 March — and a fee u/s 234-I (a new line on 143(1) intimations from AY 2026-27) can apply to revised returns.",
+    "sec80DHint2": "Enter the deductible amount from Form 16 row 10(g) — self ₹25K (₹50K senior) + parents up to ₹50K; max ₹1L",
+    "tdsOther": "TDS on interest — deducted by bank",
+    "tdsOtherHint": "Banks cut ~10% TDS on FD interest — see \"TDS other than salary\" in Form 26AS/AIS. Counts toward your refund.",
+    "tinyDemandNote": "Note: demands below ₹100 are not collected by CPC — your 143(1) will show net ₹0. Effectively settled.",
+    "tinyRefundNote": "Note: CPC does not issue refunds below ₹100 — your 143(1) will show net ₹0. Effectively settled."
   },
   "calculators": {
     "title": "All Calculators",
@@ -419,6 +438,14 @@
     "goldLoan": {
       "name": "Gold Loan Calculator",
       "desc": "Pledge gold for instant loan — RBI 2026 rules"
+    },
+    "capitalGains": {
+      "name": "Capital Gains Tax",
+      "desc": "LTCG / STCG with CII indexation"
+    },
+    "lrsTcs": {
+      "name": "LRS TCS Calculator",
+      "desc": "TCS on foreign remittances"
     }
   },
   "expenses": {
@@ -935,7 +962,12 @@
     "downloadCSV": "Download CSV",
     "amountTooHigh": "Maximum ₹10 Crore",
     "same": "Same",
-    "noSpendingThisWeek": "No spending this week 🎉"
+    "noSpendingThisWeek": "No spending this week 🎉",
+    "downloadExcel": "Download Excel",
+    "newCategory": "New",
+    "newCategoryName": "Category name",
+    "spendCalendar": "Spending calendar",
+    "spendCalendarPeak": "Heaviest day: {{date}} — ₹{{amt}}"
   },
   "schemes": {
     "title": "Government Schemes",
@@ -951,7 +983,7 @@
     "selectState": "Select Category",
     "allStates": "All Categories",
     "states": "Categories",
-    "unionTerritories": "Categories",
+    "unionTerritories": "Union Territories",
     "aboutScheme": "About this Scheme",
     "eligibility": "Eligibility Criteria",
     "keyBenefits": "Key Benefits",
@@ -1009,7 +1041,7 @@
     "appTypeService": "Access Service",
     "appTypeNoIndividual": "No Individual Application",
     "quarterlyNoteTitle": "Rates revised every quarter",
-    "quarterlyNoteBody": "PPF, SSY, NSC, KVP, POMIS, SCSS rates are notified by the Govt of India each quarter. Current rates are for Q2 2026-27 (Jul-Sep 2026). Verify the latest rate at indiapost.gov.in or rbi.org.in before investing.",
+    "quarterlyNoteBody": "PPF, SSY, NSC, KVP, POMIS, SCSS rates are notified by the Govt of India each quarter. Current rates are for {{quarter}}. Verify the latest rate at indiapost.gov.in or rbi.org.in before investing.",
     "apyCalcTitle": "APY contribution calculator",
     "apyCalcSubtitle": "Pick your age and the pension you want at 60. The chart shows the exact monthly deposit (PFRDA fixed table).",
     "apyEntryAge": "Your age now",
@@ -1018,7 +1050,10 @@
     "apyForYears": "for {{years}} years",
     "apyAnnualPension": "Annual pension at 60",
     "apyTotalDeposited": "You deposit ~{{total}}",
-    "apyNote": "Per PFRDA chart. Govt co-contributes 50% (max ₹1,000/yr) for 5 years for non-tax-payer subscribers who joined before Mar 2016. Income tax payers ineligible since 1 Oct 2022."
+    "apyNote": "Per PFRDA chart. Govt co-contributes 50% (max ₹1,000/yr) for 5 years for non-tax-payer subscribers who joined before Mar 2016. Income tax payers ineligible since 1 Oct 2022.",
+    "newYear": "New {{year}}",
+    "updatedYear": "Updated {{year}}",
+    "verifiedAgeWarn": "Verified {{months}} months ago — re-check the official site"
   },
   "profile": {
     "title": "Profile",
@@ -1170,7 +1205,8 @@
     "namePlaceholder": "e.g. Daughter\\",
     "clear": "Clear",
     "remove": "Remove",
-    "debtSlab": "Debt @ {{slab}}%"
+    "debtSlab": "Debt @ {{slab}}%",
+    "add": "Add"
   },
   "units": {
     "squareMeter": "Square Meter",
@@ -2271,7 +2307,32 @@
     "interestCol": "Interest (₹)",
     "balanceCol": "Balance (₹)",
     "emiShort": "EMI",
-    "outstandingBalance": "Outstanding Balance"
+    "outstandingBalance": "Outstanding Balance",
+    "payMoreModeHigher": "I'll pay ₹X / month",
+    "payMoreModeTarget": "Finish in N months",
+    "payMoreMonthsSaved": "Months saved",
+    "payMoreNewEmi": "Monthly payment (current EMI {{emi}})",
+    "payMoreNewTenure": "New tenure",
+    "payMoreNote": "Ask your bank to increase the EMI standing instruction — RBI mandates zero charges for higher payments on floating-rate loans to individuals.",
+    "payMorePayoff": "Debt-free by {{date}} — {{yrs}}y {{mos}}m earlier",
+    "payMoreResultHigher": "Paying {{emi}}/mo (+{{extra}})",
+    "payMoreResultTarget": "Required EMI (+{{extra}}/mo extra)",
+    "payMoreTargetMonths": "Debt-free in (current: {{m}} mo)",
+    "payMoreTitle": "Pay More, Finish Early",
+    "payMoreTooLow": "Enter an amount above your current EMI to speed up the loan.",
+    "prepayAmount": "Part-payment amount",
+    "prepayClearsLoan": "By month {{month}} the outstanding is only {{outstanding}} — this part-payment would close the loan entirely. Use the Foreclosure Simulator below for the exact settlement.",
+    "prepayEarlier": "earlier",
+    "prepayInterestSaved": "Interest saved",
+    "prepayKeepEmi": "Same EMI, loan ends early",
+    "prepayKeepTenure": "Same tenure, lighter EMI",
+    "prepayMonth": "Paid in month",
+    "prepayRbiNote": "RBI: banks cannot charge foreclosure/part-payment fees on floating-rate loans to individuals.",
+    "prepayReduceEmi": "Reduce EMI",
+    "prepayReduceTenure": "Reduce Tenure",
+    "prepayTitle": "What if I make a part-payment?",
+    "prepayVerdict": "Reduce Tenure saves {{extra}} more interest than Reduce EMI — choose Reduce EMI only if you need the monthly relief.",
+    "prepayWhatIf": "Part-Payment What-If"
   },
   "sip": {
     "sipCalculator": "SIP Calculator",
@@ -2343,7 +2404,10 @@
     "year": "Year",
     "yearlyGrowthSchedule": "Yearly Growth Schedule",
     "years": "Years",
-    "compoundingInsight": "Invested {{invested}} • current value {{currentValue}} • wealth gained {{wealthGained}}."
+    "compoundingInsight": "Invested {{invested}} • current value {{currentValue}} • wealth gained {{wealthGained}}.",
+    "costOfDelayDesc": "Same {{monthly}}/month SIP, same end date — started late. The corpus you give up never comes back:",
+    "costOfDelayStart": "Start {{n}}y late",
+    "costOfDelayTitle": "The Cost of Waiting"
   },
   "fd": {
     "title": "FD Calculator",
@@ -2521,7 +2585,10 @@
     "liveRdSubtitle": "{{months}}-month RD at effective {{effectiveRate}}% p.a.",
     "progressLabel": "{{monthsInvested}} of {{months}} months ({{percentComplete}}%)",
     "insightMaturityPending": "Matures on {{maturityDate}} — projected value {{maturityValue}}.",
-    "insightMatured": "Matured — full maturity value of {{maturityValue}} is now available."
+    "insightMatured": "Matured — full maturity value of {{maturityValue}} is now available.",
+    "goalModeTitle": "Goal mode — how much should I deposit?",
+    "goalResult": "To reach {{target}} in {{months}} months at {{rate}}%, deposit {{deposit}}/month.",
+    "goalTarget": "Target maturity amount (₹)"
   },
   "ppf": {
     "title": "PPF Calculator",
@@ -2569,7 +2636,7 @@
     "cappedAtMax": "Capped at ₹1.5L/year",
     "closing": "Closing",
     "contributionFrequency": "Contribution Frequency",
-    "currentGovtRate": "Current govt. rate: 7.1% p.a. — Q2 2026-27 (Jul-Sep 2026)",
+    "currentGovtRate": "Current govt. rate: {{rate}}% p.a. — {{quarter}}",
     "excel": "Excel",
     "halfYear": "Half-Year",
     "halfYearly": "Half-Yearly",
@@ -2674,7 +2741,7 @@
     "cumDeposit": "Cum. Deposit",
     "cumulativeDeposit": "Cumulative Deposit",
     "cumulativeInterest": "Cumulative Interest",
-    "currentRate": "Current rate: 8.2% p.a. — Q2 2026-27 (Jul-Sep 2026)",
+    "currentRate": "Current rate: {{rate}}% p.a. — {{quarter}}",
     "depositEligible": "Deposit eligible",
     "educationWithdrawalDesc": "50% can be withdrawn after girl turns 18 for education",
     "educationWithdrawalTitle": "Education Withdrawal",
@@ -2847,7 +2914,8 @@
     "perAnnum": "p.a.",
     "rateNote": "8.25% — FY 2025-26 declared rate. EPFO revises annually; verify at epfindia.gov.in",
     "pastRetirementNote": "Current age is at or beyond retirement age — nothing left to project",
-    "liveTracker": "Live EPF Tracker"
+    "liveTracker": "Live EPF Tracker",
+    "epsCeilingNote": "EPS pension share capped at 8.33% of ₹25,000 (₹2,083/mo) — wage ceiling raised from ₹15,000 w.e.f. 17 Sep 2026. The rest of the employer's 12% goes to EPF."
   },
   "nps": {
     "title": "NPS Calculator",
@@ -2887,7 +2955,7 @@
     "annuityInvestment": "Annuity Investment",
     "annuityPercentage": "Annuity %",
     "annuityPurchase": "Annuity Purchase (%)",
-    "annuityPurchaseHelper": "Minimum 40% must be used for annuity",
+    "annuityPurchaseHelper": "Minimum 20% annuity for All-Citizen / Corporate NPS (PFRDA 2026 exit rules; was 40%). Government employees: 40%.",
     "annuityRateLabel": "Annuity Rate",
     "annuityReturnHelper": "Typical annuity return 5-7%",
     "annuityReturnRate": "Annuity Return Rate (%)",
@@ -3051,7 +3119,18 @@
     "lastSalary": "Last Salary",
     "netPayout": "Net Payout",
     "estimatedTax": "Estimated tax",
-    "snapshotTitle": "Gratuity Snapshot"
+    "snapshotTitle": "Gratuity Snapshot",
+    "floorNote": "New-Code wage floor applied: base raised to {{base}} (50% of gross) since Basic+DA is below half of your total salary.",
+    "fteDesc": "Under the new Code, fixed-term employees get gratuity after just 1 year of service (no 5-year wait).",
+    "fteToggle": "Fixed-term contract employee",
+    "grossMonthly": "Total monthly gross salary (optional)",
+    "joinDate": "Date of joining",
+    "leaveDate": "Date of leaving",
+    "leaveDateHint": "Leave empty for \"as of today\"",
+    "newCodeDesc": "Exits after this date use the Code on Social Security: the gratuity base is at least 50% of your total monthly salary when Basic+DA is below half of gross.",
+    "newCodeToggle": "Leaving on/after 21 Nov 2025 (new Labour Code)",
+    "serviceComputed": "Service: {{y}}y {{m}}m — counts as {{counted}} years for gratuity (6+ months rounds up)",
+    "yearsAuto": "Auto-calculated from your dates — clear the joining date to type manually"
   },
   "tax": {
     "title": "Income Tax Calculator",
@@ -3231,7 +3310,13 @@
     "below60": "Below 60",
     "senior": "Senior 60–79",
     "superSenior": "Super 80+",
-    "exempt": "exempt"
+    "exempt": "exempt",
+    "breakEvenAlways": "At your income, the Old regime is cheaper even with zero deductions.",
+    "breakEvenAt": "Old regime beats New only if your total deductions (₹50K standard deduction + HRA + 80C + 80D + home-loan interest…) exceed {{amount}}. You currently have {{current}}.",
+    "breakEvenNever": "At your income, the New regime stays cheaper no matter how many deductions you claim — skip the proof collection.",
+    "breakEvenTitle": "Regime break-even point",
+    "marginalReliefBody": "Your new-regime taxable income is {{excess}} above the ₹12L rebate limit, so Section 87A marginal relief caps your tax at {{capped}} instead of the full slab tax of {{full}} — a saving of {{saved}} (plus cess).",
+    "marginalReliefTitle": "₹12L marginal relief is protecting you"
   },
   "swp": {
     "title": "SWP Calculator",
@@ -3306,7 +3391,11 @@
     "insightAggressiveSWR": "Withdrawal rate of {{swr}}% p.a. is above the safe 4% rule — corpus is at risk of early depletion.",
     "depletionHeadline": "⚠ Corpus runs out in Year {{year}}",
     "depletionHelp": "Reduce monthly withdrawal, lengthen the corpus by raising the rate, or shorten the plan to keep the corpus alive.",
-    "liveTracker": "Live SWP Tracker"
+    "liveTracker": "Live SWP Tracker",
+    "lastsTill": "Outlives your {{years}}y plan — lasts till ~{{date}}",
+    "maxWithdrawalBody": "At {{rate}}% returns, this corpus can pay up to {{max}}/month and land at exactly ₹0 after {{years}} years — you are withdrawing {{current}}/month.",
+    "maxWithdrawalTitle": "Max withdrawal for your {{years}}-year plan",
+    "perpetualNote": "Growth outpaces withdrawals — never runs out at this rate"
   },
   "mortgage": {
     "title": "Advanced Mortgage",
@@ -3824,7 +3913,24 @@
     "timeSpentSleeping": "Time Spent Sleeping",
     "nextBirthdayIn": "Next birthday in",
     "days": "days",
-    "youllTurn": "You'll turn {{age}}!"
+    "youllTurn": "You'll turn {{age}}!",
+    "addMonthsHint": "Add the months for a more precise date — with only years, anyone this age today falls in this one-year window.",
+    "birthYear": "Birth year",
+    "bornAround": "Born around {{date}}",
+    "bornBetween": "Born between {{from}} and {{to}}",
+    "bornInTurns": "Born in {{lo}}? You turn {{diff}} in {{hi}}.",
+    "daysAbbr": "d",
+    "enterYourAge": "Enter your age",
+    "generationOfYear": "{{year}} generation",
+    "modeDob": "Date of Birth",
+    "modeFromAge": "From Age",
+    "modeYears": "Year → Year",
+    "monthsAbbr": "m",
+    "monthsOptional": "Months (0-11)",
+    "optional": "optional",
+    "totalMonths": "Months",
+    "yearGapNote": "Exact calendar difference between the two selected dates — day totals are precise, not averages.",
+    "yearRange": "From year → to year"
   },
   "disclaimer": {
     "emi": {
@@ -4645,7 +4751,7 @@
     "subtitle": "Kisan Vikas Patra",
     "investmentAmount": "Investment Amount",
     "interestRatePA": "Interest Rate (% p.a.)",
-    "currentRate": "Current rate: 7.5% p.a. (compounded annually) — Q2 2026-27 (Jul-Sep 2026)",
+    "currentRate": "Current rate: {{rate}}% p.a. (compounded annually) — {{quarter}}",
     "maturityAmountDoubled": "Maturity Amount (Doubled)",
     "investment": "Investment",
     "doublesIn": "Doubles In",
@@ -4809,7 +4915,7 @@
     "subtitle": "National Savings Certificate",
     "totalInvestment": "Total Investment",
     "interestRatePA": "Interest Rate (% p.a.)",
-    "currentRate": "Current rate: 7.7% p.a. (compounded annually) — Q2 2026-27 (Jul-Sep 2026)",
+    "currentRate": "Current rate: {{rate}}% p.a. (compounded annually) — {{quarter}}",
     "maturityAmount5Years": "Maturity Amount (5 Years)",
     "totalInvested": "Total Invested",
     "interestEarned": "Interest Earned",
@@ -4887,7 +4993,7 @@
     "totalInvestment": "Total Investment",
     "max": "Max",
     "interestRate": "Interest Rate (% p.a.)",
-    "currentRate": "Current rate: 7.4% p.a. — Q2 2026-27 (Jul-Sep 2026)",
+    "currentRate": "Current rate: {{rate}}% p.a. — {{quarter}}",
     "jointAccount": "Joint Account",
     "jointAccountDesc": "Higher investment limit (₹15L)",
     "grossMonthlyIncome": "Gross Monthly Income",
@@ -5042,7 +5148,7 @@
     "maxInvestment": "Max: ₹30 Lakh per individual",
     "interestRate": "Interest Rate (% p.a.)",
     "interestRateLabel": "Interest Rate",
-    "currentRate": "Current rate: 8.2% p.a. — Q2 2026-27 (Jul-Sep 2026)",
+    "currentRate": "Current rate: {{rate}}% p.a. — {{quarter}}",
     "tenure": "Tenure",
     "fiveYears": "5 Years",
     "eightYears": "8 Years (5+3 Extension)",
@@ -5465,7 +5571,10 @@
     "sqftUnit": "sq.ft",
     "perAnnum": "p.a.",
     "ft": "ft",
-    "negativeCashFlowNote": "Maintenance exceeds rental income — negative cash flow, so the property never pays back from rent alone."
+    "negativeCashFlowNote": "Maintenance exceeds rental income — negative cash flow, so the property never pays back from rent alone.",
+    "bighaVaries": "Bigha",
+    "kathaVaries": "Katha",
+    "swapUnits": "Swap units"
   },
   "liveStatus": {
     "title": "Live Loan Status",
@@ -7324,7 +7433,15 @@
     "behavior": "Pay Full vs Carry Balance",
     "loanAlt": "Smarter Alternatives (24 months)",
     "recMo": "mo",
-    "recMonths": "months"
+    "recMonths": "months",
+    "minDueTrapBody": "Paying only the minimum due (5% of outstanding, min ₹200) on your {{balance}} balance costs {{interest}} in interest — the minimum shrinks every month, so it barely touches the principal.",
+    "minDueTrapFix": "Keep paying today's {{payment}} every month instead (don't let it shrink)",
+    "minDueTrapNever": "At this rate, paying only the minimum due never clears this balance — the minimum shrinks with the balance while interest keeps compounding. Pay a fixed amount instead.",
+    "minDueTrapTitle": "The Minimum-Due Trap",
+    "minDueTrapToClear": "to become debt-free",
+    "monthsShort": "mo",
+    "targetBody": "Pay a fixed {{payment}}/month and this balance clears in {{m}} months, costing {{interest}} in interest{{gst}}.",
+    "targetTitle": "Debt-free in"
   },
   "ccPayoff": {
     "title": "CC Payoff Calculator",
@@ -7403,21 +7520,21 @@
     "pickDateHint": "Pick a date above to lock this calculation as a snapshot."
   },
   "rateCtx": {
-    "homeLoanTitle": "Home Loan Rates — July 2026",
-    "homeLoanBody": "RBI held the repo rate at 5.25% in the June 2026 MPC meeting.\n\nRepo-linked (EBLR) loans: top banks now start around 7.25–8.7% (SBI from 7.25% w.e.f. Apr 2026)\nMCLR-linked loans: transmission is slower — compare with repo-linked offers\n\nTip: If you have an MCLR-linked loan, consider switching to a repo-linked loan for better rate transmission when RBI cuts rates.",
-    "personalLoanTitle": "Personal Loan Rates — July 2026",
-    "personalLoanBody": "Personal loan rates range roughly 10–24% as banks stay cautious on unsecured lending.\n\nYour CIBIL score has the biggest impact.\nScore 750+ can get rates near 10%.",
-    "fdTitle": "FD Rates — July 2026",
-    "fdBody": "FD rates have eased after RBI's 2025 rate cuts (repo now 5.25%).\n\nMajor banks offer about 6.0–6.5% on 1–3 year FDs (SBI peak 6.45%).\nSenior citizens get an additional 0.50%.\n\nPost Office schemes (NSC 7.7%, SCSS 8.2%) offer higher guaranteed rates.",
-    "carLoanTitle": "Car Loan Rates — July 2026",
-    "carLoanBody": "Car loan rates range from about 8.5–10.5% for new vehicles at top banks.\n\nUsed car loans typically carry 2–4% higher rates.\nDealer finance rates may be higher — compare with bank rates.",
-    "twoWheelerTitle": "Two Wheeler Loan Rates — July 2026",
+    "homeLoanTitle": "Home Loan Rates — October 2026",
+    "homeLoanBody": "RBI raised the repo rate by 25 bps to 5.50% on 7 Oct 2026 (stance: calibrated tightening).\n\nRepo-linked (EBLR) loans: top banks started around 7.25–8.7% before the hike (SBI from 7.25%) — expect a ~0.25% upward reset on your next rate-review date\nMCLR-linked loans: transmission is slower — compare with repo-linked offers\n\nTip: If your EMI is kept fixed, the bank usually extends tenure instead. Ask for an EMI increase to avoid paying extra interest.",
+    "personalLoanTitle": "Personal Loan Rates — October 2026",
+    "personalLoanBody": "Personal loan rates range roughly 10–24% as banks stay cautious on unsecured lending (SBI 10–15%, ICICI from 9.99%).\n\nYour CIBIL score has the biggest impact.\nScore 750+ can get rates near 10%.",
+    "fdTitle": "FD Rates — October 2026",
+    "fdBody": "FD rates bottomed after RBI's 2025 cuts; the Oct 2026 repo hike (now 5.50%) may nudge them up.\n\nMajor banks offer about 6.0–6.5% on 1–3 year FDs (SBI peak 6.40%, HDFC/ICICI 6.50%).\nSenior citizens get an additional 0.50% (peak ~7.05–7.10%).\n\nPost Office schemes (NSC 7.7%, SCSS 8.2%) offer higher guaranteed rates.",
+    "carLoanTitle": "Car Loan Rates — October 2026",
+    "carLoanBody": "Car loan rates range from about 8.4–10.5% for new vehicles at top banks (SBI 8.40–9.35%).\n\nUsed car loans typically carry 2–4% higher rates.\nDealer finance rates may be higher — compare with bank rates.",
+    "twoWheelerTitle": "Two Wheeler Loan Rates — October 2026",
     "twoWheelerBody": "Two wheeler loan rates range from 10–14% at banks.\n\nEV two wheelers may get 0.5–1% lower rates at select banks.\nNBFC rates can go up to 18–20%.",
-    "goldLoanTitle": "Gold Loan Rates — July 2026",
-    "goldLoanBody": "Banks: 8.5–14% | NBFCs: 8–27%\n\nGold loans are collateral-backed so rates are lower than personal loans.\nRBI tiered LTV caps (from Apr 2026): 85% up to ₹2.5L, 80% for ₹2.5–5L, 75% above ₹5L.",
-    "mclrWarning": "Your rate ({{rate}}%) may be MCLR-linked. Banks may raise MCLR due to funding pressure despite RBI's rate hold. Consider switching to a repo-linked loan.",
-    "repoStable": "Your loan is likely on a repo-linked rate. With RBI holding at 5.25% (reaffirmed 5 Aug 2026), your EMI is stable. Next RBI meeting: 5-7 Oct 2026.",
-    "rateHoldGeneral": "RBI held repo rate at 5.25% (Aug 2026, neutral stance). No immediate rate changes expected. Next meeting: 5-7 Oct 2026."
+    "goldLoanTitle": "Gold Loan Rates — October 2026",
+    "goldLoanBody": "Banks: 8.5–14% (SBI 9.15% bullet / 10.10% EMI) | NBFCs: 8–27%\n\nGold loans are collateral-backed so rates are lower than personal loans.\nRBI tiered LTV caps (from Apr 2026): 85% up to ₹2.5L, 80% for ₹2.5–5L, 75% above ₹5L.",
+    "mclrWarning": "Your rate ({{rate}}%) may be MCLR-linked. With RBI now hiking (repo 5.50%), MCLR resets can lag and then jump. Consider switching to a repo-linked loan.",
+    "repoStable": "Your loan is likely on a repo-linked rate. RBI raised the repo rate to 5.50% on 7 Oct 2026 — expect your rate to reset up by ~0.25% (higher EMI or longer tenure). Next RBI meeting: 2–4 Dec 2026.",
+    "rateHoldGeneral": "RBI raised the repo rate by 25 bps to 5.50% (7 Oct 2026, calibrated tightening). Floating-rate loans will reprice upward; cuts are unlikely near term. Next meeting: 2–4 Dec 2026."
   },
   "pdfReport": {
     "monthlyFinancialReport": "Monthly Financial Report",
@@ -7813,7 +7930,8 @@
     "paused": "Paused",
     "autoLogging": "Auto-logging",
     "confirmDelete": "Tap again to delete",
-    "footerNote": "Due items are added to your expense tracker automatically each time you open the app."
+    "footerNote": "Due items are added to your expense tracker automatically each time you open the app.",
+    "backfillLabel": "Also log this month's {{date}} (already passed)"
   },
   "app": {
     "backToExit": "Press back again to exit FinCalix"
@@ -7849,5 +7967,73 @@
     "nextMilestone": "Next Milestone",
     "today": "Today",
     "inNDays": "in {{days}} days"
+  },
+  "cgt": {
+    "title": "Capital Gains Tax",
+    "subtitle": "FY 2026-27 · LTCG / STCG · CII 384",
+    "assetType": "Asset type",
+    "assetEquity": "Equity / Equity MF",
+    "assetDebt": "Debt MF",
+    "assetProperty": "Property",
+    "assetGold": "Gold / Other",
+    "purchaseDate": "Purchase date",
+    "saleDate": "Sale date",
+    "cost": "Purchase price",
+    "salePrice": "Sale price",
+    "expenses": "Transfer expenses (brokerage, stamp duty)",
+    "improvement": "Cost of improvement",
+    "slabRate": "Your income-tax slab",
+    "gain": "Capital gain",
+    "loss": "Capital loss — no tax. It can be set off against other gains or carried forward for 8 years.",
+    "longTerm": "Long-term",
+    "shortTerm": "Short-term",
+    "holding": "Holding period: {{months}} months",
+    "taxPayable": "Tax payable (incl. 4% cess)",
+    "effectiveRate": "Effective rate on gain",
+    "netProceeds": "Net in hand after tax",
+    "breakdown": "Calculation breakdown",
+    "exemption": "LTCG exemption used (₹1.25 lakh / year)",
+    "indexedCost": "Indexed cost (CII {{p}} → {{s}})",
+    "taxableGain": "Taxable gain",
+    "taxRate": "Tax @",
+    "methodNoIndex": "12.5% without indexation",
+    "methodIndexed": "20% with indexation",
+    "methodSlab": "Taxed at your slab rate ({{rate}}%)",
+    "methodStcgEquity": "STCG 20% (Sec 111A / Sec 196)",
+    "methodLtcgEquity": "LTCG 12.5% above ₹1.25 lakh (Sec 112A / Sec 198)",
+    "chosenLower": "Lower of the two applies (property bought before 23 Jul 2024)",
+    "cess": "Health & education cess 4%",
+    "insightWaitLtcg": "Hold {{days}} more days to qualify as long-term and save about {{amount}}.",
+    "insightIndexSaves": "Indexation saves {{amount}} versus the flat 12.5% route.",
+    "insightSpecifiedMF": "Debt MF units bought on or after 1 Apr 2023 are always taxed at your slab rate, whatever the holding period.",
+    "insightEquityExempt": "Equity LTCG up to ₹1.25 lakh per year is tax-free — spreading sales across financial years uses the exemption twice.",
+    "note": "Resident-individual rates for FY 2026-27 (Tax Year 2026-27, Income-tax Act 2025). Surcharge and the 87A rebate are not applied; improvement cost is not indexed. Consult a CA before filing.",
+    "fyLabel": "FY {{fy}} (CII {{cii}})",
+    "pre2001": "Bought before 1 Apr 2001: use the fair market value on 1 Apr 2001 as cost (CII 100)."
+  },
+  "lrs": {
+    "title": "LRS TCS Calculator",
+    "subtitle": "Foreign remittance · rates from 1 Apr 2026",
+    "purpose": "Purpose of remittance",
+    "pEduLoan": "Education (funded by loan)",
+    "pEduMedical": "Education / Medical (own funds)",
+    "pTour": "Overseas tour package",
+    "pOther": "Investment, gift, other",
+    "amount": "This remittance",
+    "already": "Already remitted this FY (all purposes)",
+    "tcs": "TCS to be collected",
+    "rateApplied": "Rate applied",
+    "taxablePortion": "Portion above the ₹10 lakh threshold",
+    "thresholdLeft": "Threshold remaining before TCS",
+    "totalOutflow": "Total you must arrange",
+    "creditNote": "TCS is not a cost — it is advance tax. Claim it as credit in your ITR (it appears in Form 26AS / AIS) or get it refunded.",
+    "rulesTitle": "Rates w.e.f. 1 April 2026 (Budget 2026)",
+    "ruleEduLoan": "Education via a loan from a financial institution: Nil",
+    "ruleEduMedical": "Education / medical: Nil up to ₹10 lakh, 2% above (was 5%)",
+    "ruleTour": "Overseas tour packages: 2% on every rupee, no threshold",
+    "ruleOther": "All other purposes (investment, gift, maintenance): Nil up to ₹10 lakh, 20% above",
+    "limitNote": "LRS cap: USD 250,000 per person per FY. The {{threshold}} threshold is aggregate across all your LRS remittances in the FY. Section 206C(1G) of the 1961 Act → Section 394 of the Income-tax Act, 2025.",
+    "insightNoTcs": "No TCS on this remittance — you are within the ₹10 lakh annual threshold.",
+    "insightSplit": "Only {{amount}} of this remittance crosses the threshold, so TCS applies to that part alone."
   }
 }

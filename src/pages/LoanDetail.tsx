@@ -18,6 +18,7 @@ import {
 } from '../utils/investmentStatusEngine';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { getLoanRateInsight } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, getEnglishT, type ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { toLocalDateStr, todayStr, parseLocalDate } from '../utils/dateUtils';
@@ -1284,6 +1285,19 @@ export default function LoanDetail() {
                             )}
                         </AnimatePresence>
                     </div>
+
+                    {/* Market-rate insight for floating-rate loans (quarterly text in rateEnvironment.ts) */}
+                    {isFloating && (() => {
+                        const rateNow = Number(d.annualRate) || 0;
+                        const ins = getLoanRateInsight(rateNow, profile.calculatorType || '');
+                        const warn = ins.tone === 'warning';
+                        return (
+                            <div className={`p-4 rounded-2xl border flex items-start gap-3 ${warn ? 'bg-amber-500/10 border-amber-500/30' : 'bg-blue-500/10 border-blue-500/30'}`}>
+                                <Lightbulb className={`w-4 h-4 shrink-0 mt-0.5 ${warn ? 'text-amber-500' : 'text-blue-500'}`} />
+                                <p className="text-[11px] leading-relaxed" style={{ color: c.text }}>{t(ins.key, { defaultValue: ins.fallback, rate: rateNow })}</p>
+                            </div>
+                        );
+                    })()}
 
                     {/* Prepayment Simulator */}
                     {!status.loanFullyPaid && !status.loanNotStarted && (

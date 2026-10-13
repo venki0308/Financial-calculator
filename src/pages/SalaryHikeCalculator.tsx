@@ -196,11 +196,15 @@ export default function SalaryHikeCalculator() {
         const basic = newFixed * 0.5;
         const pfAnnual = basic * 0.12;
         const profTaxAnnual = 200 * 12;
-        // Income tax was previously ignored here — a ₹30L CTC showed ~95% in-hand.
-        const estIncomeTax = estimateTaxOnIncome(Math.max(0, newFixed - 75000));
-        const estimatedTakeHomeAnnual = newFixed - pfAnnual - profTaxAnnual - estIncomeTax;
+        // Monthly take-home is fixed pay only (variable is paid out separately), but the
+        // in-hand % of CTC must tax fixed + expected variable together — variable pay is
+        // taxed at the marginal slab, so taxing only the fixed part overstated in-hand %.
+        const taxOnFixed = estimateTaxOnIncome(Math.max(0, newFixed - 75000));
+        const taxOnTotal = estimateTaxOnIncome(Math.max(0, newFixed + newVariableActual - 75000));
+        const estimatedTakeHomeAnnual = newFixed - pfAnnual - profTaxAnnual - taxOnFixed;
         const estimatedTakeHomeMonthly = estimatedTakeHomeAnnual / 12;
-        const inHandPct = newCTC > 0 ? (estimatedTakeHomeAnnual / newCTC) * 100 : 0;
+        const totalInHandAnnual = newFixed + newVariableActual - pfAnnual - profTaxAnnual - taxOnTotal;
+        const inHandPct = newCTC > 0 ? (totalInHandAnnual / newCTC) * 100 : 0;
 
         const varAt80 = currentVariableTarget * 0.8;
         const varAt100 = currentVariableTarget;
@@ -235,9 +239,12 @@ export default function SalaryHikeCalculator() {
             const basic = fixed * 0.5;
             const pf = basic * 0.12;
             const profTax = 2400;
-            const takeHomeAnnual = fixed - pf - profTax;
+            // Income tax (new regime, ₹75k std deduction) — without it a higher-slab offer looked better than it is
+            const taxOnFixed = estimateTaxOnIncome(Math.max(0, fixed - 75000));
+            const taxOnAll = estimateTaxOnIncome(Math.max(0, fixed + varTarget + joining - 75000));
+            const takeHomeAnnual = fixed - pf - profTax - taxOnFixed;
             const takeHomeMonthly = takeHomeAnnual / 12;
-            const totalYear1 = takeHomeAnnual + varTarget + joining;
+            const totalYear1 = fixed + varTarget + joining - pf - profTax - taxOnAll;
             const totalYear1CTC = totalCTC + joining;
             return { fixed, varTarget, totalCTC, basic, pf, takeHomeAnnual, takeHomeMonthly, totalYear1, totalYear1CTC, joining, esop };
         };

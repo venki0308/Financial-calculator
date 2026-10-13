@@ -14,6 +14,7 @@ import {
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import RateContextNote from '../components/RateContextNote';
 import DateInput from '../components/DateInput';
 import LiveLoanStatus from '../components/LiveLoanStatus';
 import CibilBadge from '../components/CibilBadge';
@@ -1402,6 +1403,7 @@ export default function AdvancedMortgageCalculator() {
                     <CibilAdvisoryCard score={cibilScore} loanType="home_loan" loanAmount={loanAmount} tenureMonths={months} />
                 </div>
 
+                <RateContextNote type="homeLoan" />
                 <DisclaimerComponent module="mortgage" />
 
                 {/* Spacer so content is not hidden behind safe navigation */}

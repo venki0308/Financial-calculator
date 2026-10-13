@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import RateContextNote from '../components/RateContextNote';
 import { calculateReducingEMI, formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, emiMonthLabel, emiYearRange, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -39,8 +40,9 @@ export default function TwoWheelerLoanCalculator() {
     const [exShowroom, setExShowroom] = useState(90000);
     const [batteryKwh, setBatteryKwh] = useState(3);
     const [selectedState, setSelectedState] = useState('');
-    const [rtoCharges, setRtoCharges] = useState(0);
-    const [insuranceAmt, setInsuranceAmt] = useState(0);
+    // null = "use the auto estimate"; a number (including 0) is a user override.
+    const [rtoCharges, setRtoCharges] = useState<number | null>(null);
+    const [insuranceAmt, setInsuranceAmt] = useState<number | null>(null);
     const [handlingCharges, setHandlingCharges] = useState(ONROAD_DEFAULTS.handlingCharges);
     const [accessories, setAccessories] = useState(0);
     const [downPaymentPct, setDownPaymentPct] = useState(10);
@@ -103,12 +105,12 @@ export default function TwoWheelerLoanCalculator() {
     // On-road calculations
     const autoRto = Math.round(exShowroom * (isEV ? ONROAD_DEFAULTS.rtoPercentEV : ONROAD_DEFAULTS.rtoPercentPetrol));
     const autoInsurance = Math.round(exShowroom * ONROAD_DEFAULTS.insurancePercent);
-    const effectiveRto = rtoCharges || autoRto;
-    const effectiveInsurance = insuranceAmt || autoInsurance;
+    const effectiveRto = rtoCharges ?? autoRto;
+    const effectiveInsurance = insuranceAmt ?? autoInsurance;
 
     // PM E-DRIVE central subsidy — only applies to EVs whose ex-factory price
-    // is at or below ₹1.5 lakh (the scheme's eligibility cap, valid till
-    // July 31, 2026). Premium EVs above the cap get NO central subsidy.
+    // is at or below ₹1.5 lakh (the scheme's eligibility cap; e-2W window
+    // extended to 31 Mar 2028 by the Aug 2026 amendment). Premium EVs above the cap get NO central subsidy.
     // Without this guard the calculator was silently granting subsidy on
     // bikes that don't actually qualify, overstating the savings.
     // Also gate on the scheme's expiry date: once past validUntilDate the
@@ -982,6 +984,7 @@ export default function TwoWheelerLoanCalculator() {
                     </motion.div>
                 )}
 
+                <RateContextNote type="twoWheeler" />
                 <DisclaimerComponent module="emi" />
             </div>
         </div>

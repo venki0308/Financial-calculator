@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, ChevronRight, Bookmark, Users, GraduationCap, Tractor, Building2, UserCheck, Shield, Home as HomeIcon, Landmark, Heart, Briefcase, HandHeart, Clock, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { schemes, schemeCategories } from '../data/schemes';
+import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { useSchemeStore } from '../store/useSchemeStore';
 import { useTranslatedSchemeList } from '../hooks/useTranslatedScheme';
 import { AnalyticsService } from '../lib/analytics';
@@ -65,7 +66,7 @@ export default function Schemes() {
                     📅 {t('schemes.quarterlyNoteTitle', 'Rates revised every quarter')}
                 </p>
                 <p className="text-[10px] text-amber-700/80 dark:text-amber-400/80 leading-snug">
-                    {t('schemes.quarterlyNoteBody', 'PPF, SSY, NSC, KVP, POMIS, SCSS rates are notified by the Govt of India each quarter (Mar / Jun / Sep / Dec). Verify the current rate at indiapost.gov.in or rbi.org.in before investing.')}
+                    {t('schemes.quarterlyNoteBody', { quarter: SMALL_SAVINGS.label, defaultValue: 'PPF, SSY, NSC, KVP, POMIS, SCSS rates are notified by the Govt of India each quarter (Mar / Jun / Sep / Dec). Current rates are for {{quarter}}. Verify the current rate at indiapost.gov.in or rbi.org.in before investing.' })}
                 </p>
             </div>
 

@@ -17,6 +17,7 @@ import { Pie } from 'react-chartjs-2';
 import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import RateContextNote from '../components/RateContextNote';
 import LiveLoanStatus from '../components/LiveLoanStatus';
 import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
 
@@ -121,7 +122,7 @@ export default function EMICalculator() {
         return { ...r, schedule: [] as AmortizationRow[] };
     }, [principal, rate, months, method]);
 
-    const effectiveRate = useMemo(() => method === 'flat' ? calculateEffectiveRate(rate) : null, [method, rate]);
+    const effectiveRate = useMemo(() => method === 'flat' ? calculateEffectiveRate(rate, months) : null, [method, rate, months]);
 
     const foreclosureResult = useMemo((): ForeclosureResult | null => {
         if (!showForeclosure || method !== 'reducing' || result.schedule.length <= 1) return null;
@@ -561,6 +562,8 @@ export default function EMICalculator() {
                 </div>
             </div>
 
+            {/* Market context (repo decision, bank floors) — refreshed quarterly in rateEnvironment.ts */}
+            {loanType === 'Car Loan' ? <RateContextNote type="carLoan" /> : loanType === 'Personal Loan' ? <RateContextNote type="personalLoan" /> : loanType === 'Education Loan' ? null : <RateContextNote type="homeLoan" />}
             <DisclaimerComponent module="emi" />
 
             <div className="px-4 pb-28">

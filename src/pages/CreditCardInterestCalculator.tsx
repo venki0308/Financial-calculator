@@ -124,7 +124,9 @@ export default function CreditCardInterestCalculator() {
         return paymentLevels.map(({ label, pct }) => {
             const payment = Math.max(Math.round(balance * pct), 200);
             if (pct >= 1) return { label, payment, months: 1, totalInterest: 0, totalPaid: balance };
-            if (r <= 0 || payment <= balance * r) return { label, payment, months: Infinity, totalInterest: Infinity, totalPaid: Infinity };
+            if (r <= 0) { const m0 = Math.ceil(balance / payment); return { label, payment, months: m0, totalInterest: 0, totalPaid: balance }; }
+            const rEff = includeGST ? r * 1.18 : r;
+            if (payment <= balance * rEff) return { label, payment, months: Infinity, totalInterest: Infinity, totalPaid: Infinity };
             let bal = balance, totalInt = 0, m = 0;
             while (bal > 0.5 && m < 600) {
                 const interest = bal * r;

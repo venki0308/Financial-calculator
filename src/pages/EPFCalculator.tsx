@@ -14,6 +14,9 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import SaveNameDialog from '../components/SaveNameDialog';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
+/** EPS pensionable-wage ceiling: ₹25,000/month w.e.f. 17 Sep 2026 (was ₹15,000). Gazette S.O. 5109(E), Code on Social Security Ch. III. */
+const EPS_WAGE_CEILING = 25000;
+
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
 export default function EPFCalculator() {
@@ -71,15 +74,16 @@ export default function EPFCalculator() {
 
             for (let m = 0; m < 12; m++) {
                 const emp = salary * totalEmpPct / 100;
-                // Employer 12% is split: EPS (capped at 8.33% × ₹15,000 = ₹1,250/mo), rest to EPF
-                // For basic > ₹15,000: Employer EPF = 12% × basic − ₹1,250
-                // For basic ≤ ₹15,000: Employer EPF = 12% − 8.33% = 3.67% × basic
-                const EPS_WAGE_CEILING = 15000;
+                // Employer 12% is split: EPS (capped at 8.33% × ₹25,000 = ₹2,083/mo), rest to EPF
+                // Statutory wage ceiling raised ₹15,000 → ₹25,000 w.e.f. 17 Sep 2026 (Gazette S.O. 5109(E)).
+                // For basic > ₹25,000: Employer EPF = 12% × basic − ₹2,083
+                // For basic ≤ ₹25,000: Employer EPF = 12% − 8.33% = 3.67% × basic
                 const epsContrib = Math.min(salary * 0.0833, EPS_WAGE_CEILING * 0.0833);
                 const employer = (salary * 0.12) - epsContrib;
-                runningBal += emp + employer;
-                // Interest on closing balance of each month (EPFO method)
+                // EPFO method (Scheme para 60): interest accrues on the running balance
+                // BEFORE this month's contribution — contributions earn from the next month.
                 yearlyInterest += runningBal * monthlyRate;
+                runningBal += emp + employer;
                 yearEmp += emp;
                 yearEmpler += employer;
             }
@@ -142,11 +146,10 @@ export default function EPFCalculator() {
 
             for (let m = 0; m < 12; m++) {
                 const emp = simSalary * totalEmpPct / 100;
-                const EPS_WAGE_CEILING = 15000;
                 const epsContrib = Math.min(simSalary * 0.0833, EPS_WAGE_CEILING * 0.0833);
                 const employer = (simSalary * 0.12) - epsContrib;
-                simRunningBal += emp + employer;
                 simYearlyInterest += simRunningBal * simMonthlyRate;
+                simRunningBal += emp + employer;
             }
 
             simBalance = simRunningBal + simYearlyInterest;
@@ -350,6 +353,9 @@ export default function EPFCalculator() {
                             <p className="text-[9px] text-muted-foreground mt-1 leading-tight">
                                 {t('epf.rateNote', '8.25% — FY 2025-26 declared rate. EPFO revises annually; verify at epfindia.gov.in')}
                             </p>
+                            <p className="text-[9px] text-muted-foreground mt-1 leading-tight">
+                                {t('epf.epsCeilingNote', 'EPS pension share capped at 8.33% of ₹25,000 (₹2,083/mo) — wage ceiling raised from ₹15,000 w.e.f. 17 Sep 2026. The rest of the employer\'s 12% goes to EPF.')}
+                            </p>
                         </div>
                     </div>
                     {/* VPF Input */}
@@ -443,7 +449,7 @@ export default function EPFCalculator() {
                         totalYears={result.years}
                         rate={rate}
                         // Employee share + employer EPF share (12% minus EPS portion), matching the schedule's formula
-                        monthlyContribution={basic * (totalEmpPct / 100) + (basic * 0.12 - Math.min(basic * 0.0833, 15000 * 0.0833))}
+                        monthlyContribution={basic * (totalEmpPct / 100) + (basic * 0.12 - Math.min(basic * 0.0833, EPS_WAGE_CEILING * 0.0833))}
                         projectedMaturity={result.corpus}
                         label={t('epf.liveTracker', 'Live EPF Tracker')}
                     />

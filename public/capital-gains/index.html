@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capital Gains Tax Calculator FY 2026-27 — LTCG, STCG &amp; CII | FinCalix</title>
+  <meta name="description" content="Free capital gains tax calculator for India, FY 2026-27. Equity LTCG 12.5% above ₹1.25 lakh, STCG 20%, property with CII indexation (CII 384). Instant tax, cess and net proceeds. No login." />
+  <link rel="canonical" href="https://fincalix.com/capital-gains" />
+  <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://fincalix.com/capital-gains" />
+  <meta property="og:title" content="Capital Gains Tax Calculator FY 2026-27 — LTCG, STCG &amp; CII" />
+  <meta property="og:description" content="Work out LTCG/STCG on shares, mutual funds, property and gold with the FY 2026-27 rules and CII 384. Free in the FinCalix app — offline, no login." />
+  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:locale" content="en_IN" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "FinCalix", "item": "https://fincalix.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Capital Gains Tax Calculator", "item": "https://fincalix.com/capital-gains" }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is the capital gains tax on shares and equity mutual funds in FY 2026-27?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Listed shares and equity mutual funds held for more than 12 months are long-term: gains above ₹1.25 lakh in a financial year are taxed at 12.5% (Section 112A, now Section 198 of the Income-tax Act 2025). Held 12 months or less, the gain is short-term and taxed at 20% (Section 111A / Section 196). A 4% health and education cess applies on the tax." }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I still use indexation on property sales?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Only for land or buildings bought before 23 July 2024, and only by resident individuals and HUFs. You pay the lower of 12.5% without indexation or 20% with indexation using the Cost Inflation Index (CII 384 for FY 2026-27). Property bought on or after 23 July 2024 is taxed at a flat 12.5% after 24 months of holding." }
+          },
+          {
+            "@type": "Question",
+            "name": "How are debt mutual funds taxed?",
+            "acceptedAnswer": { "@type": "Answer", "text": "Debt fund units bought on or after 1 April 2023 are specified mutual funds: the entire gain is added to your income and taxed at your slab rate, whatever the holding period. Units bought before that date and held more than 24 months are long-term and taxed at 12.5% without indexation." }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the CII for FY 2026-27?",
+            "acceptedAnswer": { "@type": "Answer", "text": "The CBDT notified the Cost Inflation Index for FY 2026-27 as 384 (Notification 85/2026, 15 July 2026). FY 2025-26 was 376 and FY 2024-25 was 363. Indexed cost = purchase price × 384 ÷ CII of the purchase year." }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    :root { --ink:#0F1F18; --brand:#10B981; --brand-dark:#059669; --bg:#F8FAF9; --card:#fff; --muted:#5A6B63; --line:#E3EAE6; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--ink); line-height:1.65; }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 0; }
+    header .wrap { display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; }
+    .logo span { color:var(--brand); }
+    .cta-sm { background:var(--brand); color:#fff; text-decoration:none; font-weight:700; font-size:14px; padding:8px 16px; border-radius:8px; }
+    h1 { font-size:clamp(26px,5vw,36px); line-height:1.2; letter-spacing:-0.02em; margin:32px 0 10px; }
+    .sub { color:var(--muted); margin-bottom:24px; font-size:17px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin:18px 0; }
+    .calc label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+    .calc input, .calc select { width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+    .calc button { width:100%; margin-top:16px; background:var(--brand); color:#fff; font-weight:800; font-size:16px; border:0; border-radius:10px; padding:13px; cursor:pointer; }
+    .calc button:hover { background:var(--brand-dark); }
+    .result { display:none; margin-top:16px; padding:16px; background:#ECFDF5; border:1px solid #A7F3D0; border-radius:10px; }
+    .result strong { font-size:24px; display:block; }
+    .result small { color:var(--muted); }
+    h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
+    p { margin:10px 0; }
+    table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
+    th { background:#F0F6F3; font-size:13px; }
+    .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
+    .faq h3 { font-size:17px; margin:18px 0 6px; }
+    .install { background:linear-gradient(135deg,#0F1F18,#14532D); border-radius:16px; padding:28px 24px; margin:36px 0; text-align:center; color:#fff; }
+    .install h2 { color:#fff; margin-top:0; }
+    .install p { color:#C6E8D5; }
+    .install a.btn { display:inline-block; margin-top:14px; background:var(--brand); color:#fff; font-weight:800; text-decoration:none; padding:13px 28px; border-radius:10px; }
+    .links { display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 6px; }
+    .links a { background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; color:var(--ink); text-decoration:none; }
+    .links a:hover { border-color:var(--brand); color:var(--brand-dark); }
+    footer { border-top:1px solid var(--line); margin-top:44px; padding:22px 0 34px; font-size:13px; color:var(--muted); }
+    footer a { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <a class="logo" href="/">Fin<span>Calix</span></a>
+      <a class="cta-sm" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Get the App</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>Capital Gains Tax Calculator — FY 2026-27</h1>
+    <p class="sub">Long-term or short-term, with or without indexation — find the tax on selling shares, mutual funds, property or gold under the FY 2026-27 rules (Tax Year 2026-27, Income-tax Act 2025). CII for FY 2026-27 is <strong>384</strong>.</p>
+
+    <div class="card calc">
+      <label for="asset">Asset type</label>
+      <select id="asset">
+        <option value="equity">Listed shares / equity mutual fund</option>
+        <option value="property">Land or building (property)</option>
+        <option value="gold">Gold, unlisted shares, other assets</option>
+        <option value="debt">Debt mutual fund (bought on/after 1 Apr 2023)</option>
+      </select>
+      <label for="cost">Purchase price (₹)</label>
+      <input id="cost" type="number" inputmode="numeric" value="500000" min="0" />
+      <label for="sale">Sale price (₹)</label>
+      <input id="sale" type="number" inputmode="numeric" value="900000" min="0" />
+      <label for="months">Holding period (months)</label>
+      <input id="months" type="number" inputmode="numeric" value="30" min="0" />
+      <label for="pfy">Purchase year CII (only used for property bought before 23 Jul 2024)</label>
+      <select id="pfy">
+        <option value="167">FY 2010-11 — 167</option><option value="184">FY 2011-12 — 184</option><option value="200">FY 2012-13 — 200</option><option value="220">FY 2013-14 — 220</option>
+        <option value="240">FY 2014-15 — 240</option><option value="254">FY 2015-16 — 254</option><option value="264">FY 2016-17 — 264</option><option value="272">FY 2017-18 — 272</option>
+        <option value="280">FY 2018-19 — 280</option><option value="289">FY 2019-20 — 289</option><option value="301">FY 2020-21 — 301</option><option value="317" selected>FY 2021-22 — 317</option>
+        <option value="331">FY 2022-23 — 331</option><option value="348">FY 2023-24 — 348</option><option value="0">Bought on/after 23 Jul 2024 — no indexation</option>
+      </select>
+      <label for="slab">Your income-tax slab (for short-term gains on non-equity assets)</label>
+      <select id="slab"><option value="5">5%</option><option value="10">10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option><option value="30" selected>30%</option></select>
+      <button onclick="calc()">Calculate Capital Gains Tax</button>
+      <div class="result" id="out"></div>
+    </div>
+
+    <h2>FY 2026-27 capital gains rates at a glance</h2>
+    <table>
+      <tr><th>Asset</th><th>Long-term after</th><th>LTCG rate</th><th>STCG rate</th></tr>
+      <tr><td>Listed shares, equity MF (STT paid)</td><td>12 months</td><td>12.5% above ₹1.25 lakh/yr (Sec 112A → 198)</td><td>20% (Sec 111A → 196)</td></tr>
+      <tr><td>Land / building</td><td>24 months</td><td>12.5% no indexation; pre-23 Jul 2024 purchases may use 20% with indexation if lower</td><td>Slab rate</td></tr>
+      <tr><td>Gold, unlisted shares, other</td><td>24 months</td><td>12.5% without indexation</td><td>Slab rate</td></tr>
+      <tr><td>Debt MF bought on/after 1 Apr 2023</td><td>Never (specified MF)</td><td colspan="2">Slab rate on the full gain, any holding period</td></tr>
+    </table>
+    <p>A 4% health and education cess is added to the tax. Surcharge applies above ₹50 lakh of total income and is not modelled here. The Section 87A rebate does not apply to gains taxed at these special rates.</p>
+
+    <h2>Cost Inflation Index (CII)</h2>
+    <div class="formula">Indexed cost = purchase price × CII of sale year ÷ CII of purchase year<br/>FY 2026-27 CII = 384 (CBDT Notification 85/2026)</div>
+    <table>
+      <tr><th>FY</th><th>CII</th><th>FY</th><th>CII</th><th>FY</th><th>CII</th></tr>
+      <tr><td>2018-19</td><td>280</td><td>2021-22</td><td>317</td><td>2024-25</td><td>363</td></tr>
+      <tr><td>2019-20</td><td>289</td><td>2022-23</td><td>331</td><td>2025-26</td><td>376</td></tr>
+      <tr><td>2020-21</td><td>301</td><td>2023-24</td><td>348</td><td><strong>2026-27</strong></td><td><strong>384</strong></td></tr>
+    </table>
+
+    <h2>Worked example — property bought in FY 2010-11</h2>
+    <p>Bought for ₹30 lakh (CII 167), sold in FY 2026-27 for ₹1.2 crore. Indexed cost = ₹30,00,000 × 384 ÷ 167 = <strong>₹68,98,204</strong>. Indexed gain ₹51,01,796 × 20% = ₹10,20,359. The flat route is ₹90,00,000 × 12.5% = ₹11,25,000. The lower figure applies, so tax is ₹10,20,359 plus 4% cess = <strong>₹10,61,174</strong>.</p>
+
+    <div class="faq">
+      <h2>Frequently asked questions</h2>
+      <h3>What is the capital gains tax on shares and equity mutual funds in FY 2026-27?</h3>
+      <p>Listed shares and equity mutual funds held for more than 12 months are long-term: gains above ₹1.25 lakh in a financial year are taxed at 12.5% (Section 112A, now Section 198 of the Income-tax Act 2025). Held 12 months or less, the gain is short-term and taxed at 20% (Section 111A / Section 196). A 4% cess applies on the tax.</p>
+      <h3>Can I still use indexation on property sales?</h3>
+      <p>Only for land or buildings bought before 23 July 2024, and only by resident individuals and HUFs. You pay the lower of 12.5% without indexation or 20% with indexation. Property bought on or after 23 July 2024 is taxed at a flat 12.5% after 24 months of holding.</p>
+      <h3>How are debt mutual funds taxed?</h3>
+      <p>Units bought on or after 1 April 2023 are specified mutual funds: the entire gain is taxed at your slab rate, whatever the holding period. Units bought before that date and held more than 24 months are taxed at 12.5% without indexation.</p>
+      <h3>What is the CII for FY 2026-27?</h3>
+      <p>384, notified by the CBDT on 15 July 2026. FY 2025-26 was 376 and FY 2024-25 was 363.</p>
+    </div>
+
+    <div class="install">
+      <h2>Get the full tax toolkit — free</h2>
+      <p>Capital gains with purchase and sale dates, income tax regime comparison, Form 16 checker, HRA, LRS TCS &amp; PDF export. 45+ Indian calculators. Works offline. No login, no ads.</p>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.fincalix.app" rel="noopener">Download FinCalix on Google Play</a>
+    </div>
+
+    <h2>More free calculators</h2>
+    <div class="links">
+      <a href="/income-tax">Income Tax 2026-27</a>
+      <a href="/lrs-tcs">LRS TCS Calculator</a>
+      <a href="/hra">HRA Exemption</a>
+      <a href="/sip">SIP Calculator</a>
+      <a href="/lumpsum">Lumpsum Calculator</a>
+      <a href="/fd">FD Calculator</a>
+      <a href="/ppf">PPF Calculator</a>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>Rates shown are for resident individuals for FY 2026-27 (Tax Year 2026-27) as of October 2026; surcharge, set-off of losses and exemptions under Sections 54/54F are not modelled. Consult a chartered accountant before filing. Not tax advice.</p>
+      <p>© 2026 FinCalix · <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></p>
+    </div>
+  </footer>
+
+  <script>
+    function calc() {
+      var asset = document.getElementById('asset').value;
+      var cost = Math.max(0, parseFloat(document.getElementById('cost').value) || 0);
+      var sale = Math.max(0, parseFloat(document.getElementById('sale').value) || 0);
+      var months = Math.max(0, parseFloat(document.getElementById('months').value) || 0);
+      var pcii = parseFloat(document.getElementById('pfy').value) || 0;
+      var slab = parseFloat(document.getElementById('slab').value) || 30;
+      var out = document.getElementById('out');
+      var fmt = function (x) { return '₹' + Math.round(x).toLocaleString('en-IN'); };
+      var gain = sale - cost;
+      if (cost <= 0 || sale <= 0) { out.style.display = 'none'; return; }
+      if (gain <= 0) { out.innerHTML = '<strong>No tax — capital loss of ' + fmt(-gain) + '</strong><small>Losses can be set off against other gains or carried forward for 8 years.</small>'; out.style.display = 'block'; return; }
+      var threshold = asset === 'equity' ? 12 : 24;
+      var isLong = asset === 'debt' ? false : months > threshold;
+      var tax = 0, label = '';
+      if (asset === 'equity') {
+        if (isLong) { tax = Math.max(0, gain - 125000) * 0.125; label = 'Long-term: 12.5% above ₹1.25 lakh exemption'; }
+        else { tax = gain * 0.20; label = 'Short-term: 20%'; }
+      } else if (isLong) {
+        tax = gain * 0.125; label = 'Long-term: 12.5% without indexation';
+        if (asset === 'property' && pcii > 0) {
+          var indexedCost = cost * 384 / pcii;
+          var taxIdx = Math.max(0, sale - indexedCost) * 0.20;
+          if (taxIdx < tax) { tax = taxIdx; label = 'Long-term: 20% with indexation (indexed cost ' + fmt(indexedCost) + ') — lower than the 12.5% route'; }
+          else { label += ' (cheaper than 20% with indexation: ' + fmt(taxIdx) + ')'; }
+        }
+      } else {
+        tax = gain * slab / 100; label = (asset === 'debt' ? 'Specified debt MF — ' : 'Short-term — ') + 'taxed at your ' + slab + '% slab';
+      }
+      var cess = tax * 0.04;
+      out.innerHTML = '<strong>' + fmt(tax + cess) + ' tax payable</strong><small>Gain ' + fmt(gain) + ' · ' + label + ' · includes 4% cess ' + fmt(cess) + ' · effective ' + ((tax + cess) / gain * 100).toFixed(1) + '% · net in hand ' + fmt(sale - tax - cess) + '</small>';
+      out.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

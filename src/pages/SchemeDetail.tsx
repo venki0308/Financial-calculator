@@ -69,7 +69,10 @@ export default function SchemeDetail() {
                     )}
                     {scheme.tags.map((tag) => {
                         const tagMap: Record<string, string> = { 'New': 'schemes.new', 'Popular': 'schemes.popular', 'Verified': 'schemes.verified' };
-                        return <span key={tag} className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-brand-green/15 text-brand-green">{tagMap[tag] ? t(tagMap[tag]) : tag}</span>;
+                        // 'New 2026' / 'Updated 2026' style tags carry a year — localise the word, keep the year
+                        const yearTag = /^(New|Updated) (\d{4})$/.exec(tag);
+                        const label = tagMap[tag] ? t(tagMap[tag]) : yearTag ? t(yearTag[1] === 'New' ? 'schemes.newYear' : 'schemes.updatedYear', { year: yearTag[2] }) : tag;
+                        return <span key={tag} className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-brand-green/15 text-brand-green">{label}</span>;
                     })}
                 </div>
                 <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">{scheme.name}</h1>
@@ -214,11 +217,15 @@ export default function SchemeDetail() {
                 <DisclaimerComponent module="schemes" />
 
                 {/* Verification Badge */}
-                {scheme.lastVerified && (
-                    <div className="p-3 rounded-xl bg-green-50 dark:bg-brand-green/5 border border-green-200 dark:border-brand-green/15 mb-8">
+                {scheme.lastVerified && (() => {
+                    // Age-aware badge: scheme data older than ~4 months turns amber and asks the user to re-check
+                    const ageMonths = Math.floor((Date.now() - new Date(scheme.lastVerified).getTime()) / (30.44 * 86400000));
+                    const stale = ageMonths > 4;
+                    return (
+                    <div className={`p-3 rounded-xl border mb-8 ${stale ? 'bg-amber-50 dark:bg-amber-500/5 border-amber-200 dark:border-amber-500/15' : 'bg-green-50 dark:bg-brand-green/5 border-green-200 dark:border-brand-green/15'}`}>
                         <div className="flex items-center gap-2 mb-1">
-                            <BadgeCheck size={16} className="text-brand-green flex-shrink-0" />
-                            <span className="text-brand-green font-semibold text-[12px]">{t('schemes.verifiedSource')}</span>
+                            <BadgeCheck size={16} className={`flex-shrink-0 ${stale ? 'text-amber-600' : 'text-brand-green'}`} />
+                            <span className={`font-semibold text-[12px] ${stale ? 'text-amber-600' : 'text-brand-green'}`}>{stale ? t('schemes.verifiedAgeWarn', { months: ageMonths }) : t('schemes.verifiedSource')}</span>
                         </div>
                         <p className="text-muted-foreground dark:text-muted-foreground text-[11px] leading-relaxed pl-6">
                             {t('schemes.lastVerified')}: {new Date(scheme.lastVerified).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
@@ -226,7 +233,8 @@ export default function SchemeDetail() {
                         </p>
                         <p className="text-muted-foreground text-[10px] mt-1 pl-6 italic">{t('schemes.alwaysCheck')}</p>
                     </div>
-                )}
+                    );
+                })()}
             </div>
 
 

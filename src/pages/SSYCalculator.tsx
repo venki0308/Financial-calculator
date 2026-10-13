@@ -16,6 +16,7 @@ import { calculateSsyStatus, type SsyStatusInput } from '../utils/investmentStat
 
 import SmartInsight from '../components/SmartInsight';
 import { formatINR } from '../utils/calculations';
+import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -41,7 +42,7 @@ export default function SSYCalculator() {
     const [annual, setAnnual] = useState(50000);
     const [monthly, setMonthly] = useState(5000);
     const effectiveAnnual = depositMode === 'monthly' ? monthly * 12 : annual;
-    const [rate, setRate] = useState(8.2);
+    const [rate, setRate] = useState<number>(SMALL_SAVINGS.rates.ssy);
     const [childAge, setChildAge] = useState(1);
     const [showTimeline, setShowTimeline] = useState(false);
     const [showRules, setShowRules] = useState(false);
@@ -294,7 +295,7 @@ export default function SSYCalculator() {
                     ) : (
                         <NumberInput label={t('ssy.monthlyDeposit')} value={monthly} onChange={setMonthly} min={21} max={12500} prefix="₹" helperText={`₹${monthly.toLocaleString('en-IN')}/${t('ssy.mo')} = ₹${(monthly * 12).toLocaleString('en-IN')}/${t('ssy.year')}`} />
                     )}
-                    <NumberInput label={t('ssy.interestRate')} value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText={t('ssy.currentRate')} />
+                    <NumberInput label={t('ssy.interestRate')} value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText={t('ssy.currentRate', { rate: SMALL_SAVINGS.rates.ssy, quarter: SMALL_SAVINGS.label })} />
                     <NumberInput label={t('ssy.girlChildAge')} value={childAge} onChange={setChildAge} min={0} max={10} suffix={` ${t('ssy.years')}`} helperText={t('ssy.ageHelper')} />
                     <div>
                         <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('ssy.accountOpeningDateLabel')}</label>

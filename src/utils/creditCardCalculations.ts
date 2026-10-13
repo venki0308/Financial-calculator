@@ -91,7 +91,18 @@ export function getPayoffMonths(balance: number, annualRate: number, monthlyPaym
 export function getTotalInterest(balance: number, annualRate: number, monthlyPayment: number): number {
   const months = getPayoffMonths(balance, annualRate, monthlyPayment);
   if (months === Infinity || months === 0) return months === Infinity ? Infinity : 0;
-  return Math.round((monthlyPayment * months) - balance);
+  // Walk the schedule so the last instalment is only the remaining balance
+  // (a flat payment × ceil(months) overstated interest by up to one payment).
+  const r = (annualRate / 12 / 100) * GST_RATE;
+  let bal = balance;
+  let paid = 0;
+  for (let m = 0; m < months && bal > 0; m++) {
+    bal = bal * (1 + r);
+    const pay = Math.min(monthlyPayment, bal);
+    paid += pay;
+    bal -= pay;
+  }
+  return Math.round(paid - balance);
 }
 
 // ─── Utilization ─────────────────────────────────────────────────────────────

@@ -81,6 +81,8 @@ const SWPCalculator              = lr(() => import('./pages/SWPCalculator'));
 const STPCalculator              = lr(() => import('./pages/STPCalculator'));
 const PRAGCalculator             = lr(() => import('./pages/PRAGCalculator'));
 const CAGRCalculator             = lr(() => import('./pages/CAGRCalculator'));
+const CapitalGainsCalculator     = lr(() => import('./pages/CapitalGainsCalculator'));
+const LRSTCSCalculator           = lr(() => import('./pages/LRSTCSCalculator'));
 
 // PPF / Retirement / Post-Office Calculators — lazy loaded with retry
 const AdvancedPPFCalculator      = lr(() => import('./pages/AdvancedPPFCalculator'));
@@ -430,6 +432,8 @@ function AppContent() {
                         <Route path="/calculator/stp" element={<STPCalculator />} />
                         <Route path="/calculator/prag" element={<PRAGCalculator />} />
                         <Route path="/calculator/cagr" element={<CAGRCalculator />} />
+                        <Route path="/calculator/capital-gains" element={<CapitalGainsCalculator />} />
+                        <Route path="/calculator/lrs-tcs" element={<LRSTCSCalculator />} />
                         <Route path="/calculator/step-up-sip" element={<Navigate to="/calculator/sip" replace />} />
                         <Route path="/calculator/goal-sip" element={<Navigate to="/calculator/sip" replace />} />
                         <Route path="/calculator/ppf" element={<AdvancedPPFCalculator />} />
@@ -494,6 +498,8 @@ function AppContent() {
                         <Route path="/lumpsum" element={<Navigate to="/calculator/lumpsum" replace />} />
                         <Route path="/swp" element={<Navigate to="/calculator/swp" replace />} />
                         <Route path="/cagr" element={<Navigate to="/calculator/cagr" replace />} />
+                        <Route path="/capital-gains" element={<Navigate to="/calculator/capital-gains" replace />} />
+                        <Route path="/lrs-tcs" element={<Navigate to="/calculator/lrs-tcs" replace />} />
                         <Route path="/fd" element={<Navigate to="/calculator/fixed-deposit" replace />} />
                         <Route path="/rd" element={<Navigate to="/calculator/recurring-deposit" replace />} />
                         <Route path="/ppf" element={<Navigate to="/calculator/ppf" replace />} />

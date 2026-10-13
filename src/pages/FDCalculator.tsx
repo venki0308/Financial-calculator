@@ -13,6 +13,7 @@ import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
 import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import RateContextNote from '../components/RateContextNote';
 import { toLocalDateStr, todayStr } from '../utils/dateUtils';
 
 import SmartInsight from '../components/SmartInsight';
@@ -267,6 +268,7 @@ export default function FDCalculator() {
                 </div>
             </div>
 
+            <RateContextNote type="fd" />
             <DisclaimerComponent module="fd" />
 
             <div className="px-4 pb-28 pt-4 space-y-5">

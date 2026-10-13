@@ -11,6 +11,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import { calculatePpfStatus, type PpfStatusInput } from '../utils/investmentStatusEngine';
 
 import { formatINR, formatINRWords } from '../utils/calculations';
+import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { AnalyticsService } from '../lib/analytics';
@@ -26,7 +27,7 @@ const FREQ_OPTIONS: { key: Frequency; labelKey: string; factor: number }[] = [
     { key: 'yearly', labelKey: 'ppf.yearly', factor: 1 },
 ];
 
-const PPF_RATE = 7.1;
+const PPF_RATE: number = SMALL_SAVINGS.rates.ppf;
 const PPF_MIN_INVEST = 500;
 const PPF_MAX_INVEST = 150000;
 const PPF_LOCK_IN_YEARS = 15;
@@ -285,7 +286,7 @@ export default function AdvancedPPFCalculator() {
                         min={PPF_MIN_INVEST} max={maxPerPeriod} prefix="₹"
                         helperText={`₹${PPF_MIN_INVEST.toLocaleString()} - ₹${maxPerPeriod.toLocaleString()} (${t('ppf.annualMax')})`} />
                     <NumberInput label={t('ppf.interestRate')} value={rate} onChange={setRate}
-                        min={1} max={15} suffix="%" step={0.1} helperText={t('ppf.currentGovtRate')} />
+                        min={1} max={15} suffix="%" step={0.1} helperText={t('ppf.currentGovtRate', { rate: SMALL_SAVINGS.rates.ppf, quarter: SMALL_SAVINGS.label })} />
                     <NumberInput label={t('ppf.investmentPeriod')} value={years} onChange={setYears}
                         min={PPF_LOCK_IN_YEARS} max={50} suffix={` ${t('ppf.years')}`}
                         helperText={t('ppf.minYearsHelper', { min: PPF_LOCK_IN_YEARS, ext: PPF_EXTENSION_YEARS })} />

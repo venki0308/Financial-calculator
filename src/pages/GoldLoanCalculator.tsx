@@ -24,6 +24,7 @@ import { useAppColors } from '../theme/useAppColors';
 import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import RateContextNote from '../components/RateContextNote';
 import CibilBadge from '../components/CibilBadge';
 import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import LiveLoanStatus from '../components/LiveLoanStatus';
@@ -62,10 +63,10 @@ const PURITY_OPTIONS: { id: Purity; label: string; factorText: string }[] = [
     { id: '18K', label: '18K', factorText: '75.0%' },
 ];
 
-// Default 24K rate (₹/g) — August 2026 reference (~₹15,450-15,500/g on
-// 19 Aug 2026, up ~7% in a month). User-editable, no live API. Update this
-// constant periodically as the floor drifts; users can override per-calculation.
-const DEFAULT_GOLD_RATE_24K = 15450;
+// Default 24K rate (₹/g) — October 2026 reference. IBJA 999 fine gold was
+// ₹14,943/g (9 Oct 2026 PM) and ₹14,806/g (12 Oct 2026); jeweller 24K retail
+// ~₹15,100/g. Banks value pledged gold at the IBJA 22K/999 rate, not retail.
+const DEFAULT_GOLD_RATE_24K = 14900;
 
 // RBI 2026 tier thresholds (in ₹) — effective April 1, 2026
 const TIER_85_MAX = 250000;   // ≤ ₹2.5L → 85% LTV, no credit check required
@@ -148,6 +149,36 @@ function computeBullet(principal: number, annualRate: number, months: number): B
         });
     }
     return { monthlyInterest, totalInterest, totalPayment, finalMonthPayment, schedule };
+}
+
+/**
+ * True bullet repayment: nothing is paid monthly; principal + accrued interest
+ * (compounded monthly, as banks apply it) are settled in one shot at maturity.
+ */
+function computeTrueBullet(principal: number, annualRate: number, months: number): BulletResult {
+    if (principal <= 0 || months <= 0 || annualRate < 0) {
+        return { monthlyInterest: 0, totalInterest: 0, totalPayment: 0, finalMonthPayment: 0, schedule: [] };
+    }
+    const r = annualRate / 12 / 100;
+    const schedule = [];
+    let balance = principal;
+    for (let m = 1; m <= months; m++) {
+        const interest = Math.round(balance * r);
+        const isLast = m === months;
+        const closing = balance + interest;
+        schedule.push({
+            month: m,
+            openingBalance: balance,
+            payment: isLast ? closing : 0,
+            principal: isLast ? principal : 0,
+            interest,
+            closingBalance: isLast ? 0 : closing,
+        });
+        balance = closing;
+    }
+    const totalPayment = balance;
+    const totalInterest = totalPayment - principal;
+    return { monthlyInterest: 0, totalInterest, totalPayment, finalMonthPayment: totalPayment, schedule };
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -268,11 +299,20 @@ export default function GoldLoanCalculator() {
         return calculateReducingEMI(loanAmount, interestRate, tenureMonths);
     }, [loanAmount, interestRate, tenureMonths]);
 
-    /** Bullet calculation (used for bullet/interest-only mode + comparison) */
+    /** Interest-only calculation (interest-only mode + the EMI-vs-bullet comparison) */
     const bulletResult = useMemo(() => {
         const cappedMonths = Math.min(tenureMonths, BULLET_MAX_MONTHS);
         return computeBullet(loanAmount, interestRate, cappedMonths);
     }, [loanAmount, interestRate, tenureMonths]);
+
+    /** True bullet: zero monthly outflow, principal + compounded interest at maturity */
+    const trueBulletResult = useMemo(() => {
+        const cappedMonths = Math.min(tenureMonths, BULLET_MAX_MONTHS);
+        return computeTrueBullet(loanAmount, interestRate, cappedMonths);
+    }, [loanAmount, interestRate, tenureMonths]);
+
+    /** Result for whichever non-EMI mode is selected */
+    const modeResult = repaymentMode === 'bullet' ? trueBulletResult : bulletResult;
 
     /** Active result based on selected repayment mode */
     const activeResult = useMemo(() => {
@@ -287,12 +327,12 @@ export default function GoldLoanCalculator() {
         }
         return {
             isEmi: false,
-            monthly: bulletResult.monthlyInterest,
-            totalInterest: bulletResult.totalInterest,
-            totalPayment: bulletResult.totalPayment,
-            schedule: bulletResult.schedule,
+            monthly: modeResult.monthlyInterest,
+            totalInterest: modeResult.totalInterest,
+            totalPayment: modeResult.totalPayment,
+            schedule: modeResult.schedule,
         };
-    }, [repaymentMode, emiResult, bulletResult]);
+    }, [repaymentMode, emiResult, modeResult]);
 
     /**
      * LiveLoanStatus profile (EMI mode only). Bullet/Interest-Only loans
@@ -352,10 +392,10 @@ export default function GoldLoanCalculator() {
             return { key: 'insightThreshold80', vars: { delta: formatINR(delta) } };
         }
         if (repaymentMode === 'bullet' || repaymentMode === 'interestOnly') {
-            return { key: 'insightBulletCashFlow', vars: { monthly: formatINR(bulletResult.monthlyInterest), final: formatINR(loanAmount) } };
+            return { key: 'insightBulletCashFlow', vars: { monthly: formatINR(modeResult.monthlyInterest), final: formatINR(modeResult.finalMonthPayment) } };
         }
         return { key: 'insightEmiSteady', vars: { emi: formatINR(emiResult?.emi || 0) } };
-    }, [loanAmount, purity, repaymentMode, bulletResult.monthlyInterest, emiResult?.emi]);
+    }, [loanAmount, purity, repaymentMode, modeResult.monthlyInterest, modeResult.finalMonthPayment, emiResult?.emi]);
 
     /** Pie chart data: principal vs interest */
     const chartData = useMemo(() => ({
@@ -554,7 +594,7 @@ export default function GoldLoanCalculator() {
 
         return {
             title: te('goldLoan.title', 'Gold Loan Calculator'),
-            subtitle: `${goldWeight}g ${purity} • ${repaymentMode === 'emi' ? te('goldLoan.modeEmi', 'EMI') : te('goldLoan.modeBullet', 'Bullet')}`,
+            subtitle: `${goldWeight}g ${purity} • ${repaymentMode === 'emi' ? te('goldLoan.modeEmi', 'EMI') : repaymentMode === 'bullet' ? te('goldLoan.modeBullet', 'Bullet') : te('goldLoan.modeInterestOnly', 'Interest Only')}`,
             inputs,
             results,
             chart: { type: 'pie', segments: [
@@ -798,7 +838,7 @@ export default function GoldLoanCalculator() {
                                 </div>
                                 {!activeResult.isEmi && (
                                     <p className="text-[10px] mt-2" style={{ color: c.textSecondary }}>
-                                        {t('goldLoan.bulletFinalNote', { final: formatINR(bulletResult.finalMonthPayment) })}
+                                        {t('goldLoan.bulletFinalNote', { final: formatINR(modeResult.finalMonthPayment) })}
                                     </p>
                                 )}
                             </div>
@@ -1210,6 +1250,7 @@ export default function GoldLoanCalculator() {
                 </div>
 
                 {/* ── Disclaimer ── */}
+                <RateContextNote type="goldLoan" />
                 <DisclaimerComponent module="goldLoan" />
             </div>
         </div>

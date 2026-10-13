@@ -74,11 +74,22 @@ export function calculateFlatEMI(principal: number, annualRate: number, months: 
 }
 
 /**
- * Calculate the effective reducing-balance rate for a given flat rate.
- * Approximate: Effective Rate ≈ Flat Rate × 1.85
+ * Effective reducing-balance (APR-equivalent) rate for a flat-rate loan.
+ * Solves for the monthly rate r at which the reducing-balance EMI equals the
+ * flat-rate EMI over the same tenure (bisection; exact to 0.01%).
+ * The old ×1.85 rule of thumb was only right near 3–5 year tenures.
  */
-export function calculateEffectiveRate(flatRate: number): number {
-    return Math.round(flatRate * 1.85 * 100) / 100;
+export function calculateEffectiveRate(flatRate: number, months: number = 36): number {
+    if (flatRate <= 0 || months <= 0) return 0;
+    const n = Math.round(months);
+    const flatEmiPerRupee = (1 + (flatRate / 100) * (n / 12)) / n;
+    const reducingEmiPerRupee = (r: number) => (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    let lo = 1e-9, hi = 1; // monthly rate bounds (0% .. 1200% p.a.)
+    for (let i = 0; i < 100; i++) {
+        const mid = (lo + hi) / 2;
+        if (reducingEmiPerRupee(mid) > flatEmiPerRupee) hi = mid; else lo = mid;
+    }
+    return Math.round(((lo + hi) / 2) * 12 * 100 * 100) / 100;
 }
 
 /**
@@ -520,4 +531,157 @@ export function calculateTaxBenefits(schedule: AmortizationRow[]): TaxBenefitRes
 export function calculateLTV(loanAmount: number, propertyValue: number): number {
     if (propertyValue <= 0) return 0;
     return (loanAmount / propertyValue) * 100;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CAPITAL GAINS — resident individual, FY 2026-27 (Tax Year 2026-27)
+// Rates per Finance (No. 2) Act 2024, carried unchanged into the Income-tax
+// Act 2025: equity LTCG 12.5% above ₹1.25L (Sec 112A → 198), equity STCG 20%
+// (Sec 111A → 196), other LTCG 12.5% without indexation, land/building bought
+// before 23 Jul 2024 may use 20% WITH indexation if lower. Specified (debt)
+// MF units bought on/after 1 Apr 2023 are always taxed at slab (Sec 50AA).
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Cost Inflation Index — CBDT; FY 2026-27 = 384 (Notification 85/2026, 15 Jul 2026) */
+export const CII: Record<string, number> = {
+    '2001-02': 100, '2002-03': 105, '2003-04': 109, '2004-05': 113, '2005-06': 117,
+    '2006-07': 122, '2007-08': 129, '2008-09': 137, '2009-10': 148, '2010-11': 167,
+    '2011-12': 184, '2012-13': 200, '2013-14': 220, '2014-15': 240, '2015-16': 254,
+    '2016-17': 264, '2017-18': 272, '2018-19': 280, '2019-20': 289, '2020-21': 301,
+    '2021-22': 317, '2022-23': 331, '2023-24': 348, '2024-25': 363, '2025-26': 376,
+    '2026-27': 384,
+};
+const CII_LATEST_FY = '2026-27';
+
+/** Indian financial year label ('2026-27') for an ISO date; dates before 1 Apr 2001 map to 2001-02 */
+export function fyOfDate(iso: string): string {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return CII_LATEST_FY;
+    const y = d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1;
+    const start = Math.max(2001, y);
+    return `${start}-${String((start + 1) % 100).padStart(2, '0')}`;
+}
+
+export type CgAssetType = 'equity' | 'debtMF' | 'property' | 'gold';
+export interface CgInput {
+    asset: CgAssetType;
+    purchaseDate: string; // YYYY-MM-DD
+    saleDate: string;     // YYYY-MM-DD
+    cost: number;
+    sale: number;
+    expenses: number;     // transfer costs (brokerage, stamp duty, legal)
+    improvement: number;  // property only — not indexed here
+    slabRate: number;     // marginal slab % for gains taxed at slab
+}
+export type CgMethod = 'ltcgEquity' | 'stcgEquity' | 'ltcgFlat' | 'ltcgIndexed' | 'slab';
+export interface CgResult {
+    holdingMonths: number; isLong: boolean; specifiedMF: boolean; pre2001: boolean;
+    purchaseFY: string; saleFY: string;
+    gain: number; taxableGain: number; exemptionUsed: number;
+    indexedCost?: number; taxNoIndex: number; taxIndexed?: number;
+    method: CgMethod; rate: number; tax: number; cess: number; totalTax: number;
+    effectiveRate: number; netProceeds: number;
+    insightWaitDays?: number; insightWaitSaving?: number;
+}
+
+const EQUITY_LTCG_EXEMPTION = 125000;
+const CESS = 0.04;
+const SPECIFIED_MF_FROM = new Date('2023-04-01');
+const INDEXATION_GRANDFATHER_BEFORE = new Date('2024-07-23');
+
+function addMonths(d: Date, m: number): Date { const x = new Date(d); x.setMonth(x.getMonth() + m); return x; }
+function monthsBetween(a: Date, b: Date): number {
+    let m = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+    if (b.getDate() < a.getDate()) m -= 1;
+    return Math.max(0, m);
+}
+
+export function computeCapitalGains(i: CgInput): CgResult {
+    const p = new Date(i.purchaseDate); const s = new Date(i.saleDate);
+    const valid = !isNaN(p.getTime()) && !isNaN(s.getTime()) && s >= p;
+    const purchaseFY = fyOfDate(i.purchaseDate); const saleFY = fyOfDate(i.saleDate);
+    const ciiP = CII[purchaseFY] ?? 100; const ciiS = CII[saleFY] ?? CII[CII_LATEST_FY];
+    const holdingMonths = valid ? monthsBetween(p, s) : 0;
+    const longThresholdMonths = i.asset === 'equity' ? 12 : 24;
+    const isLongByDate = valid && s > addMonths(p, longThresholdMonths);
+    const specifiedMF = i.asset === 'debtMF' && valid && p >= SPECIFIED_MF_FROM;
+    const isLong = specifiedMF ? false : isLongByDate;
+    const pre2001 = valid && p < new Date('2001-04-01');
+
+    const netSale = Math.max(0, i.sale - Math.max(0, i.expenses));
+    const baseCost = Math.max(0, i.cost) + Math.max(0, i.improvement);
+    const gain = netSale - baseCost;
+
+    let method: CgMethod = 'slab'; let rate = i.slabRate; let taxableGain = Math.max(0, gain); let exemptionUsed = 0;
+    let indexedCost: number | undefined; let taxIndexed: number | undefined;
+    let taxNoIndex = 0;
+
+    if (gain > 0) {
+        if (i.asset === 'equity') {
+            if (isLong) { method = 'ltcgEquity'; rate = 12.5; exemptionUsed = Math.min(EQUITY_LTCG_EXEMPTION, gain); taxableGain = gain - exemptionUsed; }
+            else { method = 'stcgEquity'; rate = 20; }
+            taxNoIndex = taxableGain * rate / 100;
+        } else if (isLong) {
+            method = 'ltcgFlat'; rate = 12.5; taxNoIndex = gain * 0.125;
+            if (i.asset === 'property' && p < INDEXATION_GRANDFATHER_BEFORE) {
+                indexedCost = Math.max(0, i.cost) * ciiS / ciiP;
+                const indexedGain = netSale - indexedCost - Math.max(0, i.improvement);
+                taxIndexed = Math.max(0, indexedGain) * 0.20;
+                if (taxIndexed < taxNoIndex) { method = 'ltcgIndexed'; rate = 20; taxableGain = Math.max(0, indexedGain); }
+            }
+        } else {
+            method = 'slab'; rate = i.slabRate; taxNoIndex = gain * i.slabRate / 100;
+        }
+    } else {
+        taxableGain = 0;
+    }
+
+    const tax = gain > 0 ? (method === 'ltcgIndexed' ? (taxIndexed as number) : taxNoIndex) : 0;
+    const cess = tax * CESS;
+    const totalTax = tax + cess;
+    const effectiveRate = gain > 0 ? (totalTax / gain) * 100 : 0;
+    const netProceeds = netSale - totalTax;
+
+    // Insight: short-term today, but long-term soon → how much would waiting save?
+    let insightWaitDays: number | undefined; let insightWaitSaving: number | undefined;
+    if (valid && gain > 0 && !isLong && !specifiedMF) {
+        const eligible = addMonths(p, longThresholdMonths);
+        const days = Math.ceil((eligible.getTime() - s.getTime()) / 86400000) + 1;
+        if (days > 0 && days <= 180) {
+            const longTax = i.asset === 'equity'
+                ? Math.max(0, gain - EQUITY_LTCG_EXEMPTION) * 0.125 * (1 + CESS)
+                : gain * 0.125 * (1 + CESS);
+            insightWaitDays = days; insightWaitSaving = Math.max(0, totalTax - longTax);
+        }
+    }
+
+    return {
+        holdingMonths, isLong, specifiedMF, pre2001, purchaseFY, saleFY,
+        gain, taxableGain, exemptionUsed, indexedCost, taxNoIndex, taxIndexed,
+        method, rate, tax, cess, totalTax, effectiveRate, netProceeds,
+        insightWaitDays, insightWaitSaving,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LRS — TCS on foreign remittances, Sec 206C(1G) (ITA 1961) → Sec 394 (ITA 2025)
+// Rates w.e.f. 1 Apr 2026 (Finance Act 2026): education/medical 2% above
+// ₹10 lakh (was 5%); overseas tour package 2% flat, no threshold; education
+// funded by a financial-institution loan nil; everything else 20% above ₹10 lakh.
+// ═══════════════════════════════════════════════════════════════════════════
+export const LRS_TCS_THRESHOLD = 1000000;
+export type LrsPurpose = 'eduLoan' | 'eduMedical' | 'tour' | 'other';
+export function computeLrsTcs(purpose: LrsPurpose, amount: number, alreadyRemitted: number) {
+    const amt = Math.max(0, amount); const prior = Math.max(0, alreadyRemitted);
+    let rate = 0; let taxableAmount = 0;
+    if (purpose === 'tour') { rate = 2; taxableAmount = amt; }
+    else if (purpose === 'eduLoan') { rate = 0; taxableAmount = 0; }
+    else {
+        rate = purpose === 'eduMedical' ? 2 : 20;
+        const headroom = Math.max(0, LRS_TCS_THRESHOLD - prior);
+        taxableAmount = Math.max(0, amt - headroom);
+    }
+    const tcs = taxableAmount * rate / 100;
+    const thresholdLeft = purpose === 'tour' || purpose === 'eduLoan' ? 0 : Math.max(0, LRS_TCS_THRESHOLD - prior - amt);
+    return { rate, taxableAmount, tcs, totalOutflow: amt + tcs, thresholdLeft };
 }
