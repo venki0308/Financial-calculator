@@ -1,6 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { Translation } from 'react-i18next';
-import { CrashlyticsService } from '../lib/analytics';
 
 interface Props {
     children: ReactNode;
@@ -13,7 +12,7 @@ interface State {
 }
 
 /**
- * React Error Boundary — catches render-time errors and logs them to Crashlytics.
+ * React Error Boundary — catches render-time errors and logs them to the console.
  * Shows a friendly "Something went wrong" UI instead of a white crash screen.
  */
 export class ErrorBoundary extends Component<Props, State> {
@@ -24,8 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        console.error('[FinCalix] ErrorBoundary caught:', error);
-        CrashlyticsService.logError(error, errorInfo.componentStack ?? 'React render error');
+        console.error('[FinCalix] ErrorBoundary caught:', error, errorInfo.componentStack);
     }
 
     private handleRestart = () => {

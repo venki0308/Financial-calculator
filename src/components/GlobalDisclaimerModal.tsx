@@ -1,5 +1,6 @@
 import { safeSetItem } from '../utils/safeStorage';
 import { useState, useEffect, useRef } from 'react';
+import { DISCLAIMER_KEY, DISCLAIMER_ACCEPTED_EVENT } from '../utils/analyticsConsent';
 import { useTranslation } from 'react-i18next';
 
 export default function GlobalDisclaimerModal() {
@@ -14,13 +15,16 @@ export default function GlobalDisclaimerModal() {
         // re-accept. v2 = April 2026 expansion (CIBIL, tax, investment risk,
         // insurance, post-tax preview, gold loan, NPS PFRDA caps).
         // v3 = July 2026: Backup & Restore (export/import), Business Tracker.
+        // v4 = November 2026: corrected privacy text (usage analytics are
+        // optional and off until allowed).
         // Bumping also guarantees the banner shows on first open even when
         // Android auto-backup restored an old device's acceptance flag.
-        const CANONICAL = 'fincalix_disclaimer_accepted_v3';
+        const CANONICAL = DISCLAIMER_KEY;
         // Legacy keys (read once, then cleared so we don't keep stale state)
         const LEGACY = [
             'fincalix_disclaimer_accepted',    // v1 — pre-audit pass
             'fincalix_disclaimer_accepted_v2', // v2 — pre backup/restore
+            'fincalix_disclaimer_accepted_v3', // v3 - before the analytics choice
             'appDisclaimerAccepted',
             'expenseTrackerDisclaimerAccepted',
         ];
@@ -49,8 +53,10 @@ export default function GlobalDisclaimerModal() {
 
     const handleAccept = () => {
         if (!canAccept) return;
-        safeSetItem('fincalix_disclaimer_accepted_v3', 'true');
+        safeSetItem(DISCLAIMER_KEY, 'true');
         setVisible(false);
+        // Lets the analytics choice (AnalyticsConsent) appear next.
+        window.dispatchEvent(new Event(DISCLAIMER_ACCEPTED_EVENT));
     };
 
     if (!visible) return null;

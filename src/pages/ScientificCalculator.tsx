@@ -240,7 +240,7 @@ export default function ScientificCalculator() {
             setLastAns(res);
             setAsFraction(false);
             setHistory(h => [{ expression, result: res, ts: Date.now() }, ...h].slice(0, 10));
-            AnalyticsService.trackCalculatorUsed('Scientific', {});
+            AnalyticsService.trackCalculatorUsed('Scientific');
         }
     };
 

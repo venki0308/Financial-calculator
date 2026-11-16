@@ -28,8 +28,8 @@ export default defineConfig({
                     }
                     if (!id.includes('node_modules')) return undefined;
 
-                    // Firebase (~700KB) — analytics, crashlytics, app
-                    if (id.includes('firebase') || id.includes('@capacitor-firebase')) {
+                    // Firebase (~700KB): analytics, loaded only after the user opts in
+                    if (id.includes('firebase')) {
                         return 'vendor-firebase';
                     }
                     // PDF generation libs (~330KB) — only loaded on export action

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {ArrowLeft, ChevronDown, ChevronUp, Activity, BrainCircuit, FileText, Share2, HelpCircle, AlertCircle, Settings, Calculator } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnalyticsService, CrashlyticsService } from '../lib/analytics';
+import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, getEnglishT, ExportConfig } from '../utils/exportReport';
 import { nativeShare } from '../utils/nativeShare';
@@ -64,7 +64,7 @@ export default function HRACalculator() {
             return { annualBasicDA, annualHRA, annualRent, opt1, opt2, opt3, exempt, taxable, minIdx };
         } catch (err) {
             const error = err instanceof Error ? err : new Error(String(err));
-            CrashlyticsService.logError(error, 'HRA_Calculator_compute');
+            console.error('[FinCalix] HRA calculation failed:', error);
             // Return safe zero-state so the UI doesn't crash
             return { annualBasicDA: 0, annualHRA: 0, annualRent: 0, opt1: 0, opt2: 0, opt3: 0, exempt: 0, taxable: 0, minIdx: -1 };
         }

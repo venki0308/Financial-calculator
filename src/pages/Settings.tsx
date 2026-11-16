@@ -1,6 +1,6 @@
 import { safeSetItem } from '../utils/safeStorage';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Bell, FileText, Star, Share2, Info, ChevronRight, Globe, Check, Trash2, Download, Upload, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Bell, BarChart3, FileText, Star, Share2, Info, ChevronRight, Globe, Check, Trash2, Download, Upload, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -10,6 +10,8 @@ import { useTranslation } from 'react-i18next';
 import { switchLanguage } from '../i18n';
 import BottomSheet from '../components/BottomSheet';
 import { AnalyticsService } from '../lib/analytics';
+import { AnalyticsService as UsageAnalytics } from '../services/analyticsService';
+import { hasAnalyticsConsent } from '../utils/analyticsConsent';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { APP_VERSION } from '../config/app';
@@ -56,6 +58,25 @@ export default function Settings() {
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [showClearConfirmFinal, setShowClearConfirmFinal] = useState(false);
     const [exporting, setExporting] = useState(false);
+    const [analyticsOn, setAnalyticsOn] = useState(hasAnalyticsConsent);
+    const [analyticsBusy, setAnalyticsBusy] = useState(false);
+
+    // Usage analytics are opt-in. Turning the switch off stops collection at
+    // once and deletes the analytics IDs from the device.
+    const handleToggleAnalytics = async () => {
+        if (analyticsBusy) return;
+        const next = !analyticsOn;
+        setAnalyticsBusy(true);
+        setAnalyticsOn(next);
+        try {
+            await UsageAnalytics.setConsent(next);
+            showToast(next
+                ? t('settings.analyticsOn', 'Usage analytics turned on')
+                : t('settings.analyticsOff', 'Usage analytics turned off. Analytics IDs deleted from this device.'));
+        } finally {
+            setAnalyticsBusy(false);
+        }
+    };
     const [showExportChoice, setShowExportChoice] = useState(false);
     const [pendingImportFile, setPendingImportFile] = useState<File | null>(null);
     const importInputRef = useRef<HTMLInputElement>(null);
@@ -132,6 +153,9 @@ export default function Settings() {
         // so "cleared by mistake" is recoverable via Import App Data.
         // Best-effort: never block the clear on snapshot failure.
         try { await snapshotBackup('clear'); } catch { /* never block */ }
+        // Stop analytics and delete its identifiers too; the choice itself is
+        // removed below, so it is asked again after the reset.
+        try { await UsageAnalytics.setConsent(false); } catch { /* never block */ }
         // Wipe ALL persisted data for a true fresh-install reset.
         // Covers Zustand stores, expense tracker, loans, CIBIL profile,
         // settings, and one-time flags.
@@ -169,6 +193,8 @@ export default function Settings() {
             'fincalix_disclaimer_accepted',
             'fincalix_disclaimer_accepted_v2',
             'fincalix_disclaimer_accepted_v3',
+            'fincalix_disclaimer_accepted_v4',
+            'fincalix_analytics_consent',
             'fincalix_privacy_accepted',
             'appDisclaimerAccepted',
             'expenseTrackerDisclaimerAccepted',
@@ -244,6 +270,30 @@ export default function Settings() {
                         <span className="text-foreground font-medium text-sm flex-1 text-left">{t('settings.notifications')}</span>
                         <ChevronRight size={16} className="text-muted-foreground" />
                     </button>
+                </div>
+
+                {/* Privacy */}
+                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.privacy', 'Privacy')}</p>
+                <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
+                    <div className="flex items-center justify-between gap-3 p-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <BarChart3 size={20} className="text-brand-purple flex-shrink-0" />
+                            <div className="min-w-0">
+                                <p className="text-foreground font-medium text-sm">{t('settings.usageAnalytics', 'Usage analytics')}</p>
+                                <p className="text-muted-foreground text-xs">{t('settings.usageAnalyticsDesc', 'Send usage statistics to Google Analytics. Amounts are never sent.')}</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={handleToggleAnalytics}
+                            disabled={analyticsBusy}
+                            role="switch"
+                            aria-checked={analyticsOn}
+                            aria-label={t('settings.usageAnalytics', 'Usage analytics')}
+                            className={`w-12 h-7 rounded-full p-0.5 transition-colors flex-shrink-0 ${analyticsOn ? 'bg-brand-purple' : 'bg-slate-600'}`}
+                        >
+                            <motion.div layout className={`w-6 h-6 rounded-full bg-white shadow-md ${analyticsOn ? 'ml-auto' : 'ml-0'}`} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* About & Sharing */}
