@@ -1,8 +1,8 @@
 import { AnalyticsProvider, EventParams } from './types';
 
-// Firebase is loaded LAZILY and ONLY after the user has opted in to usage
-// analytics: `initialize()` is the first point at which any Google code is
-// fetched, any request is made or any identifier is created.
+// Firebase is loaded LAZILY, and not at all while the user has switched usage
+// analytics off: `initialize()` is the first point at which any provider code
+// is fetched, any request is made or any identifier is created.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnalyticsModule = any;

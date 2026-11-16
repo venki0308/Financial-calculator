@@ -3,15 +3,15 @@ import { FirebaseProvider } from './providers/firebaseProvider';
 import { clearAnalyticsIdentifiers, hasAnalyticsConsent, storeAnalyticsConsent } from '../utils/analyticsConsent';
 
 /**
- * Usage analytics — strictly opt-in.
+ * Usage analytics — on by default, with an off switch in Settings → Privacy.
  *
- *  - Until the user allows analytics, nothing is loaded from Google, no request
- *    is made, no identifier is created and events are dropped (not queued).
+ *  - While the user has switched analytics off, nothing is loaded from the
+ *    analytics provider, no request is made and events are dropped.
  *  - Only the events in `AnalyticsEvent` are sent, and only with the parameters
  *    in `ALLOWED_EVENT_PARAMS`. No amount and no user-typed text ever leaves
  *    the device through this service.
- *  - Turning analytics off stops collection at once and deletes the analytics
- *    identifiers from the device.
+ *  - Switching analytics off stops collection at once and deletes the
+ *    analytics identifiers from the device.
  */
 
 const EVENT_NAMES = new Set<string>(Object.values(AnalyticsEvent));
@@ -29,11 +29,11 @@ class AnalyticsWrapper {
     private lastEventLogged: Record<string, number> = {};
     private readonly DEDUPE_MS = 1000;
 
-    /** Called once at app start. Does nothing unless the user has opted in. */
+    /** Called once at app start. Starts analytics unless the user switched them off. */
     async initialize(): Promise<void> {
         if (!hasAnalyticsConsent()) {
-            // Not allowed (or not asked yet): make sure no identifier from an
-            // earlier app version is left on the device. Local only.
+            // Switched off: make sure no analytics identifier is left on the
+            // device. Local only.
             clearAnalyticsIdentifiers();
             return;
         }

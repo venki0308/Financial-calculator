@@ -61,8 +61,8 @@ export default function Settings() {
     const [analyticsOn, setAnalyticsOn] = useState(hasAnalyticsConsent);
     const [analyticsBusy, setAnalyticsBusy] = useState(false);
 
-    // Usage analytics are opt-in. Turning the switch off stops collection at
-    // once and deletes the analytics IDs from the device.
+    // Usage analytics are on by default. Turning the switch off stops
+    // collection at once and deletes the analytics IDs from the device.
     const handleToggleAnalytics = async () => {
         if (analyticsBusy) return;
         const next = !analyticsOn;

@@ -1,8 +1,8 @@
 /**
  * Page-level analytics helpers.
  *
- * Thin wrappers over services/analyticsService, which sends nothing unless the
- * user has opted in to usage analytics and only ever sends the events and
+ * Thin wrappers over services/analyticsService, which sends nothing while the
+ * user has switched usage analytics off, and only ever sends the events and
  * parameters listed in services/providers/types.ts.
  */
 import { Capacitor } from '@capacitor/core';

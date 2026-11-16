@@ -7,7 +7,7 @@ const T = {
     en: {
         title: 'Privacy Policy',
         hero: 'Your Privacy Matters',
-        heroSub: 'Your calculations and financial data stay on your device. There is no account, no backend and no database. Usage analytics are optional and off unless you allow them.',
+        heroSub: 'Your calculations and financial data stay on your device. There is no account, no backend and no database. You can turn analytics off in Settings → Privacy.',
         updated: 'Last Updated: 16 November 2026',
         s: {
             collect: 'Information We Collect',
@@ -30,7 +30,7 @@ const T = {
     hi: {
         title: 'गोपनीयता नीति',
         hero: 'आपकी गोपनीयता महत्वपूर्ण है',
-        heroSub: 'आपकी गणनाएँ और वित्तीय डेटा आपके डिवाइस पर ही रहते हैं। कोई खाता नहीं, कोई बैकएंड नहीं और कोई डेटाबेस नहीं है। उपयोग एनालिटिक्स वैकल्पिक है और जब तक आप अनुमति नहीं देते, बंद रहता है।',
+        heroSub: 'आपकी गणनाएँ और वित्तीय डेटा आपके डिवाइस पर ही रहते हैं। कोई खाता नहीं, कोई बैकएंड नहीं और कोई डेटाबेस नहीं है। आप सेटिंग्स → गोपनीयता में एनालिटिक्स बंद कर सकते हैं।',
         updated: 'अंतिम अद्यतन: 16 नवंबर 2026',
         s: {
             collect: 'हम क्या जानकारी एकत्रित करते हैं',
@@ -53,7 +53,7 @@ const T = {
     te: {
         title: 'గోప్యతా విధానం',
         hero: 'మీ గోప్యత ముఖ్యమైనది',
-        heroSub: 'మీ లెక్కలు మరియు ఆర్థిక డేటా మీ పరికరంలోనే ఉంటాయి. ఖాతా లేదు, బ్యాకెండ్ లేదు, డేటాబేస్ లేదు. వినియోగ విశ్లేషణలు ఐచ్ఛికం; మీరు అనుమతిస్తే తప్ప అవి ఆఫ్‌లో ఉంటాయి.',
+        heroSub: 'మీ లెక్కలు మరియు ఆర్థిక డేటా మీ పరికరంలోనే ఉంటాయి. ఖాతా లేదు, బ్యాకెండ్ లేదు, డేటాబేస్ లేదు. మీరు సెట్టింగ్‌లు → గోప్యత లో విశ్లేషణలను ఆఫ్ చేయవచ్చు.',
         updated: 'చివరిగా నవీకరించబడింది: 16 నవంబర్ 2026',
         s: {
             collect: 'మేము సేకరించే సమాచారం',
@@ -76,7 +76,7 @@ const T = {
     ta: {
         title: 'தனியுரிமைக் கொள்கை',
         hero: 'உங்கள் தனியுரிமை முக்கியம்',
-        heroSub: 'உங்கள் கணக்கீடுகளும் நிதித் தரவும் உங்கள் சாதனத்திலேயே இருக்கும். கணக்கு இல்லை, பின்நிலை (backend) இல்லை, தரவுத்தளம் இல்லை. பயன்பாட்டு பகுப்பாய்வு ஒரு விருப்பத் தேர்வு; நீங்கள் அனுமதிக்காத வரை அது முடக்கத்தில் இருக்கும்.',
+        heroSub: 'உங்கள் கணக்கீடுகளும் நிதித் தரவும் உங்கள் சாதனத்திலேயே இருக்கும். கணக்கு இல்லை, பின்நிலை (backend) இல்லை, தரவுத்தளம் இல்லை. அமைப்புகள் → தனியுரிமை பகுதியில் பகுப்பாய்வை முடக்கலாம்.',
         updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: 16 நவம்பர் 2026',
         s: {
             collect: 'நாங்கள் சேகரிக்கும் தகவல்',
@@ -99,7 +99,7 @@ const T = {
     kn: {
         title: 'ಗೌಪ್ಯತಾ ನೀತಿ',
         hero: 'ನಿಮ್ಮ ಗೌಪ್ಯತೆ ಮುಖ್ಯ',
-        heroSub: 'ನಿಮ್ಮ ಲೆಕ್ಕಾಚಾರಗಳು ಮತ್ತು ಹಣಕಾಸು ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಉಳಿಯುತ್ತವೆ. ಖಾತೆ ಇಲ್ಲ, ಬ್ಯಾಕೆಂಡ್ ಇಲ್ಲ, ಡೇಟಾಬೇಸ್ ಇಲ್ಲ. ಬಳಕೆಯ ಅನಾಲಿಟಿಕ್ಸ್ ಐಚ್ಛಿಕ ಮತ್ತು ನೀವು ಅನುಮತಿಸದ ಹೊರತು ಆಫ್ ಆಗಿರುತ್ತದೆ.',
+        heroSub: 'ನಿಮ್ಮ ಲೆಕ್ಕಾಚಾರಗಳು ಮತ್ತು ಹಣಕಾಸು ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಉಳಿಯುತ್ತವೆ. ಖಾತೆ ಇಲ್ಲ, ಬ್ಯಾಕೆಂಡ್ ಇಲ್ಲ, ಡೇಟಾಬೇಸ್ ಇಲ್ಲ. ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಗೌಪ್ಯತೆ ನಲ್ಲಿ ಅನಾಲಿಟಿಕ್ಸ್ ಆಫ್ ಮಾಡಬಹುದು.',
         updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: 16 ನವೆಂಬರ್ 2026',
         s: {
             collect: 'ನಾವು ಸಂಗ್ರಹಿಸುವ ಮಾಹಿತಿ',
@@ -255,11 +255,11 @@ export default function PrivacyPolicy() {
 
             {/* 3 */}
             <Section icon="📊" color="#EC4899" title={t.s.analytics}>
-                <p style={{ marginBottom: '14px' }}>Usage analytics are off unless you allow them. If you allow them, the app sends the following to a third-party analytics service. Nothing is loaded from that service and nothing is sent before you choose.</p>
+                <p style={{ marginBottom: '14px' }}>The app sends the following to a third-party analytics service. You can turn analytics off in Settings → Privacy.</p>
                 <Card>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <div>
-                            <div style={{ color: '#10B981', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Sent only if you allow</div>
+                            <div style={{ color: '#10B981', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>What Is Collected</div>
                             {['Events: page view, screen view (including app open), calculator used, scheme viewed, language changed, PDF/Excel export. The analytics service also records first open, session start and engagement time automatically.', 'Event details: screen name, page path, calculator type, scheme type (central or state), language, export type, platform', 'Identifiers: a random client ID and a random installation ID', 'Device data: screen resolution, language, OS and browser version', 'Approximate country, derived from your IP address by the analytics service'].map(item => (
                                 <div key={item} style={{ color: c.textSecondary, fontSize: '13px', padding: '4px 0', borderBottom: `1px solid ${c.border}` }}>• {item}</div>
                             ))}
@@ -280,7 +280,7 @@ export default function PrivacyPolicy() {
                 <p style={{ marginBottom: '14px' }}>FinCalix uses the following third-party service for analytics:</p>
                 <Card>
                     <div style={{ color: c.text, fontWeight: 600, marginBottom: '6px' }}>Analytics service provider</div>
-                    <div style={{ color: c.textSecondary, fontSize: '13px' }}>A third-party analytics service provider processes the usage statistics listed above on our behalf, only if you allow analytics. The data is sent to its servers, which may be outside India.</div>
+                    <div style={{ color: c.textSecondary, fontSize: '13px' }}>A third-party analytics service provider processes the usage statistics listed above on our behalf. The data is sent to its servers, which may be outside India.</div>
                 </Card>
                 <p style={{ marginTop: '12px' }}>The app also loads its font from a web font service and checks fincalix.com for update information; like any web request, these reveal your IP address to the server. No advertising networks, tracking pixels or data-selling services are used.</p>
             </Section>
@@ -363,7 +363,7 @@ export default function PrivacyPolicy() {
 
             {/* 11 */}
             <Section icon="📊" color="#EC4899" title={t.s.reporting}>
-                <p style={{ marginBottom: '14px' }}>If you allow usage analytics, a third-party analytics service provider processes the pseudonymous usage statistics described in section 3. Its servers may be outside India, which makes this a cross-border transfer. No financial data is included. FinCalix does not use crash reporting. To withdraw consent, turn off Usage analytics in Settings → Privacy.</p>
+                <p style={{ marginBottom: '14px' }}>A third-party analytics service provider processes the pseudonymous usage statistics described in section 3. Its servers may be outside India, which makes this a cross-border transfer. No financial data is included. FinCalix does not use crash reporting. To withdraw consent, turn off Usage analytics in Settings → Privacy.</p>
                 <GreenBox>
                     <div style={{ color: '#10B981', fontWeight: 600, marginBottom: '10px' }}>✅ Data Safety</div>
                     <Bullets items={[
@@ -394,7 +394,7 @@ export default function PrivacyPolicy() {
             {/* 12 — DPDP Act 2023 & Grievance */}
             <Section icon="⚖️" color="#8B5CF6" title="DPDP Act 2023 & Grievance">
                 <p style={{ marginBottom: '14px' }}>
-                    FinCalix complies with the Digital Personal Data Protection Act, 2023. Your financial inputs are stored only on your device, and optional usage analytics run only with your consent, which you can withdraw at any time. For any privacy concerns, grievances, or questions about how this app handles your data,
+                    FinCalix complies with the Digital Personal Data Protection Act, 2023. Your financial inputs are stored only on your device. You can turn analytics off in Settings → Privacy. For any privacy concerns, grievances, or questions about how this app handles your data,
                 </p>
 
                 <div style={{
