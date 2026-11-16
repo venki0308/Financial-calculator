@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF as exportReportPDF, exportToExcel as exportReportExcel, dateTag, type ExportConfig } from '../utils/exportReport';
-import { AnalyticsService } from '../lib/analytics';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
@@ -131,9 +130,6 @@ export default function OverdraftCalculator() {
   const [monthsRemaining, setMonthsRemaining] = useState('6');
   const [preclosurePenalty, setPreclosurePenalty] = useState('0');
 
-  useEffect(() => {
-    AnalyticsService.trackScreen('Overdraft_Calculator');
-  }, []);
 
   // Sync dates
   useEffect(() => {
@@ -335,12 +331,10 @@ export default function OverdraftCalculator() {
 
   const handleDownloadPDF = async () => {
     await exportReportPDF(buildExportConfig(false));
-    AnalyticsService.trackFileDownload('pdf', 'overdraft_calculator');
   };
 
   const handleDownloadExcel = async () => {
     await exportReportExcel(buildExportConfig(true));
-    AnalyticsService.trackFileDownload('excel', 'overdraft_calculator');
   };
 
   const handleSave = () => {

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
@@ -30,7 +29,6 @@ export default function KVPCalculator() {
     const navigate = useNavigate();
     const { addSaved, removeSaved } = useCalculatorStore();
 
-    useEffect(() => { AnalyticsService.trackScreen('KVP_Calculator'); }, []);
 
     const [investment, setInvestment] = useState(50000);
     const [rate, setRate] = useState<number>(SMALL_SAVINGS.rates.kvp);

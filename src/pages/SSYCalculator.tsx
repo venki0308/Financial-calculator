@@ -18,7 +18,6 @@ import SmartInsight from '../components/SmartInsight';
 import { formatINR } from '../utils/calculations';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
-import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { useAppColors } from '../theme/useAppColors';
@@ -31,7 +30,6 @@ interface YearWise { year: number; age: number; deposit: number; interest: numbe
 
 export default function SSYCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('SSY_Calculator_Advanced'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved, removeSaved } = useCalculatorStore();

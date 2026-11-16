@@ -13,7 +13,6 @@ import {
     calculatePpfStatus, calculateSsyStatus, calculateNscStatus,
     calculateKvpStatus, calculatePomisStatus, calculateScssStatus,
 } from '../utils/investmentStatusEngine';
-import { AnalyticsService } from '../lib/analytics';
 import { getAllCreditCards } from '../utils/creditCardStorage';
 import { getUtilization, getUtilizationBarColor, getDaysUntilDue } from '../utils/creditCardCalculations';
 import { parseLocalDate } from '../utils/dateUtils';
@@ -548,7 +547,6 @@ export default function MyLoans() {
     const [storageTick, setStorageTick] = useState(0);
 
     useEffect(() => {
-        AnalyticsService.trackScreen('My_Loans');
         // Refresh loanStorage merge whenever the screen comes back into focus.
         setStorageTick(t => t + 1);
     }, []);

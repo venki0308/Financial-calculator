@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, AlertTriangle, ShieldCheck, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -23,7 +22,6 @@ export default function SWPCalculator() {
     const addProfile = useLiveStatusStore(s => s.addProfile);
     const removeProfile = useLiveStatusStore(s => s.removeProfile);
 
-    useEffect(() => { AnalyticsService.trackScreen('SWP_Advanced'); }, []);
 
     // Base Inputs
     const [principal, setPrincipal] = useState(1000000);

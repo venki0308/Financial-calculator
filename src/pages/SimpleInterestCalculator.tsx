@@ -18,7 +18,6 @@ import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import { saveLoan as saveLoanToStorage, deleteLoan as deleteLoanFromStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
-import { AnalyticsService } from '../lib/analytics';
 
 type Mode = 'flat' | 'simple' | 'compound';
 
@@ -76,7 +75,6 @@ export default function SimpleInterestCalculator() {
         6: t('si.freqHalfyearly'),
         12: t('si.freqYearly'),
     };
-    useEffect(() => { AnalyticsService.trackScreen('Simple_Interest'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
     const [mode, setMode] = useState<Mode>('flat');

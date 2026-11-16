@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Plus, Trash2, Download, AlertTriangle, Briefcase, FileText, ChevronDown, ChevronUp, Info, CheckCircle2, ClipboardCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
-import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
@@ -100,7 +99,6 @@ function Collapsible({ title, children, defaultOpen = false }: { title: string; 
 
 export default function Form16TaxCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('Form16_Tax'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
 

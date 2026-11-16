@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, Lightbulb, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, getEnglishT } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -31,7 +30,6 @@ export default function GratuityCalculator() {
     const addProfile = useLiveStatusStore(s => s.addProfile);
     const removeProfile = useLiveStatusStore(s => s.removeProfile);
 
-    useEffect(() => { AnalyticsService.trackScreen('Gratuity'); }, []);
 
     const [salary, setSalary] = useState(50000);
     const [years, setYears] = useState(10);

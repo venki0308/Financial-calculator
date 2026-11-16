@@ -14,7 +14,6 @@ import { formatINR, formatINRWords } from '../utils/calculations';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
-import { AnalyticsService } from '../lib/analytics';
 import ShareableCard from '../components/ShareableCard';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
@@ -66,7 +65,6 @@ function computePPF(perPeriodContribution: number, depositsPerYear: number, rate
 
 export default function AdvancedPPFCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('PPF_Advanced_Calculator'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
 

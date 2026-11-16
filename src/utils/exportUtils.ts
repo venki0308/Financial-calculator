@@ -1,4 +1,5 @@
 import { guardAoa } from './csvSafe';
+import { trackExported } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { darkColors, lightColors } from '../theme/colors';
@@ -130,6 +131,7 @@ function blobToBase64(blob: Blob): Promise<string> {
 
 // ─── Native save — writes to Cache (always writable), then shares ───────────
 async function saveOnNative(blob: Blob, filename: string): Promise<void> {
+    trackExported(filename);
     const { Filesystem, Directory } = await import('@capacitor/filesystem');
     const { usePdfStore } = await import('../store/usePdfStore');
 
@@ -153,6 +155,7 @@ async function saveOnNative(blob: Blob, filename: string): Promise<void> {
 
 // ─── Web browser download ─────────────────────────────────────────────────
 function browserDownload(blob: Blob, filename: string) {
+    trackExported(filename);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -333,7 +336,7 @@ export const exportToPDF = async (
             const pdfBlob = doc.output('blob');
             await saveOnNative(pdfBlob, pdfFilename);
         } else {
-            doc.save(pdfFilename);
+            doc.save(pdfFilename); trackExported(pdfFilename);
             showToast('✅ PDF downloaded!');
         }
     } catch (err: any) {
@@ -563,7 +566,7 @@ export const exportComparisonPDF = async (params: ComparisonPDFParams): Promise<
 
         const pdfFilename = 'FinCalix_Loan_Comparison.pdf';
         if (Capacitor.isNativePlatform()) { await saveOnNative(doc.output('blob'), pdfFilename); }
-        else { doc.save(pdfFilename); showToast('Comparison PDF downloaded!'); }
+        else { doc.save(pdfFilename); trackExported(pdfFilename); showToast('Comparison PDF downloaded!'); }
     } catch (err: any) {
         console.error('[FinCalix] Comparison PDF Error:', err);
         showToast('PDF export failed', true);
@@ -660,7 +663,7 @@ export const exportSIPComparisonPDF = async (params: SIPComparisonParams): Promi
         addPdfDisclaimer(doc);
         const pdfFilename = 'FinCalix_SIP_Comparison.pdf';
         if (Capacitor.isNativePlatform()) { await saveOnNative(doc.output('blob'), pdfFilename); }
-        else { doc.save(pdfFilename); showToast('SIP Comparison PDF downloaded!'); }
+        else { doc.save(pdfFilename); trackExported(pdfFilename); showToast('SIP Comparison PDF downloaded!'); }
     } catch (err: any) {
         console.error('[FinCalix] SIP Comparison PDF Error:', err);
         showToast('PDF export failed', true);
@@ -755,7 +758,7 @@ export const exportFDComparisonPDF = async (params: FDComparisonParams): Promise
         addPdfDisclaimer(doc);
         const pdfFilename = 'FinCalix_FD_Comparison.pdf';
         if (Capacitor.isNativePlatform()) { await saveOnNative(doc.output('blob'), pdfFilename); }
-        else { doc.save(pdfFilename); showToast('FD Comparison PDF downloaded!'); }
+        else { doc.save(pdfFilename); trackExported(pdfFilename); showToast('FD Comparison PDF downloaded!'); }
     } catch (err: any) {
         console.error('[FinCalix] FD Comparison PDF Error:', err);
         showToast('PDF export failed', true);
@@ -940,7 +943,7 @@ export const exportExpenseReportPDF = async (data: ExpenseReportData): Promise<v
             const pdfBlob = doc.output('blob');
             await saveOnNative(pdfBlob, pdfFilename);
         } else {
-            doc.save(pdfFilename);
+            doc.save(pdfFilename); trackExported(pdfFilename);
             showToast('Expense Report PDF downloaded!');
         }
     } catch (err: any) {
@@ -1160,7 +1163,7 @@ export const exportOverdraftPDF = async (data: OverdraftReportData): Promise<voi
             const pdfBlob = doc.output('blob');
             await saveOnNative(pdfBlob, pdfFilename);
         } else {
-            doc.save(pdfFilename);
+            doc.save(pdfFilename); trackExported(pdfFilename);
             showToast('✅ OD PDF downloaded!');
         }
     } catch (err: any) {
@@ -1583,7 +1586,7 @@ export const exportLoanPDF = async (data: LoanReportData): Promise<void> => {
             showToast('⏳ Generating PDF…');
             await saveOnNative(doc.output('blob'), pdfFilename);
         } else {
-            doc.save(pdfFilename);
+            doc.save(pdfFilename); trackExported(pdfFilename);
             showToast('✅ PDF downloaded!');
         }
     } catch (err: any) {

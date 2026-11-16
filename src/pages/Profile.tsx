@@ -7,7 +7,6 @@ import { APP_VERSION } from '../config/app';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useSchemeStore } from '../store/useSchemeStore';
 import { useTranslation } from 'react-i18next';
-import { AnalyticsService } from '../lib/analytics';
 import { getAllLoans } from '../utils/loanStorage';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import { useCibil } from '../context/CibilContext';
@@ -19,7 +18,6 @@ const languages: Record<string, string> = {
 };
 
 export default function Profile() {
-    useEffect(() => { AnalyticsService.trackScreen('Profile'); }, []);
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
     const { user, updateName } = useAuthStore();

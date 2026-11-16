@@ -9,6 +9,10 @@
 import { safeSetItem } from './safeStorage';
 
 export const ANALYTICS_CONSENT_KEY = 'fincalix_analytics_consent';
+/** Events waiting to be sent while offline (see services/analyticsService). */
+export const ANALYTICS_QUEUE_KEY = 'fincalix_analytics_queue';
+/** Set to "1" by automated checks: their events are flagged as test traffic. */
+export const ANALYTICS_TEST_TRAFFIC_KEY = 'fincalix_analytics_test_traffic';
 /** Fired on `window` whenever the choice changes. `detail` is the new value. */
 export const ANALYTICS_CONSENT_EVENT = 'fincalix:analytics-consent';
 
@@ -64,7 +68,7 @@ export function clearAnalyticsIdentifiers(): void {
         indexedDB.deleteDatabase('firebase-heartbeat-database');
     } catch { /* IndexedDB unavailable */ }
     try {
-        localStorage.removeItem('fincalix_analytics_queue'); // builds up to 21
+        localStorage.removeItem(ANALYTICS_QUEUE_KEY);        // queued events are deleted, never sent
         localStorage.removeItem('fincalix_anon_id');         // builds up to 21 (crash reporting ID)
     } catch { /* storage unavailable */ }
 }

@@ -10,7 +10,6 @@ import RateContextNote from '../components/RateContextNote';
 import { calculateReducingEMI, formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, emiMonthLabel, emiYearRange, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { nativeShare } from '../utils/nativeShare';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
@@ -32,7 +31,6 @@ export default function TwoWheelerLoanCalculator() {
     const { addHistory, addSaved, removeSaved, savedCalculations } = useCalculatorStore();
     const { profile: cibilProfile } = useCibil();
 
-    useEffect(() => { AnalyticsService.trackScreen('TwoWheeler_Loan'); }, []);
 
     // ── State ──
     const [vehicleType, setVehicleType] = useState<VehicleType>('petrol');

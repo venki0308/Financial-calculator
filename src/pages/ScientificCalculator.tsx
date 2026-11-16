@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Delete, RotateCcw, Clock, Copy, Check, ChevronDown, Hash, ArrowLeft } from 'lucide-react';
-import { AnalyticsService } from '../lib/analytics';
+import { trackCalculated } from '../lib/analytics';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -61,7 +61,6 @@ export default function ScientificCalculator() {
 
     const displayRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => { AnalyticsService.trackScreen('Scientific Calculator'); }, []);
 
     useEffect(() => {
         if (displayRef.current) {
@@ -240,7 +239,7 @@ export default function ScientificCalculator() {
             setLastAns(res);
             setAsFraction(false);
             setHistory(h => [{ expression, result: res, ts: Date.now() }, ...h].slice(0, 10));
-            AnalyticsService.trackCalculatorUsed('Scientific');
+            trackCalculated();
         }
     };
 

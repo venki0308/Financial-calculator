@@ -14,6 +14,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { csvRow } from './csvSafe';
+import { trackExported } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
 import { sanitizeForPDF } from './exportUtils';
 import type { Entry, Budget, BankAccount, EntryType } from '../types/expense';
@@ -1246,6 +1247,7 @@ function blobToBase64(blob: Blob): Promise<string> {
 }
 
 async function savePDF(doc: PDFDoc, filename: string): Promise<void> {
+    trackExported(filename);
     const blob: Blob = doc.output('blob');
 
     if (Capacitor.isNativePlatform()) {
@@ -4556,6 +4558,7 @@ export async function generateExpenseCSV(data: CSVExportData): Promise<void> {
     // BOM lets Excel detect UTF-8 properly (so Indian rupee, Hindi, etc. render)
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
     const filename = `FinCalix_Expenses_${dateTagFromStr(data.startDate)}_to_${dateTagFromStr(data.endDate)}.csv`;
+    trackExported(filename);
 
     if (Capacitor.isNativePlatform()) {
         try {

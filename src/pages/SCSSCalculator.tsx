@@ -18,7 +18,6 @@ import { formatINR } from '../utils/calculations';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { calculateScssStatus, type ScssStatusInput } from '../utils/investmentStatusEngine';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
-import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAppColors } from '../theme/useAppColors';
 import { todayStr } from '../utils/dateUtils';
@@ -28,7 +27,6 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function SCSSCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('SCSS_Calculator_Advanced'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved, removeSaved } = useCalculatorStore();

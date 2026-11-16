@@ -1,4 +1,5 @@
-import { AnalyticsProvider, EventParams } from './types';
+import { AnalyticsProvider, EventParams, PageContext } from './types';
+import { ANALYTICS_TEST_TRAFFIC_KEY } from '../../utils/analyticsConsent';
 
 // Firebase is loaded LAZILY, and not at all while the user has switched usage
 // analytics off: `initialize()` is the first point at which any provider code
@@ -33,6 +34,22 @@ const CONSENT_OFF = {
 function setGaDisabled(disabled: boolean) {
     if (!MEASUREMENT_ID || typeof window === 'undefined') return;
     (window as unknown as Record<string, boolean>)[`ga-disable-${MEASUREMENT_ID}`] = disabled;
+}
+
+/**
+ * Automated checks set ANALYTICS_TEST_TRAFFIC_KEY. Their events then carry
+ * debug_mode and traffic_type=internal, which the analytics property's
+ * "Developer traffic" and "Internal traffic" data filters exclude from reports
+ * (see PLAY_DATA_SAFETY.md).
+ */
+function testTrafficParams(): Record<string, string | boolean> {
+    try {
+        return localStorage.getItem(ANALYTICS_TEST_TRAFFIC_KEY) === '1'
+            ? { debug_mode: true, traffic_type: 'internal' }
+            : {};
+    } catch {
+        return {};
+    }
 }
 
 export class FirebaseProvider implements AnalyticsProvider {
@@ -78,6 +95,7 @@ export class FirebaseProvider implements AnalyticsProvider {
                     allow_google_signals: false,             // no cross-device / demographics
                     allow_ad_personalization_signals: false, // no ad personalisation
                     send_page_view: false,                   // the app sends its own page_view
+                    ...testTrafficParams(),
                 },
             });
             this.mod = firebaseAnalytics;
@@ -87,10 +105,20 @@ export class FirebaseProvider implements AnalyticsProvider {
         }
     }
 
+    setPage(page: PageContext): void {
+        if (!this.active || !this.mod) return;
+        try {
+            // Applied to every following event, including the ones the SDK
+            // records on its own (session start, engagement time), so no
+            // event reports the generic HTML title or a record ID in the URL.
+            this.mod.setDefaultEventParameters({ ...page, ...testTrafficParams() });
+        } catch { /* keep going without the page context */ }
+    }
+
     logEvent(eventName: string, params?: EventParams): void {
         if (!this.active || !this.analytics || !this.mod) return;
         try {
-            this.mod.logEvent(this.analytics, eventName, params);
+            this.mod.logEvent(this.analytics, eventName, { ...params, ...testTrafficParams() });
         } catch (error) {
             console.error(`[FirebaseProvider] Failed to log event ${eventName}`, error);
         }

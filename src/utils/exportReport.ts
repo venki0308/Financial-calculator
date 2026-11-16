@@ -4,6 +4,7 @@
  */
 
 import { guardAoa } from './csvSafe';
+import { trackExported } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
 import { sanitizeForPDF } from './exportUtils';
 import { useSettingsStore } from '../store/useSettingsStore';
@@ -207,6 +208,7 @@ function blobToBase64(blob: Blob): Promise<string> {
 }
 
 async function saveNative(blob: Blob, filename: string): Promise<void> {
+    trackExported(filename);
     const { Filesystem, Directory } = await import('@capacitor/filesystem');
     const { usePdfStore } = await import('../store/usePdfStore');
     const base64 = await blobToBase64(blob);
@@ -218,6 +220,7 @@ async function saveNative(blob: Blob, filename: string): Promise<void> {
 }
 
 function webDownload(blob: Blob, filename: string) {
+    trackExported(filename);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

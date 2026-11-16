@@ -12,7 +12,6 @@ import { useCalculatorStore } from '../store/useCalculatorStore';
 import { Save, Check } from 'lucide-react';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
-import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
 
 // India FY 2026-27 industry avg hike benchmarks (Source: Aon Salary Survey 2026, EY Future of Pay 2026)
@@ -59,7 +58,6 @@ function estimateTaxOnIncome(annual: number): number {
 
 export default function SalaryHikeCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('Salary_Hike'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
 

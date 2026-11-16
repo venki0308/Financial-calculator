@@ -1,4 +1,5 @@
 import { safeSetItem } from '../utils/safeStorage';
+import { useCalculatedEvent } from '../lib/analytics';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
@@ -7,7 +8,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
-import { AnalyticsService } from '../lib/analytics';
 import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 
 // Dispatch helper so every handler in this file can emit either PDF or Excel
@@ -29,7 +29,6 @@ const UNIT_SHORT_LABELS = UNIT_SHORT;
 type Mode = 'land' | 'flat' | 'villa' | 'convert';
 
 export default function PropertyCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('Property'); }, []);
     useTrackCalculator();
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -160,6 +159,8 @@ export default function PropertyCalculator() {
     const [apResult, setApResult] = useState<{
         projections: { years: number; value: number; gain: number }[];
     } | null>(null);
+    // A calculation is counted when any result changes (see lib/analytics).
+    useCalculatedEvent([mode, landResult, flatResult, villaResult, sdResult, emiResult, ryResult, apResult]);
 
     // ── Copy toast ────────────────────────────────────────────────────────────
     const [copied, setCopied] = useState<string | null>(null);

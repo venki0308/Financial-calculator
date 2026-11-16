@@ -6,13 +6,11 @@ import { schemes, schemeCategories } from '../data/schemes';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { useSchemeStore } from '../store/useSchemeStore';
 import { useTranslatedSchemeList } from '../hooks/useTranslatedScheme';
-import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
 const catIcons: Record<string, React.ElementType> = { Women: Users, Education: GraduationCap, Farmers: Tractor, MSME: Building2, 'Senior Citizens': UserCheck, Insurance: Shield, Housing: HomeIcon, Banking: Landmark, Pension: Clock, Health: Heart, Employment: Briefcase, 'Social Welfare': HandHeart };
 
 export default function Schemes() {
-    useEffect(() => { AnalyticsService.trackScreen('Schemes_List'); }, []);
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { bookmarkedSchemes, addBookmark, removeBookmark } = useSchemeStore();

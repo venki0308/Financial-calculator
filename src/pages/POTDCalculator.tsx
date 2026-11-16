@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, getEnglishT, ExportConfig } from '../utils/exportReport';
@@ -34,7 +33,6 @@ export default function POTDCalculator() {
     const navigate = useNavigate();
     const { addSaved, removeSaved } = useCalculatorStore();
 
-    useEffect(() => { AnalyticsService.trackScreen('POTD_Calculator'); }, []);
 
     const [investment, setInvestment] = useState(100000);
     const [years, setYears] = useState<'1' | '2' | '3' | '5'>('5');

@@ -7,7 +7,6 @@ import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF as exportToPDFNew, dateTag, type ExportConfig } from '../utils/exportReport';
-import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
 import { useAppColors } from '../theme/useAppColors';
 
@@ -51,7 +50,6 @@ export default function AIFinancialAssistant() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const c = useAppColors();
-    useEffect(() => { AnalyticsService.trackScreen('Financial_Advisor'); }, []);
 
     // Build goals with translated labels
     const goals = goalsMeta.map(g => ({ ...g, label: t(`advisor.goals.${g.id}`) }));

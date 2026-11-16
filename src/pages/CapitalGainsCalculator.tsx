@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, BrainCircuit, ChevronDown, ChevronUp, Calculator, TrendingUp, TrendingDown } from 'lucide-react';
-import { AnalyticsService } from '../lib/analytics';
 import { formatINR, computeCapitalGains, CII, type CgAssetType } from '../utils/calculations';
 import NumberInput from '../components/NumberInput';
 import DateInput from '../components/DateInput';
@@ -24,7 +23,6 @@ const SLABS = [5, 10, 15, 20, 25, 30];
 export default function CapitalGainsCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    useEffect(() => { AnalyticsService.trackScreen('CapitalGains_Calculator'); }, []);
 
     const [asset, setAsset] = useState<CgAssetType>('equity');
     const [purchaseDate, setPurchaseDate] = useState(yearsAgoISO(3));

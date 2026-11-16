@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { trackCalculated } from '../lib/analytics';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { safeLocalStorage } from '../utils/safeStorage';
 import { useNotificationStore } from './useNotificationStore';
@@ -39,9 +40,14 @@ export const useCalculatorStore = create<CalculatorState>()(
                 )
             })),
             removeSaved: (id) => set((s) => ({ savedCalculations: s.savedCalculations.filter((c) => c.id !== id) })),
-            addHistory: (calc) => set((s) => ({
-                history: [calc, ...s.history.filter(h => h.id !== calc.id)].slice(0, 50)
-            })),
+            addHistory: (calc) => {
+                // Every calculator saves each new result here, so this is the
+                // one place that records "a calculation was completed".
+                trackCalculated();
+                set((s) => ({
+                    history: [calc, ...s.history.filter(h => h.id !== calc.id)].slice(0, 50)
+                }));
+            },
             removeHistory: (id) => set((s) => ({ history: s.history.filter((h) => h.id !== id) })),
             clearHistory: () => set({ history: [] }),
         }),

@@ -14,7 +14,6 @@ import { calculateSipStatus, type SipStatusInput } from '../utils/investmentStat
 import { exportToPDF, exportToExcel, type ExportConfig, dateTag } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
-import { AnalyticsService } from '../lib/analytics';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { todayStr } from '../utils/dateUtils';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
@@ -38,7 +37,6 @@ const goalPresets: GoalPreset[] = [
 ];
 
 export default function GoalPlanner() {
-    useEffect(() => { AnalyticsService.trackScreen('Goal_Planner'); }, []);
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { addSaved, removeSaved } = useCalculatorStore();

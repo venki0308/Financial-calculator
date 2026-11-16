@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Info, Save, Check, Target, TrendingUp, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -24,7 +23,6 @@ export default function LumpsumCalculator() {
     const addProfile = useLiveStatusStore(s => s.addProfile);
     const removeProfile = useLiveStatusStore(s => s.removeProfile);
 
-    useEffect(() => { AnalyticsService.trackScreen('Lumpsum_Advanced'); }, []);
 
     // Base Inputs
     const [principal, setPrincipal] = useState(100000);

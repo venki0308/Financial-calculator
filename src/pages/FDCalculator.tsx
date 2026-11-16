@@ -23,7 +23,6 @@ import { calculateFD, formatINR } from '../utils/calculations';
 import { calculateFdStatus, type FdStatusInput } from '../utils/investmentStatusEngine';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
-import { AnalyticsService } from '../lib/analytics';
 import { triggerCalcNotification } from '../services/calcNotifications';
 import { useAppColors } from '../theme/useAppColors';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
@@ -32,7 +31,6 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 
 export default function FDCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('FD_Calculator'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved, removeSaved, savedCalculations } = useCalculatorStore();

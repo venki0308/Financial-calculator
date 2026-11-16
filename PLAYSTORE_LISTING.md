@@ -88,7 +88,7 @@ Every salaried employee, business owner, and investor in India needs a reliable 
 • No login, no account
 • Your salary, tax inputs & financial figures NEVER leave your phone
 • Works offline: your financial data is never uploaded
-• No ads. Usage statistics are optional and sent only if you allow it
+• No ads. Usage analytics are on by default and can be turned off anytime in Settings → Privacy
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ WHY FINCALIX?

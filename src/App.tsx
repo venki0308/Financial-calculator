@@ -246,7 +246,6 @@ function AppContent() {
             setupErrorHandling();
             await FeatureFlagService.load();
             await AnalyticsService.initialize();
-            AnalyticsService.trackScreenView({ screen_name: 'App_Open' });
         };
         initAnalytics();
         NotificationScheduler.initialize();

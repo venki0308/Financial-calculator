@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, BrainCircuit, Globe, Info } from 'lucide-react';
-import { AnalyticsService } from '../lib/analytics';
 import { formatINR, computeLrsTcs, LRS_TCS_THRESHOLD, type LrsPurpose } from '../utils/calculations';
 import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
@@ -20,7 +19,6 @@ const PURPOSES: { id: LrsPurpose; key: string }[] = [
 export default function LRSTCSCalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    useEffect(() => { AnalyticsService.trackScreen('LRS_TCS_Calculator'); }, []);
 
     const [purpose, setPurpose] = useState<LrsPurpose>('eduMedical');
     const [amount, setAmount] = useState(1500000);

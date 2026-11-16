@@ -1,25 +1,44 @@
-// QA audit: usage analytics behaviour.
-// Analytics run for every user by default (as in earlier versions), with no
-// popup, and a user can switch them off in Settings → Privacy. This audit
-// drives the PRODUCTION build in a real browser, each scenario in a brand-new
-// profile, records every network request and checks that:
-//   - no popup ever asks about usage statistics,
-//   - analytics start on their own,
-//   - switching them off stops every request and deletes the identifiers,
+// QA audit: usage analytics behaviour and event hygiene.
+// Analytics run for every user by default (as in the published app), with no
+// popup, and can be switched off in Settings → Privacy. Drives the PRODUCTION
+// build in a real browser, each scenario in a brand-new profile, decodes every
+// hit sent to the analytics service and checks:
+//   - no popup ever asks about usage statistics;
+//   - one page_view per screen, with the canonical screen name, no screen_view,
+//     no underscore names, no generic HTML title, no record IDs in addresses;
+//   - calculator_calculated fires once per calculation (not per keystroke) and
+//     report_exported fires for PDF and Excel, each with only allowed params;
+//   - every hit is flagged as test traffic (debug_mode + traffic_type=internal);
+//   - offline events are queued and sent later; switching off deletes the
+//     queue unsent and stops all requests;
 //   - a user upgrading from build 21 keeps the same analytics ID.
 //
 //   npm run build
 //   node scripts/qa-consent-network.mjs            (starts its own preview server)
-//   node scripts/qa-consent-network.mjs http://127.0.0.1:4173   (use a running one)
+//   node scripts/qa-consent-network.mjs https://fincalix.com   (a deployed site)
 //
 // Needs the dev dependency playwright-core and an installed Google Chrome.
-// Note: every run sends a handful of real hits to the analytics property
-// configured in .env.
+// Every hit it causes carries debug_mode and traffic_type=internal, which the
+// analytics property filters out of reports (see PLAY_DATA_SAFETY.md).
 import { chromium } from 'playwright-core';
 import { spawn } from 'node:child_process';
 
 const ANALYTICS_HOSTS = /(^|\.)(google-analytics\.com|analytics\.google\.com|googletagmanager\.com|doubleclick\.net|firebase\.googleapis\.com|firebaseinstallations\.googleapis\.com|firebaselogging-pa\.googleapis\.com|app-measurement\.com)$/;
 const COLLECT_HOSTS = /(^|\.)(google-analytics\.com|analytics\.google\.com|app-measurement\.com)$/;
+const QUEUE_KEY = 'fincalix_analytics_queue';
+
+// Event → event parameters it may carry (as sent: "ep." params). The SDK adds
+// "origin"; test runs add "debug_mode". "language" is filed by the library
+// under its built-in language field ("ul"), checked separately.
+const ALLOWED = {
+    page_view: [],
+    calculator_calculated: ['calculator_id'],
+    report_exported: ['calculator_id', 'export_format'],
+    scheme_viewed: ['scheme_type'],
+    language_changed: [],
+};
+const SDK_PARAMS = ['origin', 'debug_mode'];
+const GENERIC_TITLE = /FinCalix — Free Financial/;
 
 let passed = 0;
 let failed = 0;
@@ -40,50 +59,98 @@ async function startPreview() {
     throw new Error('preview server did not start — run "npm run build" first');
 }
 
-/** A brand-new profile with a request log. */
-async function freshProfile(browser) {
-    const context = await browser.newContext({ viewport: { width: 412, height: 915 }, serviceWorkers: 'block' });
-    const page = await context.newPage();
-    const log = [];
-    page.on('request', (req) => {
-        const u = new URL(req.url());
-        if (ANALYTICS_HOSTS.test(u.hostname)) log.push({ host: u.hostname, path: u.pathname, method: req.method(), at: Date.now() });
-    });
-    return { context, page, log };
+/** Decode one collect request into its events (a request can batch several). */
+function decode(req) {
+    const u = new URL(req.url());
+    const base = new URLSearchParams(u.search);
+    const out = [];
+    for (const line of [u.search.slice(1), ...(req.postData() || '').split('\n')].filter(Boolean)) {
+        const p = new URLSearchParams(line);
+        const en = p.get('en');
+        if (!en) continue;
+        const ep = {};
+        for (const [k, v] of p) if (/^(ep|epn|up)\./.test(k)) ep[k.replace(/^(ep|epn|up)\./, '')] = v;
+        const get = (k) => p.get(k) ?? base.get(k);
+        out.push({ en, ep, dt: get('dt') || '', dl: get('dl') || '', ul: get('ul') || '', tt: get('tt') || '', at: Date.now() });
+    }
+    return out;
 }
 
-const state = (page) => page.evaluate(async () => ({
+/** A brand-new profile with request + event logs. Test traffic is flagged. */
+async function freshProfile(browser, seed = {}) {
+    const context = await browser.newContext({ viewport: { width: 412, height: 915 }, serviceWorkers: 'block', acceptDownloads: true });
+    await context.addInitScript((s) => {
+        try {
+            localStorage.setItem('fincalix_analytics_test_traffic', '1');
+            if (!sessionStorage.getItem('seeded')) {
+                for (const [k, v] of Object.entries(s)) localStorage.setItem(k, v);
+                sessionStorage.setItem('seeded', '1');
+            }
+        } catch { /* storage unavailable */ }
+    }, seed);
+    const page = await context.newPage();
+    const requests = [];
+    const events = [];
+    page.on('request', (req) => {
+        const u = new URL(req.url());
+        if (!ANALYTICS_HOSTS.test(u.hostname)) return;
+        requests.push({ host: u.hostname, path: u.pathname, method: req.method(), at: Date.now() });
+        if (COLLECT_HOSTS.test(u.hostname)) events.push(...decode(req));
+    });
+    return { context, page, requests, events };
+}
+
+const state = (page) => page.evaluate(async (qk) => ({
     consent: localStorage.getItem('fincalix_analytics_consent'),
     ga: (document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith('_ga=')) || '').slice(4),
     gaCookies: document.cookie.split(';').map(c => c.trim().split('=')[0]).filter(n => n.startsWith('_ga')),
     firebaseDbs: (indexedDB.databases ? await indexedDB.databases() : []).map(d => d.name).filter(n => /firebase/.test(n || '')),
     gtagLoaded: [...document.scripts].some(s => /googletagmanager/.test(s.src)),
-}));
+    queue: JSON.parse(localStorage.getItem(qk) || '[]'),
+}), QUEUE_KEY);
 
 /** Scroll the first-launch disclaimer to the end and accept it. */
 async function acceptDisclaimer(page) {
     const accept = page.locator('div.fixed.inset-0 button').last();
     await page.waitForFunction(() => !!document.querySelector('div.fixed.inset-0 .overflow-y-auto'), null, { timeout: 15000 });
-    await page.evaluate(() => {
-        const box = document.querySelector('div.fixed.inset-0 .overflow-y-auto');
-        box.scrollTop = box.scrollHeight;
-        box.dispatchEvent(new Event('scroll'));
-    });
-    await page.waitForTimeout(400);
+    // The text may still be laying out (fonts, translations): scroll until the button enables.
+    for (let i = 0; i < 20 && !(await accept.isEnabled()); i++) {
+        await page.evaluate(() => {
+            const box = document.querySelector('div.fixed.inset-0 .overflow-y-auto');
+            box.scrollTop = box.scrollHeight;
+            box.dispatchEvent(new Event('scroll'));
+        });
+        await page.waitForTimeout(300);
+    }
     await accept.click();
 }
 
-const settle = (page, ms = 3500) => page.waitForTimeout(ms);
-const visit = async (page, base, path) => { await page.goto(base + path, { waitUntil: 'load' }); await settle(page); };
-const collectCount = (log) => log.filter(r => COLLECT_HOSTS.test(r.host)).length;
-/** The analytics tag batches hits for a few seconds; wait for the first one. */
-const waitForCollect = (page) => page
-    .waitForRequest((r) => COLLECT_HOSTS.test(new URL(r.url()).hostname), { timeout: 25000 })
-    .then(() => page.waitForTimeout(500), () => {});
-/** True when anything on screen asks about usage statistics / analytics consent. */
+const wait = (page, ms) => page.waitForTimeout(ms);
+/** In-app navigation (no reload), like tapping a link. */
+const go = async (page, path, ms = 1500) => {
+    await page.evaluate((p) => { history.pushState({}, '', p); window.dispatchEvent(new PopStateEvent('popstate')); }, path);
+    await wait(page, ms);
+};
 const popupShown = (page) => page.evaluate(() =>
     !!document.querySelector('[aria-labelledby="analytics-consent-title"]') ||
     [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].some(d => /usage statistics|analytics/i.test(d.textContent || '')));
+const settle = async (page, events, ms = 9000) => { await wait(page, ms); return events.length; };
+
+/** Every hit: allowed event, only allowed params, test-flagged, no generic title, no record ID. */
+function hygiene(events, label) {
+    const bad = [];
+    for (const e of events) {
+        const allowed = ALLOWED[e.en];
+        if (!allowed) { bad.push(`unexpected event ${e.en}`); continue; }
+        const extra = Object.keys(e.ep).filter(k => !allowed.includes(k) && !SDK_PARAMS.includes(k));
+        if (extra.length) bad.push(`${e.en} has ${extra.join(',')}`);
+        if (GENERIC_TITLE.test(e.dt)) bad.push(`${e.en} generic title`);
+        if (/_/.test(e.dt)) bad.push(`${e.en} underscore title ${e.dt}`);
+        if (/\/(my-loans|business-tracker|credit-cards)\/(?!:id|add)[^/]+/.test(e.dl)) bad.push(`${e.en} record id in ${e.dl}`);
+        if (e.tt !== 'internal' || e.ep.debug_mode !== 'true') bad.push(`${e.en} not flagged as test traffic`);
+    }
+    check(`${label}: every hit is an allowed event with only allowed parameters, flagged as test traffic`, bad.length === 0 && events.length > 0, bad.length ? [...new Set(bad)].slice(0, 4).join(' | ') : `${events.length} hits`);
+}
 
 async function main() {
     const external = process.argv[2];
@@ -91,74 +158,130 @@ async function main() {
     const { base } = server;
     const browser = await chromium.launch({ channel: 'chrome', headless: true });
     try {
-        // ── 1. New user: no popup, analytics start on their own; switching off stops everything
-        console.log('\n1. New user → analytics on by default → switch off in Settings');
+        // ── 1. New user: no popup; one page_view per screen; calculate + export events
+        console.log('\n1. New user: screens, calculation, exports');
         {
-            const { context, page, log } = await freshProfile(browser);
-            await visit(page, base, '/?dev=true');
+            const { context, page, events } = await freshProfile(browser, { fincalix_dev_access: 'true' });
+            await page.goto(base + '/', { waitUntil: 'load' });
             await acceptDisclaimer(page);
-            await settle(page, 2000);
+            await wait(page, 2500);
             check('no usage-statistics popup after the disclaimer', !(await popupShown(page)));
-            await visit(page, base, '/calculator/sip');
-            await waitForCollect(page);
-            let s = await state(page);
+
+            await go(page, '/sip');                 // old URL that redirects to /calculator/sip
+            await go(page, '/calculator/loan-emi');
+            await go(page, '/my-loans');
+            await go(page, '/calculator/sip', 4500); // wait past the screen-opening window
             check('no popup on later screens either', !(await popupShown(page)));
-            check('analytics run without being asked: tag loaded and hits sent', s.gtagLoaded && collectCount(log) > 0, `${collectCount(log)} collect requests`);
-            check('nothing is stored as a choice (default on)', s.consent === null);
 
-            await visit(page, base, '/settings');
-            const toggle = page.locator('button[role="switch"]');
-            check('Settings switch shows analytics as on', (await toggle.getAttribute('aria-checked')) === 'true');
-            await toggle.click(); // off
-            await settle(page, 5000);
-            const atOff = Date.now();
-            // Same page session first (the tag is still in memory)…
-            for (const path of ['/calculator/sip', '/calculator/ppf']) {
-                await page.evaluate((p) => { history.pushState({}, '', p); window.dispatchEvent(new PopStateEvent('popstate')); }, path);
-                await settle(page, 6000);
-            }
-            // …then fresh launches.
-            await visit(page, base, '/calculator/sip');
-            await visit(page, base, '/calculator/hra');
-            await visit(page, base, '/');
-            await settle(page, 4000);
-            s = await state(page);
-            const afterOff = log.filter(r => r.at > atOff);
-            check('after switching off: choice stored as "denied"', s.consent === 'denied');
-            check('after switching off: no request at all to analytics hosts, also after relaunch', afterOff.length === 0, afterOff.map(r => r.host + r.path).join(', '));
-            check('after switching off: analytics cookies and IDs are deleted', s.gaCookies.length === 0 && s.firebaseDbs.length === 0 && !s.gtagLoaded, JSON.stringify(s));
+            // Type a new amount, key by key, then leave the field.
+            const input = page.locator('input').first();
+            await input.click();
+            await input.press('Control+A');
+            for (const k of ['1', '5', '0', '0', '0']) { await input.press(k); await wait(page, 150); }
+            await page.locator('h1, h2').first().click({ force: true }).catch(() => {});
+            await wait(page, 5000);
 
-            await visit(page, base, '/settings');
-            await page.locator('button[role="switch"]').click(); // on again
-            await settle(page, 2000);
-            await visit(page, base, '/calculator/income-tax');
-            await waitForCollect(page);
-            s = await state(page);
-            check('switching on again: hits resume', s.consent === 'granted' && log.filter(r => r.at > atOff && COLLECT_HOSTS.test(r.host)).length > 0);
+            await page.getByRole('button', { name: /pdf/i }).first().click();
+            await wait(page, 3000);
+            await page.getByRole('button', { name: /excel/i }).first().click();
+            await settle(page, events);
+
+            const views = events.filter(e => e.en === 'page_view').map(e => e.dt);
+            check('one page_view per screen visit, canonical names', JSON.stringify(views) === JSON.stringify(['Home', 'SIP Calculator', 'EMI Calculator', 'My Loans', 'SIP Calculator']), views.join(' → '));
+            check('no screen_view events', !events.some(e => e.en === 'screen_view'));
+            check('no hit reports the generic HTML title', !events.some(e => GENERIC_TITLE.test(e.dt)));
+            const calcs = events.filter(e => e.en === 'calculator_calculated');
+            check('typing 5 keys = exactly one calculator_calculated', calcs.length === 1, `${calcs.length} events`);
+            check('calculator_calculated params: calculator_id=sip, language=en', calcs[0]?.ep.calculator_id === 'sip' && calcs[0]?.ul === 'en', JSON.stringify(calcs[0]?.ep || {}) + ' ul=' + (calcs[0]?.ul || ''));
+            check('no calculator_calculated for results shown while screens were opening', calcs.length <= 1);
+            const exports = events.filter(e => e.en === 'report_exported').map(e => `${e.ep.calculator_id}/${e.ep.export_format}/${e.ul}`);
+            check('report_exported for PDF and Excel with calculator_id and language', JSON.stringify(exports) === JSON.stringify(['sip/pdf/en', 'sip/excel/en']), exports.join(', '));
+            hygiene(events, 'scenario 1');
             await context.close();
         }
 
-        // ── 2. Existing user upgrading from build 21: analytics continue with the same ID
-        console.log('\n2. Existing user upgrading from build 21');
+        // ── 2. Offline: events are queued, then sent when back online
+        console.log('\n2. Offline queue');
         {
-            const { context, page, log } = await freshProfile(browser);
+            const { context, page, events } = await freshProfile(browser, { fincalix_dev_access: 'true', fincalix_disclaimer_accepted_v4: 'true' });
+            await page.goto(base + '/', { waitUntil: 'load' });
+            await go(page, '/calculator/fixed-deposit');
+            await go(page, '/schemes', 6000);
+            const before = events.length;
+            await context.setOffline(true);
+            await go(page, '/calculator/fixed-deposit');
+            await go(page, '/schemes');
+            let s = await state(page);
+            check('while offline: page views are kept in the local queue', s.queue.length === 2 && events.length === before, `${s.queue.length} queued`);
+            check('queued items carry no amounts or typed text', s.queue.every(q => q.e === 'page_view' && Object.keys(q.p || {}).every(k => ['page_title', 'page_location'].includes(k))));
+            await context.setOffline(false);
+            await page.evaluate(() => window.dispatchEvent(new Event('online')));
+            await settle(page, events);
+            s = await state(page);
+            const sent = events.slice(before).filter(e => e.en === 'page_view').map(e => e.dt);
+            check('back online: the queue is sent and cleared', s.queue.length === 0 && sent.length === 2, sent.join(' → '));
+            hygiene(events, 'scenario 2');
+            await context.close();
+        }
+
+        // ── 3. Switched off: the queue is deleted unsent, nothing is sent again
+        console.log('\n3. Switch off in Settings (with events queued)');
+        {
+            const { context, page, events, requests } = await freshProfile(browser, { fincalix_dev_access: 'true', fincalix_disclaimer_accepted_v4: 'true' });
+            await page.goto(base + '/', { waitUntil: 'load' });
+            // Load every screen used below once while online (their code is
+            // downloaded on first use and would not load while offline).
+            await go(page, '/settings', 3000);
+            await go(page, '/schemes', 2000);
+            await go(page, '/calculator/fixed-deposit', 4000);
+            await context.setOffline(true);
+            await go(page, '/schemes');
+            await go(page, '/calculator/fixed-deposit');
+            let s = await state(page);
+            check('events queued while offline', s.queue.length >= 2, `${s.queue.length} queued`);
+            await go(page, '/settings', 1500);
+            const toggle = page.locator('button[role="switch"]');
+            check('Settings switch shows analytics as on', (await toggle.getAttribute('aria-checked')) === 'true');
+            await toggle.click(); // off
+            await wait(page, 1500);
+            s = await state(page);
+            check('switching off deletes the queue without sending it', s.queue.length === 0 && s.consent === 'denied');
+            const atOff = Date.now();
+            await context.setOffline(false);
+            await page.evaluate(() => window.dispatchEvent(new Event('online')));
+            await go(page, '/calculator/sip');
+            await page.goto(base + '/calculator/hra', { waitUntil: 'load' });
+            await settle(page, events, 6000);
+            s = await state(page);
+            const after = requests.filter(r => r.at > atOff);
+            check('after switching off: no request at all to analytics hosts, also after relaunch', after.length === 0, after.map(r => r.host + r.path).join(', '));
+            check('after switching off: analytics cookies and IDs are deleted, nothing queued', s.gaCookies.length === 0 && s.firebaseDbs.length === 0 && !s.gtagLoaded && s.queue.length === 0, JSON.stringify({ ...s, queue: s.queue.length }));
+            await context.close();
+        }
+
+        // ── 4. Upgrade from build 21: same analytics ID; old queue format handled
+        console.log('\n4. Existing user upgrading from build 21');
+        {
             const OLD_ID = 'GA1.1.1111111111.1700000000';
+            const { context, page, events } = await freshProfile(browser, {
+                fincalix_dev_access: 'true',
+                fincalix_disclaimer_accepted_v3: 'true',
+                fincalix_privacy_accepted: 'true',
+                [QUEUE_KEY]: JSON.stringify([{ eventName: 'screen_view', params: { screen_name: 'SIP_Calculator', amount: 50000 }, timestamp: Date.now() }]),
+            });
             await page.goto(base + '/robots.txt');
-            await page.evaluate((id) => {
-                localStorage.setItem('fincalix_dev_access', 'true');
-                localStorage.setItem('fincalix_disclaimer_accepted_v3', 'true');
-                localStorage.setItem('fincalix_privacy_accepted', 'true');
-                document.cookie = `_ga=${id}; path=/; max-age=63072000`;
-            }, OLD_ID);
-            await visit(page, base, '/');
+            await page.evaluate((id) => { document.cookie = `_ga=${id}; path=/; max-age=63072000`; }, OLD_ID);
+            await page.goto(base + '/', { waitUntil: 'load' });
             await acceptDisclaimer(page); // the updated disclaimer is shown once
-            await settle(page, 2000);
+            await wait(page, 2000);
             check('no usage-statistics popup after the disclaimer', !(await popupShown(page)));
-            await visit(page, base, '/calculator/sip');
-            await waitForCollect(page);
+            await go(page, '/calculator/sip');
+            await settle(page, events);
             const s = await state(page);
-            check('analytics keep running after the update', s.gtagLoaded && collectCount(log) > 0, `${collectCount(log)} collect requests`);
+            check('analytics keep running after the update', events.some(e => e.en === 'page_view'), `${events.length} hits`);
             check('the existing analytics ID is kept (same user in the reports)', s.ga === OLD_ID, s.ga);
+            check('an old queued screen_view (with an amount) is never sent, and the old queue is cleared', !events.some(e => e.en === 'screen_view' || 'amount' in e.ep) && s.queue.length === 0);
+            hygiene(events, 'scenario 4');
             await context.close();
         }
     } finally {

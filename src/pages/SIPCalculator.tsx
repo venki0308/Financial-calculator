@@ -28,7 +28,6 @@ import { calculateSipStatus, type SipStatusInput } from '../utils/investmentStat
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel, dateTag, type ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
-import { AnalyticsService } from '../lib/analytics';
 import SmartInsight from '../components/SmartInsight';
 import { useAppColors } from '../theme/useAppColors';
 import ShareableCard from '../components/ShareableCard';
@@ -59,7 +58,6 @@ const tabConfig: { key: SIPTab; labelKey: string; icon: React.ElementType }[] = 
 
 export default function SIPCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('SIP_Calculator'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
     const { addHistory, addSaved, removeSaved, savedCalculations } = useCalculatorStore();
