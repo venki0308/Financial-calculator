@@ -48,9 +48,15 @@ coverage/
 android/app/keystore.properties
 keystore.properties
 
+google-services.json
+
 # Build artifacts — APK / AAB / logs
 *.apk
 *.aab
+builds/
+builds_final/
+outputs/
+releases/
 *.log
 *.xlsx
 status_out.txt
