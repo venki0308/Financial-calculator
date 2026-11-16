@@ -23,7 +23,7 @@ Needs: the dev dependency `playwright-core`, Google Chrome installed, and intern
 | File | Purpose |
 |---|---|
 | `capture.mjs` | Serves `dist/`, seeds fictional demo data, captures each screen at 412×915 (device scale 2.625) in dark and light, in English, Telugu and Hindi, and reads the figures the app computed into `facts.json`. |
-| `content.mjs` | The list of images: size, layout, copy, which capture to show, caption, claims and sources. Figures are never typed in; they are referenced as `F('emi.emi')` and filled from `facts.json`. |
+| `content.mjs` | The list of images: size, layout, copy, which capture to show, caption, claims and sources. Results the app computed are never typed in; they are referenced as `F('emi.emi')` and filled from `facts.json`. Only the demo inputs (for example "₹5,00,000 after 3 years") and figures set by law appear as text, the latter with a source. |
 | `templates.mjs` | The brand system and the HTML layouts (`post`, `tip`, `hook`, `center`, `story`, `wide`, `play`, `feature`). |
 | `render.mjs` | Writes one HTML file per image to `marketing-assets/_html/`, screenshots it at the exact size, runs QA, converts Play assets to 24-bit PNG, and writes the manifest and contact sheet. |
 | `lib/png.mjs` | Dependency-free PNG header reader and RGB/RGBA converter. |

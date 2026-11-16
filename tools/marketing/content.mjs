@@ -3,7 +3,8 @@
 //
 // `F('emi.emi')` inserts a figure the app itself computed (read by
 // capture.mjs into marketing-assets/_captures/facts.json). No app figure is
-// typed by hand here. Figures that are law (limits, rates) carry a source.
+// typed by hand here. Demo inputs (from demo-data.mjs) are written out where a
+// sentence needs them, and figures that are law (limits, rates) carry a source.
 //
 // Copy rules are listed in README.md. In short: only true claims, and the
 // privacy wording is limited to the four phrases in PRIVACY below.
