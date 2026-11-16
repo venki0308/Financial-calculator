@@ -5,7 +5,7 @@ For FinCalix 1.2.9, build 22 (branch `privacy/consent-1.2.9`). Written 16 Novemb
 
 ## What build 22 actually does
 
-- Nothing is sent to Google until the user taps **Allow** on the "Share usage statistics?" dialog. The default is off. `node scripts/qa-consent-network.mjs` proves this on a fresh browser profile (22 checks).
+- Nothing is sent to Google unless the user turns on **Usage analytics** in Settings → Privacy. It is off by default and there is no popup. `node scripts/qa-consent-network.mjs` proves this on fresh browser profiles.
 - If allowed, the app sends usage statistics to Google Analytics 4 through the Firebase JavaScript SDK inside the WebView:
   - Events: `page_view`, `screen_view` (including app open), `calculation_event`, `scheme_viewed`, `language_changed`, `export_event`. Google Analytics adds first open, session start and engagement time on its own.
   - Parameters: screen name, page path, calculator type, scheme type (central or state), language, export type, feature name, platform. No amounts and no typed text.
@@ -13,7 +13,7 @@ For FinCalix 1.2.9, build 22 (branch `privacy/consent-1.2.9`). Written 16 Novemb
 - Settings → Privacy → **Usage analytics** turns it off: collection stops, the Analytics cookies and Firebase IDs are deleted from the device, and Firebase is asked to delete the installation ID on its servers.
 - No ads SDK, no account, no crash reporting (Crashlytics and Firebase Messaging were removed in build 22), no server of our own that receives user data.
 
-Wording note: at the owner's request the consent dialog, Settings, disclaimer, privacy policy and Data & Privacy screen say "an analytics service" and do not name the provider. The provider is still Google Analytics 4 (Firebase), which is what the answers below describe. The Data safety form asks for data types, not provider names.
+Wording note: at the owner's request Settings, the disclaimer, the privacy policy and Data & Privacy screen say "an analytics service" and do not name the provider. The provider is still Google Analytics 4 (Firebase), which is what the answers below describe. The Data safety form asks for data types, not provider names.
 
 ## Answers to enter
 
@@ -64,6 +64,6 @@ In Google Analytics Admin for this property:
 
 ## Where the same statements appear
 
-- First-launch disclaimer and consent dialog (6 languages): `src/locales/*.json` → `disclaimer.dataPrivacyBody`, `consent.*`.
+- First-launch disclaimer and the Settings switch (6 languages): `src/locales/*.json` → `disclaimer.dataPrivacyBody`, `settings.usageAnalytics*`.
 - In-app privacy policy and Data & Privacy screen: `privacyPolicy.*`, `dataSafety.*`.
 - Public pages: `src/pages/legal/PrivacyPolicy.tsx`, `src/pages/legal/DataPrivacy.tsx`.

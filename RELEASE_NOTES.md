@@ -14,11 +14,11 @@ Build 21 carried the same version name; build 22 adds the fixes below.
 - **CSV / Excel exports:** text cells that a spreadsheet would run as a formula (starting with `=`, `+`, `-`, `@`, tab or carriage return) get a leading apostrophe. Numeric cells, including negative amounts, are untouched. App-built signed figures such as `-3.2%` or `+₹1,200` are left as they are.
 
 ### Privacy
-- **Usage analytics are now opt-in.** Earlier builds started Google Analytics on every launch while the first-launch disclaimer said the app "does not track usage". Build 22 loads nothing from Google until the user taps Allow on a new consent dialog (shown after the disclaimer, and once to existing users). Settings → Privacy has a "Usage analytics" switch; turning it off stops collection and deletes the analytics IDs from the device. Checked by `node scripts/qa-consent-network.mjs`.
+- **Usage analytics are now opt-in.** Earlier builds started Google Analytics on every launch while the first-launch disclaimer said the app "does not track usage". Build 22 loads nothing from Google unless the user turns on the "Usage analytics" switch in Settings → Privacy. It is off by default and there is no popup. Turning it off stops collection and deletes the analytics IDs from the device. Checked by `node scripts/qa-consent-network.mjs`.
 - **Only six events can be sent**, with an allow-list of parameters and no amounts or typed text (`src/services/providers/types.ts`). Google signals and ad personalisation are off.
 - **Crashlytics and Firebase Messaging are removed.** They were linked into the app but had been unable to start since 1.2.2 (no Firebase config in the build).
 - **Privacy texts corrected in all six languages:** disclaimer (now v4, so every user sees it again), privacy policy, Data & Privacy screen, landing page, static pages and the store listing draft. "Zero data collected", "no tracking" and "100% offline" are gone.
-- The consent dialog is a one-sentence question with a link to the privacy policy. App texts say "an analytics service" and do not name the provider.
+- App texts say "an analytics service" and do not name the provider.
 - Play Console answers for the Data safety form: `PLAY_DATA_SAFETY.md`.
 
 ### Data refreshed (verified 16 Nov 2026)

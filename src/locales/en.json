@@ -8099,13 +8099,5 @@
     "limitNote": "LRS cap: USD 250,000 per person per FY. The {{threshold}} threshold is aggregate across all your LRS remittances in the FY. Section 206C(1G) of the 1961 Act → Section 394 of the Income-tax Act, 2025.",
     "insightNoTcs": "No TCS on this remittance — you are within the ₹10 lakh annual threshold.",
     "insightSplit": "Only {{amount}} of this remittance crosses the threshold, so TCS applies to that part alone."
-  },
-  "consent": {
-    "title": "Share usage statistics?",
-    "body": "FinCalix works fully without this. If you allow it, the app sends usage statistics to an analytics service to help us improve it.",
-    "change": "You can change this any time in Settings → Privacy.",
-    "allow": "Allow",
-    "deny": "No thanks",
-    "policy": "Read the privacy policy"
   }
 }
