@@ -255,12 +255,12 @@ export default function PrivacyPolicy() {
 
             {/* 3 */}
             <Section icon="📊" color="#EC4899" title={t.s.analytics}>
-                <p style={{ marginBottom: '14px' }}>Usage analytics are off unless you allow them. If you allow them, the app sends the following to Google Analytics (through the Firebase SDK). Nothing is loaded from Google and nothing is sent before you choose.</p>
+                <p style={{ marginBottom: '14px' }}>Usage analytics are off unless you allow them. If you allow them, the app sends the following to a third-party analytics service. Nothing is loaded from that service and nothing is sent before you choose.</p>
                 <Card>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <div>
                             <div style={{ color: '#10B981', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Sent only if you allow</div>
-                            {['Events: page view, screen view (including app open), calculator used, scheme viewed, language changed, PDF/Excel export. Google Analytics also records first open, session start and engagement time automatically.', 'Event details: screen name, page path, calculator type, scheme type (central or state), language, export type, platform', 'Identifiers: a random client ID and a Firebase installation ID', 'Device data: screen resolution, language, OS and browser version', 'Approximate country, derived by Google from your IP address'].map(item => (
+                            {['Events: page view, screen view (including app open), calculator used, scheme viewed, language changed, PDF/Excel export. The analytics service also records first open, session start and engagement time automatically.', 'Event details: screen name, page path, calculator type, scheme type (central or state), language, export type, platform', 'Identifiers: a random client ID and a random installation ID', 'Device data: screen resolution, language, OS and browser version', 'Approximate country, derived from your IP address by the analytics service'].map(item => (
                                 <div key={item} style={{ color: c.textSecondary, fontSize: '13px', padding: '4px 0', borderBottom: `1px solid ${c.border}` }}>• {item}</div>
                             ))}
                         </div>
@@ -272,17 +272,17 @@ export default function PrivacyPolicy() {
                         </div>
                     </div>
                 </Card>
-                <p style={{ marginTop: '12px' }}>This data is pseudonymous: it is tied to a random ID, not to your name or contact details. Google signals and ad personalisation are switched off. You can turn analytics off at any time in Settings → Privacy; this stops collection and deletes the analytics IDs from your device.</p>
+                <p style={{ marginTop: '12px' }}>This data is pseudonymous: it is tied to a random ID, not to your name or contact details. Advertising features and ad personalisation are switched off. You can turn analytics off at any time in Settings → Privacy; this stops collection and deletes the analytics IDs from your device.</p>
             </Section>
 
             {/* 4 */}
             <Section icon="🔗" color="#3B82F6" title={t.s.thirdParty}>
                 <p style={{ marginBottom: '14px' }}>FinCalix uses the following third-party service for analytics:</p>
                 <Card>
-                    <div style={{ color: c.text, fontWeight: 600, marginBottom: '6px' }}>Google Analytics / Firebase</div>
-                    <div style={{ color: c.textSecondary, fontSize: '13px' }}>Google LLC processes the usage statistics listed above on our behalf, only if you allow analytics. The data is sent to Google servers, which may be outside India.</div>
+                    <div style={{ color: c.text, fontWeight: 600, marginBottom: '6px' }}>Analytics service provider</div>
+                    <div style={{ color: c.textSecondary, fontSize: '13px' }}>A third-party analytics service provider processes the usage statistics listed above on our behalf, only if you allow analytics. The data is sent to its servers, which may be outside India.</div>
                 </Card>
-                <p style={{ marginTop: '12px' }}>The app also loads its font from Google Fonts and checks fincalix.com for update information; like any web request, these reveal your IP address to the server. No advertising networks, tracking pixels or data-selling services are used.</p>
+                <p style={{ marginTop: '12px' }}>The app also loads its font from a web font service and checks fincalix.com for update information; like any web request, these reveal your IP address to the server. No advertising networks, tracking pixels or data-selling services are used.</p>
             </Section>
 
             {/* 5 */}
@@ -363,7 +363,7 @@ export default function PrivacyPolicy() {
 
             {/* 11 */}
             <Section icon="📊" color="#EC4899" title={t.s.reporting}>
-                <p style={{ marginBottom: '14px' }}>If you allow usage analytics, Google Firebase Analytics (Google LLC, USA) processes the pseudonymous usage statistics described in section 3. This is a cross-border transfer to the United States. No financial data is included. FinCalix does not use crash reporting. To withdraw consent, turn off Usage analytics in Settings → Privacy.</p>
+                <p style={{ marginBottom: '14px' }}>If you allow usage analytics, a third-party analytics service provider processes the pseudonymous usage statistics described in section 3. Its servers may be outside India, which makes this a cross-border transfer. No financial data is included. FinCalix does not use crash reporting. To withdraw consent, turn off Usage analytics in Settings → Privacy.</p>
                 <GreenBox>
                     <div style={{ color: '#10B981', fontWeight: 600, marginBottom: '10px' }}>✅ Data Safety</div>
                     <Bullets items={[

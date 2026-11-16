@@ -87,7 +87,7 @@ export default function AnalyticsConsent() {
                     </div>
 
                     <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
-                        {t('consent.body', 'FinCalix works fully without this. If you allow it, the app sends usage statistics to Google Analytics to help us improve it.')}
+                        {t('consent.body', 'FinCalix works fully without this. If you allow it, the app sends usage statistics to an analytics service to help us improve it.')}
                     </p>
 
                     <p className="text-xs leading-relaxed text-muted-foreground">

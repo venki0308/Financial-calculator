@@ -280,7 +280,7 @@ export default function Settings() {
                             <BarChart3 size={20} className="text-brand-purple flex-shrink-0" />
                             <div className="min-w-0">
                                 <p className="text-foreground font-medium text-sm">{t('settings.usageAnalytics', 'Usage analytics')}</p>
-                                <p className="text-muted-foreground text-xs">{t('settings.usageAnalyticsDesc', 'Send usage statistics to Google Analytics. Amounts are never sent.')}</p>
+                                <p className="text-muted-foreground text-xs">{t('settings.usageAnalyticsDesc', 'Send usage statistics to help us improve the app. Amounts are never sent.')}</p>
                             </div>
                         </div>
                         <button

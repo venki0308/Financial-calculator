@@ -18,6 +18,7 @@ Build 21 carried the same version name; build 22 adds the fixes below.
 - **Only six events can be sent**, with an allow-list of parameters and no amounts or typed text (`src/services/providers/types.ts`). Google signals and ad personalisation are off.
 - **Crashlytics and Firebase Messaging are removed.** They were linked into the app but had been unable to start since 1.2.2 (no Firebase config in the build).
 - **Privacy texts corrected in all six languages:** disclaimer (now v4, so every user sees it again), privacy policy, Data & Privacy screen, landing page, static pages and the store listing draft. "Zero data collected", "no tracking" and "100% offline" are gone.
+- The consent dialog is a one-sentence question with a link to the privacy policy. App texts say "an analytics service" and do not name the provider.
 - Play Console answers for the Data safety form: `PLAY_DATA_SAFETY.md`.
 
 ### Data refreshed (verified 16 Nov 2026)
