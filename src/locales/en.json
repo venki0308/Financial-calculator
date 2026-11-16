@@ -8103,12 +8103,6 @@
   "consent": {
     "title": "Share usage statistics?",
     "body": "FinCalix works fully without this. If you allow it, the app sends usage statistics to Google Analytics to help us improve it.",
-    "sentTitle": "What is sent if you allow",
-    "sent1": "Which screens and calculators you open",
-    "sent2": "When you view a government scheme, change language, or export a PDF or Excel file",
-    "sent3": "A random app ID, plus device details: screen size, language, OS or browser version, and approximate country",
-    "neverTitle": "Never sent",
-    "never": "Amounts, salary, loans, expenses, or anything you type.",
     "change": "You can change this any time in Settings → Privacy.",
     "allow": "Allow",
     "deny": "No thanks",

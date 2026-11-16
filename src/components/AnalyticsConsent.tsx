@@ -3,6 +3,8 @@
  *
  *  - Shown to every user whose choice is not stored yet: new installs (after
  *    the disclaimer) and existing users on their first launch of this version.
+ *  - Kept short on purpose: what is sent is listed in the privacy policy,
+ *    which the dialog links to.
  *  - Until a button is pressed analytics stay off: nothing is loaded from
  *    Google and nothing is sent (see services/analyticsService).
  *  - "Allow" and "No thanks" are the same size and style, and neither is
@@ -13,7 +15,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BarChart3, Check, X } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 import { AnalyticsService } from '../services/analyticsService';
 import {
     ANALYTICS_CONSENT_EVENT,
@@ -86,30 +88,6 @@ export default function AnalyticsConsent() {
 
                     <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
                         {t('consent.body', 'FinCalix works fully without this. If you allow it, the app sends usage statistics to Google Analytics to help us improve it.')}
-                    </p>
-
-                    <p className="mb-1.5 text-xs font-semibold text-foreground">
-                        {t('consent.sentTitle', 'What is sent if you allow')}
-                    </p>
-                    <ul className="mb-4 space-y-1.5">
-                        {[
-                            t('consent.sent1', 'Which screens and calculators you open'),
-                            t('consent.sent2', 'When you view a government scheme, change language, or export a PDF or Excel file'),
-                            t('consent.sent3', 'A random app ID, plus device details: screen size, language, OS or browser version, and approximate country'),
-                        ].map((line) => (
-                            <li key={line} className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-                                <Check size={14} className="mt-0.5 flex-shrink-0 text-muted-foreground" />
-                                <span>{line}</span>
-                            </li>
-                        ))}
-                    </ul>
-
-                    <p className="mb-1.5 text-xs font-semibold text-foreground">
-                        {t('consent.neverTitle', 'Never sent')}
-                    </p>
-                    <p className="mb-4 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-                        <X size={14} className="mt-0.5 flex-shrink-0 text-muted-foreground" />
-                        <span>{t('consent.never', 'Amounts, salary, loans, expenses, or anything you type.')}</span>
                     </p>
 
                     <p className="text-xs leading-relaxed text-muted-foreground">
