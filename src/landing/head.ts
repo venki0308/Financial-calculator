@@ -104,3 +104,43 @@ export function headTags(d: LandingData): string {
         `<script type="application/ld+json">${jsonForScript(graph)}</script>`,
     ].join('\n    ');
 }
+
+export interface PageHeadInput {
+    title: string;
+    description: string;
+    path: string;
+    index: boolean;
+    crumbs?: Array<{ name: string; path: string }>;
+}
+
+/** <head> for the generated pages: apex canonical, robots, social cards, breadcrumbs. */
+export function pageHead(p: PageHeadInput): string {
+    const url = `${ORIGIN}${p.path}`;
+    const ld = p.crumbs && p.crumbs.length > 1 ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: p.crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: `${ORIGIN}${c.path}` })),
+    } : null;
+    return [
+        `<title>${esc(p.title)}</title>`,
+        `<meta name="description" content="${esc(p.description)}">`,
+        `<link rel="canonical" href="${url}">`,
+        `<meta name="robots" content="${p.index ? 'index, follow' : 'noindex, follow'}">`,
+        `<meta name="color-scheme" content="light dark">`,
+        `<meta name="theme-color" content="#FBFAF6" media="(prefers-color-scheme: light)">`,
+        `<meta name="theme-color" content="#0B1120" media="(prefers-color-scheme: dark)">`,
+        `<link rel="icon" type="image/png" href="/brand/fincalix-icon-512.png">`,
+        `<link rel="apple-touch-icon" href="/brand/fincalix-icon-512.png">`,
+        `<link rel="preload" href="${frauncesUrl}" as="font" type="font/woff2" crossorigin>`,
+        `<link rel="preload" href="${jakartaUrl}" as="font" type="font/woff2" crossorigin>`,
+        `<meta property="og:type" content="website">`,
+        `<meta property="og:site_name" content="FinCalix">`,
+        `<meta property="og:url" content="${url}">`,
+        `<meta property="og:title" content="${esc(p.title)}">`,
+        `<meta property="og:description" content="${esc(p.description)}">`,
+        `<meta property="og:image" content="${ORIGIN}/og/fincalix-og.png">`,
+        `<meta property="og:locale" content="en_IN">`,
+        `<meta name="twitter:card" content="summary_large_image">`,
+        ...(ld ? [`<script type="application/ld+json">${jsonForScript(ld)}</script>`] : []),
+    ].join('\n    ');
+}

@@ -68,6 +68,7 @@ export function isAppPath(pathname: string): boolean {
     const first = p.split('/')[0];
     const pageOrIndex = (list: readonly string[]) => list.includes(first) && (p === first || p === `${first}/index.html`);
     if (pageOrIndex(STATIC_PAGES) || pageOrIndex(LEGAL_PAGES)) return false;
+    if (isSiteOnlyPage(`/${p}`)) return false;
     if (PUBLIC_FILES.includes(p) || PUBLIC_DIRS.includes(first) || first === 'assets') return false;
     if (/\.[a-z0-9]+$/i.test(p) && !/\.html$/i.test(p)) return false;
     return true;
@@ -82,3 +83,74 @@ export const APP_ALIASES: Readonly<Record<string, string>> = {
     '/calculator/ppf-advanced': '/calculator/ppf',
     '/ai-advisor': '/financial-advisor',
 };
+
+// ── Website pages generated from the registry and schemes.ts ─────────────────
+
+/** Category pages: /calculators/<slug>. Keys are the website's tool-grid categories. */
+export const CATEGORY_SLUGS = {
+    loans: 'loans',
+    investments: 'investments',
+    tax: 'tax-salary',
+    retire: 'retirement-govt-savings',
+    cards: 'credit-cards',
+    goals: 'expense-goals',
+    utilities: 'utilities',
+} as const;
+export type CategoryKey = keyof typeof CATEGORY_SLUGS;
+export const categoryPath = (k: CategoryKey) => `/calculators/${CATEGORY_SLUGS[k]}`;
+
+/** noindex page for app screens that have no public content (profile, settings …). */
+export const IN_THE_APP = '/in-the-app';
+/** Static page that exports this browser's FinCalix data (also served on www). */
+export const EXPORT_PAGE = '/export-my-data';
+
+/**
+ * Pages that exist only on the website (never app routes). In dev mode they are still
+ * served as website pages; "/calculators" and "/schemes" are both: the app screen in dev
+ * mode, the website page otherwise.
+ */
+export function isSiteOnlyPage(pathname: string): boolean {
+    const p = pathname.replace(/\/+$/, '') || '/';
+    return p === IN_THE_APP || p === EXPORT_PAGE || p === '/404' ||
+        /^\/calculators\/[a-z-]+$/.test(p) || /^\/schemes\/[a-z0-9-]+$/.test(p);
+}
+
+/**
+ * Where an app URL goes on the public site (308), or null to serve the path as it is.
+ * Exact routes come from routeTargets.generated.ts (App.tsx + the registry, written by
+ * scripts/landing/sync-vercel-headers.mjs); routes with an ID are handled here.
+ */
+export function publicTarget(pathname: string, exact: Readonly<Record<string, string>>, schemeIds: readonly string[]): string | null {
+    const p = pathname.replace(/\/+$/, '') || '/';
+    const path = APP_ALIASES[p] ?? p;
+    if (APP_CANONICAL[path]) return APP_CANONICAL[path];
+    if (exact[path]) return exact[path];
+    const scheme = path.match(/^\/scheme\/([^/]+)$/);
+    if (scheme) {
+        const id = scheme[1];
+        if (APP_CANONICAL[`/scheme/${id}`]) return APP_CANONICAL[`/scheme/${id}`];
+        return schemeIds.includes(id) ? `/schemes/${id}` : '/schemes';
+    }
+    if (/^\/my-loans\/[^/]+$/.test(path)) return categoryPath('loans');
+    if (/^\/business-tracker\/[^/]+$/.test(path)) return categoryPath('goals');
+    if (/^\/expenses\/credit-cards(\/[^/]+)?$/.test(path)) return categoryPath('cards');
+    if (/^\/profile\/[^/]+$/.test(path)) return IN_THE_APP;
+    if (path === '/app.html' || path.startsWith('/assets/')) return '/';
+    return null;
+}
+
+/** Approved targets that are not the tool's registry category (17 Nov 2026 table). */
+export const ROUTE_OVERRIDES: Readonly<Record<string, string>> = {
+    '/calculator/education-loan': '/emi',
+    '/two-wheeler-loan': '/emi',
+    '/calculator/mortgage-calculator': '/home-loan',
+    '/calculator/form16-tax': '/income-tax',
+    '/expenses/accounts': '/expense-tracker',
+    '/expenses/recurring': '/expense-tracker',
+    '/budget-tracker': '/expense-tracker',
+    '/cibil-profile': '/calculators/credit-cards',
+};
+/** App screens with no public content: they go to the noindex /in-the-app page. */
+export const IN_APP_SCREENS: readonly string[] = ['/app', '/profile', '/settings', '/notifications', '/dev/validator'];
+/** App routes that are also website pages with the same address. */
+export const SHARED_PAGES: readonly string[] = ['/calculators', '/schemes'];

@@ -368,3 +368,59 @@ button, input, select { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* ── Play note: iPhone/iPad variant (class set before first paint) ───────── */
+.cta-note .note-ios { display: none; }
+.ua-ios .cta-note .note-ios { display: inline; }
+.ua-ios .cta-note .note-default { display: none; }
+
+/* ── QR code next to the hero badge: desktop with a mouse only ───────────── */
+.qr { display: none; margin: 0; align-items: center; gap: 10px; }
+.qr-code { display: block; width: 84px; height: 84px; padding: 4px; background: #fff; border: 1px solid var(--rule-strong); border-radius: 10px; }
+.qr-code svg { display: block; width: 100%; height: 100%; }
+.qr figcaption { font-size: 13px; color: var(--muted); font-weight: 600; max-width: 9em; line-height: 1.35; }
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) { .qr { display: flex; } }
+.ua-ios .qr { display: none !important; }
+
+/* ── Generated pages (categories, calculators, schemes, in-the-app, 404, export) ── */
+.list-reset { list-style: none; padding: 0; margin: 0; }
+.page > .wrap { padding-top: 28px; padding-bottom: 56px; }
+.crumbs ol { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; font-size: 14px; color: var(--muted); }
+.crumbs li + li::before { content: '›'; margin-right: 6px; }
+.crumbs a { color: var(--ink-2); }
+.page-head { margin: 22px 0 28px; max-width: 46em; }
+.page-head h1 { font-size: clamp(32px, 5vw, 52px); line-height: 1.06; margin-top: 8px; }
+.lead { margin-top: 16px; font-size: 18px; color: var(--ink-2); }
+.page .tools li { display: flex; }
+.page .tools .tool { width: 100%; }
+.page .tool-head { padding-bottom: 8px; }
+.tool-guide { margin-top: auto; align-self: flex-end; font-size: 12.5px; font-weight: 700; color: var(--primary); }
+div.tool .tool-guide { color: var(--muted); }
+.other-cats { margin-top: 40px; }
+.other-cats h2 { font-size: 24px; margin-bottom: 12px; }
+.other-cats .chip { display: inline-flex; align-items: center; text-decoration: none; }
+.cat-title a { text-decoration: none; }
+.cat-title a:hover { text-decoration: underline; }
+.scheme-desc { color: var(--ink-2); font-size: 14.5px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 24px; margin: 8px 0 18px; border-top: 2px solid var(--ink); }
+.facts div { padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.facts dt { font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin-top: 4px; font-weight: 600; }
+.official { margin: 8px 0 24px; }
+.prose-sec { margin-top: 28px; max-width: 46em; }
+.prose-sec h2 { font-size: 26px; margin-bottom: 10px; }
+.prose-sec ul, .prose-sec ol { padding-left: 22px; display: grid; gap: 8px; color: var(--ink-2); }
+.guide-link { margin-top: 24px; }
+.next-links { display: grid; gap: 6px; margin-top: 8px; }
+.export-box { margin-top: 8px; padding: 22px; border: 1px solid var(--rule); border-radius: 18px; background: var(--surface); max-width: 46em; }
+.export-status { font-weight: 700; }
+.export-found { margin: 10px 0 0; padding-left: 22px; color: var(--ink-2); }
+.export-box .btn { margin-top: 18px; }
+.export-box .btn:disabled { opacity: .5; cursor: not-allowed; }
+.export-done { margin-top: 12px; font-weight: 700; color: var(--money); }
+.other-origin { margin-top: 24px; color: var(--ink-2); max-width: 46em; }
+.other-origin a { color: var(--primary); font-weight: 700; }
+/* Final band: the sub-line already says "Free on Google Play", so only the iPhone note shows. */
+.band .cta-note { color: #fff; font-weight: 700; }
+.band .cta-note .note-default { display: none; }
+.band .ctas { flex-direction: column; align-items: center; }

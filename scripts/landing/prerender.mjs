@@ -1,10 +1,13 @@
 // Last step of `npm run build:landing`: turn the website build into static HTML.
 //
 // Before: dist/index.html   app shell (from `vite build`)
-//         dist/landing.html website template + /site/* assets (from `vite build -c vite.landing.config.ts`)
+//         dist/{landing,legal,datasafety,site}.html  templates + /site/* assets (website client build)
 //         .landing-ssr/     server render bundle (from `... --ssr`)
-// After:  dist/index.html   the website, fully pre-rendered (served at "/")
-//         dist/app.html     the app shell (vercel.json serves it for every app route)
+// After:  dist/index.html   the website home page, fully pre-rendered (served at "/")
+//         dist/app.html     the app shell (served only in dev mode, see middleware.ts)
+//         dist/<legal>/index.html, dist/calculators/…, dist/schemes/…, dist/in-the-app,
+//         dist/export-my-data, dist/404.html, dist/sitemap.xml
+//         the 27 static calculator pages get the export-banner script
 //
 // Only for the web deploy. The Android build (`npm run build` + `npx cap sync`)
 // never runs this, so the app inside the APK still loads dist/index.html.
@@ -12,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { pathToFileURL } from 'node:url';
+import QRCode from 'qrcode';
 
 const DIST = path.resolve('dist');
 const SSR = path.resolve('.landing-ssr/entry-server.js');
@@ -29,9 +33,12 @@ if (fs.existsSync(appShell) && fs.readFileSync(appShell, 'utf8').includes('<div 
 }
 if (!fs.existsSync(appHtml)) fail('dist/app.html missing (run the app build first)');
 
-// 2. Render the page.
-const { render, renderLegal } = await import(pathToFileURL(SSR).href);
-const { html, head, islandJson, data } = render();
+const ssr = await import(pathToFileURL(SSR).href);
+
+// 2. Home page, with the desktop-only QR code to Google Play (static SVG, no JavaScript).
+const qrRaw = await QRCode.toString(ssr.playUrl('qr'), { type: 'svg', margin: 1, errorCorrectionLevel: 'M', color: { dark: '#0F172A', light: '#FFFFFF' } });
+const qrSvg = qrRaw.replace(/<\?xml[^>]*>/, '').replace('<svg ', '<svg role="img" aria-hidden="true" focusable="false" ');
+const { html, head, islandJson, data } = ssr.render(qrSvg);
 let page = fs.readFileSync(template, 'utf8');
 if (!page.includes('<!--landing-head-->') || !page.includes('<!--landing-app-->')) fail('placeholders missing in landing.html');
 page = page.replace('<!--landing-head-->', head).replace('<!--landing-app-->', `${html}\n    ${islandJson}`);
@@ -48,8 +55,9 @@ if (fs.existsSync(ssrAssets)) {
         copied++;
     }
 }
-// Legal pages: same components the app showed at these URLs, as static HTML (no app shell).
-const legal = await renderLegal();
+
+// 3. Legal pages: same components the app showed at these URLs, as static HTML (no app shell).
+const legal = await ssr.renderLegal();
 for (const p of legal.pages) {
     const tpl = path.join(DIST, `${p.template}.html`);
     if (!fs.existsSync(tpl)) fail(`dist/${p.template}.html missing`);
@@ -62,14 +70,67 @@ for (const p of legal.pages) {
     fs.mkdirSync(path.join(DIST, p.name), { recursive: true });
     fs.writeFileSync(path.join(DIST, p.name, 'index.html'), out);
 }
-for (const t of ['legal.html', 'datasafety.html']) fs.rmSync(path.join(DIST, t), { force: true });
 console.log(`prerender: legal pages ${legal.pages.map((p) => `/${p.name} (${p.h1})`).join(', ')}`);
+
+// 4. Generated pages: categories, /calculators, /schemes, /schemes/<id>, /in-the-app, 404, export.
+const siteTpl = path.join(DIST, 'site.html');
+if (!fs.existsSync(siteTpl)) fail('dist/site.html missing');
+const siteTemplate = fs.readFileSync(siteTpl, 'utf8');
+const site = ssr.renderSite();
+for (const p of site.pages) {
+    const out = siteTemplate
+        .replace('<!--site-head-->', p.head)
+        .replace('<!--site-app-->', p.html)
+        .replace(/<body([^>]*)>/, `<body$1 data-title="${p.analyticsTitle}">`);
+    const file = p.path === '/404' ? path.join(DIST, '404.html') : path.join(DIST, p.path.slice(1), 'index.html');
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, out);
+}
+const noindexSchemes = site.schemePages.filter((s) => !s.index);
+console.log(`prerender: ${site.pages.length} generated pages; scheme pages ${site.schemePages.length} (${site.schemePages.length - noindexSchemes.length} indexed, ${noindexSchemes.length} noindex)`);
+for (const s of noindexSchemes) console.log(`  noindex /schemes/${s.id}: ${s.reason}`);
+
+// 5. Sitemap: the existing entries (public/sitemap.xml, lastmod kept) + every new indexable
+//    page (scheme pages carry their last-verified date).
+const today = new Date().toISOString().slice(0, 10);
+const existing = fs.readFileSync(path.resolve('public/sitemap.xml'), 'utf8');
+const urls = new Map();
+for (const m of existing.matchAll(/<url>\s*<loc>([^<]+)<\/loc>\s*(?:<lastmod>([^<]+)<\/lastmod>)?/g)) urls.set(m[1], m[2] || today);
+for (const p of site.pages.filter((x) => x.index)) {
+    const loc = `https://fincalix.com${p.path}`;
+    const id = p.path.startsWith('/schemes/') ? p.path.slice('/schemes/'.length) : null;
+    if (!urls.has(loc)) urls.set(loc, (id && ssr.schemeLastVerified(id)) || today);
+}
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...urls].map(([loc, lastmod]) => `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`).join('\n')}\n</urlset>\n`;
+fs.writeFileSync(path.join(DIST, 'sitemap.xml'), sitemap);
+console.log(`prerender: sitemap.xml ${urls.size} URLs`);
+
+// 6. Export banner on the 27 static calculator pages (their content is otherwise untouched).
+const manifestFile = path.join(DIST, 'site-manifest.json');
+if (!fs.existsSync(manifestFile)) fail('dist/site-manifest.json missing');
+const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
+const bannerJs = manifest['src/landing/banner-entry.ts']?.file;
+if (!bannerJs) fail('banner entry missing from the build manifest');
+let injected = 0;
+for (const dir of ssr.STATIC_PAGES) {
+    const f = path.join(DIST, dir, 'index.html');
+    if (!fs.existsSync(f)) fail(`static page ${dir} missing`);
+    let s = fs.readFileSync(f, 'utf8');
+    if (!s.includes(bannerJs)) {
+        s = s.replace('</body>', `  <script type="module" src="/${bannerJs}"></script>\n</body>`);
+        fs.writeFileSync(f, s);
+        injected++;
+    }
+}
+console.log(`prerender: export banner added to ${injected} static pages`);
+for (const t of ['legal.html', 'datasafety.html', 'site.html', 'site-manifest.json']) fs.rmSync(path.join(DIST, t), { force: true });
 fs.rmSync(path.resolve('.landing-ssr'), { recursive: true, force: true });
+
 const missing = [...page.matchAll(/(?:src|href)="(\/site\/[^"]+)"|(\/site\/[^\s",]+\.webp)/g)]
     .map((m) => m[1] || m[2]).filter((p) => !fs.existsSync(path.join(DIST, p)));
 if (missing.length) fail(`files referenced by the page are missing: ${[...new Set(missing)].slice(0, 5).join(', ')}`);
 
-// 3. Report what the first visit downloads in JavaScript (gzipped).
+// 7. Report what the first visit to "/" downloads in JavaScript (gzipped).
 const scripts = [...page.matchAll(/<script type="module"[^>]*src="([^"]+)"/g), ...page.matchAll(/<link rel="modulepreload"[^>]*href="([^"]+)"/g)].map((m) => m[1]);
 const js = [...new Set(scripts)].map((src) => {
     const buf = fs.readFileSync(path.join(DIST, src));

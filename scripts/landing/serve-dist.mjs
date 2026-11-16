@@ -46,14 +46,14 @@ async function loadMiddleware() {
     return { run: mod.default, matches: (p) => matchers.some((re) => re.test(p)) };
 }
 
-export async function serveDist({ port = 4320, dir = 'dist', config = 'vercel.json', asHost, overrides = {}, forceDev = false } = {}) {
+export async function serveDist({ port = 4320, dir = 'dist', config = 'vercel.json', asHost, overrides = {}, forceDev = false, middleware: useMiddleware = true } = {}) {
     const root = path.resolve(dir);
     const cfg = JSON.parse(fs.readFileSync(config, 'utf8'));
     const rx = (source) => new RegExp('^' + source + '$');
     const redirects = (cfg.redirects || []).map((r) => ({ ...r, re: rx(r.source), code: r.permanent ? 308 : 307 }));
     const rewrites = (cfg.rewrites || []).map((r) => ({ ...r, re: rx(r.source) }));
     const headers = (cfg.headers || []).map((h) => ({ ...h, re: rx(h.source) }));
-    const middleware = await loadMiddleware();
+    const middleware = useMiddleware ? await loadMiddleware() : null;   // off: serve an older build as it was
 
     const fileFor = (p) => {
         const f = path.join(root, p);
@@ -93,7 +93,12 @@ export async function serveDist({ port = 4320, dir = 'dist', config = 'vercel.js
         // 3. files, then rewrites
         let file = fileFor(p);
         if (!file) for (const r of rewrites) if (r.re.test(p) && conditionsMet(r, ctx)) { file = fileFor(r.destination); break; }
-        if (!file && !overrides[p]) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Not found'); return; }
+        if (!file && !overrides[p]) {
+            // Like Vercel for a static build: dist/404.html with status 404, else plain text.
+            const page404 = path.join(root, '404.html');
+            if (fs.existsSync(page404)) { const b = fs.readFileSync(page404); res.writeHead(404, { 'Content-Type': TYPES['.html'], 'Content-Length': b.length }); res.end(b); return; }
+            res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('Not found'); return;
+        }
         const out = {};
         for (const h of headers) if (h.re.test(decodeURIComponent(url.pathname)) && conditionsMet(h, ctx)) for (const { key, value } of h.headers) out[key] = value;
         // Middleware headers win over vercel.json headers with the same name (any case).

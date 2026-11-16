@@ -28,6 +28,7 @@ export default defineConfig(({ isSsrBuild }) => ({
         }
         : {
             outDir: 'dist',
+            manifest: 'site-manifest.json',   // read and removed by prerender.mjs
             emptyOutDir: false,          // the app build is already in dist/
             assetsDir: 'site',           // website files live under /site/, app files under /assets/
             sourcemap: false,
@@ -36,7 +37,9 @@ export default defineConfig(({ isSsrBuild }) => ({
             assetsInlineLimit: 0,        // keep fonts and images as cacheable files
             // The website, the 4 web legal pages and /data-safety (pre-rendered by prerender.mjs).
             rollupOptions: {
-                input: { landing: 'landing.html', legal: 'legal.html', datasafety: 'datasafety.html' },
+                // site.html: category, calculators, schemes, in-the-app, 404 and export pages.
+                // banner: the export banner added to the 27 static calculator pages.
+                input: { landing: 'landing.html', legal: 'legal.html', datasafety: 'datasafety.html', site: 'site.html', banner: 'src/landing/banner-entry.ts' },
                 // React is shared by all three pages: give the chunk a clear name.
                 output: { manualChunks: (id) => (/node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id) ? 'react' : undefined) },
             },

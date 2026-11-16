@@ -2,7 +2,7 @@
   "buildCommand": "npm run build:web",
   "redirects": [
     {
-      "source": "/((?!config\\.json$).*)",
+      "source": "/((?!config\\.json$|export-my-data/?$|site/|brand/).*)",
       "has": [
         {
           "type": "host",

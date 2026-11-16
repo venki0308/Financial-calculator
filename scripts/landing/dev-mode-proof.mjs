@@ -36,7 +36,8 @@ export async function runDevModeProof({ base, shotsDir, extraHeaders = {}, check
         const pathNow = () => new URL(page.url()).pathname + new URL(page.url()).search;
         const devCookie = async () => (await ctx.cookies()).find((c) => c.name === 'fincalix_dev');
         const isLanding = () => page.locator('h1').first().innerText().then((t) => /Every money decision/.test(t)).catch(() => false);
-        const isApp = () => page.locator('nav a[href="/calculators"]').count().then((n) => n > 0);
+        // The app shell loads its bundle from /assets/; website pages never do.
+        const isApp = () => page.evaluate(() => !!document.querySelector('script[src^="/assets/"]') && !!document.querySelector('#root > *'));
         const heading = async () => (await page.locator('h1').first().innerText().catch(() => '')) || '';
 
         // 1. Fresh browser: only the website and redirects
@@ -44,7 +45,7 @@ export async function runDevModeProof({ base, shotsDir, extraHeaders = {}, check
         check('fresh browser: /calculator/sip redirects to the static page /sip', pathNow() === '/sip', pathNow());
         await shot('1-fresh-calculator-sip-goes-to-static-page');
         await page.goto(base + '/app', { waitUntil: 'networkidle' });
-        check('fresh browser: /app and other app routes show the website at "/"', pathNow() === '/' && await isLanding() && !(await isApp()), pathNow());
+        check('fresh browser: /app goes to the website page /in-the-app, not the app', pathNow() === '/in-the-app' && /Android app/.test(await heading()) && !(await isApp()), pathNow());
         await page.goto(base + '/', { waitUntil: 'networkidle' });
         check('fresh browser: "/" is the website, no dev cookie', await isLanding() && !(await devCookie()));
         await shot('2-fresh-home-is-the-website');

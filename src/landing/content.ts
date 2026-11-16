@@ -144,3 +144,48 @@ export const FAQ_TEMPLATES: Faq[] = [
         a: 'Not yet. FinCalix is an Android app, available free on Google Play. There is no iPhone or computer version at the moment.',
     },
 ];
+
+// ── Copy for the generated pages (counts and names come from the registry / schemes.ts) ──
+
+/** Intro paragraph for each category page /calculators/<slug>. */
+export const CATEGORY_INTROS: Readonly<Record<string, { title: string; intro: string }>> = {
+    loans: {
+        title: 'Loan calculators',
+        intro: 'Plan a loan before you sign. These calculators work out the EMI, the total interest and the full repayment schedule for home, car, two-wheeler, personal, education and gold loans, and show what a part-payment or early closure saves. My Loans keeps every running loan in one place with its balance. All of them are in the free FinCalix Android app; tools marked “Guide” also have a page on this site with the formula and a worked example.',
+    },
+    investments: {
+        title: 'Investment calculators',
+        intro: 'See how your money can grow. Work out the future value of a monthly SIP or a one-time lumpsum, plan withdrawals with an SWP or transfers with an STP, compare returns with CAGR, and check what a fixed or recurring deposit pays at maturity. Results assume the rate you enter stays the same, so treat them as estimates: mutual fund returns go up and down with the market.',
+    },
+    tax: {
+        title: 'Tax and salary calculators',
+        intro: 'Income tax for FY 2026-27 under both the New and the Old Regime, with the standard deduction, the Section 87A rebate and marginal relief worked in. Check how much of your HRA is tax-free, what your gratuity will be, the tax on capital gains, TCS on money sent abroad under LRS, GST on a bill and what a salary hike means for take-home pay. The figures are estimates, not tax advice.',
+    },
+    retire: {
+        title: 'Retirement and government savings calculators',
+        intro: 'Plan long-term savings with government-backed schemes. Work out the maturity value of PPF, EPF, NPS, Sukanya Samriddhi, NSC and Kisan Vikas Patra, the monthly income from Post Office MIS, Post Office Time Deposit returns and the quarterly interest from the Senior Citizens Savings Scheme. The app uses the interest rates listed for each scheme; small savings rates are revised by the government every quarter.',
+    },
+    cards: {
+        title: 'Credit card calculators',
+        intro: 'Get on top of credit card debt. See your debt-free date and the interest you will pay under different payoff plans such as Avalanche and Snowball, work out the interest and GST on a card balance, compare card types for the way you spend, and learn what moves your CIBIL score. Everything you enter stays on your phone.',
+    },
+    goals: {
+        title: 'Expense, goal and planning tools',
+        intro: 'Track spending and plan for what matters. Log daily expenses and see monthly and yearly reports, set budgets, plan goals like a home or your child’s education with the monthly saving each one needs, compare scenarios side by side, keep a simple daily ledger for a small business, and compare health and life insurance plans.',
+    },
+    utilities: {
+        title: 'Everyday utility calculators',
+        intro: 'Handy tools that sit alongside the money calculators: your exact age in years, months and days, the full cost of a flat or plot with stamp duty and registration, the break-even point for a business, a scientific calculator and a world clock with time zones.',
+    },
+};
+
+export const CALCULATORS_INTRO = 'Every calculator and tracker in the FinCalix app, grouped the way people look for them. Each one shows its result as you type, works without internet in the Android app and keeps your numbers on your phone. Open a category to see what each tool does; tools marked “Guide” also have a page on this site with the formula and a worked example.';
+
+export const SCHEMES_INTRO = 'FinCalix explains central government schemes in plain language: who can apply, what you get, the documents you need and how to apply, with a link to the official website. Every scheme shows the date its details were last checked against the official source. The same list is in the Android app, where you can bookmark schemes and filter them by category.';
+
+/** Where to import a backup in the Android app (labels as the app shows them in English). */
+export const IMPORT_STEPS = [
+    'Install FinCalix from Google Play on your Android phone.',
+    'Copy the backup file to the phone (for example from email, Google Drive or a USB cable).',
+    'In FinCalix open Profile → Settings → Backup & Restore → Import App Data and choose the file.',
+];

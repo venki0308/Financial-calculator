@@ -10,8 +10,9 @@
  *   ?dev=false  → clears the cookie and redirects to "/" (the public site).
  *   With the cookie: "/" and every app route are served the app shell (/app.html), so
  *   refreshes and deep links work inside the app; every response is noindex.
- *   Without it: app routes 308-redirect to their static page (/calculator/sip → /sip)
- *   or to "/"; the app shell and the app's files are never served. The redirects are
+ *   Without it: app routes 308-redirect to their static guide (/calculator/sip → /sip),
+ *   their category page, the /schemes pages or /in-the-app; unknown paths get the 404
+ *   page. The app shell and the app's files are never served. The redirects are
  *   sent with Cache-Control: no-store, so a browser that later turns dev mode on is not
  *   held by a cached redirect.
  *
@@ -20,7 +21,8 @@
  * scripts/landing/dev-mode-proof.mjs.
  */
 import { next, rewrite } from '@vercel/functions';
-import { APP_ALIASES, APP_CANONICAL, DEV_COOKIE, isAppPath } from './src/landing/seoRoutes';
+import { DEV_COOKIE, isAppPath, publicTarget } from './src/landing/seoRoutes';
+import { ROUTE_TARGETS, SCHEME_IDS } from './src/landing/routeTargets.generated';
 
 export const config = {
     // Pages, app routes and the app's files; the website's own files never need the gate.
@@ -49,10 +51,10 @@ export default function middleware(request: Request): Response {
         if (p === '/' || isAppPath(p)) return rewrite(new URL('/app.html', url), { headers: DEV_HEADERS });
         return next({ headers: DEV_HEADERS });
     }
-    // Public: lock the app.
-    const clean = p.replace(/\/+$/, '') || '/';
-    const page = APP_CANONICAL[APP_ALIASES[clean] ?? clean];
-    if (page) return redirect(308, page);
-    if (isAppPath(p) || p.startsWith('/assets/')) return redirect(308, '/');
+    // Public: every app route goes to its static guide, category page, /schemes page or
+    // /in-the-app (table generated from App.tsx + the registry). Anything else is served as
+    // a file or page if it exists, else the 404 page (status 404).
+    const target = publicTarget(p, ROUTE_TARGETS, SCHEME_IDS);
+    if (target) return redirect(308, target);
     return next();
 }

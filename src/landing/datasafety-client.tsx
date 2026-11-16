@@ -5,6 +5,7 @@
 import '../i18n';
 import '../index.css';
 import { createRoot } from 'react-dom/client';
+import { initExportBanner } from './exportBanner';
 import { BrowserRouter } from 'react-router-dom';
 import DataSafety from '../pages/DataSafety';
 import { useSettingsStore } from '../store/useSettingsStore';
@@ -20,3 +21,6 @@ if (root) createRoot(root).render(<BrowserRouter><DataSafety /></BrowserRouter>)
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => { void r.unregister(); })).catch(() => {});
 }
+
+// One-time banner for a browser that still holds FinCalix data from the old web app.
+initExportBanner();

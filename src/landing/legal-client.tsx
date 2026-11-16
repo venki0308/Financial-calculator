@@ -4,6 +4,7 @@
  * selector and the visitor's saved theme work; no app shell, no app bundle.
  */
 import { createRoot } from 'react-dom/client';
+import { initExportBanner } from './exportBanner';
 import { WEB_LEGAL_PAGES } from './legal-pages';
 
 const name = document.body.dataset.page || '';
@@ -15,3 +16,6 @@ if (Page && root) createRoot(root).render(<Page />);
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => { void r.unregister(); })).catch(() => {});
 }
+
+// One-time banner for a browser that still holds FinCalix data from the old web app.
+initExportBanner();

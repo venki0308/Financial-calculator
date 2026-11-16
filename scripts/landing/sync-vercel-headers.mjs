@@ -13,6 +13,7 @@
 //   - cache headers for the app shell and the website's files (/site, /og, /brand)
 import fs from 'node:fs';
 import { buildSync } from 'esbuild';
+import { buildRouteTargets } from './route-targets.mjs';
 
 const out = buildSync({ entryPoints: ['src/landing/seoRoutes.ts'], bundle: true, format: 'esm', platform: 'neutral', write: false, logLevel: 'error' });
 const R = await import('data:text/javascript;base64,' + Buffer.from(out.outputFiles[0].text).toString('base64'));
@@ -42,7 +43,11 @@ const raw = fs.readFileSync(file, 'utf8');
 const cfg = JSON.parse(raw);
 const next = { ...cfg };
 next.buildCommand = 'npm run build:web';
-next.redirects = [...(cfg.redirects || []).filter((r) => !isManagedRedirect(r)), ...managedRedirects];
+// www → apex for everything except config.json (old app builds) and the data-export page with
+// the files it loads, so data saved on the www origin can still be exported there.
+const WWW_SOURCE = `/((?!config\\.json$|${R.EXPORT_PAGE.slice(1)}/?$|site/|brand/).*)`;
+const withWww = (cfg.redirects || []).map((r) => (r.has && r.has.some((h) => h.type === 'host' && h.value === 'www.fincalix.com') ? { ...r, source: WWW_SOURCE } : r));
+next.redirects = [...withWww.filter((r) => !isManagedRedirect(r)), ...managedRedirects];
 delete next.rewrites;
 const kept = cfg.headers.filter((h) => !isManagedHeader(h));
 const firstCache = kept.findIndex((h) => h.source !== '/(.*)');
@@ -51,10 +56,18 @@ const order = ['buildCommand', 'redirects', 'headers'];
 const sorted = Object.fromEntries([...order.filter((k) => k in next), ...Object.keys(next).filter((k) => !order.includes(k))].map((k) => [k, next[k]]));
 const text = JSON.stringify(sorted, null, 2) + '\n';
 
+// Public redirect table for every app route (src/landing/routeTargets.generated.ts).
+const TARGETS_FILE = 'src/landing/routeTargets.generated.ts';
+const targets = await buildRouteTargets();
+const norm = (t) => t.replace(/\r\n/g, '\n');
+
 if (process.argv.includes('--check')) {
-    if (text.replace(/\r\n/g, '\n') !== raw.replace(/\r\n/g, '\n')) { console.error('vercel.json is out of date: run node scripts/landing/sync-vercel-headers.mjs'); process.exit(1); }
-    console.log('vercel.json is up to date');
+    if (!fs.existsSync(TARGETS_FILE) || norm(fs.readFileSync(TARGETS_FILE, 'utf8')) !== norm(targets.text)) { console.error(`${TARGETS_FILE} is out of date: run node scripts/landing/sync-vercel-headers.mjs`); process.exit(1); }
+    if (norm(text) !== norm(raw)) { console.error('vercel.json is out of date: run node scripts/landing/sync-vercel-headers.mjs'); process.exit(1); }
+    console.log('vercel.json and the route table are up to date');
 } else {
     fs.writeFileSync(file, text);
-    console.log(`vercel.json: /app.html backstop and noindex in dev mode (${R.DEV_COOKIE} cookie); the gate itself is middleware.ts`);
+    fs.writeFileSync(TARGETS_FILE, targets.text);
+    console.log(`vercel.json: www → apex except config.json and ${R.EXPORT_PAGE}, /app.html backstop, noindex in dev mode (${R.DEV_COOKIE} cookie)`);
+    console.log(`${TARGETS_FILE}: ${targets.count} app routes with a public target`);
 }

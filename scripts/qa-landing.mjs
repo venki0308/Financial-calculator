@@ -9,15 +9,19 @@
 //    structured data; only Google Play badges (4 placements, referrer each); no app links,
 //    no manifest, no service worker; no banned claim; images sized and described.
 // 2. Every link on "/" resolves on production.
-// 3. Production lock: every app route 308s to its static page or "/"; the app shell is
-//    never served; legal pages are static HTML; sitemap = landing + 27 static + 5 legal;
-//    config.json unchanged; www and the public alias behave like production.
+// 3. Production lock: every app route 308s to its generated target (static guide, category
+//    page, /schemes/<id> or /in-the-app); unknown paths are a real 404; the app shell is never
+//    served; legal pages are static HTML; generated pages (intro, descriptions, canonical,
+//    robots, scheme verified date); sitemap = every indexable page; config.json unchanged;
+//    www redirects except /export-my-data; any other host behaves like production.
 // 4. Dev host: the full app works, X-Robots-Tag: noindex.
 // 5. In Chrome (production rules): no console error; no app bundle or app shell requested
 //    on the website, static or legal pages; legal text identical to what the app showed;
 //    calculator = the app's functions; analytics (play_badge_click, test traffic); nothing
 //    when analytics are off; no overflow at any width 360–1920; both hero phones inside the
-//    viewport; layout shift; theme; keyboard; ?q=; the service-worker kill switch.
+//    viewport; layout shift; theme; keyboard; ?q=; the service-worker kill switch;
+//    export banner (data only, dismiss, back once after 30 days, never a third time) and
+//    /export-my-data (the app's own backup file); iPhone note, desktop-only QR code.
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { buildSync } from 'esbuild';
@@ -40,6 +44,8 @@ const seo = await load('src/landing/seoRoutes.ts');
 const content = await load('src/landing/content.ts');
 const play = await load('src/landing/play.ts');
 const reg = await load('src/data/calculatorList.ts');
+const siteData = await load('src/landing/site-data.ts');
+const rt = await load('src/landing/routeTargets.generated.ts');
 
 const PROD = 'fincalix.com';
 const PLACEMENTS = ['header', 'hero', 'mini_calc', 'final_cta'];
@@ -122,7 +128,7 @@ async function main() {
         // ── 2. Links on "/" ─────────────────────────────────────────────────
         console.log('\n2. Every link on "/" (production)');
         const hrefs = [...new Set([...html.matchAll(/<a\b[^>]*\shref="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&')))];
-        const okPage = (p) => p === '/' || seo.STATIC_PAGES.includes(p.slice(1)) || seo.LEGAL_PAGES.includes(p.slice(1));
+        const okPage = (p) => p === '/' || seo.STATIC_PAGES.includes(p.slice(1)) || seo.LEGAL_PAGES.includes(p.slice(1)) || seo.SHARED_PAGES.includes(p) || (seo.isSiteOnlyPage(p) && p !== '/404');
         const bad = [];
         for (const h of hrefs) {
             if (h.startsWith('#')) { if (!html.includes(`id="${h.slice(1)}"`)) bad.push(`${h}: no such section`); continue; }
@@ -150,11 +156,56 @@ async function main() {
         check(`${Object.keys(seo.APP_CANONICAL).length} app routes and the old alias URLs 308 to their static page (not cached, so dev mode can follow later)`, redirBad.length === 0, redirBad.slice(0, 3).join(' | '));
         const appJs = fs.readdirSync('dist/assets').find((f) => /^index-.*\.js$/.test(f));
         const lockBad = [];
-        for (const p of ['/app', '/app/', '/app.html', '/calculators', '/calculator/age', '/calculator/credit-card-payoff', '/schemes', '/scheme/c-ssy', '/my-loans', '/my-loans/abc', '/settings', '/goal-planner', '/expenses/credit-cards', '/no-such-page', `/assets/${appJs}`]) {
+        const lockWant = {
+            ...rt.ROUTE_TARGETS,
+            '/app/': '/in-the-app', '/my-loans/abc': '/calculators/loans', '/business-tracker/b1': '/calculators/expense-goals',
+            '/expenses/credit-cards': '/calculators/credit-cards', '/expenses/credit-cards/add': '/calculators/credit-cards', '/profile/edit': '/in-the-app',
+            '/scheme/c-ssy': '/schemes/c-ssy', '/scheme/c-mudra': '/schemes/c-mudra', '/scheme/c-apy': '/atal-pension', '/scheme/no-such-scheme': '/schemes',
+            '/app.html': '/', [`/assets/${appJs}`]: '/',
+        };
+        for (const [p, want] of Object.entries(lockWant)) {
             const r = await get(prod.base, p);
-            if (r.status !== 308 || r.loc !== '/') lockBad.push(`${p}: ${r.status} ${r.loc}`);
+            // /app.html is also caught by the vercel.json backstop (a plain permanent redirect).
+            if (r.status !== 308 || r.loc !== want || (p !== '/app.html' && !/no-store/.test(r.cache))) lockBad.push(`${p}: ${r.status} ${r.loc} (want ${want})`);
         }
-        check('every other app route (incl. /app, /app.html, app JS) 308s to "/"', lockBad.length === 0, lockBad.slice(0, 4).join(' | '));
+        check(`every other app route 308s to its approved target (${Object.keys(rt.ROUTE_TARGETS).length} generated + routes with IDs, /app.html, app JS)`, lockBad.length === 0, lockBad.slice(0, 4).join(' | '));
+        const nf = await Promise.all(['/no-such-page', '/calculator/no-such-tool', '/calculators/no-such-category', '/schemes/no-such-scheme'].map((p) => get(prod.base, p)));
+        check('unknown paths: real 404 status, the 404 page (noindex, links home), never the app shell', nf.every((r) => r.status === 404 && /<meta name="robots" content="noindex/.test(r.body) && r.body.includes('Page not found') && !r.body.includes('<div id="root"></div>')), nf.map((r) => r.status).join(','));
+
+        // Generated pages: categories, /calculators, /schemes, scheme pages, /in-the-app, export
+        const metaRobots = (b) => (b.match(/<meta name="robots" content="([^"]+)"/) || [])[1] || '';
+        const canonOk = (b, p) => b.includes(`<link rel="canonical" href="https://fincalix.com${p}">`);
+        const lead = (b) => text((b.match(/<p class="lead">([\s\S]*?)<\/p>/) || [])[1] || '');
+        const toolDescs = (b) => [...b.matchAll(/<span class="tool-desc">([\s\S]*?)<\/span>/g)].map((m) => text(m[1]));
+        const toolNames = (b) => [...b.matchAll(/<span class="tool-name">([\s\S]*?)<\/span>/g)].map((m) => text(m[1]));
+        const catBad = [], seenTools = new Set();
+        const catPaths = Object.values(seo.CATEGORY_SLUGS).map((s) => `/calculators/${s}`);
+        for (const p of ['/calculators', ...catPaths]) {
+            const r = await get(prod.base, p);
+            const descs = toolDescs(r.body);
+            if (p !== '/calculators') toolNames(r.body).forEach((n) => seenTools.add(n));
+            if (r.status !== 200 || r.robots || !/^index/.test(metaRobots(r.body)) || !canonOk(r.body, p) || lead(r.body).length < 120 || !descs.length || descs.some((d) => d.length < 8)) catBad.push(`${p}: ${r.status} robots=${metaRobots(r.body)} lead=${lead(r.body).length} tools=${descs.length}`);
+        }
+        check(`/calculators + ${catPaths.length} category pages: 200, indexable, apex canonical, intro paragraph, a one-line description for every tool`, catBad.length === 0, catBad.slice(0, 3).join(' | '));
+        const regNames = props.tools.map((t) => t.name);
+        check('every registered tool is on its category page', regNames.every((n) => seenTools.has(n)), regNames.filter((n) => !seenTools.has(n)).slice(0, 5).join(', '));
+        const schemePages = siteData.buildSchemePages();
+        const sl = await get(prod.base, '/schemes');
+        const listBad = schemePages.filter((s) => !sl.body.includes(`href="${s.path}"`)).map((s) => s.id);
+        check(`/schemes: 200, indexable, intro, links to all ${schemePages.length} scheme pages with their verified date`, sl.status === 200 && /^index/.test(metaRobots(sl.body)) && canonOk(sl.body, '/schemes') && lead(sl.body).length >= 120 && listBad.length === 0 && (sl.body.match(/Last verified /g) || []).length >= schemePages.length, listBad.slice(0, 5).join(', '));
+        const stale = schemePages.filter((s) => !s.scheme.lastVerified || s.scheme.lastVerified < siteData.SCHEME_VERIFIED_SINCE);
+        check(`every scheme verified on or after ${siteData.SCHEME_VERIFIED_SINCE} (none held back for re-verification)`, stale.length === 0, stale.map((s) => s.id).join(', '));
+        const spBad = [];
+        for (const s of schemePages) {
+            const r = await get(prod.base, s.path);
+            const robots = metaRobots(r.body);
+            if (r.status !== 200 || !canonOk(r.body, s.path) || (s.index ? !/^index/.test(robots) : !/^noindex/.test(robots)) || !text(r.body).includes(`Last verified ${s.verified}`) || !text(r.body).includes(s.scheme.name)) spBad.push(`${s.id}: ${r.status} ${robots}`);
+        }
+        const noindexed = schemePages.filter((s) => !s.index);
+        check(`${schemePages.length} scheme pages: 200, apex canonical, "Last verified <date>", robots = index unless under ${siteData.SCHEME_MIN_WORDS} words (${noindexed.length} noindex)`, spBad.length === 0, spBad.slice(0, 3).join(' | ') || noindexed.map((s) => s.id).join(', '));
+        const ita = await get(prod.base, '/in-the-app'), exp = await get(prod.base, '/export-my-data');
+        check('/in-the-app: 200, noindex, Google Play badge, no app link', ita.status === 200 && /^noindex/.test(metaRobots(ita.body)) && /data-play="/.test(ita.body) && !/href="\/(app|settings|profile)"/.test(ita.body));
+        check('/export-my-data: 200, noindex, export button and import steps in the HTML', exp.status === 200 && /^noindex/.test(metaRobots(exp.body)) && exp.body.includes('data-export-button') && text(exp.body).includes('Backup & Restore'));
         const staticBad = [];
         for (const s of seo.STATIC_PAGES) { const r = await get(prod.base, '/' + s); if (r.status !== 200 || r.robots || !r.body.includes(`<link rel="canonical" href="https://fincalix.com/${s}"`)) staticBad.push(s); }
         check(`${seo.STATIC_PAGES.length} static pages: 200, indexable, own canonical`, staticBad.length === 0, staticBad.join(', '));
@@ -173,12 +224,16 @@ async function main() {
         check('/config.json unchanged: CORS *, max-age=300', cfg.r.headers.get('access-control-allow-origin') === '*' && cfg.r.headers.get('cache-control') === 'public, max-age=300, must-revalidate');
         check('manifest start_url reverted to "/"', JSON.parse((await get(prod.base, '/manifest.json')).body).start_url === '/');
         const locs = [...(await get(prod.base, '/sitemap.xml')).body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-        const wantLocs = ['https://fincalix.com/', ...seo.STATIC_PAGES.map((s) => `https://fincalix.com/${s}`), ...seo.LEGAL_PAGES.map((s) => `https://fincalix.com/${s}`)].sort();
-        check('sitemap = landing + 27 static pages + 5 legal pages', JSON.stringify([...locs].sort()) === JSON.stringify(wantLocs), `${locs.length} URLs`);
-        const w1 = await get(www.base, '/calculator/sip'), w2 = await get(www.base, '/config.json');
-        check('www: redirects to the apex (which then locks), config.json still served', w1.status === 308 && w1.loc === 'https://fincalix.com/calculator/sip' && w2.status === 200);
+        const indexedPaths = ['/calculators', ...catPaths, '/schemes', ...schemePages.filter((s) => s.index).map((s) => s.path)];
+        const wantLocs = ['https://fincalix.com/', ...seo.STATIC_PAGES.map((s) => `https://fincalix.com/${s}`), ...seo.LEGAL_PAGES.map((s) => `https://fincalix.com/${s}`), ...indexedPaths.map((p) => `https://fincalix.com${p}`)].sort();
+        const lastmods = [...(await get(prod.base, '/sitemap.xml')).body.matchAll(/<loc>https:\/\/fincalix\.com\/schemes\/([^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)];
+        check(`sitemap = landing + ${seo.STATIC_PAGES.length} static + ${seo.LEGAL_PAGES.length} legal + ${indexedPaths.length} new indexable pages (no noindex page, apex only)`, JSON.stringify([...locs].sort()) === JSON.stringify(wantLocs), `${locs.length} URLs, want ${wantLocs.length}`);
+        check('sitemap: each scheme page dated by its last-verified date', lastmods.length > 0 && lastmods.every(([, id, d]) => schemePages.find((s) => s.id === id)?.scheme.lastVerified === d));
+        const w1 = await get(www.base, '/calculator/sip'), w2 = await get(www.base, '/config.json'), w3 = await get(www.base, '/export-my-data'), w4 = await get(www.base, '/');
+        check('www: redirects to the apex (which then locks), config.json still served', w1.status === 308 && w1.loc === 'https://fincalix.com/calculator/sip' && w2.status === 200 && w4.status === 308 && w4.loc === 'https://fincalix.com/');
+        check('www: /export-my-data is served there (not redirected), canonical on the apex', w3.status === 200 && w3.body.includes('data-export-button') && canonOk(w3.body, '/export-my-data'), `${w3.status} ${w3.loc || ''}`);
         const b1 = await get(bay.base, '/app'), b2 = await get(bay.base, '/calculator/sip');
-        check('any other host (e.g. the public bay.vercel.app alias) is locked the same way', b1.status === 308 && b1.loc === '/' && b2.status === 308 && b2.loc === '/sip');
+        check('any other host (e.g. a *.vercel.app deployment URL) is locked the same way', b1.status === 308 && b1.loc === '/in-the-app' && b2.status === 308 && b2.loc === '/sip');
         let synced = true; try { execFileSync(process.execPath, ['scripts/landing/sync-vercel-headers.mjs', '--check'], { stdio: 'pipe' }); } catch { synced = false; }
         check('vercel.json matches src/landing/seoRoutes.ts', synced);
 
@@ -341,6 +396,102 @@ async function main() {
                 const names = await page.locator('#tools .tool-name').allInnerTexts();
                 check('/?q=ppf filters the tool grid (SearchAction target works)', names.length > 0 && names.length < 10 && names.some((n) => /PPF/.test(n)), names.join(', '));
                 await ctx.close();
+            }
+            // 5g. Export banner + /export-my-data (a browser that used the old web app)
+            {
+                const OLD = {
+                    fincalix_analytics_consent: 'denied',
+                    fincalix_entries: JSON.stringify([{ id: 'qa-entry-1', amount: 250, type: 'expense', category: 'food', description: 'QA lunch', date: '2026-11-01' }]),
+                    'calculator-storage': JSON.stringify({ state: { savedCalculations: [], history: [{ id: 'qa-h1', type: 'sip', timestamp: 1 }, { id: 'qa-h2', type: 'emi', timestamp: 2 }] }, version: 0 }),
+                };
+                const { ctx, page, errors } = await profile(prod.base, { acceptDownloads: true }, OLD);
+                const banner = page.locator('.fx-banner');
+                const visibleOn = async (p) => { await page.goto(prod.base + p, { waitUntil: 'networkidle' }); await page.waitForTimeout(300); return banner.isVisible(); };
+                await page.goto(prod.base + '/export-my-data', { waitUntil: 'load' });   // be on the origin so localStorage can be set (no banner on this page)
+                const setNotice = (v) => page.evaluate((x) => { if (x) localStorage.setItem('fincalix_export_notice', JSON.stringify(x)); else localStorage.removeItem('fincalix_export_notice'); }, v);
+                const shown = [];
+                for (const p of ['/', '/sip', '/privacy-policy', '/calculators/loans', '/schemes/c-mudra', '/in-the-app']) { await setNotice(null); shown.push(`${p}:${await visibleOn(p)}`); }
+                check('banner shows on every kind of page when the browser holds FinCalix data', shown.every((s) => s.endsWith(':true')), shown.join(' '));
+                await setNotice(null);
+                await visibleOn('/sip');
+                check('banner: title, Export button, Google Play badge, link to /export-my-data', (await banner.locator('h2').innerText()) === 'FinCalix now lives on Android — export your data'
+                    && await banner.locator('[data-fx-export]').isVisible() && (await banner.locator('.fx-play').getAttribute('href')) === play.playUrl('final_cta') && (await banner.locator('.fx-more').getAttribute('href')) === '/export-my-data');
+                const fixed = await banner.evaluate((el) => getComputedStyle(el).position);
+                check('banner is fixed at the bottom (never moves the page)', fixed === 'fixed');
+                const [dl] = await Promise.all([page.waitForEvent('download'), banner.locator('[data-fx-export]').click()]);
+                const file = JSON.parse(fs.readFileSync(await dl.path(), 'utf8'));
+                const fileOk = /^fincalix-backup-\d{8}\.json$/.test(dl.suggestedFilename()) && file.app === 'FinCalix' && file.schema === 1 && JSON.stringify(file.data).includes('qa-entry-1') && JSON.stringify(file.data).includes('qa-h2');
+                check('banner export: the app\'s own backup file (fincalix-backup-YYYYMMDD.json) with this browser\'s data', fileOk, dl.suggestedFilename());
+                await page.waitForTimeout(300);
+                check('banner: confirms the download and names the import steps', (await banner.locator('.fx-done').innerText()).includes('Import App Data'));
+                await banner.locator('.fx-close').click();
+                const n1 = await page.evaluate(() => JSON.parse(localStorage.getItem('fincalix_export_notice') || 'null'));
+                check('dismissed: gone, stays gone on the next visit', !(await banner.isVisible()) && n1?.dismissals === 1 && !(await visibleOn('/sip')) && !(await visibleOn('/')));
+                const DAY = 86400000;
+                await setNotice({ dismissals: 1, at: Date.now() - 29 * DAY });
+                const at29 = await visibleOn('/sip');
+                await setNotice({ dismissals: 1, at: Date.now() - 31 * DAY });
+                const at31 = await visibleOn('/sip');
+                check('comes back once 30 days after the dismissal (not at 29 days)', !at29 && at31);
+                await page.keyboard.press('Tab');
+                await banner.locator('.fx-close').focus();
+                await page.keyboard.press('Escape');
+                const n2 = await page.evaluate(() => JSON.parse(localStorage.getItem('fincalix_export_notice') || 'null'));
+                await setNotice({ dismissals: 2, at: Date.now() - 400 * DAY });
+                check('second dismissal (Escape works too): never shown a third time, even a year later', n2?.dismissals === 2 && !(await visibleOn('/sip')) && !(await visibleOn('/')));
+                // /export-my-data
+                await setNotice(null);
+                await page.goto(prod.base + '/export-my-data', { waitUntil: 'networkidle' });
+                await page.waitForTimeout(300);
+                const found = await page.locator('[data-export-found] li').allInnerTexts();
+                check('/export-my-data: lists what this browser holds, no banner on the page itself', found.join('|').includes('1 expense entry') && found.join('|').includes('2 recent calculations') && !(await banner.isVisible()), found.join(' | '));
+                const [dl2] = await Promise.all([page.waitForEvent('download'), page.locator('[data-export-button]').click()]);
+                const file2 = JSON.parse(fs.readFileSync(await dl2.path(), 'utf8'));
+                check('/export-my-data: downloads the same backup file', /^fincalix-backup-\d{8}\.json$/.test(dl2.suggestedFilename()) && JSON.stringify(file2.data) === JSON.stringify(file.data));
+                check('/export-my-data on the apex points to the www copy of the page', await page.locator('[data-origin="apex"]').isVisible() && !(await page.locator('[data-origin="www"]').isVisible()));
+                const appData = await page.evaluate(() => localStorage.getItem('fincalix_entries'));
+                check('export never changes the app data in the browser', appData === OLD.fincalix_entries);
+                check('banner and export: no console error', errors.length === 0, errors.slice(0, 3).join(' | '));
+                await ctx.close();
+                const empty = await profile(prod.base, {}, { fincalix_analytics_consent: 'denied', 'settings-storage': JSON.stringify({ state: { theme: 'dark' }, version: 0 }) });
+                const none = [];
+                for (const p of ['/', '/sip', '/privacy-policy', '/calculators/loans']) { await empty.page.goto(prod.base + p, { waitUntil: 'networkidle' }); await empty.page.waitForTimeout(300); if (await empty.page.locator('.fx-banner').isVisible()) none.push(p); }
+                await empty.page.goto(prod.base + '/export-my-data', { waitUntil: 'networkidle' });
+                await empty.page.waitForTimeout(300);
+                const status = await empty.page.locator('[data-export-status]').innerText();
+                check('no banner without FinCalix records (settings alone do not count); export page says nothing was found', none.length === 0 && /No FinCalix data was found/.test(status) && await empty.page.locator('[data-export-button]').isDisabled(), none.join(', ') || status);
+                await empty.ctx.close();
+            }
+            // 5h. iPhone and the desktop-only QR code
+            {
+                const iphone = { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' };
+                const { ctx, page, errors } = await profile(prod.base, iphone, { fincalix_analytics_consent: 'denied' });
+                await page.goto(prod.base + '/', { waitUntil: 'load' });
+                const shift = await page.evaluate(() => new Promise((r) => { let v = 0; new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) v += e.value; }).observe({ type: 'layout-shift', buffered: true }); setTimeout(() => r(v), 2500); }));
+                const ios = await page.evaluate(() => ({ cls: document.documentElement.classList.contains('ua-ios'), sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }));
+                check('iPhone: "Android only for now — there\'s no iPhone app yet." under the hero badge, Play badge kept', ios.cls && await page.locator('.hero .note-ios').isVisible() && !(await page.locator('.hero .note-default').isVisible())
+                    && (await page.locator('.hero .note-ios').innerText()) === 'Android only for now — there’s no iPhone app yet.' && await page.locator('.hero [data-play="hero"]').isVisible());
+                check('iPhone: no QR code, no "send the link" button, no layout shift, no horizontal scroll', !(await page.locator('.qr').first().isVisible()) && !/send (me )?the link/i.test(await page.content()) && shift < 0.05 && ios.sw <= ios.cw, `CLS ${shift.toFixed(4)}`);
+                const amount = page.locator('#calc-panel input:not([type=range])').nth(0);
+                await amount.fill('3500000'); await amount.press('Tab');
+                await page.waitForTimeout(400);
+                check('iPhone: the mini-calculator works', (await page.locator('.calc-out .big').innerText()) === calc.formatINR(calc.calculateReducingEMI(3500000, 8.5, 240).emi), await page.locator('.calc-out .big').innerText());
+                await page.goto(prod.base + '/sip', { waitUntil: 'load' });
+                check('iPhone: the guides open and work (no redirect, no error)', page.url().endsWith('/sip') && errors.length === 0, errors.slice(0, 2).join(' | '));
+                await ctx.close();
+                const desk = await profile(prod.base, {}, { fincalix_analytics_consent: 'denied' });
+                await desk.page.goto(prod.base + '/', { waitUntil: 'load' });
+                const qr = desk.page.locator('.hero .qr');
+                const qrOk = await qr.isVisible() && (await qr.locator('svg').count()) === 1;
+                const deskNote = await desk.page.locator('.hero .note-default').isVisible() && !(await desk.page.locator('.hero .note-ios').isVisible());
+                await desk.page.setViewportSize({ width: 900, height: 900 });
+                const qrNarrow = await qr.isVisible();
+                check('desktop (≥1024 px, mouse): QR code to Google Play next to the hero badge; hidden on narrower windows', qrOk && deskNote && !qrNarrow);
+                await desk.ctx.close();
+                const android = await profile(prod.base, { viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2.625 }, { fincalix_analytics_consent: 'denied' });
+                await android.page.goto(prod.base + '/', { waitUntil: 'load' });
+                check('Android phone: no QR code, no iPhone note', !(await android.page.locator('.hero .qr').isVisible()) && !(await android.page.locator('.hero .note-ios').isVisible()));
+                await android.ctx.close();
             }
         } finally {
             await browser.close();

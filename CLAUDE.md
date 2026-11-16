@@ -33,7 +33,8 @@ node scripts/qa-expense-tracker.mjs
 node scripts/qa-loan-engine.mjs
 node scripts/qa-export-safety.mjs     # CSV/Excel formula-injection guard
 node scripts/qa-consent-network.mjs   # analytics events, switch-off and offline queue (needs build:web + Chrome)
-node scripts/qa-landing.mjs           # website: no-JS content, links, SEO headers, calculator parity, CTAs (needs build:web + Chrome)
+node scripts/qa-landing.mjs           # website: no-JS content, links, route targets, generated pages, sitemap, export banner, iPhone/QR (needs build:web + Chrome)
+node scripts/landing/round-trip-android.mjs   # old web app data → export (apex + www) → import on an Android emulator (needs adb, a running emulator, a debug APK)
 ```
 
 There is no test framework, ESLint, or Prettier configured. Type-checking via `tsc` (run as part of `npm run build`) is the only automated gate. Correctness for calculator math lives in the hand-written `scripts/qa-*.mjs` audits, which re-implement each formula independently and diff against the production util.
@@ -43,7 +44,7 @@ There is no test framework, ESLint, or Prettier configured. Type-checking via `t
 ### Dual-target app shell (`src/App.tsx`)
 The same React tree renders the app on Android and in the browser:
 1. **Native (Capacitor)** — full app, all routes, Home at "/", wraps `AppContent` in `ErrorBoundary` + `CibilProvider` + `BrowserRouter`.
-2. **Browser (owner testing only)** — fincalix.com is a marketing site; the app shell is never served publicly. Opening any URL with `?dev=true` sets the `fincalix_dev` cookie (`middleware.ts`, Vercel edge) and then "/" and every app route serve `/app.html` (noindex, no service worker, analytics flagged as test traffic). `?dev=false` clears it. Without the cookie, app routes 308 to their static page (`/calculator/sip` → `/sip`) or to "/". The legal pages are pre-rendered static HTML (`src/landing/legal-pages.tsx`).
+2. **Browser (owner testing only)** — fincalix.com is a marketing site; the app shell is never served publicly. Opening any URL with `?dev=true` sets the `fincalix_dev` cookie (`middleware.ts`, Vercel edge) and then "/" and every app route serve `/app.html` (noindex, no service worker, analytics flagged as test traffic). `?dev=false` clears it. Without the cookie, every app route 308s to a website page: its static guide (`/calculator/sip` → `/sip`), its category page (`/calculators/<slug>`), `/schemes/<id>`, or `/in-the-app` (noindex) for profile/settings screens; unknown paths get a real 404 (`dist/404.html`). The legal pages are pre-rendered static HTML (`src/landing/legal-pages.tsx`).
 
 Every page is lazy-loaded through a `lazyRetry` helper that retries chunk-load failures up to 3× (with cache-bust) and falls back to a one-time full page reload. When editing routes or adding pages, keep them behind `lr(() => import(...))` — the retry wrapper is important for users on stale caches after deploys.
 
@@ -51,8 +52,12 @@ Every page is lazy-loaded through a `lazyRetry` helper that retries chunk-load f
 The public home page (and the 5 legal pages) is a separate Vite build (`vite.landing.config.ts`) pre-rendered to static HTML by `scripts/landing/prerender.mjs`; only the islands hydrate (theme switch, hero figure, mini-calculator, tool grid). Its only call to action is the official Google Play badge (header, hero, after the calculator, final band) with an install referrer per placement. It never ships with the Android app (`npm run build` does not build it). Rules:
 - Figures and names come from the app: tools from `calculatorList.ts` (`allCalcs` + `appTools`, names from `en.json` at build time), schemes from `schemes.ts`, tax from `src/utils/incomeTax.ts`, EMI/SIP from `calculations.ts`. Never hand-type a count or figure in `src/landing/content.ts`.
 - Routing (static pages, legal pages, app-route table, dev cookie) lives in `src/landing/seoRoutes.ts`, used by `middleware.ts`; after changing it run `node scripts/landing/sync-vercel-headers.mjs`. `node scripts/landing/dev-mode-proof.mjs` shows the dev-mode flow with screenshots.
+- Route targets for app routes are generated: `scripts/landing/route-targets.mjs` reads every `<Route path>` in `App.tsx` plus the registry and writes `src/landing/routeTargets.generated.ts` (run by `sync-vercel-headers.mjs`; `--check` fails if stale). It throws on any route without a target, so a new route needs a registry category, a `ROUTE_OVERRIDES` entry or an `IN_APP_SCREENS` entry in `seoRoutes.ts`.
+- Generated pages (`site.html`, `src/landing/SitePages.tsx`, `site-data.ts`, rendered by `renderSite()` in `entry-server.tsx`): `/calculators`, 7 category pages, `/schemes`, `/schemes/<id>`, `/in-the-app`, `/export-my-data`, 404. A scheme page is indexed only if verified since `SCHEME_VERIFIED_SINCE` and has ≥ `SCHEME_MIN_WORDS` of its own text; prerender logs the noindex ones. `dist/sitemap.xml` = `public/sitemap.xml` + every indexable generated page (scheme pages dated by `lastVerified`).
+- Data export for old web-app users: `/export-my-data` (also served on www, excluded from the www→apex redirect) and a one-time banner (`exportBanner.ts`, key `fincalix_export_notice`: shown when `userData.ts` finds real records, back once 30 days after dismissal, never a third time). Both call the app's `exportBackup('download')`. The banner script is injected into the 27 static pages by prerender.
 - Screenshots: `tools/marketing/capture.mjs` → `node scripts/landing/build-images.mjs` (committed WebP). OG image and header icon: `node scripts/landing/build-og.mjs`. Fonts: `node scripts/landing/fetch-fonts.mjs`.
 - Analytics: same service and rules as the app; the website sends only `page_view` ("Website") and `play_badge_click` with `placement`.
+- iPhone: the head script adds `ua-ios`; CTAs then show "Android only for now — there's no iPhone app yet." under the Play badge. The QR code (static SVG, `qrcode` at build time, referrer `qr`) shows only at ≥1024 px with a mouse.
 - `public/sw.js` runs only inside the Android app; on any web host it is a kill switch (deletes caches, unregisters).
 - Initial JS budget 120 KB gzipped (prerender.mjs fails the build above it).
 

@@ -11,21 +11,9 @@ import { Island } from './islands';
 import type { IslandProps } from './islands';
 import { Shot } from './Shot';
 import type { LandingData } from './data';
-import { ANALYTICS_LINE, FEATURES, LANGUAGES, PRIVACY_CLAIMS, SUPPORT_EMAIL } from './content';
-import { playUrl } from './play';
-import type { Placement } from './play';
+import { ANALYTICS_LINE, FEATURES, LANGUAGES, PRIVACY_CLAIMS } from './content';
+import { CtaBand, PlayBadge, PlayCta, SiteFooter, SiteHeader } from './SiteChrome';
 import { formatINR } from '../utils/calculations';
-import badgeUrl from './assets/google-play-badge-en.png';
-import iconUrl from './assets/fincalix-icon-96.webp';
-
-/** The official Google Play badge (unaltered artwork), with an install referrer per placement. */
-function PlayBadge({ placement, small }: { placement: Placement; small?: boolean }) {
-    return (
-        <a className={`play${small ? ' play-sm' : ''}`} href={playUrl(placement)} data-play={placement} target="_blank" rel="noopener">
-            <img src={badgeUrl} width={646} height={250} alt="Get it on Google Play" />
-        </a>
-    );
-}
 
 function Section({ id, className = '', children }: { id: string; className?: string; children: ReactNode }) {
     return <section id={id} className={`sec ${className}`} aria-labelledby={`${id}-h`}>{children}</section>;
@@ -38,30 +26,17 @@ const Check = () => (
 /** Promote the visible hero screenshots (current theme) to an eager, high-priority load. */
 const HERO_IMG_SCRIPT = `(function(){var t=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';document.querySelectorAll('img[data-hero].only-'+t).forEach(function(i){i.loading='eager';i.fetchPriority='high';});})();`;
 
-export function Landing({ data }: { data: LandingData }) {
+export function Landing({ data, qrSvg }: { data: LandingData; qrSvg?: string }) {
     const islandProps: IslandProps = { tools: data.tools };
     const { tax } = data;
     return (
         <>
-            <a className="skip" href="#main">Skip to content</a>
-            <header className="hdr">
-                <div className="wrap nav">
-                    <a className="logo" href="/" aria-label="FinCalix home">
-                        <img src={iconUrl} width={34} height={34} alt="" />
-                        <span>FinCalix</span>
-                    </a>
-                    <nav className="nav-links" aria-label="Sections">
-                        <a href="#tools">Calculators</a>
-                        <a href="#tax">Tax 2026-27</a>
-                        <a href="#schemes">Schemes</a>
-                        <a href="#privacy">Privacy</a>
-                    </nav>
-                    <div className="nav-right">
-                        <Island name="header" props={islandProps} />
-                        <PlayBadge placement="header" small />
-                    </div>
-                </div>
-            </header>
+            <SiteHeader nav={[
+                { href: '#tools', label: 'Calculators' },
+                { href: '#tax', label: 'Tax 2026-27' },
+                { href: '#schemes', label: 'Schemes' },
+                { href: '#privacy', label: 'Privacy' },
+            ]} />
 
             <main id="main">
                 <div className="wrap hero">
@@ -69,10 +44,7 @@ export function Landing({ data }: { data: LandingData }) {
                         <p className="eyebrow">Free · No login · 6 Indian languages</p>
                         <h1 className="serif">Every money decision, <em>worked out</em> in seconds.</h1>
                         <p className="sub">EMI, SIP, income tax, government schemes and your monthly spending, in one Android app made for India. Your financial data stays on your device.</p>
-                        <div className="ctas">
-                            <PlayBadge placement="hero" />
-                            <span className="cta-note">Free on Google Play for Android</span>
-                        </div>
+                        <PlayCta placement="hero" qrSvg={qrSvg} />
                         <ul className="trust-line">
                             <li><Check />No ads</li>
                             <li><Check />Works offline</li>
@@ -229,46 +201,10 @@ export function Landing({ data }: { data: LandingData }) {
                     </div>
                 </Section>
 
-                <section className="band" aria-labelledby="band-h">
-                    <div className="wrap">
-                        <h2 id="band-h" className="serif">Your next money decision,<br />sorted in seconds.</h2>
-                        <p className="band-sub">Free on Google Play. No login, no ads.</p>
-                        <div className="ctas"><PlayBadge placement="final_cta" /></div>
-                    </div>
-                </section>
+                <CtaBand title={<>Your next money decision,<br />sorted in seconds.</>} />
             </main>
 
-            <footer className="ftr">
-                <div className="wrap">
-                    <div className="fgrid">
-                        <div className="fbrand">
-                            <a className="logo" href="/" aria-label="FinCalix home"><img src={iconUrl} width={34} height={34} alt="" /><span>FinCalix</span></a>
-                            <p>Free money calculators for India.</p>
-                            <p><a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a></p>
-                        </div>
-                        {data.footer.map((c) => (
-                            <nav key={c.id} aria-labelledby={`f-${c.id}`}>
-                                <h3 id={`f-${c.id}`}>{c.label}</h3>
-                                <ul>{c.links.map((l) => <li key={l.href}><a href={l.href}>{l.label}</a></li>)}</ul>
-                            </nav>
-                        ))}
-                        <nav aria-labelledby="f-legal">
-                            <h3 id="f-legal">Legal</h3>
-                            <ul>
-                                <li><a href="/privacy-policy">Privacy policy</a></li>
-                                <li><a href="/data-privacy">Data privacy</a></li>
-                                <li><a href="/data-safety">Data safety</a></li>
-                                <li><a href="/terms-of-service">Terms of service</a></li>
-                                <li><a href="/about">About</a></li>
-                            </ul>
-                        </nav>
-                    </div>
-                    <div className="legal">
-                        <span>© {new Date().getFullYear()} FinCalix · Made in India</span>
-                        <span>Calculators give estimates for planning, not financial advice.</span>
-                    </div>
-                </div>
-            </footer>
+            <SiteFooter groups={data.footer} />
         </>
     );
 }
