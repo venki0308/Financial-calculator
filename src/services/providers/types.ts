@@ -44,7 +44,7 @@ export interface ExportEventParams extends EventParams {
 
 /** Core interface that every analytics provider implements. */
 export interface AnalyticsProvider {
-    /** Load and start the provider. Called only after the user has opted in. */
+    /** Load and start the provider. Not called while analytics are switched off. */
     initialize(): Promise<void>;
     /** Send one event. */
     logEvent(eventName: string, params?: EventParams): void;

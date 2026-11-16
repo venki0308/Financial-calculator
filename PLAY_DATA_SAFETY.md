@@ -5,8 +5,8 @@ For FinCalix 1.2.9, build 22 (branch `privacy/consent-1.2.9`). Written 16 Novemb
 
 ## What build 22 actually does
 
-- Nothing is sent to Google unless the user turns on **Usage analytics** in Settings → Privacy. It is off by default and there is no popup. `node scripts/qa-consent-network.mjs` proves this on fresh browser profiles.
-- If allowed, the app sends usage statistics to Google Analytics 4 through the Firebase JavaScript SDK inside the WebView:
+- Usage analytics run for every user by default, as in earlier builds, and there is no popup. A user can switch them off in Settings → Privacy. `node scripts/qa-consent-network.mjs` checks both on fresh browser profiles.
+- The app sends usage statistics to Google Analytics 4 through the Firebase JavaScript SDK inside the WebView:
   - Events: `page_view`, `screen_view` (including app open), `calculation_event`, `scheme_viewed`, `language_changed`, `export_event`. Google Analytics adds first open, session start and engagement time on its own.
   - Parameters: screen name, page path, calculator type, scheme type (central or state), language, export type, feature name, platform. No amounts and no typed text.
   - Identifiers and device data: a random Analytics client ID, a Firebase installation ID, screen resolution, language, OS and browser version. Google derives an approximate location from the IP address.
@@ -46,6 +46,7 @@ Google's page says a transfer to a "service provider", defined as "an entity tha
 
 ## Answers I am unsure of
 
+0. **"Optional".** Google's definition of optional includes the ability to opt out, and users can switch analytics off in Settings, so "Optional" stands. Analytics are on by default.
 1. **Data deletion request.** The Settings toggle deletes the identifiers on the device and the Firebase installation ID, but it does not erase events already stored in Google Analytics, and we cannot find one user's past events once their ID is gone. If the form needs a yes/no, **"No"** is the answer I can stand behind today. To answer "Yes" you would need a process, for example an email address plus a way to act on a client ID. Lowering the Analytics data retention to 2 months reduces what is held.
 2. **Approximate location.** Google's page says "Approximate location that is inferred, such as via IP address ... must be disclosed", and Analytics derives country, region and city by default, so I have listed it. If you turn off "granular location and device data" for all regions in Analytics Admin, only coarser location remains; I would still declare it.
 3. **"Shared: No" depends on your Analytics settings.** If data sharing with other Google products, Google signals or ads links are enabled in the Analytics property, Google is no longer only a service provider and the answer becomes "Yes". The app switches Google signals and ad personalisation off in code, but the property settings are yours.

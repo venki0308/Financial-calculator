@@ -1,10 +1,10 @@
 /**
- * The choice the user made about optional usage analytics.
+ * Usage analytics switch.
  *
- * Analytics are OFF until the user explicitly allows them: nothing from Google
- * is loaded, no request is made and no identifier is created while the choice
- * is missing or "denied". There is no popup: the user turns analytics on or
- * off in Settings → Privacy.
+ * Analytics run for every user by default, as in earlier versions of the app.
+ * There is no popup. A user can switch them off (and on again) in
+ * Settings → Privacy; while the stored value is "denied" nothing is loaded,
+ * nothing is sent and the analytics identifiers are deleted.
  */
 import { safeSetItem } from './safeStorage';
 
@@ -17,7 +17,7 @@ export type AnalyticsConsent = 'granted' | 'denied';
 /** Current disclaimer acceptance key (see GlobalDisclaimerModal). */
 export const DISCLAIMER_KEY = 'fincalix_disclaimer_accepted_v4';
 
-/** The stored choice, or null when the user has not been asked yet. */
+/** The stored choice, or null when the user has never touched the switch. */
 export function getAnalyticsConsent(): AnalyticsConsent | null {
     try {
         const v = localStorage.getItem(ANALYTICS_CONSENT_KEY);
@@ -27,8 +27,9 @@ export function getAnalyticsConsent(): AnalyticsConsent | null {
     }
 }
 
+/** True unless the user has switched analytics off. */
 export function hasAnalyticsConsent(): boolean {
-    return getAnalyticsConsent() === 'granted';
+    return getAnalyticsConsent() !== 'denied';
 }
 
 /** Persist the choice and tell the rest of the app. */
