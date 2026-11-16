@@ -391,9 +391,9 @@ function AppContent() {
 
                     {/* Main app — all routes public, no auth required */}
                     <Route element={<Layout />}>
-                        {/* On the web the pre-rendered website (landing.html) is served at "/",
-                            so the app's Home lives at /app; "/" inside the app goes there. */}
-                        <Route path="/" element={Capacitor.isNativePlatform() ? <Home /> : <Navigate to="/app" replace />} />
+                        <Route path="/" element={<Home />} />
+                        {/* Alias kept for links from the redesign preview. On the web the app only
+                            runs in dev mode (?dev=true cookie, middleware.ts). */}
                         <Route path="/app" element={<Home />} />
                         <Route path="/calculators" element={<Calculators />} />
                         <Route path="/schemes" element={<Schemes />} />

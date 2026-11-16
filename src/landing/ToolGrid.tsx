@@ -11,6 +11,7 @@ export interface GridTool {
     cat: SiteCategory;
     color: string;
     keywords: string;
+    href: string | null;
 }
 
 const ICONS = new Map([...allCalcs, ...appTools].map((c) => [c.path, c.icon]));
@@ -22,10 +23,11 @@ function matches(t: GridTool, words: string[]) {
     return words.every((w) => hay.includes(w));
 }
 
+/** A tool card. Tools with a guide page on this site link to it; the rest are in the app only. */
 function Card({ t }: { t: GridTool }) {
     const Icon = ICONS.get(t.path);
-    return (
-        <a className="tool" href={t.path} data-cta="open_app" data-cta-loc="tools">
+    const inner = (
+        <>
             <span className="tool-head">
                 <span className="tool-icon" style={{ ['--c' as string]: t.color }} aria-hidden="true">
                     {Icon ? <Icon size={20} strokeWidth={2} /> : null}
@@ -33,8 +35,10 @@ function Card({ t }: { t: GridTool }) {
                 <span className="tool-name">{t.name}</span>
             </span>
             <span className="tool-desc">{t.desc}</span>
-        </a>
+            {t.href && <span className="tool-guide" aria-hidden="true">Guide →</span>}
+        </>
     );
+    return t.href ? <a className="tool tool-link" href={t.href}>{inner}</a> : <div className="tool">{inner}</div>;
 }
 
 export function ToolGrid({ tools }: { tools: GridTool[] }) {

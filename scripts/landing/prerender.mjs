@@ -30,7 +30,7 @@ if (fs.existsSync(appShell) && fs.readFileSync(appShell, 'utf8').includes('<div 
 if (!fs.existsSync(appHtml)) fail('dist/app.html missing (run the app build first)');
 
 // 2. Render the page.
-const { render } = await import(pathToFileURL(SSR).href);
+const { render, renderLegal } = await import(pathToFileURL(SSR).href);
 const { html, head, islandJson, data } = render();
 let page = fs.readFileSync(template, 'utf8');
 if (!page.includes('<!--landing-head-->') || !page.includes('<!--landing-app-->')) fail('placeholders missing in landing.html');
@@ -48,6 +48,22 @@ if (fs.existsSync(ssrAssets)) {
         copied++;
     }
 }
+// Legal pages: same components the app showed at these URLs, as static HTML (no app shell).
+const legal = await renderLegal();
+for (const p of legal.pages) {
+    const tpl = path.join(DIST, `${p.template}.html`);
+    if (!fs.existsSync(tpl)) fail(`dist/${p.template}.html missing`);
+    if (!p.h1 || /^[a-z]+\.[a-zA-Z.]+$/.test(p.h1)) fail(`${p.name}: no heading rendered (${p.h1 || 'empty'})`);
+    const out = fs.readFileSync(tpl, 'utf8')
+        .replace('<!--legal-head-->', p.head)
+        .replace('<!--legal-app-->', p.html)
+        .replace('<!--legal-data-->', '')
+        .replace(/<body([^>]*)>/, `<body$1 data-page="${p.name}">`);
+    fs.mkdirSync(path.join(DIST, p.name), { recursive: true });
+    fs.writeFileSync(path.join(DIST, p.name, 'index.html'), out);
+}
+for (const t of ['legal.html', 'datasafety.html']) fs.rmSync(path.join(DIST, t), { force: true });
+console.log(`prerender: legal pages ${legal.pages.map((p) => `/${p.name} (${p.h1})`).join(', ')}`);
 fs.rmSync(path.resolve('.landing-ssr'), { recursive: true, force: true });
 const missing = [...page.matchAll(/(?:src|href)="(\/site\/[^"]+)"|(\/site\/[^\s",]+\.webp)/g)]
     .map((m) => m[1] || m[2]).filter((p) => !fs.existsSync(path.join(DIST, p)));

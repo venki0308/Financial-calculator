@@ -92,9 +92,9 @@ async function startPreview() {
         const { serveDist } = await import('../../scripts/landing/serve-dist.mjs');
         const prev = process.cwd();
         process.chdir(ROOT);
-        const server = await serveDist({ port: PORT });
+        const server = await serveDist({ port: PORT, forceDev: true }); // the web app runs only in dev mode
         process.chdir(prev);
-        HOME = '/app';
+        HOME = '/';
         return { base: server.base, stop: () => { server.stop(); } };
     }
     const base = `http://127.0.0.1:${PORT}`;

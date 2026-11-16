@@ -23,6 +23,8 @@ export interface ToolCard {
     cat: SiteCategory;
     color: string;
     keywords: string;
+    /** Static guide page for this tool on fincalix.com, if there is one. */
+    href: string | null;
 }
 
 export interface SchemeCard {
@@ -31,6 +33,8 @@ export interface SchemeCard {
     category: string;
     figure: string;
     verified: string | null;
+    /** Static guide page for this scheme, if there is one. */
+    href: string | null;
 }
 
 export interface LandingData {
@@ -64,6 +68,7 @@ const toolCard = (c: CalcItem): ToolCard => ({
     cat: siteCategory(c),
     color: c.color,
     keywords: (c.keywords || []).join(' '),
+    href: APP_CANONICAL[c.path] ?? null,
 });
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -82,7 +87,7 @@ export function buildData(): LandingData {
         if (!s) throw new Error(`landing: scheme ${id} not in schemes.ts`);
         const figure = s.interestRate || s.benefitAmount;
         if (!figure) throw new Error(`landing: scheme ${id} has no rate or benefit amount`);
-        return { id: s.id, name: s.name, category: s.category, figure, verified: monthYear(s.lastVerified) };
+        return { id: s.id, name: s.name, category: s.category, figure, verified: monthYear(s.lastVerified), href: APP_CANONICAL['/scheme/' + s.id] ?? null };
     });
 
     const rebateLimit = NEW_REGIME_REBATE_LIMIT;

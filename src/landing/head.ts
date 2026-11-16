@@ -85,7 +85,6 @@ export function headTags(d: LandingData): string {
         `<meta name="google-play-app" content="app-id=com.fincalix.app">`,
         `<link rel="icon" type="image/png" href="/brand/fincalix-icon-512.png">`,
         `<link rel="apple-touch-icon" href="/brand/fincalix-icon-512.png">`,
-        `<link rel="manifest" href="/manifest.json">`,
         `<link rel="preload" href="${frauncesUrl}" as="font" type="font/woff2" crossorigin>`,
         `<link rel="preload" href="${jakartaUrl}" as="font" type="font/woff2" crossorigin>`,
         `<meta property="og:type" content="website">`,

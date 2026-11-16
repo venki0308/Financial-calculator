@@ -8,8 +8,8 @@
  * tracking", "100% offline", or the analytics provider's name.
  */
 
-export const PLAY_URL = 'https://play.google.com/store/apps/details?id=com.fincalix.app';
-export const SUPPORT_EMAIL = 'support@fincalix.com';
+export { PLAY_URL, playUrl } from './play';
+export type { Placement } from './play';export const SUPPORT_EMAIL = 'support@fincalix.com';
 
 export const PRIVACY_CLAIMS = [
     { title: 'Your financial data stays on your device', body: 'Your calculations, loans and expenses are saved on your phone, not on a server.' },
@@ -27,7 +27,6 @@ export interface Feature {
     points: string[];
     shot: string;          // key in img/images.json
     alt: string;
-    link: { href: string; label: string };
 }
 
 export const FEATURES: Feature[] = [
@@ -39,7 +38,6 @@ export const FEATURES: Feature[] = [
             'Choose between a lower EMI and a shorter tenure with the numbers side by side.',
         ],
         shot: 'en-foreclosure', alt: 'FinCalix loan screen showing interest saved by a part-payment',
-        link: { href: '/my-loans', label: 'Open My Loans' },
     },
     {
         id: 'expenses', eyebrow: 'Expense tracker', title: 'Know where the month went.',
@@ -49,7 +47,6 @@ export const FEATURES: Feature[] = [
             'Set budgets and see what is left for the month.',
         ],
         shot: 'en-expenses-monthly', alt: 'FinCalix monthly expense report with spending by category',
-        link: { href: '/expenses', label: 'Open the expense tracker' },
     },
     {
         id: 'cards', eyebrow: 'Credit cards', title: 'Clear card debt faster.',
@@ -59,7 +56,6 @@ export const FEATURES: Feature[] = [
             'See what paying only the minimum really costs.',
         ],
         shot: 'en-cc-payoff', alt: 'FinCalix credit card payoff screen with debt-free date and total interest',
-        link: { href: '/calculator/credit-card-payoff', label: 'Open credit card payoff' },
     },
     {
         id: 'goals', eyebrow: 'Goal planner', title: 'A plan for every goal.',
@@ -69,7 +65,6 @@ export const FEATURES: Feature[] = [
             'Plan several goals at once.',
         ],
         shot: 'en-goal-planner', alt: 'FinCalix goal planner showing monthly saving needed for each goal',
-        link: { href: '/goal-planner', label: 'Open the goal planner' },
     },
     {
         id: 'export', eyebrow: 'Reports', title: 'Reports you can share.',
@@ -79,7 +74,6 @@ export const FEATURES: Feature[] = [
             'Back up all your app data to a file.',
         ],
         shot: 'en-export', alt: 'FinCalix export options for PDF and Excel reports',
-        link: { href: '/expenses', label: 'Try a report' },
     },
     {
         id: 'reminders', eyebrow: 'Reminders', title: 'Gentle nudges, not noise.',
@@ -89,7 +83,6 @@ export const FEATURES: Feature[] = [
             'Turn any reminder off in one tap.',
         ],
         shot: 'en-reminders', alt: 'FinCalix notification settings with daily quote and log reminder switches',
-        link: { href: '/settings', label: 'See the settings' },
     },
 ];
 
@@ -140,7 +133,7 @@ export const FAQ_TEMPLATES: Faq[] = [
     },
     {
         q: 'What usage data does FinCalix collect?',
-        a: 'Usage analytics are on by default: which screens are opened, completed calculations, exported reports and, on this website, taps on the buttons that open the app. Amounts and inputs are never sent. You can turn analytics off anytime in Settings → Privacy.',
+        a: 'Usage analytics are on by default: which screens are opened in the app, completed calculations, exported reports and, on this website, taps on the Google Play buttons. Amounts and inputs are never sent. You can turn analytics off anytime in Settings → Privacy.',
     },
     {
         q: 'Which languages does FinCalix support?',
@@ -148,6 +141,6 @@ export const FAQ_TEMPLATES: Faq[] = [
     },
     {
         q: 'Can I use FinCalix on an iPhone or a computer?',
-        a: 'There is no iPhone app yet, but FinCalix works in any modern browser: tap “Open FinCalix” on this page. On Android, you can install it from Google Play.',
+        a: 'Not yet. FinCalix is an Android app, available free on Google Play. There is no iPhone or computer version at the moment.',
     },
 ];

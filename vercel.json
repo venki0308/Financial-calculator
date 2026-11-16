@@ -16,12 +16,22 @@
       "source": "/privacy-policy.html",
       "destination": "/privacy-policy",
       "permanent": true
-    }
-  ],
-  "rewrites": [
+    },
     {
-      "source": "/(.*)",
-      "destination": "/app.html"
+      "source": "/app\\.html",
+      "missing": [
+        {
+          "type": "cookie",
+          "key": "fincalix_dev",
+          "value": "1"
+        },
+        {
+          "type": "query",
+          "key": "dev"
+        }
+      ],
+      "destination": "/",
+      "permanent": true
     }
   ],
   "headers": [
@@ -51,286 +61,14 @@
       ]
     },
     {
-      "source": "/calculator/loan-emi",
-      "headers": [
+      "source": "/(.*)",
+      "has": [
         {
-          "key": "Link",
-          "value": "<https://fincalix.com/emi>; rel=\"canonical\""
+          "type": "cookie",
+          "key": "fincalix_dev",
+          "value": "1"
         }
-      ]
-    },
-    {
-      "source": "/calculator/home-loan",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/home-loan>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/car-loan",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/car-loan>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/personal-loan",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/personal-loan>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/sip",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/sip>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/lumpsum",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/lumpsum>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/swp",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/swp>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/cagr",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/cagr>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/capital-gains",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/capital-gains>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/lrs-tcs",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/lrs-tcs>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/fixed-deposit",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/fd>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/recurring-deposit",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/rd>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/ppf",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/ppf>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/epf",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/epf>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/nps",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/nps>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/gratuity",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/gratuity>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/sukanya-samriddhi",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/sukanya-samriddhi>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/nsc",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/nsc>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/kvp",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/kvp>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/post-office-mis",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/post-office-mis>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/post-office-td",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/post-office-td>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/senior-citizen-savings",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/scss>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/income-tax",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/income-tax>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/hra",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/hra>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/calculator/gst",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/gst>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/expenses",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/expense-tracker>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/scheme/c-apy",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/atal-pension>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/privacy-policy",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/privacy-policy>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/data-privacy",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/data-privacy>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/terms-of-service",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/terms-of-service>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/about",
-      "headers": [
-        {
-          "key": "Link",
-          "value": "<https://fincalix.com/about>; rel=\"canonical\""
-        }
-      ]
-    },
-    {
-      "source": "/((?!$|index\\.html$|(?:atal-pension|cagr|capital-gains|car-loan|emi|epf|expense-tracker|fd|gratuity|gst|home-loan|hra|income-tax|kvp|lrs-tcs|lumpsum|nps|nsc|personal-loan|post-office-mis|post-office-td|ppf|rd|scss|sip|sukanya-samriddhi|swp)(?:/(?:index\\.html)?)?$|(?:privacy-policy|data-privacy|terms-of-service|about)/?$|(?:calculator/loan-emi|calculator/home-loan|calculator/car-loan|calculator/personal-loan|calculator/sip|calculator/lumpsum|calculator/swp|calculator/cagr|calculator/capital-gains|calculator/lrs-tcs|calculator/fixed-deposit|calculator/recurring-deposit|calculator/ppf|calculator/epf|calculator/nps|calculator/gratuity|calculator/sukanya-samriddhi|calculator/nsc|calculator/kvp|calculator/post-office-mis|calculator/post-office-td|calculator/senior-citizen-savings|calculator/income-tax|calculator/hra|calculator/gst|expenses|scheme/c-apy)/?$|(?:assets|site|icons|screenshots|og|brand)/|[^/]*\\.(?!html$)[A-Za-z0-9]+$).*)",
+      ],
       "headers": [
         {
           "key": "X-Robots-Tag",
@@ -343,11 +81,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        },
-        {
-          "key": "X-Robots-Tag",
-          "value": "noindex"
+          "value": "private, no-store"
         }
       ]
     },

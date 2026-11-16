@@ -34,6 +34,11 @@ export default defineConfig(({ isSsrBuild }) => ({
             minify: 'terser',
             modulePreload: { polyfill: false },
             assetsInlineLimit: 0,        // keep fonts and images as cacheable files
-            rollupOptions: { input: 'landing.html' },
+            // The website, the 4 web legal pages and /data-safety (pre-rendered by prerender.mjs).
+            rollupOptions: {
+                input: { landing: 'landing.html', legal: 'legal.html', datasafety: 'datasafety.html' },
+                // React is shared by all three pages: give the chunk a clear name.
+                output: { manualChunks: (id) => (/node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id) ? 'react' : undefined) },
+            },
         },
 }));

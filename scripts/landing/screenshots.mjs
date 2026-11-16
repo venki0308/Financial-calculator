@@ -29,7 +29,7 @@ const VIEWS = [
 
 const external = process.argv[2];
 const OUT = path.resolve(process.argv[3] || 'marketing-assets/website-preview');
-const server = external ? { base: external.replace(/\/$/, ''), stop: async () => {} } : await serveDist({ port: 4322 });
+const server = external ? { base: external.replace(/\/$/, ''), stop: async () => {} } : await serveDist({ port: 4322, asHost: 'fincalix.com' });
 fs.mkdirSync(OUT, { recursive: true });
 const browser = await chromium.launch({ channel: 'chrome' });
 const problems = [];

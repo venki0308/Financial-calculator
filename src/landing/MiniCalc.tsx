@@ -127,7 +127,7 @@ export function ResultCard({ result, variant }: { result: Result; variant: 'full
                     </div>
                 ))}
             </dl>
-            <a className="btn btn-ghost" href={result.href} data-cta="open_app" data-cta-loc="calculator">
+            <a className="btn btn-ghost" href={result.href} data-play="mini_calc" target="_blank" rel="noopener">
                 {result.linkLabel} <span aria-hidden="true">→</span>
             </a>
             <p className="disc">{result.note}</p>

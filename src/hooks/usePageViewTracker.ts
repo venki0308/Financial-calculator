@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Capacitor } from '@capacitor/core';
 import { normalizePath, trackScreenOpened } from '../lib/analytics';
 
 /**
@@ -164,8 +163,6 @@ export function usePageViewTracker() {
     useEffect(() => {
         const pathname = location.pathname;
         if (REDIRECT_ONLY.has(pathname)) return;
-        // On the web "/" inside the app only redirects to /app (the website records its own view).
-        if (pathname === '/' && !Capacitor.isNativePlatform()) return;
         const timer = setTimeout(() => trackScreenOpened(screenNameFor(pathname), pathname), SETTLE_MS);
         return () => clearTimeout(timer);
     }, [location.pathname]);

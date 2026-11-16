@@ -53,7 +53,8 @@ const check = (label, ok, detail = '') => {
 /** Serve dist/ the way Vercel does (website at /, app shell for app routes). Run "npm run build:web" first. */
 async function startPreview() {
     if (!fs.existsSync('dist/app.html')) throw new Error('dist/app.html missing — run "npm run build:web" first');
-    return serveDist({ port: 4319 });
+    // On the web the app only runs in dev mode (fincalix_dev cookie); serve it as dev mode does.
+    return serveDist({ port: 4319, forceDev: true });
 }
 
 /** Decode one collect request into its events (a request can batch several). */
@@ -170,7 +171,7 @@ async function main() {
         console.log('\n1. New user: screens, calculation, exports (app code loading slowly, like a phone)');
         {
             const { context, page, events } = await freshProfile(browser, { fincalix_dev_access: 'true' }, { slowCode: true });
-            await page.goto(base + '/app', { waitUntil: 'load' }); // the app's Home on the web
+            await page.goto(base + '/', { waitUntil: 'load' }); // dev mode: the app's Home
             await acceptDisclaimer(page);
             await wait(page, 2500);
             check('no usage-statistics popup after the disclaimer', !(await popupShown(page)));
@@ -214,7 +215,7 @@ async function main() {
         console.log('\n2. Offline queue');
         {
             const { context, page, events } = await freshProfile(browser, { fincalix_dev_access: 'true', fincalix_disclaimer_accepted_v4: 'true' });
-            await page.goto(base + '/app', { waitUntil: 'load' }); // the app's Home on the web
+            await page.goto(base + '/', { waitUntil: 'load' }); // dev mode: the app's Home
             await go(page, '/calculator/fixed-deposit');
             await go(page, '/schemes', 6000);
             const before = events.length;
@@ -238,7 +239,7 @@ async function main() {
         console.log('\n3. Switch off in Settings (with events queued)');
         {
             const { context, page, events, requests } = await freshProfile(browser, { fincalix_dev_access: 'true', fincalix_disclaimer_accepted_v4: 'true' });
-            await page.goto(base + '/app', { waitUntil: 'load' }); // the app's Home on the web
+            await page.goto(base + '/', { waitUntil: 'load' }); // dev mode: the app's Home
             // Load every screen used below once while online (their code is
             // downloaded on first use and would not load while offline).
             await go(page, '/settings', 3000);
@@ -281,7 +282,7 @@ async function main() {
             });
             await page.goto(base + '/robots.txt');
             await page.evaluate((id) => { document.cookie = `_ga=${id}; path=/; max-age=63072000`; }, OLD_ID);
-            await page.goto(base + '/app', { waitUntil: 'load' }); // the app's Home on the web
+            await page.goto(base + '/', { waitUntil: 'load' }); // dev mode: the app's Home
             await acceptDisclaimer(page); // the updated disclaimer is shown once
             await wait(page, 2000);
             check('no usage-statistics popup after the disclaimer', !(await popupShown(page)));

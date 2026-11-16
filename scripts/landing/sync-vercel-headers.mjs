@@ -1,47 +1,40 @@
-// Write the website's routing and SEO headers into vercel.json from src/landing/seoRoutes.ts.
+// Write the website's routing into vercel.json from src/landing/seoRoutes.ts.
 //
 //   node scripts/landing/sync-vercel-headers.mjs          update vercel.json
 //   node scripts/landing/sync-vercel-headers.mjs --check  exit 1 if vercel.json is out of date
 //
 // Managed here (everything else in vercel.json is left exactly as it is, including the
-// www → apex redirect and the /config.json CORS and cache headers):
-//   - buildCommand "npm run build:web" (app + pre-rendered website)
-//   - the catch-all rewrite to /app.html (the website itself is dist/index.html at "/")
-//   - Link rel=canonical for app routes that have a static page, and for the legal pages
-//   - X-Robots-Tag: noindex for every other app route
-//   - cache headers for the app shell (/app.html) and the website's files (/site, /og, /brand)
+// www → apex redirect, the /privacy-policy.html redirect, the security headers and the
+// /config.json CORS and cache headers):
+//   - buildCommand "npm run build:web" (app + pre-rendered website + legal pages)
+//   - a backstop for the lock in middleware.ts: /app.html is never served without the dev cookie
+//   - no rewrites: the app shell is only ever served by middleware.ts in dev mode
+//   - X-Robots-Tag: noindex on every response in dev mode (cookie present)
+//   - cache headers for the app shell and the website's files (/site, /og, /brand)
 import fs from 'node:fs';
 import { buildSync } from 'esbuild';
 
 const out = buildSync({ entryPoints: ['src/landing/seoRoutes.ts'], bundle: true, format: 'esm', platform: 'neutral', write: false, logLevel: 'error' });
-const { APP_CANONICAL, INDEXED_APP_PAGES, ORIGIN, STATIC_PAGES } = await import('data:text/javascript;base64,' + Buffer.from(out.outputFiles[0].text).toString('base64'));
+const R = await import('data:text/javascript;base64,' + Buffer.from(out.outputFiles[0].text).toString('base64'));
 
-const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const alt = (list) => `(?:${list.map(esc).join('|')})`;
-const appCanon = Object.keys(APP_CANONICAL).map((p) => p.slice(1));
-const legal = INDEXED_APP_PAGES.map((p) => p.slice(1));
+const COOKIE = { type: 'cookie', key: R.DEV_COOKIE, value: '1' };
+const NOT_DEV = [COOKIE, { type: 'query', key: 'dev' }];
 
-// Everything that must stay indexable (or is a file) is excluded from the noindex rule.
-const keep = [
-    '$', 'index\\.html$',
-    `${alt([...STATIC_PAGES])}(?:/(?:index\\.html)?)?$`,
-    `${alt(legal)}/?$`,
-    `${alt(appCanon)}/?$`,
-    '(?:assets|site|icons|screenshots|og|brand)/',
-    '[^/]*\\.(?!html$)[A-Za-z0-9]+$',
+// The gate itself is middleware.ts (its redirects are sent with no-store, so a browser that
+// turns dev mode on later is not held by a cached redirect). vercel.json keeps one backstop:
+// the app shell file is never served without the dev cookie, even if middleware did not run.
+const managedRedirects = [
+    { source: '/app\\.html', missing: NOT_DEV, destination: '/', permanent: true },
 ];
-export const NOINDEX_SOURCE = `/((?!${keep.join('|')}).*)`;
-
 const managedHeaders = [
-    ...Object.entries(APP_CANONICAL).map(([app, page]) => ({ source: app, headers: [{ key: 'Link', value: `<${ORIGIN}${page}>; rel="canonical"` }] })),
-    ...INDEXED_APP_PAGES.map((p) => ({ source: p, headers: [{ key: 'Link', value: `<${ORIGIN}${p}>; rel="canonical"` }] })),
-    { source: NOINDEX_SOURCE, headers: [{ key: 'X-Robots-Tag', value: 'noindex' }] },
-    { source: '/app.html', headers: [{ key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' }, { key: 'X-Robots-Tag', value: 'noindex' }] },
+    { source: '/(.*)', has: [COOKIE], headers: [{ key: 'X-Robots-Tag', value: 'noindex' }] },
+    { source: '/app.html', headers: [{ key: 'Cache-Control', value: 'private, no-store' }] },
     { source: '/site/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] },
     { source: '/(og|brand)/(.*)', headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000' }] },
 ];
-const isManaged = (h) =>
-    h.source === '/app.html' || h.source === '/site/(.*)' || h.source === '/(og|brand)/(.*)' ||
+const isManagedRedirect = (r) => !!r.missing || !!(r.has && r.has.some((h) => h.type !== 'host' || /vercel\\?\.app/.test(h.value)));
+const isManagedHeader = (h) =>
+    !!h.has || h.source === '/app.html' || h.source === '/site/(.*)' || h.source === '/(og|brand)/(.*)' ||
     h.headers.some((x) => x.key === 'X-Robots-Tag' || (x.key === 'Link' && /rel="canonical"/.test(x.value)));
 
 const file = 'vercel.json';
@@ -49,12 +42,12 @@ const raw = fs.readFileSync(file, 'utf8');
 const cfg = JSON.parse(raw);
 const next = { ...cfg };
 next.buildCommand = 'npm run build:web';
-next.rewrites = [{ source: '/(.*)', destination: '/app.html' }];
-// Managed rules go after the general security headers and before the per-file cache rules.
-const kept = cfg.headers.filter((h) => !isManaged(h));
+next.redirects = [...(cfg.redirects || []).filter((r) => !isManagedRedirect(r)), ...managedRedirects];
+delete next.rewrites;
+const kept = cfg.headers.filter((h) => !isManagedHeader(h));
 const firstCache = kept.findIndex((h) => h.source !== '/(.*)');
 next.headers = [...kept.slice(0, firstCache), ...managedHeaders, ...kept.slice(firstCache)];
-const order = ['buildCommand', 'redirects', 'rewrites', 'headers'];
+const order = ['buildCommand', 'redirects', 'headers'];
 const sorted = Object.fromEntries([...order.filter((k) => k in next), ...Object.keys(next).filter((k) => !order.includes(k))].map((k) => [k, next[k]]));
 const text = JSON.stringify(sorted, null, 2) + '\n';
 
@@ -63,5 +56,5 @@ if (process.argv.includes('--check')) {
     console.log('vercel.json is up to date');
 } else {
     fs.writeFileSync(file, text);
-    console.log(`vercel.json: ${Object.keys(APP_CANONICAL).length} canonical app routes, ${INDEXED_APP_PAGES.length} legal pages, noindex for the rest`);
+    console.log(`vercel.json: /app.html backstop and noindex in dev mode (${R.DEV_COOKIE} cookie); the gate itself is middleware.ts`);
 }

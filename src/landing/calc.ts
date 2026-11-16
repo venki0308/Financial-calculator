@@ -8,6 +8,7 @@
 import { useSyncExternalStore } from 'react';
 import { calculateReducingEMI, calculateSIP, formatINR, formatINRShort, formatINRWords } from '../utils/calculations';
 import { compareSalaryTax } from '../utils/incomeTax';
+import { playUrl } from './play';
 
 export type Tab = 'emi' | 'sip' | 'tax';
 
@@ -77,7 +78,7 @@ export function computeResult(s: CalcState): Result {
                 { label: 'Total value', value: formatINR(r.futureValue) },
             ],
             bar: { a: r.invested, b: Math.max(0, r.wealthGained), aLabel: 'Invested', bLabel: 'Gains' },
-            href: '/calculator/sip', linkLabel: 'See full breakdown',
+            href: playUrl('mini_calc'), linkLabel: 'Get the full breakdown in the app',
             note: `Assumes a fixed ${rate}% yearly return. Mutual fund returns go up and down with the market.`,
         };
     }
@@ -97,7 +98,7 @@ export function computeResult(s: CalcState): Result {
                 { label: 'You save', value: formatINR(Math.abs(newTax - oldTax)) },
             ],
             bar: { a: newTax, b: oldTax, aLabel: 'New Regime', bLabel: 'Old Regime' },
-            href: '/calculator/income-tax', linkLabel: 'See full breakdown',
+            href: playUrl('mini_calc'), linkLabel: 'Get the full breakdown in the app',
             note: 'FY 2026-27, salaried resident below 60, including 4% cess. An estimate, not tax advice.',
         };
     }
@@ -112,7 +113,7 @@ export function computeResult(s: CalcState): Result {
             { label: 'Total payment', value: formatINR(r.totalPayment) },
         ],
         bar: { a: amount, b: r.totalInterest, aLabel: 'Principal', bLabel: 'Interest' },
-        href: '/calculator/loan-emi', linkLabel: 'See full breakdown',
+        href: playUrl('mini_calc'), linkLabel: 'Get the full breakdown in the app',
         note: 'Reducing-balance EMI. An estimate for planning; your lender’s figures may differ.',
     };
 }

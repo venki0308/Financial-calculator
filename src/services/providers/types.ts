@@ -11,14 +11,12 @@ export enum AnalyticsEvent {
     REPORT_EXPORTED = 'report_exported',
     SCHEME_VIEWED = 'scheme_viewed',
     LANGUAGE_CHANGED = 'language_changed',
-    /** Website (fincalix.com): a button that opens the web app was tapped. */
-    OPEN_APP = 'open_app',
     /** Website (fincalix.com): a Google Play badge was tapped. */
-    PLAY_BADGE = 'play_badge',
+    PLAY_BADGE_CLICK = 'play_badge_click',
 }
 
-/** Where on the website a call-to-action sits. */
-const CTA_LOCATION = /^(header|hero|calculator|tax|tools|features|band|footer)$/;
+/** Where on the website the Google Play badge sits. */
+const PLACEMENT = /^(header|hero|mini_calc|final_cta)$/;
 
 /** App-defined identifiers only: lower-case letters, digits and dashes. */
 const ID = /^[a-z0-9-]{1,40}$/;
@@ -37,8 +35,7 @@ export const EVENT_PARAMS: Readonly<Record<AnalyticsEvent, Readonly<Record<strin
     [AnalyticsEvent.REPORT_EXPORTED]: { calculator_id: ID, export_format: /^(pdf|excel|csv)$/, language: LANG },
     [AnalyticsEvent.SCHEME_VIEWED]: { scheme_type: /^(central|state)$/ },
     [AnalyticsEvent.LANGUAGE_CHANGED]: { language: LANG },
-    [AnalyticsEvent.OPEN_APP]: { cta_location: CTA_LOCATION },
-    [AnalyticsEvent.PLAY_BADGE]: { cta_location: CTA_LOCATION },
+    [AnalyticsEvent.PLAY_BADGE_CLICK]: { placement: PLACEMENT },
 };
 
 export interface EventParams {

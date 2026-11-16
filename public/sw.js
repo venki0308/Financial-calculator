@@ -21,6 +21,24 @@ const APP_SHELL = [
     '/icons/fincalix-logo.png',
 ];
 
+// The offline cache is only for the Android app (served from localhost). On every web
+// host (fincalix.com, www, Vercel URLs) the web app is not offered, or runs in dev mode
+// without a service worker, so this file is a kill switch there: it deletes every cache,
+// unregisters itself and reloads open pages from the network.
+const KEEP_WEB_APP = self.location.hostname === 'localhost';
+
+if (!KEEP_WEB_APP) {
+    self.addEventListener('install', () => self.skipWaiting());
+    self.addEventListener('activate', (event) => {
+        event.waitUntil((async () => {
+            for (const key of await caches.keys()) await caches.delete(key);
+            await self.registration.unregister();
+            const pages = await self.clients.matchAll({ type: 'window' });
+            for (const page of pages) page.navigate(page.url).catch(() => {});
+        })());
+    });
+} else {
+
 // ── INSTALL: cache the app shell ──────────────────────────────
 self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -119,3 +137,4 @@ self.addEventListener('fetch', (event) => {
             )
     );
 });
+}

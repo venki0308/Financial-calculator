@@ -1,40 +1,30 @@
 /**
  * The fincalix.com home page, pre-rendered to static HTML at build time
- * (scripts/landing/prerender.mjs). Everything here is plain HTML except the
- * four islands (header controls, hero figure, mini-calculator, tool grid).
+ * (scripts/landing/prerender.mjs). Its only goal is Google Play installs:
+ * the one call to action is the official Google Play badge, in four places
+ * (header, hero, after the mini-calculator, final band). The web app is not
+ * linked from here. Everything is plain HTML except the islands (theme switch,
+ * hero figure, mini-calculator, tool grid).
  */
 import type { ReactNode } from 'react';
 import { Island } from './islands';
 import type { IslandProps } from './islands';
 import { Shot } from './Shot';
 import type { LandingData } from './data';
-import { ANALYTICS_LINE, FEATURES, LANGUAGES, PLAY_URL, PRIVACY_CLAIMS, SUPPORT_EMAIL } from './content';
+import { ANALYTICS_LINE, FEATURES, LANGUAGES, PRIVACY_CLAIMS, SUPPORT_EMAIL } from './content';
+import { playUrl } from './play';
+import type { Placement } from './play';
 import { formatINR } from '../utils/calculations';
 import badgeUrl from './assets/google-play-badge-en.png';
 import iconUrl from './assets/fincalix-icon-96.webp';
 
-/* Device-aware calls to action. Both are always in the HTML (no layout
-   shift); an inline script in <head> marks Android browsers, and CSS then
-   puts the Play badge first and relabels the web app button. */
-function OpenApp({ loc, small }: { loc: string; small?: boolean }) {
+/** The official Google Play badge (unaltered artwork), with an install referrer per placement. */
+function PlayBadge({ placement, small }: { placement: Placement; small?: boolean }) {
     return (
-        <a className={`btn btn-primary cta-web${small ? ' btn-sm' : ''}`} href="/app" data-cta="open_app" data-cta-loc={loc}>
-            <span className="l-web">{small ? 'Open app' : 'Open FinCalix'}</span><span className="l-android">Use in browser</span>
-            <span aria-hidden="true" className="arrow">→</span>
-        </a>
-    );
-}
-
-function PlayBadge({ loc, small }: { loc: string; small?: boolean }) {
-    return (
-        <a className={`play${small ? ' play-sm' : ''}`} href={PLAY_URL} data-cta="play_badge" data-cta-loc={loc} target="_blank" rel="noopener">
+        <a className={`play${small ? ' play-sm' : ''}`} href={playUrl(placement)} data-play={placement} target="_blank" rel="noopener">
             <img src={badgeUrl} width={646} height={250} alt="Get it on Google Play" />
         </a>
     );
-}
-
-function Ctas({ loc }: { loc: string }) {
-    return <div className="ctas cta-group"><OpenApp loc={loc} /><PlayBadge loc={loc} /></div>;
 }
 
 function Section({ id, className = '', children }: { id: string; className?: string; children: ReactNode }) {
@@ -68,10 +58,7 @@ export function Landing({ data }: { data: LandingData }) {
                     </nav>
                     <div className="nav-right">
                         <Island name="header" props={islandProps} />
-                        <div className="cta-group hdr-ctas">
-                            <OpenApp loc="header" small />
-                            <PlayBadge loc="header" small />
-                        </div>
+                        <PlayBadge placement="header" small />
                     </div>
                 </div>
             </header>
@@ -81,8 +68,11 @@ export function Landing({ data }: { data: LandingData }) {
                     <div className="hero-copy">
                         <p className="eyebrow">Free · No login · 6 Indian languages</p>
                         <h1 className="serif">Every money decision, <em>worked out</em> in seconds.</h1>
-                        <p className="sub">EMI, SIP, income tax, government schemes and your monthly spending, in one app made for India. Your financial data stays on your device.</p>
-                        <Ctas loc="hero" />
+                        <p className="sub">EMI, SIP, income tax, government schemes and your monthly spending, in one Android app made for India. Your financial data stays on your device.</p>
+                        <div className="ctas">
+                            <PlayBadge placement="hero" />
+                            <span className="cta-note">Free on Google Play for Android</span>
+                        </div>
                         <ul className="trust-line">
                             <li><Check />No ads</li>
                             <li><Check />Works offline</li>
@@ -90,8 +80,8 @@ export function Landing({ data }: { data: LandingData }) {
                         </ul>
                     </div>
                     <div className="stage">
-                        <Shot id="en-tax" hero className="p2" sizes="(max-width: 760px) 172px, 222px" alt="FinCalix income tax screen comparing the New and Old Regime" />
-                        <Shot id="en-home" hero className="p1" sizes="(max-width: 760px) 196px, 252px" alt="FinCalix home screen with budget, daily quote and planners" />
+                        <Shot id="en-tax" hero className="p2" sizes="(max-width: 760px) 40vw, 222px" alt="FinCalix income tax screen comparing the New and Old Regime" />
+                        <Shot id="en-home" hero className="p1" sizes="(max-width: 760px) 46vw, 252px" alt="FinCalix home screen with budget, daily quote and government schemes" />
                         <Island name="hero" props={islandProps} className="hero-card-slot" />
                     </div>
                     <script dangerouslySetInnerHTML={{ __html: HERO_IMG_SCRIPT }} />
@@ -107,6 +97,10 @@ export function Landing({ data }: { data: LandingData }) {
                             <p className="sec-lead">The same maths the app uses. Change any value and the result updates at once.</p>
                         </div>
                         <Island name="calc" props={islandProps} />
+                        <div className="after-calc">
+                            <p>Every calculator, the full schedule and PDF or Excel reports are in the app, and work offline.</p>
+                            <PlayBadge placement="mini_calc" />
+                        </div>
                     </div>
                 </Section>
 
@@ -117,7 +111,7 @@ export function Landing({ data }: { data: LandingData }) {
                                 <p className="eyebrow">Income tax · FY 2026-27 · New Regime</p>
                                 <h2 id="tax-h" className="serif">No tax up to <span className="hl">₹12 lakh</span> of taxable income.</h2>
                                 <p className="tax-lead">With the {formatINR(tax.stdDeduction)} standard deduction, a salary of up to {formatINR(tax.zeroTaxSalary)} pays no income tax under the New Regime. FinCalix compares it with the Old Regime for your own deductions.</p>
-                                <a className="btn btn-on-dark" href="/calculator/income-tax" data-cta="open_app" data-cta-loc="tax">Compare both regimes <span aria-hidden="true">→</span></a>
+                                <a className="btn btn-on-dark" href="/income-tax">Read the income tax guide <span aria-hidden="true">→</span></a>
                             </div>
                             <dl className="tax-list">
                                 <div><dt>Rebate limit, taxable income</dt><dd className="serif num">{formatINR(tax.rebateLimit)}</dd></div>
@@ -137,7 +131,7 @@ export function Landing({ data }: { data: LandingData }) {
                                 <p className="eyebrow">{data.calculatorCount} calculators · {data.toolCount - data.calculatorCount} trackers and planners</p>
                                 <h2 id="tools-h" className="serif">Every tool, one search away.</h2>
                             </div>
-                            <p className="sec-lead">Tap any tool to open it in your browser.</p>
+                            <p className="sec-lead">All of these are in the free Android app. Tools marked “Guide” also have a page on this site.</p>
                         </div>
                         <Island name="tools" props={islandProps} />
                     </div>
@@ -158,7 +152,6 @@ export function Landing({ data }: { data: LandingData }) {
                                     <p className="eyebrow">{f.eyebrow}</p>
                                     <h3 id={`feat-${f.id}`} className="serif">{f.title}</h3>
                                     <ul>{f.points.map((p) => <li key={p}>{p}</li>)}</ul>
-                                    <a className="text-link" href={f.link.href} data-cta="open_app" data-cta-loc="features">{f.link.label} <span aria-hidden="true">→</span></a>
                                 </div>
                             </article>
                         ))}
@@ -192,20 +185,21 @@ export function Landing({ data }: { data: LandingData }) {
                                 <p className="eyebrow">Government schemes</p>
                                 <h2 id="schemes-h" className="serif"><span className="num">{data.schemeCount}</span> central schemes, explained simply.</h2>
                             </div>
-                            <a className="btn btn-ghost" href="/schemes" data-cta="open_app" data-cta-loc="features">Browse all schemes <span aria-hidden="true">→</span></a>
                         </div>
-                        <p className="sec-lead">Eligibility, benefits, documents and how to apply, for schemes like these:</p>
+                        <p className="sec-lead">All {data.schemeCount} are in the app, with eligibility, benefits, documents and how to apply. A few popular ones:</p>
                         <ul className="schemes">
-                            {data.schemeCards.map((s) => (
-                                <li key={s.id}>
-                                    <a className="scheme" href={`/scheme/${s.id}`} data-cta="open_app" data-cta-loc="features">
+                            {data.schemeCards.map((s) => {
+                                const inner = (
+                                    <>
                                         <span className="scheme-cat">{s.category}</span>
                                         <span className="scheme-name serif">{s.name}</span>
                                         <span className="scheme-fig num">{s.figure}</span>
                                         {s.verified && <span className="scheme-ver">Checked {s.verified}</span>}
-                                    </a>
-                                </li>
-                            ))}
+                                        {s.href && <span className="tool-guide" aria-hidden="true">Guide →</span>}
+                                    </>
+                                );
+                                return <li key={s.id}>{s.href ? <a className="scheme scheme-link" href={s.href}>{inner}</a> : <div className="scheme">{inner}</div>}</li>;
+                            })}
                         </ul>
                         <p className="disc">Rates and benefits as listed in the app, with the month they were last checked against official sources.</p>
                     </div>
@@ -238,7 +232,8 @@ export function Landing({ data }: { data: LandingData }) {
                 <section className="band" aria-labelledby="band-h">
                     <div className="wrap">
                         <h2 id="band-h" className="serif">Your next money decision,<br />sorted in seconds.</h2>
-                        <Ctas loc="band" />
+                        <p className="band-sub">Free on Google Play. No login, no ads.</p>
+                        <div className="ctas"><PlayBadge placement="final_cta" /></div>
                     </div>
                 </section>
             </main>
@@ -262,6 +257,7 @@ export function Landing({ data }: { data: LandingData }) {
                             <ul>
                                 <li><a href="/privacy-policy">Privacy policy</a></li>
                                 <li><a href="/data-privacy">Data privacy</a></li>
+                                <li><a href="/data-safety">Data safety</a></li>
                                 <li><a href="/terms-of-service">Terms of service</a></li>
                                 <li><a href="/about">About</a></li>
                             </ul>

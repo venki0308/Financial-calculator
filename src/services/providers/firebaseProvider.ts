@@ -40,11 +40,16 @@ function setGaDisabled(disabled: boolean) {
  * Automated checks set ANALYTICS_TEST_TRAFFIC_KEY. Their events then carry
  * debug_mode and traffic_type=internal, which the analytics property's
  * "Developer traffic" and "Internal traffic" data filters exclude from reports
- * (see PLAY_DATA_SAFETY.md).
+ * (see PLAY_DATA_SAFETY.md). Every hit in dev mode (fincalix_dev cookie, set by
+ * ?dev=true) or from a *.vercel.app host is test traffic too; the Android app
+ * (localhost) and fincalix.com visitors are not affected.
  */
 function testTrafficParams(): Record<string, string | boolean> {
     try {
-        return localStorage.getItem(ANALYTICS_TEST_TRAFFIC_KEY) === '1'
+        // Dev mode (?dev=true cookie on fincalix.com) and *.vercel.app preview hosts are test traffic.
+        const devHost = typeof location !== 'undefined' && (/\.vercel\.app$/.test(location.hostname)
+            || /(?:^|;\s*)fincalix_dev=1(?:;|$)/.test(typeof document !== 'undefined' ? document.cookie : ''));
+        return devHost || localStorage.getItem(ANALYTICS_TEST_TRAFFIC_KEY) === '1'
             ? { debug_mode: true, traffic_type: 'internal' }
             : {};
     } catch {

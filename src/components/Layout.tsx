@@ -24,8 +24,7 @@ export default function Layout() {
     }, [location.pathname]);
 
     const isWeb = !Capacitor.isNativePlatform();
-    // On the web "/" is the website; the app's Home is /app.
-    const homePath = isWeb ? '/app' : '/';
+    const homePath = '/';
 
     const tabs = [
         { to: homePath, icon: Home, label: t('nav.home') },

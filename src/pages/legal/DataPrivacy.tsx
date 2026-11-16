@@ -82,7 +82,7 @@ export default function DataPrivacy() {
 
             <Section icon="📊" color="#EC4899" title={t.s.analytics}>
                 <p style={{ marginBottom: '10px' }}>FinCalix sends usage statistics to an analytics service so we can see which calculators are useful.</p>
-                <p style={{ marginBottom: '10px' }}><strong style={{ color: colors.text }}>What is sent: which screens and calculators are opened, scheme views, language changes, completed calculations and exported reports (PDF, Excel, CSV), with a random app ID, device type, language, OS version and approximate country. On the website, taps on the buttons that open the app or its Google Play page are also sent. On the website, taps on the buttons that open the app or its Google Play page are also sent.</strong></p>
+                <p style={{ marginBottom: '10px' }}><strong style={{ color: colors.text }}>What is sent: which screens and calculators are opened, scheme views, language changes, completed calculations and exported reports (PDF, Excel, CSV), with a random app ID, device type, language, OS version and approximate country. On the website, taps on the Google Play buttons are also sent. On the website, taps on the Google Play buttons are also sent.</strong></p>
                 <p style={{ marginBottom: '10px' }}>This data is pseudonymous: it is tied to a random ID, not to your name or contact details.</p>
                 <p>Your financial inputs (salary, EMI amounts, etc.) are never part of analytics. Usage analytics are on by default; you can turn them off anytime in Settings → Privacy.</p>
             </Section>
