@@ -7,9 +7,12 @@ import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import type { LocalNotificationSchema } from '@capacitor/local-notifications';
 import { useNotificationStore } from '../store/useNotificationStore';
+import type { NotificationCategory } from '../store/useNotificationStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { dailyQuotes } from '../data/quotes';
+import { dailyQuoteKey } from '../data/quotes';
+import i18n, { ensureLocaleLoaded } from '../i18n';
+import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { RemoteConfigService } from './remoteConfig.service';
 import { APP_VERSION } from '../config/app';
 import { getAllCreditCards } from '../utils/creditCardStorage';
@@ -40,10 +43,20 @@ const REMINDER_ID_BASE = 10000;
 const LOG_REMINDER_ID_BASE = 3000;
 const LOG_REMINDER_DAYS = 7; // ids 3000..3006
 
-function addNotif(n: { type: string, title: string, body: string, icon: string, route?: string, itemId?: string }) {
+// Once-only / paced alert bookkeeping (all plain localStorage, device-local).
+const FIRED_ALERTS_KEY = 'fincalix_fired_alerts';        // JSON string[] of alert keys
+const SAVINGS_TIP_AT_KEY = 'fincalix_last_savings_tip';  // epoch ms of the last tip
+const SAVINGS_TIP_IDX_KEY = 'fincalix_savings_tip_idx';  // index of the last tip shown
+const SIP_REMINDER_MONTH_KEY = 'fincalix_sip_reminder_month'; // 'YYYY-MM'
+const SEEN_SCHEMES_KEY = 'fincalix_seen_scheme_ids';     // JSON string[] of scheme ids
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+type NotifInput = { type: string, title: string, body: string, icon: string, route?: string, itemId?: string, category?: NotificationCategory };
+
+function addNotif(n: NotifInput) {
     useNotificationStore.getState().addNotification({
         type: n.type,
-        category: n.type.includes('alert') ? 'alert' : n.type.includes('insight') ? 'insight' : 'reminder',
+        category: n.category ?? (n.type.includes('alert') ? 'alert' : n.type.includes('insight') ? 'insight' : 'reminder'),
         title: n.title,
         body: n.body,
         icon: n.icon,
@@ -60,6 +73,23 @@ function shouldRun(): boolean {
     const last = localStorage.getItem(LAST_RUN_KEY);
     if (!last) return true;
     return Date.now() - parseInt(last) > MIN_INTERVAL_MS;
+}
+
+/**
+ * Add a dated alert at most ONCE per key (e.g. "2026-adv-Dec-open"). The store
+ * only dedupes within a single day, so a check that is true for a whole month
+ * (ITR season, advance-tax window) used to add a fresh copy every day.
+ */
+function fireOnce(key: string, n: NotifInput) {
+    let fired: string[] = [];
+    try {
+        const parsed = JSON.parse(localStorage.getItem(FIRED_ALERTS_KEY) || '[]');
+        if (Array.isArray(parsed)) fired = parsed.filter((k): k is string => typeof k === 'string');
+    } catch { /* corrupt → start over */ }
+    if (fired.includes(key)) return;
+    addNotif(n);
+    // Keep only the most recent keys — a year produces ~20.
+    localStorage.setItem(FIRED_ALERTS_KEY, JSON.stringify([...fired, key].slice(-60)));
 }
 
 function checkEMIReminders() {
@@ -84,6 +114,9 @@ function checkEMIReminders() {
                 body: `Your EMI of ${amount} is due today. Make sure your account is funded.`,
                 icon: '💳',
                 route: '/calculator/loan-emi', // Or to saved items
+                // Per-calculation id: without it the store's same-day dedup
+                // collapsed two loans due on the same date into one alert.
+                itemId: calc.id,
             });
         });
     } else if ([1, 5, 15].includes(dayOfMonth)) {
@@ -110,100 +143,118 @@ function checkEMIReminders() {
 function checkSIPReminders() {
     if (!useSettingsStore.getState().notifications.calcReminders) return;
     const today = new Date();
-    const dayOfMonth = today.getDate();
-    // SIP reminder on 1st week
-    if (dayOfMonth <= 7) {
-        addNotif({
-            type: 'sip_reminder',
-            title: '📈 SIP Investment Due',
-            body: 'Your monthly SIP may be due. Ensure your bank account has sufficient balance for auto-debit.',
-            icon: '📈',
-            route: '/calculator/sip',
-        });
-    }
+    // First week of the month only.
+    if (today.getDate() > 7) return;
+    // Only for users who have actually planned a SIP in the app — a loan-only
+    // or budget-only user must not get "SIP due" nudges for a SIP they don't have.
+    const hasSip = useCalculatorStore.getState().savedCalculations
+        .some(c => c.calculatorType === 'SIP Calculator');
+    if (!hasSip) return;
+    // One reminder per month — this used to be re-added on each of the 7 days.
+    const monthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    if (localStorage.getItem(SIP_REMINDER_MONTH_KEY) === monthKey) return;
+    addNotif({
+        type: 'sip_reminder',
+        title: '📈 SIP Investment Due',
+        body: 'Your monthly SIP may be due. Ensure your bank account has sufficient balance for auto-debit.',
+        icon: '📈',
+        route: '/calculator/sip',
+    });
+    localStorage.setItem(SIP_REMINDER_MONTH_KEY, monthKey);
 }
+
+// Advance-tax instalments, keyed by calendar month (due on the 15th).
+const ADVANCE_TAX: Record<number, { label: string; body: string }> = {
+    6: { label: 'Jun', body: '1st instalment of advance tax (15%) is due by June 15. Use our Income Tax calculator to estimate.' },
+    9: { label: 'Sep', body: '2nd instalment of advance tax (45% cumulative) is due by September 15. Use our Income Tax calculator to estimate.' },
+    12: { label: 'Dec', body: '3rd instalment of advance tax (75% cumulative) is due by December 15. Check your liability now.' },
+    3: { label: 'Mar', body: 'Final instalment of advance tax (100%) is due by March 15. Pay on time to avoid late-payment interest.' },
+};
 
 function checkTaxAlerts() {
     if (!useSettingsStore.getState().notifications.calcReminders) return;
     const today = new Date();
+    const year = today.getFullYear();
     const month = today.getMonth() + 1; // 1-12
     const day = today.getDate();
+    // Every alert is keyed, so it lands in the bell ONCE — the month-long
+    // checks below used to add a new copy on every daily run.
+    const taxAlert = (key: string, title: string, body: string, icon: string) =>
+        fireOnce(`${year}-${key}`, { type: 'tax_alert', title, body, icon, route: '/calculator/income-tax' });
 
-    // Specific Annual Tax Filing Reminder (March 25th)
-    if (month === 3 && day === 25) {
-        addNotif({
-            type: 'tax_alert',
-            title: '⚠️ Annual Tax Reminder',
-            body: 'Today is March 25th! Ensure your tax-saving investments (PPF, ELSS) are complete before year-end.',
-            icon: '⚠️',
-            route: '/calculator/income-tax',
-        });
+    const adv = ADVANCE_TAX[month];
+    if (adv && day <= 15) {
+        // One heads-up when the window opens, one final reminder on the 13th–15th.
+        if (day >= 13) {
+            const left = 15 - day;
+            taxAlert(`adv-${adv.label}-last`,
+                `⏰ Advance Tax (${adv.label}) — due ${left === 0 ? 'today' : `in ${left} day${left > 1 ? 's' : ''}`}`,
+                adv.body, '⏰');
+        } else {
+            taxAlert(`adv-${adv.label}-open`, `📋 Advance Tax (${adv.label})`, adv.body, '📋');
+        }
     } else if (month === 3 && day === 31) {
-        addNotif({
-            type: 'tax_alert',
-            title: '⚠️ Tax Year Ending Today',
-            body: 'Financial year ends today, March 31. Last chance for tax-saving investments.',
-            icon: '⚠️',
-            route: '/calculator/income-tax',
-        });
-    } else if (month === 6 && day <= 15) {
-        addNotif({
-            type: 'tax_alert',
-            title: '📋 Advance Tax (Jun)',
-            body: '1st installment of advance tax (15%) is due by June 15. Use our Income Tax calculator to estimate.',
-            icon: '📋',
-            route: '/calculator/income-tax',
-        });
-    } else if (month === 9 && day <= 15) {
-        addNotif({
-            type: 'tax_alert',
-            title: '📋 Advance Tax (Sep)',
-            body: '2nd installment of advance tax (45% cumulative) is due by September 15. Use our Income Tax calculator to estimate.',
-            icon: '📋',
-            route: '/calculator/income-tax',
-        });
-    } else if (month === 12 && day <= 15) {
-        addNotif({
-            type: 'tax_alert',
-            title: '📋 Advance Tax (Dec)',
-            body: '3rd installment of advance tax (75% cumulative) is due by December 15. Check your liability now.',
-            icon: '📋',
-            route: '/calculator/income-tax',
-        });
-    } else if (month === 3 && day <= 15) {
-        addNotif({
-            type: 'tax_alert',
-            title: '📋 Advance Tax (Mar)',
-            body: 'Final installment of advance tax (100%) is due by March 15. Clear it to avoid interest u/s 234C.',
-            icon: '📋',
-            route: '/calculator/income-tax',
-        });
-    } else if (month === 7) {
-        addNotif({
-            type: 'tax_alert',
-            title: '📁 ITR Filing Reminder',
-            body: 'ITR deadline for non-audit taxpayers (ITR-1 to ITR-4): July 31. Audit cases: October 31. File early to avoid penalties.',
-            icon: '📁',
-            route: '/calculator/income-tax',
-        });
-    } else if (month === 8) {
-        addNotif({
-            type: 'tax_alert',
-            title: '📁 Missed July 31? File Belated ITR',
-            body: 'If you missed the July 31 deadline, you can still file a belated return until December 31 (late fee u/s 234F up to ₹5,000). Audit cases are due October 31.',
-            icon: '📁',
-            route: '/calculator/income-tax',
-        });
+        taxAlert('fy-end-today', '⚠️ Tax Year Ending Today',
+            'Financial year ends today, March 31. Last chance for tax-saving investments.', '⚠️');
+    } else if (month === 3 && day >= 25) {
+        taxAlert('fy-end', '⚠️ Financial Year Ends March 31',
+            'Complete your tax-saving investments (PPF, ELSS, NPS) before the year closes on March 31.', '⚠️');
     } else if (month === 4 && day <= 7) {
-        addNotif({
-            type: 'tax_alert',
-            title: '🎯 New Financial Year Begins',
-            body: 'A new financial year has begun! Zero tax up to ₹12L taxable (New Regime) and 14% employer NPS deduction u/s 80CCD(2) for all. Update your tax plan now.',
-            icon: '🎯',
-            route: '/calculator/income-tax',
-        });
+        taxAlert('new-fy', '🎯 New Financial Year Begins',
+            'A new financial year has begun! Zero tax up to ₹12L taxable income (New Regime), and employer NPS contributions up to 14% of salary are deductible. Update your tax plan now.', '🎯');
+    } else if (month === 7) {
+        // Since AY 2026-27: ITR-1/ITR-2 by July 31, non-audit ITR-3/ITR-4 by August 31.
+        taxAlert(day >= 25 ? 'itr-jul-last' : 'itr-jul', '📁 ITR Filing Reminder',
+            'ITR due dates: July 31 for ITR-1 and ITR-2, August 31 for non-audit ITR-3 and ITR-4, October 31 for audit cases. File early to avoid late fees.', '📁');
+    } else if (month === 8) {
+        taxAlert(day >= 25 ? 'itr-aug-last' : 'itr-aug', '📁 ITR: August 31 & Belated Returns',
+            'Non-audit ITR-3 and ITR-4 are due August 31. Missed July 31 for ITR-1 or ITR-2? You can still file a belated return until December 31 (late fee up to ₹5,000).', '📁');
+    } else if (month === 12 && day >= 16) {
+        taxAlert(day >= 25 ? 'itr-belated-last' : 'itr-belated', '📁 Belated ITR — December 31 Deadline',
+            'December 31 is the last date to file a belated income-tax return for the last financial year (late fee up to ₹5,000). Revised returns can be filed until March 31.', '📁');
     }
 }
+
+/** PPF maturity (₹ lakh, 1 decimal) for ₹1.5L a year over 15 years at the notified rate. */
+function ppfMaturityLakh(): string {
+    const r = SMALL_SAVINGS.rates.ppf / 100;
+    const maturity = 150000 * ((Math.pow(1 + r, 15) - 1) / r) * (1 + r);
+    return (maturity / 100000).toFixed(1);
+}
+
+// Rotating weekly tips. Built lazily so rate-dependent figures stay current.
+const SAVINGS_TIPS: Array<() => { title: string; body: string; route: string }> = [
+    () => ({
+        title: '💡 Savings Tip',
+        body: 'Did you know? Investing ₹5,000/month in a SIP at an assumed 12% for 10 years can grow to about ₹11.6 lakh.',
+        route: '/calculator/sip',
+    }),
+    () => ({
+        title: '💡 PPF Tip',
+        body: `₹1.5 lakh a year in PPF for 15 years at the current ${SMALL_SAVINGS.rates.ppf}% grows to about ₹${ppfMaturityLakh()} lakh — and the maturity is tax-free.`,
+        route: '/calculator/ppf',
+    }),
+    () => ({
+        title: '💡 Rule of 72',
+        body: 'Divide 72 by the interest rate to see how many years your money takes to double — at 8% it is about 9 years.',
+        route: '/calculator/compound-interest',
+    }),
+    () => ({
+        title: '💡 Budget Tip',
+        body: 'Try the 50-30-20 rule: 50% of income for needs, 30% for wants, 20% for savings. The Budget Tracker shows where you stand.',
+        route: '/expenses',
+    }),
+    () => ({
+        title: '💡 Emergency Fund',
+        body: 'Keep about 6 months of expenses in an easily accessible emergency fund before investing for long-term goals.',
+        route: '/expenses',
+    }),
+    () => ({
+        title: '💡 Home Loan Tip',
+        body: 'Paying one extra EMI every year on a 20-year home loan at 8.5% can close it about 3 years early.',
+        route: '/calculator/mortgage-calculator',
+    }),
+];
 
 function checkSavingsInsight() {
     if (!useSettingsStore.getState().notifications.calcReminders) return;
@@ -213,13 +264,58 @@ function checkSavingsInsight() {
     const savedCalcs = localStorage.getItem('calculator-storage') || localStorage.getItem('fincalix-calculator-store');
     if (!savedCalcs) return;
 
-    addNotif({
-        type: 'savings_insight',
-        title: '💡 Savings Tip',
-        body: 'Did you know? Investing ₹5,000/month in SIP at 12% for 10 years can grow to ₹11.6 Lakhs!',
-        icon: '💡',
-        route: '/calculator/sip',
-    });
+    // One tip a week, rotating — this used to add the SAME tip every day.
+    const lastAt = Number(localStorage.getItem(SAVINGS_TIP_AT_KEY)) || 0;
+    if (Date.now() - lastAt < WEEK_MS) return;
+    const rawIdx = localStorage.getItem(SAVINGS_TIP_IDX_KEY);
+    const lastIdx = rawIdx === null ? -1 : Number(rawIdx);
+    // Anything unexpected in storage restarts the rotation at the first tip.
+    const idx = Number.isInteger(lastIdx) && lastIdx >= -1 ? (lastIdx + 1) % SAVINGS_TIPS.length : 0;
+    const tip = SAVINGS_TIPS[idx]();
+
+    addNotif({ type: 'savings_insight', title: tip.title, body: tip.body, icon: '💡', route: tip.route });
+    localStorage.setItem(SAVINGS_TIP_AT_KEY, String(Date.now()));
+    localStorage.setItem(SAVINGS_TIP_IDX_KEY, String(idx));
+}
+
+/**
+ * "New schemes" toggle: announce government schemes added to the app since
+ * this device last looked. The first run only records a baseline, so an
+ * existing install is never flooded with the whole catalogue.
+ */
+async function checkNewSchemes() {
+    try {
+        // schemes.ts is large — load on demand, keep it out of the app shell.
+        const { schemes } = await import('../data/schemes');
+        let seen: string[] | null = null;
+        try {
+            const parsed = JSON.parse(localStorage.getItem(SEEN_SCHEMES_KEY) || 'null');
+            if (Array.isArray(parsed)) seen = parsed.filter((x): x is string => typeof x === 'string');
+        } catch { /* corrupt → re-baseline */ }
+        // Always advance the baseline, even with the toggle off, so turning it
+        // on later doesn't replay months of additions.
+        localStorage.setItem(SEEN_SCHEMES_KEY, JSON.stringify(schemes.map(s => s.id)));
+        if (!seen) return;
+        if (!useSettingsStore.getState().notifications.newSchemes) return;
+        const seenIds = new Set(seen);
+        for (const s of schemes.filter(x => !seenIds.has(x.id)).slice(0, 3)) {
+            addNotif({
+                type: 'new_scheme',
+                category: 'insight',
+                title: `🆕 New scheme added: ${s.name}`,
+                body: s.description,
+                icon: '🆕',
+                route: `/scheme/${s.id}`,
+                itemId: s.id,
+            });
+        }
+    } catch { /* storage or chunk unavailable — try again next run */ }
+}
+
+/** Today's (or a given day's) quote in the requested language; English if the bundle is unavailable. */
+async function quoteTextFor(lang: string, date: Date = new Date()): Promise<string> {
+    await ensureLocaleLoaded(lang);
+    return String(i18n.getFixedT(lang)(dailyQuoteKey(date)));
 }
 
 async function checkDailyQuote() {
@@ -254,6 +350,9 @@ async function checkDailyQuote() {
                     await LocalNotifications.cancel({ notifications: quoteNotifIds });
                 }
 
+                // Make sure the user's language bundle is in memory before
+                // building the batch — at cold start it may still be loading.
+                await ensureLocaleLoaded(langKey);
                 const notifications = [];
                 const now = new Date();
                 // Schedule next 14 days
@@ -266,10 +365,6 @@ async function checkDailyQuote() {
                         continue;
                     }
 
-                    const dayOfYear = Math.floor((targetDate.getTime() - new Date(targetDate.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
-                    const quoteIndex = dayOfYear % dailyQuotes.length;
-                    const quote = dailyQuotes[quoteIndex];
-
                     notifications.push({
                         // id by batch offset (1000..1013), NOT quote index —
                         // dayOfYear % 60 restarts at the year boundary, so a
@@ -277,7 +372,7 @@ async function checkDailyQuote() {
                         // silently overwrote some days' quotes.
                         id: 1000 + i,
                         title: '💡 FinCalix Daily Quote',
-                        body: String(quote[langKey]),
+                        body: await quoteTextFor(langKey, targetDate),
                         schedule: { at: targetDate }
                     });
                 }
@@ -292,21 +387,21 @@ async function checkDailyQuote() {
         const now = new Date();
 
         if (now.getHours() >= 8 && lastQuoteDate !== todayStr) {
-            const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
-            const quoteIndex = dayOfYear % dailyQuotes.length;
-            const quote = dailyQuotes[quoteIndex];
+            const quoteText = await quoteTextFor(langKey, now);
 
+            // Own type ('quote_insight'): sharing 'savings_insight' with the
+            // savings tip made the two overwrite each other in the bell.
             addNotif({
-                type: 'savings_insight',
+                type: 'quote_insight',
                 title: '💡 Daily Financial Quote',
-                body: String(quote[langKey]),
+                body: quoteText,
                 icon: '💡',
                 route: '/',
             });
 
             if ('Notification' in window && Notification.permission === 'granted') {
                 new Notification('💡 FinCalix Daily Quote', {
-                    body: String(quote[langKey]),
+                    body: quoteText,
                     icon: '/icon-192x192.png'
                 });
             }
@@ -508,21 +603,17 @@ function seedInitialNotifications() {
     addNotif({
         type: 'general',
         title: '🎉 Welcome to FinCalix!',
-        body: 'Your personal finance super-app is ready. Explore 43+ calculators, budget tools, government schemes, and more!',
+        body: 'Your personal finance super-app is ready. Explore 45+ calculators, budget tools, government schemes, and more!',
         icon: '🎉',
         route: '/',
     });
 
-    // Daily quote
-    const now = new Date();
-    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
-    const quoteIndex = dayOfYear % dailyQuotes.length;
-    const quote = dailyQuotes[quoteIndex];
-
+    // Daily quote (first launch is always English). Own type so the savings
+    // tip below does not replace it via the store's same-day dedup.
     addNotif({
-        type: 'savings_insight',
+        type: 'quote_insight',
         title: '💡 Daily Financial Quote',
-        body: String(quote.en),
+        body: String(i18n.t(dailyQuoteKey())),
         icon: '💡',
         route: '/',
     });
@@ -535,6 +626,9 @@ function seedInitialNotifications() {
         icon: '💡',
         route: '/expenses',
     });
+    // Start the weekly tip clock now, so the first rotating tip arrives next
+    // week instead of replacing this one on the same launch.
+    localStorage.setItem(SAVINGS_TIP_AT_KEY, String(Date.now()));
 
     localStorage.setItem(SEED_KEY, 'done');
 }
@@ -832,6 +926,7 @@ export const NotificationScheduler = {
                     ['loan', checkLoanPayments],
                     ['savings', checkSavingsInsight],
                     ['appUpdate', checkAppUpdate], // async, fire-and-forget
+                    ['newSchemes', checkNewSchemes], // async, fire-and-forget (self-contained try/catch)
                 ];
                 for (const [name, fn] of bellChecks) {
                     try { fn(); } catch (e) { console.error(`Bell check failed: ${name}`, e); }
