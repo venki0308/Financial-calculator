@@ -48,31 +48,55 @@ const DEFAULT_CONFIG: FincalixRemoteConfig = {
 // Fetched from our own domain (Vercel-hosted) so it shares the cache
 // infrastructure and IP visibility is to fincalix.com only — disclosed in
 // the Privacy Policy under Section 3.
-const CONFIG_URL = 'https://fincalix.com/config.json';
+//
+// IMPORTANT: ask the www host first. The apex (https://fincalix.com) answers
+// with a redirect to www that carries no Access-Control-Allow-Origin header,
+// and a cross-origin fetch is blocked when ANY hop lacks it. The Android
+// WebView runs on https://localhost and the site itself on www, so every
+// client is cross-origin to the apex — the old apex URL always failed and the
+// app silently ran on DEFAULT_CONFIG (no update prompts, no remote flags).
+// The apex stays as a fallback in case the primary domain is ever switched.
+const CONFIG_URLS = [
+    'https://www.fincalix.com/config.json',
+    'https://fincalix.com/config.json',
+];
 
 let cachedConfig: FincalixRemoteConfig | null = null;
+// Several callers ask at startup (update banner, bell check, feature flags);
+// share one request instead of fetching the same file three times.
+let inFlight: Promise<FincalixRemoteConfig> | null = null;
+
+async function fetchConfig(url: string): Promise<FincalixRemoteConfig> {
+    // 5s timeout — never block the app waiting for the config endpoint
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+        const res = await fetch(url, { cache: 'no-cache', signal: controller.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return (await res.json()) as FincalixRemoteConfig;
+    } finally {
+        clearTimeout(timeout);
+    }
+}
 
 export const RemoteConfigService = {
     /** Fetch config; returns cached or default on failure / timeout / offline */
     async getConfig(): Promise<FincalixRemoteConfig> {
         if (cachedConfig) return cachedConfig;
-        try {
-            // 5s timeout — never block the app waiting for the config endpoint
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 5000);
-            const res = await fetch(CONFIG_URL, {
-                cache: 'no-cache',
-                signal: controller.signal,
-            });
-            clearTimeout(timeout);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            cachedConfig = (await res.json()) as FincalixRemoteConfig;
-            return cachedConfig;
-        } catch {
-            // Network error / timeout / offline → use defaults
-            cachedConfig = DEFAULT_CONFIG;
-            return DEFAULT_CONFIG;
+        if (!inFlight) {
+            inFlight = (async () => {
+                for (const url of CONFIG_URLS) {
+                    try {
+                        cachedConfig = await fetchConfig(url);
+                        return cachedConfig;
+                    } catch { /* blocked / offline / timeout → try the next host */ }
+                }
+                // Network error / timeout / offline → use defaults
+                cachedConfig = DEFAULT_CONFIG;
+                return DEFAULT_CONFIG;
+            })();
         }
+        return inFlight;
     },
 
     /** Compare semver strings: returns 1 if a > b, -1 if a < b, 0 if equal */
