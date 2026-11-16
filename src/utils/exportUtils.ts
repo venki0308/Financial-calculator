@@ -1,3 +1,4 @@
+import { guardAoa } from './csvSafe';
 import { Capacitor } from '@capacitor/core';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { darkColors, lightColors } from '../theme/colors';
@@ -8,17 +9,11 @@ import { darkColors, lightColors } from '../theme/colors';
 
 // Excel formula-injection guard (CWE-1236): user-entered text must not be
 // interpreted as a formula when the exported file is opened in Excel.
-// Defense-in-depth for '=' and '@' only; '+'/'-' are excluded because signed
-// amounts (e.g. "+₹1,200", "-3.2%") are legitimate in financial exports and
+// The rule lives in utils/csvSafe (shared with the CSV export): text cells that
+// start with = + - @ tab or CR get a leading apostrophe; app-built signed
+// figures such as "+₹1,200" or "-3.2%" and all numeric cells are left alone.
 // aoa_to_sheet stores strings as type-'s' cells Excel never evaluates.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sanitizeAoa<T extends any[][]>(rows: T): T {
-    return rows.map(row =>
-        row.map(cell =>
-            typeof cell === 'string' && /^[=@\t\r]/.test(cell) ? `'${cell}` : cell
-        )
-    ) as T;
-}
+const sanitizeAoa = guardAoa;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _jsPDFCached: any = null;

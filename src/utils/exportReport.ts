@@ -3,6 +3,7 @@
  * All calculators call exportToPDF(config) and exportToExcel(config).
  */
 
+import { guardAoa } from './csvSafe';
 import { Capacitor } from '@capacitor/core';
 import { sanitizeForPDF } from './exportUtils';
 import { useSettingsStore } from '../store/useSettingsStore';
@@ -484,16 +485,11 @@ export async function exportToPDF(config: ExportConfig): Promise<void> {
 // Excel formula-injection guard (CWE-1236): user-entered text (e.g. a loan
 // nickname like "=HYPERLINK(...)") must not be interpreted as a formula when
 // the exported file is opened in Excel. Prefixing with ' renders it as text.
-// Defense-in-depth for '=' and '@' only; '+'/'-' are excluded because signed
-// amounts (e.g. "+₹1,200", "-3.2%") are legitimate in financial exports and
+// The rule lives in utils/csvSafe (shared with the CSV export): text cells that
+// start with = + - @ tab or CR get a leading apostrophe; app-built signed
+// figures such as "+₹1,200" or "-3.2%" and all numeric cells are left alone.
 // aoa_to_sheet stores strings as type-'s' cells Excel never evaluates.
-function sanitizeAoa(rows: (string | number)[][]): (string | number)[][] {
-    return rows.map(row =>
-        row.map(cell =>
-            typeof cell === 'string' && /^[=@\t\r]/.test(cell) ? `'${cell}` : cell
-        )
-    );
-}
+const sanitizeAoa = guardAoa;
 
 // ─── Public: exportToExcel ────────────────────────────────────────────────────
 
