@@ -1,3 +1,4 @@
+import { safeSetItem } from '../utils/safeStorage';
 import { AnalyticsEvent, AnalyticsProvider, EventParams, ScreenViewParams, FeatureUsageTimeParams, CalculationEventParams, ExportEventParams, ErrorEventParams } from './providers/types';
 import { FirebaseProvider } from './providers/firebaseProvider';
 
@@ -165,7 +166,7 @@ class AnalyticsWrapper {
             if (this.offlineQueue.length > 100) {
                 this.offlineQueue = this.offlineQueue.slice(-100);
             }
-            localStorage.setItem('fincalix_analytics_queue', JSON.stringify(this.offlineQueue));
+            safeSetItem('fincalix_analytics_queue', JSON.stringify(this.offlineQueue));
         } catch { /* Silent fail */ }
     }
 

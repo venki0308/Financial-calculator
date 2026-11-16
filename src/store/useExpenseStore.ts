@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 export interface Expense {
     id: string;
@@ -167,6 +168,6 @@ export const useExpenseStore = create<ExpenseState>()(
                 }, {} as Record<string, number>);
             },
         }),
-        { name: 'fincalix-expenses' }
+        { name: 'fincalix-expenses', storage: createJSONStorage(() => safeLocalStorage) }
     )
 );

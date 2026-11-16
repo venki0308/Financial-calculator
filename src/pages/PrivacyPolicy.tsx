@@ -1,3 +1,4 @@
+import { safeSetItem } from '../utils/safeStorage';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, Lock, Eye, EyeOff, Server, Users, FileText, Mail, Globe, Smartphone } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -55,7 +56,7 @@ export default function PrivacyPolicy() {
                         value={i18n.language.substring(0, 2)}
                         onChange={(e) => {
                             switchLanguage(e.target.value);
-                            localStorage.setItem('language', e.target.value);
+                            safeSetItem('language', e.target.value);
                         }}
                         className="bg-card border border-border text-foreground text-xs rounded-lg px-2 py-1.5 outline-none custom-select-arrow"
                     >

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 export interface FeatureFlag {
     id: string;
@@ -57,6 +58,6 @@ export const useFeatureFlagStore = create<FeatureFlagState>()(
             },
             setFeatures: (features) => set({ features }),
         }),
-        { name: 'feature-flags-storage' }
+        { name: 'feature-flags-storage', storage: createJSONStorage(() => safeLocalStorage) }
     )
 );

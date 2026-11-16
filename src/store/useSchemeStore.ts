@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 interface SchemeState {
     bookmarkedSchemes: string[];
@@ -16,6 +17,6 @@ export const useSchemeStore = create<SchemeState>()(
             removeBookmark: (id) => set((s) => ({ bookmarkedSchemes: s.bookmarkedSchemes.filter((b) => b !== id) })),
             isBookmarked: (id) => get().bookmarkedSchemes.includes(id),
         }),
-        { name: 'scheme-storage' }
+        { name: 'scheme-storage', storage: createJSONStorage(() => safeLocalStorage) }
     )
 );

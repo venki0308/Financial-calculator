@@ -1,3 +1,4 @@
+import { safeSetItem } from '../utils/safeStorage';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -48,7 +49,7 @@ export default function GlobalDisclaimerModal() {
 
     const handleAccept = () => {
         if (!canAccept) return;
-        localStorage.setItem('fincalix_disclaimer_accepted_v3', 'true');
+        safeSetItem('fincalix_disclaimer_accepted_v3', 'true');
         setVisible(false);
     };
 

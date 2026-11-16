@@ -8,7 +8,8 @@
  * without needing auth. See Capacitor AdMob plugin.
  */
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { safeLocalStorage } from '../utils/safeStorage';
 import { Capacitor } from '@capacitor/core';
 
 export interface User {
@@ -60,7 +61,7 @@ export const useAuthStore = create<LocalUserState>()(
             },
         }),
         {
-            name: 'local-user-storage',
+            name: 'local-user-storage', storage: createJSONStorage(() => safeLocalStorage),
             /** Re-generate UID in case storage was corrupted */
             onRehydrateStorage: () => (state) => {
                 if (state?.user && !state.user.uid) {

@@ -2,6 +2,7 @@
 // FINCALIX — ADD ENTRY BOTTOM SHEET (shared across all tabs)
 // ═══════════════════════════════════════════════════════════════
 
+import { safeSetItem } from '../utils/safeStorage';
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { X, Trash2 } from 'lucide-react';
@@ -60,7 +61,7 @@ function writeEntryPref(type: EntryType, pref: EntryPref): void {
   try {
     const prefs = readEntryPrefs();
     prefs[type] = { ...prefs[type], ...pref };
-    localStorage.setItem(ENTRY_PREFS_KEY, JSON.stringify(prefs));
+    safeSetItem(ENTRY_PREFS_KEY, JSON.stringify(prefs));
   } catch { /* storage full / unavailable — non-fatal */ }
 }
 

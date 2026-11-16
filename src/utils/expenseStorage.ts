@@ -3,6 +3,7 @@
 // Raw CRUD operations on localStorage. No calculations here.
 // ═══════════════════════════════════════════════════════════════
 
+import { mustSetItem } from './safeStorage';
 import type { Entry, BankAccount, Budget, Category } from '../types/expense';
 import { ALL_DEFAULT_CATEGORIES } from '../types/expense';
 
@@ -37,7 +38,7 @@ export const saveEntry = (entry: Entry): void => {
   } else {
     all.push(entry);
   }
-  localStorage.setItem(ENTRIES_KEY, JSON.stringify(all));
+  mustSetItem(ENTRIES_KEY, JSON.stringify(all));
 };
 
 export const deleteEntry = (id: string): void => {
@@ -46,7 +47,7 @@ export const deleteEntry = (id: string): void => {
   if (idx >= 0) {
     all[idx].isDeleted = true;
     all[idx].updatedAt = new Date().toISOString();
-    localStorage.setItem(ENTRIES_KEY, JSON.stringify(all));
+    mustSetItem(ENTRIES_KEY, JSON.stringify(all));
   }
 };
 
@@ -108,7 +109,7 @@ export const saveAccount = (account: BankAccount): void => {
   } else {
     all.push(account);
   }
-  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(all));
+  mustSetItem(ACCOUNTS_KEY, JSON.stringify(all));
 };
 
 export const deleteAccount = (id: string): void => {
@@ -116,7 +117,7 @@ export const deleteAccount = (id: string): void => {
   const idx = all.findIndex(a => a.id === id);
   if (idx >= 0) {
     all[idx].isActive = false;
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(all));
+    mustSetItem(ACCOUNTS_KEY, JSON.stringify(all));
   }
 };
 
@@ -149,7 +150,7 @@ export const saveBudget = (budget: Budget): void => {
   } else {
     all.push(budget);
   }
-  localStorage.setItem(BUDGETS_KEY, JSON.stringify(all));
+  mustSetItem(BUDGETS_KEY, JSON.stringify(all));
 };
 
 export const generateBudgetId = (): string => {
@@ -159,7 +160,7 @@ export const generateBudgetId = (): string => {
 /** Remove the budget for a given month entirely from storage. */
 export const deleteBudget = (monthStr: string): void => {
   const all = getAllBudgets().filter(b => b.month !== monthStr);
-  localStorage.setItem(BUDGETS_KEY, JSON.stringify(all));
+  mustSetItem(BUDGETS_KEY, JSON.stringify(all));
 };
 
 /** Soft-delete all entries within a date range (inclusive). */
@@ -174,7 +175,7 @@ export const deleteEntriesInRange = (startDate: string, endDate: string): number
       count++;
     }
   });
-  if (count > 0) localStorage.setItem(ENTRIES_KEY, JSON.stringify(all));
+  if (count > 0) mustSetItem(ENTRIES_KEY, JSON.stringify(all));
   return count;
 };
 
@@ -195,7 +196,7 @@ export const saveCustomCategory = (cat: Category): void => {
   } else {
     all.push(cat);
   }
-  localStorage.setItem(CATEGORIES_KEY, JSON.stringify(all));
+  mustSetItem(CATEGORIES_KEY, JSON.stringify(all));
 };
 
 export const getAllCategories = (): Category[] => {
@@ -235,7 +236,7 @@ export const migrateFromOldStore = (): boolean => {
       investmentType: old.investmentType,
     }));
 
-    localStorage.setItem(ENTRIES_KEY, JSON.stringify(migrated));
+    mustSetItem(ENTRIES_KEY, JSON.stringify(migrated));
     // Migration moves ONLY entries. 'budget-tracker-storage' is still the LIVE
     // persist key of useBudgetTrackerStore (subscriptions, netWorthHistory,
     // monthlyBalances, savingsGoal) — removing it would destroy that data.
@@ -246,7 +247,7 @@ export const migrateFromOldStore = (): boolean => {
         const envelope = JSON.parse(rawEnvelope);
         if (envelope?.state) {
           envelope.state.entries = [];
-          localStorage.setItem('budget-tracker-storage', JSON.stringify(envelope));
+          mustSetItem('budget-tracker-storage', JSON.stringify(envelope));
         }
       }
     } catch { /* leave the envelope untouched rather than risk data loss */ }

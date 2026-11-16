@@ -1,3 +1,4 @@
+import { safeSetItem } from '../utils/safeStorage';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldAlert, X } from 'lucide-react';
@@ -19,7 +20,7 @@ export function PrivacyBanner() {
     }, []);
 
     const handleAccept = () => {
-        localStorage.setItem('fincalix_privacy_accepted', 'true');
+        safeSetItem('fincalix_privacy_accepted', 'true');
         setIsVisible(false);
     };
 

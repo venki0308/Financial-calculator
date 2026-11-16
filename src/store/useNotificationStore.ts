@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 export type NotificationCategory = 'calculator' | 'reminder' | 'alert' | 'insight';
 
@@ -97,7 +98,7 @@ export const useNotificationStore = create<NotificationStore>()(
             },
         }),
         {
-            name: 'fincalix_notifications', // updated key
+            name: 'fincalix_notifications', storage: createJSONStorage(() => safeLocalStorage), // updated key
         }
     )
 );

@@ -1,3 +1,4 @@
+import { mustSetItem } from './safeStorage';
 /**
  * loanStorage.ts — My Loans data model & localStorage CRUD
  */
@@ -60,7 +61,7 @@ export const saveLoan = (loan: SavedLoan): void => {
         loans.push(loan);
     }
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(loans));
+        mustSetItem(STORAGE_KEY, JSON.stringify(loans));
     } catch {
         // QuotaExceededError — localStorage is full
         console.warn('[LoanStorage] localStorage full, cannot save loan');
@@ -71,7 +72,7 @@ export const saveLoan = (loan: SavedLoan): void => {
 export const deleteLoan = (id: string): void => {
     const loans = getAllLoans().filter(l => l.id !== id);
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(loans));
+        mustSetItem(STORAGE_KEY, JSON.stringify(loans));
     } catch {
         console.warn('[LoanStorage] localStorage full, cannot update loans');
     }

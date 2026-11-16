@@ -3,6 +3,7 @@
  * - Firebase GA4: track user behaviour (no personal data ever)
  * - Firebase Crashlytics: automatic crash & error reporting
  */
+import { safeSetItem } from '../utils/safeStorage';
 import { FirebaseCrashlytics } from '@capacitor-firebase/crashlytics';
 import { Capacitor } from '@capacitor/core';
 
@@ -42,7 +43,7 @@ export const CrashlyticsService = {
                 const arr = new Uint8Array(8);
                 crypto.getRandomValues(arr);
                 anonId = 'uid-' + Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
-                localStorage.setItem('fincalix_anon_id', anonId);
+                safeSetItem('fincalix_anon_id', anonId);
             }
             await FirebaseCrashlytics.setUserId({ userId: anonId });
             console.log(`[FinCalix] Crashlytics anonymous ID set: ${anonId}`);

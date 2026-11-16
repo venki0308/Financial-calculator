@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 export interface SavedLiveProfile {
     id: string;
@@ -33,6 +34,6 @@ export const useLiveStatusStore = create<LiveStatusState>()(
                 )
             })),
         }),
-        { name: 'live-status-storage' }
+        { name: 'live-status-storage', storage: createJSONStorage(() => safeLocalStorage) }
     )
 );

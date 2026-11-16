@@ -4,6 +4,7 @@
 // and ensure all stores survive an app restart cleanly.
 // ═══════════════════════════════════════════════════════════════
 
+import { safeSetItem } from './safeStorage';
 import type { Entry, BankAccount, Budget } from '../types/expense';
 import type { SavedLoan } from './loanStorage';
 
@@ -149,16 +150,16 @@ function validateStore<T>(
         parsed = JSON.parse(raw);
     } catch {
         // Corrupted JSON — back it up and reset to empty array
-        localStorage.setItem(`${key}_corrupted_backup_${Date.now()}`, raw);
-        localStorage.setItem(key, '[]');
+        safeSetItem(`${key}_corrupted_backup_${Date.now()}`, raw);
+        safeSetItem(key, '[]');
         report.issues.push(`${storeLabel}: corrupted JSON, backed up and reset`);
         return;
     }
 
     if (!Array.isArray(parsed)) {
         // Wrong shape — back it up
-        localStorage.setItem(`${key}_corrupted_backup_${Date.now()}`, raw);
-        localStorage.setItem(key, '[]');
+        safeSetItem(`${key}_corrupted_backup_${Date.now()}`, raw);
+        safeSetItem(key, '[]');
         report.issues.push(`${storeLabel}: not an array, backed up and reset`);
         return;
     }
@@ -175,7 +176,7 @@ function validateStore<T>(
     }
 
     if (removedCount > 0) {
-        localStorage.setItem(key, JSON.stringify(validItems));
+        safeSetItem(key, JSON.stringify(validItems));
         report.removed += removedCount;
         report.issues.push(`${storeLabel}: removed ${removedCount} invalid item(s)`);
     }

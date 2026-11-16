@@ -3,6 +3,7 @@
  * Evaluates user financial data daily and triggers smart notifications.
  */
 
+import { safeSetItem } from '../utils/safeStorage';
 import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import type { LocalNotificationSchema } from '@capacitor/local-notifications';
@@ -89,7 +90,7 @@ function fireOnce(key: string, n: NotifInput) {
     if (fired.includes(key)) return;
     addNotif(n);
     // Keep only the most recent keys — a year produces ~20.
-    localStorage.setItem(FIRED_ALERTS_KEY, JSON.stringify([...fired, key].slice(-60)));
+    safeSetItem(FIRED_ALERTS_KEY, JSON.stringify([...fired, key].slice(-60)));
 }
 
 function checkEMIReminders() {
@@ -160,7 +161,7 @@ function checkSIPReminders() {
         icon: '📈',
         route: '/calculator/sip',
     });
-    localStorage.setItem(SIP_REMINDER_MONTH_KEY, monthKey);
+    safeSetItem(SIP_REMINDER_MONTH_KEY, monthKey);
 }
 
 // Advance-tax instalments, keyed by calendar month (due on the 15th).
@@ -274,8 +275,8 @@ function checkSavingsInsight() {
     const tip = SAVINGS_TIPS[idx]();
 
     addNotif({ type: 'savings_insight', title: tip.title, body: tip.body, icon: '💡', route: tip.route });
-    localStorage.setItem(SAVINGS_TIP_AT_KEY, String(Date.now()));
-    localStorage.setItem(SAVINGS_TIP_IDX_KEY, String(idx));
+    safeSetItem(SAVINGS_TIP_AT_KEY, String(Date.now()));
+    safeSetItem(SAVINGS_TIP_IDX_KEY, String(idx));
 }
 
 /**
@@ -294,7 +295,7 @@ async function checkNewSchemes() {
         } catch { /* corrupt → re-baseline */ }
         // Always advance the baseline, even with the toggle off, so turning it
         // on later doesn't replay months of additions.
-        localStorage.setItem(SEEN_SCHEMES_KEY, JSON.stringify(schemes.map(s => s.id)));
+        safeSetItem(SEEN_SCHEMES_KEY, JSON.stringify(schemes.map(s => s.id)));
         if (!seen) return;
         if (!useSettingsStore.getState().notifications.newSchemes) return;
         const seenIds = new Set(seen);
@@ -405,7 +406,7 @@ async function checkDailyQuote() {
                     icon: '/icon-192x192.png'
                 });
             }
-            localStorage.setItem('fincalix_last_quote_date', todayStr);
+            safeSetItem('fincalix_last_quote_date', todayStr);
         }
     }
 }
@@ -583,7 +584,7 @@ async function checkAppUpdate() {
             icon: '🆕',
             route: '/__update',
         });
-        localStorage.setItem(LAST_KEY, config.latestVersion);
+        safeSetItem(LAST_KEY, config.latestVersion);
     } catch {
         // Network unavailable — skip silently
     }
@@ -595,7 +596,7 @@ function seedInitialNotifications() {
 
     const notifs = useNotificationStore.getState().notifications;
     if (notifs.length > 0) {
-        localStorage.setItem(SEED_KEY, 'done');
+        safeSetItem(SEED_KEY, 'done');
         return;
     }
 
@@ -628,9 +629,9 @@ function seedInitialNotifications() {
     });
     // Start the weekly tip clock now, so the first rotating tip arrives next
     // week instead of replacing this one on the same launch.
-    localStorage.setItem(SAVINGS_TIP_AT_KEY, String(Date.now()));
+    safeSetItem(SAVINGS_TIP_AT_KEY, String(Date.now()));
 
-    localStorage.setItem(SEED_KEY, 'done');
+    safeSetItem(SEED_KEY, 'done');
 }
 
 // ─── Native scheduled reminders (delivered while the app is closed) ─────────
@@ -679,7 +680,7 @@ function registerTapListener() {
     LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
         const route = event.notification?.extra?.route;
         if (typeof route === 'string' && route.startsWith('/')) {
-            localStorage.setItem(PENDING_NAV_KEY, route);
+            safeSetItem(PENDING_NAV_KEY, route);
             window.dispatchEvent(new Event(NOTIFICATION_NAV_EVENT));
         }
     }).catch(() => { tapListenerRegistered = false; });
@@ -712,7 +713,7 @@ async function ensureNativeNotificationsReady(): Promise<boolean> {
             // a bad cold-boot moment): state stayed 'prompt' but we never
             // asked again. A real denial reports 'denied', which we honor —
             // the OS blocks re-prompting after that anyway.
-            localStorage.setItem(PERM_REQUESTED_KEY, '1');
+            safeSetItem(PERM_REQUESTED_KEY, '1');
             perm = await LocalNotifications.requestPermissions();
         }
         return perm.display === 'granted';
@@ -913,7 +914,7 @@ export const NotificationScheduler = {
 
             const gated = shouldRun(); // capture once — LAST_RUN_KEY is set next
             if (gated) {
-                localStorage.setItem(LAST_RUN_KEY, Date.now().toString());
+                safeSetItem(LAST_RUN_KEY, Date.now().toString());
 
                 // Run all in-app (bell) checks — each isolated so one failure
                 // can't skip the rest (or the native scheduling further down).
