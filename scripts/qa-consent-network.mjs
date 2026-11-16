@@ -76,9 +76,20 @@ function decode(req) {
     return out;
 }
 
-/** A brand-new profile with request + event logs. Test traffic is flagged. */
-async function freshProfile(browser, seed = {}) {
+/**
+ * A brand-new profile with request + event logs. Test traffic is flagged.
+ * `slowCode` delays every app code file by 1.2 s, like a phone network: a
+ * redirecting URL then stays on screen longer, which is where duplicate
+ * page views showed up on production.
+ */
+async function freshProfile(browser, seed = {}, { slowCode = false } = {}) {
     const context = await browser.newContext({ viewport: { width: 412, height: 915 }, serviceWorkers: 'block', acceptDownloads: true });
+    if (slowCode) {
+        await context.route(/\/assets\/.+\.js(\?.*)?$/, async (route) => {
+            await new Promise((r) => setTimeout(r, 1200));
+            await route.continue();
+        });
+    }
     await context.addInitScript((s) => {
         try {
             localStorage.setItem('fincalix_analytics_test_traffic', '1');
@@ -159,18 +170,20 @@ async function main() {
     const browser = await chromium.launch({ channel: 'chrome', headless: true });
     try {
         // ── 1. New user: no popup; one page_view per screen; calculate + export events
-        console.log('\n1. New user: screens, calculation, exports');
+        console.log('\n1. New user: screens, calculation, exports (app code loading slowly, like a phone)');
         {
-            const { context, page, events } = await freshProfile(browser, { fincalix_dev_access: 'true' });
+            const { context, page, events } = await freshProfile(browser, { fincalix_dev_access: 'true' }, { slowCode: true });
             await page.goto(base + '/', { waitUntil: 'load' });
             await acceptDisclaimer(page);
             await wait(page, 2500);
             check('no usage-statistics popup after the disclaimer', !(await popupShown(page)));
 
-            await go(page, '/sip');                 // old URL that redirects to /calculator/sip
-            await go(page, '/calculator/loan-emi');
-            await go(page, '/my-loans');
-            await go(page, '/calculator/sip', 4500); // wait past the screen-opening window
+            // Each screen gets time to load and appear (code is slowed down here);
+            // a screen the user leaves before it ever appears is not counted.
+            await go(page, '/sip', 5000);           // old URL that redirects to /calculator/sip
+            await go(page, '/calculator/loan-emi', 5000);
+            await go(page, '/my-loans', 5000);
+            await go(page, '/calculator/sip', 6000); // also past the screen-opening window
             check('no popup on later screens either', !(await popupShown(page)));
 
             // Type a new amount, key by key, then leave the field.

@@ -104,6 +104,46 @@ export function screenNameFor(pathname: string): string {
     return (name || 'Home').replace(/[^A-Za-z0-9 &()'./-]/g, '').slice(0, 60);
 }
 
+/**
+ * Old URLs that only redirect (<Navigate> routes in App.tsx). They are not
+ * screens: the visit is recorded for the screen they land on. Keep this list
+ * in sync when a redirect is added (scripts/qa-consent-network.mjs checks /sip).
+ */
+const REDIRECT_ONLY = new Set([
+    '/ai-advisor',
+    '/atal-pension',
+    '/cagr',
+    '/calculator/advanced-sip',
+    '/calculator/goal-sip',
+    '/calculator/ppf-advanced',
+    '/calculator/step-up-sip',
+    '/capital-gains',
+    '/car-loan',
+    '/emi',
+    '/epf',
+    '/expense-tracker',
+    '/fd',
+    '/gratuity',
+    '/gst',
+    '/home-loan',
+    '/hra',
+    '/income-tax',
+    '/kvp',
+    '/lrs-tcs',
+    '/lumpsum',
+    '/nps',
+    '/nsc',
+    '/personal-loan',
+    '/post-office-mis',
+    '/post-office-td',
+    '/ppf',
+    '/rd',
+    '/scss',
+    '/sip',
+    '/sukanya-samriddhi',
+    '/swp',
+]);
+
 /** Time to let a redirecting URL settle before the visit is recorded. */
 const SETTLE_MS = 300;
 
@@ -121,6 +161,7 @@ export function usePageViewTracker() {
 
     useEffect(() => {
         const pathname = location.pathname;
+        if (REDIRECT_ONLY.has(pathname)) return;
         const timer = setTimeout(() => trackScreenOpened(screenNameFor(pathname), pathname), SETTLE_MS);
         return () => clearTimeout(timer);
     }, [location.pathname]);
