@@ -1,0 +1,142 @@
+{
+  "en-home": {
+    "aspect": [
+      1082,
+      2050
+    ],
+    "widths": [
+      280,
+      560
+    ]
+  },
+  "en-tax": {
+    "aspect": [
+      1082,
+      2050
+    ],
+    "widths": [
+      280,
+      560
+    ]
+  },
+  "en-foreclosure": {
+    "aspect": [
+      1082,
+      2050
+    ],
+    "widths": [
+      280,
+      560
+    ]
+  },
+  "en-expenses-monthly": {
+    "aspect": [
+      1082,
+      2050
+    ],
+    "widths": [
+      280,
+      560
+    ]
+  },
+  "en-cc-payoff": {
+    "aspect": [
+      1082,
+      2050
+    ],
+    "widths": [
+      280,
+      560
+    ]
+  },
+  "en-goal-planner": {
+    "aspect": [
+      1082,
+      2050
+    ],
+    "widths": [
+      280,
+      560
+    ]
+  },
+  "en-export": {
+    "aspect": [
+      1082,
+      2050
+    ],
+    "widths": [
+      280,
+      560
+    ]
+  },
+  "en-reminders": {
+    "aspect": [
+      1082,
+      2050
+    ],
+    "widths": [
+      280,
+      560
+    ]
+  },
+  "en-home-mini": {
+    "aspect": [
+      1082,
+      1500
+    ],
+    "widths": [
+      180,
+      360
+    ]
+  },
+  "hi-home-mini": {
+    "aspect": [
+      1082,
+      1500
+    ],
+    "widths": [
+      180,
+      360
+    ]
+  },
+  "te-home-mini": {
+    "aspect": [
+      1082,
+      1500
+    ],
+    "widths": [
+      180,
+      360
+    ]
+  },
+  "ta-home-mini": {
+    "aspect": [
+      1082,
+      1500
+    ],
+    "widths": [
+      180,
+      360
+    ]
+  },
+  "kn-home-mini": {
+    "aspect": [
+      1082,
+      1500
+    ],
+    "widths": [
+      180,
+      360
+    ]
+  },
+  "ml-home-mini": {
+    "aspect": [
+      1082,
+      1500
+    ],
+    "widths": [
+      180,
+      360
+    ]
+  }
+}

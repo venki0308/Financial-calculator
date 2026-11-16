@@ -78,3 +78,18 @@ export const allCalcs: CalcItem[] = [
     { nameKey: 'calculators.ccInterest.name', descKey: 'calculators.ccInterest.desc', icon: CreditCard, color: '#EF4444', path: '/calculator/credit-card-interest', category: 'loans', keywords: ['credit', 'card', 'interest', 'gst', 'finance', 'charge'] },
     { nameKey: 'calculators.ccCompare.name', descKey: 'calculators.ccCompare.desc', icon: GitCompare, color: '#8B5CF6', path: '/calculator/credit-card-compare', category: 'loans', keywords: ['credit', 'card', 'compare', 'type', 'cashback', 'rewards', 'travel', 'fuel'] },
 ];
+
+/**
+ * App tools that are not calculators (trackers and planners). Listed here so the
+ * website's tool grid is generated from this registry too. Not part of allCalcs:
+ * the app's Calculators screen and "recently used" tracking do not read it.
+ */
+export const appTools: CalcItem[] = [
+    { nameKey: 'expenses.title', descKey: 'expenses.dailySubtitle', icon: Wallet, color: '#10B981', path: '/expenses', category: 'planning', keywords: ['expense', 'spending', 'budget', 'tracker', 'monthly', 'yearly', 'report'] },
+    { nameKey: 'budgetTracker.title', descKey: 'budgetTracker.subtitle', icon: PiggyBank, color: '#F59E0B', path: '/budget-tracker', category: 'planning', keywords: ['budget', 'tracker', 'monthly', 'goals'] },
+    { nameKey: 'goalPlanner.title', descKey: 'home.goalPlannerDesc', icon: Target, color: '#EC4899', path: '/goal-planner', category: 'planning', keywords: ['goal', 'planner', 'saving', 'target', 'house', 'education', 'retirement'] },
+    { nameKey: 'advisor.title', descKey: 'home.financialAdvisorDesc', icon: Sparkles, color: '#8B5CF6', path: '/financial-advisor', category: 'planning', keywords: ['planner', 'insights', 'asset allocation', 'plan'] },
+    { nameKey: 'compare.title', descKey: 'home.compareScenariosDesc', icon: GitCompare, color: '#06B6D4', path: '/compare', category: 'planning', keywords: ['compare', 'scenario', 'investment'] },
+    { nameKey: 'biz.title', descKey: 'biz.subtitle', icon: Briefcase, color: '#F97316', path: '/business-tracker', category: 'planning', keywords: ['business', 'shop', 'income', 'expense', 'daily'] },
+    { nameKey: 'myLoans.title', descKey: 'myLoans.subtitle', icon: Landmark, color: '#3B82F6', path: '/my-loans', category: 'loans', keywords: ['loan', 'tracker', 'emi', 'foreclosure', 'part payment', 'prepayment'] },
+];

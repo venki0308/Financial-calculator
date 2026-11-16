@@ -8,6 +8,7 @@ For FinCalix 1.2.9, build 22. Written 16 November 2026 against Google's form def
 - Usage analytics run for every user by default, as in earlier builds, and there is no popup. A user can switch them off in Settings → Privacy. `node scripts/qa-consent-network.mjs` checks both on fresh browser profiles.
 - The app sends usage statistics to Google Analytics 4 through the Firebase JavaScript SDK inside the WebView:
   - Events: `page_view` (one per screen visit, with the screen name), `calculator_calculated` (once per completed calculation), `report_exported` (PDF, Excel or CSV), `scheme_viewed`, `language_changed`. Google Analytics adds first open, session start and engagement time on its own.
+  - Website only (fincalix.com, not the Android app): `open_app` and `play_badge` when a visitor taps a button that opens the web app or the Google Play page, with `cta_location` (where the button sits, e.g. `hero`). The privacy policy lists them.
   - Parameters, allow-listed per event: screen name and page address (record IDs replaced by ":id"), `calculator_id`, `export_format`, `language`, `scheme_type`. No amounts, inputs, results or typed text.
   - Identifiers and device data: a random Analytics client ID, a Firebase installation ID, screen resolution, language, OS and browser version. Google derives an approximate location from the IP address.
   - Events raised while offline are kept on the device (at most 200, none older than 7 days) and sent when the app is back online. Switching analytics off deletes them unsent.

@@ -11,10 +11,11 @@
 // across every device. Without this, hashed chunks pinned by the SW
 // could keep an old buggy build alive on a user's device for days even
 // after a successful deploy.
-const CACHE_NAME = 'fincalix-v89';
+const CACHE_NAME = 'fincalix-v90';
 const APP_SHELL = [
     '/',
     '/index.html',
+    '/app.html',      // web app shell (the website is served at /)
     '/manifest.json',
     '/og-image.png',
     '/icons/fincalix-logo.png',
@@ -60,7 +61,7 @@ self.addEventListener('fetch', (event) => {
     if (url.origin !== self.location.origin) return;
 
     // ── Hashed JS/CSS chunks → cache-first (immutable) ──────
-    const isHashedAsset = url.pathname.startsWith('/assets/') &&
+    const isHashedAsset = (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/site/')) &&
         (url.pathname.endsWith('.js') || url.pathname.endsWith('.css'));
     if (isHashedAsset) {
         event.respondWith(
@@ -112,7 +113,9 @@ self.addEventListener('fetch', (event) => {
                 return response;
             })
             .catch(() =>
-                caches.match(event.request).then((cached) => cached || caches.match('/index.html'))
+                caches.match(event.request).then((cached) =>
+                    // Offline app route: the app shell on the web (/app.html), else index.html (Android).
+                    cached || caches.match('/app.html').then((shell) => shell || caches.match('/index.html')))
             )
     );
 });

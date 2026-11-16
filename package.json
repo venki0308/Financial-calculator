@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:landing": "vite build -c vite.landing.config.ts && vite build -c vite.landing.config.ts --ssr src/landing/entry-server.tsx && node scripts/landing/prerender.mjs",
+    "build:web": "npm run build && npm run build:landing",
     "preview": "vite preview"
   },
   "dependencies": {

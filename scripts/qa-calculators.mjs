@@ -280,6 +280,73 @@ check('LRS education ₹15L own funds → 2% on ₹5L', 10000, lrsTcs('eduMedica
 check('LRS education via bank loan → nil', 0, lrsTcs('eduLoan', 2500000, 0), 0);
 
 // ──────────────────────────────────────────────────────────────
+// 2V — Income tax, New vs Old Regime (FY 2026-27, salaried, below 60)
+// Independent re-implementation, then diffed against src/utils/incomeTax.ts
+// (the code the app's Income Tax Calculator and the website both use).
+// ──────────────────────────────────────────────────────────────
+console.log('\n2V. Income tax New vs Old Regime (FY 2026-27) — independent maths vs src/utils/incomeTax.ts');
+{
+  const slabTax = (x, slabs) => slabs.reduce((t, [lo, hi, rate]) => t + Math.max(0, Math.min(x, hi) - lo) * rate, 0);
+  const NEW = [[0, 4e5, 0], [4e5, 8e5, .05], [8e5, 12e5, .10], [12e5, 16e5, .15], [16e5, 20e5, .20], [20e5, 24e5, .25], [24e5, Infinity, .30]];
+  const OLD = [[0, 2.5e5, 0], [2.5e5, 5e5, .05], [5e5, 10e5, .20], [10e5, Infinity, .30]];
+  // Surcharge tiers as [threshold, rate, rate of the tier below]; the new regime stops at 25%.
+  const SUR = { new: [[2e7, .25, .15], [1e7, .15, .10], [5e6, .10, 0]], old: [[5e7, .37, .25], [2e7, .25, .15], [1e7, .15, .10], [5e6, .10, 0]] };
+  function indepTax(taxable, regime) {
+    const slabs = regime === 'new' ? NEW : OLD;
+    let tax = slabTax(taxable, slabs);
+    if (regime === 'new') tax = taxable <= 12e5 ? 0 : Math.min(tax, taxable - 12e5);   // 87A + marginal relief
+    else tax = taxable <= 5e5 ? 0 : tax;                                                // 87A, no relief
+    let sur = 0;
+    const tier = tax > 0 && SUR[regime].find(([th]) => taxable > th);
+    if (tier) {
+      const [th, rate, below] = tier;
+      sur = tax * rate;
+      const cap = slabTax(th, slabs) * (1 + below) + (taxable - th);                   // surcharge marginal relief
+      if (tax + sur > cap) sur = Math.max(0, cap - tax);
+    }
+    return (tax + sur) * 1.04;
+  }
+  const round10 = (n) => Math.round(n / 10) * 10;
+  const indep = (gross, ded) => ({
+    newTax: indepTax(round10(Math.max(0, gross - 75000)), 'new'),
+    oldTax: indepTax(round10(Math.max(0, gross - 50000 - ded)), 'old'),
+  });
+
+  // Figures the app displayed (marketing-assets facts, tools/marketing/capture.mjs).
+  const a = indep(1450000, 150000 + 25000 + 200000);
+  check('₹14.5L salary, ₹3.75L deductions — New Regime', 89700, a.newTax, 1);
+  check('₹14.5L salary, ₹3.75L deductions — Old Regime', 124800, a.oldTax, 1);
+  const z = indep(1275000, 0);
+  check('₹12.75L salary — New Regime (₹0 up to ₹12L taxable)', 0, z.newTax, 0);
+  check('₹12.75L salary — Old Regime, no deductions', 187200, z.oldTax, 1);
+  check('₹12L + ₹10 taxable — New Regime marginal relief caps tax at ₹10 + cess', 10.4, indep(1275010, 0).newTax, 0.01);
+
+  // Production code, bundled on the fly (esbuild ships with Vite).
+  const { buildSync } = await import('esbuild');
+  const out = buildSync({ entryPoints: ['src/utils/incomeTax.ts'], bundle: true, format: 'esm', platform: 'neutral', write: false, logLevel: 'error' });
+  const prod = await import('data:text/javascript;base64,' + Buffer.from(out.outputFiles[0].text).toString('base64'));
+  check('incomeTax.ts constant: New Regime rebate limit', 1200000, prod.NEW_REGIME_REBATE_LIMIT, 0);
+  check('incomeTax.ts constant: New Regime standard deduction', 75000, prod.NEW_REGIME_STANDARD_DEDUCTION, 0);
+  let worst = 0, cases = 0, where = '';
+  for (let gross = 0; gross <= 6e7; gross += gross < 3e6 ? 12345 : gross < 1.2e7 ? 98765 : 777777) {
+    for (const ded of [0, 150000, 375000, 600000]) {
+      const p = prod.compareSalaryTax(gross, ded);
+      const i = indep(gross, ded);
+      for (const [x, y] of [[p.newTax.totalTax, i.newTax], [p.oldTax.totalTax, i.oldTax]]) {
+        cases++;
+        if (Math.abs(x - y) > worst) { worst = Math.abs(x - y); where = `gross ${gross}, deductions ${ded}`; }
+      }
+    }
+  }
+  check(`incomeTax.ts vs independent maths over ${cases} cases (worst gap${where ? ' at ' + where : ''})`, 0, worst, 0.01);
+  const p14 = prod.compareSalaryTax(1450000, 375000);
+  check('incomeTax.ts: ₹14.5L — New Regime', 89700, p14.newTax.totalTax, 1);
+  check('incomeTax.ts: ₹14.5L — Old Regime', 124800, p14.oldTax.totalTax, 1);
+  check('incomeTax.ts: ₹14.5L — New Regime saves', 35100, p14.betterRegime === 'New' ? p14.saving : -1, 1);
+  check('incomeTax.ts: ₹12.75L — New Regime', 0, prod.compareSalaryTax(1275000, 0).newTax.totalTax, 0);
+}
+
+// ──────────────────────────────────────────────────────────────
 // FINAL REPORT
 // ──────────────────────────────────────────────────────────────
 console.log('\n═══════════════════════════════════════════════════════════════');
