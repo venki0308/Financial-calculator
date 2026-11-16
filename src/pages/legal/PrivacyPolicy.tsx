@@ -7,8 +7,8 @@ const T = {
     en: {
         title: 'Privacy Policy',
         hero: 'Your Privacy Matters',
-        heroSub: 'FinCalix stores zero personal or financial data on any server. All your financial data stays exclusively on your device. We use anonymous Firebase Analytics for app improvement — no names, no amounts, no PAN, no phone numbers. See Section 4 for details.',
-        updated: 'Last Updated: July 2026',
+        heroSub: 'Your calculations and financial data stay on your device. There is no account, no backend and no database. Usage analytics are optional and off unless you allow them.',
+        updated: 'Last Updated: 16 November 2026',
         s: {
             collect: 'Information We Collect',
             storage: 'Data Stored on Your Device',
@@ -21,7 +21,7 @@ const T = {
             rights: 'Your Rights',
             changes: 'Changes to This Policy',
             contact: 'Contact Us',
-            reporting: 'Analytics & Crash Reporting',
+            reporting: 'Usage Analytics and Consent',
             access: 'Access',
             delete: 'Delete',
             portability: 'Portability',
@@ -30,8 +30,8 @@ const T = {
     hi: {
         title: 'गोपनीयता नीति',
         hero: 'आपकी गोपनीयता महत्वपूर्ण है',
-        heroSub: 'FinCalix कोई व्यक्तिगत डेटा नहीं संग्रहित करता। कोई सर्वर नहीं, कोई डेटाबेस नहीं।',
-        updated: 'अंतिम अपडेट: जुलाई 2026',
+        heroSub: 'आपकी गणनाएँ और वित्तीय डेटा आपके डिवाइस पर ही रहते हैं। कोई खाता नहीं, कोई बैकएंड नहीं और कोई डेटाबेस नहीं है। उपयोग एनालिटिक्स वैकल्पिक है और जब तक आप अनुमति नहीं देते, बंद रहता है।',
+        updated: 'अंतिम अद्यतन: 16 नवंबर 2026',
         s: {
             collect: 'हम क्या जानकारी एकत्रित करते हैं',
             storage: 'आपके डिवाइस पर संग्रहीत डेटा',
@@ -44,7 +44,7 @@ const T = {
             rights: 'आपके अधिकार',
             changes: 'इस नीति में परिवर्तन',
             contact: 'संपर्क करें',
-            reporting: 'विश्लेषण और क्रैश रिपोर्टिंग',
+            reporting: 'उपयोग एनालिटिक्स और सहमति',
             access: 'पहुंच',
             delete: 'हटाएं',
             portability: 'पोर्टेबिलिटी',
@@ -53,8 +53,8 @@ const T = {
     te: {
         title: 'గోప్యతా విధానం',
         hero: 'మీ గోప్యత ముఖ్యమైనది',
-        heroSub: 'FinCalix వ్యక్తిగత డేటాను సేకరించదు. సర్వర్ నిల్వ లేదు — అన్నీ మీ పరికరంపైనే ఉంటాయి.',
-        updated: 'చివరి నవీకరణ: జూలై 2026',
+        heroSub: 'మీ లెక్కలు మరియు ఆర్థిక డేటా మీ పరికరంలోనే ఉంటాయి. ఖాతా లేదు, బ్యాకెండ్ లేదు, డేటాబేస్ లేదు. వినియోగ విశ్లేషణలు ఐచ్ఛికం; మీరు అనుమతిస్తే తప్ప అవి ఆఫ్‌లో ఉంటాయి.',
+        updated: 'చివరిగా నవీకరించబడింది: 16 నవంబర్ 2026',
         s: {
             collect: 'మేము సేకరించే సమాచారం',
             storage: 'మీ పరికరంలో నిల్వ చేసిన డేటా',
@@ -67,7 +67,7 @@ const T = {
             rights: 'మీ హక్కులు',
             changes: 'ఈ విధానంలో మార్పులు',
             contact: 'సంప్రదించండి',
-            reporting: 'విశ్లేషణ మరియు క్రాష్ రిపోర్టింగ్',
+            reporting: 'వినియోగ విశ్లేషణలు మరియు సమ్మతి',
             access: 'యాక్సెస్',
             delete: 'తొలగించు',
             portability: 'పోర్టబిలిటీ',
@@ -76,8 +76,8 @@ const T = {
     ta: {
         title: 'தனியுரிமைக் கொள்கை',
         hero: 'உங்கள் தனியுரிமை முக்கியம்',
-        heroSub: 'FinCalix எந்த தனிப்பட்ட தரவையும் சேகரிக்கவில்லை. சர்வர் சேமிப்பு இல்லை.',
-        updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: ஜூலை 2026',
+        heroSub: 'உங்கள் கணக்கீடுகளும் நிதித் தரவும் உங்கள் சாதனத்திலேயே இருக்கும். கணக்கு இல்லை, பின்நிலை (backend) இல்லை, தரவுத்தளம் இல்லை. பயன்பாட்டு பகுப்பாய்வு ஒரு விருப்பத் தேர்வு; நீங்கள் அனுமதிக்காத வரை அது முடக்கத்தில் இருக்கும்.',
+        updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: 16 நவம்பர் 2026',
         s: {
             collect: 'நாங்கள் சேகரிக்கும் தகவல்',
             storage: 'உங்கள் சாதனத்தில் சேமிக்கப்பட்ட தரவு',
@@ -90,7 +90,7 @@ const T = {
             rights: 'உங்கள் உரிமைகள்',
             changes: 'இந்தக் கொள்கையில் மாற்றங்கள்',
             contact: 'தொடர்பு கொள்ளுங்கள்',
-            reporting: 'பகுப்பாய்வு மற்றும் செயலிழப்பு அறிக்கையிடல்',
+            reporting: 'பயன்பாட்டு பகுப்பாய்வு மற்றும் ஒப்புதல்',
             access: 'அணுகல்',
             delete: 'நீக்கு',
             portability: 'பொருந்தும் தன்மை',
@@ -99,8 +99,8 @@ const T = {
     kn: {
         title: 'ಗೌಪ್ಯತಾ ನೀತಿ',
         hero: 'ನಿಮ್ಮ ಗೌಪ್ಯತೆ ಮುಖ್ಯ',
-        heroSub: 'FinCalix ಯಾವುದೇ ವ್ಯಕ್ತಿಗತ ಡೇಟಾವನ್ನು ಸಂಗ್ರಹಿಸುವುದಿಲ್ಲ. ಸರ್ವರ್ ಸಂಗ್ರಹ ಇಲ್ಲ.',
-        updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: ಜುಲೈ 2026',
+        heroSub: 'ನಿಮ್ಮ ಲೆಕ್ಕಾಚಾರಗಳು ಮತ್ತು ಹಣಕಾಸು ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಉಳಿಯುತ್ತವೆ. ಖಾತೆ ಇಲ್ಲ, ಬ್ಯಾಕೆಂಡ್ ಇಲ್ಲ, ಡೇಟಾಬೇಸ್ ಇಲ್ಲ. ಬಳಕೆಯ ಅನಾಲಿಟಿಕ್ಸ್ ಐಚ್ಛಿಕ ಮತ್ತು ನೀವು ಅನುಮತಿಸದ ಹೊರತು ಆಫ್ ಆಗಿರುತ್ತದೆ.',
+        updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: 16 ನವೆಂಬರ್ 2026',
         s: {
             collect: 'ನಾವು ಸಂಗ್ರಹಿಸುವ ಮಾಹಿತಿ',
             storage: 'ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಸಂಗ್ರಹಿಸಿದ ಡೇಟಾ',
@@ -113,7 +113,7 @@ const T = {
             rights: 'ನಿಮ್ಮ ಹಕ್ಕುಗಳು',
             changes: 'ಈ ನೀತಿಯಲ್ಲಿ ಬದಲಾವಣೆಗಳು',
             contact: 'ಸಂಪರ್ಕಿಸಿ',
-            reporting: 'ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ಕ್ರ್ಯಾಶ್ ವರದಿ',
+            reporting: 'ಬಳಕೆಯ ಅನಾಲಿಟಿಕ್ಸ್ ಮತ್ತು ಸಮ್ಮತಿ',
             access: 'ಪ್ರವೇಶ',
             delete: 'ಅಳಿಸು',
             portability: 'ಪೋರ್ಟೆಬಿಲಿಟಿ',
@@ -223,7 +223,7 @@ export default function PrivacyPolicy() {
 
             {/* 1 */}
             <Section icon="👁️" color="#8B5CF6" title={t.s.collect}>
-                <p style={{ marginBottom: '10px' }}>FinCalix does <strong style={{ color: c.text }}>NOT</strong> collect any personal information whatsoever.</p>
+                <p style={{ marginBottom: '10px' }}>FinCalix does <strong style={{ color: c.text }}>not</strong> ask for, collect or store your name, contact details or financial data.</p>
                 <Bullets items={[
                     'No name, email address, phone number, or postal address is collected',
                     'No financial data (salary, investments, EMI amounts) is collected',
@@ -255,12 +255,12 @@ export default function PrivacyPolicy() {
 
             {/* 3 */}
             <Section icon="📊" color="#EC4899" title={t.s.analytics}>
-                <p style={{ marginBottom: '14px' }}>We use limited analytics (Firebase Analytics) to understand app usage and improve performance. No personal or financial data is ever collected.</p>
+                <p style={{ marginBottom: '14px' }}>Usage analytics are off unless you allow them. If you allow them, the app sends the following to Google Analytics (through the Firebase SDK). Nothing is loaded from Google and nothing is sent before you choose.</p>
                 <Card>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <div>
-                            <div style={{ color: '#10B981', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>What Is Collected</div>
-                            {['Which calculator was used', 'Session duration', 'Device type', 'App version', 'Country'].map(item => (
+                            <div style={{ color: '#10B981', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Sent only if you allow</div>
+                            {['Events: page view, screen view (including app open), calculator used, scheme viewed, language changed, PDF/Excel export. Google Analytics also records first open, session start and engagement time automatically.', 'Event details: screen name, page path, calculator type, scheme type (central or state), language, export type, platform', 'Identifiers: a random client ID and a Firebase installation ID', 'Device data: screen resolution, language, OS and browser version', 'Approximate country, derived by Google from your IP address'].map(item => (
                                 <div key={item} style={{ color: c.textSecondary, fontSize: '13px', padding: '4px 0', borderBottom: `1px solid ${c.border}` }}>• {item}</div>
                             ))}
                         </div>
@@ -272,7 +272,7 @@ export default function PrivacyPolicy() {
                         </div>
                     </div>
                 </Card>
-                <p style={{ marginTop: '12px' }}>All analytics data is fully anonymous and cannot be linked to any individual.</p>
+                <p style={{ marginTop: '12px' }}>This data is pseudonymous: it is tied to a random ID, not to your name or contact details. Google signals and ad personalisation are switched off. You can turn analytics off at any time in Settings → Privacy; this stops collection and deletes the analytics IDs from your device.</p>
             </Section>
 
             {/* 4 */}
@@ -280,9 +280,9 @@ export default function PrivacyPolicy() {
                 <p style={{ marginBottom: '14px' }}>FinCalix uses the following third-party service for analytics:</p>
                 <Card>
                     <div style={{ color: c.text, fontWeight: 600, marginBottom: '6px' }}>Google Analytics / Firebase</div>
-                    <div style={{ color: c.textSecondary, fontSize: '13px' }}>Anonymous usage statistics only. No personal data is transmitted.</div>
+                    <div style={{ color: c.textSecondary, fontSize: '13px' }}>Google LLC processes the usage statistics listed above on our behalf, only if you allow analytics. The data is sent to Google servers, which may be outside India.</div>
                 </Card>
-                <p style={{ marginTop: '12px' }}>No advertising networks, tracking pixels, or data-selling services are used.</p>
+                <p style={{ marginTop: '12px' }}>The app also loads its font from Google Fonts and checks fincalix.com for update information; like any web request, these reveal your IP address to the server. No advertising networks, tracking pixels or data-selling services are used.</p>
             </Section>
 
             {/* 5 */}
@@ -363,7 +363,7 @@ export default function PrivacyPolicy() {
 
             {/* 11 */}
             <Section icon="📊" color="#EC4899" title={t.s.reporting}>
-                <p style={{ marginBottom: '14px' }}>We use Google Firebase Analytics (Google LLC, USA) to understand anonymous app usage and improve performance. This constitutes a cross-border transfer of anonymous, non-identifiable data to the United States. No personal or financial data is collected. You can disable analytics at any time by clearing app data or uninstalling the app.</p>
+                <p style={{ marginBottom: '14px' }}>If you allow usage analytics, Google Firebase Analytics (Google LLC, USA) processes the pseudonymous usage statistics described in section 3. This is a cross-border transfer to the United States. No financial data is included. FinCalix does not use crash reporting. To withdraw consent, turn off Usage analytics in Settings → Privacy.</p>
                 <GreenBox>
                     <div style={{ color: '#10B981', fontWeight: 600, marginBottom: '10px' }}>✅ Data Safety</div>
                     <Bullets items={[
@@ -394,7 +394,7 @@ export default function PrivacyPolicy() {
             {/* 12 — DPDP Act 2023 & Grievance */}
             <Section icon="⚖️" color="#8B5CF6" title="DPDP Act 2023 & Grievance">
                 <p style={{ marginBottom: '14px' }}>
-                    FinCalix complies with the Digital Personal Data Protection Act, 2023. Because we collect zero personal data and store all financial inputs only on your device, FinCalix is exempt from appointing a Data Protection Officer under the DPDP Act. For any privacy concerns, grievances, or questions about how this app handles your data, please email us. We aim to respond within 30 days.
+                    FinCalix complies with the Digital Personal Data Protection Act, 2023. Your financial inputs are stored only on your device, and optional usage analytics run only with your consent, which you can withdraw at any time. For any privacy concerns, grievances, or questions about how this app handles your data,
                 </p>
 
                 <div style={{
@@ -408,7 +408,7 @@ export default function PrivacyPolicy() {
                         'Right to correction — edit any saved entry inside the app',
                         'Right to erasure — clear app data from device settings or uninstall the app',
                         'Right to grievance redressal — email support@fincalix.com',
-                        'Right to withdraw consent — disable analytics by clearing app data',
+                        'Right to withdraw consent — turn off Usage analytics in Settings → Privacy',
                     ]} />
                 </div>
 

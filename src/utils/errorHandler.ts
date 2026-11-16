@@ -1,10 +1,9 @@
-import { CrashlyticsService } from '../lib/analytics';
 import { StorageFullError } from './safeStorage';
 
 /**
  * Sets up global window-level error handlers.
  * Catches all unhandled JS errors and promise rejections,
- * then forwards them to Firebase Crashlytics.
+ * and logs them to the console. Nothing is sent off the device.
  */
 export function setupErrorHandling() {
     // Unhandled promise rejections (async/await failures, storage errors, etc.)
@@ -18,7 +17,6 @@ export function setupErrorHandling() {
             : new Error(String(reason ?? 'Unhandled promise rejection'));
 
         console.error('[FinCalix] Unhandled promise rejection:', error);
-        CrashlyticsService.logError(error, 'Unhandled Promise Rejection');
     });
 
     // Synchronous JS errors
@@ -28,11 +26,7 @@ export function setupErrorHandling() {
             ? event.error
             : new Error(event.message ?? 'Unknown JS error');
 
-        console.error('[FinCalix] Uncaught error:', error);
-        CrashlyticsService.logError(
-            error,
-            `JS Error @ ${event.filename ?? 'unknown'}:${event.lineno ?? 0}`
-        );
+        console.error('[FinCalix] Uncaught error:', error, `@ ${event.filename ?? 'unknown'}:${event.lineno ?? 0}`);
     });
 
     console.log('[FinCalix] Global error handlers registered');

@@ -715,7 +715,7 @@ export default function EMICalculator() {
                 {method === 'reducing' && result.schedule && result.schedule.length > 0 && (
                     <div className="mb-4">
                         <button onClick={() => { setShowAmortization(!showAmortization); setAmortPage(0); }}
-                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
+                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
                             <Calculator size={16} />
                             {showAmortization ? t('emi.hide') : t('emi.view')} {t('emi.amortizationSchedule')}
                             {showAmortization ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -789,7 +789,7 @@ export default function EMICalculator() {
                 {method === 'reducing' && result.emi > 0 && months > 1 && (
                     <div className="mb-4">
                         <button onClick={() => setShowPayMore(!showPayMore)}
-                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
+                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
                             <TrendingDown size={16} />
                             {showPayMore ? t('emi.hide') : t('emi.payMoreTitle', 'Pay More, Finish Early')}
                             {showPayMore ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -881,7 +881,7 @@ export default function EMICalculator() {
                 {method === 'reducing' && result.emi > 0 && months > 1 && (
                     <div className="mb-4">
                         <button onClick={() => setShowPrepay(!showPrepay)}
-                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
+                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
                             <TrendingDown size={16} />
                             {showPrepay ? t('emi.hide') : t('emi.prepayWhatIf', 'Part-Payment What-If')}
                             {showPrepay ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -971,7 +971,7 @@ export default function EMICalculator() {
                 {method === 'reducing' && result.schedule && result.schedule.length > 0 && (
                     <div className="mb-4">
                         <button onClick={() => setShowForeclosure(!showForeclosure)}
-                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
+                            className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
                             <TrendingDown size={16} />
                             {showForeclosure ? t('emi.hide') : t('emi.foreclosureCalculator')}
                             {showForeclosure ? <ChevronUp size={16} /> : <ChevronDown size={16} />}

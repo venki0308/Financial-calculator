@@ -1,12 +1,11 @@
 import StorageGuard from './components/StorageGuard';
+import AnalyticsConsent from './components/AnalyticsConsent';
 import { safeSetItem } from './utils/safeStorage';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { App as CapApp } from '@capacitor/app';
 import { useSettingsStore } from './store/useSettingsStore';
-import { CrashlyticsService } from './lib/analytics';
-import { useCrashContext } from './hooks/useCrashContext';
 import { usePageViewTracker } from './hooks/usePageViewTracker';
 import { useTrackCalculator } from './hooks/useTrackCalculator';
 import { AnalyticsService } from './services/analyticsService';
@@ -182,7 +181,6 @@ function AppContent() {
     const lastBackPress = useRef<number>(0);
     const [showBackToast, setShowBackToast] = useState(false);
 
-    useCrashContext();
     usePageViewTracker();
     // Global "recently used" tracker — runs on EVERY navigation. The hook
     // filters to only paths that exist in the canonical `allCalcs` list, so
@@ -234,7 +232,6 @@ function AppContent() {
         import('./utils/dataIntegrity').then(({ runDataIntegrityCheck }) => {
             const report = runDataIntegrityCheck();
             if (report.issues.length > 0) {
-                CrashlyticsService.log(`Data integrity: ${report.issues.length} issue(s) repaired`);
             }
             // Materialize due recurring transactions (rent/EMI/salary rules)
             // AFTER integrity repair so we never write against corrupt stores.
@@ -242,18 +239,12 @@ function AppContent() {
             // creates entries while a tracker tab is visible, the tab picks
             // them up on its next mount (existing refreshKey/re-mount pattern).
             import('./utils/recurringStorage').then(({ materializeDueRecurring }) => {
-                const { created } = materializeDueRecurring();
-                if (created > 0) {
-                    CrashlyticsService.log(`Recurring: auto-logged ${created} entr${created === 1 ? 'y' : 'ies'}`);
-                }
+                materializeDueRecurring();
             });
         });
 
         const initAnalytics = async () => {
             setupErrorHandling();
-            await CrashlyticsService.initialize();
-            await CrashlyticsService.setCustomKey('app_version', APP_VERSION);
-            await CrashlyticsService.setCustomKey('platform', Capacitor.getPlatform());
             await FeatureFlagService.load();
             await AnalyticsService.initialize();
             AnalyticsService.trackScreenView({ screen_name: 'App_Open' });
@@ -393,6 +384,7 @@ function AppContent() {
             <BackToast visible={showBackToast} />
             <UpdateChecker />
             <StorageGuard />
+            <AnalyticsConsent />
             <Suspense fallback={LazyFallback}>
                 <GlobalDisclaimerModal />
                 <PdfActionSheet />

@@ -40,7 +40,7 @@ export default function Layout() {
                 <div className="sticky top-0 z-[10000] bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-4 py-2 text-xs font-medium flex items-center justify-between shadow-md">
                     <div className="flex items-center gap-2 overflow-hidden">
                         <span className="text-base flex-shrink-0">📲</span>
-                        <span className="truncate"><strong>FinCalix App</strong>: 45+ Tools, 0 Ads & 100% Offline</span>
+                        <span className="truncate"><strong>FinCalix App</strong>: 45+ Tools, 0 Ads & Works Offline</span>
                     </div>
                     <a
                         href="https://play.google.com/store/apps/details?id=com.fincalix.app"

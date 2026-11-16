@@ -365,7 +365,7 @@ export default function AdvancedPPFCalculator() {
 
                 {/* Year-by-Year Table */}
                 <button onClick={() => setShowTable(!showTable)}
-                    className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card/50 flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
+                    className="w-full py-3.5 rounded-2xl border border-slate-200 dark:border-border text-muted-foreground font-bold text-sm bg-white dark:bg-card flex items-center justify-center gap-2 mb-3 shadow-sm dark:shadow-none">
                     {showTable ? t('ppf.hide') : t('ppf.view')} {t('ppf.yearByYearBreakdown')}
                     {showTable ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>

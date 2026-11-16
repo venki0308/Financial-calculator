@@ -24,7 +24,7 @@ export default function SchemeDetail() {
 
     useEffect(() => {
         if (rawScheme) {
-            AnalyticsService.trackSchemeViewed(rawScheme.name, rawScheme.governmentLevel);
+            AnalyticsService.trackSchemeViewed(rawScheme.governmentLevel);
         }
     }, [rawScheme]);
 

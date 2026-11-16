@@ -406,7 +406,7 @@ EMI, SIP, FD, RD, PPF, NPS, EPF, Gratuity, SSY, NSC, KVP, SCSS, POMIS, Income Ta
 
 All updated for FY 2026-27.
 
-Works offline. Your data never leaves your phone.
+Works offline. Your financial data stays on your phone.
 
 I built this because every Indian deserves free financial tools.
 
@@ -430,7 +430,7 @@ Others: Require login/signup. FinCalix: No login ever.
 Others: English only. FinCalix: 6 Indian languages.
 Others: Old tax slabs. FinCalix: Budget 2025 updated.
 Others: Basic results. FinCalix: PDF/Excel export, live tracking, CIBIL integration.
-Others: Send your data to servers. FinCalix: 100% offline, data stays on device.
+Others: Send your data to servers. FinCalix: works offline, financial data stays on device.
 
 The choice is obvious.
 
@@ -633,7 +633,7 @@ In a world where every app wants your data, FinCalix is different.
 
 No login. No signup. No phone number. No email. No OTP.
 No data goes to any server. Ever.
-Works 100% offline.
+Works offline.
 Your financial calculations are YOURS.
 
 Privacy is not a feature. It's a right.
@@ -664,7 +664,7 @@ What we covered:
 -- Budget Tracker and Goal Planner
 -- 6 Indian languages
 -- PDF/Excel export
--- Privacy-first, offline-first
+-- No login, works offline
 
 This is just the beginning. More features coming soon.
 
@@ -790,9 +790,9 @@ Thank you for the love. If FinCalix helped you, leave a review on Play Store -- 
   - (3-15s) Show FinCalix Expense Tracker -- add expense with one tap, categorize, done
   - (15-30s) Show dashboard: daily, weekly, monthly, yearly views with charts
   - (30-45s) Budget Tracker: set monthly budgets per category, get warnings when overspending
-  - (45-55s) Show export to PDF feature. Data never leaves your phone.
+  - (45-55s) Show export to PDF feature. Your financial data stays on your phone.
   - (55-60s) CTA
-- **On-Screen Text:** "NO LOGIN" / "NO ADS" / "NO DATA COLLECTION" / "Just honest expense tracking"
+- **On-Screen Text:** "NO LOGIN" / "NO ADS" / "DATA STAYS ON YOUR PHONE" / "Just honest expense tracking"
 - **Call to Action:** "Download FinCalix -- track expenses privately."
 - **Target Keyword:** expense tracker app India free
 
@@ -1015,7 +1015,7 @@ FinCalix is India's most complete financial calculator app with 44+ calculators 
 - This or That comparisons
 
 **Pillar 4: Trust and Transparency (10% of content)**
-- Privacy-first messaging
+- Privacy messaging limited to: financial data stays on device, no login, no ads, works offline
 - Solo founder story and journey
 - No ads, no login, offline-first philosophy
 - Open comparisons with competing apps
@@ -1131,7 +1131,7 @@ I built FinCalix -- a free financial calculator app for India with 44+ calculato
 - 100% free, no ads, no login
 - Updated for Budget 2025 / FY 2026-27
 - Available in 6 Indian languages
-- Fully offline, privacy-first
+- Works offline, no login
 
 I think your audience would genuinely find it useful. Would you be open to trying it and sharing your honest review? No script, no pressure -- just your genuine opinion.
 

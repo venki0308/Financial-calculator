@@ -123,7 +123,7 @@ export default function DataSafety() {
                     </div>
                     <div className="pl-9 space-y-1.5 text-muted-foreground text-xs leading-relaxed">
                         <p>{t('dataSafety.sec3Body1')}</p>
-                        <p><strong>{t('dataSafety.table1Label')}:</strong> {t('dataSafety.sec3Body2').replace('Data collected:', '')}</p>
+                        <p>{t('dataSafety.sec3Body2')}</p>
                         <p>{t('dataSafety.sec3Body3')}</p>
                         <p>{t('dataSafety.sec3Body4')}</p>
                     </div>

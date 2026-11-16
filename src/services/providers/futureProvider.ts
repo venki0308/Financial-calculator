@@ -30,15 +30,7 @@ export class FutureProvider implements AnalyticsProvider {
         }
     }
 
-    setUserId(userId: string): void {
-        if (!this.initialized) return;
-        // e.g., mixpanel.identify(userId)
-        console.log(`[FutureProvider] Set User ID: ${userId}`);
-    }
-
-    setUserProperty(name: string, value: string): void {
-        if (!this.initialized) return;
-        // e.g., mixpanel.people.set(name, value)
-        console.log(`[FutureProvider] Set Property ${name}: ${value}`);
+    async disable(): Promise<void> {
+        this.initialized = false;
     }
 }

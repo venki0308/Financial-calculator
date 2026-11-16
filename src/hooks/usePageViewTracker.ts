@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AnalyticsService } from '../services/analyticsService';
+import { AnalyticsEvent } from '../services/providers/types';
 
 /**
  * Maps a URL pathname to a human-readable screen name for Google Analytics.
@@ -82,7 +83,9 @@ const ROUTE_NAMES: Record<string, string> = {
 };
 
 /**
- * usePageViewTracker — Fires a GA4 `page_view` + `screen_view` on every route change.
+ * usePageViewTracker — Fires `page_view` + `screen_view` on every route change.
+ * Sent only when the user has opted in to usage analytics (AnalyticsService
+ * drops every event otherwise). Record IDs in the path are replaced by ":id".
  *
  * Call this ONCE high in the component tree (AppContent in App.tsx).
  * It automatically maps pathnames to human-readable names for clean GA4 reports.
@@ -91,7 +94,12 @@ export function usePageViewTracker() {
     const location = useLocation();
 
     useEffect(() => {
-        const pathname = location.pathname;
+        // Dynamic routes carry a locally generated record ID (loan, business,
+        // card). It is not needed for analytics, so it never leaves the device.
+        const pathname = location.pathname.replace(
+            /^\/(my-loans|business-tracker|expenses\/credit-cards)\/(?!add$)[^/]+/,
+            '/$1/:id'
+        );
 
         // Resolve friendly name: exact match first, then prefix match for dynamic routes
         let screenName = ROUTE_NAMES[pathname];
@@ -111,7 +119,7 @@ export function usePageViewTracker() {
         }
 
         // Fire page_view (standard GA4 web event)
-        AnalyticsService.trackEvent('page_view', {
+        AnalyticsService.trackEvent(AnalyticsEvent.PAGE_VIEW, {
             page_path: pathname,
             page_title: screenName,
         });
