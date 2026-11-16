@@ -1,5 +1,11 @@
 {
   "redirects": [
+    {
+      "source": "/((?!config\\.json$).*)",
+      "has": [{ "type": "host", "value": "www.fincalix.com" }],
+      "destination": "https://fincalix.com/$1",
+      "permanent": true
+    },
     { "source": "/privacy-policy.html", "destination": "/privacy-policy", "permanent": true }
   ],
   "rewrites": [
