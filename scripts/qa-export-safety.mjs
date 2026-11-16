@@ -35,11 +35,35 @@ check('signed rupee amount', guardText('+₹1,200'), '+₹1,200');
 check('negative decimal string', guardText('-500.00'), '-500.00');
 check('date', guardText('2026-11-16'), '2026-11-16');
 
+console.log('\n2b. The signed-number exemption must match the WHOLE cell');
+// A cell that merely starts like a signed number but carries anything else
+// (operators, a second formula, a command) is still neutralised.
+const DDE = "-1+cmd|' /C calc'!A0";
+const TRAILING_FORMULA = '+1,200 =HYPERLINK("http://evil.example","x")';
+check('number then DDE command', guardText(DDE), `'${DDE}`);
+check('amount then formula', guardText(TRAILING_FORMULA), `'${TRAILING_FORMULA}`);
+check('percent then operator', guardText('-3.2%+A1'), "'-3.2%+A1");
+check('amount then newline formula', guardText('+₹1,200\n=1+1'), "'+₹1,200\n=1+1");
+check('amount then tab formula', guardText('-500.00\t=1+1'), "'-500.00\t=1+1");
+check('two signed numbers', guardText('-1-1'), "'-1-1");
+check('exponent form', guardText('-1E5'), "'-1E5");
+check('sign only', guardText('-'), "'-");
+check(
+    'amount then formula, as a CSV field',
+    csvCell(TRAILING_FORMULA),
+    `"'+1,200 =HYPERLINK(""http://evil.example"",""x"")"`
+);
+
 console.log('\n3. Numbers stay numeric in CSV');
 check('negative number', csvCell(-1250.5), '-1250.5');
 check('zero', csvCell(0), '0');
 check('empty for null', csvCell(null), '');
 
+// Note: the expense tracker itself never holds a negative amount. The entry
+// form saves only amounts > 0 (AddEntrySheet) and the boot-time integrity check
+// removes entries with amount < 0 (utils/dataIntegrity). The export has no
+// amount filter, so the negative values here prove the helper, which other
+// exports (reports with signed figures) rely on.
 console.log('\n4. CSV record: attack text neutralised and quoted, amount numeric');
 const record = csvRow(['2026-11-16', 'expense', 'Food', ATTACK, -1250.5, 'upi']);
 check(
