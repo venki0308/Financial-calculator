@@ -20,7 +20,6 @@ import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { getLoanRateInsight } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, getEnglishT, type ExportConfig } from '../utils/exportReport';
-import { AnalyticsService } from '../lib/analytics';
 import { toLocalDateStr, todayStr, parseLocalDate } from '../utils/dateUtils';
 
 function fmtDate(d: string | number): string {
@@ -262,7 +261,6 @@ export default function LoanDetail() {
 
     const { savedProfiles, removeProfile } = useLiveStatusStore();
 
-    useEffect(() => { AnalyticsService.trackScreen('Tracker_Detail'); }, []);
 
     // Find profile from useLiveStatusStore first, then fallback to loanStorage
     const profile: SavedLiveProfile | null = useMemo(() => {

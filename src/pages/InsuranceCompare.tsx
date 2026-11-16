@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { trackCalculated } from '../lib/analytics';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -8,7 +9,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DisclaimerComponent from '../components/DisclaimerComponent';
-import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
@@ -189,7 +189,6 @@ const childAgeLabel = (age: number, t: (key: string) => string): string => {
 
 export default function InsuranceCompare() {
   const { t } = useTranslation();
-  useEffect(() => { AnalyticsService.trackScreen('Insurance_Compare'); }, []);
   useTrackCalculator();
   const navigate = useNavigate();
 
@@ -708,7 +707,7 @@ export default function InsuranceCompare() {
 
               {/* Analyse Button */}
               <motion.button whileTap={{ scale: 0.97 }}
-                onClick={() => { setStep('results'); setOpenChecklist(new Set()); setShowBreakdown(false); }}
+                onClick={() => { setStep('results'); trackCalculated(); setOpenChecklist(new Set()); setShowBreakdown(false); }}
                 className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20">
                 <Shield size={18} />
                 {t('ins.compare.analyzeButton')}

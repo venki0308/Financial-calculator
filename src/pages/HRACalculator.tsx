@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {ArrowLeft, ChevronDown, ChevronUp, Activity, BrainCircuit, FileText, Share2, HelpCircle, AlertCircle, Settings, Calculator } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, getEnglishT, ExportConfig } from '../utils/exportReport';
 import { nativeShare } from '../utils/nativeShare';
@@ -16,7 +15,6 @@ export default function HRACalculator() {
     const { t } = useTranslation();
     const navigate = useNavigate();
 
-    useEffect(() => { AnalyticsService.trackScreen('HRA_Calculator'); }, []);
 
     // 1. STATE & TOGGLES
     const [taxRegime, setTaxRegime] = useState<'old' | 'new'>('old');

@@ -9,7 +9,6 @@ import { useCibil } from '../context/CibilContext';
 import { getCibilTier, getTierId, CIBIL_RANGES, LOAN_CIBIL_RATES } from '../data/cibilData';
 import { getCibilColor, type CibilProfile, clearCibilProfile } from '../utils/cibilProfile';
 import { formatINR, calculateReducingEMI } from '../utils/calculations';
-import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { todayStr } from '../utils/dateUtils';
 
@@ -28,7 +27,6 @@ export default function CibilProfileSetup() {
     const c = useAppColors();
     const { profile, save, refresh } = useCibil();
     useTrackCalculator();
-    useEffect(() => { AnalyticsService.trackScreen('CIBIL_Profile'); }, []);
 
     const [score, setScore] = useState(profile?.score || 720);
     const [isNTC, setIsNTC] = useState(profile?.isNTC ?? false);

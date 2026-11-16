@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, Target, BarChart2, RotateCw, Info, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
@@ -22,7 +21,6 @@ export default function RDCalculator() {
     const navigate = useNavigate();
     const { addSaved, removeSaved } = useCalculatorStore();
 
-    useEffect(() => { AnalyticsService.trackScreen('RD_Advanced'); }, []);
 
     // Base Inputs
     const [monthly, setMonthly] = useState(5000);

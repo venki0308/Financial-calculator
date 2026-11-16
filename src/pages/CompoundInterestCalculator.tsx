@@ -9,7 +9,6 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import { calculateCompoundInterest, formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
-import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
@@ -22,7 +21,6 @@ const fmtINR = (v: number) => formatINR(Math.round(v));
 
 export default function CompoundInterestCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('Compound_Interest_Advanced'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved, removeSaved } = useCalculatorStore();

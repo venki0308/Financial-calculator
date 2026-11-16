@@ -25,7 +25,6 @@ import {
   getBusinessById, getEntriesForBusiness, addBizEntry, softDeleteBizEntry,
   calcBizTotals, getBizCategoryById, BUSINESS_TYPE_META,
 } from '../../utils/businessStorage';
-import { AnalyticsService } from '../../lib/analytics';
 
 /* ── constants ── */
 
@@ -56,9 +55,6 @@ export default function BusinessDetail() {
   const [showSheet, setShowSheet] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  useEffect(() => {
-    AnalyticsService.trackScreen('Business_Detail');
-  }, []);
 
   const business = useMemo(() => {
     void refreshKey;

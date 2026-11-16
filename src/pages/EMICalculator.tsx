@@ -33,7 +33,6 @@ import CalculatorInfoModal from '../components/CalculatorInfoModal';
 import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import CibilBadge from '../components/CibilBadge';
 import { useCibil } from '../context/CibilContext';
-import { AnalyticsService } from '../lib/analytics';
 import ShareableCard from '../components/ShareableCard';
 import { triggerCalcNotification } from '../services/calcNotifications';
 
@@ -44,7 +43,6 @@ const ROWS_PER_PAGE = 12;
 
 export default function EMICalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('EMI_Calculator'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
 

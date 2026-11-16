@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useCalculatedEvent } from '../lib/analytics';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
@@ -14,7 +15,6 @@ import SnapshotPreviewCard from '../components/SnapshotPreviewCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import SaveNameDialog from '../components/SaveNameDialog';
 import CalculatorInfoModal from '../components/CalculatorInfoModal';
-import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
 import { useAppColors } from '../theme/useAppColors';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
@@ -417,7 +417,6 @@ const LIFE_PLAN_TYPES: {
 
 export default function InsuranceCalculator() {
   const { t } = useTranslation();
-  useEffect(() => { AnalyticsService.trackScreen('Insurance_Calculator'); }, []);
   useTrackCalculator();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<InsuranceTab>('health');
@@ -433,6 +432,7 @@ export default function InsuranceCalculator() {
   const [city, setCity] = useState<'metro' | 'tier2' | 'tier3'>('metro');
   const [preExisting, setPreExisting] = useState(false);
   const [healthCalced, setHealthCalced] = useState(false);
+    useCalculatedEvent([healthCalced, selfAge, hasSpouse, spouseAge, children, parents, si, city, preExisting]);
   const [openChecklist, setOpenChecklist] = useState<Set<number>>(new Set());
   const [showPremiumBreakdown, setShowPremiumBreakdown] = useState(false);
 

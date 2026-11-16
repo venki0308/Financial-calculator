@@ -7,7 +7,6 @@ import { useBudgetTrackerStore } from '../store/useBudgetTrackerStore';
 import { getBudgetForMonth, getEntriesForDateRange, getAllAccounts } from '../utils/expenseStorage';
 import { calculateSummary, getMonthRange } from '../utils/expenseCalculations';
 import { formatINR } from '../utils/calculations';
-import { AnalyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { allCalcs } from '../data/calculatorList';
@@ -84,9 +83,6 @@ export default function Home() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
 
-    useEffect(() => {
-        AnalyticsService.trackScreen('Home');
-    }, []);
 
     const loadRecent = useCallback(() => {
         try {

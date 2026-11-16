@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { AnalyticsService } from '../services/analyticsService';
-import { AnalyticsEvent } from '../services/providers/types';
+import { normalizePath, trackScreenOpened } from '../lib/analytics';
 
 /**
  * Maps a URL pathname to a human-readable screen name for Google Analytics.
@@ -40,6 +39,9 @@ const ROUTE_NAMES: Record<string, string> = {
     '/calculator/lumpsum': 'Lumpsum Calculator',
     '/calculator/swp': 'SWP Calculator',
     '/calculator/stp': 'STP Calculator',
+    '/calculator/capital-gains': 'Capital Gains Calculator',
+    '/calculator/lrs-tcs': 'LRS TCS Calculator',
+    '/calculator/home-loan': 'Home Loan EMI Calculator',
     '/calculator/prag': 'PRAG Calculator',
     '/calculator/cagr': 'CAGR Calculator',
     '/calculator/mortgage-calculator': 'Advanced Mortgage Calculator',
@@ -75,6 +77,13 @@ const ROUTE_NAMES: Record<string, string> = {
     '/my-loans': 'My Loans',
     '/expenses/accounts': 'Bank Accounts',
     '/expenses/credit-cards/add': 'Add Credit Card',
+    '/expenses/credit-cards/:id': 'Credit Card Detail',
+    '/expenses/recurring': 'Recurring Transactions',
+    '/my-loans/:id': 'Loan Detail',
+    '/business-tracker': 'Business Tracker',
+    '/business-tracker/:id': 'Business Detail',
+    '/data-privacy': 'Data Privacy',
+    '/dev/validator': 'Validator',
 
     // Legal & support
     '/privacy-policy': 'Privacy Policy',
@@ -82,53 +91,37 @@ const ROUTE_NAMES: Record<string, string> = {
     '/data-safety': 'Data Safety',
 };
 
+/** Canonical screen name for a path; every screen reports exactly this name. */
+export function screenNameFor(pathname: string): string {
+    const path = normalizePath(pathname);
+    if (ROUTE_NAMES[path]) return ROUTE_NAMES[path];
+    if (path.startsWith('/scheme/')) return 'Scheme Detail';
+    // Unlisted route: "/calculator/foo-bar" → "Foo Bar Calculator", "/a/b" → "A - B".
+    const words = (seg: string) => seg.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    const calc = path.match(/^\/calculator\/([a-z0-9-]+)$/);
+    if (calc) return `${words(calc[1])} Calculator`;
+    const name = path.split('/').filter((seg) => seg && seg !== ':id').map(words).join(' - ');
+    return (name || 'Home').replace(/[^A-Za-z0-9 &()'./-]/g, '').slice(0, 60);
+}
+
+/** Time to let a redirecting URL settle before the visit is recorded. */
+const SETTLE_MS = 300;
+
 /**
- * usePageViewTracker — Fires `page_view` + `screen_view` on every route change.
- * Sent only when the user has opted in to usage analytics (AnalyticsService
- * drops every event otherwise). Record IDs in the path are replaced by ":id".
+ * usePageViewTracker — one `page_view` per screen visit, with the screen's
+ * canonical name (see ROUTE_NAMES). Waits briefly so a redirecting URL
+ * (e.g. /sip → /calculator/sip) reports only the screen it lands on.
+ * Sent only while usage analytics are on (AnalyticsService drops it
+ * otherwise). Record IDs in the path are replaced by ":id".
  *
  * Call this ONCE high in the component tree (AppContent in App.tsx).
- * It automatically maps pathnames to human-readable names for clean GA4 reports.
  */
 export function usePageViewTracker() {
     const location = useLocation();
 
     useEffect(() => {
-        // Dynamic routes carry a locally generated record ID (loan, business,
-        // card). It is not needed for analytics, so it never leaves the device.
-        const pathname = location.pathname.replace(
-            /^\/(my-loans|business-tracker|expenses\/credit-cards)\/(?!add$)[^/]+/,
-            '/$1/:id'
-        );
-
-        // Resolve friendly name: exact match first, then prefix match for dynamic routes
-        let screenName = ROUTE_NAMES[pathname];
-
-        if (!screenName) {
-            // Handle dynamic routes like /scheme/:id
-            if (pathname.startsWith('/scheme/')) {
-                screenName = 'Scheme Detail';
-            } else {
-                // Fallback: convert path to Title Case
-                screenName = pathname
-                    .replace(/^\//, '')
-                    .replace(/\//g, ' > ')
-                    .replace(/-/g, ' ')
-                    .replace(/\b\w/g, (c) => c.toUpperCase()) || 'Home';
-            }
-        }
-
-        // Fire page_view (standard GA4 web event)
-        AnalyticsService.trackEvent(AnalyticsEvent.PAGE_VIEW, {
-            page_path: pathname,
-            page_title: screenName,
-        });
-
-        // Fire screen_view (standard GA4 app event — used for cross-platform reporting)
-        AnalyticsService.trackScreenView({
-            screen_name: screenName,
-            page_path: pathname,
-        });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        const pathname = location.pathname;
+        const timer = setTimeout(() => trackScreenOpened(screenNameFor(pathname), pathname), SETTLE_MS);
+        return () => clearTimeout(timer);
     }, [location.pathname]);
 }

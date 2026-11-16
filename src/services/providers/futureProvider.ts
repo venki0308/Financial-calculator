@@ -1,4 +1,4 @@
-import { AnalyticsProvider, EventParams } from './types';
+import { AnalyticsProvider, EventParams, PageContext } from './types';
 
 /**
  * A stub provider showing how easily FinCalix can swap to a new backend 
@@ -28,6 +28,10 @@ export class FutureProvider implements AnalyticsProvider {
         } catch (error) {
             console.error(`[FutureProvider] Failed to track ${eventName}`, error);
         }
+    }
+
+    setPage(_page: PageContext): void {
+        // e.g. mixpanel.register({ page: _page.page_title })
     }
 
     async disable(): Promise<void> {

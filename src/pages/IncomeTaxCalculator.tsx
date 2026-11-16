@@ -5,7 +5,6 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { ArrowLeft, Info, TrendingUp, Download, ExternalLink, ChevronDown, ChevronUp, Lightbulb, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
-import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
@@ -197,7 +196,6 @@ function getWarning(k: string, rawValue: string, t: (key: string, opts?: Record<
 // ══════════════════════════════════════════════════════════════════════════════
 export default function IncomeTaxCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('Income_Tax'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
     const [regime, setRegime] = useState<'old' | 'new'>('new');

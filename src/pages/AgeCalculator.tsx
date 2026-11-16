@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useCalculatedEvent } from '../lib/analytics';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Calendar, Star, Clock, Cake, Info, Activity, Wind, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { AnalyticsService } from '../lib/analytics';
 import DateInput from '../components/DateInput';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import DisclaimerComponent from '../components/DisclaimerComponent';
@@ -51,7 +51,6 @@ function getNextBirthday(birthDate: Date, today: Date) {
 }
 
 export default function AgeCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('Age_Calculator'); }, []);
     useTrackCalculator();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
@@ -138,6 +137,7 @@ export default function AgeCalculator() {
             gen: getGeneration(loD.getFullYear()),
         };
     }, [fromYear, toYear, fromMonth, toMonth, fromDay, toDay]);
+    useCalculatedEvent([birthDate]);
 
     const result = useMemo(() => {
         if (!birthDate) return null;

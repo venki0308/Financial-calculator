@@ -19,7 +19,6 @@ import {
   getAllBusinesses, addBusiness, softDeleteBusiness,
   getAllBizEntries, calcBizTotals,
 } from '../../utils/businessStorage';
-import { AnalyticsService } from '../../lib/analytics';
 
 export default function BusinessTracker() {
   const { t } = useTranslation();
@@ -37,9 +36,6 @@ export default function BusinessTracker() {
   const [type, setType] = useState<BusinessType>('restaurant');
   const [customEmoji, setCustomEmoji] = useState('');
 
-  useEffect(() => {
-    AnalyticsService.trackScreen('Business_Tracker');
-  }, []);
 
   const businesses = useMemo(() => {
     void refreshKey;

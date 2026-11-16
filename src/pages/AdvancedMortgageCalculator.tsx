@@ -11,7 +11,6 @@ import {
     formatINR,
     formatINRShort,
 } from '../utils/calculations';
-import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import RateContextNote from '../components/RateContextNote';
@@ -33,7 +32,6 @@ const ROWS_PER_PAGE = 24; // Show 2 years per page for better view
 
 export default function AdvancedMortgageCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('Advanced_Mortgage_Calculator'); }, []);
     const navigate = useNavigate();
     const c = useAppColors();
     const { addSaved, removeSaved } = useCalculatorStore();

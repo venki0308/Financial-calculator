@@ -17,7 +17,6 @@ import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
-import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import DateInput from '../components/DateInput';
@@ -32,7 +31,6 @@ interface YearEntry { year: number; age: number; contrib: number; corpus: number
 
 export default function NPSCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('NPS_Calculator_Advanced'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
     const { addSaved, removeSaved } = useCalculatorStore();

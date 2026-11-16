@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExpenseTheme } from '../theme/expenseTheme';
-import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { migrateFromOldStore, getAllCategories, getAllAccounts } from '../utils/expenseStorage';
 import { getTodayStr } from '../utils/expenseCalculations';
@@ -120,7 +119,6 @@ export default function ExpenseTracker() {
   // Migrate old data on first mount
   useEffect(() => {
     migrateFromOldStore();
-    AnalyticsService.trackScreen('Expense_Tracker');
   }, []);
 
   // Scroll to top when switching tabs

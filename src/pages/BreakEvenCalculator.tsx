@@ -16,7 +16,6 @@ import ShareableCard from '../components/ShareableCard';
 import WhatIfSimulator from '../components/WhatIfSimulator';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, getEnglishT, type ExportConfig } from '../utils/exportReport';
-import { AnalyticsService } from '../lib/analytics';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useAppColors } from '../theme/useAppColors';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
@@ -24,7 +23,6 @@ import { useHistoryTracker } from '../hooks/useHistoryTracker';
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
 export default function BreakEvenCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('BreakEven'); }, []);
     useTrackCalculator();
     const { t } = useTranslation();
     const navigate = useNavigate();

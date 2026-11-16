@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Search, ChevronRight, Calculator, FileText, Clock, Percent, PiggyBank, Landmark, Wallet, TrendingUp, LayoutGrid, RefreshCcw, ArrowUpRight, DollarSign, Target, GraduationCap, Heart, BarChart3, Minus, Building2, Car, Receipt, Sparkles, History, Briefcase, Mail, CreditCard, GitCompare, Calendar, Globe, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { AnalyticsService } from '../lib/analytics';
 
 import { allCalcs, CalcItem } from '../data/calculatorList';
 import DisclaimerComponent from '../components/DisclaimerComponent';
@@ -33,7 +32,6 @@ const categoryMeta: Record<string, { icon: React.ElementType; color: string; bg:
 const categoryOrder = ['all', 'taxSalary', 'loans', 'investments', 'banking', 'retirement', 'postOffice', 'business', 'property', 'insurance', 'tools'];
 
 export default function Calculators() {
-    useEffect(() => { AnalyticsService.trackScreen('Calculators_List'); }, []);
     const navigate = useNavigate();
     const { t } = useTranslation();
     const [search, setSearch] = useState('');

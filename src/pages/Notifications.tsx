@@ -4,7 +4,6 @@ import { RemoteConfigService } from '../services/remoteConfig.service';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AnalyticsService } from '../lib/analytics';
 import { useNotificationStore, AppNotification } from '../store/useNotificationStore';
 
 const TYPE_META: Record<string, { emoji: string; color: string; bg: string }> = {
@@ -119,7 +118,6 @@ function NotifCard({ n, onRead, onDismiss, onClick, t }: NotifCardProps) {
 }
 
 export default function Notifications() {
-    useEffect(() => { AnalyticsService.trackScreen('Notifications'); }, []);
     const navigate = useNavigate();
     const { t } = useTranslation();
     const { notifications, markRead, markAllRead, deleteNotification, clearAll } = useNotificationStore();

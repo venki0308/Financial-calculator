@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, Target, BarChart2, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -23,7 +22,6 @@ export default function CAGRCalculator() {
     const addProfile = useLiveStatusStore(s => s.addProfile);
     const removeProfile = useLiveStatusStore(s => s.removeProfile);
 
-    useEffect(() => { AnalyticsService.trackScreen('CAGR_Advanced'); }, []);
 
     // Base Inputs
     const [initial, setInitial] = useState(100000);

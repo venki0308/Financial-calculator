@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, CalendarDays, Target, BarChart3, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { AnalyticsService } from '../lib/analytics';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { migrateFromOldStore } from '../utils/expenseStorage';
 
@@ -23,7 +22,6 @@ type TabId = typeof TABS[number]['id'];
 
 export default function BudgetTracker() {
     useEffect(() => {
-        AnalyticsService.trackScreen('Budget_Tracker');
         migrateFromOldStore();
     }, []);
     const { t } = useTranslation();

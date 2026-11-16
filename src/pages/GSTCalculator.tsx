@@ -24,7 +24,6 @@ import {
     Title,
 } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
-import { AnalyticsService } from '../lib/analytics';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 import { triggerCalcNotification } from '../services/calcNotifications';
 import { useAppColors } from '../theme/useAppColors';
@@ -58,7 +57,6 @@ interface InvoiceItem {
 }
 
 export default function GSTCalculator() {
-    useEffect(() => { AnalyticsService.trackScreen('GST_Calculator'); }, []);
     useTrackCalculator();
     const { t } = useTranslation();
     const navigate = useNavigate();

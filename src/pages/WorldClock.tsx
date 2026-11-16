@@ -1,10 +1,10 @@
 import { safeSetItem } from '../utils/safeStorage';
+import { useCalculatedEvent } from '../lib/analytics';
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Plus, X, Search, ChevronLeft, Sun, Sunrise, MapPin, DollarSign, Globe, ArrowRightLeft, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnalyticsService } from '../lib/analytics';
 import BottomSheet from '../components/BottomSheet';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 
@@ -340,6 +340,7 @@ function CompareView() {
     const [targetTZs, setTargetTZs] = useState<string[]>(saved.targets);
     const [inputHour, setInputHour] = useState(9);
     const [inputMin, setInputMin] = useState(0);
+    useCalculatedEvent([srcTZ, targetTZs, inputHour, inputMin]);
     const [useLive, setUseLive] = useState(false);
     const [showScenario, setShowScenario] = useState(false);
 
@@ -1340,7 +1341,6 @@ const LiveAddZoneItem = memo(function LiveAddZoneItem({ tz, onAdd }: { tz: Timez
 
 export default function WorldClock() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('World_Clock'); }, []);
     const navigate = useNavigate();
     const [view, setView] = useState<'clocks' | 'compare'>('clocks');
     const [clocks, setClocks] = useState<SavedClock[]>([]);

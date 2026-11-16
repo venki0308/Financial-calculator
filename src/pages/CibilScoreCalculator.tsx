@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useCalculatedEvent } from '../lib/analytics';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Lightbulb, Shield, TrendingUp, Download, AlertTriangle, Target, Zap, Clock } from 'lucide-react';
@@ -9,7 +10,6 @@ import NumberInput from '../components/NumberInput';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { formatINR, calculateReducingEMI } from '../utils/calculations';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
-import { AnalyticsService } from '../lib/analytics';
 import { exportToPDF, getEnglishT, type ExportConfig } from '../utils/exportReport';
 import { CIBIL_RANGES, getCibilTier, getTierId, LOAN_CIBIL_RATES, CIBIL_TIPS, CIBIL_MYTHS, RBI_NOTES } from '../data/cibilData';
 import { todayStr } from '../utils/dateUtils';
@@ -46,7 +46,6 @@ export default function CibilScoreCalculator() {
     const navigate = useNavigate();
     const c = useAppColors();
     useTrackCalculator();
-    useEffect(() => { AnalyticsService.trackScreen('CIBIL_Score_Guide'); }, []);
 
     const [score, setScore] = useState(720);
     const [isNH, setIsNH] = useState(false);
@@ -60,6 +59,7 @@ export default function CibilScoreCalculator() {
     const [showSimulator, setShowSimulator] = useState(false);
     const [showTimeline, setShowTimeline] = useState(false);
     const [simUtilization, setSimUtilization] = useState(30);
+    useCalculatedEvent([score, isNH, calcLoanType, calcAmount, calcTenure, simUtilization]);
     const [simOnTimeMonths, setSimOnTimeMonths] = useState(6);
     const [simNoNewLoans, setSimNoNewLoans] = useState(true);
 

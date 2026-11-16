@@ -33,7 +33,6 @@ import type { LoanProfile } from '../utils/loanStatusEngine';
 import { calculateReducingEMI, formatINR, formatINRShort } from '../utils/calculations';
 import { exportToPDF, exportToExcel, getEnglishT, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { AnalyticsService } from '../lib/analytics';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { nativeShare } from '../utils/nativeShare';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
@@ -192,7 +191,6 @@ export default function GoldLoanCalculator() {
     const { profile: cibilProfile, rateFor } = useCibil();
     const addLiveProfile = useLiveStatusStore(s => s.addProfile);
 
-    useEffect(() => { AnalyticsService.trackScreen('Gold_Loan'); }, []);
 
     // ── State ──
     // Defaults chosen to (a) reflect typical Indian household pledges (~50g 22K

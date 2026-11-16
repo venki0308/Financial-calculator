@@ -13,7 +13,6 @@ import { formatINR, calculateSIP } from '../utils/calculations';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useAppColors } from '../theme/useAppColors';
 
-import { AnalyticsService } from '../lib/analytics';
 import { exportComparisonPDF, exportSIPComparisonPDF, exportFDComparisonPDF } from '../utils/exportUtils';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
@@ -55,7 +54,6 @@ function calcFD(principal: number, rate: number, tenure: number) {
 
 export default function CompareCalculator() {
     const { t } = useTranslation();
-    useEffect(() => { AnalyticsService.trackScreen('Compare_Calculator'); }, []);
     useTrackCalculator();
     const navigate = useNavigate();
     const [selectedType, setSelectedType] = useState<CompareType>('emi');

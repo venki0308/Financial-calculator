@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, Target, BarChart2, RotateCw, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnalyticsService } from '../lib/analytics';
 import { formatINR } from '../utils/calculations';
 import { exportToPDF, exportToExcel, getEnglishT, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -26,7 +25,6 @@ export default function EPFCalculator() {
     const addProfile = useLiveStatusStore(s => s.addProfile);
     const removeProfile = useLiveStatusStore(s => s.removeProfile);
 
-    useEffect(() => { AnalyticsService.trackScreen('EPF_Advanced'); }, []);
 
     // Base Inputs
     const [basic, setBasic] = useState(30000);

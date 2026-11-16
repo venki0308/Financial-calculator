@@ -84,7 +84,6 @@ export default function Settings() {
 
     const currentLang = languages.find(l => i18n.language.startsWith(l.code)) || languages[0];
 
-    useEffect(() => { AnalyticsService.trackScreen('Settings'); }, []);
 
     const { setLanguage } = useSettingsStore();
     const changeLanguage = async (code: string) => {
