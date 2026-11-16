@@ -76,3 +76,6 @@ missing_keys.json
 .vercel
 .claude/settings.local.json
 .playwright-mcp/
+
+# Generated marketing images (regenerate with tools/marketing)
+marketing-assets/
