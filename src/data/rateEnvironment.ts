@@ -71,7 +71,7 @@ export const RATE_CONTEXT = {
         titleKey: 'rateCtx.fdTitle',
         titleFallback: 'FD Rates — November 2026',
         bodyKey: 'rateCtx.fdBody',
-        bodyFallback: 'FD rates bottomed after RBI\'s 2025 cuts; the Oct 2026 repo hike (now 5.50%) may nudge them up.\n\nMajor banks offer about 6.0–6.6% on 1–5 year FDs (SBI peak 6.40%, HDFC 6.60%, ICICI 6.50–6.60%).\nSenior citizens get an additional 0.50% (peak ~7.05–7.20%).\n\nPost Office schemes (NSC 7.7%, SCSS 8.2%) offer higher guaranteed rates.',
+        bodyFallback: 'FD rates bottomed after RBI\'s 2025 cuts; the Oct 2026 repo hike (now 5.50%) may nudge them up.\n\nMajor banks offer about 6.0–6.6% on 1–5 year FDs (SBI peak 6.40%, HDFC 6.60%, ICICI 6.50%).\nSenior citizens get an additional 0.50% (peak ~7.05–7.20%).\n\nPost Office schemes (NSC 7.7%, SCSS 8.2%) offer higher guaranteed rates.',
     },
     carLoan: {
         titleKey: 'rateCtx.carLoanTitle',

@@ -6911,6 +6911,18 @@
     "59": "An emergency fund turns a crisis into an inconvenience.",
     "60": "Good things happen to those who save."
   },
+  "storage": {
+    "fullTitle": "Storage full",
+    "fullBody": "Storage full — export a backup and delete old entries to keep saving.",
+    "inputKept": "What you just entered has not been saved yet. It is still on screen — save it again after freeing space.",
+    "warnTitle": "Storage almost full ({{percent}}%)",
+    "warnBody": "Export a backup and delete old entries soon, or new entries will stop saving.",
+    "exportBackup": "Export backup",
+    "exporting": "Preparing backup…",
+    "exportDone": "Backup exported",
+    "exportFailed": "Could not create the backup. Please try again.",
+    "close": "Close"
+  },
   "whatIf": {
     "title": "What-If Simulator",
     "adjustPrompt": "Adjust the sliders above to see how changes affect your result."
@@ -7587,7 +7599,7 @@
     "personalLoanTitle": "Personal Loan Rates — November 2026",
     "personalLoanBody": "Personal loan rates range roughly 10–24% as banks stay cautious on unsecured lending (SBI 10–15%, ICICI from 9.99%).\n\nYour CIBIL score has the biggest impact.\nScore 750+ can get rates near 10%.",
     "fdTitle": "FD Rates — November 2026",
-    "fdBody": "FD rates bottomed after RBI's 2025 cuts; the Oct 2026 repo hike (now 5.50%) may nudge them up.\n\nMajor banks offer about 6.0–6.6% on 1–5 year FDs (SBI peak 6.40%, HDFC 6.60%, ICICI 6.50–6.60%).\nSenior citizens get an additional 0.50% (peak ~7.05–7.20%).\n\nPost Office schemes (NSC 7.7%, SCSS 8.2%) offer higher guaranteed rates.",
+    "fdBody": "FD rates bottomed after RBI's 2025 cuts; the Oct 2026 repo hike (now 5.50%) may nudge them up.\n\nMajor banks offer about 6.0–6.6% on 1–5 year FDs (SBI peak 6.40%, HDFC 6.60%, ICICI 6.50%).\nSenior citizens get an additional 0.50% (peak ~7.05–7.20%).\n\nPost Office schemes (NSC 7.7%, SCSS 8.2%) offer higher guaranteed rates.",
     "carLoanTitle": "Car Loan Rates — November 2026",
     "carLoanBody": "Car loan rates range from about 8.5–10.5% for new vehicles at top banks (SBI 8.55–9.50%).\n\nUsed car loans typically carry 2–4% higher rates.\nDealer finance rates may be higher — compare with bank rates.",
     "twoWheelerTitle": "Two Wheeler Loan Rates — November 2026",
