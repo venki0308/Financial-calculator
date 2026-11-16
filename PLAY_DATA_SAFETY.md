@@ -13,6 +13,8 @@ For FinCalix 1.2.9, build 22 (branch `privacy/consent-1.2.9`). Written 16 Novemb
 - Settings → Privacy → **Usage analytics** turns it off: collection stops, the Analytics cookies and Firebase IDs are deleted from the device, and Firebase is asked to delete the installation ID on its servers.
 - No ads SDK, no account, no crash reporting (Crashlytics and Firebase Messaging were removed in build 22), no server of our own that receives user data.
 
+Wording note: at the owner's request the consent dialog, Settings, disclaimer, privacy policy and Data & Privacy screen say "an analytics service" and do not name the provider. The provider is still Google Analytics 4 (Firebase), which is what the answers below describe. The Data safety form asks for data types, not provider names.
+
 ## Answers to enter
 
 ### Data collection and security

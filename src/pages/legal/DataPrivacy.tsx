@@ -81,7 +81,7 @@ export default function DataPrivacy() {
             </Section>
 
             <Section icon="📊" color="#EC4899" title={t.s.analytics}>
-                <p style={{ marginBottom: '10px' }}>Only if you allow it, FinCalix sends usage statistics to Google Analytics so we can see which calculators are useful.</p>
+                <p style={{ marginBottom: '10px' }}>Only if you allow it, FinCalix sends usage statistics to an analytics service so we can see which calculators are useful.</p>
                 <p style={{ marginBottom: '10px' }}><strong style={{ color: colors.text }}>What is sent: which screens and calculators are opened, scheme views, language changes and exports, with a random app ID, device type, language, OS version and approximate country.</strong></p>
                 <p style={{ marginBottom: '10px' }}>This data is pseudonymous: it is tied to a random ID, not to your name or contact details.</p>
                 <p>Your financial inputs (salary, EMI amounts, etc.) are never part of analytics. You can turn analytics off in Settings → Privacy.</p>
@@ -106,7 +106,7 @@ export default function DataPrivacy() {
                 <div style={{ background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '14px', overflow: 'hidden' }}>
                     {[
                         { label: 'DATA COLLECTED', value: 'Only if you allow usage analytics: app interactions, device or other IDs, approximate location' },
-                        { label: 'DATA SHARED WITH THIRD PARTIES', value: 'Processed by Google Analytics (Google LLC) for us; not sold, not used for advertising' },
+                        { label: 'DATA SHARED WITH THIRD PARTIES', value: 'Processed by a third-party analytics service provider for us; not sold, not used for advertising' },
                         { label: 'DATA ENCRYPTED IN TRANSIT', value: 'Yes (HTTPS)' },
                         { label: 'CAN USERS REQUEST DELETION', value: 'Turn off Usage analytics in Settings → Privacy: collection stops and the analytics IDs are deleted from your device' },
                         { label: 'DATA USED TO TRACK USERS', value: 'No' },
