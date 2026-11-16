@@ -844,7 +844,7 @@ function ExpenseTrackerSection() {
 // ── 09 TRUST & SECURITY ───────────────────────────────────────────────────────
 function TrustSection() {
   const cards = [
-    { icon: '🔒', title: 'Your financial data stays on your device', accent: '#2D6A4F', body: 'Calculations and financial data are kept on your phone. No login, no ads. Usage statistics are sent only if you allow it.' },
+    { icon: '🔒', title: 'Your financial data stays on your device', accent: '#2D6A4F', body: 'Calculations and financial data are kept on your phone. No login, no ads. Usage analytics are on by default and can be turned off anytime in Settings → Privacy.' },
     { icon: '✅', title: 'Verified Calculations', accent: '#D4A017', body: 'All formulas verified against RBI, Income Tax Dept, and official government guidelines.' },
     { icon: '🇮🇳', title: 'Made for India',       accent: '#3B82F6', body: 'Built for Indian tax laws, government schemes, Indian financial products and 6 regional languages.' },
   ];

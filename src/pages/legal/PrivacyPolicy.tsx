@@ -7,7 +7,7 @@ const T = {
     en: {
         title: 'Privacy Policy',
         hero: 'Your Privacy Matters',
-        heroSub: 'Your calculations and financial data stay on your device. There is no account, no backend and no database. You can turn analytics off in Settings → Privacy.',
+        heroSub: 'Your calculations and financial data stay on your device. There is no account, no backend and no database. Usage analytics are on by default; you can turn them off anytime in Settings → Privacy.',
         updated: 'Last Updated: 16 November 2026',
         s: {
             collect: 'Information We Collect',
@@ -21,7 +21,7 @@ const T = {
             rights: 'Your Rights',
             changes: 'Changes to This Policy',
             contact: 'Contact Us',
-            reporting: 'Usage Analytics and Consent',
+            reporting: 'Usage Analytics',
             access: 'Access',
             delete: 'Delete',
             portability: 'Portability',
@@ -30,7 +30,7 @@ const T = {
     hi: {
         title: 'गोपनीयता नीति',
         hero: 'आपकी गोपनीयता महत्वपूर्ण है',
-        heroSub: 'आपकी गणनाएँ और वित्तीय डेटा आपके डिवाइस पर ही रहते हैं। कोई खाता नहीं, कोई बैकएंड नहीं और कोई डेटाबेस नहीं है। आप सेटिंग्स → गोपनीयता में एनालिटिक्स बंद कर सकते हैं।',
+        heroSub: 'आपकी गणनाएँ और वित्तीय डेटा आपके डिवाइस पर ही रहते हैं। कोई खाता नहीं, कोई बैकएंड नहीं और कोई डेटाबेस नहीं है। उपयोग एनालिटिक्स डिफ़ॉल्ट रूप से चालू रहता है; आप इसे कभी भी सेटिंग्स → गोपनीयता में बंद कर सकते हैं।',
         updated: 'अंतिम अद्यतन: 16 नवंबर 2026',
         s: {
             collect: 'हम क्या जानकारी एकत्रित करते हैं',
@@ -44,7 +44,7 @@ const T = {
             rights: 'आपके अधिकार',
             changes: 'इस नीति में परिवर्तन',
             contact: 'संपर्क करें',
-            reporting: 'उपयोग एनालिटिक्स और सहमति',
+            reporting: 'उपयोग एनालिटिक्स',
             access: 'पहुंच',
             delete: 'हटाएं',
             portability: 'पोर्टेबिलिटी',
@@ -53,7 +53,7 @@ const T = {
     te: {
         title: 'గోప్యతా విధానం',
         hero: 'మీ గోప్యత ముఖ్యమైనది',
-        heroSub: 'మీ లెక్కలు మరియు ఆర్థిక డేటా మీ పరికరంలోనే ఉంటాయి. ఖాతా లేదు, బ్యాకెండ్ లేదు, డేటాబేస్ లేదు. మీరు సెట్టింగ్‌లు → గోప్యత లో విశ్లేషణలను ఆఫ్ చేయవచ్చు.',
+        heroSub: 'మీ లెక్కలు మరియు ఆర్థిక డేటా మీ పరికరంలోనే ఉంటాయి. ఖాతా లేదు, బ్యాకెండ్ లేదు, డేటాబేస్ లేదు. వినియోగ విశ్లేషణలు డిఫాల్ట్‌గా ఆన్‌లో ఉంటాయి; మీరు వాటిని ఎప్పుడైనా సెట్టింగ్‌లు → గోప్యత లో ఆఫ్ చేయవచ్చు.',
         updated: 'చివరిగా నవీకరించబడింది: 16 నవంబర్ 2026',
         s: {
             collect: 'మేము సేకరించే సమాచారం',
@@ -67,7 +67,7 @@ const T = {
             rights: 'మీ హక్కులు',
             changes: 'ఈ విధానంలో మార్పులు',
             contact: 'సంప్రదించండి',
-            reporting: 'వినియోగ విశ్లేషణలు మరియు సమ్మతి',
+            reporting: 'వినియోగ విశ్లేషణలు',
             access: 'యాక్సెస్',
             delete: 'తొలగించు',
             portability: 'పోర్టబిలిటీ',
@@ -76,7 +76,7 @@ const T = {
     ta: {
         title: 'தனியுரிமைக் கொள்கை',
         hero: 'உங்கள் தனியுரிமை முக்கியம்',
-        heroSub: 'உங்கள் கணக்கீடுகளும் நிதித் தரவும் உங்கள் சாதனத்திலேயே இருக்கும். கணக்கு இல்லை, பின்நிலை (backend) இல்லை, தரவுத்தளம் இல்லை. அமைப்புகள் → தனியுரிமை பகுதியில் பகுப்பாய்வை முடக்கலாம்.',
+        heroSub: 'உங்கள் கணக்கீடுகளும் நிதித் தரவும் உங்கள் சாதனத்திலேயே இருக்கும். கணக்கு இல்லை, பின்நிலை (backend) இல்லை, தரவுத்தளம் இல்லை. பயன்பாட்டு பகுப்பாய்வு இயல்பாகவே இயக்கத்தில் இருக்கும்; அமைப்புகள் → தனியுரிமை பகுதியில் எப்போது வேண்டுமானாலும் அதை முடக்கலாம்.',
         updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: 16 நவம்பர் 2026',
         s: {
             collect: 'நாங்கள் சேகரிக்கும் தகவல்',
@@ -90,7 +90,7 @@ const T = {
             rights: 'உங்கள் உரிமைகள்',
             changes: 'இந்தக் கொள்கையில் மாற்றங்கள்',
             contact: 'தொடர்பு கொள்ளுங்கள்',
-            reporting: 'பயன்பாட்டு பகுப்பாய்வு மற்றும் ஒப்புதல்',
+            reporting: 'பயன்பாட்டு பகுப்பாய்வு',
             access: 'அணுகல்',
             delete: 'நீக்கு',
             portability: 'பொருந்தும் தன்மை',
@@ -99,7 +99,7 @@ const T = {
     kn: {
         title: 'ಗೌಪ್ಯತಾ ನೀತಿ',
         hero: 'ನಿಮ್ಮ ಗೌಪ್ಯತೆ ಮುಖ್ಯ',
-        heroSub: 'ನಿಮ್ಮ ಲೆಕ್ಕಾಚಾರಗಳು ಮತ್ತು ಹಣಕಾಸು ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಉಳಿಯುತ್ತವೆ. ಖಾತೆ ಇಲ್ಲ, ಬ್ಯಾಕೆಂಡ್ ಇಲ್ಲ, ಡೇಟಾಬೇಸ್ ಇಲ್ಲ. ನೀವು ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಗೌಪ್ಯತೆ ನಲ್ಲಿ ಅನಾಲಿಟಿಕ್ಸ್ ಆಫ್ ಮಾಡಬಹುದು.',
+        heroSub: 'ನಿಮ್ಮ ಲೆಕ್ಕಾಚಾರಗಳು ಮತ್ತು ಹಣಕಾಸು ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಉಳಿಯುತ್ತವೆ. ಖಾತೆ ಇಲ್ಲ, ಬ್ಯಾಕೆಂಡ್ ಇಲ್ಲ, ಡೇಟಾಬೇಸ್ ಇಲ್ಲ. ಬಳಕೆಯ ಅನಾಲಿಟಿಕ್ಸ್ ಡೀಫಾಲ್ಟ್ ಆಗಿ ಆನ್ ಆಗಿರುತ್ತದೆ; ನೀವು ಅದನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಗೌಪ್ಯತೆ ನಲ್ಲಿ ಆಫ್ ಮಾಡಬಹುದು.',
         updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: 16 ನವೆಂಬರ್ 2026',
         s: {
             collect: 'ನಾವು ಸಂಗ್ರಹಿಸುವ ಮಾಹಿತಿ',
@@ -113,7 +113,7 @@ const T = {
             rights: 'ನಿಮ್ಮ ಹಕ್ಕುಗಳು',
             changes: 'ಈ ನೀತಿಯಲ್ಲಿ ಬದಲಾವಣೆಗಳು',
             contact: 'ಸಂಪರ್ಕಿಸಿ',
-            reporting: 'ಬಳಕೆಯ ಅನಾಲಿಟಿಕ್ಸ್ ಮತ್ತು ಸಮ್ಮತಿ',
+            reporting: 'ಬಳಕೆಯ ಅನಾಲಿಟಿಕ್ಸ್',
             access: 'ಪ್ರವೇಶ',
             delete: 'ಅಳಿಸು',
             portability: 'ಪೋರ್ಟೆಬಿಲಿಟಿ',
@@ -255,7 +255,7 @@ export default function PrivacyPolicy() {
 
             {/* 3 */}
             <Section icon="📊" color="#EC4899" title={t.s.analytics}>
-                <p style={{ marginBottom: '14px' }}>The app sends the following to a third-party analytics service. You can turn analytics off in Settings → Privacy.</p>
+                <p style={{ marginBottom: '14px' }}>The app sends the following to a third-party analytics service. Usage analytics are on by default; you can turn them off anytime in Settings → Privacy.</p>
                 <Card>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <div>
@@ -363,7 +363,7 @@ export default function PrivacyPolicy() {
 
             {/* 11 */}
             <Section icon="📊" color="#EC4899" title={t.s.reporting}>
-                <p style={{ marginBottom: '14px' }}>A third-party analytics service provider processes the pseudonymous usage statistics described in section 3. Its servers may be outside India, which makes this a cross-border transfer. No financial data is included. FinCalix does not use crash reporting. To withdraw consent, turn off Usage analytics in Settings → Privacy.</p>
+                <p style={{ marginBottom: '14px' }}>A third-party analytics service provider processes the pseudonymous usage statistics described in section 3. Its servers may be outside India, which makes this a cross-border transfer. No financial data is included. FinCalix does not use crash reporting. Usage analytics are on by default; you can turn them off anytime in Settings → Privacy.</p>
                 <GreenBox>
                     <div style={{ color: '#10B981', fontWeight: 600, marginBottom: '10px' }}>✅ Data Safety</div>
                     <Bullets items={[
@@ -394,7 +394,7 @@ export default function PrivacyPolicy() {
             {/* 12 — DPDP Act 2023 & Grievance */}
             <Section icon="⚖️" color="#8B5CF6" title="DPDP Act 2023 & Grievance">
                 <p style={{ marginBottom: '14px' }}>
-                    FinCalix complies with the Digital Personal Data Protection Act, 2023. Your financial inputs are stored only on your device. You can turn analytics off in Settings → Privacy. For any privacy concerns, grievances, or questions about how this app handles your data,
+                    FinCalix complies with the Digital Personal Data Protection Act, 2023. Your financial inputs are stored only on your device. Usage analytics are on by default; you can turn them off anytime in Settings → Privacy. For any privacy concerns, grievances, or questions about how this app handles your data,
                 </p>
 
                 <div style={{
@@ -408,7 +408,7 @@ export default function PrivacyPolicy() {
                         'Right to correction — edit any saved entry inside the app',
                         'Right to erasure — clear app data from device settings or uninstall the app',
                         'Right to grievance redressal — email support@fincalix.com',
-                        'Right to withdraw consent — turn off Usage analytics in Settings → Privacy',
+                        'Right to stop usage analytics — turn it off anytime in Settings → Privacy',
                     ]} />
                 </div>
 

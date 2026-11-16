@@ -1,6 +1,6 @@
 # Play Console Data safety answers
 
-For FinCalix 1.2.9, build 22 (branch `privacy/consent-1.2.9`). Written 16 November 2026 against Google's form definitions at
+For FinCalix 1.2.9, build 22. Written 16 November 2026 against Google's form definitions at
 <https://support.google.com/googleplay/android-developer/answer/10787469>.
 
 ## What build 22 actually does
@@ -33,9 +33,9 @@ Enter the same answers for each of the three types below.
 
 | Data type (category) | Collected | Shared | Processed ephemerally | Required or optional | Purpose |
 |---|---|---|---|---|---|
-| App interactions (App activity) | Yes | No | No | Optional: users can choose whether this data is collected | Analytics |
-| Device or other IDs | Yes | No | No | Optional | Analytics |
-| Approximate location (Location) | Yes | No | No | Optional | Analytics |
+| App interactions (App activity) | Yes | No | No | Optional: users can choose whether this data is collected (on by default; users can turn it off anytime in Settings → Privacy) | Analytics |
+| Device or other IDs | Yes | No | No | Optional (users can turn it off) | Analytics |
+| Approximate location (Location) | Yes | No | No | Optional (users can turn it off) | Analytics |
 
 Everything else: **not collected**. In particular Crash logs, Diagnostics, Financial info, Personal info, Precise location, Files, Photos, Contacts and Messages.
 
