@@ -135,7 +135,8 @@ function seedStorage({ lang, dark, entries, budgets }) {
     localStorage.clear();
     localStorage.setItem('fincalix_dev_access', 'true');               // full app instead of the landing page
     localStorage.setItem('fincalix_disclaimer_accepted_v4', 'true');   // first-launch disclaimer already accepted
-    localStorage.setItem('fincalix_analytics_consent', 'denied');      // no consent dialog, analytics stay off
+    localStorage.setItem('fincalix_analytics_consent', 'denied');      // analytics off during captures
+    localStorage.setItem('fincalix_analytics_test_traffic', '1');      // and flagged as test traffic if ever sent
     localStorage.setItem('language', lang);
     localStorage.setItem('settings-storage', JSON.stringify({
         state: { darkMode: dark, language: lang, notifications: { priceAlerts: true, newSchemes: true, calcReminders: true, appUpdates: true, dailyQuotes: true, logReminder: true } },

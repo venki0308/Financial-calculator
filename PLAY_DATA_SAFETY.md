@@ -7,9 +7,10 @@ For FinCalix 1.2.9, build 22 (branch `privacy/consent-1.2.9`). Written 16 Novemb
 
 - Usage analytics run for every user by default, as in earlier builds, and there is no popup. A user can switch them off in Settings → Privacy. `node scripts/qa-consent-network.mjs` checks both on fresh browser profiles.
 - The app sends usage statistics to Google Analytics 4 through the Firebase JavaScript SDK inside the WebView:
-  - Events: `page_view`, `screen_view` (including app open), `calculation_event`, `scheme_viewed`, `language_changed`, `export_event`. Google Analytics adds first open, session start and engagement time on its own.
-  - Parameters: screen name, page path, calculator type, scheme type (central or state), language, export type, feature name, platform. No amounts and no typed text.
+  - Events: `page_view` (one per screen visit, with the screen name), `calculator_calculated` (once per completed calculation), `report_exported` (PDF, Excel or CSV), `scheme_viewed`, `language_changed`. Google Analytics adds first open, session start and engagement time on its own.
+  - Parameters, allow-listed per event: screen name and page address (record IDs replaced by ":id"), `calculator_id`, `export_format`, `language`, `scheme_type`. No amounts, inputs, results or typed text.
   - Identifiers and device data: a random Analytics client ID, a Firebase installation ID, screen resolution, language, OS and browser version. Google derives an approximate location from the IP address.
+  - Events raised while offline are kept on the device (at most 200, none older than 7 days) and sent when the app is back online. Switching analytics off deletes them unsent.
 - Settings → Privacy → **Usage analytics** turns it off: collection stops, the Analytics cookies and Firebase IDs are deleted from the device, and Firebase is asked to delete the installation ID on its servers.
 - No ads SDK, no account, no crash reporting (Crashlytics and Firebase Messaging were removed in build 22), no server of our own that receives user data.
 
@@ -51,6 +52,15 @@ Google's page says a transfer to a "service provider", defined as "an entity tha
 2. **Approximate location.** Google's page says "Approximate location that is inferred, such as via IP address ... must be disclosed", and Analytics derives country, region and city by default, so I have listed it. If you turn off "granular location and device data" for all regions in Analytics Admin, only coarser location remains; I would still declare it.
 3. **"Shared: No" depends on your Analytics settings.** If data sharing with other Google products, Google signals or ads links are enabled in the Analytics property, Google is no longer only a service provider and the answer becomes "Yes". The app switches Google signals and ad personalisation off in code, but the property settings are yours.
 4. **IP addresses seen by fincalix.com and Google Fonts.** The app fetches `config.json` from fincalix.com and its font from Google Fonts. These are ordinary web requests that carry no user data; I have not listed them as collection. If your host keeps access logs you rely on, mention it in the privacy policy (the policy already does).
+
+## Excluding test traffic from reports
+
+Every automated check (`node scripts/qa-consent-network.mjs`, and any run with the device flag `fincalix_analytics_test_traffic` = `1`) sends its events with `debug_mode` and `traffic_type=internal`. Apply both filters once, in Google Analytics Admin:
+
+1. Admin → Data collection and modification → Data filters → **Create filter** → **Developer traffic** → Operation: Exclude → Filter state: **Active** → Save. This drops events sent with `debug_mode` (they still appear in Admin → DebugView, which is useful for checking a release).
+2. Admin → Data collection and modification → Data filters → open the **Internal Traffic** filter (create it if it is missing: type Internal traffic, parameter value `internal`) → Filter state: **Active** → Save. This drops events with `traffic_type=internal`.
+
+Filters apply from the moment they are active; test events sent before that stay in the reports. A newly created filter can be left in "Testing" for a day first to see what it would remove (the "Test data filter name" dimension).
 
 ## Analytics property settings to match the policy
 
