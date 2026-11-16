@@ -141,7 +141,13 @@ async function main() {
             const r = await get(prod.base, appPath);
             if (r.status !== 308 || r.loc !== page || !/no-store/.test(r.cache)) redirBad.push(`${appPath}: ${r.status} ${r.loc} ${r.cache}`);
         }
-        check(`${Object.keys(seo.APP_CANONICAL).length} app routes 308 to their static page (not cached, so dev mode can follow later)`, redirBad.length === 0, redirBad.slice(0, 3).join(' | '));
+        for (const [alias, target] of Object.entries(seo.APP_ALIASES)) {
+            const want = seo.APP_CANONICAL[target];
+            if (!want) continue;
+            const r = await get(prod.base, alias);
+            if (r.status !== 308 || r.loc !== want) redirBad.push(`alias ${alias}: ${r.status} ${r.loc}`);
+        }
+        check(`${Object.keys(seo.APP_CANONICAL).length} app routes and the old alias URLs 308 to their static page (not cached, so dev mode can follow later)`, redirBad.length === 0, redirBad.slice(0, 3).join(' | '));
         const appJs = fs.readdirSync('dist/assets').find((f) => /^index-.*\.js$/.test(f));
         const lockBad = [];
         for (const p of ['/app', '/app/', '/app.html', '/calculators', '/calculator/age', '/calculator/credit-card-payoff', '/schemes', '/scheme/c-ssy', '/my-loans', '/my-loans/abc', '/settings', '/goal-planner', '/expenses/credit-cards', '/no-such-page', `/assets/${appJs}`]) {

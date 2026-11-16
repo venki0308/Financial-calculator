@@ -20,7 +20,7 @@
  * scripts/landing/dev-mode-proof.mjs.
  */
 import { next, rewrite } from '@vercel/functions';
-import { APP_CANONICAL, DEV_COOKIE, isAppPath } from './src/landing/seoRoutes';
+import { APP_ALIASES, APP_CANONICAL, DEV_COOKIE, isAppPath } from './src/landing/seoRoutes';
 
 export const config = {
     // Pages, app routes and the app's files; the website's own files never need the gate.
@@ -50,7 +50,8 @@ export default function middleware(request: Request): Response {
         return next({ headers: DEV_HEADERS });
     }
     // Public: lock the app.
-    const page = APP_CANONICAL[p.replace(/\/+$/, '') || '/'];
+    const clean = p.replace(/\/+$/, '') || '/';
+    const page = APP_CANONICAL[APP_ALIASES[clean] ?? clean];
     if (page) return redirect(308, page);
     if (isAppPath(p) || p.startsWith('/assets/')) return redirect(308, '/');
     return next();

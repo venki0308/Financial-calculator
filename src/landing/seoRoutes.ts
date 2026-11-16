@@ -72,3 +72,13 @@ export function isAppPath(pathname: string): boolean {
     if (/\.[a-z0-9]+$/i.test(p) && !/\.html$/i.test(p)) return false;
     return true;
 }
+
+/** Old app URLs that the app itself redirects (<Navigate> routes in App.tsx). The public
+ *  site follows them first, so e.g. /calculator/step-up-sip lands on the /sip page. */
+export const APP_ALIASES: Readonly<Record<string, string>> = {
+    '/calculator/step-up-sip': '/calculator/sip',
+    '/calculator/goal-sip': '/calculator/sip',
+    '/calculator/advanced-sip': '/calculator/sip',
+    '/calculator/ppf-advanced': '/calculator/ppf',
+    '/ai-advisor': '/financial-advisor',
+};

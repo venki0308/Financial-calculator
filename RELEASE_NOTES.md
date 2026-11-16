@@ -1,5 +1,10 @@
 # FinCalix release notes
 
+## Website (fincalix.com) — branch website/redesign, awaiting approval
+
+- fincalix.com becomes a marketing site whose only call to action is the Google Play badge. The web app is no longer public: app routes 308 to their static page or to "/". The owner opens it with `?dev=true` (cookie `fincalix_dev`; `?dev=false` clears it).
+- **To revisit: middleware runtime.** `middleware.ts` runs on Vercel's edge runtime. Vercel's build log calls edge "deprecated"; the Node.js runtime was tried on 17 Nov 2026 and returned HTTP 500 on every route (module load error), so edge stays. If Vercel announces removal of the edge runtime, move the gate to the Node.js runtime and re-run `node scripts/qa-landing.mjs` and `node scripts/landing/dev-mode-proof.mjs <preview URL>` before deploying.
+
 ## 1.2.9 (build 22) — prepared 16 Nov 2026
 
 Build 21 carried the same version name; build 22 adds the fixes below.
