@@ -29,6 +29,8 @@ npx cap open android          # open in Android Studio
 node scripts/qa-calculators.mjs
 node scripts/qa-expense-tracker.mjs
 node scripts/qa-loan-engine.mjs
+node scripts/qa-export-safety.mjs     # CSV/Excel formula-injection guard
+node scripts/qa-consent-network.mjs   # analytics stay off until consent (needs a build + Chrome)
 ```
 
 There is no test framework, ESLint, or Prettier configured. Type-checking via `tsc` (run as part of `npm run build`) is the only automated gate. Correctness for calculator math lives in the hand-written `scripts/qa-*.mjs` audits, which re-implement each formula independently and diff against the production util.
@@ -71,7 +73,7 @@ Each calculator is a self-contained page under `src/pages/`. Shared helpers:
 Six locales: `en`, `hi`, `te`, `ta`, `kn`, `ml`. Only `en.json` is bundled; the others are fetched on demand when the user switches language. Use `switchLanguage(lang)` (not `i18n.changeLanguage` directly) — it loads the bundle before switching. `update-locales.js` / `update-loc.py` at the repo root are helpers for cross-locale key sync.
 
 ### Services (`src/services/`)
-- `analyticsService.ts` + `src/lib/analytics.ts` wrap Firebase Analytics + Crashlytics; always called through the service, never direct Firebase SDK calls from components.
+- `analyticsService.ts` + `src/lib/analytics.ts` wrap Firebase Analytics, which is strictly opt-in: nothing from Google loads until the user allows it (`src/utils/analyticsConsent.ts`, `src/components/AnalyticsConsent.tsx`, Settings → Privacy), and only the events and parameters listed in `src/services/providers/types.ts` can be sent. There is no crash reporting. Analytics are always called through the service, never direct Firebase SDK calls from components.
 - `featureFlags.service.ts` + `remoteConfig.service.ts` — Firebase Remote Config, fetched once during `initAnalytics` in `App.tsx`.
 - `DecisionEngine.ts`, `HealthScoreService.ts`, `InsightEngine.ts` — business-logic layer sitting above the stores (goal recommendations, financial-health scoring).
 - `NotificationScheduler.ts` + `calcNotifications.ts` — wraps `@capacitor/local-notifications`.
