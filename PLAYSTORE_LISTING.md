@@ -85,10 +85,10 @@ Every salaried employee, business owner, and investor in India needs a reliable 
 🔒 YOUR PRIVACY IS PROTECTED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 • All calculations happen 100% on your device
-• No login, no account, no personal data collected
+• No login, no account
 • Your salary, tax inputs & financial figures NEVER leave your phone
-• No server, no database — complete offline capability
-• No ads, no tracking of personal information
+• Works offline: your financial data is never uploaded
+• No ads. Usage statistics are optional and sent only if you allow it
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ WHY FINCALIX?
@@ -129,7 +129,7 @@ income tax calculator india 2026,EMI,SIP,FD,tax saving,ITR planning,old vs new r
 ✅ Export calculation reports as PDF
 ✅ AI Financial Advisor
 ✅ Dark Mode & Multi-language support (6 languages)
-✅ 100% offline — your data never leaves your device
+✅ Works offline — your financial data stays on your device
 ✅ No login required — completely free
 ```
 

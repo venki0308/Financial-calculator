@@ -1,6 +1,6 @@
 /**
  * Local User Store
- * Replaces Firebase Auth — 100% offline, zero backend, zero tracking.
+ * Replaces Firebase Auth: profile data is kept on the device, with no backend.
  * A local UUID is auto-generated on first launch and persisted on device.
  * No login required. All user data stays on device.
  *

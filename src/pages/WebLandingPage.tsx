@@ -108,7 +108,7 @@ const FAQS = [
   { q:'Is FinCalix really free?',
     a:'Yes, 100% free. No subscription, no premium plan, no login, no hidden charges. Download and start calculating immediately.' },
   { q:'Does it work without internet?',
-    a:'All 45+ calculators, expense tracker, and budget planner work completely offline after download. No internet needed.' },
+    a:'All 45+ calculators, expense tracker, and budget planner work offline after download. No internet is needed for calculations.' },
   { q:'Is Income Tax updated for Budget 2026-27?',
     a:'Yes. Income Tax Calculator is updated with Budget 2026-27 — zero tax up to ₹12L under New Regime after standard deduction.' },
   { q:'Which languages are supported?',
@@ -118,7 +118,7 @@ const FAQS = [
   { q:'Does it support EV / Two-Wheeler & Gold loans?',
     a:'Yes. Two-Wheeler Loan Calculator includes the PM E-Drive EV subsidy (₹2,500/kWh, capped at ₹5,000) with petrol vs EV running-cost comparison. Gold Loan Calculator uses RBI LTV norms with bullet, EMI and overdraft repayment options.' },
   { q:'Is my financial data safe?',
-    a:'Completely safe. We collect zero personal data. All your calculations and expense data stays only on your device.' },
+    a:'Your calculations and expense data stay only on your device. There is no login and there are no ads. The app asks before sending any usage statistics, and you can say no.' },
   { q:'How many calculators does it have?',
     a:'FinCalix has 45+ financial tools — Form 16 Refund, Rent vs Buy, SIP, Lumpsum, SWP, STP, CAGR, EMI, FD, RD, PPF, NPS, EPF, Gratuity, Income Tax, HRA, Salary Hike, GST, Gold Loan, Two-Wheeler Loan, Overdraft, Credit Card Payoff, Credit Card Interest, Credit Card Compare, CIBIL Score, Insurance, Advanced Mortgage, Post Office MIS, SCSS, Goal Planner, AI Smart Planner, Expense Tracker, Budget Tracker, World Clock and more.' },
 ];
@@ -396,8 +396,8 @@ function HeroSection() {
             justifyContent: isMobile ? 'center' : 'flex-start',
           }}>
             {[
-              { icon: '🔒', text: 'Zero Data Collected' },
-              { icon: '📵', text: '100% Offline' },
+              { icon: '🔒', text: 'Your financial data stays on your device' },
+              { icon: '📵', text: 'Works offline' },
               { icon: '🇮🇳', text: 'Made for India' },
             ].map(chip => (
               <div key={chip.text} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#F0F7F4', border: '1px solid #B7E4C7', borderRadius: '100px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, color: '#2D6A4F', whiteSpace: 'nowrap' }}>
@@ -844,7 +844,7 @@ function ExpenseTrackerSection() {
 // ── 09 TRUST & SECURITY ───────────────────────────────────────────────────────
 function TrustSection() {
   const cards = [
-    { icon: '🔒', title: 'Zero Data Collection', accent: '#2D6A4F', body: 'No personal or financial data ever leaves your device. No servers, no accounts, no tracking.' },
+    { icon: '🔒', title: 'Your financial data stays on your device', accent: '#2D6A4F', body: 'Calculations and financial data are kept on your phone. No login, no ads. Usage statistics are sent only if you allow it.' },
     { icon: '✅', title: 'Verified Calculations', accent: '#D4A017', body: 'All formulas verified against RBI, Income Tax Dept, and official government guidelines.' },
     { icon: '🇮🇳', title: 'Made for India',       accent: '#3B82F6', body: 'Built for Indian tax laws, government schemes, Indian financial products and 6 regional languages.' },
   ];
@@ -854,7 +854,7 @@ function TrustSection() {
         <Reveal>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <h2 style={{ fontSize: 'clamp(26px, 4vw, 36px)', fontWeight: 800, color: '#0F1F18', letterSpacing: '-0.02em', marginBottom: '12px' }}>Your Money Data Stays Private</h2>
-            <p style={{ fontSize: '16px', color: '#6B7280' }}>We collect zero personal data. Everything stays on your device.</p>
+            <p style={{ fontSize: '16px', color: '#6B7280' }}>Your financial data stays on your device. No login. No ads. Works offline.</p>
           </div>
         </Reveal>
         <div className="fcl-trust-grid">

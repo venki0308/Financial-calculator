@@ -3,11 +3,11 @@ import LegalLayout, { LangSelector, PlayStoreBadge, type Lang } from './LegalLay
 import { useAppColors } from '../../theme/useAppColors';
 
 const T = {
-    en: { title: 'Data & Privacy', hero: 'Your Data Stays With You', heroSub: 'FinCalix processes all your financial data locally. We only use limited anonymous analytics to improve stability.', updated: 'Last Updated: July 2026', s: { collect: 'What FinCalix Collects', storage: 'Stored on Your Device Only', backup: 'Backup & Restore', analytics: 'Anonymous Usage Analytics', promises: 'Our Promises', safety: 'Google Play Data Safety Declaration', contact: 'Contact' } },
-    hi: { title: 'डेटा और गोपनीयता', hero: 'आपका डेटा आपके साथ रहता है', heroSub: 'FinCalix सभी वित्तीय डेटा स्थानीय रूप से प्रोसेस करता है।', updated: 'अंतिम अपडेट: जुलाई 2026', s: { collect: 'FinCalix क्या एकत्रित करता है', storage: 'केवल आपके डिवाइस पर संग्रहीत', backup: 'बैकअप और रीस्टोर', analytics: 'अनाम उपयोग विश्लेषण', promises: 'हमारे वादे', safety: 'Google Play डेटा सुरक्षा', contact: 'संपर्क' } },
-    te: { title: 'డేటా మరియు గోప్యత', hero: 'మీ డేటా మీతోనే ఉంటుంది', heroSub: 'FinCalix అన్ని ఆర్థిక డేటాను స్థానికంగా ప్రాసెస్ చేస్తుంది.', updated: 'చివరి నవీకరణ: జూలై 2026', s: { collect: 'FinCalix ఏమి సేకరిస్తుంది', storage: 'మీ పరికరంలో మాత్రమే నిల్వ', backup: 'బ్యాకప్ & రీస్టోర్', analytics: 'అనామక వినియోగ విశ్లేషణ', promises: 'మా వాగ్దానాలు', safety: 'Google Play డేటా భద్రత', contact: 'సంప్రదించండి' } },
-    ta: { title: 'தரவு மற்றும் தனியுரிமை', hero: 'உங்கள் தரவு உங்களிடமே உள்ளது', heroSub: 'FinCalix அனைத்து நிதி தரவையும் உள்ளூரில் செயலாக்குகிறது.', updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: ஜூலை 2026', s: { collect: 'FinCalix என்ன சேகரிக்கிறது', storage: 'உங்கள் சாதனத்தில் மட்டும் சேமிக்கப்பட்டுள்ளது', backup: 'காப்புப்பிரதி & மீட்டெடுப்பு', analytics: 'அநாமதேய பயன்பாட்டு பகுப்பாய்வு', promises: 'எங்கள் வாக்குறுதிகள்', safety: 'Google Play தரவு பாதுகாப்பு', contact: 'தொடர்பு' } },
-    kn: { title: 'ಡೇಟಾ ಮತ್ತು ಗೌಪ್ಯತೆ', hero: 'ನಿಮ್ಮ ಡೇಟಾ ನಿಮ್ಮೊಂದಿಗಿದೆ', heroSub: 'FinCalix ಎಲ್ಲಾ ಹಣಕಾಸು ಡೇಟಾವನ್ನು ಸ್ಥಳೀಯವಾಗಿ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸುತ್ತದೆ.', updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: ಜುಲೈ 2026', s: { collect: 'FinCalix ಏನು ಸಂಗ್ರಹಿಸುತ್ತದೆ', storage: 'ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ ಸಂಗ್ರಹ', backup: 'ಬ್ಯಾಕಪ್ & ರೀಸ್ಟೋರ್', analytics: 'ಅನಾಮಧೇಯ ಬಳಕೆ ವಿಶ್ಲೇಷಣೆ', promises: 'ನಮ್ಮ ವಾಗ್ದಾನಗಳು', safety: 'Google Play ಡೇಟಾ ಸುರಕ್ಷತೆ', contact: 'ಸಂಪರ್ಕಿಸಿ' } },
+    en: { title: 'Data & Privacy', hero: 'Your Data Stays With You', heroSub: 'FinCalix processes all your financial data on your device. Usage analytics are optional and off unless you allow them.', updated: 'Last Updated: 16 November 2026', s: { collect: 'What FinCalix Collects', storage: 'Stored on Your Device Only', backup: 'Backup & Restore', analytics: 'Optional Usage Analytics', promises: 'Our Promises', safety: 'Google Play Data Safety Declaration', contact: 'Contact' } },
+    hi: { title: 'डेटा और गोपनीयता', hero: 'आपका डेटा आपके साथ रहता है', heroSub: 'FinCalix आपके सभी वित्तीय डेटा को आपके डिवाइस पर ही प्रोसेस करता है। उपयोग एनालिटिक्स वैकल्पिक है और जब तक आप अनुमति नहीं देते, बंद रहता है।', updated: 'अंतिम अद्यतन: 16 नवंबर 2026', s: { collect: 'FinCalix क्या एकत्रित करता है', storage: 'केवल आपके डिवाइस पर संग्रहीत', backup: 'बैकअप और रीस्टोर', analytics: 'वैकल्पिक उपयोग एनालिटिक्स', promises: 'हमारे वादे', safety: 'Google Play डेटा सुरक्षा', contact: 'संपर्क' } },
+    te: { title: 'డేటా మరియు గోప్యత', hero: 'మీ డేటా మీతోనే ఉంటుంది', heroSub: 'FinCalix మీ ఆర్థిక డేటా మొత్తాన్ని మీ పరికరంలోనే ప్రాసెస్ చేస్తుంది. వినియోగ విశ్లేషణలు ఐచ్ఛికం; మీరు అనుమతిస్తే తప్ప అవి ఆఫ్‌లో ఉంటాయి.', updated: 'చివరిగా నవీకరించబడింది: 16 నవంబర్ 2026', s: { collect: 'FinCalix ఏమి సేకరిస్తుంది', storage: 'మీ పరికరంలో మాత్రమే నిల్వ', backup: 'బ్యాకప్ & రీస్టోర్', analytics: 'ఐచ్ఛిక వినియోగ విశ్లేషణలు', promises: 'మా వాగ్దానాలు', safety: 'Google Play డేటా భద్రత', contact: 'సంప్రదించండి' } },
+    ta: { title: 'தரவு மற்றும் தனியுரிமை', hero: 'உங்கள் தரவு உங்களிடமே உள்ளது', heroSub: 'FinCalix உங்கள் நிதித் தரவு அனைத்தையும் உங்கள் சாதனத்திலேயே செயலாக்குகிறது. பயன்பாட்டு பகுப்பாய்வு ஒரு விருப்பத் தேர்வு; நீங்கள் அனுமதிக்காத வரை அது முடக்கத்தில் இருக்கும்.', updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: 16 நவம்பர் 2026', s: { collect: 'FinCalix என்ன சேகரிக்கிறது', storage: 'உங்கள் சாதனத்தில் மட்டும் சேமிக்கப்பட்டுள்ளது', backup: 'காப்புப்பிரதி & மீட்டெடுப்பு', analytics: 'விருப்பத் தேர்வான பயன்பாட்டு பகுப்பாய்வு', promises: 'எங்கள் வாக்குறுதிகள்', safety: 'Google Play தரவு பாதுகாப்பு', contact: 'தொடர்பு' } },
+    kn: { title: 'ಡೇಟಾ ಮತ್ತು ಗೌಪ್ಯತೆ', hero: 'ನಿಮ್ಮ ಡೇಟಾ ನಿಮ್ಮೊಂದಿಗಿದೆ', heroSub: 'FinCalix ನಿಮ್ಮ ಎಲ್ಲಾ ಹಣಕಾಸು ಡೇಟಾವನ್ನು ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸುತ್ತದೆ. ಬಳಕೆಯ ಅನಾಲಿಟಿಕ್ಸ್ ಐಚ್ಛಿಕ ಮತ್ತು ನೀವು ಅನುಮತಿಸದ ಹೊರತು ಆಫ್ ಆಗಿರುತ್ತದೆ.', updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: 16 ನವೆಂಬರ್ 2026', s: { collect: 'FinCalix ಏನು ಸಂಗ್ರಹಿಸುತ್ತದೆ', storage: 'ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ ಸಂಗ್ರಹ', backup: 'ಬ್ಯಾಕಪ್ & ರೀಸ್ಟೋರ್', analytics: 'ಐಚ್ಛಿಕ ಬಳಕೆಯ ಅನಾಲಿಟಿಕ್ಸ್', promises: 'ನಮ್ಮ ವಾಗ್ದಾನಗಳು', safety: 'Google Play ಡೇಟಾ ಸುರಕ್ಷತೆ', contact: 'ಸಂಪರ್ಕಿಸಿ' } },
 } as const;
 
 function Section({ icon, color, title, children }: { icon: string; color: string; title: string; children: React.ReactNode }) {
@@ -64,7 +64,7 @@ export default function DataPrivacy() {
             </div>
 
             <Section icon="👁️" color="#8B5CF6" title={t.s.collect}>
-                <p style={{ marginBottom: '10px' }}>FinCalix does <strong style={{ color: colors.text }}>NOT</strong> collect any personal information whatsoever.</p>
+                <p style={{ marginBottom: '10px' }}>FinCalix does not ask for or store your name, contact details or financial data.</p>
                 <p>No registration, no login, no account needed. Your name, email and phone number are never asked or stored by us.</p>
             </Section>
 
@@ -81,10 +81,10 @@ export default function DataPrivacy() {
             </Section>
 
             <Section icon="📊" color="#EC4899" title={t.s.analytics}>
-                <p style={{ marginBottom: '10px' }}>We use Firebase Analytics to understand which calculators are most useful and to improve app stability.</p>
-                <p style={{ marginBottom: '10px' }}><strong style={{ color: colors.text }}>Data collected: which calculator was opened, session duration, device type.</strong></p>
-                <p style={{ marginBottom: '10px' }}>This data is fully anonymous — no personal identity is ever captured.</p>
-                <p>Your financial inputs (salary, EMI amounts, etc.) are never part of analytics.</p>
+                <p style={{ marginBottom: '10px' }}>Only if you allow it, FinCalix sends usage statistics to Google Analytics so we can see which calculators are useful.</p>
+                <p style={{ marginBottom: '10px' }}><strong style={{ color: colors.text }}>What is sent: which screens and calculators are opened, scheme views, language changes and exports, with a random app ID, device type, language, OS version and approximate country.</strong></p>
+                <p style={{ marginBottom: '10px' }}>This data is pseudonymous: it is tied to a random ID, not to your name or contact details.</p>
+                <p>Your financial inputs (salary, EMI amounts, etc.) are never part of analytics. You can turn analytics off in Settings → Privacy.</p>
             </Section>
 
             <Section icon="✅" color="#10B981" title={t.s.promises}>
@@ -105,10 +105,10 @@ export default function DataPrivacy() {
             <Section icon="📋" color="#C9A84C" title={t.s.safety}>
                 <div style={{ background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '14px', overflow: 'hidden' }}>
                     {[
-                        { label: 'DATA COLLECTED', value: 'App interaction data (anonymous), Device ID (anonymous)' },
-                        { label: 'DATA SHARED WITH THIRD PARTIES', value: 'Google Analytics / Firebase (anonymous only)' },
+                        { label: 'DATA COLLECTED', value: 'Only if you allow usage analytics: app interactions, device or other IDs, approximate location' },
+                        { label: 'DATA SHARED WITH THIRD PARTIES', value: 'Processed by Google Analytics (Google LLC) for us; not sold, not used for advertising' },
                         { label: 'DATA ENCRYPTED IN TRANSIT', value: 'Yes (HTTPS)' },
-                        { label: 'CAN USERS REQUEST DELETION', value: 'Not applicable — we hold no personal user data' },
+                        { label: 'CAN USERS REQUEST DELETION', value: 'Turn off Usage analytics in Settings → Privacy: collection stops and the analytics IDs are deleted from your device' },
                         { label: 'DATA USED TO TRACK USERS', value: 'No' },
                     ].map((row, i) => (
                         <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', padding: '14px 18px', borderBottom: i < 4 ? `1px solid ${colors.border}` : 'none' }}>
