@@ -1,5 +1,4 @@
 import StorageGuard from './components/StorageGuard';
-import AnalyticsConsent from './components/AnalyticsConsent';
 import { safeSetItem } from './utils/safeStorage';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
@@ -384,7 +383,6 @@ function AppContent() {
             <BackToast visible={showBackToast} />
             <UpdateChecker />
             <StorageGuard />
-            <AnalyticsConsent />
             <Suspense fallback={LazyFallback}>
                 <GlobalDisclaimerModal />
                 <PdfActionSheet />

@@ -1,13 +1,14 @@
-// QA audit: usage analytics must be strictly opt-in.
-// Drives the PRODUCTION build in a real browser, each scenario in a brand-new
-// profile, and records every network request.
+// QA audit: usage analytics must stay off unless the user turns them on.
+// There is no popup: the only switch is Settings → Privacy → "Usage analytics",
+// off by default. Drives the PRODUCTION build in a real browser, each scenario
+// in a brand-new profile, and records every network request.
 //
 //   npm run build
 //   node scripts/qa-consent-network.mjs            (starts its own preview server)
 //   node scripts/qa-consent-network.mjs http://127.0.0.1:4173   (use a running one)
 //
 // Needs the dev dependency playwright-core and an installed Google Chrome.
-// Note: the "Allow" scenarios send a handful of real hits to the Analytics
+// Note: the "switch on" scenarios send a handful of real hits to the analytics
 // property configured in .env.
 import { chromium } from 'playwright-core';
 import { spawn } from 'node:child_process';
@@ -67,7 +68,6 @@ async function acceptDisclaimer(page) {
     await accept.click();
 }
 
-const consentDialog = (page) => page.locator('[aria-labelledby="analytics-consent-title"]');
 const settle = (page, ms = 3500) => page.waitForTimeout(ms);
 const visit = async (page, base, path) => { await page.goto(base + path, { waitUntil: 'load' }); await settle(page); };
 const collectCount = (log) => log.filter(r => COLLECT_HOSTS.test(r.host)).length;
@@ -75,6 +75,11 @@ const collectCount = (log) => log.filter(r => COLLECT_HOSTS.test(r.host)).length
 const waitForCollect = (page) => page
     .waitForRequest((r) => COLLECT_HOSTS.test(new URL(r.url()).hostname), { timeout: 25000 })
     .then(() => page.waitForTimeout(500), () => {});
+/** True when anything on screen asks about usage statistics / analytics consent. */
+const popupShown = (page) => page.evaluate(() =>
+    !!document.querySelector('[aria-labelledby="analytics-consent-title"]') ||
+    [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].some(d => /usage statistics|analytics/i.test(d.textContent || '')));
+const flipSwitch = async (page, base) => { await visit(page, base, '/settings'); await page.locator('button[role="switch"]').click(); };
 
 async function main() {
     const external = process.argv[2];
@@ -82,40 +87,48 @@ async function main() {
     const { base } = server;
     const browser = await chromium.launch({ channel: 'chrome', headless: true });
     try {
-        // ── 1. New user: nothing before the choice, starts on Allow, stops on toggle-off
-        console.log('\n1. New user → Allow → turn off in Settings');
+        // ── 1. New user who never opens Settings: nothing is ever sent, and nothing asks
+        console.log('\n1. New user, Settings never touched');
         {
             const { context, page, log } = await freshProfile(browser);
             await visit(page, base, '/?dev=true');
             await acceptDisclaimer(page);
-            await consentDialog(page).waitFor({ timeout: 10000 });
-            const buttons = consentDialog(page).locator('button.flex-1');
-            const [denyBox, allowBox] = [await buttons.nth(0).boundingBox(), await buttons.nth(1).boundingBox()];
-            const [denyClass, allowClass] = [await buttons.nth(0).getAttribute('class'), await buttons.nth(1).getAttribute('class')];
-            check('consent dialog is shown after the disclaimer', await consentDialog(page).isVisible());
-            check('"No thanks" and "Allow" have identical styling and size', denyClass === allowClass && Math.abs(denyBox.width - allowBox.width) < 2 && denyBox.height === allowBox.height, `${Math.round(denyBox.width)}x${denyBox.height} vs ${Math.round(allowBox.width)}x${allowBox.height}`);
+            await settle(page, 2000);
+            check('no usage-statistics popup after the disclaimer', !(await popupShown(page)));
             await visit(page, base, '/calculator/sip');
             await visit(page, base, '/calculator/loan-emi');
-            let s = await state(page);
-            check('before choosing: zero requests to Google analytics / Firebase hosts', log.length === 0, `${log.length} requests`);
-            check('before choosing: no Google tag, no _ga cookie, no Firebase database', !s.gtagLoaded && s.gaCookies.length === 0 && s.firebaseDbs.length === 0, JSON.stringify(s));
-            check('before choosing: choice is not stored (default off)', s.consent === null);
+            await visit(page, base, '/'); // relaunch
+            const s = await state(page);
+            check('no popup on later launches either', !(await popupShown(page)));
+            check('zero requests to analytics / Firebase hosts', log.length === 0, `${log.length} requests`);
+            check('no tag, no _ga cookie, no Firebase database', !s.gtagLoaded && s.gaCookies.length === 0 && s.firebaseDbs.length === 0, JSON.stringify(s));
+            check('analytics choice is not stored (default off)', s.consent === null);
+            await context.close();
+        }
 
-            await consentDialog(page).locator('button.flex-1').nth(1).click(); // Allow
+        // ── 2. New user who switches analytics on in Settings, then off again
+        console.log('\n2. New user → switch on in Settings → switch off');
+        {
+            const { context, page, log } = await freshProfile(browser);
+            await visit(page, base, '/?dev=true');
+            await acceptDisclaimer(page);
+            await visit(page, base, '/calculator/sip');
+            check('before switching on: zero requests', log.length === 0, `${log.length} requests`);
+            await visit(page, base, '/settings');
+            check('Settings switch is off by default', (await page.locator('button[role="switch"]').getAttribute('aria-checked')) === 'false');
+            await page.locator('button[role="switch"]').click(); // on
             await settle(page, 2000);
             await visit(page, base, '/calculator/income-tax');
             await waitForCollect(page);
-            s = await state(page);
-            const afterAllow = collectCount(log);
-            check('after Allow: choice stored as "granted"', s.consent === 'granted');
-            check('after Allow: Google tag loaded and collect requests are sent', s.gtagLoaded && afterAllow > 0, `${afterAllow} collect requests`);
+            let s = await state(page);
+            const afterOn = collectCount(log);
+            check('after switching on: choice stored as "granted"', s.consent === 'granted');
+            check('after switching on: the tag loads and collect requests are sent', s.gtagLoaded && afterOn > 0, `${afterOn} collect requests`);
 
-            await visit(page, base, '/settings');
-            await page.locator('button[role="switch"]').click();
+            await flipSwitch(page, base); // off
             await settle(page, 5000);
             const atOff = Date.now();
-            const hostsAtOff = [...new Set(log.map(r => r.host))];
-            // Same page session first (the Google tag is still in memory)…
+            // Same page session first (the tag is still in memory)…
             for (const path of ['/calculator/sip', '/calculator/ppf']) {
                 await page.evaluate((p) => { history.pushState({}, '', p); window.dispatchEvent(new PopStateEvent('popstate')); }, path);
                 await settle(page, 6000);
@@ -126,39 +139,18 @@ async function main() {
             await visit(page, base, '/schemes');
             await settle(page, 4000);
             s = await state(page);
-            const collectAfterOff = log.filter(r => r.at > atOff && COLLECT_HOSTS.test(r.host)).length;
-            const anyAfterOff = log.filter(r => r.at > atOff);
-            check('after toggle off: choice stored as "denied"', s.consent === 'denied');
-            check('after toggle off: zero collect requests on three more screens', collectAfterOff === 0, `${collectAfterOff} requests`);
-            check('after toggle off: no request at all to Google analytics / Firebase hosts', anyAfterOff.length === 0, anyAfterOff.map(r => r.host + r.path).join(', '));
-            check('after toggle off: _ga cookies and Firebase databases are deleted', s.gaCookies.length === 0 && s.firebaseDbs.length === 0, JSON.stringify(s));
-            console.log(`    hosts contacted while allowed: ${hostsAtOff.join(', ')}`);
+            const afterOff = log.filter(r => r.at > atOff);
+            check('after switching off: choice stored as "denied"', s.consent === 'denied');
+            check('after switching off: no request at all to analytics / Firebase hosts', afterOff.length === 0, afterOff.map(r => r.host + r.path).join(', '));
+            check('after switching off: _ga cookies and Firebase databases are deleted', s.gaCookies.length === 0 && s.firebaseDbs.length === 0, JSON.stringify(s));
             const del = log.filter(r => r.method === 'DELETE').map(r => r.host);
-            console.log(`    deletion request at opt-out: ${del.length ? del.join(', ') : 'none seen'}`);
+            console.log(`    deletion request at switch-off: ${del.length ? del.join(', ') : 'none seen'}`);
             await context.close();
         }
 
-        // ── 2. New user: No thanks → never anything
-        console.log('\n2. New user → No thanks');
-        {
-            const { context, page, log } = await freshProfile(browser);
-            await visit(page, base, '/?dev=true');
-            await acceptDisclaimer(page);
-            await consentDialog(page).waitFor({ timeout: 10000 });
-            await consentDialog(page).locator('button.flex-1').nth(0).click(); // No thanks
-            await visit(page, base, '/calculator/sip');
-            await visit(page, base, '/calculator/loan-emi');
-            await visit(page, base, '/'); // relaunch
-            const s = await state(page);
-            check('choice stored as "denied" and the dialog does not return', s.consent === 'denied' && !(await consentDialog(page).isVisible()));
-            check('zero requests to Google analytics / Firebase hosts', log.length === 0, `${log.length} requests`);
-            check('no Google tag, no _ga cookie, no Firebase database', !s.gtagLoaded && s.gaCookies.length === 0 && s.firebaseDbs.length === 0);
-            await context.close();
-        }
-
-        // ── 3. Existing user upgrading from build 21 (had analytics on, old disclaimer accepted)
+        // ── 3. Existing user upgrading from build 21 (analytics used to run for everyone)
         console.log('\n3. Existing user upgrading from build 21');
-        for (const answer of ['No thanks', 'Allow']) {
+        {
             const { context, page, log } = await freshProfile(browser);
             await page.goto(base + '/robots.txt');
             await page.evaluate(async () => {
@@ -173,21 +165,16 @@ async function main() {
             });
             await visit(page, base, '/');
             let s = await state(page);
-            check(`[${answer}] first launch: no request before a choice is made`, log.length === 0, `${log.length} requests`);
-            check(`[${answer}] first launch: identifiers left by build 21 are deleted`, s.gaCookies.length === 0 && s.firebaseDbs.length === 0 && s.legacyKeys.length === 0, JSON.stringify(s));
-            await acceptDisclaimer(page); // corrected disclaimer (v4) is shown again
-            await consentDialog(page).waitFor({ timeout: 10000 });
-            check(`[${answer}] corrected disclaimer, then the consent choice, are shown`, await consentDialog(page).isVisible());
-            await consentDialog(page).locator('button.flex-1').nth(answer === 'Allow' ? 1 : 0).click();
+            check('first launch: identifiers left by build 21 are deleted', s.gaCookies.length === 0 && s.firebaseDbs.length === 0 && s.legacyKeys.length === 0, JSON.stringify(s));
+            await acceptDisclaimer(page); // the corrected disclaimer is shown once
             await settle(page, 2000);
+            check('no usage-statistics popup after the disclaimer', !(await popupShown(page)));
             await visit(page, base, '/calculator/sip');
-            if (answer === 'Allow') await waitForCollect(page); else await settle(page, 8000);
+            await visit(page, base, '/calculator/loan-emi');
+            await settle(page, 6000);
             s = await state(page);
-            if (answer === 'Allow') {
-                check('[Allow] requests start only now', s.consent === 'granted' && collectCount(log) > 0, `${collectCount(log)} collect requests`);
-            } else {
-                check('[No thanks] still zero requests', s.consent === 'denied' && log.length === 0, `${log.length} requests`);
-            }
+            check('zero requests to analytics / Firebase hosts', log.length === 0, `${log.length} requests`);
+            check('analytics stay off until switched on', s.consent === null && !s.gtagLoaded);
             await context.close();
         }
     } finally {

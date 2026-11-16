@@ -3,8 +3,8 @@
  *
  * Analytics are OFF until the user explicitly allows them: nothing from Google
  * is loaded, no request is made and no identifier is created while the choice
- * is missing or "denied". The choice is asked once (AnalyticsConsent dialog)
- * and can be changed any time in Settings → Privacy.
+ * is missing or "denied". There is no popup: the user turns analytics on or
+ * off in Settings → Privacy.
  */
 import { safeSetItem } from './safeStorage';
 
@@ -16,8 +16,6 @@ export type AnalyticsConsent = 'granted' | 'denied';
 
 /** Current disclaimer acceptance key (see GlobalDisclaimerModal). */
 export const DISCLAIMER_KEY = 'fincalix_disclaimer_accepted_v4';
-/** Fired on `window` when the disclaimer has just been accepted. */
-export const DISCLAIMER_ACCEPTED_EVENT = 'fincalix:disclaimer-accepted';
 
 /** The stored choice, or null when the user has not been asked yet. */
 export function getAnalyticsConsent(): AnalyticsConsent | null {

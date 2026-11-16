@@ -1,6 +1,6 @@
 import { safeSetItem } from '../utils/safeStorage';
 import { useState, useEffect, useRef } from 'react';
-import { DISCLAIMER_KEY, DISCLAIMER_ACCEPTED_EVENT } from '../utils/analyticsConsent';
+import { DISCLAIMER_KEY } from '../utils/analyticsConsent';
 import { useTranslation } from 'react-i18next';
 
 export default function GlobalDisclaimerModal() {
@@ -55,8 +55,6 @@ export default function GlobalDisclaimerModal() {
         if (!canAccept) return;
         safeSetItem(DISCLAIMER_KEY, 'true');
         setVisible(false);
-        // Lets the analytics choice (AnalyticsConsent) appear next.
-        window.dispatchEvent(new Event(DISCLAIMER_ACCEPTED_EVENT));
     };
 
     if (!visible) return null;
