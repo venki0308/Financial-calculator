@@ -13,7 +13,9 @@ const TYPE_META: Record<string, { emoji: string; color: string; bg: string }> = 
     sip_reminder:    { emoji: '📈', color: '#10B981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
     tax_alert:       { emoji: '⚠️', color: '#F59E0B', bg: 'bg-amber-50 dark:bg-amber-500/10' },
     savings_insight: { emoji: '💡', color: '#8B5CF6', bg: 'bg-violet-50 dark:bg-violet-500/10' },
-    bill_payment:    { emoji: '🧾', color: '#EF4444', bg: 'bg-red-50 dark:bg-red-500/10' },
+    quote_insight:   { emoji: '💡', color: '#F59E0B', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+    new_scheme:      { emoji: '🆕', color: '#6366F1', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
+    bill_payment:   { emoji: '🧾', color: '#EF4444', bg: 'bg-red-50 dark:bg-red-500/10' },
     // Calculator notifications
     emi_saved:       { emoji: '🏦', color: '#3B82F6', bg: 'bg-blue-50 dark:bg-blue-500/10' },
     tax_reminder:    { emoji: '📋', color: '#F59E0B', bg: 'bg-amber-50 dark:bg-amber-500/10' },

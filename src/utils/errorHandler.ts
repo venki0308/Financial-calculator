@@ -1,4 +1,5 @@
 import { CrashlyticsService } from '../lib/analytics';
+import { StorageFullError } from './safeStorage';
 
 /**
  * Sets up global window-level error handlers.
@@ -9,6 +10,9 @@ export function setupErrorHandling() {
     // Unhandled promise rejections (async/await failures, storage errors, etc.)
     window.addEventListener('unhandledrejection', (event) => {
         const reason = event.reason;
+        // "Storage full" is a handled condition (the StorageGuard dialog is
+        // already on screen) — not a crash to report.
+        if (reason instanceof StorageFullError) return;
         const error = reason instanceof Error
             ? reason
             : new Error(String(reason ?? 'Unhandled promise rejection'));
@@ -19,6 +23,7 @@ export function setupErrorHandling() {
 
     // Synchronous JS errors
     window.addEventListener('error', (event) => {
+        if (event.error instanceof StorageFullError) return; // handled — see above
         const error = event.error instanceof Error
             ? event.error
             : new Error(event.message ?? 'Unknown JS error');

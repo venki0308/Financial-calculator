@@ -4,6 +4,7 @@
 // All views import from here. No inline math anywhere.
 // ═══════════════════════════════════════════════════════════════
 
+import { safeSetItem } from './safeStorage';
 import type { Entry, Budget, Category } from '../types/expense';
 import { ALL_DEFAULT_CATEGORIES } from '../types/expense';
 import { getCustomCategories, getBudgetForMonth, getEntriesForMonth } from './expenseStorage';
@@ -259,7 +260,7 @@ export const getMonthStartDay = (): number => {
 export const setMonthStartDay = (day: number): void => {
   try {
     const clamped = Math.min(28, Math.max(1, Math.round(day) || 1));
-    localStorage.setItem(MONTH_START_DAY_KEY, String(clamped));
+    safeSetItem(MONTH_START_DAY_KEY, String(clamped));
   } catch {
     // localStorage unavailable — setting simply won't persist.
   }

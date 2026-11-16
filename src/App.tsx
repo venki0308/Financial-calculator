@@ -1,3 +1,5 @@
+import StorageGuard from './components/StorageGuard';
+import { safeSetItem } from './utils/safeStorage';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -390,6 +392,7 @@ function AppContent() {
         <>
             <BackToast visible={showBackToast} />
             <UpdateChecker />
+            <StorageGuard />
             <Suspense fallback={LazyFallback}>
                 <GlobalDisclaimerModal />
                 <PdfActionSheet />
@@ -531,7 +534,7 @@ export default function App() {
     // (same UI as the native app). Persisted to localStorage so it survives reloads.
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('dev') === 'true') {
-        localStorage.setItem('fincalix_dev_access', 'true');
+        safeSetItem('fincalix_dev_access', 'true');
     } else if (urlParams.get('dev') === 'false') {
         localStorage.removeItem('fincalix_dev_access');
     }

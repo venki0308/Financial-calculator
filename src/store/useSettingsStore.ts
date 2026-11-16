@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 interface SettingsState {
     darkMode: boolean;
@@ -28,7 +29,7 @@ export const useSettingsStore = create<SettingsState>()(
                 set((s) => ({ notifications: { ...s.notifications, [key]: val } })),
         }),
         {
-            name: 'settings-storage',
+            name: 'settings-storage', storage: createJSONStorage(() => safeLocalStorage),
             // Deep-merge `notifications` so flags added in later versions
             // (e.g. logReminder, default ON) keep their defaults for users
             // whose persisted object predates them — persist's default

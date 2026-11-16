@@ -1,3 +1,4 @@
+import { safeSetItem } from '../utils/safeStorage';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
@@ -185,7 +186,7 @@ export default function PropertyCalculator() {
 
     useEffect(() => {
         const data = { landArea, landUnit, landPrice, builtUp, ppsf, gstPct, villaPlotArea, groundFloor, sdState, loanRate };
-        localStorage.setItem('fincalix_property_data', JSON.stringify(data));
+        safeSetItem('fincalix_property_data', JSON.stringify(data));
     }, [landArea, landUnit, landPrice, builtUp, ppsf, gstPct, villaPlotArea, groundFloor, sdState, loanRate]);
 
     const copyResult = (val: number, label: string) => {

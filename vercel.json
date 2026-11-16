@@ -1,5 +1,11 @@
 {
   "redirects": [
+    {
+      "source": "/((?!config\\.json$).*)",
+      "has": [{ "type": "host", "value": "www.fincalix.com" }],
+      "destination": "https://fincalix.com/$1",
+      "permanent": true
+    },
     { "source": "/privacy-policy.html", "destination": "/privacy-policy", "permanent": true }
   ],
   "rewrites": [
@@ -38,8 +44,12 @@
       "source": "/config.json",
       "headers": [
         {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
           "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=3600"
+          "value": "public, max-age=300, must-revalidate"
         }
       ]
     },

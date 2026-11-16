@@ -1,3 +1,4 @@
+import { safeSetItem } from '../utils/safeStorage';
 import { useState, useEffect, useMemo, useRef, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -355,7 +356,7 @@ function CompareView() {
 
     // Persist
     useEffect(() => {
-        localStorage.setItem('fincalix_comparev2', JSON.stringify({ src: srcTZ, targets: targetTZs }));
+        safeSetItem('fincalix_comparev2', JSON.stringify({ src: srcTZ, targets: targetTZs }));
     }, [srcTZ, targetTZs]);
 
     // ── Core computation ─────────────────────────────────────────────────────
@@ -1443,7 +1444,7 @@ export default function WorldClock() {
             addedAt: new Date().toISOString()
         };
         const nextClocks = [...clocks, newClock];
-        localStorage.setItem('fincalix_world_clocks', JSON.stringify(nextClocks));
+        safeSetItem('fincalix_world_clocks', JSON.stringify(nextClocks));
         setClocks(nextClocks);
         setShowAddPanel(false);
         setSearchQuery('');
@@ -1452,7 +1453,7 @@ export default function WorldClock() {
 
     const removeZone = (clockId: string) => {
         const nextClocks = clocks.filter(c => c.id !== clockId);
-        localStorage.setItem('fincalix_world_clocks', JSON.stringify(nextClocks));
+        safeSetItem('fincalix_world_clocks', JSON.stringify(nextClocks));
         setClocks(nextClocks);
     };
 

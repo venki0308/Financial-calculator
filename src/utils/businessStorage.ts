@@ -1,3 +1,4 @@
+import { mustSetItem } from './safeStorage';
 // ═══════════════════════════════════════════════════════════════
 // FINCALIX — BUSINESS TRACKER STORAGE ENGINE
 // Raw CRUD operations on localStorage for the Business Tracker
@@ -117,7 +118,7 @@ export const addBusiness = (partial: Omit<Business, 'id' | 'createdAt' | 'update
   const biz: Business = { ...partial, id: generateBusinessId(), createdAt: now, updatedAt: now, isDeleted: false };
   const all = getAllBusinessesRaw();
   all.push(biz);
-  localStorage.setItem(BUSINESSES_KEY, JSON.stringify(all));
+  mustSetItem(BUSINESSES_KEY, JSON.stringify(all));
   return biz;
 };
 
@@ -126,7 +127,7 @@ export const updateBusiness = (biz: Business): void => {
   const idx = all.findIndex(b => b.id === biz.id);
   if (idx >= 0) {
     all[idx] = { ...biz, updatedAt: new Date().toISOString() };
-    localStorage.setItem(BUSINESSES_KEY, JSON.stringify(all));
+    mustSetItem(BUSINESSES_KEY, JSON.stringify(all));
   }
 };
 
@@ -137,7 +138,7 @@ export const softDeleteBusiness = (id: string): void => {
   if (idx >= 0) {
     all[idx].isDeleted = true;
     all[idx].updatedAt = new Date().toISOString();
-    localStorage.setItem(BUSINESSES_KEY, JSON.stringify(all));
+    mustSetItem(BUSINESSES_KEY, JSON.stringify(all));
   }
   // Cascade: soft-delete every entry that belongs to this business
   const entries = getAllBizEntriesRaw();
@@ -148,7 +149,7 @@ export const softDeleteBusiness = (id: string): void => {
       touched = true;
     }
   });
-  if (touched) localStorage.setItem(BIZ_ENTRIES_KEY, JSON.stringify(entries));
+  if (touched) mustSetItem(BIZ_ENTRIES_KEY, JSON.stringify(entries));
 };
 
 // ─── ENTRIES CRUD ─────────────────────────────────────────────
@@ -172,7 +173,7 @@ export const addBizEntry = (partial: Omit<BizEntry, 'id' | 'createdAt' | 'isDele
   };
   const all = getAllBizEntriesRaw();
   all.push(entry);
-  localStorage.setItem(BIZ_ENTRIES_KEY, JSON.stringify(all));
+  mustSetItem(BIZ_ENTRIES_KEY, JSON.stringify(all));
   return entry;
 };
 
@@ -181,7 +182,7 @@ export const softDeleteBizEntry = (id: string): void => {
   const idx = all.findIndex(e => e.id === id);
   if (idx >= 0) {
     all[idx].isDeleted = true;
-    localStorage.setItem(BIZ_ENTRIES_KEY, JSON.stringify(all));
+    mustSetItem(BIZ_ENTRIES_KEY, JSON.stringify(all));
   }
 };
 

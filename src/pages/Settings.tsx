@@ -1,3 +1,4 @@
+import { safeSetItem } from '../utils/safeStorage';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Moon, Sun, Bell, FileText, Star, Share2, Info, ChevronRight, Globe, Check, Trash2, Download, Upload, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -67,7 +68,7 @@ export default function Settings() {
     const { setLanguage } = useSettingsStore();
     const changeLanguage = async (code: string) => {
         await switchLanguage(code);
-        localStorage.setItem('language', code);
+        safeSetItem('language', code);
         setLanguage(code);
         AnalyticsService.trackLanguageChanged(code);
         setShowLangPicker(false);

@@ -2,6 +2,7 @@
  * Credit Card Storage — localStorage CRUD for FinCalix Credit Card Manager
  */
 
+import { mustSetItem } from './safeStorage';
 import type { CCCard } from './creditCardCalculations';
 
 const STORAGE_KEY = 'fincalix_credit_cards';
@@ -46,7 +47,7 @@ export function saveCreditCard(card: CCCard): void {
     all.push({ ...card, createdAt: now, updatedAt: now });
   }
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+    mustSetItem(STORAGE_KEY, JSON.stringify(all));
   } catch {
     console.warn('[CCStorage] localStorage full');
   }
@@ -60,7 +61,7 @@ export function deleteCreditCard(id: string): void {
     all[idx].isDeleted = true;
     all[idx].updatedAt = new Date().toISOString();
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+      mustSetItem(STORAGE_KEY, JSON.stringify(all));
     } catch {
       console.warn('[CCStorage] localStorage full');
     }
@@ -80,7 +81,7 @@ export function getLastPayoffStrategy(): string {
 
 export function savePayoffStrategy(strategy: string): void {
   try {
-    localStorage.setItem(STRATEGY_KEY, strategy);
+    mustSetItem(STRATEGY_KEY, strategy);
   } catch { /* ignore */ }
 }
 

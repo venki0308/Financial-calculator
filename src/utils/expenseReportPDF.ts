@@ -13,6 +13,7 @@
 //   formatINR, drawSectionHeader, drawStatBoxes, addPageHeaderFooter
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { csvRow } from './csvSafe';
 import { Capacitor } from '@capacitor/core';
 import { sanitizeForPDF } from './exportUtils';
 import type { Entry, Budget, BankAccount, EntryType } from '../types/expense';
@@ -4497,13 +4498,6 @@ export interface CSVExportData {
 
 /** RFC-4180 escape: wrap in quotes if value contains comma/quote/newline,
  *  and double any embedded quotes. */
-function csvEscape(value: string | number): string {
-    const str = String(value ?? '');
-    if (/[",\r\n]/.test(str)) {
-        return `"${str.replace(/"/g, '""')}"`;
-    }
-    return str;
-}
 
 /** Build a CSV string from an array of entries. */
 export function buildExpenseCSV(entries: Entry[]): string {
@@ -4540,10 +4534,13 @@ export function buildExpenseCSV(entries: Entry[]): string {
             e.updatedAt || '',
         ]);
 
+    // csvRow (utils/csvSafe) quotes each field and neutralises text that a
+    // spreadsheet would run as a formula (e.g. a description of
+    // "=HYPERLINK(...)"). The amount is a number, so it stays numeric.
     const lines: string[] = [];
-    lines.push(headers.map(csvEscape).join(','));
+    lines.push(csvRow(headers));
     rows.forEach((row) => {
-        lines.push(row.map(csvEscape).join(','));
+        lines.push(csvRow(row));
     });
 
     // CRLF line endings — Excel handles these reliably across Windows/Mac

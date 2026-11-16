@@ -11,6 +11,7 @@ import { AnalyticsService } from '../lib/analytics';
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 import { allCalcs } from '../data/calculatorList';
+import FinancialQuote from '../components/FinancialQuote';
 import { schemes } from '../data/schemes';
 import { useNotificationStore } from '../store/useNotificationStore';
 
@@ -405,6 +406,9 @@ export default function Home() {
                     </div>
                 </div>
             </section>
+
+            {/* Daily quote — same quote the daily notification carries */}
+            <FinancialQuote className="mb-8" />
 
             <section className="mb-8">
                 <motion.button

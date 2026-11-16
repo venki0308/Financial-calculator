@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { safeLocalStorage } from '../utils/safeStorage';
 import { useNotificationStore } from './useNotificationStore';
 import { parseLocalDate } from '../utils/dateUtils';
 
@@ -403,7 +404,7 @@ export const useBudgetTrackerStore = create<BudgetTrackerState>()(
             setHealthScore: (healthScore) => set({ healthScore }),
         }),
         {
-            name: 'budget-tracker-storage',
+            name: 'budget-tracker-storage', storage: createJSONStorage(() => safeLocalStorage),
             version: 3,
             migrate: (persistedState: unknown, fromVersion: number) => {
                 const state = persistedState as Record<string, unknown>;

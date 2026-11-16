@@ -13,6 +13,7 @@
 // every function here is a no-op that returns [] / {created: 0}.
 // ═══════════════════════════════════════════════════════════════
 
+import { mustSetItem } from './safeStorage';
 import type { PaymentMethod } from '../types/expense';
 import { getAllEntries, saveEntry, createEntry, getCategoryById } from './expenseStorage';
 import { todayStr, shiftLocalDate } from './dateUtils';
@@ -72,7 +73,7 @@ export const saveRule = (rule: RecurringRule): void => {
   } else {
     all.push(rule);
   }
-  localStorage.setItem(RECURRING_KEY, JSON.stringify(all));
+  mustSetItem(RECURRING_KEY, JSON.stringify(all));
 };
 
 export const deleteRule = (id: string): void => {
@@ -81,7 +82,7 @@ export const deleteRule = (id: string): void => {
   if (idx >= 0) {
     all[idx].isDeleted = true;
     all[idx].updatedAt = new Date().toISOString();
-    localStorage.setItem(RECURRING_KEY, JSON.stringify(all));
+    mustSetItem(RECURRING_KEY, JSON.stringify(all));
   }
 };
 
@@ -224,7 +225,7 @@ export const materializeDueRecurring = (): MaterializeResult => {
     }
 
     if (rulesMutated) {
-      localStorage.setItem(RECURRING_KEY, JSON.stringify(rules));
+      mustSetItem(RECURRING_KEY, JSON.stringify(rules));
     }
   } catch {
     // Storage unavailable / corrupt — never crash app startup.

@@ -66,4 +66,25 @@ export async function switchLanguage(lang: string): Promise<void> {
     await i18n.changeLanguage(lang);
 }
 
+/**
+ * Load a locale bundle WITHOUT switching the UI language. For background code
+ * (e.g. the notification scheduler) that needs translated strings for the
+ * user's saved language before the boot-time lazy load has finished.
+ * Resolves false if the bundle could not be loaded — callers then get the
+ * English fallback from `i18n.getFixedT(lang)`.
+ */
+export async function ensureLocaleLoaded(lang: string): Promise<boolean> {
+    if (lang === 'en' || i18n.hasResourceBundle(lang, 'translation')) return true;
+    const loader = localeLoaders[lang];
+    if (!loader) return false;
+    try {
+        const mod = await loader();
+        i18n.addResourceBundle(lang, 'translation', mod.default, true, true);
+        return true;
+    } catch (err) {
+        console.warn(`Failed to load locale ${lang}:`, err);
+        return false;
+    }
+}
+
 export default i18n;

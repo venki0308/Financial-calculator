@@ -1,3 +1,4 @@
+import { safeSetItem } from '../utils/safeStorage';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { CrashlyticsService } from '../lib/analytics';
@@ -36,7 +37,7 @@ export function useTrackCalculator() {
         try {
             const recent: string[] = JSON.parse(localStorage.getItem('fincalix_recently_used') || '[]');
             const updated = [path, ...recent.filter((p) => p !== path)].slice(0, 6);
-            localStorage.setItem('fincalix_recently_used', JSON.stringify(updated));
+            safeSetItem('fincalix_recently_used', JSON.stringify(updated));
         } catch { /* ignore localStorage errors */ }
 
         // 2. Attach feature name to Crashlytics (native only, safe no-op on web).

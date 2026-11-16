@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { safeLocalStorage } from '../utils/safeStorage';
 import { useNotificationStore } from './useNotificationStore';
 
 export interface Calculation {
@@ -44,6 +45,6 @@ export const useCalculatorStore = create<CalculatorState>()(
             removeHistory: (id) => set((s) => ({ history: s.history.filter((h) => h.id !== id) })),
             clearHistory: () => set({ history: [] }),
         }),
-        { name: 'calculator-storage' }
+        { name: 'calculator-storage', storage: createJSONStorage(() => safeLocalStorage) }
     )
 );

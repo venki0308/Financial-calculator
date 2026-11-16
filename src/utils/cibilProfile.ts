@@ -2,6 +2,7 @@
  * cibilProfile.ts — CIBIL Profile storage engine
  * Stores user's CIBIL score locally, provides rate suggestions for all loan types.
  */
+import { safeSetItem } from './safeStorage';
 import { LOAN_CIBIL_RATES, getTierId } from '../data/cibilData';
 
 export type CibilTier = 'nh' | 'very_poor' | 'poor' | 'average' | 'good' | 'very_good' | 'excellent';
@@ -24,7 +25,7 @@ export const getCibilProfile = (): CibilProfile | null => {
 };
 
 export const saveCibilProfile = (p: CibilProfile): void => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+    safeSetItem(STORAGE_KEY, JSON.stringify(p));
 };
 
 export const clearCibilProfile = (): void => {
@@ -32,7 +33,7 @@ export const clearCibilProfile = (): void => {
 };
 
 export const isOnboardingShown = (): boolean => localStorage.getItem(ONBOARDING_KEY) === '1';
-export const markOnboardingShown = (): void => { localStorage.setItem(ONBOARDING_KEY, '1'); };
+export const markOnboardingShown = (): void => { safeSetItem(ONBOARDING_KEY, '1'); };
 
 export const getProfileTier = (score: number | null, isNTC: boolean): CibilTier => {
     if (isNTC || score === null) return 'nh';

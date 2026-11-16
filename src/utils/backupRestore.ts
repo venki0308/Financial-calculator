@@ -7,6 +7,7 @@
  * dataIntegrity re-validates the imported data.
  */
 
+import { mustSetItem } from './safeStorage';
 import { Capacitor } from '@capacitor/core';
 import { APP_VERSION } from '../config/app';
 
@@ -272,7 +273,7 @@ export async function importBackup(input: File | string): Promise<ImportResult> 
             continue;
         }
         if (typeof value === 'string') {
-            localStorage.setItem(key, value);
+            mustSetItem(key, value);
             restored++;
         } else if (value === null) {
             localStorage.removeItem(key);

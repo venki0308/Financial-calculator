@@ -1,3 +1,4 @@
+import { safeSetItem } from '../utils/safeStorage';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -108,7 +109,7 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
             const recent: string[] = JSON.parse(localStorage.getItem('fincalix_recently_used') || '[]');
             const path = window.location.pathname;
             const updated = [path, ...recent.filter((p) => p !== path)].slice(0, 6);
-            localStorage.setItem('fincalix_recently_used', JSON.stringify(updated));
+            safeSetItem('fincalix_recently_used', JSON.stringify(updated));
         } catch { }
     }, []);
 
