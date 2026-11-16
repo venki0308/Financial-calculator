@@ -5,6 +5,10 @@
  *    from neutral to "calibrated tightening". Next MPC: 2–4 Dec 2026.
  *  - Small-savings rates for Oct–Dec 2026 re-notified unchanged on 30 Sep 2026
  *    (DEA OM F.No.1/4/2019-NS) — 10th straight quarter without change.
+ * Re-verified 16 Nov 2026: repo and small-savings unchanged. Banks repriced
+ * after the hike — SBI home loans from 7.50% (EBLR 8.15%, w.e.f. 15 Oct 2026),
+ * SBI car 8.55–9.50%, SBI gold 9.30% bullet / 10.25% EMI, HDFC FD peak 6.60%
+ * (senior 7.20%, w.e.f. 4 Nov 2026). SBI FD and personal-loan cards unchanged.
  */
 export const RATE_ENVIRONMENT = {
     quarter: 'Q3 FY2026-27',
@@ -53,39 +57,39 @@ export const SMALL_SAVINGS = {
 export const RATE_CONTEXT = {
     homeLoan: {
         titleKey: 'rateCtx.homeLoanTitle',
-        titleFallback: 'Home Loan Rates — October 2026',
+        titleFallback: 'Home Loan Rates — November 2026',
         bodyKey: 'rateCtx.homeLoanBody',
-        bodyFallback: 'RBI raised the repo rate by 25 bps to 5.50% on 7 Oct 2026 (stance: calibrated tightening).\n\nRepo-linked (EBLR) loans: top banks started around 7.25–8.7% before the hike (SBI from 7.25%) — expect a ~0.25% upward reset on your next rate-review date\nMCLR-linked loans: transmission is slower — compare with repo-linked offers\n\nTip: If your EMI is fixed, the bank usually extends tenure instead. Ask for an EMI increase to avoid paying extra interest.',
+        bodyFallback: 'RBI raised the repo rate by 25 bps to 5.50% on 7 Oct 2026 (stance: calibrated tightening).\n\nRepo-linked (EBLR) loans: banks have passed on the hike — SBI now starts at 7.50% (was 7.25%) from 15 Oct 2026. If your loan has not reset yet, expect ~0.25% more on your next rate-review date\nMCLR-linked loans: transmission is slower — compare with repo-linked offers\n\nTip: If your EMI is fixed, the bank usually extends tenure instead. Ask for an EMI increase to avoid paying extra interest.',
     },
     personalLoan: {
         titleKey: 'rateCtx.personalLoanTitle',
-        titleFallback: 'Personal Loan Rates — October 2026',
+        titleFallback: 'Personal Loan Rates — November 2026',
         bodyKey: 'rateCtx.personalLoanBody',
         bodyFallback: 'Personal loan rates range roughly 10–24% as banks stay cautious on unsecured lending (SBI 10–15%, ICICI from 9.99%).\n\nYour CIBIL score has the biggest impact.\nScore 750+ can get rates near 10%.',
     },
     fd: {
         titleKey: 'rateCtx.fdTitle',
-        titleFallback: 'FD Rates — October 2026',
+        titleFallback: 'FD Rates — November 2026',
         bodyKey: 'rateCtx.fdBody',
-        bodyFallback: 'FD rates bottomed after RBI\'s 2025 cuts; the Oct 2026 repo hike (now 5.50%) may nudge them up.\n\nMajor banks offer about 6.0–6.5% on 1–3 year FDs (SBI peak 6.40%, HDFC/ICICI 6.50%).\nSenior citizens get an additional 0.50% (peak ~7.05–7.10%).\n\nPost Office schemes (NSC 7.7%, SCSS 8.2%) offer higher guaranteed rates.',
+        bodyFallback: 'FD rates bottomed after RBI\'s 2025 cuts; the Oct 2026 repo hike (now 5.50%) may nudge them up.\n\nMajor banks offer about 6.0–6.6% on 1–5 year FDs (SBI peak 6.40%, HDFC 6.60%, ICICI 6.50–6.60%).\nSenior citizens get an additional 0.50% (peak ~7.05–7.20%).\n\nPost Office schemes (NSC 7.7%, SCSS 8.2%) offer higher guaranteed rates.',
     },
     carLoan: {
         titleKey: 'rateCtx.carLoanTitle',
-        titleFallback: 'Car Loan Rates — October 2026',
+        titleFallback: 'Car Loan Rates — November 2026',
         bodyKey: 'rateCtx.carLoanBody',
-        bodyFallback: 'Car loan rates range from about 8.4–10.5% for new vehicles at top banks (SBI 8.40–9.35%).\n\nUsed car loans typically carry 2–4% higher rates.\nDealer finance rates may be higher — compare with bank rates.',
+        bodyFallback: 'Car loan rates range from about 8.5–10.5% for new vehicles at top banks (SBI 8.55–9.50%).\n\nUsed car loans typically carry 2–4% higher rates.\nDealer finance rates may be higher — compare with bank rates.',
     },
     twoWheeler: {
         titleKey: 'rateCtx.twoWheelerTitle',
-        titleFallback: 'Two Wheeler Loan Rates — October 2026',
+        titleFallback: 'Two Wheeler Loan Rates — November 2026',
         bodyKey: 'rateCtx.twoWheelerBody',
         bodyFallback: 'Two wheeler loan rates range from 10–14% at banks.\n\nEV two wheelers may get 0.5–1% lower rates at select banks.\nNBFC rates can go up to 18–20%.',
     },
     goldLoan: {
         titleKey: 'rateCtx.goldLoanTitle',
-        titleFallback: 'Gold Loan Rates — October 2026',
+        titleFallback: 'Gold Loan Rates — November 2026',
         bodyKey: 'rateCtx.goldLoanBody',
-        bodyFallback: 'Banks: 8.5–14% (SBI 9.15% bullet / 10.10% EMI) | NBFCs: 8–27%\n\nGold loans are collateral-backed so rates are lower than personal loans.\nRBI tiered LTV caps (from Apr 2026): 85% up to ₹2.5L, 80% for ₹2.5–5L, 75% above ₹5L.',
+        bodyFallback: 'Banks: 8.5–14% (SBI 9.30% bullet / 10.25% EMI) | NBFCs: 8–27%\n\nGold loans are collateral-backed so rates are lower than personal loans.\nRBI tiered LTV caps (from Apr 2026): 85% up to ₹2.5L, 80% for ₹2.5–5L, 75% above ₹5L.',
     },
 };
 

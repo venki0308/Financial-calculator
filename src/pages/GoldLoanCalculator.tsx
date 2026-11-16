@@ -66,7 +66,7 @@ const PURITY_OPTIONS: { id: Purity; label: string; factorText: string }[] = [
 // Default 24K rate (₹/g) — October 2026 reference. IBJA 999 fine gold was
 // ₹14,943/g (9 Oct 2026 PM) and ₹14,806/g (12 Oct 2026); jeweller 24K retail
 // ~₹15,100/g. Banks value pledged gold at the IBJA 22K/999 rate, not retail.
-const DEFAULT_GOLD_RATE_24K = 14900;
+const DEFAULT_GOLD_RATE_24K = 13600;
 
 // RBI 2026 tier thresholds (in ₹) — effective April 1, 2026
 const TIER_85_MAX = 250000;   // ≤ ₹2.5L → 85% LTV, no credit check required
