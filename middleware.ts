@@ -24,6 +24,7 @@ import { APP_CANONICAL, DEV_COOKIE, isAppPath } from './src/landing/seoRoutes';
 
 export const config = {
     // Pages, app routes and the app's files; the website's own files never need the gate.
+    runtime: 'nodejs',
     matcher: ['/((?!site/|og/|brand/|icons/|screenshots/).*)'],
 };
 
