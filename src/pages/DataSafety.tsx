@@ -35,7 +35,7 @@ export default function DataSafety() {
     ];
 
     return (
-        <div className="min-h-dvh bg-background pb-10" style={{ maxWidth: 428, margin: '0 auto' }}>
+        <div data-legal-content="" className="min-h-dvh bg-background pb-10" style={{ maxWidth: 428, margin: '0 auto' }}>
             {/* Header */}
             <div className="sticky top-0 z-10 bg-background  px-4 pt-14 pb-3 border-b border-border">
                 <div className="flex items-center justify-between">

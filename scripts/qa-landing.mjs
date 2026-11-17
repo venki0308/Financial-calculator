@@ -23,6 +23,7 @@
 //    export banner (data only, dismiss, back once after 30 days, never a third time) and
 //    /export-my-data (the app's own backup file); iPhone note, desktop-only QR code.
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { buildSync } from 'esbuild';
 import { chromium } from 'playwright-core';
@@ -324,23 +325,43 @@ async function main() {
                 check('switched off: no request to analytics hosts and nothing queued', analyticsReqs.length === 0 && !queue, analyticsReqs.join(','));
                 await ctx.close();
             }
-            // 5c. Legal pages: static, no app bundle, same text as the app showed (dev mode, in-app routing)
+            // 5c. Legal pages: static, no app bundle; the app's screen (dev mode, in-app routing: the same
+            // code as the Android app) shows the same text as the website page, [data-legal-content], in
+            // every language the page offers (the frames around it differ: app header vs website header).
             {
+                const LEGAL_LANGS = { en: 'English', hi: 'हिंदी', te: 'తెలుగు', ta: 'தமிழ்', kn: 'ಕನ್ನಡ' };
+                const SAFETY_LANGS = ['en', 'hi', 'te', 'ta', 'kn', 'ml'];   // /data-safety: the app's i18n languages
+                const legalText = async (pg) => norm(await pg.evaluate(() => document.querySelector('[data-legal-content]')?.innerText || ''));
+                const pickLang = async (pg, p, code) => {
+                    if (p === 'data-safety') { await pg.locator('[data-legal-content] select').first().selectOption(code); await pg.waitForTimeout(1200); return; }
+                    await pg.locator('button', { hasText: '▼' }).first().click();
+                    await pg.locator('button', { hasText: LEGAL_LANGS[code] }).last().click();
+                    await pg.waitForTimeout(300);
+                };
                 const ref = await profile(dev.base, {}, { fincalix_analytics_consent: 'denied', fincalix_disclaimer_accepted_v4: 'true' });
                 await ref.page.goto(dev.base + '/', { waitUntil: 'networkidle' });
                 for (const p of seo.LEGAL_PAGES) {
                     await ref.page.evaluate((path) => { history.pushState({}, '', path); window.dispatchEvent(new PopStateEvent('popstate')); }, '/' + p);
                     await ref.page.waitForTimeout(1500);
-                    const appText = norm(await ref.page.locator('#root').innerText());
+                    // The app's frame, not the website's: no website header link to "/".
+                    const appFrame = await ref.page.evaluate(() => !document.querySelector('header a[href="/"]'));
                     const { ctx, page, errors, appRequests } = await profile(prod.base, {}, { fincalix_analytics_consent: 'denied' });
                     await page.goto(prod.base + '/' + p, { waitUntil: 'networkidle' });
                     await page.waitForTimeout(500);
-                    const staticText = norm(await page.locator('#root').innerText());
+                    const langs = p === 'data-safety' ? SAFETY_LANGS : Object.keys(LEGAL_LANGS);
+                    const bad = [];
+                    let enText = '';
+                    const hashes = [];
+                    for (const l of langs) {
+                        if (l !== 'en') { await pickLang(ref.page, p, l); await pickLang(page, p, l); }
+                        const a = await legalText(ref.page), w = await legalText(page);
+                        if (l === 'en') enText = a;
+                        hashes.push(`${l} ${createHash('sha256').update(a).digest('hex').slice(0, 10)}`);
+                        if (a !== w || a.length < 300) { let i = 0; while (i < a.length && a[i] === w[i]) i++; bad.push(`${l} differs at ${i}: app "${a.slice(i, i + 40)}" vs web "${w.slice(i, i + 40)}"`); }
+                    }
+                    if (p === 'data-safety') await pickLang(ref.page, p, 'en');
                     const raw = norm(text((await get(prod.base, '/' + p)).body.split(/<body[^>]*>/)[1] || ''));
-                    const same = staticText === appText;
-                    let where = '';
-                    if (!same) { let i = 0; while (i < staticText.length && staticText[i] === appText[i]) i++; where = `differs at ${i}: "${staticText.slice(i, i + 40)}" vs "${appText.slice(i, i + 40)}"`; }
-                    check(`/${p}: same text as the app showed; in the HTML without JS; no app bundle; no errors`, same && appText.length > 300 && raw.toLowerCase().includes(appText.slice(0, 120).toLowerCase()) && appRequests.length === 0 && errors.length === 0, same ? `${appText.length} chars` : where || errors.slice(0, 2).join(' | '));
+                    check(`/${p}: the app's screen (app frame) and the website page show the same text in ${langs.join('/')}; in the HTML without JS; no app bundle; no errors`, bad.length === 0 && appFrame && raw.toLowerCase().includes(enText.slice(0, 120).toLowerCase()) && appRequests.length === 0 && errors.length === 0, bad.length ? bad.slice(0, 2).join(' | ') : !appFrame ? 'app shows the website frame' : errors.length ? errors.slice(0, 2).join(' | ') : `sha256 ${hashes.join(', ')}`);
                     await ctx.close();
                 }
                 await ref.ctx.close();

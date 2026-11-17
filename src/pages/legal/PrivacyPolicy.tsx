@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import LegalLayout, { LangSelector, PlayStoreBadge, type Lang } from './LegalLayout';
+import LegalLayout, { LangSelector, PlayStoreBadge, type Lang, type LegalDoc } from './LegalLayout';
 import { useAppColors } from '../../theme/useAppColors';
 
 // ── Translations ─────────────────────────────────────────
@@ -8,7 +8,7 @@ const T = {
         title: 'Privacy Policy',
         hero: 'Your Privacy Matters',
         heroSub: 'Your calculations and financial data stay on your device. There is no account, no backend and no database. Usage analytics are on by default; you can turn them off anytime in Settings → Privacy.',
-        updated: 'Last Updated: 16 November 2026',
+        updated: 'Last Updated: 17 November 2026',
         s: {
             collect: 'Information We Collect',
             storage: 'Data Stored on Your Device',
@@ -31,7 +31,7 @@ const T = {
         title: 'गोपनीयता नीति',
         hero: 'आपकी गोपनीयता महत्वपूर्ण है',
         heroSub: 'आपकी गणनाएँ और वित्तीय डेटा आपके डिवाइस पर ही रहते हैं। कोई खाता नहीं, कोई बैकएंड नहीं और कोई डेटाबेस नहीं है। उपयोग एनालिटिक्स डिफ़ॉल्ट रूप से चालू रहता है; आप इसे कभी भी सेटिंग्स → गोपनीयता में बंद कर सकते हैं।',
-        updated: 'अंतिम अद्यतन: 16 नवंबर 2026',
+        updated: 'अंतिम अद्यतन: 17 नवंबर 2026',
         s: {
             collect: 'हम क्या जानकारी एकत्रित करते हैं',
             storage: 'आपके डिवाइस पर संग्रहीत डेटा',
@@ -54,7 +54,7 @@ const T = {
         title: 'గోప్యతా విధానం',
         hero: 'మీ గోప్యత ముఖ్యమైనది',
         heroSub: 'మీ లెక్కలు మరియు ఆర్థిక డేటా మీ పరికరంలోనే ఉంటాయి. ఖాతా లేదు, బ్యాకెండ్ లేదు, డేటాబేస్ లేదు. వినియోగ విశ్లేషణలు డిఫాల్ట్‌గా ఆన్‌లో ఉంటాయి; మీరు వాటిని ఎప్పుడైనా సెట్టింగ్‌లు → గోప్యత లో ఆఫ్ చేయవచ్చు.',
-        updated: 'చివరిగా నవీకరించబడింది: 16 నవంబర్ 2026',
+        updated: 'చివరిగా నవీకరించబడింది: 17 నవంబర్ 2026',
         s: {
             collect: 'మేము సేకరించే సమాచారం',
             storage: 'మీ పరికరంలో నిల్వ చేసిన డేటా',
@@ -77,7 +77,7 @@ const T = {
         title: 'தனியுரிமைக் கொள்கை',
         hero: 'உங்கள் தனியுரிமை முக்கியம்',
         heroSub: 'உங்கள் கணக்கீடுகளும் நிதித் தரவும் உங்கள் சாதனத்திலேயே இருக்கும். கணக்கு இல்லை, பின்நிலை (backend) இல்லை, தரவுத்தளம் இல்லை. பயன்பாட்டு பகுப்பாய்வு இயல்பாகவே இயக்கத்தில் இருக்கும்; அமைப்புகள் → தனியுரிமை பகுதியில் எப்போது வேண்டுமானாலும் அதை முடக்கலாம்.',
-        updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: 16 நவம்பர் 2026',
+        updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: 17 நவம்பர் 2026',
         s: {
             collect: 'நாங்கள் சேகரிக்கும் தகவல்',
             storage: 'உங்கள் சாதனத்தில் சேமிக்கப்பட்ட தரவு',
@@ -100,7 +100,7 @@ const T = {
         title: 'ಗೌಪ್ಯತಾ ನೀತಿ',
         hero: 'ನಿಮ್ಮ ಗೌಪ್ಯತೆ ಮುಖ್ಯ',
         heroSub: 'ನಿಮ್ಮ ಲೆಕ್ಕಾಚಾರಗಳು ಮತ್ತು ಹಣಕಾಸು ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಉಳಿಯುತ್ತವೆ. ಖಾತೆ ಇಲ್ಲ, ಬ್ಯಾಕೆಂಡ್ ಇಲ್ಲ, ಡೇಟಾಬೇಸ್ ಇಲ್ಲ. ಬಳಕೆಯ ಅನಾಲಿಟಿಕ್ಸ್ ಡೀಫಾಲ್ಟ್ ಆಗಿ ಆನ್ ಆಗಿರುತ್ತದೆ; ನೀವು ಅದನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಗೌಪ್ಯತೆ ನಲ್ಲಿ ಆಫ್ ಮಾಡಬಹುದು.',
-        updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: 16 ನವೆಂಬರ್ 2026',
+        updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: 17 ನವೆಂಬರ್ 2026',
         s: {
             collect: 'ನಾವು ಸಂಗ್ರಹಿಸುವ ಮಾಹಿತಿ',
             storage: 'ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಸಂಗ್ರಹಿಸಿದ ಡೇಟಾ',
@@ -188,24 +188,19 @@ function GreenBox({ children }: { children: React.ReactNode }) {
 
 function Bullets({ items }: { items: string[] }) {
     return (
-        <ul style={{ paddingLeft: '20px', margin: '10px 0' }}>
+        <ul style={{ paddingLeft: '20px', margin: '10px 0', listStyle: 'disc' }}>
             {items.map((item, i) => <li key={i} style={{ marginBottom: '6px' }}>{item}</li>)}
         </ul>
     );
 }
 
-// ── Page ─────────────────────────────────────────────────
-export default function PrivacyPolicy() {
-    const [lang, setLang] = useState<Lang>('en');
+// ── Page text (shared by the website page below and the app screen, src/pages/PrivacyPolicy.tsx) ──
+function Body({ lang }: { lang: Lang }) {
     const c = useAppColors();
     const t = T[lang];
 
     return (
-        <LegalLayout
-            title={t.title}
-            updated={t.updated}
-            langBar={<LangSelector lang={lang} onChange={setLang} />}
-        >
+        <>
             {/* Hero */}
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
                 <div style={{
@@ -288,7 +283,7 @@ export default function PrivacyPolicy() {
             {/* 5 */}
             <Section icon="🔒" color="#10B981" title={t.s.financial}>
                 <GreenBox>
-                    💰 <strong>Your financial data is 100% safe</strong>
+                    💰 <strong>Your financial data stays on your device</strong>
                     <Bullets items={[
                         'All numbers you enter (salary, EMI, tax inputs, SIP amounts, etc.) are processed entirely on your device',
                         'We never see, store, or transmit your financial figures',
@@ -313,7 +308,7 @@ export default function PrivacyPolicy() {
             {/* 6 */}
             <Section icon="👶" color="#F59E0B" title={t.s.children}>
                 <p style={{ marginBottom: '10px' }}>FinCalix is designed for users 18 years of age and above. The app contains financial calculators intended for adult use (tax planning, loan EMI, investment returns, etc.).</p>
-                <p>We do not knowingly collect data from anyone under 18 years of age. Since we collect no personal data at all, there is no risk of children's data being stored.</p>
+                <p>We do not knowingly collect data from anyone under 18 years of age.</p>
             </Section>
 
             {/* 7 */}
@@ -332,7 +327,7 @@ export default function PrivacyPolicy() {
                     {[
                         { title: t.s.access, text: 'All your data is visible directly in the app (Saved Calculations, History, Preferences).' },
                         { title: t.s.delete, text: 'Clear app data from your device settings, or simply uninstall the app. All data is removed instantly.' },
-                        { title: t.s.portability, text: "We cannot delete data on your behalf because we never had it. You have full control." },
+                        { title: t.s.portability, text: 'Your financial data never reaches us, so there is nothing for us to delete. Turning off usage analytics deletes the analytics IDs from your device.' },
                     ].map(card => (
                         <Card key={card.title}>
                             <div style={{ color: '#C9A84C', fontWeight: 600, fontSize: '14px', marginBottom: '8px' }}>{card.title}</div>
@@ -434,6 +429,25 @@ export default function PrivacyPolicy() {
                     </p>
                 </div>
             </Section>
+        </>
+    );
+}
+
+export const PRIVACY_POLICY: LegalDoc = { meta: T, Body };
+
+// ── Website page ─────────────────────────────────────────
+export default function PrivacyPolicy() {
+    const [lang, setLang] = useState<Lang>('en');
+    const c = useAppColors();
+    const t = T[lang];
+
+    return (
+        <LegalLayout
+            title={t.title}
+            updated={t.updated}
+            langBar={<LangSelector lang={lang} onChange={setLang} />}
+        >
+            <Body lang={lang} />
 
             {/* Play Store */}
             <div style={{ textAlign: 'center', paddingTop: '32px', borderTop: `1px solid ${c.border}` }}>

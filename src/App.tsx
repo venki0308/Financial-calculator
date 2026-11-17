@@ -126,6 +126,7 @@ const BusinessDetail             = lr(() => import('./pages/business/BusinessDet
 const PrivacyPolicy              = lr(() => import('./pages/PrivacyPolicy'));
 const TermsOfService             = lr(() => import('./pages/TermsOfService'));
 const About                      = lr(() => import('./pages/About'));
+const DataPrivacy                = lr(() => import('./pages/DataPrivacy'));
 const DataSafety                 = lr(() => import('./pages/DataSafety'));
 const SavedCalculations          = lr(() => import('./pages/SavedCalculations'));
 const CalculationHistory         = lr(() => import('./pages/CalculationHistory'));
@@ -145,12 +146,7 @@ const GlobalDisclaimerModal      = lr(() => import('./components/GlobalDisclaime
 // lazyRetry for chunk-load resilience.
 const PdfActionSheet             = lazy(() => lazyRetry(() => import('./components/PdfActionSheet').then(m => ({ default: m.PdfActionSheet }))));
 
-// Web legal pages — lazy loaded with retry
-const WebPrivacyPolicy           = lr(() => import('./pages/legal/PrivacyPolicy'));
 const NotFound                   = lr(() => import('./pages/NotFound'));
-const WebAbout                   = lr(() => import('./pages/legal/About'));
-const WebDataPrivacy             = lr(() => import('./pages/legal/DataPrivacy'));
-const WebTermsOfService          = lr(() => import('./pages/legal/TermsOfService'));
 
 const LazyFallback = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: '14px', color: '#666' }}>
@@ -385,7 +381,9 @@ function AppContent() {
                 <PdfActionSheet />
                 <Routes>
                     {/* Support pages (no nav bar) */}
+                    {/* Legal pages: the website's text (src/pages/legal/*) in the app's frame */}
                     <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                    <Route path="/data-privacy" element={<DataPrivacy />} />
                     <Route path="/terms-of-service" element={<TermsOfService />} />
                     <Route path="/data-safety" element={<DataSafety />} />
 
@@ -529,25 +527,15 @@ export default function App() {
     } else if (urlParams.get('dev') === 'false') {
         localStorage.removeItem('fincalix_dev_access');
     }
-    const isNative = Capacitor.isNativePlatform();
-
     return (
         <ErrorBoundary>
             <CibilProvider>
                 <BrowserRouter>
                     <Suspense fallback={LazyFallback}>
                         <Routes>
-                            {/* Web Legal pages */}
-                            {!isNative && (
-                                <>
-                                    <Route path="/privacy-policy" element={<WebPrivacyPolicy />} />
-                                    <Route path="/about" element={<WebAbout />} />
-                                    <Route path="/data-privacy" element={<WebDataPrivacy />} />
-                                    <Route path="/terms-of-service" element={<WebTermsOfService />} />
-                                </>
-                            )}
-
-                            {/* Full App Routes — accessible to Native, Dev Mode, AND Organic Web Search Visitors */}
+                            {/* Every route, the legal pages included, is the app's (native, and dev mode in a
+                                browser). fincalix.com serves its own static legal pages (src/landing/legal-pages.tsx)
+                                with the same text. */}
                             <Route path="*" element={<AppContent />} />
                         </Routes>
                     </Suspense>

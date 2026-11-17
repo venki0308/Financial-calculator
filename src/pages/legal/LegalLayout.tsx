@@ -1,9 +1,34 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { useAppColors } from '../../theme/useAppColors';
 
 // ── Language types ───────────────────────────────────────
 export type Lang = 'en' | 'hi' | 'te' | 'ta' | 'kn';
+
+/**
+ * One legal page's text: the single source for the website page (LegalLayout) and the
+ * app screen (AppLegalScreen). Edit the wording only in the page's module.
+ */
+export interface LegalDoc {
+    meta: Readonly<Record<Lang, { title: string; updated: string }>>;
+    Body: ComponentType<{ lang: Lang }>;
+}
+
+/** The text block both the website and the app render (the legal-text check hashes [data-legal-content]). */
+export function LegalText({ title, updated, children }: { title: string; updated: string; children: ReactNode }) {
+    const c = useAppColors();
+    return (
+        <>
+            <p style={{ color: '#C9A84C', fontSize: '11px', fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', marginBottom: '10px' }}>
+                {updated}
+            </p>
+            <h1 style={{ fontSize: 'clamp(1.7rem, 5vw, 2.6rem)', fontWeight: 700, letterSpacing: '-0.8px', lineHeight: 1.1, marginBottom: '40px', color: c.text }}>
+                {title}
+            </h1>
+            {children}
+        </>
+    );
+}
 
 export const LANG_OPTIONS: { code: Lang; label: string }[] = [
     { code: 'en', label: 'English' },
@@ -171,14 +196,8 @@ export default function LegalLayout({
             {/* Content */}
             {/* border-box: width 100% includes the padding (the app gets this from Tailwind's base styles; the
                 website's static legal pages do not load them, so at 360 px main was 408 px wide). */}
-            <main style={{ flex: 1, maxWidth: '880px', margin: '0 auto', width: '100%', padding: '48px 24px 80px', boxSizing: 'border-box', overflowWrap: 'break-word' }}>
-                <p style={{ color: '#C9A84C', fontSize: '11px', fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', marginBottom: '10px' }}>
-                    {updated}
-                </p>
-                <h1 style={{ fontSize: 'clamp(1.7rem, 5vw, 2.6rem)', fontWeight: 700, letterSpacing: '-0.8px', lineHeight: 1.1, marginBottom: '40px', color: c.text }}>
-                    {title}
-                </h1>
-                {children}
+            <main data-legal-content="" style={{ flex: 1, maxWidth: '880px', margin: '0 auto', width: '100%', padding: '48px 24px 80px', boxSizing: 'border-box', overflowWrap: 'break-word' }}>
+                <LegalText title={title} updated={updated}>{children}</LegalText>
             </main>
 
             {/* Footer */}

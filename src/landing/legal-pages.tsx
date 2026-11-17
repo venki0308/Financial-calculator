@@ -1,9 +1,10 @@
 /**
  * The legal pages, served as pre-rendered static HTML (dist/<name>/index.html) so they
- * work on fincalix.com without the app shell. They render the very same components the
- * app used for these URLs, so the wording is identical:
- *   - /privacy-policy, /data-privacy, /terms-of-service, /about → src/pages/legal/*
- *   - /data-safety → src/pages/DataSafety (the in-app screen that URL showed)
+ * work on fincalix.com without the app shell. The text has one source, shared with the app:
+ *   - /privacy-policy, /data-privacy, /terms-of-service, /about → src/pages/legal/* (the app
+ *     shows the same text in its own frame: src/pages/legal/AppLegalScreen.tsx)
+ *   - /data-safety → src/pages/DataSafety (the app's own screen)
+ * qa-landing 5c checks that [data-legal-content] reads the same in the app and on the website.
  */
 import type { ComponentType } from 'react';
 import PrivacyPolicy from '../pages/legal/PrivacyPolicy';

@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import LegalLayout, { LangSelector, PlayStoreBadge, type Lang } from './LegalLayout';
+import LegalLayout, { LangSelector, PlayStoreBadge, type Lang, type LegalDoc } from './LegalLayout';
 import { useAppColors } from '../../theme/useAppColors';
+import { APP_VERSION } from '../../config/app';
 
 const T = {
-    en: { title: 'About FinCalix', updated: 'Last Updated: March 2026', s: { ref: 'Reference Tool', accuracy: 'Data Accuracy', official: 'Official Sources', resources: 'Key Resources' } },
-    hi: { title: 'FinCalix के बारे में', updated: 'अंतिम अपडेट: मार्च 2026', s: { ref: 'संदर्भ उपकरण', accuracy: 'डेटा सटीकता', official: 'आधिकारिक स्रोत', resources: 'मुख्य संसाधन' } },
-    te: { title: 'FinCalix గురించి', updated: 'చివరి నవీకరణ: మార్చి 2026', s: { ref: 'రెఫరెన్స్ సాధనం', accuracy: 'డేటా ఖచ్చితత్వం', official: 'అధికారిక వనరులు', resources: 'ముఖ్యమైన వనరులు' } },
-    ta: { title: 'FinCalix பற்றி', updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: மார்ச் 2026', s: { ref: 'குறிப்பு கருவி', accuracy: 'தரவு துல்லியம்', official: 'அதிகாரப்பூர்வ ஆதாரங்கள்', resources: 'முக்கிய ஆதாரங்கள்' } },
-    kn: { title: 'FinCalix ಬಗ್ಗೆ', updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: ಮಾರ್ಚ್ 2026', s: { ref: 'ಉಲ್ಲೇಖ ಸಾಧನ', accuracy: 'ಡೇಟಾ ನಿಖರತೆ', official: 'ಅಧಿಕೃತ ಮೂಲಗಳು', resources: 'ಪ್ರಮುಖ ಸಂಪನ್ಮೂಲಗಳು' } },
+    en: { title: 'About FinCalix', updated: 'Last Updated: 17 November 2026', s: { ref: 'Reference Tool', accuracy: 'Data Accuracy', official: 'Official Sources', resources: 'Key Resources', trademarks: 'Trademarks & Disclaimers' } },
+    hi: { title: 'FinCalix के बारे में', updated: 'अंतिम अपडेट: 17 नवंबर 2026', s: { ref: 'संदर्भ उपकरण', accuracy: 'डेटा सटीकता', official: 'आधिकारिक स्रोत', resources: 'मुख्य संसाधन', trademarks: 'ट्रेडमार्क और अस्वीकरण' } },
+    te: { title: 'FinCalix గురించి', updated: 'చివరి నవీకరణ: 17 నవంబర్ 2026', s: { ref: 'రెఫరెన్స్ సాధనం', accuracy: 'డేటా ఖచ్చితత్వం', official: 'అధికారిక వనరులు', resources: 'ముఖ్యమైన వనరులు', trademarks: 'ట్రేడ్‌మార్క్‌లు & నిరాకరణలు' } },
+    ta: { title: 'FinCalix பற்றி', updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: 17 நவம்பர் 2026', s: { ref: 'குறிப்பு கருவி', accuracy: 'தரவு துல்லியம்', official: 'அதிகாரப்பூர்வ ஆதாரங்கள்', resources: 'முக்கிய ஆதாரங்கள்', trademarks: 'வர்த்தக முத்திரைகள் & மறுப்புகள்' } },
+    kn: { title: 'FinCalix ಬಗ್ಗೆ', updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: 17 ನವೆಂಬರ್ 2026', s: { ref: 'ಉಲ್ಲೇಖ ಸಾಧನ', accuracy: 'ಡೇಟಾ ನಿಖರತೆ', official: 'ಅಧಿಕೃತ ಮೂಲಗಳು', resources: 'ಪ್ರಮುಖ ಸಂಪನ್ಮೂಲಗಳು', trademarks: 'ಟ್ರೇಡ್‌ಮಾರ್ಕ್‌ಗಳು & ನಿರಾಕರಣೆಗಳು' } },
 } as const;
 
 const RESOURCES = [
@@ -16,8 +17,8 @@ const RESOURCES = [
     { color: '#F59E0B', icon: '🟡', name: 'RBI Official Website', url: 'https://rbi.org.in', domain: 'rbi.org.in' },
 ];
 
-export default function About() {
-    const [lang, setLang] = useState<Lang>('en');
+// Page text, shared by the website page below and the app screen (src/pages/About.tsx).
+function Body({ lang }: { lang: Lang }) {
     const t = T[lang];
     const c = useAppColors();
 
@@ -26,7 +27,7 @@ export default function About() {
     const bgOpacity = c.isDark ? '30' : '20';
 
     return (
-        <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />}>
+        <>
             {/* App identity */}
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
                 <img src="/icons/fincalix-logo.png" alt="FinCalix" style={{ width: '80px', height: '80px', borderRadius: '22px', margin: '0 auto 16px', display: 'block', boxShadow: `0 0 40px ${c.isDark ? 'rgba(201,168,76,0.2)' : 'rgba(201,168,76,0.1)'}` }} />
@@ -44,7 +45,7 @@ export default function About() {
                     fontWeight: 600 
                 }}>
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: emeraldColor, display: 'inline-block' }} />
-                    v1.0.9
+                    {`v${APP_VERSION}`}
                 </div>
             </div>
 
@@ -127,6 +128,19 @@ export default function About() {
                 </div>
             </section>
 
+            {/* Trademarks & disclaimers */}
+            <section style={{ marginBottom: '40px' }}>
+                <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: '14px', padding: '20px 24px' }}>
+                    <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: c.text, margin: '0 0 10px' }}>{t.s.trademarks}</h2>
+                    <p style={{ color: c.textSecondary, fontSize: '13px', lineHeight: 1.7, margin: '0 0 10px' }}>
+                        CIBIL is a registered trademark of TransUnion CIBIL Limited. FinCalix is not affiliated with, endorsed by, or partnered with TransUnion CIBIL or any credit bureau. All CIBIL scores entered in this app are manually self-declared by the user and are never fetched from any bureau or uploaded to any server.
+                    </p>
+                    <p style={{ color: c.textSecondary, fontSize: '13px', lineHeight: 1.7, margin: 0 }}>
+                        FinCalix provides educational calculators and reference information only. We are not a SEBI-registered investment advisor, lender, or financial advisor. All outputs are automated calculations, not financial advice. Consult a licensed professional for personal advice.
+                    </p>
+                </div>
+            </section>
+
             {/* Contact */}
             <section style={{ marginBottom: '40px' }}>
                 <div style={{ 
@@ -140,7 +154,20 @@ export default function About() {
                     <div style={{ color: c.textSecondary, fontSize: '13px', marginTop: '6px' }}>FinCalix Team · Hyderabad, India</div>
                 </div>
             </section>
+        </>
+    );
+}
 
+export const ABOUT: LegalDoc = { meta: T, Body };
+
+// Website page
+export default function About() {
+    const [lang, setLang] = useState<Lang>('en');
+    const t = T[lang];
+
+    return (
+        <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />}>
+            <Body lang={lang} />
             <div style={{ textAlign: 'center' }}>
                 <PlayStoreBadge />
             </div>

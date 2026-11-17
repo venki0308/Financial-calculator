@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import LegalLayout, { LangSelector, PlayStoreBadge, type Lang } from './LegalLayout';
+import LegalLayout, { LangSelector, PlayStoreBadge, type Lang, type LegalDoc } from './LegalLayout';
 import { useAppColors } from '../../theme/useAppColors';
 
 const T = {
@@ -33,13 +33,13 @@ const SECTIONS = (t: any) => [
     },
 ];
 
-export default function TermsOfService() {
-    const [lang, setLang] = useState<Lang>('en');
+// Page text, shared by the website page below and the app screen (src/pages/TermsOfService.tsx).
+function Body({ lang }: { lang: Lang }) {
     const t = T[lang];
     const c = useAppColors();
 
     return (
-        <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />}>
+        <>
             {/* Header badge */}
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
                 <div style={{
@@ -98,7 +98,20 @@ export default function TermsOfService() {
                 <p style={{ color: c.text, fontSize: '14px', lineHeight: 1.7, margin: '0 0 10px', fontWeight: 500 }}>{t.closing}</p>
                 <p style={{ color: c.textSecondary, fontSize: '12px', margin: 0 }}>{t.updated}</p>
             </div>
+        </>
+    );
+}
 
+export const TERMS_OF_SERVICE: LegalDoc = { meta: T, Body };
+
+// Website page
+export default function TermsOfService() {
+    const [lang, setLang] = useState<Lang>('en');
+    const t = T[lang];
+
+    return (
+        <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />}>
+            <Body lang={lang} />
             <div style={{ textAlign: 'center' }}>
                 <PlayStoreBadge />
             </div>
