@@ -8,7 +8,7 @@
 // 3. derive.ts searches are checked by their defining property; the prepayment scenario is re-run
 //    with an independent month-by-month schedule.
 // 4. Headline figures, computed independently, appear in the built HTML of their page.
-// 5. No two feature pages share more than 15% of their own text (8-word shingles), so no page is
+// 5. No two pages (feature pages and scheme pages with content) share more than 10% of their own text (8-word shingles), so no page is
 //    a near-duplicate of another (SEO_PLAN.md: quality over volume).
 import fs from 'node:fs';
 import { buildSync } from 'esbuild';
@@ -212,16 +212,33 @@ console.log('\n5. Shared text between feature pages (8-word shingles of the page
         return h.replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').toLowerCase().replace(/[^a-z0-9₹%.\s]/g, ' ').split(/\s+/).filter(Boolean);
     };
     const shingles = (w) => { const s = new Set(); for (let i = 0; i + 8 <= w.length; i++) s.add(w.slice(i, i + 8).join(' ')); return s; };
-    const sets = Object.fromEntries(seo.FEATURE_PAGES.map((s) => [s, shingles(own(s))]));
+    // Feature pages plus every scheme page that has website content (schemes/content/<id>.ts).
+    const schemeSlugs = fs.existsSync('src/landing/schemes/content')
+        ? fs.readdirSync('src/landing/schemes/content').filter((f) => /^[^_].*\.ts$/.test(f)).map((f) => `schemes/${f.slice(0, -3)}`)
+            .filter((s) => fs.existsSync(`dist/${s}/index.html`))
+        : [];
+    const slugs = [...seo.FEATURE_PAGES, ...schemeSlugs];
+    const sets = Object.fromEntries(slugs.map((s) => [s, shingles(own(s))]));
+    const LIMIT = 0.10;
     let worst = 0, pair = '';
-    const slugs = [...seo.FEATURE_PAGES];
+    const over = [];
     for (let i = 0; i < slugs.length; i++) for (let j = i + 1; j < slugs.length; j++) {
         const a = sets[slugs[i]], b = sets[slugs[j]];
         let common = 0; for (const x of a) if (b.has(x)) common++;
         const share = common / Math.min(a.size, b.size);
+        if (share > LIMIT) over.push(`${slugs[i]} ~ ${slugs[j]} ${(share * 100).toFixed(1)}%`);
         if (share > worst) { worst = share; pair = `${slugs[i]} ~ ${slugs[j]}`; }
     }
-    check(`no two pages share more than 15% of their own text (highest ${(worst * 100).toFixed(1)}%: ${pair})`, worst <= 0.15);
+    check(`no two of ${slugs.length} pages share more than 10% of their own text (highest ${(worst * 100).toFixed(1)}%: ${pair})`, worst <= LIMIT, over.slice(0, 8).join(' | '));
+}
+
+// ── 6. Page-group checks (scripts/qa-features/*.mjs): independent maths for each group's pages ──
+if (fs.existsSync('scripts/qa-features')) {
+    for (const f of fs.readdirSync('scripts/qa-features').filter((x) => x.endsWith('.mjs')).sort()) {
+        console.log(`\n6. ${f}`);
+        const mod = await import(new URL(`./qa-features/${f}`, import.meta.url));
+        await mod.default({ check, load, inr, page: (slug) => fs.readFileSync(`dist/${slug}/index.html`, 'utf8') });
+    }
 }
 
 console.log(`\nRESULTS: ${passed} passed, ${failed} failed`);

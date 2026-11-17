@@ -9,7 +9,8 @@ import type { FooterGroup } from './SiteChrome';
 import type { CategoryPage, SchemePage } from './site-data';
 import { firstSentence, longDate, schemeHref, schemesByCategory } from './site-data';
 import { CALCULATORS_INTRO, IMPORT_STEPS, SCHEMES_INTRO } from './content';
-import { EXPORT_PAGE } from './seoRoutes';
+import { EXPORT_PAGE, ORIGIN } from './seoRoutes';
+import { DataTable } from './features/ui';
 import type { ToolCard } from './data';
 
 interface Crumb { href?: string; label: string }
@@ -138,6 +139,7 @@ export function SchemeView({ page, footer }: { page: SchemePage; footer: FooterG
     facts.push(['How to apply', s.applicationType]);
     if (s.launchYear) facts.push(['Launched', String(s.launchYear)]);
     facts.push(['Last verified', page.verified ?? 'Not recorded']);
+    if (page.content) return <SchemeViewV2 page={page} facts={facts} footer={footer} />;
     return (
         <Page footer={footer} crumbs={[{ href: '/', label: 'Home' }, { href: '/schemes', label: 'Government schemes' }, { label: s.name }]}>
             <header className="page-head">
@@ -158,6 +160,78 @@ export function SchemeView({ page, footer }: { page: SchemePage; footer: FooterG
             <p className="disc">Details as listed in the FinCalix app{page.verified ? `, last checked against the official source on ${page.verified}` : ''}. Rules and rates change: confirm on the official website before you apply. FinCalix is not affiliated with the Government of India.</p>
         </Page>
     );
+}
+
+/** Scheme page with verified website content (schemes/content/<id>.ts): answer first, then the details. */
+function SchemeViewV2({ page, facts, footer }: { page: SchemePage; facts: Array<[string, ReactNode]>; footer: FooterGroup[] }) {
+    const s = page.scheme;
+    const c = page.content!;
+    return (
+        <Page footer={footer} crumbs={[{ href: '/', label: 'Home' }, { href: '/schemes', label: 'Government schemes' }, { label: s.name }]}>
+            <header className="page-head fhead">
+                <p className="eyebrow">{s.category} · Central government scheme</p>
+                <h1 className="serif">{c.h1}</h1>
+                <div className="answer">{c.answer.map((p) => <p key={p}>{p}</p>)}</div>
+                <p className="updated">
+                    Last verified {page.verified} · Sources:{' '}
+                    {c.sources.map((src, i) => <span key={src.url}>{i > 0 && ', '}<a href={src.url} target="_blank" rel="noopener external">{src.label}</a></span>)}
+                </p>
+            </header>
+            <dl className="facts">
+                {facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}
+            </dl>
+            {c.table && <section className="fsec"><DataTable caption={c.table.caption} head={c.table.head} rows={c.table.rows} note={c.table.note} /></section>}
+            <List title="Benefits" items={c.benefits ?? s.benefits} />
+            <List title="Who can apply" items={c.eligibility ?? s.eligibility} />
+            {c.notEligible && <List title="Who cannot apply" items={c.notEligible} />}
+            <List title="Documents" items={c.documents ?? s.documents} />
+            <section className="prose-sec">
+                <h2 className="serif">How to apply</h2>
+                <ol className="steps">{c.howToApply.map((x) => <li key={x}>{x}</li>)}</ol>
+            </section>
+            {c.statusSteps && (
+                <section className="prose-sec">
+                    <h2 className="serif">How to check your status</h2>
+                    <ol className="steps">{c.statusSteps.map((x) => <li key={x}>{x}</li>)}</ol>
+                    <p>FinCalix does not check status for you; the steps end on the official portal.</p>
+                </section>
+            )}
+            <section className="prose-sec">
+                <h2 className="serif">Official portal{c.helpline ? ' and helpline' : ''}</h2>
+                <p><a className="text-link" href={c.portal.url} rel="noopener external" target="_blank">{c.portal.label} <span aria-hidden="true">↗</span></a></p>
+                {c.helpline && <p>Helpline: {c.helpline}</p>}
+            </section>
+            <section className="faq fsec" aria-labelledby="faq-h">
+                <h2 id="faq-h" className="serif">Questions people ask</h2>
+                {c.faqs.map((q) => (<details key={q.q}><summary>{q.q}</summary><p>{q.a}</p></details>))}
+            </section>
+            <nav className="related fsec" aria-labelledby="rel-h">
+                <h2 id="rel-h" className="serif">Related</h2>
+                <ul className="list-reset">
+                    {c.related.map((r) => <li key={r.href}><a href={r.href}>{r.label}</a><span>{r.note}</span></li>)}
+                    {page.guide && <li><a href={page.guide}>Calculator for this scheme</a><span>Work out the returns</span></li>}
+                    <li><a href="/schemes">All government schemes</a><span>Every central scheme in the app, explained</span></li>
+                </ul>
+            </nav>
+            <p className="disc">Checked against the official sources above on {page.verified}. Rules, amounts and dates change: confirm on the official portal before you apply. FinCalix is not affiliated with the Government of India and does not process applications.</p>
+        </Page>
+    );
+}
+
+/** JSON-LD for a scheme page with content: FAQPage + GovernmentService. */
+export function schemeLd(page: SchemePage): object[] {
+    const c = page.content;
+    if (!c) return [];
+    const url = `${ORIGIN}${page.path}`;
+    return [
+        { '@context': 'https://schema.org', '@type': 'FAQPage', url, mainEntity: c.faqs.map((q) => ({ '@type': 'Question', name: q.q, acceptedAnswer: { '@type': 'Answer', text: q.a } })) },
+        {
+            '@context': 'https://schema.org', '@type': 'GovernmentService', name: page.scheme.name, description: c.description, url,
+            serviceType: page.scheme.category, areaServed: { '@type': 'Country', name: 'India' },
+            provider: { '@type': 'GovernmentOrganization', name: page.scheme.ministry },
+            availableChannel: { '@type': 'ServiceChannel', serviceUrl: c.portal.url },
+        },
+    ];
 }
 
 export function InTheAppView({ footer }: { footer: FooterGroup[] }) {

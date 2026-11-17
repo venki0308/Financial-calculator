@@ -19,7 +19,7 @@ import { setWebsiteTheme } from '../theme/useAppColors';
 import { EXPORT_PAGE, IN_THE_APP, ORIGIN } from './seoRoutes';
 import { buildCategoryPages, buildSchemePages, firstSentence } from './site-data';
 import { schemes } from '../data/schemes';
-import { CalculatorsView, CategoryView, ExportView, InTheAppView, NotFoundView, SchemeView, SchemesView } from './SitePages';
+import { CalculatorsView, CategoryView, ExportView, InTheAppView, NotFoundView, SchemeView, SchemesView, schemeLd } from './SitePages';
 import iconUrl from './assets/fincalix-icon-96.webp';
 import { FEATURES, checkFeatures } from './features/registry';
 import { FeatureView, faqLd } from './features/ui';
@@ -100,7 +100,7 @@ export function renderSite(): { pages: SitePageOut[]; schemePages: Array<{ id: s
     const cats = buildCategoryPages(data);
     const schemePages = buildSchemePages();
     const out: SitePageOut[] = [];
-    const add = (path: string, el: ReactElement, h: { title: string; description: string; index: boolean; crumbs?: Array<{ name: string; path: string }> }, analyticsTitle: string, note?: string) => {
+    const add = (path: string, el: ReactElement, h: { title: string; description: string; index: boolean; crumbs?: Array<{ name: string; path: string }>; ld?: object[] }, analyticsTitle: string, note?: string) => {
         out.push({ path, html: renderToString(el), head: pageHead({ ...h, path }), index: h.index, analyticsTitle, note });
     };
     const home = { name: 'FinCalix', path: '/' };
@@ -125,9 +125,10 @@ export function renderSite(): { pages: SitePageOut[]; schemePages: Array<{ id: s
     }, 'Website - Schemes');
     for (const sp of schemePages) {
         add(sp.path, <SchemeView page={sp} footer={footer} />, {
-            title: `${sp.scheme.name} — eligibility, benefits, how to apply`.slice(0, 70),
-            description: firstSentence(sp.scheme.description).slice(0, 158),
+            title: sp.content?.title ?? `${sp.scheme.name} — eligibility, benefits, how to apply`.slice(0, 70),
+            description: sp.content?.description ?? firstSentence(sp.scheme.description).slice(0, 158),
             index: sp.index, crumbs: [home, { name: 'Government schemes', path: '/schemes' }, { name: sp.scheme.name, path: sp.path }],
+            ld: schemeLd(sp),
         }, 'Website - Scheme', sp.reason);
     }
     // Feature pages: one app feature each (src/landing/features/).
@@ -140,13 +141,14 @@ export function renderSite(): { pages: SitePageOut[]; schemePages: Array<{ id: s
             path,
             html: renderToString(<FeatureView f={f} footer={footer} catLabel={cat.label} catPath={cat.path} />),
             head: pageHead({
-                title: f.title, description: f.description, path, index: true,
+                title: f.title, description: f.description, path, index: !f.noindex,
                 crumbs: [home, calcCrumb, { name: cat.label, path: cat.path }, { name: f.crumb, path }],
-                ld: [faqLd(f)],
+                ld: [faqLd(f), ...(f.ld ?? [])],
             }),
-            index: true,
+            index: !f.noindex,
             analyticsTitle: f.analyticsTitle,
             lastmod: f.updated,
+            note: f.noindex ? `noindex: ${f.noindex}` : undefined,
         });
     }
     add(IN_THE_APP, <InTheAppView footer={footer} />, {

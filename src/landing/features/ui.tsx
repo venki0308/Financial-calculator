@@ -8,7 +8,7 @@ import { CtaBand, SiteFooter, SiteHeader } from '../SiteChrome';
 import type { FooterGroup } from '../SiteChrome';
 import { longDate } from '../site-data';
 import { ORIGIN } from '../seoRoutes';
-import { CALCS } from './calcs/all';
+import { getCalc } from './calcs/resolve';
 import type { DisclaimerKey, FeatureDef, Faq } from './types';
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -119,7 +119,7 @@ const DISCLAIMER_TEXT: Record<DisclaimerKey, () => string> = {
 };
 
 export function FeatureView({ f, footer, catLabel, catPath }: { f: FeatureDef; footer: FooterGroup[]; catLabel: string; catPath: string }) {
-    const Calc = f.calc ? CALCS[f.calc.key] : null;
+    const Calc = f.calc ? getCalc(f.calc.key) : null;
     const calcProps = f.calc ? { ...f.calc.props, campaign: f.slug } : null;
     return (
         <>
@@ -162,7 +162,7 @@ export function FeatureView({ f, footer, catLabel, catPath }: { f: FeatureDef; f
                         </ul>
                     </nav>
                     <aside className="disclaimer" aria-label="Disclaimer">
-                        <p><strong>Disclaimer.</strong> {DISCLAIMER_TEXT[f.disclaimer]()}</p>
+                        <p><strong>Disclaimer.</strong> {typeof f.disclaimer === 'string' ? DISCLAIMER_TEXT[f.disclaimer]() : f.disclaimer.text}</p>
                         <p>{appText('general')}</p>
                     </aside>
                 </div>

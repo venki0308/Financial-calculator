@@ -1,34 +1,24 @@
 /**
- * Every feature page, in the order they are built. The build fails if this list and
- * seoRoutes.FEATURE_PAGES disagree, or if a page breaks the title/description limits.
+ * Every feature page: each module in features/pages exports one FeatureDef (collected by the
+ * generated index, so adding a page means adding one file). Pages are ordered as in
+ * seoRoutes.FEATURE_PAGES; the build fails if that list and the page files disagree, or if a
+ * page breaks the title/description limits.
  */
 import { FEATURE_PAGES } from '../seoRoutes';
 import type { FeatureDef } from './types';
-import { creditCardInterest } from './pages/credit-card-interest';
-import { goldLoanCalculator } from './pages/gold-loan-calculator';
-import { homeLoanPrepayment } from './pages/home-loan-prepayment';
-import { incomeTax } from './pages/income-tax';
-import { incomeTaxDueDates } from './pages/income-tax-due-dates';
-import { oldVsNewTaxRegime } from './pages/old-vs-new-tax-regime';
-import { postOfficeTd } from './pages/post-office-td';
-import { sipFor1Crore } from './pages/sip-for-1-crore';
-import { stepUpSipPage } from './pages/step-up-sip';
-import { sukanyaSamriddhi } from './pages/sukanya-samriddhi';
+import { PAGE_MODULES } from './generated';
+import { hasCalc } from './calcs/resolve';
 
-export const FEATURES: readonly FeatureDef[] = [
-    oldVsNewTaxRegime,
-    homeLoanPrepayment,
-    sipFor1Crore,
-    stepUpSipPage,
-    sukanyaSamriddhi,
-    incomeTax,
-    creditCardInterest,
-    goldLoanCalculator,
-    postOfficeTd,
-    incomeTaxDueDates,
-];
+const isFeature = (v: unknown): v is FeatureDef =>
+    !!v && typeof v === 'object' && typeof (v as FeatureDef).slug === 'string' && typeof (v as FeatureDef).Body === 'function';
+
+const found = PAGE_MODULES.flatMap((m) => Object.values(m).filter(isFeature));
+const order = (slug: string) => { const i = FEATURE_PAGES.indexOf(slug); return i < 0 ? Number.MAX_SAFE_INTEGER : i; };
+
+export const FEATURES: readonly FeatureDef[] = [...found].sort((a, b) => order(a.slug) - order(b.slug));
 
 const ANALYTICS_TITLE = /^[A-Za-z0-9 &()'./-]{1,60}$/;   // services/providers/types.ts page_title rule
+const URL_OK = /^https:\/\//;
 
 /** Throws on any rule a feature page breaks (run by entry-server before rendering). */
 export function checkFeatures(): void {
@@ -42,9 +32,14 @@ export function checkFeatures(): void {
         if (f.faqs.length < 5 || f.faqs.length > 8) problems.push(`${f.slug}: ${f.faqs.length} FAQs (5–8)`);
         if (f.related.length < 3 || f.related.length > 6) problems.push(`${f.slug}: ${f.related.length} related links (3–6)`);
         if (!f.sources.length) problems.push(`${f.slug}: no official source`);
+        if (f.sources.some((s) => !URL_OK.test(s.url) && !/^http:\/\/(www\.)?(dea|nsiindia)\.gov\.in/.test(s.url))) problems.push(`${f.slug}: a source URL is not https`);
         if (!/^\d{4}-\d{2}-\d{2}$/.test(f.updated)) problems.push(`${f.slug}: updated must be YYYY-MM-DD`);
+        if (f.calc && !hasCalc(f.calc.key)) problems.push(`${f.slug}: calculator "${f.calc.key}" does not exist`);
+        if (f.related.some((r) => r.href === `/${f.slug}`)) problems.push(`${f.slug}: links to itself in related`);
     }
     for (const p of FEATURE_PAGES) if (!slugs.includes(p)) problems.push(`${p}: in FEATURE_PAGES but no page module`);
     if (new Set(slugs).size !== slugs.length) problems.push('duplicate slug');
+    if (new Set(FEATURES.map((f) => f.title)).size !== FEATURES.length) problems.push('duplicate title');
+    if (new Set(FEATURES.map((f) => f.description)).size !== FEATURES.length) problems.push('duplicate description');
     if (problems.length) throw new Error(`feature pages:\n  ${problems.join('\n  ')}`);
 }

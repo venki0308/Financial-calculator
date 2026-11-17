@@ -6,7 +6,8 @@
  */
 import type { ComponentType, ReactNode } from 'react';
 import type { CATEGORY_SLUGS } from '../seoRoutes';
-import type { CalcKey } from './calcs/keys';
+/** A calculator: one of calcs/keys.ts (batch 1, in calcs/all.tsx) or a file name in calcs/c/ (checked at build time). */
+export type CalcKey = string;
 
 export type CategoryKey = keyof typeof CATEGORY_SLUGS;
 
@@ -52,5 +53,10 @@ export interface FeatureDef {
     Body: ComponentType;
     faqs: Faq[];
     related: RelatedLink[];
-    disclaimer: DisclaimerKey;
+    /** A shared disclaimer (features/ui.tsx) or the page's own text. */
+    disclaimer: DisclaimerKey | { text: string };
+    /** Extra JSON-LD objects (FAQPage, BreadcrumbList and WebApplication are added automatically). */
+    ld?: object[];
+    /** Set when the page fails a quality gate: it is built but served noindex and left out of the sitemap. */
+    noindex?: string;
 }

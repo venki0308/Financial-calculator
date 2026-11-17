@@ -4,6 +4,8 @@
  * from en.json) and schemes.ts. Nothing here is hand-typed except the intros in content.ts.
  */
 import { schemes } from '../data/schemes';
+import { SCHEME_CONTENT } from './schemes/generated';
+import type { SchemeContent } from './schemes/types';
 import type { Scheme } from '../data/schemes';
 import { SITE_CATEGORIES } from './categories';
 import type { SiteCategory } from './categories';
@@ -41,6 +43,23 @@ export interface SchemePage {
     index: boolean;
     reason: string;
     guide: string | null;
+    /** Website-only verified content (schemes/content/<id>.ts), when written. */
+    content: SchemeContent | null;
+}
+
+/** Problems that keep a scheme page with content out of the index (empty = fine). */
+export function schemeContentProblems(c: SchemeContent): string[] {
+    const p: string[] = [];
+    if (c.title.length > 60) p.push(`title ${c.title.length} chars`);
+    if (c.description.length > 155) p.push(`description ${c.description.length} chars`);
+    if (c.answer.length < 2) p.push('answer needs 2–3 sentences');
+    if (c.faqs.length < 5 || c.faqs.length > 8) p.push(`${c.faqs.length} FAQs (5–8)`);
+    if (c.related.length < 2) p.push('needs at least 2 related links');
+    if (!c.sources.length) p.push('no official source');
+    if (!c.howToApply.length) p.push('no how-to-apply steps');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(c.verified)) p.push('verified must be YYYY-MM-DD');
+    if (c.verified < SCHEME_VERIFIED_SINCE) p.push(`verified before ${SCHEME_VERIFIED_SINCE}`);
+    return p;
 }
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -48,6 +67,11 @@ export const longDate = (iso?: string) => {
     const m = iso && iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
     return m ? `${Number(m[3])} ${MONTHS[Number(m[2]) - 1]} ${m[1]}` : null;
 };
+
+const contentWords = (c: SchemeContent) =>
+    [...c.answer, ...(c.eligibility ?? []), ...(c.notEligible ?? []), ...(c.benefits ?? []), ...(c.documents ?? []), ...c.howToApply,
+        ...(c.statusSteps ?? []), ...c.faqs.flatMap((f) => [f.q, f.a]), ...(c.table ? c.table.rows.flat() : [])]
+        .join(' ').split(/\s+/).filter(Boolean).length;
 
 const ownWords = (s: Scheme) =>
     [s.description, ...s.benefits, ...s.eligibility, ...s.documents, ...s.howToApply, s.notes || '']
@@ -69,12 +93,15 @@ export function buildSchemePages(): SchemePage[] {
         // /scheme/c-apy has its own guide page (/atal-pension); no second page for it.
         .filter((s) => !APP_CANONICAL[`/scheme/${s.id}`])
         .map((s) => {
-            const words = ownWords(s);
-            const recent = !!s.lastVerified && s.lastVerified >= SCHEME_VERIFIED_SINCE;
+            const content = SCHEME_CONTENT[s.id] ?? null;
+            const words = ownWords(s) + (content ? contentWords(content) : 0);
+            const verifiedIso = content?.verified ?? s.lastVerified;
+            const recent = !!verifiedIso && verifiedIso >= SCHEME_VERIFIED_SINCE;
             const enough = words >= SCHEME_MIN_WORDS;
-            const index = recent && enough;
-            const reason = !recent ? `not verified since ${SCHEME_VERIFIED_SINCE}` : !enough ? `only ${words} words of scheme text (minimum ${SCHEME_MIN_WORDS})` : 'indexed';
-            return { id: s.id, path: `/schemes/${s.id}`, scheme: s, words, verified: longDate(s.lastVerified), index, reason, guide: SCHEME_GUIDES[s.id] ?? null };
+            const problems = content ? schemeContentProblems(content) : [];
+            const index = recent && enough && problems.length === 0;
+            const reason = problems.length ? `content: ${problems.join('; ')}` : !recent ? `not verified since ${SCHEME_VERIFIED_SINCE}` : !enough ? `only ${words} words of scheme text (minimum ${SCHEME_MIN_WORDS})` : 'indexed';
+            return { id: s.id, path: `/schemes/${s.id}`, scheme: s, words, verified: longDate(verifiedIso), index, reason, guide: SCHEME_GUIDES[s.id] ?? null, content };
         });
 }
 

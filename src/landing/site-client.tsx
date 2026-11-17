@@ -20,11 +20,17 @@ if (exportRoot) initExportPage(exportRoot);
 // from one lazily loaded chunk, so reading the page needs no JavaScript.
 const calcRoots = document.querySelectorAll<HTMLElement>('[data-calc]');
 if (calcRoots.length) {
-    void import('./features/calcs/all').then(({ CALCS }) => {
+    // Batch-1 calculators share one chunk (calcs/all.tsx); every later one is its own chunk.
+    void import('./features/generated-client').then(({ CALC_LOADERS }) => {
         calcRoots.forEach((el) => {
-            const C = CALCS[el.dataset.calc as keyof typeof CALCS];
-            if (!C) return;
-            hydrateRoot(el, <C {...JSON.parse(el.dataset.props || '{}')} />);
+            const key = el.dataset.calc || '';
+            const props = JSON.parse(el.dataset.props || '{}');
+            const load = CALC_LOADERS[key];
+            if (load) void load().then(({ default: C }) => hydrateRoot(el, <C {...props} />));
+            else void import('./features/calcs/all').then(({ CALCS }) => {
+                const C = CALCS[key as keyof typeof CALCS];
+                if (C) hydrateRoot(el, <C {...props} />);
+            });
         });
     });
 }
