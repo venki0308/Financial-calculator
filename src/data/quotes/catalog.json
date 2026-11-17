@@ -553,7 +553,7 @@
   "indian": false,
   "en": {
    "text": "The great givers have been great savers.",
-   "by": "T. T. Munger"
+   "by": "Theodore T. Munger"
   }
  },
  {
@@ -853,7 +853,7 @@
   "indian": false,
   "en": {
    "text": "The habit of keeping a strict account of personal expenses down to the penny has great educational power.",
-   "by": "T. T. Munger"
+   "by": "Theodore T. Munger"
   }
  },
  {
@@ -4262,7 +4262,7 @@
   "indian": false,
   "en": {
    "text": "The habit of saving is itself an education.",
-   "by": "T. T. Munger"
+   "by": "Theodore T. Munger"
   }
  },
  {
@@ -4367,7 +4367,7 @@
   "indian": false,
   "en": {
    "text": "To spend all one earns is a mistake.",
-   "by": "T. T. Munger"
+   "by": "Theodore T. Munger"
   }
  },
  {
@@ -5491,11 +5491,11 @@
   "sourceRef": null,
   "sourceUrl": null,
   "attributionType": "original",
-  "idea": "belated-revised-return-window",
+  "idea": "year-end-review",
   "indian": true,
   "calendar": "dec31",
   "en": {
-   "text": "Year-end check: a return not yet filed can usually still be filed late until 31 December.",
+   "text": "Year-end check: look back at this year's money, put the papers in order, and set one goal for the next.",
    "by": null
   }
  }
