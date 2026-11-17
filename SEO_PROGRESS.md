@@ -82,6 +82,22 @@ pmfme, pmegp, daynrlm.
 
 | Scheme | Status | Notes |
 |---|---|---|
+| c-pmjjby | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-pmsby | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-pmfby | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-pmsym | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-pmay-g | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-telemanas | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-abdm | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-bbbp | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-jjm | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-digital-india | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-pmkvy | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-ddugky | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-saksham | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-pmksy | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-digital-agri | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
+| c-naps | noindex | NAPS-2 ended 31 Mar 2026; no official extension or PM-NAPS 3.0 found |
 | (filled as each is verified) | | |
 
 ## Route table plan (apply when the pages are registered)
