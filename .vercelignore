@@ -1,0 +1,7 @@
+# Not needed to build the web app or the website on Vercel
+android
+builds
+marketing-assets
+dist
+.landing-ssr
+*.log

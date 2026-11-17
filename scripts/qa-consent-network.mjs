@@ -13,15 +13,16 @@
 //     queue unsent and stops all requests;
 //   - a user upgrading from build 21 keeps the same analytics ID.
 //
-//   npm run build
-//   node scripts/qa-consent-network.mjs            (starts its own preview server)
+//   npm run build:web
+//   node scripts/qa-consent-network.mjs            (serves dist/ like Vercel)
 //   node scripts/qa-consent-network.mjs https://fincalix.com   (a deployed site)
 //
 // Needs the dev dependency playwright-core and an installed Google Chrome.
 // Every hit it causes carries debug_mode and traffic_type=internal, which the
 // analytics property filters out of reports (see PLAY_DATA_SAFETY.md).
 import { chromium } from 'playwright-core';
-import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import { serveDist } from './landing/serve-dist.mjs';
 
 const ANALYTICS_HOSTS = /(^|\.)(google-analytics\.com|analytics\.google\.com|googletagmanager\.com|doubleclick\.net|firebase\.googleapis\.com|firebaseinstallations\.googleapis\.com|firebaselogging-pa\.googleapis\.com|app-measurement\.com)$/;
 const COLLECT_HOSTS = /(^|\.)(google-analytics\.com|analytics\.google\.com|app-measurement\.com)$/;
@@ -36,6 +37,8 @@ const ALLOWED = {
     report_exported: ['calculator_id', 'export_format'],
     scheme_viewed: ['scheme_type'],
     language_changed: [],
+    open_app: ['cta_location'],     // website only
+    play_badge: ['cta_location'],   // website only
 };
 const SDK_PARAMS = ['origin', 'debug_mode'];
 const GENERIC_TITLE = /FinCalix — Free Financial/;
@@ -47,16 +50,11 @@ const check = (label, ok, detail = '') => {
     console.log(`  ${ok ? '✓' : '✗'} ${label}${detail ? `  [${detail}]` : ''}`);
 };
 
+/** Serve dist/ the way Vercel does (website at /, app shell for app routes). Run "npm run build:web" first. */
 async function startPreview() {
-    const port = 4319;
-    const child = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--port', String(port), '--strictPort', '--host', '127.0.0.1'], { stdio: 'ignore' });
-    const base = `http://127.0.0.1:${port}`;
-    for (let i = 0; i < 60; i++) {
-        try { if ((await fetch(base)).ok) return { base, stop: () => child.kill() }; } catch { /* not up yet */ }
-        await new Promise(r => setTimeout(r, 250));
-    }
-    child.kill();
-    throw new Error('preview server did not start — run "npm run build" first');
+    if (!fs.existsSync('dist/app.html')) throw new Error('dist/app.html missing — run "npm run build:web" first');
+    // On the web the app only runs in dev mode (fincalix_dev cookie); serve it as dev mode does.
+    return serveDist({ port: 4319, forceDev: true });
 }
 
 /** Decode one collect request into its events (a request can batch several). */
@@ -173,7 +171,7 @@ async function main() {
         console.log('\n1. New user: screens, calculation, exports (app code loading slowly, like a phone)');
         {
             const { context, page, events } = await freshProfile(browser, { fincalix_dev_access: 'true' }, { slowCode: true });
-            await page.goto(base + '/', { waitUntil: 'load' });
+            await page.goto(base + '/', { waitUntil: 'load' }); // dev mode: the app's Home
             await acceptDisclaimer(page);
             await wait(page, 2500);
             check('no usage-statistics popup after the disclaimer', !(await popupShown(page)));
@@ -217,7 +215,7 @@ async function main() {
         console.log('\n2. Offline queue');
         {
             const { context, page, events } = await freshProfile(browser, { fincalix_dev_access: 'true', fincalix_disclaimer_accepted_v4: 'true' });
-            await page.goto(base + '/', { waitUntil: 'load' });
+            await page.goto(base + '/', { waitUntil: 'load' }); // dev mode: the app's Home
             await go(page, '/calculator/fixed-deposit');
             await go(page, '/schemes', 6000);
             const before = events.length;
@@ -241,7 +239,7 @@ async function main() {
         console.log('\n3. Switch off in Settings (with events queued)');
         {
             const { context, page, events, requests } = await freshProfile(browser, { fincalix_dev_access: 'true', fincalix_disclaimer_accepted_v4: 'true' });
-            await page.goto(base + '/', { waitUntil: 'load' });
+            await page.goto(base + '/', { waitUntil: 'load' }); // dev mode: the app's Home
             // Load every screen used below once while online (their code is
             // downloaded on first use and would not load while offline).
             await go(page, '/settings', 3000);
@@ -284,7 +282,7 @@ async function main() {
             });
             await page.goto(base + '/robots.txt');
             await page.evaluate((id) => { document.cookie = `_ga=${id}; path=/; max-age=63072000`; }, OLD_ID);
-            await page.goto(base + '/', { waitUntil: 'load' });
+            await page.goto(base + '/', { waitUntil: 'load' }); // dev mode: the app's Home
             await acceptDisclaimer(page); // the updated disclaimer is shown once
             await wait(page, 2000);
             check('no usage-statistics popup after the disclaimer', !(await popupShown(page)));

@@ -4,44 +4,31 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/icons/fincalix-logo.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <!-- Pinch-zoom is allowed on the web. The Android app locks the scale at
+       start-up (src/main.tsx), as it did before. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <!-- Prevents Android from activating assistive overlays (clipboard bar, link
        detection, phone/email/address auto-detection) on input fields, which
        causes a floating card to appear above the keyboard in Capacitor apps. -->
   <meta name="format-detection" content="telephone=no, date=no, email=no, address=no, url=no" />
 
-  <!-- Primary SEO -->
-  <title>FinCalix — Free Financial Calculator App India | SIP, EMI, Tax, Insurance, Mortgage</title>
-  <meta name="description" content="India's free financial calculator app. 45+ tools: SIP, EMI, Income Tax FY 2026-27 (Old vs New Regime), PPF, FD, Credit Card Payoff, CIBIL Simulator, Expense Tracker, Goal Planner. Rates updated Jul 2026. 6 Indian languages. No login. Works offline." />
-  <meta name="keywords" content="SIP calculator India, EMI calculator, income tax calculator 2026, PPF calculator, FD calculator, HRA calculator, GST calculator, expense tracker India, financial calculator app, mutual fund calculator, home loan EMI, Budget 2026-27 tax calculator, free financial app India, FinCalix, insurance calculator India, IRDAI insurance simulator, health insurance compare, mortgage calculator India, RBI LTV, goal planner, AI financial advisor, compare scenarios, world clock, budget tracker" />
-  <meta name="author" content="FinCalix" />
-  <meta name="robots" content="index, follow" />
-  <meta name="language" content="English" />
+  <!-- App shell. On the web it is served as /app.html for every app route; the
+       canonical link (or noindex) for each route is sent as an HTTP header from
+       vercel.json, and the indexed pages are the website at "/" and the static
+       calculator pages. -->
+  <title>FinCalix — Money calculators for India</title>
+  <meta name="description" content="EMI, SIP, FD, PPF and income tax calculators for India, with an expense tracker and government schemes. No login. 6 Indian languages." />
   <meta name="application-name" content="FinCalix" />
-  <link rel="canonical" href="https://fincalix.com" />
 
-  <!-- Geo targeting India -->
-  <meta name="geo.region" content="IN" />
-  <meta name="geo.placename" content="Hyderabad, India" />
-
-  <!-- Open Graph (Facebook / WhatsApp / LinkedIn) -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://fincalix.com" />
-  <meta property="og:title" content="FinCalix — Free Financial Calculator App India" />
-  <meta property="og:description" content="45+ free financial tools for India. SIP, EMI, Income Tax, Insurance, Mortgage, PPF, FD, Expense Tracker, CIBIL Simulator. FY 2026-27 updated. No login required." />
-  <meta property="og:image" content="https://fincalix.com/og-image.png" />
+  <meta property="og:site_name" content="FinCalix" />
+  <meta property="og:title" content="FinCalix — Money calculators for India" />
+  <meta property="og:description" content="EMI, SIP, FD, PPF and income tax calculators for India. No login. 6 Indian languages." />
+  <meta property="og:image" content="https://fincalix.com/og/fincalix-og.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="FinCalix — India's free financial calculator app" />
-  <meta property="og:site_name" content="FinCalix" />
   <meta property="og:locale" content="en_IN" />
-
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://fincalix.com" />
-  <meta name="twitter:title" content="FinCalix — Free Financial Calculator App India" />
-  <meta name="twitter:description" content="45+ free financial tools. SIP, EMI, Tax, Insurance, Mortgage, PPF, Expense Tracker, CIBIL Simulator. Made for India." />
-  <meta name="twitter:image" content="https://fincalix.com/og-image.png" />
 
   <!-- Mobile App Meta -->
   <meta name="mobile-web-app-capable" content="yes" />
@@ -49,141 +36,15 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="FinCalix" />
   <meta name="theme-color" content="#0F172A" />
-  <meta name="msapplication-TileColor" content="#0F172A" />
   <link rel="apple-touch-icon" href="/icons/fincalix-logo.png" />
-
-  <!-- Google Play Store -->
   <meta name="google-play-app" content="app-id=com.fincalix.app" />
-
-  <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json" />
-
-  <!-- Preload LCP hero image -->
-  <link rel="preload" as="image" href="/screenshots/screen1-home.webp" fetchpriority="high" />
 
   <!-- Fonts — async (non-render-blocking) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"></noscript>
-
-  <!-- JSON-LD Structured Data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "MobileApplication",
-        "name": "FinCalix",
-        "description": "India's most complete financial calculator app with 45+ calculators, 45+ government schemes, expense tracker, insurance simulator, CIBIL simulator. Free, offline, no login.",
-        "url": "https://fincalix.com",
-        "applicationCategory": "FinanceApplication",
-        "operatingSystem": "Android",
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "INR"
-        },
-        "installUrl": "https://play.google.com/store/apps/details?id=com.fincalix.app",
-        "screenshot": "https://fincalix.com/og-image.png",
-        "featureList": [
-          "SIP Calculator",
-          "EMI Calculator",
-          "Income Tax Calculator Old vs New Regime",
-          "PPF Calculator",
-          "FD RD Calculator",
-          "HRA Calculator",
-          "GST Calculator",
-          "Insurance Simulator IRDAI",
-          "Health Insurance Compare",
-          "Advanced Mortgage Calculator",
-          "AI Financial Advisor",
-          "Goal Planner",
-          "Compare Scenarios",
-          "Expense Tracker",
-          "Budget Tracker",
-          "World Clock",
-          "Government Schemes",
-          "PDF Excel Export",
-          "Budget 2026-27 Updated",
-          "Works Offline",
-          "No Login Required",
-          "6 Indian Languages"
-        ]
-      },
-      {
-        "@type": "Organization",
-        "name": "FinCalix",
-        "url": "https://fincalix.com",
-        "logo": "https://fincalix.com/logo.png",
-        "contactPoint": {
-          "@type": "ContactPoint",
-          "email": "support@fincalix.com",
-          "contactType": "customer support"
-        },
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Hyderabad",
-          "addressRegion": "Telangana",
-          "addressCountry": "IN"
-        }
-      },
-      {
-        "@type": "FAQPage",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "Is FinCalix free to use?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Yes, FinCalix is completely free. No subscription, no login, no hidden charges."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Does FinCalix work offline?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Yes, all calculators work offline. No internet connection is needed for calculations."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Is FinCalix updated for Budget 2026-27?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Yes, FinCalix Income Tax Calculator is fully updated for Budget 2026-27 including zero tax up to ₹12 lakh under New Regime."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Which languages does FinCalix support?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "FinCalix supports English, Hindi, Telugu, Tamil, Kannada, and Malayalam — 6 Indian languages."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "How many calculators does FinCalix have?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "FinCalix has 45+ financial tools including SIP, EMI, FD, PPF, HRA, GST, Income Tax, NPS, Credit Card Payoff, CIBIL Simulator, Insurance Simulator, Advanced Mortgage, Goal Planner, Compare Scenarios, Expense Tracker and more."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Does FinCalix have insurance and mortgage calculators?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Yes. FinCalix includes an IRDAI-based Insurance Simulator for health and life insurance, side-by-side plan comparison, and an Advanced Mortgage Calculator with prepayment analysis, RBI LTV tiers, and Section 80C/24b tax benefits."
-            }
-          }
-        ]
-      }
-    ]
-  }
-  </script>
 </head>
 
 <body>
@@ -192,11 +53,18 @@
 
   <!-- Service Worker Registration -->
   <script>
+    // Offline cache only inside the Android app (Capacitor). On the web the app
+    // runs only in dev mode, without a service worker: remove any left from earlier versions.
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('SW registered:', reg.scope))
-          .catch(err => console.log('SW registration failed:', err));
+        const native = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+        if (native) {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registered:', reg.scope))
+            .catch(err => console.log('SW registration failed:', err));
+        } else {
+          navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {});
+        }
       });
     }
   </script>

@@ -33,7 +33,7 @@ const OUT = path.join(ROOT, 'marketing-assets', '_captures');
 const EN_SCREENS = [
     'home', 'tax', 'tax-zero', 'emi', 'emi-amortisation', 'foreclosure', 'sip', 'fd', 'rd', 'ppf', 'hra', 'gst',
     'expenses-monthly', 'expenses-yearly', 'expenses-budget', 'goal-planner', 'advisor', 'schemes', 'scheme-detail',
-    'world-clock', 'export', 'settings-language', 'data-privacy', 'calculators',
+    'world-clock', 'export', 'settings-language', 'data-privacy', 'calculators', 'cc-payoff', 'reminders',
 ];
 const LOCAL_DARK = ['home', 'tax', 'emi', 'foreclosure', 'sip', 'expenses-monthly', 'goal-planner', 'schemes', 'export', 'settings-language'];
 const LOCAL_LIGHT = ['home', 'tax', 'emi'];
@@ -41,9 +41,10 @@ const PLAN = {
     en: { dark: EN_SCREENS, light: EN_SCREENS },
     te: { dark: LOCAL_DARK, light: LOCAL_LIGHT },
     hi: { dark: LOCAL_DARK, light: LOCAL_LIGHT },
-    ta: { dark: ['home'] },
-    kn: { dark: ['home'] },
-    ml: { dark: ['home'] },
+    // Light home screens are used by the website's language section.
+    ta: { dark: ['home'], light: ['home'] },
+    kn: { dark: ['home'], light: ['home'] },
+    ml: { dark: ['home'], light: ['home'] },
 };
 
 const args = Object.fromEntries(process.argv.slice(2).filter(a => a.startsWith('--')).map(a => {
@@ -80,8 +81,22 @@ const LOCALES = { en: EN };
 const escapeRx = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // ── Preview server ──────────────────────────────────────────────────────────
+/** The app's Home: "/app" on a web build (the website is at "/"), "/" on a plain app build. */
+let HOME = '/';
+
 async function startPreview() {
     if (!fs.existsSync(path.join(ROOT, 'dist', 'index.html'))) throw new Error('dist/ is missing: run "npm run build" first');
+    // After "npm run build:web" dist/index.html is the website and the app is app.html:
+    // serve dist/ the way Vercel does instead of vite preview (which sends every route to index.html).
+    if (fs.existsSync(path.join(ROOT, 'dist', 'app.html'))) {
+        const { serveDist } = await import('../../scripts/landing/serve-dist.mjs');
+        const prev = process.cwd();
+        process.chdir(ROOT);
+        const server = await serveDist({ port: PORT, forceDev: true }); // the web app runs only in dev mode
+        process.chdir(prev);
+        HOME = '/';
+        return { base: server.base, stop: () => { server.stop(); } };
+    }
     const base = `http://127.0.0.1:${PORT}`;
     const up = async () => { try { return (await fetch(base)).ok; } catch { return false; } };
     if (await up()) throw new Error(`port ${PORT} is already in use: stop that server or pass --port=`);
@@ -287,7 +302,7 @@ const FLOWS = [
     {
         ids: ['home'],
         async run(s) {
-            await s.goto('/', { wait: 2000 });
+            await s.goto(HOME, { wait: 2000 });
             await s.snap('home', 'Home: search box, My Budget (seeded sample month) and the daily quote card');
             if (!s.extras) return;
             await s.align('Smart Planner');
@@ -751,6 +766,24 @@ const FLOWS = [
             await s.snap('data-privacy', 'In-app Data & Privacy screen: what stays on the device');
             await s.align('Stored on Your Device Only');
             await s.snap('data-privacy-2', 'In-app Data & Privacy screen: local storage and backup');
+        },
+    },
+    {
+        // The calculator opens with one sample card (₹50,000 at 42%, the app's own default).
+        ids: ['cc-payoff'],
+        async run(s) {
+            await s.goto('/calculator/credit-card-payoff', { wait: 1500 });
+            await s.snap('cc-payoff', 'Credit card payoff: card balance, rate and minimum due, debt-free date and interest');
+        },
+    },
+    {
+        ids: ['reminders'],
+        async run(s) {
+            await s.goto('/settings', { wait: 1200 });
+            await s.button('Notification Settings').click();
+            await s.wait(900);
+            await s.align(s.label('Daily Financial Quotes'));
+            await s.snap('reminders', 'Notification settings: daily financial quote, daily log reminder and calculation reminders');
         },
     },
     {

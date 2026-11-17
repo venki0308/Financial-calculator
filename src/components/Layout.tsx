@@ -23,15 +23,16 @@ export default function Layout() {
         }
     }, [location.pathname]);
 
+    const isWeb = !Capacitor.isNativePlatform();
+    const homePath = '/';
+
     const tabs = [
-        { to: '/', icon: Home, label: t('nav.home') },
+        { to: homePath, icon: Home, label: t('nav.home') },
         { to: '/calculators', icon: Calculator, label: t('nav.calculate') },
         { to: '/schemes', icon: FileText, label: t('nav.schemes') },
         { to: '/expenses', icon: Wallet, label: t('nav.expenses') },
         { to: '/profile', icon: User, label: t('nav.profile') },
     ];
-
-    const isWeb = !Capacitor.isNativePlatform();
 
     return (
         <div className="flex flex-col min-h-dvh app-container">
@@ -61,11 +62,11 @@ export default function Layout() {
             <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-[#1E293B] z-[9999] safe-area-bottom">
                 <div className="flex items-center justify-around h-20 px-2 pb-1">
                     {tabs.map(({ to, icon: Icon, label }) => {
-                        const homeSubPages = ['/', '/financial-advisor', '/goal-planner', '/compare', '/world-clock', '/notifications', '/insurance-compare', '/budget-tracker'];
+                        const homeSubPages = ['/', '/app', '/financial-advisor', '/goal-planner', '/compare', '/world-clock', '/notifications', '/insurance-compare', '/budget-tracker'];
                         const calcSubPages = ['/two-wheeler-loan', '/gold-loan', '/cibil-score', '/cibil-profile'];
                         const isActive = location.pathname === to ||
-                (to !== '/' && location.pathname.startsWith(to)) ||
-                (to === '/' && (homeSubPages.includes(location.pathname) || location.pathname.startsWith('/my-loans') || location.pathname.startsWith('/business-tracker'))) ||
+                (to !== homePath && location.pathname.startsWith(to)) ||
+                (to === homePath && (homeSubPages.includes(location.pathname) || location.pathname.startsWith('/my-loans') || location.pathname.startsWith('/business-tracker'))) ||
                 (to === '/calculators' && (location.pathname.startsWith('/calculator/') || location.pathname.startsWith('/insurance') || calcSubPages.includes(location.pathname))) ||
                 (to === '/schemes' && location.pathname.startsWith('/scheme/')) ||
                 (to === '/profile' && (location.pathname === '/settings' || location.pathname === '/about'));

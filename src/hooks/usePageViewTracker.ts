@@ -9,6 +9,7 @@ import { normalizePath, trackScreenOpened } from '../lib/analytics';
  */
 const ROUTE_NAMES: Record<string, string> = {
     '/': 'Home',
+    '/app': 'Home',   // the app's Home on the web
     '/calculators': 'Calculators',
     '/schemes': 'Schemes',
     '/expenses': 'Expense Tracker',

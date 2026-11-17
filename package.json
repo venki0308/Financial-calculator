@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:landing": "vite build -c vite.landing.config.ts && vite build -c vite.landing.config.ts --ssr src/landing/entry-server.tsx && node scripts/landing/prerender.mjs",
+    "build:web": "npm run build && npm run build:landing",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -19,6 +21,7 @@
     "@capacitor/local-notifications": "^8.0.2",
     "@capacitor/share": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
+    "@vercel/functions": "3.10.0",
     "chart.js": "^4.4.7",
     "firebase": "^12.10.0",
     "framer-motion": "^12.4.7",
@@ -43,6 +46,7 @@
     "autoprefixer": "^10.4.20",
     "playwright-core": "^1.65.1",
     "postcss": "^8.5.3",
+    "qrcode": "1.5.4",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.17",
     "terser": "^5.46.1",

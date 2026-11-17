@@ -3,6 +3,14 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
+import { Capacitor } from '@capacitor/core'
+
+// Pinch-zoom stays available on the website (accessibility); inside the
+// Android app the screen is locked to 1x, as before.
+if (Capacitor.isNativePlatform()) {
+    document.querySelector('meta[name="viewport"]')?.setAttribute('content',
+        'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+}
 
 // Global handler: catch chunk loading failures that escape React error boundaries
 window.addEventListener('unhandledrejection', (event) => {

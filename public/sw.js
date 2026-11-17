@@ -11,14 +11,33 @@
 // across every device. Without this, hashed chunks pinned by the SW
 // could keep an old buggy build alive on a user's device for days even
 // after a successful deploy.
-const CACHE_NAME = 'fincalix-v89';
+const CACHE_NAME = 'fincalix-v90';
 const APP_SHELL = [
     '/',
     '/index.html',
+    '/app.html',      // web app shell (the website is served at /)
     '/manifest.json',
     '/og-image.png',
     '/icons/fincalix-logo.png',
 ];
+
+// The offline cache is only for the Android app (served from localhost). On every web
+// host (fincalix.com, www, Vercel URLs) the web app is not offered, or runs in dev mode
+// without a service worker, so this file is a kill switch there: it deletes every cache,
+// unregisters itself and reloads open pages from the network.
+const KEEP_WEB_APP = self.location.hostname === 'localhost';
+
+if (!KEEP_WEB_APP) {
+    self.addEventListener('install', () => self.skipWaiting());
+    self.addEventListener('activate', (event) => {
+        event.waitUntil((async () => {
+            for (const key of await caches.keys()) await caches.delete(key);
+            await self.registration.unregister();
+            const pages = await self.clients.matchAll({ type: 'window' });
+            for (const page of pages) page.navigate(page.url).catch(() => {});
+        })());
+    });
+} else {
 
 // ── INSTALL: cache the app shell ──────────────────────────────
 self.addEventListener('install', (event) => {
@@ -60,7 +79,7 @@ self.addEventListener('fetch', (event) => {
     if (url.origin !== self.location.origin) return;
 
     // ── Hashed JS/CSS chunks → cache-first (immutable) ──────
-    const isHashedAsset = url.pathname.startsWith('/assets/') &&
+    const isHashedAsset = (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/site/')) &&
         (url.pathname.endsWith('.js') || url.pathname.endsWith('.css'));
     if (isHashedAsset) {
         event.respondWith(
@@ -112,7 +131,10 @@ self.addEventListener('fetch', (event) => {
                 return response;
             })
             .catch(() =>
-                caches.match(event.request).then((cached) => cached || caches.match('/index.html'))
+                caches.match(event.request).then((cached) =>
+                    // Offline app route: the app shell on the web (/app.html), else index.html (Android).
+                    cached || caches.match('/app.html').then((shell) => shell || caches.match('/index.html')))
             )
     );
 });
+}

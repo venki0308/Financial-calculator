@@ -18,8 +18,6 @@ import { Capacitor } from '@capacitor/core';
 import { NotificationScheduler } from './services/NotificationScheduler';
 import { StatusBar, Style } from '@capacitor/status-bar';
 
-// WebLandingPage — static import (first page web users see, must not lazy-load)
-import WebLandingPage from './pages/WebLandingPage';
 
 // ─── Retry wrapper for lazy imports ────────────────────────────────────────
 // When a chunk fails to load (stale cache after deploy, network hiccup, etc.)
@@ -394,6 +392,9 @@ function AppContent() {
                     {/* Main app — all routes public, no auth required */}
                     <Route element={<Layout />}>
                         <Route path="/" element={<Home />} />
+                        {/* Alias kept for links from the redesign preview. On the web the app only
+                            runs in dev mode (?dev=true cookie, middleware.ts). */}
+                        <Route path="/app" element={<Home />} />
                         <Route path="/calculators" element={<Calculators />} />
                         <Route path="/schemes" element={<Schemes />} />
                         <Route path="/scheme/:id" element={<SchemeDetail />} />
@@ -519,15 +520,15 @@ function AppContent() {
 }
 
 export default function App() {
-    // Web preview escape hatch: ?dev=true unlocks the in-browser web app shell
-    // (same UI as the native app). Persisted to localStorage so it survives reloads.
+    // Legacy ?dev=true flag (older test scripts set it). The web app is now open
+    // at /app for everyone and "/" is the pre-rendered website, so the flag no
+    // longer changes what is shown; it is only kept so old links do no harm.
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('dev') === 'true') {
         safeSetItem('fincalix_dev_access', 'true');
     } else if (urlParams.get('dev') === 'false') {
         localStorage.removeItem('fincalix_dev_access');
     }
-    const isDevMode = localStorage.getItem('fincalix_dev_access') === 'true';
     const isNative = Capacitor.isNativePlatform();
 
     return (
@@ -536,11 +537,6 @@ export default function App() {
                 <BrowserRouter>
                     <Suspense fallback={LazyFallback}>
                         <Routes>
-                            {/* Landing page for web root visitors */}
-                            {!isNative && !isDevMode && (
-                                <Route path="/" element={<WebLandingPage />} />
-                            )}
-
                             {/* Web Legal pages */}
                             {!isNative && (
                                 <>

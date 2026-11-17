@@ -12,6 +12,9 @@ import { App as CapApp } from '@capacitor/app';
 import { allCalcs } from '../data/calculatorList';
 import FinancialQuote from '../components/FinancialQuote';
 import { schemes } from '../data/schemes';
+
+/** Shown on the Government Schemes card (was a fixed "50+"). */
+const CENTRAL_SCHEME_COUNT = schemes.filter((s) => s.governmentLevel === 'central' && s.isActive !== false).length;
 import { useNotificationStore } from '../store/useNotificationStore';
 
 // Full calculator catalog for icon/color resolution
@@ -422,7 +425,7 @@ export default function Home() {
                         </div>
                     </div>
                     <div className="mt-4 flex gap-2">
-                        <span className="px-3 py-1.5 rounded-lg bg-white/20 text-foreground text-[10px] font-bold uppercase tracking-wider">{t('home.new2026')}</span>
+                        <span className="px-3 py-1.5 rounded-lg bg-white/20 text-foreground text-[10px] font-bold uppercase tracking-wider">{t('home.new2026', { n: CENTRAL_SCHEME_COUNT })}</span>
                         <span className="px-3 py-1.5 rounded-lg bg-white/20 text-foreground text-[10px] font-bold uppercase tracking-wider">{t('home.centralGovt')}</span>
                     </div>
                 </motion.button>

@@ -79,3 +79,6 @@ missing_keys.json
 
 # Generated marketing images (regenerate with tools/marketing)
 marketing-assets/
+
+# Website pre-render output (scripts/landing/prerender.mjs)
+.landing-ssr/
