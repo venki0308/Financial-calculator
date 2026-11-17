@@ -84,7 +84,7 @@ function Body() {
                     { title: `${amt(5000000)} at 7.5% for 25 years, ${amt(500000)} prepaid after 2 years`, body: <>Keeping the EMI of {inr(s1.emi)}, the loan ends {yearsMonths(s1.monthsSaved)} early and you save {inr(s1.saved)} of interest.</> },
                     { title: `${amt(7500000)} at 8% for 30 years, ${amt(1000000)} prepaid after 5 years, EMI reduced`, body: <>The EMI drops from {inr(s2.emi)} to {inr(s2.newEmi)} for the rest of the loan, and total interest falls by {inr(s2.saved)}.</> },
                     { title: `${amt(2000000)} at 9% for 15 years, ${amt(200000)} prepaid after 8 years`, body: <>A late prepayment still helps, but less: {inr(s3.saved)} of interest saved and the loan ends {yearsMonths(s3.monthsSaved)} early.</> },
-                    { title: `A yearly bonus of ${amt(150000)} on a ${amt(4000000)} loan at 8.25%`, body: <>Even one bonus prepaid after the first year saves {inr(s4t.saved)} and ends the loan {yearsMonths(s4t.monthsSaved)} early. The FinCalix app lets you add several prepayments to the same loan.</> },
+                    { title: `A yearly bonus of ${amt(150000)} on a ${amt(4000000)} loan at 8.25% for 20 years`, body: <>Even one bonus prepaid after the first year saves {inr(s4t.saved)} and ends the loan {yearsMonths(s4t.monthsSaved)} early. The FinCalix app lets you add several prepayments to the same loan.</> },
                 ]} />
             </Section>
 

@@ -43,7 +43,7 @@ function TaxRegimeCalc(p: P) {
                 { label: 'Old Regime tax', value: inr(c.oldTax.totalTax), tone: c.betterRegime === 'Old' && !tie ? 'money' : undefined },
                 { label: 'Old Regime wins from', value: be === null ? 'Never' : be === 0 ? '₹0 of deductions' : `${inr(be)} of deductions` },
             ]}
-            note="Tax includes the 87A rebate, marginal relief, surcharge and 4% cess. Estimate only: your employer and the tax department compute the final figure." />
+            note="Tax includes the rebate (section 156, the old 87A), marginal relief, surcharge and 4% cess. Estimate only: your employer and the tax department compute the final figure." />
     );
 }
 
@@ -69,7 +69,7 @@ function IncomeTaxCalc(p: P) {
                 { label: 'Effective rate', value: pct(eff) },
                 { label: 'Old Regime tax', value: c.oldTax.totalTax === 0 ? 'Nil' : inr(c.oldTax.totalTax) },
             ]}
-            note="Includes the 87A rebate with marginal relief, surcharge and cess. Estimate only." />
+            note="Includes the rebate (section 156, the old 87A) with marginal relief, surcharge and cess. Estimate only." />
     );
 }
 
