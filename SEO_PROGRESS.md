@@ -14,11 +14,11 @@ Status values: `todo` → `written` (file exists) → `built` (in build, tsc ok)
 ## Infrastructure
 | Item | Status |
 |---|---|
-| Generated indexes for pages / calculators / scheme content (no shared registry edits) | todo |
-| Per-calculator lazy chunks | todo |
-| Scheme page template v2 (website-only content files, FAQ, sources, GovernmentService JSON-LD) | todo |
-| Shared-wording check at 10%, across feature pages and scheme pages | todo |
-| qa-feature-pages plug-in checks per page group | todo |
+| Generated indexes for pages / calculators / scheme content (no shared registry edits) | done |
+| Per-calculator lazy chunks | done |
+| Scheme page template v2 (website-only content files, FAQ, sources, GovernmentService JSON-LD) | done |
+| Shared-wording check at 10%, across feature pages and scheme pages | done |
+| qa-feature-pages plug-in checks per page group | done |
 
 ## Feature pages (batch 1 = 10 done and live on 17 Nov 2026)
 | Group | Page | Replaces guide | Status | Notes |
@@ -89,16 +89,16 @@ pmfme, pmegp, daynrlm.
 |---|---|
 | Category pages + /calculators: rich intros, 1–2 line tool descriptions | todo |
 | Route table: every app route → its dedicated page | todo |
-| Titles/descriptions unique; per-page OG images | todo |
+| Titles/descriptions unique; per-page OG images | in progress (uniqueness enforced at build; cards rendered at the end) |
 | JSON-LD: WebApplication, FAQPage, BreadcrumbList, GovernmentService, Organization (sameAs = Play), WebSite | todo |
 | Internal links: no orphans, ≥ 2 links in per page, no broken links | todo |
-| Split sitemaps with real lastmod | todo |
-| robots.txt (search + AI search allowed; training-only bots listed for the owner's decision) | todo |
-| llms.txt | todo |
-| IndexNow (key file + submit script) | todo |
-| /how-we-calculate, /updates, entity facts consistent, PLAYSTORE_LISTING.md | todo |
-| Phase 5: Search Console DNS TXT + steps, Bing import, OFFSITE_PLAN.md | todo |
-| Phase 6: SEO_TRACKING.md | todo |
+| Split sitemaps with real lastmod | done |
+| robots.txt (search + AI search allowed; training-only bots listed for the owner's decision) | done (training-only bots listed, none blocked) |
+| llms.txt | done |
+| IndexNow (key file + submit script) | done (submit after production deploy) |
+| /how-we-calculate, /updates, entity facts consistent, PLAYSTORE_LISTING.md | in progress (pages built; PLAYSTORE_LISTING.md pending) |
+| Phase 5: Search Console DNS TXT + steps, Bing import, OFFSITE_PLAN.md | done — SEO_SETUP_STEPS.md, OFFSITE_PLAN.md |
+| Phase 6: SEO_TRACKING.md | done (baseline to complete with first GSC/Play data) |
 
 ## Failed gates (ship noindex)
 (none yet)

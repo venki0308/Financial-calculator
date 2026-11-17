@@ -142,9 +142,12 @@ export const EXPORT_PAGE = '/export-my-data';
  * served as website pages; "/calculators" and "/schemes" are both: the app screen in dev
  * mode, the website page otherwise.
  */
+/** Website-only trust pages (Phase 4): how figures are made, and the dated change log. */
+export const TRUST_PAGES: readonly string[] = ['/how-we-calculate', '/updates'];
+
 export function isSiteOnlyPage(pathname: string): boolean {
     const p = pathname.replace(/\/+$/, '') || '/';
-    return p === IN_THE_APP || p === EXPORT_PAGE || p === '/404' ||
+    return p === IN_THE_APP || p === EXPORT_PAGE || p === '/404' || TRUST_PAGES.includes(p) ||
         /^\/calculators\/[a-z-]+$/.test(p) || /^\/schemes\/[a-z0-9-]+$/.test(p);
 }
 

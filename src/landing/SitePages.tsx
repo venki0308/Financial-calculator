@@ -8,7 +8,8 @@ import { CtaBand, SiteFooter, SiteHeader } from './SiteChrome';
 import type { FooterGroup } from './SiteChrome';
 import type { CategoryPage, SchemePage } from './site-data';
 import { firstSentence, longDate, schemeHref, schemesByCategory } from './site-data';
-import { CALCULATORS_INTRO, IMPORT_STEPS, SCHEMES_INTRO } from './content';
+import { CALCULATORS_INTRO, IMPORT_STEPS, PUBLISHER, SCHEMES_INTRO, SUPPORT_EMAIL } from './content';
+import { METHODS, PROCESS, UPDATES } from './trust-content';
 import { EXPORT_PAGE, ORIGIN } from './seoRoutes';
 import { DataTable } from './features/ui';
 import type { ToolCard } from './data';
@@ -214,6 +215,69 @@ function SchemeViewV2({ page, facts, footer }: { page: SchemePage; facts: Array<
                 </ul>
             </nav>
             <p className="disc">Checked against the official sources above on {page.verified}. Rules, amounts and dates change: confirm on the official portal before you apply. FinCalix is not affiliated with the Government of India and does not process applications.</p>
+        </Page>
+    );
+}
+
+export const HOW_FAQS: ReadonlyArray<{ q: string; a: string }> = [
+    { q: 'Are the figures on FinCalix the same as in the app?', a: 'Yes. The website calls the same calculation functions as the Android app, so an EMI, a tax figure or a maturity amount is identical in both for the same inputs.' },
+    { q: 'Where do the tax slabs and rates come from?', a: 'From the official text: the Income-tax Act, 2025 and the Finance Act, 2026 for tax; RBI directions for loans and cards; the Government’s quarterly notification for small-savings rates. Each page links its sources and shows the date they were checked.' },
+    { q: 'How often are rates and rules updated?', a: 'Small-savings rates are checked every quarter when the Government notifies them, tax rules after every Budget, and each scheme page shows the date it was last verified.' },
+    { q: 'What happens when FinCalix finds a mistake?', a: `The shared calculation is corrected for both the app and the website, an independent check is added so it cannot come back, and the change is listed on the updates page. Report anything that looks wrong to ${SUPPORT_EMAIL}.` },
+    { q: 'Is FinCalix financial advice?', a: 'No. FinCalix gives estimates from the inputs you enter and the published rules. Banks, the tax department and scheme offices compute the final figures; for decisions, speak to a qualified adviser.' },
+    { q: 'Who makes FinCalix?', a: `FinCalix is built and published by ${PUBLISHER}, India. You can reach the team at ${SUPPORT_EMAIL}.` },
+];
+
+export function HowWeCalculateView({ footer }: { footer: FooterGroup[] }) {
+    return (
+        <Page footer={footer} crumbs={[{ href: '/', label: 'Home' }, { label: 'How we calculate' }]}>
+            <header className="page-head fhead">
+                <p className="eyebrow">Method and sources</p>
+                <h1 className="serif">How FinCalix calculates and checks its numbers</h1>
+                <div className="answer">
+                    <p>Every figure on fincalix.com is computed by the same code as the FinCalix Android app, from the rules in the official texts, and checked by independent re-calculations before the site is published.</p>
+                    <p>{`FinCalix is built by ${PUBLISHER}, India (${SUPPORT_EMAIL}). It gives estimates, not advice.`}</p>
+                </div>
+            </header>
+            <section className="prose-sec">
+                <h2 className="serif">How a page is made</h2>
+                <ol className="steps">{PROCESS.map((x) => <li key={x}>{x}</li>)}</ol>
+            </section>
+            <section className="fsec">
+                <DataTable caption="Methods behind the main calculators" head={['What', 'How it is worked out', 'App function', 'Checked by']} rows={METHODS.map((m) => [m.area, m.how, m.fn, m.checked])} />
+            </section>
+            <section className="faq fsec" aria-labelledby="faq-h">
+                <h2 id="faq-h" className="serif">Questions people ask</h2>
+                {HOW_FAQS.map((q) => (<details key={q.q}><summary>{q.q}</summary><p>{q.a}</p></details>))}
+            </section>
+            <nav className="related fsec" aria-labelledby="rel-h">
+                <h2 id="rel-h" className="serif">See it in use</h2>
+                <ul className="list-reset">
+                    <li><a href="/updates">Updates</a><span>Dated list of corrections and new pages</span></li>
+                    <li><a href="/old-vs-new-tax-regime">Old vs new tax regime</a><span>Tax worked out slab by slab</span></li>
+                    <li><a href="/home-loan-prepayment">Home loan prepayment</a><span>A month-by-month loan schedule</span></li>
+                    <li><a href="/calculators">All calculators</a><span>Every tool, by category</span></li>
+                </ul>
+            </nav>
+        </Page>
+    );
+}
+
+export function UpdatesView({ footer }: { footer: FooterGroup[] }) {
+    return (
+        <Page footer={footer} crumbs={[{ href: '/', label: 'Home' }, { label: 'Updates' }]}>
+            <header className="page-head">
+                <p className="eyebrow">Change log</p>
+                <h1 className="serif">What changed on FinCalix</h1>
+                <p className="lead">New pages, corrected calculations and rate checks, newest first. Corrections to a calculation apply to both the website and the Android app.</p>
+            </header>
+            {UPDATES.map((u) => (
+                <section key={u.date + u.title} className="prose-sec">
+                    <h2 className="serif"><time dateTime={u.date}>{longDate(u.date)}</time> — {u.title}</h2>
+                    <ul>{u.items.map((x) => <li key={x}>{x}</li>)}</ul>
+                </section>
+            ))}
+            <p className="guide-link"><a className="text-link" href="/how-we-calculate">How we calculate and check our numbers <span aria-hidden="true">→</span></a></p>
         </Page>
     );
 }

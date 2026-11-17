@@ -80,6 +80,15 @@ async function main() {
     const dev = await serveDist({ port: 4324, forceDev: true });   // as a browser with the dev cookie
     const www = await serveDist({ port: 4325, asHost: 'www.fincalix.com' });
     const bay = await serveDist({ port: 4326, asHost: 'financial-calculator-bay.vercel.app' });
+    // sitemap.xml is an index of sitemap-*.xml files: return all of their <url> entries as one XML text.
+    const sitemapXml = async (base) => {
+        const idx = (await get(base, '/sitemap.xml')).body;
+        const kids = [...idx.matchAll(/<sitemap>\s*<loc>https:\/\/fincalix\.com(\/[^<]+)<\/loc>/g)].map((m) => m[1]);
+        if (!kids.length) return idx;
+        let all = '';
+        for (const k of kids) all += (await get(base, k)).body;
+        return all;
+    };
     const get = async (base, p, cookie) => { const r = await fetch(base + p, { redirect: 'manual', headers: cookie ? { cookie } : {} }); return { status: r.status, loc: r.headers.get('location'), robots: r.headers.get('x-robots-tag'), cache: r.headers.get('cache-control') || '', setCookie: r.headers.get('set-cookie') || '', r, body: await r.text() }; };
     try {
         // ── 1. "/" without JavaScript ───────────────────────────────────────
@@ -238,12 +247,12 @@ async function main() {
         const cfg = await get(prod.base, '/config.json');
         check('/config.json unchanged: CORS *, max-age=300', cfg.r.headers.get('access-control-allow-origin') === '*' && cfg.r.headers.get('cache-control') === 'public, max-age=300, must-revalidate');
         check('manifest start_url reverted to "/"', JSON.parse((await get(prod.base, '/manifest.json')).body).start_url === '/');
-        const locs = [...(await get(prod.base, '/sitemap.xml')).body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+        const locs = [...(await sitemapXml(prod.base)).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
         const indexedPaths = ['/calculators', ...catPaths, '/schemes', ...schemePages.filter((s) => s.index).map((s) => s.path)];
         const wantLocs = ['https://fincalix.com/', ...seo.STATIC_PAGES.map((s) => `https://fincalix.com/${s}`), ...seo.FEATURE_PAGES.map((s) => `https://fincalix.com/${s}`),...seo.LEGAL_PAGES.map((s) => `https://fincalix.com/${s}`), ...indexedPaths.map((p) => `https://fincalix.com${p}`)].sort();
-        const lastmods = [...(await get(prod.base, '/sitemap.xml')).body.matchAll(/<loc>https:\/\/fincalix\.com\/schemes\/([^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)];
+        const lastmods = [...(await sitemapXml(prod.base)).matchAll(/<loc>https:\/\/fincalix\.com\/schemes\/([^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)];
         check(`sitemap = landing + ${seo.STATIC_PAGES.length} static + ${seo.FEATURE_PAGES.length} feature + ${seo.LEGAL_PAGES.length} legal + ${indexedPaths.length} new indexable pages (no noindex page, apex only)`, JSON.stringify([...locs].sort()) === JSON.stringify(wantLocs), `${locs.length} URLs, want ${wantLocs.length}`);
-        check('sitemap: each scheme page dated by its last-verified date', lastmods.length > 0 && lastmods.every(([, id, d]) => schemePages.find((s) => s.id === id)?.scheme.lastVerified === d));
+        check('sitemap: each scheme page dated by its last-verified date', lastmods.length > 0 && lastmods.every(([, id, d]) => schemePages.find((s) => s.id === id) && ((schemePages.find((s) => s.id === id).content?.verified ?? schemePages.find((s) => s.id === id).scheme.lastVerified) === d)));
         const w1 = await get(www.base, '/calculator/sip'), w2 = await get(www.base, '/config.json'), w3 = await get(www.base, '/export-my-data'), w4 = await get(www.base, '/');
         check('www: redirects to the apex (which then locks), config.json still served', w1.status === 308 && w1.loc === 'https://fincalix.com/calculator/sip' && w2.status === 200 && w4.status === 308 && w4.loc === 'https://fincalix.com/');
         check('www: /export-my-data is served there (not redirected), canonical on the apex', w3.status === 200 && w3.body.includes('data-export-button') && canonOk(w3.body, '/export-my-data'), `${w3.status} ${w3.loc || ''}`);
@@ -264,7 +273,7 @@ async function main() {
         check('with the cookie: "/" and /calculator/sip serve the app, the app\'s files load', d1.status === 200 && d1.body.includes('<div id="root">') && d2.status === 200 && d2.body.includes('<div id="root">') && d4.status === 200 && d5.status === 200);
         check('with the cookie: every response is noindex (app, static pages, files)', [d1, d2, d3, d4].every((x) => x.robots === 'noindex'));
         const devRef = /[?&]dev=/;
-        check('the website, sitemap and structured data never mention ?dev', !devRef.test(html) && !devRef.test((await get(prod.base, '/sitemap.xml')).body) && !devRef.test(JSON.stringify(ld || {})));
+        check('the website, sitemap and structured data never mention ?dev', !devRef.test(html) && !devRef.test((await sitemapXml(prod.base))) && !devRef.test(JSON.stringify(ld || {})));
         await runDevModeProof({ base: prod.local, shotsDir: 'marketing-assets/website-preview/dev-mode', check });
 
         // ── 5. In Chrome ────────────────────────────────────────────────────
@@ -406,7 +415,7 @@ async function main() {
             {
                 // Every page in the sitemap (plus /data-safety, /in-the-app, /export-my-data and the 404) on a 360 px
                 // phone: the page never scrolls sideways. A wide guide table scrolls inside its own container.
-                const smXml = (await get(prod.base, '/sitemap.xml')).body;
+                const smXml = (await sitemapXml(prod.base));
                 const smPaths = [...smXml.matchAll(/<loc>https:\/\/fincalix\.com([^<]*)<\/loc>/g)].map((m) => m[1] || '/');
                 const { ctx, page } = await profile(prod.base, { viewport: { width: 360, height: 760 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }, { fincalix_analytics_consent: 'denied' });
                 const wide = [];

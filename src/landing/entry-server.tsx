@@ -19,7 +19,8 @@ import { setWebsiteTheme } from '../theme/useAppColors';
 import { EXPORT_PAGE, IN_THE_APP, ORIGIN } from './seoRoutes';
 import { buildCategoryPages, buildSchemePages, firstSentence } from './site-data';
 import { schemes } from '../data/schemes';
-import { CalculatorsView, CategoryView, ExportView, InTheAppView, NotFoundView, SchemeView, SchemesView, schemeLd } from './SitePages';
+import { CalculatorsView, CategoryView, ExportView, InTheAppView, NotFoundView, SchemeView, SchemesView, schemeLd, HowWeCalculateView, UpdatesView, HOW_FAQS } from './SitePages';
+import { UPDATES } from './trust-content';
 import iconUrl from './assets/fincalix-icon-96.webp';
 import { FEATURES, checkFeatures } from './features/registry';
 import { FeatureView, faqLd } from './features/ui';
@@ -143,7 +144,13 @@ export function renderSite(): { pages: SitePageOut[]; schemePages: Array<{ id: s
             head: pageHead({
                 title: f.title, description: f.description, path, index: !f.noindex,
                 crumbs: [home, calcCrumb, { name: cat.label, path: cat.path }, { name: f.crumb, path }],
-                ld: [faqLd(f), ...(f.ld ?? [])],
+                ld: [faqLd(f), ...(f.calc ? [{
+                    '@context': 'https://schema.org', '@type': 'WebApplication', name: f.crumb, url: `${ORIGIN}${path}`,
+                    description: f.description, applicationCategory: 'FinanceApplication', operatingSystem: 'Any (web browser)',
+                    browserRequirements: 'Requires JavaScript', isAccessibleForFree: true, inLanguage: 'en-IN',
+                    offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+                    publisher: { '@id': `${ORIGIN}/#org` }, isPartOf: { '@id': `${ORIGIN}/#website` },
+                }] : []), ...(f.ld ?? [])],
             }),
             index: !f.noindex,
             analyticsTitle: f.analyticsTitle,
@@ -151,6 +158,19 @@ export function renderSite(): { pages: SitePageOut[]; schemePages: Array<{ id: s
             note: f.noindex ? `noindex: ${f.noindex}` : undefined,
         });
     }
+    add('/how-we-calculate', <HowWeCalculateView footer={footer} />, {
+        title: 'How FinCalix calculates and checks its numbers',
+        description: 'The formulas, app functions and official sources behind every FinCalix figure, how each page is checked, and who makes FinCalix.',
+        index: true, crumbs: [home, { name: 'How we calculate', path: '/how-we-calculate' }],
+        ld: [{ '@context': 'https://schema.org', '@type': 'FAQPage', url: `${ORIGIN}/how-we-calculate`, mainEntity: HOW_FAQS.map((q) => ({ '@type': 'Question', name: q.q, acceptedAnswer: { '@type': 'Answer', text: q.a } })) }],
+    }, 'Website - How we calculate');
+    out[out.length - 1].lastmod = '2026-11-17';
+    add('/updates', <UpdatesView footer={footer} />, {
+        title: 'Updates — what changed on FinCalix',
+        description: 'Dated list of new pages, corrected calculations and rate checks on FinCalix, for both the website and the Android app.',
+        index: true, crumbs: [home, { name: 'Updates', path: '/updates' }],
+    }, 'Website - Updates');
+    out[out.length - 1].lastmod = UPDATES[0].date;
     add(IN_THE_APP, <InTheAppView footer={footer} />, {
         title: 'This part of FinCalix is in the Android app', description: 'Profile, saved calculations, history, settings and notifications are in the free FinCalix Android app.', index: false,
     }, 'Website - In the app');
@@ -160,12 +180,26 @@ export function renderSite(): { pages: SitePageOut[]; schemePages: Array<{ id: s
     add(EXPORT_PAGE, <ExportView footer={footer} />, {
         title: 'Export your FinCalix data', description: 'Download the FinCalix data saved in this browser and import it in the Android app.', index: false,
     }, 'Website - Export data');
+    // Real lastmod for the sitemap: scheme pages = date verified; a category = its newest feature
+    // page; /calculators = newest feature page; /schemes = newest verified scheme.
+    const newest = (ds: Array<string | undefined>) => ds.filter((d): d is string => !!d).sort().pop();
+    const schemeDate = (sp: (typeof schemePages)[number]) => sp.content?.verified ?? sp.scheme.lastVerified;
+    for (const p of out) {
+        if (p.lastmod) continue;
+        const sp = schemePages.find((s) => s.path === p.path);
+        const cat = cats.find((c) => c.path === p.path);
+        if (sp) p.lastmod = schemeDate(sp);
+        else if (cat) p.lastmod = newest(FEATURES.filter((f) => f.category === cat.key && !f.noindex).map((f) => f.updated));
+        else if (p.path === '/calculators') p.lastmod = newest(FEATURES.map((f) => f.updated));
+        else if (p.path === '/schemes') p.lastmod = newest(schemePages.filter((s) => s.index).map(schemeDate));
+    }
     return { pages: out, schemePages: schemePages.map((s) => ({ id: s.id, index: s.index, reason: s.reason, verified: s.verified })) };
 }
 
 // For prerender.mjs: the Play link for the QR code, the static page list, scheme dates.
 export { playUrl } from './play';
 export { STATIC_PAGES } from './seoRoutes';
+export { ogKey } from './head';
 export function schemeLastVerified(id: string): string | null {
     return schemes.find((s) => s.id === id)?.lastVerified ?? null;
 }

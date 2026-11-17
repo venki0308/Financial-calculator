@@ -9,7 +9,10 @@
  */
 
 export { PLAY_URL, playUrl } from './play';
-export type { Placement } from './play';export const SUPPORT_EMAIL = 'support@fincalix.com';
+export type { Placement } from './play';
+export const SUPPORT_EMAIL = 'support@fincalix.com';
+/** Who builds and publishes FinCalix (owner's decision; no personal names or street address). */
+export const PUBLISHER = 'Sri Moksha Software Developers';
 
 export const PRIVACY_CLAIMS = [
     { title: 'Your financial data stays on your device', body: 'Your calculations, loans and expenses are saved on your phone, not on a server.' },

@@ -1,4 +1,25 @@
+# fincalix.com — updated 17 Nov 2026
+# Search engines and AI search / answer engines are welcome: they show and cite our pages.
 User-agent: *
 Allow: /
-Sitemap: https://fincalix.com/sitemap.xml
 Disallow: /api/
+
+# Search crawlers and AI search or user-requested fetchers, listed explicitly (allowed).
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: Applebot
+User-agent: DuckDuckBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+Allow: /
+Disallow: /api/
+
+# Training-only crawlers (GPTBot, ClaudeBot, Google-Extended, Applebot-Extended, CCBot,
+# Bytespider, Meta-ExternalAgent) are currently allowed by the rule above. Whether to block
+# any of them is the owner's decision (see SEO_PROGRESS.md); nothing is blocked yet.
+
+Sitemap: https://fincalix.com/sitemap.xml

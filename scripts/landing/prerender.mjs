@@ -103,9 +103,69 @@ for (const p of site.pages.filter((x) => x.index)) {
     if (p.lastmod) urls.set(loc, p.lastmod);
     else if (!urls.has(loc)) urls.set(loc, (id && ssr.schemeLastVerified(id)) || today);
 }
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...urls].map(([loc, lastmod]) => `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`).join('\n')}\n</urlset>\n`;
-fs.writeFileSync(path.join(DIST, 'sitemap.xml'), sitemap);
-console.log(`prerender: sitemap.xml ${urls.size} URLs`);
+// Split sitemaps: pages (home, legal, hubs), calculators (feature pages), schemes. sitemap.xml is
+// the index; each child carries real lastmod dates. The home page is dated by its newest page.
+const featurePaths = new Set(site.pages.filter((x) => x.index && x.lastmod && !x.path.startsWith('/schemes/') && x.path !== '/calculators' && !x.path.startsWith('/calculators/') && x.path !== '/schemes').map((x) => `https://fincalix.com${x.path}`));
+const groupOf = (loc) => (loc.startsWith('https://fincalix.com/schemes/') ? 'schemes' : featurePaths.has(loc) ? 'calculators' : 'pages');
+const allDates = [...urls.values()].sort();
+if (urls.has('https://fincalix.com/')) urls.set('https://fincalix.com/', allDates[allDates.length - 1]);
+const groups = { pages: [], calculators: [], schemes: [] };
+for (const [loc, lastmod] of urls) groups[groupOf(loc)].push([loc, lastmod]);
+const urlset = (list) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${list.map(([loc, lastmod]) => `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`).join('\n')}\n</urlset>\n`;
+const index = [];
+for (const [name, list] of Object.entries(groups)) {
+    if (!list.length) continue;
+    fs.writeFileSync(path.join(DIST, `sitemap-${name}.xml`), urlset(list));
+    index.push([`https://fincalix.com/sitemap-${name}.xml`, list.map(([, d]) => d).sort().pop()]);
+}
+fs.writeFileSync(path.join(DIST, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${index.map(([loc, d]) => `  <sitemap>\n    <loc>${loc}</loc>\n    <lastmod>${d}</lastmod>\n  </sitemap>`).join('\n')}\n</sitemapindex>\n`);
+console.log(`prerender: sitemap.xml index of ${index.length} sitemaps, ${urls.size} URLs (${Object.entries(groups).map(([k, v]) => `${k} ${v.length}`).join(', ')})`);
+
+// 5a. Social cards: every generated page names /og/p/<key>.jpg (src/landing/head.ts). List them for
+//     scripts/landing/build-page-og.mjs, and fail when a card is missing from public/og/p.
+{
+    const titleOf = (head) => ((head.match(/<title>([^<]+)<\/title>/) || [])[1] || '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#39;/g, "'");
+    const cards = site.pages.map((p) => ({ key: ssr.ogKey(p.path), path: p.path, title: titleOf(p.head) }));
+    fs.writeFileSync(path.join(DIST, 'og-pages.json'), JSON.stringify(cards, null, 1));
+    const missing = cards.filter((c) => !fs.existsSync(path.resolve('public/og/p', `${c.key}.jpg`)));
+    if (missing.length) console.log(`prerender: ${missing.length} social cards missing in public/og/p (run node scripts/landing/build-page-og.mjs): ${missing.slice(0, 5).map((c) => c.key).join(', ')}${missing.length > 5 ? ' …' : ''}`);
+    else console.log(`prerender: social cards present for all ${cards.length} generated pages`);
+}
+
+// 5b. llms.txt: a plain map of the site for AI answer engines (indexable pages only, their own
+//     titles and descriptions; same entity facts as the structured data).
+{
+    const meta = (head, re) => ((head.match(re) || [])[1] || '').replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#39;/g, "'");
+    const line = (p) => `- [${meta(p.head, /<title>([^<]+)<\/title>/)}](https://fincalix.com${p.path}): ${meta(p.head, /<meta name="description" content="([^"]+)"/)}`;
+    const indexable = site.pages.filter((x) => x.index);
+    const calcs = indexable.filter((x) => groupOf(`https://fincalix.com${x.path}`) === 'calculators');
+    const schemePgs = indexable.filter((x) => x.path.startsWith('/schemes/'));
+    const hubs = indexable.filter((x) => x.path === '/calculators' || x.path.startsWith('/calculators/') || x.path === '/schemes' || ['/how-we-calculate', '/updates'].includes(x.path));
+    const llms = [
+        '# FinCalix',
+        '',
+        '> Free personal-finance calculators and guides for India (EMI, SIP, income tax FY 2026-27, PPF, FD, small savings, credit cards, government schemes), and the FinCalix Android app. Published by Sri Moksha Software Developers, India. Contact: support@fincalix.com.',
+        '',
+        'Every figure on these pages is computed with the same functions the FinCalix app uses, and every rule links to its official source (Income-tax Act 2025, RBI, India Post / NSI, EPFO, PFRDA, scheme portals) with the date it was checked. Estimates only; not financial, tax or legal advice. App: https://play.google.com/store/apps/details?id=com.fincalix.app',
+        '',
+        '## Calculators and guides',
+        ...calcs.map(line),
+        '',
+        '## Government schemes',
+        ...schemePgs.map(line),
+        '',
+        '## Hubs and method',
+        ...hubs.map(line),
+        '',
+        '## Optional',
+        '- [Privacy Policy](https://fincalix.com/privacy-policy): what the app and website collect and why',
+        '- [Data safety](https://fincalix.com/data-safety): data handled by the Android app',
+        '- [About FinCalix](https://fincalix.com/about): who makes FinCalix',
+        '',
+    ].join('\n');
+    fs.writeFileSync(path.join(DIST, 'llms.txt'), llms);
+    console.log(`prerender: llms.txt ${calcs.length} calculators, ${schemePgs.length} schemes, ${hubs.length} hubs`);
+}
 
 // 6. Export banner on the 27 static calculator pages (their content is otherwise untouched).
 const manifestFile = path.join(DIST, 'site-manifest.json');

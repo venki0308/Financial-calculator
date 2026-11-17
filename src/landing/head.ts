@@ -4,7 +4,7 @@
  * screenshots. No street address is published.
  */
 import type { LandingData } from './data';
-import { PLAY_URL, SUPPORT_EMAIL } from './content';
+import { PLAY_URL, PUBLISHER, SUPPORT_EMAIL } from './content';
 import { ORIGIN } from './seoRoutes';
 import { shotUrl } from './Shot';
 import frauncesUrl from './fonts/fraunces-var.woff2?url';
@@ -33,7 +33,9 @@ export function headTags(d: LandingData): string {
                 '@type': 'Organization',
                 '@id': `${ORIGIN}/#org`,
                 name: 'FinCalix',
+                legalName: PUBLISHER,
                 url: `${ORIGIN}/`,
+                address: { '@type': 'PostalAddress', addressCountry: 'IN' },
                 logo: { '@type': 'ImageObject', url: logo, width: 512, height: 512 },
                 email: SUPPORT_EMAIL,
                 contactPoint: { '@type': 'ContactPoint', email: SUPPORT_EMAIL, contactType: 'customer support', availableLanguage: ['English', 'Hindi', 'Telugu', 'Tamil', 'Kannada', 'Malayalam'] },
@@ -114,6 +116,9 @@ export interface PageHeadInput {
     ld?: object[];
 }
 
+/** The page's own social card: /og/p/<key>.jpg (scripts/landing/build-page-og.mjs; committed). */
+export const ogKey = (path: string) => (path === '/' ? 'home' : path.replace(/^\/+|\/+$/g, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase());
+
 /** <head> for the generated pages: apex canonical, robots, social cards, breadcrumbs. */
 export function pageHead(p: PageHeadInput): string {
     const url = `${ORIGIN}${p.path}`;
@@ -138,9 +143,13 @@ export function pageHead(p: PageHeadInput): string {
         `<meta property="og:url" content="${url}">`,
         `<meta property="og:title" content="${esc(p.title)}">`,
         `<meta property="og:description" content="${esc(p.description)}">`,
-        `<meta property="og:image" content="${ORIGIN}/og/fincalix-og.png">`,
+        `<meta property="og:image" content="${ORIGIN}/og/p/${ogKey(p.path)}.jpg">`,
+        `<meta property="og:image:width" content="1200">`,
+        `<meta property="og:image:height" content="630">`,
+        `<meta property="og:image:alt" content="${esc(p.title)}">`,
         `<meta property="og:locale" content="en_IN">`,
         `<meta name="twitter:card" content="summary_large_image">`,
+        `<meta name="twitter:image" content="${ORIGIN}/og/p/${ogKey(p.path)}.jpg">`,
         ...(ld ? [`<script type="application/ld+json">${jsonForScript(ld)}</script>`] : []),
         ...(p.ld ?? []).map((o) => `<script type="application/ld+json">${jsonForScript(o)}</script>`),
     ].join('\n    ');
