@@ -11,7 +11,7 @@ import { useNotificationStore } from '../store/useNotificationStore';
 import type { NotificationCategory } from '../store/useNotificationStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { dailyQuoteKey } from '../data/quotes';
+import { formatQuote, getDailyQuote } from '../data/quotes';
 import i18n, { ensureLocaleLoaded } from '../i18n';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { RemoteConfigService } from './remoteConfig.service';
@@ -313,10 +313,12 @@ async function checkNewSchemes() {
     } catch { /* storage or chunk unavailable — try again next run */ }
 }
 
-/** Today's (or a given day's) quote in the requested language; English if the bundle is unavailable. */
+/**
+ * Today's (or a given day's) quote with its attribution, in the requested language; English if that
+ * language's quotes are unavailable. Same function as the Home card (src/data/quotes.ts).
+ */
 async function quoteTextFor(lang: string, date: Date = new Date()): Promise<string> {
-    await ensureLocaleLoaded(lang);
-    return String(i18n.getFixedT(lang)(dailyQuoteKey(date)));
+    return formatQuote((await getDailyQuote(lang, date)).text);
 }
 
 async function checkDailyQuote() {
@@ -611,13 +613,14 @@ function seedInitialNotifications() {
 
     // Daily quote (first launch is always English). Own type so the savings
     // tip below does not replace it via the store's same-day dedup.
-    addNotif({
+    // Added once the quote data has loaded (its chunk is fetched on demand), a moment after the tip below.
+    void quoteTextFor('en').then((body) => addNotif({
         type: 'quote_insight',
         title: '💡 Daily Financial Quote',
-        body: String(i18n.t(dailyQuoteKey())),
+        body,
         icon: '💡',
         route: '/',
-    });
+    })).catch(() => { /* quote data unavailable — the daily check adds one later */ });
 
     // Savings tip
     addNotif({

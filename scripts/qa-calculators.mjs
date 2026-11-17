@@ -369,7 +369,10 @@ console.log('\n2W. Post Office TD — yearly payout (app = website: calculatePOT
   }
   check('5-yr TD is NOT compounded across years (old app showed ₹1,44,995)', 138568, calc.calculatePOTD(100000, 7.5, 5).maturity, 0.5);
   // Live status of a tracked TD (screen, My Loans, Loan Detail): maturity value on the same rule.
-  const start = new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10);
+  // Local calendar date 400 days ago (the engine counts days in local time; a UTC date is a day
+  // early between 00:00 and 05:30 IST and made this check fail at night).
+  const d400 = new Date(); d400.setDate(d400.getDate() - 400);
+  const start = `${d400.getFullYear()}-${String(d400.getMonth() + 1).padStart(2, '0')}-${String(d400.getDate()).padStart(2, '0')}`;
   const s = status.calculateFdStatus({ principal: 100000, annualRate: 7.5, tenureMonths: 60, startDate: start, compoundingFreq: 4, payout: 'yearly' });
   check('Tracked 5-yr TD — maturity value (yearly payout)', 138568, s.maturityValue, 0.5);
   check('Tracked 5-yr TD after 400 days — one year paid + 35 days accrued', 100000 + 7714.3 + 100000 * ((1 + 7.5 / 400) ** (35 / (365 / 4)) - 1), s.valueToday, 2);

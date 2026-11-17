@@ -32,6 +32,7 @@ node scripts/qa-calculators.mjs
 node scripts/qa-expense-tracker.mjs
 node scripts/qa-loan-engine.mjs
 node scripts/qa-export-safety.mjs     # CSV/Excel formula-injection guard
+node scripts/qa-quotes.mjs            # 366 daily quotes: ids/days, 6 languages, ≤180 chars, script, sources, authors, mix, day rule
 node scripts/qa-consent-network.mjs   # analytics events, switch-off and offline queue (needs build:web + Chrome)
 node scripts/qa-landing.mjs           # website: no-JS content, links, route targets, generated pages, sitemap, export banner, iPhone/QR (needs build:web + Chrome)
 node scripts/qa-feature-pages.mjs     # website feature + scheme pages: independent maths (+ scripts/qa-features/*.mjs per group), figures on pages, JSON-LD, links/orphans, shared wording < 10% (needs build:web)
@@ -97,6 +98,8 @@ Each calculator is a self-contained page under `src/pages/`. Shared helpers:
 
 ### i18n (`src/i18n.ts`, `src/locales/`)
 Six locales: `en`, `hi`, `te`, `ta`, `kn`, `ml`. Only `en.json` is bundled; the others are fetched on demand when the user switches language. Use `switchLanguage(lang)` (not `i18n.changeLanguage` directly) — it loads the bundle before switching. `update-locales.js` / `update-loc.py` at the repo root are helpers for cross-locale key sync.
+
+Daily quotes are NOT in the locale files: `src/data/quotes.ts` (types, day rule, loaders) + `src/data/quotes/catalog.json` (366 entries with English, source and attribution type) + `quotes/<lang>.json` (text and attribution per id), all loaded on demand. The day is the date's number on a leap-year calendar (29 Feb = 60, 31 Dec = 366), so the Home card (`FinancialQuote`) and the morning notification (`NotificationScheduler`) show the same quote on the same date for everyone. Only public-domain authors (died before 1955, listed in `scripts/qa-quotes-authors.json` with a primary source URL per quote), labelled proverbs or unattributed originals; run `node scripts/qa-quotes.mjs` after any change. `quotes-review.xlsx` holds every translation with its back-translation.
 
 ### Services (`src/services/`)
 - `analyticsService.ts` + `src/lib/analytics.ts` wrap Firebase Analytics, which runs for every user by default and can be switched off in Settings → Privacy (`src/utils/analyticsConsent.ts`; there is no consent popup), and only the events and parameters listed in `src/services/providers/types.ts` can be sent. There is no crash reporting. Events go through one helper, `src/lib/analytics.ts`: one `page_view` per screen (names in `src/hooks/usePageViewTracker.ts`), `trackCalculated()` (already called by the history store's `addHistory`, so a new calculator that saves history is covered), and `trackExported(filename)` (called by the shared save functions in the export utils). Allowed parameters per event live in `src/services/providers/types.ts`. Analytics are always called through the service, never direct Firebase SDK calls from components.

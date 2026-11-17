@@ -1,0 +1,5502 @@
+[
+ {
+  "id": "q001",
+  "day": 1,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "new-year-one-habit",
+  "indian": true,
+  "calendar": "jan1",
+  "en": {
+   "text": "A new year, a clean page. Write one money habit on it and keep it all year.",
+   "by": null
+  }
+ },
+ {
+  "id": "q002",
+  "day": 2,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "W. Morton, A Collection of Proverbs, Bengali and Sanscrit (Calcutta, 1832), no. 407",
+  "sourceUrl": "https://archive.org/details/bub_gb_jPw3AAAAYAAJ_2",
+  "attributionType": "proverb",
+  "idea": "patience-in-hard-times",
+  "indian": true,
+  "en": {
+   "text": "Keep hope in hard times; trees blossom only in their own season.",
+   "by": "Bengali proverb"
+  }
+ },
+ {
+  "id": "q003",
+  "day": 3,
+  "category": "investing",
+  "author": "Lao Tzu",
+  "sourceRef": "Tao Te Ching, ch. 64.2, tr. James Legge (1891)",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/216/pg216.txt",
+  "attributionType": "public-domain",
+  "idea": "begin-small",
+  "indian": false,
+  "en": {
+   "text": "The tree which fills the arms grew from the tiniest sprout.",
+   "by": "Lao Tzu"
+  }
+ },
+ {
+  "id": "q004",
+  "day": 4,
+  "category": "work",
+  "author": "Narayana (Hitopadesha)",
+  "sourceRef": "Hitopadesha, Prastavika (introduction), verse 36",
+  "sourceUrl": "https://sa.wikisource.org/wiki/%E0%A4%B9%E0%A4%BF%E0%A4%A4%E0%A5%8B%E0%A4%AA%E0%A4%A6%E0%A5%87%E0%A4%B6%E0%A4%83%E0%A5%A6%E0%A5%A7",
+  "attributionType": "public-domain",
+  "idea": "effort-over-fate",
+  "indian": true,
+  "en": {
+   "text": "Tasks are achieved by effort, not by wishing; deer do not walk into the mouth of a sleeping lion.",
+   "by": "Hitopadesha, introduction 36"
+  }
+ },
+ {
+  "id": "q005",
+  "day": 5,
+  "category": "investing",
+  "author": "Samuel Smiles",
+  "sourceRef": "Self-Help (1859), ch. IV 'Application and Perseverance'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/935/pg935.txt",
+  "attributionType": "public-domain",
+  "idea": "great-things-take-time",
+  "indian": false,
+  "en": {
+   "text": "We must sow before we can reap… the fruit best worth waiting for often ripening the slowest.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q006",
+  "day": 6,
+  "category": "work",
+  "author": "Seneca",
+  "sourceRef": "Moral Letters to Lucilius, Letter 1.2 ('On saving time'), tr. R. M. Gummere (1917)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Moral_letters_to_Lucilius/Letter_1",
+  "attributionType": "public-domain",
+  "idea": "do-it-now",
+  "indian": false,
+  "en": {
+   "text": "Lay hold of to-day's task, and you will not need to depend so much upon to-morrow's.",
+   "by": "Seneca"
+  }
+ },
+ {
+  "id": "q007",
+  "day": 7,
+  "category": "investing",
+  "author": "Chanakya",
+  "sourceRef": "Chanakya Niti 12.22; published translation: K. Raghunathji, 'Vriddha-Chanakya, or the Maxims of Chanakya' (Bombay: Family Printing Press), ch. 12 no. 22",
+  "sourceUrl": "https://sa.wikisource.org/wiki/%E0%A4%9A%E0%A4%BE%E0%A4%A3%E0%A4%95%E0%A5%8D%E0%A4%AF%E0%A4%A8%E0%A5%80%E0%A4%A4%E0%A4%BF%E0%A4%83",
+  "attributionType": "public-domain",
+  "idea": "drop-by-drop",
+  "indian": true,
+  "en": {
+   "text": "Drop by falling drop, a pot is filled; so too are learning, virtue and wealth gathered.",
+   "by": "Chanakya Niti 12.22"
+  }
+ },
+ {
+  "id": "q008",
+  "day": 8,
+  "category": "work",
+  "author": "Confucius",
+  "sourceRef": "Analects XIII.17, tr. James Legge",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/4094/pg4094.txt",
+  "attributionType": "public-domain",
+  "idea": "haste-spoils",
+  "indian": false,
+  "en": {
+   "text": "Desire to have things done quickly prevents their being done thoroughly.",
+   "by": "Confucius"
+  }
+ },
+ {
+  "id": "q009",
+  "day": 9,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "U. B. Narasinga Rao, A Handbook of Kannada Proverbs (1912), via kn.wikiquote",
+  "sourceUrl": "https://kn.wikiquote.org/wiki/ಎ_ಹ್ಯಾಂಡ್ಬುಕ್_ಆಫ಼್‌_ಕನ್ನಡ_ಪ್ರಾವರ್ಬ್ಸ್_ಪುಸ್ತಕದಿಂದ_ಗಾದೆಗಳು",
+  "attributionType": "proverb",
+  "idea": "never-enough",
+  "indian": true,
+  "en": {
+   "text": "Too much greed leads to ruin.",
+   "by": "Kannada proverb"
+  }
+ },
+ {
+  "id": "q010",
+  "day": 10,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": "P. Percival, Tamil Proverbs (archive.org scan dated 1877), no. 1209",
+  "sourceUrl": "https://archive.org/details/tamilproverbswi01percgoog",
+  "attributionType": "proverb",
+  "idea": "fortunes-change",
+  "indian": true,
+  "en": {
+   "text": "Neither wealth nor want stays in one place for ever.",
+   "by": "Tamil proverb"
+  }
+ },
+ {
+  "id": "q011",
+  "day": 11,
+  "category": "work",
+  "author": "Rabindranath Tagore",
+  "sourceRef": "Stray Birds (1916), no. 134",
+  "sourceUrl": "https://en.wikisource.org/wiki/Stray_Birds",
+  "attributionType": "public-domain",
+  "idea": "seeds-and-roots",
+  "indian": true,
+  "en": {
+   "text": "The roots below the earth claim no rewards for making the branches fruitful.",
+   "by": "Rabindranath Tagore"
+  }
+ },
+ {
+  "id": "q012",
+  "day": 12,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "sharing-over-spending",
+  "indian": true,
+  "calendar": "festival",
+  "en": {
+   "text": "A shared meal and an evening together cost little and are remembered the longest.",
+   "by": null
+  }
+ },
+ {
+  "id": "q013",
+  "day": 13,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "ml.wikiquote, \"പഴഞ്ചൊല്ലുകൾ/അ\"",
+  "sourceUrl": "https://ml.wikiquote.org/wiki/പഴഞ്ചൊല്ലുകൾ/അ",
+  "attributionType": "proverb",
+  "idea": "slow-and-steady",
+  "indian": true,
+  "en": {
+   "text": "Better than a thousand gold coins on one day is half a coin every day.",
+   "by": "Malayalam proverb"
+  }
+ },
+ {
+  "id": "q014",
+  "day": 14,
+  "category": "work",
+  "author": "Bhartrihari",
+  "sourceRef": "Bhartrihari, Niti Shataka, verse 27",
+  "sourceUrl": "https://sa.wikisource.org/wiki/%E0%A4%A8%E0%A5%80%E0%A4%A4%E0%A4%BF%E0%A4%B6%E0%A4%A4%E0%A4%95%E0%A4%AE%E0%A5%8D",
+  "attributionType": "public-domain",
+  "idea": "finish-what-you-start",
+  "indian": true,
+  "en": {
+   "text": "Struck by obstacles again and again, people of the finest character still do not give up what they began.",
+   "by": "Bhartrihari, Niti Shataka 27"
+  }
+ },
+ {
+  "id": "q015",
+  "day": 15,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "health-first",
+  "indian": true,
+  "en": {
+   "text": "Count medical costs into your retirement plan; health needs grow with the years.",
+   "by": null
+  }
+ },
+ {
+  "id": "q016",
+  "day": 16,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "mistakes-are-lessons",
+  "indian": true,
+  "en": {
+   "text": "Past money mistakes are lessons, not a life sentence.",
+   "by": null
+  }
+ },
+ {
+  "id": "q017",
+  "day": 17,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "big-goal-small-months",
+  "indian": true,
+  "en": {
+   "text": "A big goal is just many small months put together.",
+   "by": null
+  }
+ },
+ {
+  "id": "q018",
+  "day": 18,
+  "category": "work",
+  "author": "Seneca",
+  "sourceRef": "Moral Letters to Lucilius, Letter 71.3, tr. R. M. Gummere (1920)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Moral_letters_to_Lucilius/Letter_71",
+  "attributionType": "public-domain",
+  "idea": "know-your-goal",
+  "indian": false,
+  "en": {
+   "text": "When a man does not know what harbour he is making for, no wind is the right wind.",
+   "by": "Seneca"
+  }
+ },
+ {
+  "id": "q019",
+  "day": 19,
+  "category": "money",
+  "author": "Charles Dickens",
+  "sourceRef": "David Copperfield (1850), ch. 12 (Mr Micawber)",
+  "sourceUrl": "https://gutenberg.pglaf.org/7/6/766/766-0.txt",
+  "attributionType": "public-domain",
+  "idea": "income-above-outgo",
+  "indian": false,
+  "en": {
+   "text": "Annual income twenty pounds, annual expenditure nineteen nineteen and six, result happiness.",
+   "by": "Charles Dickens"
+  }
+ },
+ {
+  "id": "q020",
+  "day": 20,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "one-folder-for-tax-proofs",
+  "indian": true,
+  "en": {
+   "text": "Keep rent receipts, premium receipts and investment proofs in one folder all year.",
+   "by": null
+  }
+ },
+ {
+  "id": "q021",
+  "day": 21,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "celebrate-milestones",
+  "indian": true,
+  "en": {
+   "text": "Celebrate when you reach a goal. Then set the next one, a little further out.",
+   "by": null
+  }
+ },
+ {
+  "id": "q022",
+  "day": 22,
+  "category": "investing",
+  "author": "Vemana",
+  "sourceRef": "Vemana Padyamulu, Book 1 no. 4 (Andhra Bharati numbering of C. P. Brown's edition)",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B5%E0%B1%87%E0%B0%AE%E0%B0%A8_%E0%B0%AA%E0%B0%A6%E0%B1%8D%E0%B0%AF%E0%B0%BE%E0%B0%B2%E0%B1%81%2F%E0%B0%A8",
+  "attributionType": "public-domain",
+  "idea": "one-true-gem",
+  "indian": true,
+  "en": {
+   "text": "One genuine sapphire is enough; why a basketful of glittering stones?",
+   "by": "Vemana"
+  }
+ },
+ {
+  "id": "q023",
+  "day": 23,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "think-before-buying",
+  "indian": true,
+  "en": {
+   "text": "Scanning to pay takes a second. Pausing for three seconds first is kinder to the month.",
+   "by": null
+  }
+ },
+ {
+  "id": "q024",
+  "day": 24,
+  "category": "work",
+  "author": "Samuel Smiles",
+  "sourceRef": "Self-Help (1859), ch. IV 'Application and Perseverance'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/935/pg935.txt",
+  "attributionType": "public-domain",
+  "idea": "fortune-favours-industry",
+  "indian": false,
+  "en": {
+   "text": "Fortune is usually on the side of the industrious, as the winds and waves are on the side of the best navigators.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q025",
+  "day": 25,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "track-spending",
+  "indian": true,
+  "en": {
+   "text": "Check your spending once a week; surprises are kinder when they are small.",
+   "by": null
+  }
+ },
+ {
+  "id": "q026",
+  "day": 26,
+  "category": "investing",
+  "author": "Publilius Syrus",
+  "sourceRef": "Sentences, no. 505 (The Moral Sayings of Publius Syrus, tr. D. Lyman, 1856)",
+  "sourceUrl": "https://archive.org/download/moralsayingspub00lymagoog/moralsayingspub00lymagoog_djvu.txt",
+  "attributionType": "public-domain",
+  "idea": "patience-is-opportunity",
+  "indian": false,
+  "en": {
+   "text": "Delay is always vexatious, but it is wisdom's opportunity.",
+   "by": "Publilius Syrus"
+  }
+ },
+ {
+  "id": "q027",
+  "day": 27,
+  "category": "money",
+  "author": "P. T. Barnum",
+  "sourceRef": "The Art of Money Getting (1880), opening section on economy",
+  "sourceUrl": "https://gutenberg.pglaf.org/8/5/8/8581/8581.txt",
+  "attributionType": "public-domain",
+  "idea": "rich-by-wanting-less",
+  "indian": false,
+  "en": {
+   "text": "The real comforts of life cost but a small portion of what most of us can earn.",
+   "by": "P. T. Barnum"
+  }
+ },
+ {
+  "id": "q028",
+  "day": 28,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "one-small-step-today",
+  "indian": true,
+  "en": {
+   "text": "Break a big money task into small steps, and do one of them today.",
+   "by": null
+  }
+ },
+ {
+  "id": "q029",
+  "day": 29,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "kindness-to-future-self",
+  "indian": true,
+  "en": {
+   "text": "Saving is not about denying today. It is kindness to the person you will be.",
+   "by": null
+  }
+ },
+ {
+  "id": "q030",
+  "day": 30,
+  "category": "money",
+  "author": "Samuel Smiles",
+  "sourceRef": "Self-Help (1859), ch. X \"Money—Its Use and Abuse\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/9/3/935/935-0.txt",
+  "attributionType": "public-domain",
+  "idea": "rainy-day-reserve",
+  "indian": false,
+  "en": {
+   "text": "A store of savings is to the working man as a barricade against want.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q031",
+  "day": 31,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "consistency-outlasts-enthusiasm",
+  "indian": true,
+  "en": {
+   "text": "Invest an amount you can keep investing. Consistency outlasts enthusiasm.",
+   "by": null
+  }
+ },
+ {
+  "id": "q032",
+  "day": 32,
+  "category": "money",
+  "author": "Baddena",
+  "sourceRef": "Sumati Satakam 58",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B8%E0%B1%81%E0%B0%AE%E0%B0%A4%E0%B1%80_%E0%B0%B6%E0%B0%A4%E0%B0%95%E0%B0%AE%E0%B1%81_-_%E0%B0%B0%E0%B1%86%E0%B0%82%E0%B0%A1%E0%B0%B5%E0%B0%AD%E0%B0%BE%E0%B0%97%E0%B0%82",
+  "attributionType": "public-domain",
+  "idea": "wealth-is-for-use",
+  "indian": true,
+  "en": {
+   "text": "Wealth that one never puts to use goes partly to the ruler and partly into the ground.",
+   "by": "Baddena, Sumati Satakam 58"
+  }
+ },
+ {
+  "id": "q033",
+  "day": 33,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "read-your-payslip",
+  "indian": true,
+  "en": {
+   "text": "Learn to read your payslip. Every line on it is a part of your money.",
+   "by": null
+  }
+ },
+ {
+  "id": "q034",
+  "day": 34,
+  "category": "investing",
+  "author": "Confucius",
+  "sourceRef": "Analects IX.27, tr. James Legge",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/4094/pg4094.txt",
+  "attributionType": "public-domain",
+  "idea": "patience-in-hard-times",
+  "indian": false,
+  "en": {
+   "text": "When the year becomes cold, then we know how the pine and the cypress are the last to lose their leaves.",
+   "by": "Confucius"
+  }
+ },
+ {
+  "id": "q035",
+  "day": 35,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "begin-small",
+  "indian": true,
+  "en": {
+   "text": "Start the emergency fund with one small amount today, and add to it month by month.",
+   "by": null
+  }
+ },
+ {
+  "id": "q036",
+  "day": 36,
+  "category": "inspiration",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 620",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "effort-over-fate",
+  "indian": true,
+  "en": {
+   "text": "Those who strive on without fear or faltering will leave even fate behind them.",
+   "by": "Thiruvalluvar, Tirukkural 620"
+  }
+ },
+ {
+  "id": "q037",
+  "day": 37,
+  "category": "money",
+  "author": "Theodore T. Munger",
+  "sourceRef": "On the Threshold (1881), ch. \"Thrift\", p. 89",
+  "sourceUrl": "https://archive.org/download/onthreshold00mun/onthreshold00mun_djvu.txt",
+  "attributionType": "public-domain",
+  "idea": "saving-enables-giving",
+  "indian": false,
+  "en": {
+   "text": "The great givers have been great savers.",
+   "by": "T. T. Munger"
+  }
+ },
+ {
+  "id": "q038",
+  "day": 38,
+  "category": "work",
+  "author": "Subramania Bharati",
+  "sourceRef": "Puthiya Aathichoodi, line 14",
+  "sourceUrl": "https://ta.wikisource.org/wiki/%E0%AE%AA%E0%AF%81%E0%AE%A4%E0%AE%BF%E0%AE%AF_%E0%AE%86%E0%AE%A4%E0%AF%8D%E0%AE%A4%E0%AE%BF%E0%AE%9A%E0%AF%82%E0%AE%9F%E0%AE%BF",
+  "attributionType": "public-domain",
+  "idea": "do-it-now",
+  "indian": true,
+  "en": {
+   "text": "Do not waste time.",
+   "by": "Subramania Bharati, Puthiya Aathichoodi 14"
+  }
+ },
+ {
+  "id": "q039",
+  "day": 39,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "haste-spoils",
+  "indian": true,
+  "en": {
+   "text": "Money decisions made slowly rarely need to be undone.",
+   "by": null
+  }
+ },
+ {
+  "id": "q040",
+  "day": 40,
+  "category": "money",
+  "author": "Poonthanam Nambudiri",
+  "sourceRef": "Jnanappana (Poonthanam), passage on the craving for wealth",
+  "sourceUrl": "https://ml.wikisource.org/wiki/%E0%B4%9C%E0%B5%8D%E0%B4%9E%E0%B4%BE%E0%B4%A8%E0%B4%AA%E0%B5%8D%E0%B4%AA%E0%B4%BE%E0%B4%A8",
+  "attributionType": "public-domain",
+  "idea": "never-enough",
+  "indian": true,
+  "en": {
+   "text": "Get ten and we want a hundred; get a hundred and we want a thousand.",
+   "by": "Poonthanam, Jnanappana"
+  }
+ },
+ {
+  "id": "q041",
+  "day": 41,
+  "category": "work",
+  "author": null,
+  "sourceRef": "ml.wikiquote, \"പഴഞ്ചൊല്ലുകൾ/അ\"",
+  "sourceUrl": "https://ml.wikiquote.org/wiki/പഴഞ്ചൊല്ലുകൾ/അ",
+  "attributionType": "proverb",
+  "idea": "bitter-root-sweet-fruit",
+  "indian": true,
+  "en": {
+   "text": "The root of hard work is bitter, but its fruit is sweet.",
+   "by": "Malayalam proverb"
+  }
+ },
+ {
+  "id": "q042",
+  "day": 42,
+  "category": "money",
+  "author": "Sarvajna",
+  "sourceRef": "Sarvajna, tripadi no. 1137 in 'ಸರ್ವಜ್ಞನ ವಚನಗಳು' (Kannada Wikisource numbering)",
+  "sourceUrl": "https://kn.wikisource.org/wiki/%E0%B2%B8%E0%B2%B0%E0%B3%8D%E0%B2%B5%E0%B2%9C%E0%B3%8D%E0%B2%9E%E0%B2%A8_%E0%B2%B5%E0%B2%9A%E0%B2%A8%E0%B2%97%E0%B2%B3%E0%B3%81",
+  "attributionType": "public-domain",
+  "idea": "fortunes-change",
+  "indian": true,
+  "en": {
+   "text": "A full lake does not stay full forever; do not count on wealth staying, for hard times can follow close.",
+   "by": "Sarvajna"
+  }
+ },
+ {
+  "id": "q043",
+  "day": 43,
+  "category": "investing",
+  "author": "Epictetus",
+  "sourceRef": "Discourses I.15 ('What philosophy promises'), tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/10661/pg10661.txt",
+  "attributionType": "public-domain",
+  "idea": "great-things-take-time",
+  "indian": false,
+  "en": {
+   "text": "Nothing great… is produced suddenly, since not even the grape or the fig is.",
+   "by": "Epictetus"
+  }
+ },
+ {
+  "id": "q044",
+  "day": 44,
+  "category": "inspiration",
+  "author": "Ralph Waldo Emerson",
+  "sourceRef": "Essays: First Series (1841), 'Self-Reliance'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/2944/pg2944.txt",
+  "attributionType": "public-domain",
+  "idea": "trust-yourself",
+  "indian": false,
+  "en": {
+   "text": "Trust thyself: every heart vibrates to that iron string.",
+   "by": "Ralph Waldo Emerson"
+  }
+ },
+ {
+  "id": "q045",
+  "day": 45,
+  "category": "money",
+  "author": "Subramania Bharati",
+  "sourceRef": "Puthiya Aathichoodi, line 97",
+  "sourceUrl": "https://ta.wikisource.org/wiki/%E0%AE%AA%E0%AF%81%E0%AE%A4%E0%AE%BF%E0%AE%AF_%E0%AE%86%E0%AE%A4%E0%AF%8D%E0%AE%A4%E0%AE%BF%E0%AE%9A%E0%AF%82%E0%AE%9F%E0%AE%BF",
+  "attributionType": "public-domain",
+  "idea": "drop-by-drop",
+  "indian": true,
+  "en": {
+   "text": "Many tiny drops make a flood.",
+   "by": "Subramania Bharati, Puthiya Aathichoodi 97"
+  }
+ },
+ {
+  "id": "q046",
+  "day": 46,
+  "category": "work",
+  "author": "Benjamin Franklin",
+  "sourceRef": "The Way to Wealth (1758)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Way_to_wealth_(1)",
+  "attributionType": "public-domain",
+  "idea": "no-gains-without-pains",
+  "indian": false,
+  "en": {
+   "text": "There are no gains without pains.",
+   "by": "Benjamin Franklin"
+  }
+ },
+ {
+  "id": "q047",
+  "day": 47,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "pay-savings-first",
+  "indian": false,
+  "en": {
+   "text": "Save first, spend later.",
+   "by": null
+  }
+ },
+ {
+  "id": "q048",
+  "day": 48,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "seeds-and-roots",
+  "indian": true,
+  "en": {
+   "text": "Seeds do not sprout faster because we dig them up to check.",
+   "by": null
+  }
+ },
+ {
+  "id": "q049",
+  "day": 49,
+  "category": "money",
+  "author": "Publilius Syrus",
+  "sourceRef": "Sentences, no. 50 (The Moral Sayings of Publius Syrus, tr. D. Lyman, 1856)",
+  "sourceUrl": "https://archive.org/download/moralsayingspub00lymagoog/moralsayingspub00lymagoog_djvu.txt",
+  "attributionType": "public-domain",
+  "idea": "money-servant-not-master",
+  "indian": false,
+  "en": {
+   "text": "When reason rules, money is a blessing.",
+   "by": "Publilius Syrus"
+  }
+ },
+ {
+  "id": "q050",
+  "day": 50,
+  "category": "inspiration",
+  "author": "Swami Vivekananda",
+  "sourceRef": "The Complete Works of Swami Vivekananda, Vol. 5, Sayings and Utterances, no. 16",
+  "sourceUrl": "https://en.wikisource.org/wiki/The_Complete_Works_of_Swami_Vivekananda/Volume_5/Sayings_and_Utterances",
+  "attributionType": "public-domain",
+  "idea": "world-is-a-gym",
+  "indian": true,
+  "en": {
+   "text": "This world is the great gymnasium where we come to make ourselves strong.",
+   "by": "Swami Vivekananda"
+  }
+ },
+ {
+  "id": "q051",
+  "day": 51,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "slow-and-steady",
+  "indian": true,
+  "en": {
+   "text": "Regular investing asks one thing of you: show up in the good months and the dull ones.",
+   "by": null
+  }
+ },
+ {
+  "id": "q052",
+  "day": 52,
+  "category": "money",
+  "author": "Ralph Waldo Emerson",
+  "sourceRef": "The Conduct of Life (1860), 'Wealth'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/39827/pg39827.txt",
+  "attributionType": "public-domain",
+  "idea": "income-above-outgo",
+  "indian": false,
+  "en": {
+   "text": "The secret of success lies never in the amount of money, but in the relation of income to outgo.",
+   "by": "Ralph Waldo Emerson"
+  }
+ },
+ {
+  "id": "q053",
+  "day": 53,
+  "category": "work",
+  "author": "Thomas Carlyle",
+  "sourceRef": "Past and Present (1843), Book III, ch. XI 'Labour'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/13534/pg13534.txt",
+  "attributionType": "public-domain",
+  "idea": "find-your-work",
+  "indian": false,
+  "en": {
+   "text": "Blessed is he who has found his work; let him ask no other blessedness.",
+   "by": "Thomas Carlyle"
+  }
+ },
+ {
+  "id": "q054",
+  "day": 54,
+  "category": "money",
+  "author": "Thomas Jefferson",
+  "sourceRef": "Letter to Thomas Jefferson Smith, 21 February 1825 (\"A Decalogue of Canons for Observation in Practical Life\"), canon 4",
+  "sourceUrl": "https://en.wikiquote.org/wiki/Thomas_Jefferson",
+  "attributionType": "public-domain",
+  "idea": "think-before-buying",
+  "indian": false,
+  "en": {
+   "text": "Never buy what you do not want, because it is cheap; it will be dear to you.",
+   "by": "Thomas Jefferson"
+  }
+ },
+ {
+  "id": "q055",
+  "day": 55,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "slow-clock-habits",
+  "indian": true,
+  "en": {
+   "text": "Good money habits run on a slow clock. Be patient with the clock.",
+   "by": null
+  }
+ },
+ {
+  "id": "q056",
+  "day": 56,
+  "category": "work",
+  "author": "Benjamin Franklin",
+  "sourceRef": "The Way to Wealth (1758)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Way_to_wealth,_or,_Poor_Richard%27s_maxims_improved/Way_to_Wealth,_or,_Poor_Richard%27s_Maxims_Improved",
+  "attributionType": "public-domain",
+  "idea": "diligence-makes-luck",
+  "indian": false,
+  "en": {
+   "text": "Diligence is the mother of good luck.",
+   "by": "Benjamin Franklin"
+  }
+ },
+ {
+  "id": "q057",
+  "day": 57,
+  "category": "money",
+  "author": "Theodore T. Munger",
+  "sourceRef": "On the Threshold (1881), ch. \"Thrift\", p. 94",
+  "sourceUrl": "https://archive.org/download/onthreshold00mun/onthreshold00mun_djvu.txt",
+  "attributionType": "public-domain",
+  "idea": "track-spending",
+  "indian": false,
+  "en": {
+   "text": "The habit of keeping a strict account of personal expenses down to the penny has great educational power.",
+   "by": "T. T. Munger"
+  }
+ },
+ {
+  "id": "q058",
+  "day": 58,
+  "category": "inspiration",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 666",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "firm-will-achieves",
+  "indian": true,
+  "en": {
+   "text": "What people plan, they gain just as they planned it, if they are firm of will.",
+   "by": "Thiruvalluvar, Tirukkural 666"
+  }
+ },
+ {
+  "id": "q059",
+  "day": 59,
+  "category": "money",
+  "author": null,
+  "sourceRef": "P. Percival, Tamil Proverbs with their English Translation (2nd ed., archive.org scan dated 1877), no. 3245",
+  "sourceUrl": "https://archive.org/details/tamilproverbswi01percgoog",
+  "attributionType": "proverb",
+  "idea": "rich-by-wanting-less",
+  "indian": true,
+  "en": {
+   "text": "Gather little by little, and live well.",
+   "by": "Tamil proverb"
+  }
+ },
+ {
+  "id": "q060",
+  "day": 60,
+  "category": "investing",
+  "author": "Seneca",
+  "sourceRef": "Moral Letters to Lucilius, Letter 13.4, tr. R. M. Gummere (1917)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Moral_letters_to_Lucilius/Letter_13",
+  "attributionType": "public-domain",
+  "idea": "dont-suffer-in-advance",
+  "indian": false,
+  "en": {
+   "text": "What I advise you to do is, not to be unhappy before the crisis comes.",
+   "by": "Seneca"
+  }
+ },
+ {
+  "id": "q061",
+  "day": 61,
+  "category": "work",
+  "author": "Marcus Aurelius",
+  "sourceRef": "Meditations (Thoughts), Book V.1, tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/15877/pg15877.txt",
+  "attributionType": "public-domain",
+  "idea": "rise-to-your-work",
+  "indian": false,
+  "en": {
+   "text": "In the morning when thou risest unwillingly, let this thought be present—I am rising to the work of a human being.",
+   "by": "Marcus Aurelius"
+  }
+ },
+ {
+  "id": "q062",
+  "day": 62,
+  "category": "money",
+  "author": "Chanakya",
+  "sourceRef": "Chanakya Niti 1.7; published translation: K. Raghunathji, 'Vriddha-Chanakya, or the Maxims of Chanakya' (Bombay: Family Printing Press), ch. 1 no. 7",
+  "sourceUrl": "https://sa.wikisource.org/wiki/%E0%A4%9A%E0%A4%BE%E0%A4%A3%E0%A4%95%E0%A5%8D%E0%A4%AF%E0%A4%A8%E0%A5%80%E0%A4%A4%E0%A4%BF%E0%A4%83",
+  "attributionType": "public-domain",
+  "idea": "rainy-day-reserve",
+  "indian": true,
+  "en": {
+   "text": "Save money for bad times; do not think the rich are safe. Fortune can shift, and even savings can perish.",
+   "by": "Chanakya Niti 1.7"
+  }
+ },
+ {
+  "id": "q063",
+  "day": 63,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "quiet-plan-loud-headlines",
+  "indian": true,
+  "en": {
+   "text": "Headlines are loud and short-lived. Let your plan be quiet and long-lived.",
+   "by": null
+  }
+ },
+ {
+  "id": "q064",
+  "day": 64,
+  "category": "money",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 1005",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "wealth-is-for-use",
+  "indian": true,
+  "en": {
+   "text": "Those who neither give nor enjoy what they have are poor, though they hold crores heaped up.",
+   "by": "Thiruvalluvar, Tirukkural 1005"
+  }
+ },
+ {
+  "id": "q065",
+  "day": 65,
+  "category": "inspiration",
+  "author": "Baddena",
+  "sourceRef": "Sumati Satakam 69",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B8%E0%B1%81%E0%B0%AE%E0%B0%A4%E0%B1%80_%E0%B0%B6%E0%B0%A4%E0%B0%95%E0%B0%AE%E0%B1%81_-_%E0%B0%B0%E0%B1%86%E0%B0%82%E0%B0%A1%E0%B0%B5%E0%B0%AD%E0%B0%BE%E0%B0%97%E0%B0%82",
+  "attributionType": "public-domain",
+  "idea": "patience-in-hard-times",
+  "indian": true,
+  "en": {
+   "text": "Do not lose heart once hard times have come.",
+   "by": "Baddena, Sumati Satakam 69"
+  }
+ },
+ {
+  "id": "q066",
+  "day": 66,
+  "category": "work",
+  "author": "Lao Tzu",
+  "sourceRef": "Tao Te Ching, ch. 64.2, tr. James Legge (1891)",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/216/pg216.txt",
+  "attributionType": "public-domain",
+  "idea": "begin-small",
+  "indian": false,
+  "en": {
+   "text": "The journey of a thousand li commenced with a single step.",
+   "by": "Lao Tzu"
+  }
+ },
+ {
+  "id": "q067",
+  "day": 67,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "budget-with-room-for-joy",
+  "indian": true,
+  "en": {
+   "text": "Leave room in the budget for small joys. A plan you enjoy is a plan you keep.",
+   "by": null
+  }
+ },
+ {
+  "id": "q068",
+  "day": 68,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "review-yearly-not-daily",
+  "indian": true,
+  "en": {
+   "text": "Review your SIPs once a year, not once a day.",
+   "by": null
+  }
+ },
+ {
+  "id": "q069",
+  "day": 69,
+  "category": "money",
+  "author": "Samuel Smiles",
+  "sourceRef": "Thrift (1875), ch. VI \"Methods of Economy\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/1/4/4/1/14418/14418-0.txt",
+  "attributionType": "public-domain",
+  "idea": "saving-enables-giving",
+  "indian": false,
+  "en": {
+   "text": "Without economy, a man cannot be generous.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q070",
+  "day": 70,
+  "category": "work",
+  "author": "Sarvajna",
+  "sourceRef": "Sarvajna, tripadi no. 1134 in 'ಸರ್ವಜ್ಞನ ವಚನಗಳು' (Kannada Wikisource numbering)",
+  "sourceUrl": "https://kn.wikisource.org/wiki/%E0%B2%B8%E0%B2%B0%E0%B3%8D%E0%B2%B5%E0%B2%9C%E0%B3%8D%E0%B2%9E%E0%B2%A8_%E0%B2%B5%E0%B2%9A%E0%B2%A8%E0%B2%97%E0%B2%B3%E0%B3%81",
+  "attributionType": "public-domain",
+  "idea": "effort-over-fate",
+  "indian": true,
+  "en": {
+   "text": "Miss the season to sow, forget the arrow in battle or the coracle at the river, and why blame fate?",
+   "by": "Sarvajna"
+  }
+ },
+ {
+  "id": "q071",
+  "day": 71,
+  "category": "money",
+  "author": "Poonthanam Nambudiri",
+  "sourceRef": "Jnanappana (Poonthanam), passage on the craving for wealth",
+  "sourceUrl": "https://ml.wikisource.org/wiki/%E0%B4%9C%E0%B5%8D%E0%B4%9E%E0%B4%BE%E0%B4%A8%E0%B4%AA%E0%B5%8D%E0%B4%AA%E0%B4%BE%E0%B4%A8",
+  "attributionType": "public-domain",
+  "idea": "never-enough",
+  "indian": true,
+  "en": {
+   "text": "However much wealth one has, the mind is never satisfied.",
+   "by": "Poonthanam, Jnanappana"
+  }
+ },
+ {
+  "id": "q072",
+  "day": 72,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "hi.wikiquote, \"हिन्दी लोकोक्तियाँ\"",
+  "sourceUrl": "https://hi.wikiquote.org/wiki/हिन्दी_लोकोक्तियाँ",
+  "attributionType": "proverb",
+  "idea": "haste-spoils",
+  "indian": true,
+  "en": {
+   "text": "Oil pressed in a hurry is half oil, half water.",
+   "by": "Hindi proverb"
+  }
+ },
+ {
+  "id": "q073",
+  "day": 73,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "honest-starting-point",
+  "indian": true,
+  "en": {
+   "text": "Every fresh start begins with an honest look at where you stand today.",
+   "by": null
+  }
+ },
+ {
+  "id": "q074",
+  "day": 74,
+  "category": "money",
+  "author": "Abdul Rahim Khan-i-Khanan (Rahim)",
+  "sourceRef": "Rahim, doha no. 123 in Rahim-Kavitavali (ed. Surendranath Tiwari, 1926), 'Dohe'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%B0%E0%A4%B9%E0%A5%80%E0%A4%AE-%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE%E0%A4%B5%E0%A4%B2%E0%A5%80/%E0%A4%A6%E0%A5%8B%E0%A4%B9%E0%A5%87",
+  "attributionType": "public-domain",
+  "idea": "fortunes-change",
+  "indian": true,
+  "en": {
+   "text": "When disaster strikes, wealth does not stay, even lakhs and crores; it fades like the stars at dawn.",
+   "by": "Rahim"
+  }
+ },
+ {
+  "id": "q075",
+  "day": 75,
+  "category": "work",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 605",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "do-it-now",
+  "indian": true,
+  "en": {
+   "text": "Delay, forgetfulness, idleness and sleep: these four are the boat of those headed for ruin.",
+   "by": "Thiruvalluvar, Tirukkural 605"
+  }
+ },
+ {
+  "id": "q076",
+  "day": 76,
+  "category": "money",
+  "author": null,
+  "sourceRef": "S. W. Fallon, A Dictionary of Hindustani Proverbs (1886), p. 47, under \"Būnd\"",
+  "sourceUrl": "https://archive.org/details/hindustani-proverbs-dictionary-marwari-punjabi-maggah-bhojpuri-tirhuti",
+  "attributionType": "proverb",
+  "idea": "drop-by-drop",
+  "indian": true,
+  "en": {
+   "text": "Drop by drop, the pond fills.",
+   "by": "Hindi proverb"
+  }
+ },
+ {
+  "id": "q077",
+  "day": 77,
+  "category": "investing",
+  "author": "Samuel Smiles",
+  "sourceRef": "Self-Help (1859), ch. IV 'Application and Perseverance'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/935/pg935.txt",
+  "attributionType": "public-domain",
+  "idea": "great-things-take-time",
+  "indian": false,
+  "en": {
+   "text": "Great results cannot be achieved at once; and we must be satisfied to advance in life as we walk, step by step.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q078",
+  "day": 78,
+  "category": "money",
+  "author": "Benjamin Franklin",
+  "sourceRef": "The Way to Wealth (1758)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Way_to_wealth,_or,_Poor_Richard%27s_maxims_improved/Way_to_Wealth,_or,_Poor_Richard%27s_Maxims_Improved",
+  "attributionType": "public-domain",
+  "idea": "pay-savings-first",
+  "indian": false,
+  "en": {
+   "text": "If you would be wealthy, think of saving as well as of getting.",
+   "by": "Benjamin Franklin"
+  }
+ },
+ {
+  "id": "q079",
+  "day": 79,
+  "category": "investing",
+  "author": "Aristotle",
+  "sourceRef": "Nicomachean Ethics I.7, tr. D. P. Chase (1847)",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/8438/pg8438.txt",
+  "attributionType": "public-domain",
+  "idea": "one-day-proves-nothing",
+  "indian": false,
+  "en": {
+   "text": "It is not one swallow or one fine day that makes a spring.",
+   "by": "Aristotle"
+  }
+ },
+ {
+  "id": "q080",
+  "day": 80,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "tidy-business-records",
+  "indian": true,
+  "en": {
+   "text": "Keep invoices, GST papers and bank records tidy; a tidy business is easier to grow.",
+   "by": null
+  }
+ },
+ {
+  "id": "q081",
+  "day": 81,
+  "category": "money",
+  "author": "Rabindranath Tagore",
+  "sourceRef": "Stray Birds (1916), no. 231",
+  "sourceUrl": "https://en.wikisource.org/wiki/Stray_Birds",
+  "attributionType": "public-domain",
+  "idea": "gold-weighs-wings",
+  "indian": true,
+  "en": {
+   "text": "Set bird's wings with gold and it will never again soar in the sky.",
+   "by": "Rabindranath Tagore"
+  }
+ },
+ {
+  "id": "q082",
+  "day": 82,
+  "category": "inspiration",
+  "author": "Kabir",
+  "sourceRef": "Kabir, sakhi no. 128 in Kavita-Kaumudi vol. 1 (ed. Ramnaresh Tripathi, 1918), section 3 'Kabir Sahab'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE-%E0%A4%95%E0%A5%8C%E0%A4%AE%E0%A5%81%E0%A4%A6%E0%A5%80_%E0%A5%A7/%E0%A5%A9_%E0%A4%95%E0%A4%AC%E0%A5%80%E0%A4%B0_%E0%A4%B8%E0%A4%BE%E0%A4%B9%E0%A4%AC",
+  "attributionType": "public-domain",
+  "idea": "dive-deep-to-find",
+  "indian": true,
+  "en": {
+   "text": "Those who searched, found, by diving into deep water; the one afraid of drowning sat on the shore.",
+   "by": "Kabir"
+  }
+ },
+ {
+  "id": "q083",
+  "day": 83,
+  "category": "money",
+  "author": "Abdul Rahim Khan-i-Khanan (Rahim)",
+  "sourceRef": "Rahim, doha no. 39 in Rahim-Kavitavali (ed. Surendranath Tiwari, 1926), 'Dohe'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%B0%E0%A4%B9%E0%A5%80%E0%A4%AE-%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE%E0%A4%B5%E0%A4%B2%E0%A5%80/%E0%A4%A6%E0%A5%8B%E0%A4%B9%E0%A5%87",
+  "attributionType": "public-domain",
+  "idea": "income-above-outgo",
+  "indian": true,
+  "en": {
+   "text": "Spending up, earnings down, the ruler hard of heart: what can such people do? Like fish in shallow water.",
+   "by": "Rahim"
+  }
+ },
+ {
+  "id": "q084",
+  "day": 84,
+  "category": "investing",
+  "author": "Baddena",
+  "sourceRef": "Sumati Satakam 100",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B8%E0%B1%81%E0%B0%AE%E0%B0%A4%E0%B1%80_%E0%B0%B6%E0%B0%A4%E0%B0%95%E0%B0%AE%E0%B1%81_-_%E0%B0%B0%E0%B1%86%E0%B0%82%E0%B0%A1%E0%B0%B5%E0%B0%AD%E0%B0%BE%E0%B0%97%E0%B0%82",
+  "attributionType": "public-domain",
+  "idea": "verify-before-acting",
+  "indian": true,
+  "en": {
+   "text": "Listen to whatever anyone tells you, but do not rush on hearing it; examine it first.",
+   "by": "Baddena, Sumati Satakam 100"
+  }
+ },
+ {
+  "id": "q085",
+  "day": 85,
+  "category": "work",
+  "author": null,
+  "sourceRef": "P. Percival, Tamil Proverbs (archive.org scan dated 1877), no. 1208",
+  "sourceUrl": "https://archive.org/details/tamilproverbswi01percgoog",
+  "attributionType": "proverb",
+  "idea": "learning-is-real-wealth",
+  "indian": true,
+  "en": {
+   "text": "True wealth is the wealth of learning.",
+   "by": "Tamil proverb"
+  }
+ },
+ {
+  "id": "q086",
+  "day": 86,
+  "category": "money",
+  "author": "Benjamin Franklin",
+  "sourceRef": "The Way to Wealth (1758)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Way_to_wealth_(1)",
+  "attributionType": "public-domain",
+  "idea": "think-before-buying",
+  "indian": false,
+  "en": {
+   "text": "At a great pennyworth pause a while.",
+   "by": "Benjamin Franklin"
+  }
+ },
+ {
+  "id": "q087",
+  "day": 87,
+  "category": "inspiration",
+  "author": "Henry David Thoreau",
+  "sourceRef": "Walden (1854), 'Conclusion'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/205/pg205.txt",
+  "attributionType": "public-domain",
+  "idea": "advance-toward-dreams",
+  "indian": false,
+  "en": {
+   "text": "If one advances confidently in the direction of his dreams… he will meet with a success unexpected in common hours.",
+   "by": "Henry David Thoreau"
+  }
+ },
+ {
+  "id": "q088",
+  "day": 88,
+  "category": "money",
+  "author": "P. T. Barnum",
+  "sourceRef": "The Art of Money Getting (1880), opening section on economy",
+  "sourceUrl": "https://gutenberg.pglaf.org/8/5/8/8581/8581.txt",
+  "attributionType": "public-domain",
+  "idea": "track-spending",
+  "indian": false,
+  "en": {
+   "text": "When you find that you have no surplus at the end of the year… mark down every item of expenditure.",
+   "by": "P. T. Barnum"
+  }
+ },
+ {
+  "id": "q089",
+  "day": 89,
+  "category": "investing",
+  "author": "Rabindranath Tagore",
+  "sourceRef": "Stray Birds (1916), no. 96",
+  "sourceUrl": "https://en.wikisource.org/wiki/Stray_Birds",
+  "attributionType": "public-domain",
+  "idea": "ignore-the-noise",
+  "indian": true,
+  "en": {
+   "text": "The noise of the moment scoffs at the music of the Eternal.",
+   "by": "Rabindranath Tagore"
+  }
+ },
+ {
+  "id": "q090",
+  "day": 90,
+  "category": "work",
+  "author": null,
+  "sourceRef": "hi.wikiquote, \"हिन्दी लोकोक्तियाँ\"",
+  "sourceUrl": "https://hi.wikiquote.org/wiki/हिन्दी_लोकोक्तियाँ",
+  "attributionType": "proverb",
+  "idea": "effort-gains-sloth-loses",
+  "indian": true,
+  "en": {
+   "text": "Who runs, gains; who sleeps, loses.",
+   "by": "Hindi proverb"
+  }
+ },
+ {
+  "id": "q091",
+  "day": 91,
+  "category": "money",
+  "author": "Seneca",
+  "sourceRef": "Moral Letters to Lucilius, Letter 2.6, tr. R. M. Gummere (1917)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Moral_letters_to_Lucilius/Letter_2",
+  "attributionType": "public-domain",
+  "idea": "rich-by-wanting-less",
+  "indian": false,
+  "en": {
+   "text": "It is not the man who has too little, but the man who craves more, that is poor.",
+   "by": "Seneca"
+  }
+ },
+ {
+  "id": "q092",
+  "day": 92,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "plan-tax-at-year-start",
+  "indian": true,
+  "calendar": "apr1",
+  "en": {
+   "text": "A new financial year begins. Plan this year's tax and savings now, not in a March rush.",
+   "by": null
+  }
+ },
+ {
+  "id": "q093",
+  "day": 93,
+  "category": "investing",
+  "author": "Chanakya",
+  "sourceRef": "Chanakya Niti 1.13; published translation: K. Raghunathji, 'Vriddha-Chanakya, or the Maxims of Chanakya' (Bombay: Family Printing Press), ch. 1 no. 13",
+  "sourceUrl": "https://sa.wikisource.org/wiki/%E0%A4%9A%E0%A4%BE%E0%A4%A3%E0%A4%95%E0%A5%8D%E0%A4%AF%E0%A4%A8%E0%A5%80%E0%A4%A4%E0%A4%BF%E0%A4%83",
+  "attributionType": "public-domain",
+  "idea": "certain-over-uncertain",
+  "indian": true,
+  "en": {
+   "text": "Whoever gives up the certain to chase the uncertain loses the certain, and the uncertain is as good as lost.",
+   "by": "Chanakya Niti 1.13"
+  }
+ },
+ {
+  "id": "q094",
+  "day": 94,
+  "category": "money",
+  "author": "Samuel Smiles",
+  "sourceRef": "Thrift (1875), ch. XIII \"Great Debtors\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/1/4/4/1/14418/14418-0.txt",
+  "attributionType": "public-domain",
+  "idea": "rainy-day-reserve",
+  "indian": false,
+  "en": {
+   "text": "He can keep within his means, and… reserve a fund of savings against a time of need.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q095",
+  "day": 95,
+  "category": "work",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 467",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "think-before-committing",
+  "indian": true,
+  "en": {
+   "text": "Think first, then undertake the work; to say 'we will think' after starting is a fault.",
+   "by": "Thiruvalluvar, Tirukkural 467"
+  }
+ },
+ {
+  "id": "q096",
+  "day": 96,
+  "category": "money",
+  "author": "Thomas Fuller",
+  "sourceRef": "Gnomologia (1732), no. 5798",
+  "sourceUrl": "https://en.wikiquote.org/wiki/Thomas_Fuller_(writer)",
+  "attributionType": "public-domain",
+  "idea": "wealth-is-for-use",
+  "indian": false,
+  "en": {
+   "text": "Withhold not thy money where there is need; and waste it not where there is none.",
+   "by": "Thomas Fuller"
+  }
+ },
+ {
+  "id": "q097",
+  "day": 97,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "begin-small",
+  "indian": true,
+  "en": {
+   "text": "It is never too late to start, and never too small to begin.",
+   "by": null
+  }
+ },
+ {
+  "id": "q098",
+  "day": 98,
+  "category": "investing",
+  "author": "Abdul Rahim Khan-i-Khanan (Rahim)",
+  "sourceRef": "Rahim, doha no. 169 in Rahim-Kavitavali (ed. Surendranath Tiwari, 1926), 'Dohe'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%B0%E0%A4%B9%E0%A5%80%E0%A4%AE-%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE%E0%A4%B5%E0%A4%B2%E0%A5%80/%E0%A4%A6%E0%A5%8B%E0%A4%B9%E0%A5%87",
+  "attributionType": "public-domain",
+  "idea": "patience-in-hard-times",
+  "indian": true,
+  "en": {
+   "text": "When the days turn against you, sit quietly and wait; when good days return, things come right soon enough.",
+   "by": "Rahim"
+  }
+ },
+ {
+  "id": "q099",
+  "day": 99,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "compare-tax-regimes",
+  "indian": true,
+  "en": {
+   "text": "Choose your tax regime with a calculator, not a guess.",
+   "by": null
+  }
+ },
+ {
+  "id": "q100",
+  "day": 100,
+  "category": "money",
+  "author": "Benjamin Franklin",
+  "sourceRef": "The Way to Wealth (1758)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Way_to_wealth,_or,_Poor_Richard%27s_maxims_improved/Way_to_Wealth,_or,_Poor_Richard%27s_Maxims_Improved",
+  "attributionType": "public-domain",
+  "idea": "small-leaks-sink-ships",
+  "indian": false,
+  "en": {
+   "text": "Beware of little expenses; a small leak will sink a great ship.",
+   "by": "Benjamin Franklin"
+  }
+ },
+ {
+  "id": "q101",
+  "day": 101,
+  "category": "work",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 616",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "effort-over-fate",
+  "indian": true,
+  "en": {
+   "text": "Effort brings prosperity; the lack of effort brings want.",
+   "by": "Thiruvalluvar, Tirukkural 616"
+  }
+ },
+ {
+  "id": "q102",
+  "day": 102,
+  "category": "money",
+  "author": null,
+  "sourceRef": "te.wikiquote, \"సామెతలు - ద\"",
+  "sourceUrl": "https://te.wikiquote.org/wiki/సామెతలు_-_ద",
+  "attributionType": "proverb",
+  "idea": "prepare-while-you-can",
+  "indian": true,
+  "en": {
+   "text": "Set the house in order while the lamp is still lit.",
+   "by": "Telugu proverb"
+  }
+ },
+ {
+  "id": "q103",
+  "day": 103,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "waiting-is-part-of-the-plan",
+  "indian": true,
+  "en": {
+   "text": "The years of waiting are part of the plan, not a delay in it.",
+   "by": null
+  }
+ },
+ {
+  "id": "q104",
+  "day": 104,
+  "category": "money",
+  "author": null,
+  "sourceRef": "U. B. Narasinga Rao, A Handbook of Kannada Proverbs (1912), via kn.wikiquote",
+  "sourceUrl": "https://kn.wikiquote.org/wiki/ಎ_ಹ್ಯಾಂಡ್ಬುಕ್_ಆಫ಼್‌_ಕನ್ನಡ_ಪ್ರಾವರ್ಬ್ಸ್_ಪುಸ್ತಕದಿಂದ_ಗಾದೆಗಳು",
+  "attributionType": "proverb",
+  "idea": "spend-within-means",
+  "indian": true,
+  "en": {
+   "text": "Stretch your legs only as far as your bed allows.",
+   "by": "Kannada proverb"
+  }
+ },
+ {
+  "id": "q105",
+  "day": 105,
+  "category": "inspiration",
+  "author": "John Ruskin",
+  "sourceRef": "Unto This Last (1862), Essay IV \"Ad Valorem\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/3/6/5/4/36541/36541.txt",
+  "attributionType": "public-domain",
+  "idea": "life-is-the-real-wealth",
+  "indian": false,
+  "en": {
+   "text": "There is no wealth but life.",
+   "by": "John Ruskin"
+  }
+ },
+ {
+  "id": "q106",
+  "day": 106,
+  "category": "work",
+  "author": null,
+  "sourceRef": "S. W. Fallon, A Dictionary of Hindustani Proverbs (1886), p. 2, under \"Ab\"",
+  "sourceUrl": "https://archive.org/details/hindustani-proverbs-dictionary-marwari-punjabi-maggah-bhojpuri-tirhuti",
+  "attributionType": "proverb",
+  "idea": "do-it-now",
+  "indian": true,
+  "en": {
+   "text": "What use is regret once the birds have eaten the field?",
+   "by": "Hindi proverb"
+  }
+ },
+ {
+  "id": "q107",
+  "day": 107,
+  "category": "investing",
+  "author": "Marcus Aurelius",
+  "sourceRef": "Meditations (Thoughts), Book IV.49, tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/15877/pg15877.txt",
+  "attributionType": "public-domain",
+  "idea": "stand-firm-in-storms",
+  "indian": false,
+  "en": {
+   "text": "Be like the promontory against which the waves continually break, but it stands firm.",
+   "by": "Marcus Aurelius"
+  }
+ },
+ {
+  "id": "q108",
+  "day": 108,
+  "category": "money",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 475",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "small-loads-add-up",
+  "indian": true,
+  "en": {
+   "text": "Even peacock feathers, piled on too high, will break the axle of the cart.",
+   "by": "Thiruvalluvar, Tirukkural 475"
+  }
+ },
+ {
+  "id": "q109",
+  "day": 109,
+  "category": "money",
+  "author": null,
+  "sourceRef": "mr.wikiquote, \"म्हणी\"",
+  "sourceUrl": "https://mr.wikiquote.org/wiki/म्हणी",
+  "attributionType": "proverb",
+  "idea": "dont-borrow-to-celebrate",
+  "indian": true,
+  "en": {
+   "text": "A festival paid for with a loan becomes a cause of sorrow.",
+   "by": "Marathi proverb"
+  }
+ },
+ {
+  "id": "q110",
+  "day": 110,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "daily-cash-count",
+  "indian": true,
+  "en": {
+   "text": "Small shop or startup, know your cash in and cash out by the end of each day.",
+   "by": null
+  }
+ },
+ {
+  "id": "q111",
+  "day": 111,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "Japanese proverb (石の上にも三年), via en.wikiquote \"Japanese proverbs\"",
+  "sourceUrl": "https://en.wikiquote.org/wiki/Japanese_proverbs",
+  "attributionType": "proverb",
+  "idea": "perseverance-warms-the-stone",
+  "indian": false,
+  "en": {
+   "text": "Sit three years on a cold stone and even it grows warm.",
+   "by": "Japanese proverb"
+  }
+ },
+ {
+  "id": "q112",
+  "day": 112,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "score-from-promises-kept",
+  "indian": true,
+  "en": {
+   "text": "A credit score is built slowly, from small promises kept on time.",
+   "by": null
+  }
+ },
+ {
+  "id": "q113",
+  "day": 113,
+  "category": "inspiration",
+  "author": "Basavanna",
+  "sourceRef": "Basavanna, vachana no. 235 (Kannada Wikisource, 'ಕಳಬೇಡ, ಕೊಲಬೇಡ, ಹುಸಿಯ')",
+  "sourceUrl": "https://kn.wikisource.org/wiki/%E0%B2%95%E0%B2%B3%E0%B2%AC%E0%B3%87%E0%B2%A1,_%E0%B2%95%E0%B3%8A%E0%B2%B2%E0%B2%AC%E0%B3%87%E0%B2%A1,_%E0%B2%B9%E0%B3%81%E0%B2%B8%E0%B2%BF%E0%B2%AF",
+  "attributionType": "public-domain",
+  "idea": "inner-and-outer-honesty",
+  "indian": true,
+  "en": {
+   "text": "Do not steal, kill or lie; do not rage, scorn others, praise yourself or run others down.",
+   "by": "Basavanna"
+  }
+ },
+ {
+  "id": "q114",
+  "day": 114,
+  "category": "money",
+  "author": "P. T. Barnum",
+  "sourceRef": "The Art of Money Getting (1880), opening section on economy",
+  "sourceUrl": "https://gutenberg.pglaf.org/8/5/8/8581/8581.txt",
+  "attributionType": "public-domain",
+  "idea": "income-above-outgo",
+  "indian": false,
+  "en": {
+   "text": "True economy consists in always making the income exceed the out-go.",
+   "by": "P. T. Barnum"
+  }
+ },
+ {
+  "id": "q115",
+  "day": 115,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "foundation-before-investing",
+  "indian": true,
+  "en": {
+   "text": "Before investing, put the emergency fund and insurance in place. Foundations first.",
+   "by": null
+  }
+ },
+ {
+  "id": "q116",
+  "day": 116,
+  "category": "work",
+  "author": null,
+  "sourceRef": "A. Manwaring, Marathi Proverbs (Oxford, 1899), no. 1506",
+  "sourceUrl": "https://archive.org/details/marathiproverbs00manwgoog",
+  "attributionType": "proverb",
+  "idea": "growth-through-hardship",
+  "indian": true,
+  "en": {
+   "text": "No stone becomes an idol without bearing the chisel's blows.",
+   "by": "Marathi proverb"
+  }
+ },
+ {
+  "id": "q117",
+  "day": 117,
+  "category": "money",
+  "author": "Benjamin Franklin",
+  "sourceRef": "The Way to Wealth (1758)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Way_to_wealth_(1)",
+  "attributionType": "public-domain",
+  "idea": "think-before-buying",
+  "indian": false,
+  "en": {
+   "text": "Ere fancy you consult, consult your purse.",
+   "by": "Benjamin Franklin"
+  }
+ },
+ {
+  "id": "q118",
+  "day": 118,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "P. Percival, Tamil Proverbs (archive.org scan dated 1877), no. 1108",
+  "sourceUrl": "https://archive.org/details/tamilproverbswi01percgoog",
+  "attributionType": "proverb",
+  "idea": "youthful-effort-supports-old-age",
+  "indian": true,
+  "en": {
+   "text": "Effort made in youth will look after you in old age.",
+   "by": "Tamil proverb"
+  }
+ },
+ {
+  "id": "q119",
+  "day": 119,
+  "category": "money",
+  "author": null,
+  "sourceRef": "hi.wikiquote, \"हिन्दी लोकोक्तियाँ\"",
+  "sourceUrl": "https://hi.wikiquote.org/wiki/हिन्दी_लोकोक्तियाँ",
+  "attributionType": "proverb",
+  "idea": "track-spending",
+  "indian": true,
+  "en": {
+   "text": "Whoever is careless in keeping accounts will find the purse lighter.",
+   "by": "Hindi proverb"
+  }
+ },
+ {
+  "id": "q120",
+  "day": 120,
+  "category": "work",
+  "author": "Rabindranath Tagore",
+  "sourceRef": "Stray Birds (1916), no. 24",
+  "sourceUrl": "https://en.wikisource.org/wiki/Stray_Birds",
+  "attributionType": "public-domain",
+  "idea": "rest-is-part-of-work",
+  "indian": true,
+  "en": {
+   "text": "Rest belongs to the work as the eyelids to the eyes.",
+   "by": "Rabindranath Tagore"
+  }
+ },
+ {
+  "id": "q121",
+  "day": 121,
+  "category": "inspiration",
+  "author": "Kabir",
+  "sourceRef": "Kabir, sakhi no. 16 in Kavita-Kaumudi vol. 1 (ed. Ramnaresh Tripathi, 1918), section 3 'Kabir Sahab'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE-%E0%A4%95%E0%A5%8C%E0%A4%AE%E0%A5%81%E0%A4%A6%E0%A5%80_%E0%A5%A7/%E0%A5%A9_%E0%A4%95%E0%A4%AC%E0%A5%80%E0%A4%B0_%E0%A4%B8%E0%A4%BE%E0%A4%B9%E0%A4%AC",
+  "attributionType": "public-domain",
+  "idea": "time-is-precious",
+  "indian": true,
+  "en": {
+   "text": "Nights lost to sleep, days lost to eating: a life precious as a diamond, traded for a cowrie shell.",
+   "by": "Kabir"
+  }
+ },
+ {
+  "id": "q122",
+  "day": 122,
+  "category": "money",
+  "author": "Henry David Thoreau",
+  "sourceRef": "Walden (1854), 'Where I Lived, and What I Lived For'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/205/pg205.txt",
+  "attributionType": "public-domain",
+  "idea": "rich-by-wanting-less",
+  "indian": false,
+  "en": {
+   "text": "A man is rich in proportion to the number of things which he can afford to let alone.",
+   "by": "Henry David Thoreau"
+  }
+ },
+ {
+  "id": "q123",
+  "day": 123,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "separate-pots-for-goals",
+  "indian": true,
+  "en": {
+   "text": "Give separate goals separate savings, so one never quietly borrows from another.",
+   "by": null
+  }
+ },
+ {
+  "id": "q124",
+  "day": 124,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "minimum-due-is-not-enough",
+  "indian": true,
+  "en": {
+   "text": "Paying the minimum due keeps the card active, not your money safe.",
+   "by": null
+  }
+ },
+ {
+  "id": "q125",
+  "day": 125,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "price-your-time",
+  "indian": true,
+  "en": {
+   "text": "Price your work fairly, and count your time in it. Underpricing is not kindness to yourself.",
+   "by": null
+  }
+ },
+ {
+  "id": "q126",
+  "day": 126,
+  "category": "money",
+  "author": "Benjamin Franklin",
+  "sourceRef": "The Way to Wealth (1758)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Way_to_wealth,_or,_Poor_Richard%27s_maxims_improved/Way_to_Wealth,_or,_Poor_Richard%27s_Maxims_Improved",
+  "attributionType": "public-domain",
+  "idea": "rainy-day-reserve",
+  "indian": false,
+  "en": {
+   "text": "For age and want save what you may; no morning sun lasts a whole day.",
+   "by": "Benjamin Franklin"
+  }
+ },
+ {
+  "id": "q127",
+  "day": 127,
+  "category": "investing",
+  "author": "Vemana",
+  "sourceRef": "Vemana Padyamulu, Book 1 no. 56 (Andhra Bharati numbering of C. P. Brown's edition)",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B5%E0%B1%87%E0%B0%AE%E0%B0%A8_%E0%B0%AA%E0%B0%A6%E0%B1%8D%E0%B0%AF%E0%B0%BE%E0%B0%B2%E0%B1%81%2F%E0%B0%AE",
+  "attributionType": "public-domain",
+  "idea": "look-beneath-the-surface",
+  "indian": true,
+  "en": {
+   "text": "The fig looks golden from outside; split it open and it is full of worms.",
+   "by": "Vemana"
+  }
+ },
+ {
+  "id": "q128",
+  "day": 128,
+  "category": "inspiration",
+  "author": "Rabindranath Tagore",
+  "sourceRef": "Fireflies (1928)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Fireflies",
+  "attributionType": "public-domain",
+  "idea": "faith-before-dawn",
+  "indian": true,
+  "en": {
+   "text": "Faith is the bird that feels the light and sings when the dawn is still dark.",
+   "by": "Rabindranath Tagore"
+  }
+ },
+ {
+  "id": "q129",
+  "day": 129,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "credit-history-opens-doors",
+  "indian": true,
+  "en": {
+   "text": "A clean credit history works quietly for you on the day you need a loan.",
+   "by": null
+  }
+ },
+ {
+  "id": "q130",
+  "day": 130,
+  "category": "work",
+  "author": "P. T. Barnum",
+  "sourceRef": "The Art of Money Getting (1880), \"Don't Get Above Your Business\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/8/5/8/8581/8581.txt",
+  "attributionType": "public-domain",
+  "idea": "effort-gives-value",
+  "indian": false,
+  "en": {
+   "text": "Nothing is worth anything unless it costs effort.",
+   "by": "P. T. Barnum"
+  }
+ },
+ {
+  "id": "q131",
+  "day": 131,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "read-the-exclusions",
+  "indian": true,
+  "en": {
+   "text": "Read what your policy does not cover before the day you need it.",
+   "by": null
+  }
+ },
+ {
+  "id": "q132",
+  "day": 132,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "transfer-pf-on-job-change",
+  "indian": true,
+  "en": {
+   "text": "When you change jobs, move your PF along with you. The years add up.",
+   "by": null
+  }
+ },
+ {
+  "id": "q133",
+  "day": 133,
+  "category": "money",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 758",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "own-funds-first",
+  "indian": true,
+  "en": {
+   "text": "Taking up a venture with money in your own hands is like watching an elephant fight from a hilltop.",
+   "by": "Thiruvalluvar, Tirukkural 758"
+  }
+ },
+ {
+  "id": "q134",
+  "day": 134,
+  "category": "work",
+  "author": "Narayana (Hitopadesha)",
+  "sourceRef": "Hitopadesha, Prastavika (introduction), verse 30",
+  "sourceUrl": "https://sa.wikisource.org/wiki/%E0%A4%B9%E0%A4%BF%E0%A4%A4%E0%A5%8B%E0%A4%AA%E0%A4%A6%E0%A5%87%E0%A4%B6%E0%A4%83%E0%A5%A6%E0%A5%A7",
+  "attributionType": "public-domain",
+  "idea": "effort-over-fate",
+  "indian": true,
+  "en": {
+   "text": "As a chariot cannot move on one wheel, fortune does not succeed without human effort.",
+   "by": "Hitopadesha, introduction 30"
+  }
+ },
+ {
+  "id": "q135",
+  "day": 135,
+  "category": "inspiration",
+  "author": "Lao Tzu",
+  "sourceRef": "Tao Te Ching, ch. 33.1, tr. James Legge (1891)",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/216/pg216.txt",
+  "attributionType": "public-domain",
+  "idea": "content-and-energetic",
+  "indian": false,
+  "en": {
+   "text": "He who is satisfied with his lot is rich; he who goes on acting with energy has a firm will.",
+   "by": "Lao Tzu"
+  }
+ },
+ {
+  "id": "q136",
+  "day": 136,
+  "category": "investing",
+  "author": "Ralph Waldo Emerson",
+  "sourceRef": "Essays: First Series (1841), 'Prudence'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/2944/pg2944.txt",
+  "attributionType": "public-domain",
+  "idea": "law-not-luck",
+  "indian": false,
+  "en": {
+   "text": "Let him learn that every thing in nature, even motes and feathers, go by law and not by luck.",
+   "by": "Ralph Waldo Emerson"
+  }
+ },
+ {
+  "id": "q137",
+  "day": 137,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "pay-card-in-full",
+  "indian": true,
+  "en": {
+   "text": "Pay the full credit card bill by the due date, and the card stays a convenience.",
+   "by": null
+  }
+ },
+ {
+  "id": "q138",
+  "day": 138,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "buffer-buys-time",
+  "indian": true,
+  "en": {
+   "text": "A few months of expenses set aside buys you time to think, not just time to pay.",
+   "by": null
+  }
+ },
+ {
+  "id": "q139",
+  "day": 139,
+  "category": "work",
+  "author": null,
+  "sourceRef": "te.wikiquote, \"సామెతలు - ఆ\"",
+  "sourceUrl": "https://te.wikiquote.org/wiki/సామెతలు_-_ఆ",
+  "attributionType": "proverb",
+  "idea": "do-it-now",
+  "indian": true,
+  "en": {
+   "text": "Delay turns even nectar into poison.",
+   "by": "Telugu proverb"
+  }
+ },
+ {
+  "id": "q140",
+  "day": 140,
+  "category": "investing",
+  "author": "Lao Tzu",
+  "sourceRef": "Tao Te Ching, ch. 63.2, tr. James Legge (1891)",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/216/pg216.txt",
+  "attributionType": "public-domain",
+  "idea": "act-while-it-is-easy",
+  "indian": false,
+  "en": {
+   "text": "All difficult things in the world are sure to arise from a previous state in which they were easy.",
+   "by": "Lao Tzu"
+  }
+ },
+ {
+  "id": "q141",
+  "day": 141,
+  "category": "money",
+  "author": "Sarvajna",
+  "sourceRef": "Sarvajna, tripadi no. 1159 in 'ಸರ್ವಜ್ಞನ ವಚನಗಳು' (Kannada Wikisource numbering)",
+  "sourceUrl": "https://kn.wikisource.org/wiki/%E0%B2%B8%E0%B2%B0%E0%B3%8D%E0%B2%B5%E0%B2%9C%E0%B3%8D%E0%B2%9E%E0%B2%A8_%E0%B2%B5%E0%B2%9A%E0%B2%A8%E0%B2%97%E0%B2%B3%E0%B3%81",
+  "attributionType": "public-domain",
+  "idea": "debt-free-home",
+  "indian": true,
+  "en": {
+   "text": "Milk-rice is good, a garland is good, a home without debt is good, and children at play are good.",
+   "by": "Sarvajna"
+  }
+ },
+ {
+  "id": "q142",
+  "day": 142,
+  "category": "inspiration",
+  "author": "Ralph Waldo Emerson",
+  "sourceRef": "The Conduct of Life (1860), 'Power'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/39827/pg39827.txt",
+  "attributionType": "public-domain",
+  "idea": "health-first",
+  "indian": false,
+  "en": {
+   "text": "The first wealth is health.",
+   "by": "Ralph Waldo Emerson"
+  }
+ },
+ {
+  "id": "q143",
+  "day": 143,
+  "category": "money",
+  "author": "Samuel Smiles",
+  "sourceRef": "Self-Help (1859), ch. X \"Money—Its Use and Abuse\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/9/3/935/935-0.txt",
+  "attributionType": "public-domain",
+  "idea": "money-tests-wisdom",
+  "indian": false,
+  "en": {
+   "text": "How a man uses money—makes it, saves it, and spends it—is perhaps one of the best tests of practical wisdom.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q144",
+  "day": 144,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "sip-is-a-habit",
+  "indian": true,
+  "en": {
+   "text": "A SIP is a habit before it is an investment. The habit is the part you control.",
+   "by": null
+  }
+ },
+ {
+  "id": "q145",
+  "day": 145,
+  "category": "work",
+  "author": "Thomas Carlyle",
+  "sourceRef": "Past and Present (1843), Book III, ch. XI 'Labour'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/13534/pg13534.txt",
+  "attributionType": "public-domain",
+  "idea": "hope-in-work",
+  "indian": false,
+  "en": {
+   "text": "There is always hope in a man that actually and earnestly works.",
+   "by": "Thomas Carlyle"
+  }
+ },
+ {
+  "id": "q146",
+  "day": 146,
+  "category": "money",
+  "author": "P. T. Barnum",
+  "sourceRef": "The Art of Money Getting (1880), opening section on economy",
+  "sourceUrl": "https://gutenberg.pglaf.org/8/5/8/8581/8581.txt",
+  "attributionType": "public-domain",
+  "idea": "income-above-outgo",
+  "indian": false,
+  "en": {
+   "text": "We will regulate our out-go by our income, and lay up something for a rainy day.",
+   "by": "P. T. Barnum"
+  }
+ },
+ {
+  "id": "q147",
+  "day": 147,
+  "category": "investing",
+  "author": "Ralph Waldo Emerson",
+  "sourceRef": "Essays: First Series (1841), 'Prudence'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/2944/pg2944.txt",
+  "attributionType": "public-domain",
+  "idea": "seeds-and-roots",
+  "indian": false,
+  "en": {
+   "text": "The thrift of the agriculturist, to stick a tree between whiles, because it will grow whilst he sleeps.",
+   "by": "Ralph Waldo Emerson"
+  }
+ },
+ {
+  "id": "q148",
+  "day": 148,
+  "category": "money",
+  "author": "Benjamin Franklin",
+  "sourceRef": "The Way to Wealth (1758)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Way_to_wealth_(1)",
+  "attributionType": "public-domain",
+  "idea": "think-before-buying",
+  "indian": false,
+  "en": {
+   "text": "It is easier to suppress the first desire than to satisfy all that follow it.",
+   "by": "Benjamin Franklin"
+  }
+ },
+ {
+  "id": "q149",
+  "day": 149,
+  "category": "work",
+  "author": "Samuel Smiles",
+  "sourceRef": "Self-Help (1859), ch. IV 'Application and Perseverance'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/935/pg935.txt",
+  "attributionType": "public-domain",
+  "idea": "work-cheerfully-wait-patiently",
+  "indian": false,
+  "en": {
+   "text": "To wait patiently, however, men must work cheerfully.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q150",
+  "day": 150,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": "S. W. Fallon, A Dictionary of Hindustani Proverbs (1886), p. 236, under \"Thes\"",
+  "sourceUrl": "https://archive.org/details/hindustani-proverbs-dictionary-marwari-punjabi-maggah-bhojpuri-tirhuti",
+  "attributionType": "proverb",
+  "idea": "stumble-adds-wisdom",
+  "indian": true,
+  "en": {
+   "text": "A stumble adds to wisdom.",
+   "by": "Hindi proverb"
+  }
+ },
+ {
+  "id": "q151",
+  "day": 151,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "track-spending",
+  "indian": true,
+  "en": {
+   "text": "Your bank statement tells the story of your month. Read it before you plan the next one.",
+   "by": null
+  }
+ },
+ {
+  "id": "q152",
+  "day": 152,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "question-quick-returns",
+  "indian": true,
+  "en": {
+   "text": "Anything that promises sure, quick and high returns deserves three slow questions.",
+   "by": null
+  }
+ },
+ {
+  "id": "q153",
+  "day": 153,
+  "category": "money",
+  "author": null,
+  "sourceRef": "ml.wikiquote, \"പഴഞ്ചൊല്ലുകൾ/ക\"",
+  "sourceUrl": "https://ml.wikiquote.org/wiki/പഴഞ്ചൊല്ലുകൾ/ക",
+  "attributionType": "proverb",
+  "idea": "lend-only-what-you-can-spare",
+  "indian": true,
+  "en": {
+   "text": "Do not lend so much that you go hungry yourself.",
+   "by": "Malayalam proverb"
+  }
+ },
+ {
+  "id": "q154",
+  "day": 154,
+  "category": "work",
+  "author": "Sarvajna",
+  "sourceRef": "Sarvajna, tripadi no. 1112 in 'ಸರ್ವಜ್ಞನ ವಚನಗಳು' (Kannada Wikisource numbering)",
+  "sourceUrl": "https://kn.wikisource.org/wiki/%E0%B2%B8%E0%B2%B0%E0%B3%8D%E0%B2%B5%E0%B2%9C%E0%B3%8D%E0%B2%9E%E0%B2%A8_%E0%B2%B5%E0%B2%9A%E0%B2%A8%E0%B2%97%E0%B2%B3%E0%B3%81",
+  "attributionType": "public-domain",
+  "idea": "no-idleness",
+  "indian": true,
+  "en": {
+   "text": "The idle get not even gruel; for one never lazy at work, fruit comes like jackfruit, straight from the root.",
+   "by": "Sarvajna"
+  }
+ },
+ {
+  "id": "q155",
+  "day": 155,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "honest-disclosure",
+  "indian": true,
+  "en": {
+   "text": "Answer every question on an insurance form honestly; a future claim depends on it.",
+   "by": null
+  }
+ },
+ {
+  "id": "q156",
+  "day": 156,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "steady-slowly-is-a-plan",
+  "indian": true,
+  "en": {
+   "text": "Getting rich quick is a story. Getting steady slowly is a plan.",
+   "by": null
+  }
+ },
+ {
+  "id": "q157",
+  "day": 157,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "notice-small-wins",
+  "indian": true,
+  "en": {
+   "text": "Small wins count. Notice them, and they will keep you going.",
+   "by": null
+  }
+ },
+ {
+  "id": "q158",
+  "day": 158,
+  "category": "money",
+  "author": "Aesop",
+  "sourceRef": "Aesop's Fables, 'The Ants and the Grasshopper', tr. G. F. Townsend (1867)",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/21/pg21.txt",
+  "attributionType": "public-domain",
+  "idea": "save-in-good-times",
+  "indian": false,
+  "en": {
+   "text": "Why did you not treasure up food during the summer?",
+   "by": "Aesop"
+  }
+ },
+ {
+  "id": "q159",
+  "day": 159,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "trust-brings-customers",
+  "indian": true,
+  "en": {
+   "text": "A customer who trusts you comes back. Trust is the cheapest marketing there is.",
+   "by": null
+  }
+ },
+ {
+  "id": "q160",
+  "day": 160,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "compounding-needs-time",
+  "indian": true,
+  "en": {
+   "text": "Compounding needs time far more than it needs cleverness.",
+   "by": null
+  }
+ },
+ {
+  "id": "q161",
+  "day": 161,
+  "category": "money",
+  "author": "Thomas Jefferson",
+  "sourceRef": "Letter to Thomas Jefferson Smith, 21 February 1825 (\"A Decalogue of Canons for Observation in Practical Life\"), canon 3",
+  "sourceUrl": "https://en.wikiquote.org/wiki/Thomas_Jefferson",
+  "attributionType": "public-domain",
+  "idea": "dont-spend-before-you-earn",
+  "indian": false,
+  "en": {
+   "text": "Never spend your money before you have it.",
+   "by": "Thomas Jefferson"
+  }
+ },
+ {
+  "id": "q162",
+  "day": 162,
+  "category": "work",
+  "author": "Confucius",
+  "sourceRef": "Analects XV.9, tr. James Legge",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/4094/pg4094.txt",
+  "attributionType": "public-domain",
+  "idea": "sharpen-your-tools",
+  "indian": false,
+  "en": {
+   "text": "The mechanic, who wishes to do his work well, must first sharpen his tools.",
+   "by": "Confucius"
+  }
+ },
+ {
+  "id": "q163",
+  "day": 163,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "emergency-fund-contains-damage",
+  "indian": true,
+  "en": {
+   "text": "An emergency fund is quiet money. Its job is to keep a bad month from becoming a bad year.",
+   "by": null
+  }
+ },
+ {
+  "id": "q164",
+  "day": 164,
+  "category": "investing",
+  "author": "Aesop",
+  "sourceRef": "Aesop's Fables, 'The Hare and the Tortoise', tr. G. F. Townsend (1867)",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/21/pg21.txt",
+  "attributionType": "public-domain",
+  "idea": "slow-and-steady",
+  "indian": false,
+  "en": {
+   "text": "Slow but steady wins the race.",
+   "by": "Aesop"
+  }
+ },
+ {
+  "id": "q165",
+  "day": 165,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "raise-savings-with-income",
+  "indian": true,
+  "en": {
+   "text": "When your income rises, let your savings rise first and your lifestyle second.",
+   "by": null
+  }
+ },
+ {
+  "id": "q166",
+  "day": 166,
+  "category": "inspiration",
+  "author": "Marcus Aurelius",
+  "sourceRef": "Meditations (Thoughts), Book VII.59, tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/15877/pg15877.txt",
+  "attributionType": "public-domain",
+  "idea": "look-within",
+  "indian": false,
+  "en": {
+   "text": "Look within. Within is the fountain of good, and it will ever bubble up, if thou wilt ever dig.",
+   "by": "Marcus Aurelius"
+  }
+ },
+ {
+  "id": "q167",
+  "day": 167,
+  "category": "work",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 619",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "effort-over-fate",
+  "indian": true,
+  "en": {
+   "text": "Even when fate denies the goal, effort still pays the wages of one's labour.",
+   "by": "Thiruvalluvar, Tirukkural 619"
+  }
+ },
+ {
+  "id": "q168",
+  "day": 168,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "plan-on-salary-day",
+  "indian": true,
+  "en": {
+   "text": "Plan the month on salary day, before the month starts planning for you.",
+   "by": null
+  }
+ },
+ {
+  "id": "q169",
+  "day": 169,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "ml.wikiquote, \"പഴഞ്ചൊല്ലുകൾ/ച\"",
+  "sourceUrl": "https://ml.wikiquote.org/wiki/പഴഞ്ചൊല്ലുകൾ/ച",
+  "attributionType": "proverb",
+  "idea": "save-young-spend-later",
+  "indian": true,
+  "en": {
+   "text": "Save while you are young; spend in your later years.",
+   "by": "Malayalam proverb"
+  }
+ },
+ {
+  "id": "q170",
+  "day": 170,
+  "category": "money",
+  "author": "Publilius Syrus",
+  "sourceRef": "Sentences, no. 612 (The Moral Sayings of Publius Syrus, tr. D. Lyman, 1856)",
+  "sourceUrl": "https://archive.org/download/moralsayingspub00lymagoog/moralsayingspub00lymagoog_djvu.txt",
+  "attributionType": "public-domain",
+  "idea": "saving-is-gaining",
+  "indian": false,
+  "en": {
+   "text": "Our greatest gains are made by sparing what we possess.",
+   "by": "Publilius Syrus"
+  }
+ },
+ {
+  "id": "q171",
+  "day": 171,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "ask-parents-about-money",
+  "indian": true,
+  "en": {
+   "text": "Ask your parents about their money plans; listening is a form of care.",
+   "by": null
+  }
+ },
+ {
+  "id": "q172",
+  "day": 172,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "match-form16",
+  "indian": true,
+  "en": {
+   "text": "Match your Form 16 with your salary slips before filing; small mismatches cause long delays.",
+   "by": null
+  }
+ },
+ {
+  "id": "q173",
+  "day": 173,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "name-your-savings",
+  "indian": true,
+  "en": {
+   "text": "Give each savings pot a name: travel, school fees, a new phone. Named money stays put.",
+   "by": null
+  }
+ },
+ {
+  "id": "q174",
+  "day": 174,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "restart-after-a-miss",
+  "indian": true,
+  "en": {
+   "text": "Missed an instalment? It is not a failure. Restart next month and carry on.",
+   "by": null
+  }
+ },
+ {
+  "id": "q175",
+  "day": 175,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "write-goals-down",
+  "indian": true,
+  "en": {
+   "text": "Write your goals down: school fees, a home, a trip. Paper makes them real.",
+   "by": null
+  }
+ },
+ {
+  "id": "q176",
+  "day": 176,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "allowance-teaches",
+  "indian": true,
+  "en": {
+   "text": "Give children a small allowance and let them make small mistakes with it.",
+   "by": null
+  }
+ },
+ {
+  "id": "q177",
+  "day": 177,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "ml.wikiquote, \"പഴഞ്ചൊല്ലുകൾ/ഒ\"",
+  "sourceUrl": "https://ml.wikiquote.org/wiki/പഴഞ്ചൊല്ലുകൾ/ഒ",
+  "attributionType": "proverb",
+  "idea": "one-lucky-win-is-not-a-plan",
+  "indian": true,
+  "en": {
+   "text": "A falling jackfruit once caught a hare; will it happen every time?",
+   "by": "Malayalam proverb"
+  }
+ },
+ {
+  "id": "q178",
+  "day": 178,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "income-above-outgo",
+  "indian": false,
+  "en": {
+   "text": "Live below your means.",
+   "by": null
+  }
+ },
+ {
+  "id": "q179",
+  "day": 179,
+  "category": "work",
+  "author": "Samuel Smiles",
+  "sourceRef": "Self-Help (1859), ch. I",
+  "sourceUrl": "https://gutenberg.pglaf.org/9/3/935/935-0.txt",
+  "attributionType": "public-domain",
+  "idea": "self-help-grows-you",
+  "indian": false,
+  "en": {
+   "text": "The spirit of self-help is the root of all genuine growth in the individual.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q180",
+  "day": 180,
+  "category": "inspiration",
+  "author": "Subramania Bharati",
+  "sourceRef": "Puthiya Aathichoodi, line 52",
+  "sourceUrl": "https://ta.wikisource.org/wiki/%E0%AE%AA%E0%AF%81%E0%AE%A4%E0%AE%BF%E0%AE%AF_%E0%AE%86%E0%AE%A4%E0%AF%8D%E0%AE%A4%E0%AE%BF%E0%AE%9A%E0%AF%82%E0%AE%9F%E0%AE%BF",
+  "attributionType": "public-domain",
+  "idea": "patience-in-hard-times",
+  "indian": true,
+  "en": {
+   "text": "Do not be shaken by failure.",
+   "by": "Subramania Bharati, Puthiya Aathichoodi 52"
+  }
+ },
+ {
+  "id": "q181",
+  "day": 181,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "save-part-of-windfalls",
+  "indian": true,
+  "en": {
+   "text": "A bonus or a gift is a chance to save a part before it melts into the month.",
+   "by": null
+  }
+ },
+ {
+  "id": "q182",
+  "day": 182,
+  "category": "investing",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 461",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "weigh-cost-and-gain",
+  "indian": true,
+  "en": {
+   "text": "Weigh what will be spent, what will come back and what will finally be gained; then act.",
+   "by": "Thiruvalluvar, Tirukkural 461"
+  }
+ },
+ {
+  "id": "q183",
+  "day": 183,
+  "category": "money",
+  "author": "Publilius Syrus",
+  "sourceRef": "Sentences, no. 796 (The Moral Sayings of Publius Syrus, tr. D. Lyman, 1856)",
+  "sourceUrl": "https://archive.org/download/moralsayingspub00lymagoog/moralsayingspub00lymagoog_djvu.txt",
+  "attributionType": "public-domain",
+  "idea": "prepare-for-bad-days",
+  "indian": false,
+  "en": {
+   "text": "The wise man guards against future evils as if they were present.",
+   "by": "Publilius Syrus"
+  }
+ },
+ {
+  "id": "q184",
+  "day": 184,
+  "category": "work",
+  "author": "Vemana",
+  "sourceRef": "Vemana Padyamulu, Book 1 no. 91 (Andhra Bharati numbering of C. P. Brown's edition)",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B5%E0%B1%87%E0%B0%AE%E0%B0%A8_%E0%B0%AA%E0%B0%A6%E0%B1%8D%E0%B0%AF%E0%B0%BE%E0%B0%B2%E0%B1%81%2F%E0%B0%85",
+  "attributionType": "public-domain",
+  "idea": "practice-makes-it-sweet",
+  "indian": true,
+  "en": {
+   "text": "Chew neem again and again and it turns sweet; through practice, work gets done in this world.",
+   "by": "Vemana"
+  }
+ },
+ {
+  "id": "q185",
+  "day": 185,
+  "category": "money",
+  "author": null,
+  "sourceRef": "U. B. Narasinga Rao, A Handbook of Kannada Proverbs (1912), via kn.wikiquote",
+  "sourceUrl": "https://kn.wikiquote.org/wiki/ಎ_ಹ್ಯಾಂಡ್ಬುಕ್_ಆಫ಼್‌_ಕನ್ನಡ_ಪ್ರಾವರ್ಬ್ಸ್_ಪುಸ್ತಕದಿಂದ_ಗಾದೆಗಳು",
+  "attributionType": "proverb",
+  "idea": "false-economy-costs-more",
+  "indian": true,
+  "en": {
+   "text": "The lazy do the work twice; the stingy pay three times.",
+   "by": "Kannada proverb"
+  }
+ },
+ {
+  "id": "q186",
+  "day": 186,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "near-vs-far-goals",
+  "indian": true,
+  "en": {
+   "text": "Near goals and far goals need different plans. Know which one you are saving for.",
+   "by": null
+  }
+ },
+ {
+  "id": "q187",
+  "day": 187,
+  "category": "work",
+  "author": "Subramania Bharati",
+  "sourceRef": "Puthiya Aathichoodi, line 19",
+  "sourceUrl": "https://ta.wikisource.org/wiki/%E0%AE%AA%E0%AF%81%E0%AE%A4%E0%AE%BF%E0%AE%AF_%E0%AE%86%E0%AE%A4%E0%AF%8D%E0%AE%A4%E0%AE%BF%E0%AE%9A%E0%AF%82%E0%AE%9F%E0%AE%BF",
+  "attributionType": "public-domain",
+  "idea": "slackness-ruins",
+  "indian": true,
+  "en": {
+   "text": "What ruins us is slackness and losing heart.",
+   "by": "Subramania Bharati, Puthiya Aathichoodi 19"
+  }
+ },
+ {
+  "id": "q188",
+  "day": 188,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "employer-cover-ends",
+  "indian": true,
+  "en": {
+   "text": "Office health cover usually ends with the job. Know what protects your family beyond it.",
+   "by": null
+  }
+ },
+ {
+  "id": "q189",
+  "day": 189,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "saving-invites-good-things",
+  "indian": false,
+  "en": {
+   "text": "Good things happen to those who save.",
+   "by": null
+  }
+ },
+ {
+  "id": "q190",
+  "day": 190,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "check-ais-26as",
+  "indian": true,
+  "en": {
+   "text": "Look at your AIS and Form 26AS before filing. What the tax office sees, you should see too.",
+   "by": null
+  }
+ },
+ {
+  "id": "q191",
+  "day": 191,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "revisit-goals-yearly",
+  "indian": true,
+  "en": {
+   "text": "Revisit your goals once a year. Life changes, and the plan should keep up.",
+   "by": null
+  }
+ },
+ {
+  "id": "q192",
+  "day": 192,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "small-prepayments",
+  "indian": true,
+  "en": {
+   "text": "Small part-prepayments, made now and then, can shorten a loan more than you expect.",
+   "by": null
+  }
+ },
+ {
+  "id": "q193",
+  "day": 193,
+  "category": "work",
+  "author": null,
+  "sourceRef": "U. B. Narasinga Rao, A Handbook of Kannada Proverbs (1912), via kn.wikiquote",
+  "sourceUrl": "https://kn.wikiquote.org/wiki/ಎ_ಹ್ಯಾಂಡ್ಬುಕ್_ಆಫ಼್‌_ಕನ್ನಡ_ಪ್ರಾವರ್ಬ್ಸ್_ಪುಸ್ತಕದಿಂದ_ಗಾದೆಗಳು",
+  "attributionType": "proverb",
+  "idea": "small-tool-steady-effort",
+  "indian": true,
+  "en": {
+   "text": "The chisel may be small, yet it keeps cutting until the tree falls.",
+   "by": "Kannada proverb"
+  }
+ },
+ {
+  "id": "q194",
+  "day": 194,
+  "category": "money",
+  "author": "Kabir",
+  "sourceRef": "Kabir, sakhi no. 89 in Kavita-Kaumudi vol. 1 (ed. Ramnaresh Tripathi, 1918), section 3 'Kabir Sahab'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE-%E0%A4%95%E0%A5%8C%E0%A4%AE%E0%A5%81%E0%A4%A6%E0%A5%80_%E0%A5%A7/%E0%A5%A9_%E0%A4%95%E0%A4%AC%E0%A5%80%E0%A4%B0_%E0%A4%B8%E0%A4%BE%E0%A4%B9%E0%A4%AC",
+  "attributionType": "public-domain",
+  "idea": "keep-the-grain",
+  "indian": true,
+  "en": {
+   "text": "A good person is like a winnowing basket: keep what has substance and let the empty husk blow away.",
+   "by": "Kabir"
+  }
+ },
+ {
+  "id": "q195",
+  "day": 195,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "sip-date-not-market-noise",
+  "indian": true,
+  "en": {
+   "text": "Markets move every day. Your SIP date is the only date you need to remember.",
+   "by": null
+  }
+ },
+ {
+  "id": "q196",
+  "day": 196,
+  "category": "money",
+  "author": null,
+  "sourceRef": "P. Percival, Tamil Proverbs (archive.org scan dated 1877), no. 2534",
+  "sourceUrl": "https://archive.org/details/tamilproverbswi01percgoog",
+  "attributionType": "proverb",
+  "idea": "match-means-to-need",
+  "indian": true,
+  "en": {
+   "text": "Check the depth of the well and the length of your rope.",
+   "by": "Tamil proverb"
+  }
+ },
+ {
+  "id": "q197",
+  "day": 197,
+  "category": "inspiration",
+  "author": "Ralph Waldo Emerson",
+  "sourceRef": "Essays: First Series (1841), 'Self-Reliance' (closing lines)",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/2944/pg2944.txt",
+  "attributionType": "public-domain",
+  "idea": "peace-from-within",
+  "indian": false,
+  "en": {
+   "text": "Nothing can bring you peace but yourself.",
+   "by": "Ralph Waldo Emerson"
+  }
+ },
+ {
+  "id": "q198",
+  "day": 198,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "one-money-skill-a-month",
+  "indian": true,
+  "en": {
+   "text": "Learn one money skill a month: reading a payslip, a loan offer, a policy. It adds up.",
+   "by": null
+  }
+ },
+ {
+  "id": "q199",
+  "day": 199,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "retirement-account-nominees",
+  "indian": true,
+  "en": {
+   "text": "Update the nominee in EPF, PPF and NPS whenever your family changes.",
+   "by": null
+  }
+ },
+ {
+  "id": "q200",
+  "day": 200,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "goal-needs-date-and-amount",
+  "indian": true,
+  "en": {
+   "text": "Put a date and a monthly amount next to every goal. That is when a wish becomes a plan.",
+   "by": null
+  }
+ },
+ {
+  "id": "q201",
+  "day": 201,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "total-interest-not-just-emi",
+  "indian": true,
+  "en": {
+   "text": "Read the total interest, not just the monthly EMI. Both are part of the price.",
+   "by": null
+  }
+ },
+ {
+  "id": "q202",
+  "day": 202,
+  "category": "work",
+  "author": "Marcus Aurelius",
+  "sourceRef": "Meditations (Thoughts), Book VI.19, tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/15877/pg15877.txt",
+  "attributionType": "public-domain",
+  "idea": "difficult-not-impossible",
+  "indian": false,
+  "en": {
+   "text": "If a thing is difficult to be accomplished by thyself, do not think that it is impossible for man.",
+   "by": "Marcus Aurelius"
+  }
+ },
+ {
+  "id": "q203",
+  "day": 203,
+  "category": "investing",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 669",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "delayed-reward",
+  "indian": true,
+  "en": {
+   "text": "Though it brings hardship at first, carry out firmly the work that brings joy in the end.",
+   "by": "Thiruvalluvar, Tirukkural 669"
+  }
+ },
+ {
+  "id": "q204",
+  "day": 204,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "file-even-if-no-tax",
+  "indian": true,
+  "en": {
+   "text": "Filing a return even when no tax is due builds a record that helps with loans and visas.",
+   "by": null
+  }
+ },
+ {
+  "id": "q205",
+  "day": 205,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "needs-savings-wants-order",
+  "indian": true,
+  "en": {
+   "text": "Needs first, then savings, then wants. The order matters more than the amounts.",
+   "by": null
+  }
+ },
+ {
+  "id": "q206",
+  "day": 206,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "money-is-a-means",
+  "indian": true,
+  "en": {
+   "text": "Money is a means. Keep sight of what it is meant for: people, health and time.",
+   "by": null
+  }
+ },
+ {
+  "id": "q207",
+  "day": 207,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "borrowing-is-a-tool",
+  "indian": true,
+  "en": {
+   "text": "Borrowing is a tool. Like any tool, it works best with a plan in hand.",
+   "by": null
+  }
+ },
+ {
+  "id": "q208",
+  "day": 208,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "kn.wikiquote, \"ಗಾದೆಗಳು\"; also as \"ತಾಳಿದವ ಬಾಳ್ಯಾನು\" from U. B. Narasinga Rao, A Handbook of Kannada Proverbs (1912)",
+  "sourceUrl": "https://kn.wikiquote.org/wiki/ಗಾದೆಗಳು",
+  "attributionType": "proverb",
+  "idea": "patience-brings-prosperity",
+  "indian": true,
+  "en": {
+   "text": "The one who is patient will prosper.",
+   "by": "Kannada proverb"
+  }
+ },
+ {
+  "id": "q209",
+  "day": 209,
+  "category": "work",
+  "author": "Swami Vivekananda",
+  "sourceRef": "The Complete Works of Swami Vivekananda, Vol. 1, Raja-Yoga, ch. 'Pratyahara and Dharana'",
+  "sourceUrl": "https://en.wikisource.org/wiki/The_Complete_Works_of_Swami_Vivekananda/Volume_1/Raja-Yoga/Pratyahara_And_Dharana",
+  "attributionType": "public-domain",
+  "idea": "perseverance-and-will",
+  "indian": true,
+  "en": {
+   "text": "To succeed, you must have tremendous perseverance, tremendous will. … work hard, and you will reach the goal.",
+   "by": "Swami Vivekananda"
+  }
+ },
+ {
+  "id": "q210",
+  "day": 210,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "no-dues-certificate",
+  "indian": true,
+  "en": {
+   "text": "When a loan is closed, collect the no-dues letter and keep it safe.",
+   "by": null
+  }
+ },
+ {
+  "id": "q211",
+  "day": 211,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "emi-stress-test",
+  "indian": true,
+  "en": {
+   "text": "Before you sign for an EMI, imagine paying it in your toughest month.",
+   "by": null
+  }
+ },
+ {
+  "id": "q212",
+  "day": 212,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "ready-not-predicting",
+  "indian": true,
+  "en": {
+   "text": "Investing regularly is less about predicting the future and more about being ready for it.",
+   "by": null
+  }
+ },
+ {
+  "id": "q213",
+  "day": 213,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "file-itr-on-time",
+  "indian": true,
+  "calendar": "jul31",
+  "en": {
+   "text": "File your income tax return before the due date, and keep the acknowledgement safe.",
+   "by": null
+  }
+ },
+ {
+  "id": "q214",
+  "day": 214,
+  "category": "inspiration",
+  "author": "Confucius",
+  "sourceRef": "Analects II.24, tr. James Legge",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/4094/pg4094.txt",
+  "attributionType": "public-domain",
+  "idea": "courage-to-act",
+  "indian": false,
+  "en": {
+   "text": "To see what is right and not to do it is want of courage.",
+   "by": "Confucius"
+  }
+ },
+ {
+  "id": "q215",
+  "day": 215,
+  "category": "work",
+  "author": "Kabir",
+  "sourceRef": "Kabir, sakhi no. 134 in Kavita-Kaumudi vol. 1 (ed. Ramnaresh Tripathi, 1918), section 3 'Kabir Sahab'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE-%E0%A4%95%E0%A5%8C%E0%A4%AE%E0%A5%81%E0%A4%A6%E0%A5%80_%E0%A5%A7/%E0%A5%A9_%E0%A4%95%E0%A4%AC%E0%A5%80%E0%A4%B0_%E0%A4%B8%E0%A4%BE%E0%A4%B9%E0%A4%AC",
+  "attributionType": "public-domain",
+  "idea": "keep-walking",
+  "indian": true,
+  "en": {
+   "text": "There is no fault in falling while you walk the path; the one who sits still keeps all the hard miles ahead.",
+   "by": "Kabir"
+  }
+ },
+ {
+  "id": "q216",
+  "day": 216,
+  "category": "money",
+  "author": "Samuel Johnson",
+  "sourceRef": "Letter to James Boswell, 7 December 1782 (Boswell's Life of Johnson)",
+  "sourceUrl": "https://en.wikiquote.org/wiki/Samuel_Johnson",
+  "attributionType": "public-domain",
+  "idea": "spend-less-than-you-have",
+  "indian": false,
+  "en": {
+   "text": "Whatever you have, spend less.",
+   "by": "Samuel Johnson"
+  }
+ },
+ {
+  "id": "q217",
+  "day": 217,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "know-what-you-own",
+  "indian": true,
+  "en": {
+   "text": "Know what you own and why you own it. That alone calms many anxious days.",
+   "by": null
+  }
+ },
+ {
+  "id": "q218",
+  "day": 218,
+  "category": "money",
+  "author": "Narayana (Hitopadesha)",
+  "sourceRef": "Hitopadesha, Prastavika (introduction), verse 6",
+  "sourceUrl": "https://sa.wikisource.org/wiki/%E0%A4%B9%E0%A4%BF%E0%A4%A4%E0%A5%8B%E0%A4%AA%E0%A4%A6%E0%A5%87%E0%A4%B6%E0%A4%83%E0%A5%A6%E0%A5%A7",
+  "attributionType": "public-domain",
+  "idea": "learning-to-wealth",
+  "indian": true,
+  "en": {
+   "text": "Learning gives humility; humility, worthiness; worthiness brings wealth; wealth, right living; then happiness.",
+   "by": "Hitopadesha, introduction 6"
+  }
+ },
+ {
+  "id": "q219",
+  "day": 219,
+  "category": "work",
+  "author": "Ralph Waldo Emerson",
+  "sourceRef": "The Conduct of Life (1860), 'Power'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/39827/pg39827.txt",
+  "attributionType": "public-domain",
+  "idea": "focus-wins",
+  "indian": false,
+  "en": {
+   "text": "The one prudence in life is concentration; the one evil is dissipation.",
+   "by": "Ralph Waldo Emerson"
+  }
+ },
+ {
+  "id": "q220",
+  "day": 220,
+  "category": "money",
+  "author": "Samuel Smiles",
+  "sourceRef": "Thrift (1875), ch. II \"Habits of Thrift\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/1/4/4/1/14418/14418-0.txt",
+  "attributionType": "public-domain",
+  "idea": "saving-is-a-habit",
+  "indian": false,
+  "en": {
+   "text": "It is the habit of economizing and denying oneself that needs to be formed.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q221",
+  "day": 221,
+  "category": "inspiration",
+  "author": "Confucius",
+  "sourceRef": "Analects XV.29, tr. James Legge",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/4094/pg4094.txt",
+  "attributionType": "public-domain",
+  "idea": "fix-your-mistakes",
+  "indian": false,
+  "en": {
+   "text": "To have faults and not to reform them—this, indeed, should be pronounced having faults.",
+   "by": "Confucius"
+  }
+ },
+ {
+  "id": "q222",
+  "day": 222,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "ml.wikiquote, \"പഴഞ്ചൊല്ലുകൾ/ക\"",
+  "sourceUrl": "https://ml.wikiquote.org/wiki/പഴഞ്ചൊല്ലുകൾ/ക",
+  "attributionType": "proverb",
+  "idea": "patience-lets-things-settle",
+  "indian": true,
+  "en": {
+   "text": "The patient cow gets to drink clear water.",
+   "by": "Malayalam proverb"
+  }
+ },
+ {
+  "id": "q223",
+  "day": 223,
+  "category": "money",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 754",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "honest-earnings",
+  "indian": true,
+  "en": {
+   "text": "Wealth earned by the right means, without wrongdoing, yields both virtue and happiness.",
+   "by": "Thiruvalluvar, Tirukkural 754"
+  }
+ },
+ {
+  "id": "q224",
+  "day": 224,
+  "category": "work",
+  "author": null,
+  "sourceRef": "W. H. Porter, Proverbs: Arranged in Alphabetical Order (1845), p. 157, via en.wikiquote \"English proverbs\"",
+  "sourceUrl": "https://en.wikiquote.org/wiki/English_proverbs",
+  "attributionType": "proverb",
+  "idea": "practice-makes-perfect",
+  "indian": false,
+  "en": {
+   "text": "Practice makes perfect.",
+   "by": "English proverb"
+  }
+ },
+ {
+  "id": "q225",
+  "day": 225,
+  "category": "money",
+  "author": "Ralph Waldo Emerson",
+  "sourceRef": "Essays: First Series (1841), 'Prudence'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/2944/pg2944.txt",
+  "attributionType": "public-domain",
+  "idea": "wealth-means-freedom",
+  "indian": false,
+  "en": {
+   "text": "The best good of wealth is freedom.",
+   "by": "Ralph Waldo Emerson"
+  }
+ },
+ {
+  "id": "q226",
+  "day": 226,
+  "category": "investing",
+  "author": "Confucius",
+  "sourceRef": "Analects XV.11, tr. James Legge",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/4094/pg4094.txt",
+  "attributionType": "public-domain",
+  "idea": "think-long-term",
+  "indian": false,
+  "en": {
+   "text": "If a man take no thought about what is distant, he will find sorrow near at hand.",
+   "by": "Confucius"
+  }
+ },
+ {
+  "id": "q227",
+  "day": 227,
+  "category": "money",
+  "author": null,
+  "sourceRef": "M. W. Carr, A Collection of Telugu Proverbs (1868), no. 2288",
+  "sourceUrl": "https://archive.org/details/collectionoftelu00mwca",
+  "attributionType": "proverb",
+  "idea": "idle-spending-melts-mountains",
+  "indian": true,
+  "en": {
+   "text": "If you only sit and eat, even mountains melt away.",
+   "by": "Telugu proverb"
+  }
+ },
+ {
+  "id": "q228",
+  "day": 228,
+  "category": "inspiration",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 621",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "smile-at-trouble",
+  "indian": true,
+  "en": {
+   "text": "When trouble comes, smile; nothing drives it back as well as that.",
+   "by": "Thiruvalluvar, Tirukkural 621"
+  }
+ },
+ {
+  "id": "q229",
+  "day": 229,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "habits-on-ordinary-days",
+  "indian": true,
+  "en": {
+   "text": "Habits are built on ordinary days, not on New Year's Day.",
+   "by": null
+  }
+ },
+ {
+  "id": "q230",
+  "day": 230,
+  "category": "money",
+  "author": "Baddena",
+  "sourceRef": "Sumati Satakam 6",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B8%E0%B1%81%E0%B0%AE%E0%B0%A4%E0%B1%80_%E0%B0%B6%E0%B0%A4%E0%B0%95%E0%B0%AE%E0%B1%81",
+  "attributionType": "public-domain",
+  "idea": "borrowed-show-costs",
+  "indian": true,
+  "en": {
+   "text": "Splendour bought with borrowed money turns into a burden and brings harm later.",
+   "by": "Baddena, Sumati Satakam 6"
+  }
+ },
+ {
+  "id": "q231",
+  "day": 231,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "tend-savings-regularly",
+  "indian": true,
+  "en": {
+   "text": "Look in on your savings every month, the way you would water a plant.",
+   "by": null
+  }
+ },
+ {
+  "id": "q232",
+  "day": 232,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "health-cover-early",
+  "indian": true,
+  "en": {
+   "text": "Health cover is easiest to get while you are healthy. That alone is reason to sort it early.",
+   "by": null
+  }
+ },
+ {
+  "id": "q233",
+  "day": 233,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "separate-business-account",
+  "indian": true,
+  "en": {
+   "text": "Keep business money and home money in separate accounts from day one.",
+   "by": null
+  }
+ },
+ {
+  "id": "q234",
+  "day": 234,
+  "category": "investing",
+  "author": "Swami Vivekananda",
+  "sourceRef": "The Complete Works of Swami Vivekananda, Vol. 5, Epistles - First Series, XLIX, letter to Alasinga",
+  "sourceUrl": "https://en.wikisource.org/wiki/The_Complete_Works_of_Swami_Vivekananda/Volume_5/Epistles_-_First_Series/IL_Alasinga",
+  "attributionType": "public-domain",
+  "idea": "great-things-take-time",
+  "indian": true,
+  "en": {
+   "text": "Are great things ever done smoothly? Time, patience, and indomitable will must show.",
+   "by": "Swami Vivekananda"
+  }
+ },
+ {
+  "id": "q235",
+  "day": 235,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "limit-is-not-budget",
+  "indian": true,
+  "en": {
+   "text": "A credit limit is the bank's number, not your budget.",
+   "by": null
+  }
+ },
+ {
+  "id": "q236",
+  "day": 236,
+  "category": "inspiration",
+  "author": "Epictetus",
+  "sourceRef": "Discourses I.24 ('How we should struggle with circumstances'), tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/10661/pg10661.txt",
+  "attributionType": "public-domain",
+  "idea": "difficulties-reveal-character",
+  "indian": false,
+  "en": {
+   "text": "It is circumstances (difficulties) which show what men are.",
+   "by": "Epictetus"
+  }
+ },
+ {
+  "id": "q237",
+  "day": 237,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "budget-is-a-plan",
+  "indian": true,
+  "en": {
+   "text": "A budget is not a cage. It is a plan for money you already have.",
+   "by": null
+  }
+ },
+ {
+  "id": "q238",
+  "day": 238,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "refund-bank-details",
+  "indian": true,
+  "en": {
+   "text": "A tax refund is your own money coming home. Keep your bank details on the portal correct.",
+   "by": null
+  }
+ },
+ {
+  "id": "q239",
+  "day": 239,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "goal-before-tips",
+  "indian": true,
+  "en": {
+   "text": "Let your goal decide your investment, not a friend's tip or a viral video.",
+   "by": null
+  }
+ },
+ {
+  "id": "q240",
+  "day": 240,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "skills-as-asset",
+  "indian": true,
+  "en": {
+   "text": "Skills are the one asset no market can take from you. Keep adding to them.",
+   "by": null
+  }
+ },
+ {
+  "id": "q241",
+  "day": 241,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "emi-share-of-income",
+  "indian": true,
+  "en": {
+   "text": "If EMIs take too much of your take-home pay, pause new loans and give the budget room.",
+   "by": null
+  }
+ },
+ {
+  "id": "q242",
+  "day": 242,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "review-subscriptions",
+  "indian": true,
+  "en": {
+   "text": "Subscriptions are quiet spenders. Review them twice a year and keep only what you use.",
+   "by": null
+  }
+ },
+ {
+  "id": "q243",
+  "day": 243,
+  "category": "investing",
+  "author": "Samuel Smiles",
+  "sourceRef": "Self-Help (1859), ch. X \"Money—Its Use and Abuse\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/9/3/935/935-0.txt",
+  "attributionType": "public-domain",
+  "idea": "delay-gratification",
+  "indian": false,
+  "en": {
+   "text": "Economy also means the power of resisting present gratification for the purpose of securing a future good.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q244",
+  "day": 244,
+  "category": "work",
+  "author": null,
+  "sourceRef": "Kannada Sharana saying 'ಕಾಯಕವೇ ಕೈಲಾಸ', as recorded in Mysore University Encyclopaedia, article 'ಕಾಯಕ' (Kannada Wikisource)",
+  "sourceUrl": "https://kn.wikisource.org/wiki/%E0%B2%AE%E0%B3%88%E0%B2%B8%E0%B3%82%E0%B2%B0%E0%B3%81_%E0%B2%B5%E0%B2%BF%E0%B2%B6%E0%B3%8D%E0%B2%B5%E0%B2%B5%E0%B2%BF%E0%B2%A6%E0%B3%8D%E0%B2%AF%E0%B2%BE%E0%B2%A8%E0%B2%BF%E0%B2%B2%E0%B2%AF_%E0%B2%B5%E0%B2%BF%E0%B2%B6%E0%B3%8D%E0%B2%B5%E0%B2%95%E0%B3%8B%E0%B2%B6/%E0%B2%95%E0%B2%BE%E0%B2%AF%E0%B2%95",
+  "attributionType": "proverb",
+  "idea": "work-is-worship",
+  "indian": true,
+  "en": {
+   "text": "Work itself is heaven.",
+   "by": "Kannada proverb"
+  }
+ },
+ {
+  "id": "q245",
+  "day": 245,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": "W. Morton, A Collection of Proverbs, Bengali and Sanscrit (Calcutta, 1832), no. 299",
+  "sourceUrl": "https://archive.org/details/bub_gb_jPw3AAAAYAAJ_2",
+  "attributionType": "proverb",
+  "idea": "keep-hoping-keep-working",
+  "indian": true,
+  "en": {
+   "text": "While there is breath, there is hope.",
+   "by": "Bengali proverb"
+  }
+ },
+ {
+  "id": "q246",
+  "day": 246,
+  "category": "money",
+  "author": null,
+  "sourceRef": "ml.wikiquote, \"പഴഞ്ചൊല്ലുകൾ/ന\"",
+  "sourceUrl": "https://ml.wikiquote.org/wiki/പഴഞ്ചൊല്ലുകൾ/ന",
+  "attributionType": "proverb",
+  "idea": "drop-by-drop",
+  "indian": true,
+  "en": {
+   "text": "Keep taking a pinch and a pit forms; keep adding a pinch and a hill rises.",
+   "by": "Malayalam proverb"
+  }
+ },
+ {
+  "id": "q247",
+  "day": 247,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "patience-as-currency",
+  "indian": false,
+  "en": {
+   "text": "Patience is the best currency for an investor.",
+   "by": null
+  }
+ },
+ {
+  "id": "q248",
+  "day": 248,
+  "category": "money",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 435",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "prepare-before-trouble",
+  "indian": true,
+  "en": {
+   "text": "One who does not guard against trouble before it comes is consumed like straw before a fire.",
+   "by": "Thiruvalluvar, Tirukkural 435"
+  }
+ },
+ {
+  "id": "q249",
+  "day": 249,
+  "category": "work",
+  "author": "Aristotle",
+  "sourceRef": "Nicomachean Ethics II.1, tr. D. P. Chase (1847)",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/8438/pg8438.txt",
+  "attributionType": "public-domain",
+  "idea": "learn-by-doing",
+  "indian": false,
+  "en": {
+   "text": "Men come to be builders, for instance, by building; harp-players, by playing on the harp.",
+   "by": "Aristotle"
+  }
+ },
+ {
+  "id": "q250",
+  "day": 250,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "talk-money-at-home",
+  "indian": true,
+  "en": {
+   "text": "Talk about money at home. Children learn more from a calm conversation than a lecture.",
+   "by": null
+  }
+ },
+ {
+  "id": "q251",
+  "day": 251,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "future-looks-back-kindly",
+  "indian": true,
+  "en": {
+   "text": "Ten years from now, today's small effort will look like the wise one.",
+   "by": null
+  }
+ },
+ {
+  "id": "q252",
+  "day": 252,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "steady-not-perfect",
+  "indian": true,
+  "en": {
+   "text": "You do not need to be perfect with money. You need to be steady.",
+   "by": null
+  }
+ },
+ {
+  "id": "q253",
+  "day": 253,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "check-credit-report",
+  "indian": true,
+  "en": {
+   "text": "Check your credit report once a year; an error is easier to fix when caught early.",
+   "by": null
+  }
+ },
+ {
+  "id": "q254",
+  "day": 254,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "aim-your-effort",
+  "indian": true,
+  "en": {
+   "text": "Hard work counts for more when it is pointed at something you chose.",
+   "by": null
+  }
+ },
+ {
+  "id": "q255",
+  "day": 255,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "tell-family-where-policies-are",
+  "indian": true,
+  "en": {
+   "text": "Tell your family where the policies are kept. Cover they cannot find cannot help them.",
+   "by": null
+  }
+ },
+ {
+  "id": "q256",
+  "day": 256,
+  "category": "investing",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 490",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "heron-patience",
+  "indian": true,
+  "en": {
+   "text": "Wait like a heron while the time is not right; strike like the heron when the moment comes.",
+   "by": "Thiruvalluvar, Tirukkural 490"
+  }
+ },
+ {
+  "id": "q257",
+  "day": 257,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "start-saving-today",
+  "indian": true,
+  "en": {
+   "text": "Your first salary is a good day to start saving. So is today.",
+   "by": null
+  }
+ },
+ {
+  "id": "q258",
+  "day": 258,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "first-customer",
+  "indian": true,
+  "en": {
+   "text": "A side income begins with one paying customer. Serve that one well.",
+   "by": null
+  }
+ },
+ {
+  "id": "q259",
+  "day": 259,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "compare-with-yourself",
+  "indian": true,
+  "en": {
+   "text": "Compare your savings with your own last year, not with a friend's.",
+   "by": null
+  }
+ },
+ {
+  "id": "q260",
+  "day": 260,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "dont-wait-for-a-bigger-salary",
+  "indian": true,
+  "en": {
+   "text": "Saving a little with purpose beats saving nothing while waiting for a bigger salary.",
+   "by": null
+  }
+ },
+ {
+  "id": "q261",
+  "day": 261,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "start-small-step-up",
+  "indian": true,
+  "en": {
+   "text": "Start with an amount you will not miss, and raise it a little when your pay rises.",
+   "by": null
+  }
+ },
+ {
+  "id": "q262",
+  "day": 262,
+  "category": "money",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 226",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "saving-enables-giving",
+  "indian": true,
+  "en": {
+   "text": "Relieving the hunger of those in need is the safest place to store one's wealth.",
+   "by": "Thiruvalluvar, Tirukkural 226"
+  }
+ },
+ {
+  "id": "q263",
+  "day": 263,
+  "category": "work",
+  "author": "Samuel Smiles",
+  "sourceRef": "Self-Help (1859), ch. VIII 'Energy and Courage'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/935/pg935.txt",
+  "attributionType": "public-domain",
+  "idea": "purpose-over-talent",
+  "indian": false,
+  "en": {
+   "text": "It is not eminent talent that is required to ensure success in any pursuit, so much as purpose.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q264",
+  "day": 264,
+  "category": "investing",
+  "author": "Confucius",
+  "sourceRef": "Analects XIII.17, tr. James Legge",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/4094/pg4094.txt",
+  "attributionType": "public-domain",
+  "idea": "look-past-small-advantages",
+  "indian": false,
+  "en": {
+   "text": "Looking at small advantages prevents great affairs from being accomplished.",
+   "by": "Confucius"
+  }
+ },
+ {
+  "id": "q265",
+  "day": 265,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "talk-to-lender-early",
+  "indian": true,
+  "en": {
+   "text": "Struggling with an EMI? Call the lender early. Most problems shrink once they are spoken.",
+   "by": null
+  }
+ },
+ {
+  "id": "q266",
+  "day": 266,
+  "category": "inspiration",
+  "author": "Swami Vivekananda",
+  "sourceRef": "The Complete Works of Swami Vivekananda, Vol. 6, Epistles - Second Series, LI",
+  "sourceUrl": "https://en.wikisource.org/wiki/The_Complete_Works_of_Swami_Vivekananda/Volume_6/Epistles_-_Second_Series/LI_Dear_and_Beloved",
+  "attributionType": "public-domain",
+  "idea": "three-ps-of-success",
+  "indian": true,
+  "en": {
+   "text": "Purity, patience, and perseverance are the three essentials to success and, above all, love.",
+   "by": "Swami Vivekananda"
+  }
+ },
+ {
+  "id": "q267",
+  "day": 267,
+  "category": "money",
+  "author": null,
+  "sourceRef": "English proverb; J. A. Mair, A Handbook of Proverbs (1873), p. 28",
+  "sourceUrl": "https://en.wikiquote.org/wiki/English_proverbs",
+  "attributionType": "proverb",
+  "idea": "penny-saved-penny-earned",
+  "indian": false,
+  "en": {
+   "text": "A penny saved is a penny earned.",
+   "by": "English proverb"
+  }
+ },
+ {
+  "id": "q268",
+  "day": 268,
+  "category": "work",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 664",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "do-what-you-say",
+  "indian": true,
+  "en": {
+   "text": "Saying how a thing should be done is easy for anyone; doing it as said is hard.",
+   "by": "Thiruvalluvar, Tirukkural 664"
+  }
+ },
+ {
+  "id": "q269",
+  "day": 269,
+  "category": "investing",
+  "author": "Publilius Syrus",
+  "sourceRef": "Sentences, no. 151 (The Moral Sayings of Publius Syrus, tr. D. Lyman, 1856)",
+  "sourceUrl": "https://archive.org/download/moralsayingspub00lymagoog/moralsayingspub00lymagoog_djvu.txt",
+  "attributionType": "public-domain",
+  "idea": "time-is-a-counselor",
+  "indian": false,
+  "en": {
+   "text": "Man's most prudent counselor is time.",
+   "by": "Publilius Syrus"
+  }
+ },
+ {
+  "id": "q270",
+  "day": 270,
+  "category": "money",
+  "author": "Kabir",
+  "sourceRef": "Kabir, sakhi no. 164 in Kavita-Kaumudi vol. 1 (ed. Ramnaresh Tripathi, 1918), section 3 'Kabir Sahab'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE-%E0%A4%95%E0%A5%8C%E0%A4%AE%E0%A5%81%E0%A4%A6%E0%A5%80_%E0%A5%A7/%E0%A5%A9_%E0%A4%95%E0%A4%AC%E0%A5%80%E0%A4%B0_%E0%A4%B8%E0%A4%BE%E0%A4%B9%E0%A4%AC",
+  "attributionType": "public-domain",
+  "idea": "rich-by-wanting-less",
+  "indian": true,
+  "en": {
+   "text": "Eat your plain dry bread and drink cool water; do not let your heart crave another's buttered roti.",
+   "by": "Kabir"
+  }
+ },
+ {
+  "id": "q271",
+  "day": 271,
+  "category": "investing",
+  "author": "Seneca",
+  "sourceRef": "Moral Letters to Lucilius, Letter 13.4, tr. R. M. Gummere (1917)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Moral_letters_to_Lucilius/Letter_13",
+  "attributionType": "public-domain",
+  "idea": "fear-exceeds-reality",
+  "indian": false,
+  "en": {
+   "text": "We suffer more often in imagination than in reality.",
+   "by": "Seneca"
+  }
+ },
+ {
+  "id": "q272",
+  "day": 272,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "year-round-festival-fund",
+  "indian": true,
+  "calendar": "festival",
+  "en": {
+   "text": "Keep a small festival fund through the year, and the season arrives already paid for.",
+   "by": null
+  }
+ },
+ {
+  "id": "q273",
+  "day": 273,
+  "category": "money",
+  "author": "Vemana",
+  "sourceRef": "Vemana Padyamulu, Book 2 no. 280 (Andhra Bharati numbering of C. P. Brown's edition); Brown 1829 Verses of Vemana no. 509",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B5%E0%B1%87%E0%B0%AE%E0%B0%A8_%E0%B0%AA%E0%B0%A6%E0%B1%8D%E0%B0%AF%E0%B0%BE%E0%B0%B2%E0%B1%81%2F%E0%B0%85",
+  "attributionType": "public-domain",
+  "idea": "dont-eat-into-capital",
+  "indian": true,
+  "en": {
+   "text": "Spending beyond measure on enjoyment eats into one's original capital.",
+   "by": "Vemana"
+  }
+ },
+ {
+  "id": "q274",
+  "day": 274,
+  "category": "work",
+  "author": null,
+  "sourceRef": "kn.wikiquote, \"ಗಾದೆಗಳು\"",
+  "sourceUrl": "https://kn.wikiquote.org/wiki/ಗಾದೆಗಳು",
+  "attributionType": "proverb",
+  "idea": "hard-work-feeds",
+  "indian": true,
+  "en": {
+   "text": "Muddy hands in the field bring curd to the plate.",
+   "by": "Kannada proverb"
+  }
+ },
+ {
+  "id": "q275",
+  "day": 275,
+  "category": "money",
+  "author": "Publilius Syrus",
+  "sourceRef": "Sentences, no. 662 (The Moral Sayings of Publius Syrus, tr. D. Lyman, 1856)",
+  "sourceUrl": "https://archive.org/download/moralsayingspub00lymagoog/moralsayingspub00lymagoog_djvu.txt",
+  "attributionType": "public-domain",
+  "idea": "small-savings-protect-big",
+  "indian": false,
+  "en": {
+   "text": "The greater will be lost, if the less is not saved.",
+   "by": "Publilius Syrus"
+  }
+ },
+ {
+  "id": "q276",
+  "day": 276,
+  "category": "inspiration",
+  "author": "Marcus Aurelius",
+  "sourceRef": "Meditations (Thoughts), Book V.18, tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/15877/pg15877.txt",
+  "attributionType": "public-domain",
+  "idea": "you-can-bear-it",
+  "indian": false,
+  "en": {
+   "text": "Nothing happens to any man which he is not formed by nature to bear.",
+   "by": "Marcus Aurelius"
+  }
+ },
+ {
+  "id": "q277",
+  "day": 277,
+  "category": "investing",
+  "author": "Baddena",
+  "sourceRef": "Sumati Satakam 25",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B8%E0%B1%81%E0%B0%AE%E0%B0%A4%E0%B1%80_%E0%B0%B6%E0%B0%A4%E0%B0%95%E0%B0%AE%E0%B1%81",
+  "attributionType": "public-domain",
+  "idea": "fortunes-change",
+  "indian": true,
+  "en": {
+   "text": "Like boats and carts carrying each other in turn, plenty and want come by turns in this world.",
+   "by": "Baddena, Sumati Satakam 25"
+  }
+ },
+ {
+  "id": "q278",
+  "day": 278,
+  "category": "money",
+  "author": "Kabir",
+  "sourceRef": "Kabir, sakhi no. 162 in Kavita-Kaumudi vol. 1 (ed. Ramnaresh Tripathi, 1918), section 3 'Kabir Sahab'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE-%E0%A4%95%E0%A5%8C%E0%A4%AE%E0%A5%81%E0%A4%A6%E0%A5%80_%E0%A5%A7/%E0%A5%A9_%E0%A4%95%E0%A4%AC%E0%A5%80%E0%A4%B0_%E0%A4%B8%E0%A4%BE%E0%A4%B9%E0%A4%AC",
+  "attributionType": "public-domain",
+  "idea": "never-enough",
+  "indian": true,
+  "en": {
+   "text": "The fly sinks into the jaggery and its wings stick fast; it can only wring its hands. Greed is a curse.",
+   "by": "Kabir"
+  }
+ },
+ {
+  "id": "q279",
+  "day": 279,
+  "category": "work",
+  "author": "Subramania Bharati",
+  "sourceRef": "Puthiya Aathichoodi, line 18",
+  "sourceUrl": "https://ta.wikisource.org/wiki/%E0%AE%AA%E0%AF%81%E0%AE%A4%E0%AE%BF%E0%AE%AF_%E0%AE%86%E0%AE%A4%E0%AF%8D%E0%AE%A4%E0%AE%BF%E0%AE%9A%E0%AF%82%E0%AE%9F%E0%AE%BF",
+  "attributionType": "public-domain",
+  "idea": "work-together",
+  "indian": true,
+  "en": {
+   "text": "Work together with others.",
+   "by": "Subramania Bharati, Puthiya Aathichoodi 18"
+  }
+ },
+ {
+  "id": "q280",
+  "day": 280,
+  "category": "money",
+  "author": "Samuel Smiles",
+  "sourceRef": "Self-Help (1859), ch. X \"Money—Its Use and Abuse\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/9/3/935/935-0.txt",
+  "attributionType": "public-domain",
+  "idea": "live-below-means",
+  "indian": false,
+  "en": {
+   "text": "Prudence requires that we shall pitch our scale of living a degree below our means, rather than up to them.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q281",
+  "day": 281,
+  "category": "investing",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 463",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "protect-principal",
+  "indian": true,
+  "en": {
+   "text": "The wise do not take up ventures that may eat away their capital in the hope of profit.",
+   "by": "Thiruvalluvar, Tirukkural 463"
+  }
+ },
+ {
+  "id": "q282",
+  "day": 282,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "festival-budget-first",
+  "indian": true,
+  "calendar": "festival",
+  "en": {
+   "text": "Set the festival budget before the shopping list; the joy stays and the stress does not.",
+   "by": null
+  }
+ },
+ {
+  "id": "q283",
+  "day": 283,
+  "category": "inspiration",
+  "author": "Epictetus",
+  "sourceRef": "Encheiridion 5, tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/10661/pg10661.txt",
+  "attributionType": "public-domain",
+  "idea": "opinions-disturb-us",
+  "indian": false,
+  "en": {
+   "text": "Men are disturbed not by the things which happen, but by the opinions about the things.",
+   "by": "Epictetus"
+  }
+ },
+ {
+  "id": "q284",
+  "day": 284,
+  "category": "money",
+  "author": "Theodore T. Munger",
+  "sourceRef": "On the Threshold (1881), ch. \"Thrift\", p. 88",
+  "sourceUrl": "https://archive.org/download/onthreshold00mun/onthreshold00mun_djvu.txt",
+  "attributionType": "public-domain",
+  "idea": "saving-educates",
+  "indian": false,
+  "en": {
+   "text": "The habit of saving is itself an education.",
+   "by": "T. T. Munger"
+  }
+ },
+ {
+  "id": "q285",
+  "day": 285,
+  "category": "work",
+  "author": "Swami Vivekananda",
+  "sourceRef": "The Complete Works of Swami Vivekananda, Vol. 2, Practical Vedanta, Part I",
+  "sourceUrl": "https://en.wikisource.org/wiki/The_Complete_Works_of_Swami_Vivekananda/Volume_2/Practical_Vedanta_and_other_lectures/Practical_Vedanta:_Part_I",
+  "attributionType": "public-domain",
+  "idea": "calm-mind-more-work",
+  "indian": true,
+  "en": {
+   "text": "The calmer we are, the better for us, and the more the amount of work we can do.",
+   "by": "Swami Vivekananda"
+  }
+ },
+ {
+  "id": "q286",
+  "day": 286,
+  "category": "money",
+  "author": "Benjamin Franklin",
+  "sourceRef": "The Way to Wealth (1758)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Way_to_wealth,_or,_Poor_Richard%27s_maxims_improved/Way_to_Wealth,_or,_Poor_Richard%27s_Maxims_Improved",
+  "attributionType": "public-domain",
+  "idea": "income-varies-expenses-dont",
+  "indian": false,
+  "en": {
+   "text": "Gain may be temporary and uncertain; but ever while you live, expense is constant and certain.",
+   "by": "Benjamin Franklin"
+  }
+ },
+ {
+  "id": "q287",
+  "day": 287,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "sustainable-saving-pace",
+  "indian": true,
+  "en": {
+   "text": "A saving habit started gently lasts; one started with strain usually breaks.",
+   "by": null
+  }
+ },
+ {
+  "id": "q288",
+  "day": 288,
+  "category": "money",
+  "author": null,
+  "sourceRef": "en.wikiquote, \"English proverbs\" (cites Caughey 2008)",
+  "sourceUrl": "https://en.wikiquote.org/wiki/English_proverbs",
+  "attributionType": "proverb",
+  "idea": "waste-not-want-not",
+  "indian": false,
+  "en": {
+   "text": "Waste not, want not.",
+   "by": "English proverb"
+  }
+ },
+ {
+  "id": "q289",
+  "day": 289,
+  "category": "work",
+  "author": "Kabir",
+  "sourceRef": "Kabir, sakhi no. 19 in Kavita-Kaumudi vol. 1 (ed. Ramnaresh Tripathi, 1918), section 3 'Kabir Sahab'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE-%E0%A4%95%E0%A5%8C%E0%A4%AE%E0%A5%81%E0%A4%A6%E0%A5%80_%E0%A5%A7/%E0%A5%A9_%E0%A4%95%E0%A4%AC%E0%A5%80%E0%A4%B0_%E0%A4%B8%E0%A4%BE%E0%A4%B9%E0%A4%AC",
+  "attributionType": "public-domain",
+  "idea": "do-it-now",
+  "indian": true,
+  "en": {
+   "text": "Do tomorrow's work today, and today's work now; ruin may strike in a moment, so when will you do it?",
+   "by": "Kabir"
+  }
+ },
+ {
+  "id": "q290",
+  "day": 290,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "start-retirement-plan-early",
+  "indian": true,
+  "en": {
+   "text": "Retirement feels far away until it is near. Start the plan while it is far.",
+   "by": null
+  }
+ },
+ {
+  "id": "q291",
+  "day": 291,
+  "category": "money",
+  "author": "Theodore T. Munger",
+  "sourceRef": "On the Threshold (1881), ch. \"Thrift\", p. 88",
+  "sourceUrl": "https://archive.org/download/onthreshold00mun/onthreshold00mun_djvu.txt",
+  "attributionType": "public-domain",
+  "idea": "dont-spend-it-all",
+  "indian": false,
+  "en": {
+   "text": "To spend all one earns is a mistake.",
+   "by": "T. T. Munger"
+  }
+ },
+ {
+  "id": "q292",
+  "day": 292,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "offers-vs-plan",
+  "indian": true,
+  "calendar": "festival",
+  "en": {
+   "text": "Festive offers return every year. Your plan for the year need not change for one sale.",
+   "by": null
+  }
+ },
+ {
+  "id": "q293",
+  "day": 293,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "record-your-progress",
+  "indian": true,
+  "en": {
+   "text": "A loan cleared, a goal reached, a habit kept: write it down and be proud of it.",
+   "by": null
+  }
+ },
+ {
+  "id": "q294",
+  "day": 294,
+  "category": "money",
+  "author": "Abdul Rahim Khan-i-Khanan (Rahim)",
+  "sourceRef": "Rahim, doha no. 198 in Rahim-Kavitavali (ed. Surendranath Tiwari, 1926), 'Dohe'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%B0%E0%A4%B9%E0%A5%80%E0%A4%AE-%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE%E0%A4%B5%E0%A4%B2%E0%A5%80/%E0%A4%A6%E0%A5%8B%E0%A4%B9%E0%A5%87",
+  "attributionType": "public-domain",
+  "idea": "ill-gotten-wealth",
+  "indian": true,
+  "en": {
+   "text": "Wealth gained by wrong means does not take long to go; a Holi fire built from stolen wood was ash in a moment.",
+   "by": "Rahim"
+  }
+ },
+ {
+  "id": "q295",
+  "day": 295,
+  "category": "work",
+  "author": null,
+  "sourceRef": "S. W. Fallon, A Dictionary of Hindustani Proverbs (1886), p. 303, under \"Chakki\"",
+  "sourceUrl": "https://archive.org/details/hindustani-proverbs-dictionary-marwari-punjabi-maggah-bhojpuri-tirhuti",
+  "attributionType": "proverb",
+  "idea": "nothing-for-nothing",
+  "indian": true,
+  "en": {
+   "text": "Put grain into the mill, and you will get flour.",
+   "by": "Hindi proverb"
+  }
+ },
+ {
+  "id": "q296",
+  "day": 296,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "waiting-is-cheap",
+  "indian": true,
+  "en": {
+   "text": "Impatience is expensive. Waiting is often the cheapest decision you can make.",
+   "by": null
+  }
+ },
+ {
+  "id": "q297",
+  "day": 297,
+  "category": "money",
+  "author": "P. T. Barnum",
+  "sourceRef": "The Art of Money Getting (1880), \"Avoid Debt\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/8/5/8/8581/8581.txt",
+  "attributionType": "public-domain",
+  "idea": "money-servant-not-master",
+  "indian": false,
+  "en": {
+   "text": "Money is in some respects like fire; it is a very excellent servant but a terrible master.",
+   "by": "P. T. Barnum"
+  }
+ },
+ {
+  "id": "q298",
+  "day": 298,
+  "category": "work",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 612",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "finish-what-you-start",
+  "indian": true,
+  "en": {
+   "text": "Do not abandon a task midway; the world abandons those who leave their work unfinished.",
+   "by": "Thiruvalluvar, Tirukkural 612"
+  }
+ },
+ {
+  "id": "q299",
+  "day": 299,
+  "category": "money",
+  "author": null,
+  "sourceRef": "ml.wikiquote, \"പഴഞ്ചൊല്ലുകൾ/ഉ\"",
+  "sourceUrl": "https://ml.wikiquote.org/wiki/പഴഞ്ചൊല്ലുകൾ/ഉ",
+  "attributionType": "proverb",
+  "idea": "save-ahead-for-the-season",
+  "indian": true,
+  "en": {
+   "text": "Like the ant that stores up for Onam.",
+   "by": "Malayalam proverb"
+  }
+ },
+ {
+  "id": "q300",
+  "day": 300,
+  "category": "investing",
+  "author": "Baddena",
+  "sourceRef": "Sumati Satakam 49",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B8%E0%B1%81%E0%B0%AE%E0%B0%A4%E0%B1%80_%E0%B0%B6%E0%B0%A4%E0%B0%95%E0%B0%AE%E0%B1%81",
+  "attributionType": "public-domain",
+  "idea": "patience-completes-work",
+  "indian": true,
+  "en": {
+   "text": "Bear with delay and bear with toil, and even a task that went wrong will be accomplished.",
+   "by": "Baddena, Sumati Satakam 49"
+  }
+ },
+ {
+  "id": "q301",
+  "day": 301,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "count-emis-before-festive-offers",
+  "indian": true,
+  "calendar": "festival",
+  "en": {
+   "text": "Before saying yes to a festive \"no-cost EMI\", count the EMIs you already pay.",
+   "by": null
+  }
+ },
+ {
+  "id": "q302",
+  "day": 302,
+  "category": "inspiration",
+  "author": "Henry David Thoreau",
+  "sourceRef": "Walden (1854), 'Conclusion'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/205/pg205.txt",
+  "attributionType": "public-domain",
+  "idea": "foundations-under-dreams",
+  "indian": false,
+  "en": {
+   "text": "If you have built castles in the air, your work need not be lost… Now put the foundations under them.",
+   "by": "Henry David Thoreau"
+  }
+ },
+ {
+  "id": "q303",
+  "day": 303,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "term-cover-as-care",
+  "indian": true,
+  "en": {
+   "text": "Term cover is not really for you. It is a promise of care to those who depend on you.",
+   "by": null
+  }
+ },
+ {
+  "id": "q304",
+  "day": 304,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "P. Percival, Tamil Proverbs (archive.org scan dated 1877), no. 806",
+  "sourceUrl": "https://archive.org/details/tamilproverbswi01percgoog",
+  "attributionType": "proverb",
+  "idea": "know-the-depth-first",
+  "indian": true,
+  "en": {
+   "text": "Do not step in until you know how deep the water is.",
+   "by": "Tamil proverb"
+  }
+ },
+ {
+  "id": "q305",
+  "day": 305,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "nominee-five-minute-kindness",
+  "indian": true,
+  "en": {
+   "text": "Add a nominee to every account and policy. It is a five-minute kindness.",
+   "by": null
+  }
+ },
+ {
+  "id": "q306",
+  "day": 306,
+  "category": "work",
+  "author": "Abdul Rahim Khan-i-Khanan (Rahim)",
+  "sourceRef": "Rahim, doha no. 238 in Rahim-Kavitavali (ed. Surendranath Tiwari, 1926), 'Dohe'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%B0%E0%A4%B9%E0%A5%80%E0%A4%AE-%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE%E0%A4%B5%E0%A4%B2%E0%A5%80/%E0%A4%A6%E0%A5%8B%E0%A4%B9%E0%A5%87",
+  "attributionType": "public-domain",
+  "idea": "timing-matters",
+  "indian": true,
+  "en": {
+   "text": "No gain like a well-timed gain, no loss like a missed moment; the wise feel the sting of a chance let slip.",
+   "by": "Rahim"
+  }
+ },
+ {
+  "id": "q307",
+  "day": 307,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "upi-taps-add-up",
+  "indian": true,
+  "en": {
+   "text": "Every UPI tap feels small. Add up a month of them before deciding what is small.",
+   "by": null
+  }
+ },
+ {
+  "id": "q308",
+  "day": 308,
+  "category": "inspiration",
+  "author": "Seneca",
+  "sourceRef": "Moral Letters to Lucilius, Letter 1.3, tr. R. M. Gummere (1917)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Moral_letters_to_Lucilius/Letter_1",
+  "attributionType": "public-domain",
+  "idea": "time-is-all-we-own",
+  "indian": false,
+  "en": {
+   "text": "Nothing, Lucilius, is ours, except time.",
+   "by": "Seneca"
+  }
+ },
+ {
+  "id": "q309",
+  "day": 309,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "thoughtful-gifts",
+  "indian": true,
+  "calendar": "festival",
+  "en": {
+   "text": "A gift chosen with thought is remembered longer than a gift chosen by its price.",
+   "by": null
+  }
+ },
+ {
+  "id": "q310",
+  "day": 310,
+  "category": "investing",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 485",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "wait-for-right-time",
+  "indian": true,
+  "en": {
+   "text": "Those who aim high wait for the right time calmly, without being shaken.",
+   "by": "Thiruvalluvar, Tirukkural 485"
+  }
+ },
+ {
+  "id": "q311",
+  "day": 311,
+  "category": "money",
+  "author": "Samuel Smiles",
+  "sourceRef": "Thrift (1875), ch. II \"Habits of Thrift\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/1/4/4/1/14418/14418-0.txt",
+  "attributionType": "public-domain",
+  "idea": "begin-small",
+  "indian": false,
+  "en": {
+   "text": "Begin somewhere; but, at all events, make a beginning.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q312",
+  "day": 312,
+  "category": "work",
+  "author": "Kabir",
+  "sourceRef": "Kabir, sakhi no. 131 in Kavita-Kaumudi vol. 1 (ed. Ramnaresh Tripathi, 1918), section 3 'Kabir Sahab'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE-%E0%A4%95%E0%A5%8C%E0%A4%AE%E0%A5%81%E0%A4%A6%E0%A5%80_%E0%A5%A7/%E0%A5%A9_%E0%A4%95%E0%A4%AC%E0%A5%80%E0%A4%B0_%E0%A4%B8%E0%A4%BE%E0%A4%B9%E0%A4%AC",
+  "attributionType": "public-domain",
+  "idea": "deeds-over-words",
+  "indian": true,
+  "en": {
+   "text": "Talk is sweet as sugar, doing is bitter as poison; leave the talk and act, and poison turns to nectar.",
+   "by": "Kabir"
+  }
+ },
+ {
+  "id": "q313",
+  "day": 313,
+  "category": "money",
+  "author": "Benjamin Franklin",
+  "sourceRef": "The Way to Wealth (1758)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Way_to_wealth,_or,_Poor_Richard%27s_maxims_improved/Way_to_Wealth,_or,_Poor_Richard%27s_Maxims_Improved",
+  "attributionType": "public-domain",
+  "idea": "steady-work-clears-debt",
+  "indian": false,
+  "en": {
+   "text": "Industry pays debts, while despair increaseth them.",
+   "by": "Benjamin Franklin"
+  }
+ },
+ {
+  "id": "q314",
+  "day": 314,
+  "category": "investing",
+  "author": "Narayana (Hitopadesha)",
+  "sourceRef": "Hitopadesha, Prastavika (introduction), verse 3",
+  "sourceUrl": "https://sa.wikisource.org/wiki/%E0%A4%B9%E0%A4%BF%E0%A4%A4%E0%A5%8B%E0%A4%AA%E0%A4%A6%E0%A5%87%E0%A4%B6%E0%A4%83%E0%A5%A6%E0%A5%A7",
+  "attributionType": "public-domain",
+  "idea": "plan-as-if-long-life",
+  "indian": true,
+  "en": {
+   "text": "The wise should plan for learning and wealth as if they would never grow old or die.",
+   "by": "Hitopadesha, introduction 3"
+  }
+ },
+ {
+  "id": "q315",
+  "day": 315,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "smooth-freelance-income",
+  "indian": true,
+  "en": {
+   "text": "Freelance income comes unevenly. Save from the busy months for the quiet ones.",
+   "by": null
+  }
+ },
+ {
+  "id": "q316",
+  "day": 316,
+  "category": "money",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 478",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "income-above-outgo",
+  "indian": true,
+  "en": {
+   "text": "A small income brings no ruin, so long as what goes out is not larger than what comes in.",
+   "by": "Thiruvalluvar, Tirukkural 478"
+  }
+ },
+ {
+  "id": "q317",
+  "day": 317,
+  "category": "inspiration",
+  "author": "Marcus Aurelius",
+  "sourceRef": "Meditations (Thoughts), Book X.16, tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/15877/pg15877.txt",
+  "attributionType": "public-domain",
+  "idea": "act-dont-talk",
+  "indian": false,
+  "en": {
+   "text": "No longer talk at all about the kind of man that a good man ought to be, but be such.",
+   "by": "Marcus Aurelius"
+  }
+ },
+ {
+  "id": "q318",
+  "day": 318,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "loan-as-promise",
+  "indian": true,
+  "en": {
+   "text": "A loan is a promise to your future self. Make only promises you can keep.",
+   "by": null
+  }
+ },
+ {
+  "id": "q319",
+  "day": 319,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "pension-sent-ahead",
+  "indian": true,
+  "en": {
+   "text": "A pension is income you send ahead to your older self.",
+   "by": null
+  }
+ },
+ {
+  "id": "q320",
+  "day": 320,
+  "category": "work",
+  "author": "Ralph Waldo Emerson",
+  "sourceRef": "Essays: First Series (1841), 'Self-Reliance'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/2944/pg2944.txt",
+  "attributionType": "public-domain",
+  "idea": "work-speaks-for-you",
+  "indian": false,
+  "en": {
+   "text": "Do your work, and I shall know you. Do your work, and you shall reinforce yourself.",
+   "by": "Ralph Waldo Emerson"
+  }
+ },
+ {
+  "id": "q321",
+  "day": 321,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "pay-savings-first",
+  "indian": true,
+  "en": {
+   "text": "Let your savings move on salary day, so willpower never has to be asked.",
+   "by": null
+  }
+ },
+ {
+  "id": "q322",
+  "day": 322,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "ppf-teaches-patience",
+  "indian": true,
+  "en": {
+   "text": "PPF teaches patience in fifteen-year lessons.",
+   "by": null
+  }
+ },
+ {
+  "id": "q323",
+  "day": 323,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "buffer-turns-panic-into-plan",
+  "indian": true,
+  "en": {
+   "text": "A job loss, a hospital bill, a sudden trip home: a buffer turns panic into a plan.",
+   "by": null
+  }
+ },
+ {
+  "id": "q324",
+  "day": 324,
+  "category": "inspiration",
+  "author": "Vemana",
+  "sourceRef": "Vemana Padyamulu, Book 1 no. 103 (Andhra Bharati numbering of C. P. Brown's edition)",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B5%E0%B1%87%E0%B0%AE%E0%B0%A8_%E0%B0%AA%E0%B0%A6%E0%B1%8D%E0%B0%AF%E0%B0%BE%E0%B0%B2%E0%B1%81%2F%E0%B0%97",
+  "attributionType": "public-domain",
+  "idea": "quality-over-quantity",
+  "indian": true,
+  "en": {
+   "text": "A ladleful of milk from a good cow is enough; what use is a potful of donkey's milk?",
+   "by": "Vemana"
+  }
+ },
+ {
+  "id": "q325",
+  "day": 325,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "ask-for-raise-with-facts",
+  "indian": true,
+  "en": {
+   "text": "Ask for a raise with facts in hand: what you did, what it added, what you are asking for.",
+   "by": null
+  }
+ },
+ {
+  "id": "q326",
+  "day": 326,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "rainy-day-reserve",
+  "indian": true,
+  "en": {
+   "text": "Fill the emergency fund in calm months, so the stormy ones find you ready.",
+   "by": null
+  }
+ },
+ {
+  "id": "q327",
+  "day": 327,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "haste-spoils",
+  "indian": true,
+  "en": {
+   "text": "Most money mistakes are made in a hurry. Give big decisions a night's sleep.",
+   "by": null
+  }
+ },
+ {
+  "id": "q328",
+  "day": 328,
+  "category": "money",
+  "author": "Abdul Rahim Khan-i-Khanan (Rahim)",
+  "sourceRef": "Rahim, doha no. 87 in Rahim-Kavitavali (ed. Surendranath Tiwari, 1926), 'Dohe'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%B0%E0%A4%B9%E0%A5%80%E0%A4%AE-%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE%E0%A4%B5%E0%A4%B2%E0%A5%80/%E0%A4%A6%E0%A5%8B%E0%A4%B9%E0%A5%87",
+  "attributionType": "public-domain",
+  "idea": "live-within-means",
+  "indian": true,
+  "en": {
+   "text": "Better to live within a measure you can keep every day; water that overflows its banks runs away.",
+   "by": "Rahim"
+  }
+ },
+ {
+  "id": "q329",
+  "day": 329,
+  "category": "work",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 611",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "effort-over-doubt",
+  "indian": true,
+  "en": {
+   "text": "Do not lose heart saying 'it is too hard'; effort brings the strength to do it.",
+   "by": "Thiruvalluvar, Tirukkural 611"
+  }
+ },
+ {
+  "id": "q330",
+  "day": 330,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "budget-you-can-follow",
+  "indian": true,
+  "en": {
+   "text": "The best budget is the one you can still follow in the last week of the month.",
+   "by": null
+  }
+ },
+ {
+  "id": "q331",
+  "day": 331,
+  "category": "investing",
+  "author": "Marcus Aurelius",
+  "sourceRef": "Meditations (Thoughts), Book VII.8, tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/15877/pg15877.txt",
+  "attributionType": "public-domain",
+  "idea": "dont-fear-the-future",
+  "indian": false,
+  "en": {
+   "text": "Let not future things disturb thee, for thou wilt come to them, if it shall be necessary.",
+   "by": "Marcus Aurelius"
+  }
+ },
+ {
+  "id": "q332",
+  "day": 332,
+  "category": "inspiration",
+  "author": null,
+  "sourceRef": "Japanese proverb (七転び八起き), via en.wikiquote \"Japanese proverbs\"",
+  "sourceUrl": "https://en.wikiquote.org/wiki/Japanese_proverbs",
+  "attributionType": "proverb",
+  "idea": "get-up-once-more",
+  "indian": false,
+  "en": {
+   "text": "Fall down seven times, get up eight.",
+   "by": "Japanese proverb"
+  }
+ },
+ {
+  "id": "q333",
+  "day": 333,
+  "category": "money",
+  "author": "Henry David Thoreau",
+  "sourceRef": "Walden (1854), 'Economy'",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/205/pg205.txt",
+  "attributionType": "public-domain",
+  "idea": "cost-in-life",
+  "indian": false,
+  "en": {
+   "text": "The cost of a thing is the amount of what I will call life which is required to be exchanged for it.",
+   "by": "Henry David Thoreau"
+  }
+ },
+ {
+  "id": "q334",
+  "day": 334,
+  "category": "work",
+  "author": "Narayana (Hitopadesha)",
+  "sourceRef": "Hitopadesha, Prastavika (introduction), verse 32",
+  "sourceUrl": "https://sa.wikisource.org/wiki/%E0%A4%B9%E0%A4%BF%E0%A4%A4%E0%A5%8B%E0%A4%AA%E0%A4%A6%E0%A5%87%E0%A4%B6%E0%A4%83%E0%A5%A6%E0%A5%A7",
+  "attributionType": "public-domain",
+  "idea": "effort-over-fate",
+  "indian": true,
+  "en": {
+   "text": "Do not give up effort by brooding on fate; without effort you cannot get oil even from sesame seeds.",
+   "by": "Hitopadesha, introduction 32"
+  }
+ },
+ {
+  "id": "q335",
+  "day": 335,
+  "category": "investing",
+  "author": "Rabindranath Tagore",
+  "sourceRef": "Stray Birds (1916), no. 126",
+  "sourceUrl": "https://en.wikisource.org/wiki/Stray_Birds",
+  "attributionType": "public-domain",
+  "idea": "slow-shaping",
+  "indian": true,
+  "en": {
+   "text": "Not hammerstrokes, but dance of the water sings the pebbles into perfection.",
+   "by": "Rabindranath Tagore"
+  }
+ },
+ {
+  "id": "q336",
+  "day": 336,
+  "category": "money",
+  "author": "Abdul Rahim Khan-i-Khanan (Rahim)",
+  "sourceRef": "Rahim, doha no. 174 in Rahim-Kavitavali (ed. Surendranath Tiwari, 1926), 'Dohe'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%B0%E0%A4%B9%E0%A5%80%E0%A4%AE-%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE%E0%A4%B5%E0%A4%B2%E0%A5%80/%E0%A4%A6%E0%A5%8B%E0%A4%B9%E0%A5%87",
+  "attributionType": "public-domain",
+  "idea": "small-things-matter",
+  "indian": true,
+  "en": {
+   "text": "Seeing the big, do not throw away the small; where a needle is needed, what can a sword do?",
+   "by": "Rahim"
+  }
+ },
+ {
+  "id": "q337",
+  "day": 337,
+  "category": "money",
+  "author": "Kabir",
+  "sourceRef": "Kabir, sakhi no. 88 in Kavita-Kaumudi vol. 1 (ed. Ramnaresh Tripathi, 1918), section 3 'Kabir Sahab'",
+  "sourceUrl": "https://hi.wikisource.org/wiki/%E0%A4%95%E0%A4%B5%E0%A4%BF%E0%A4%A4%E0%A4%BE-%E0%A4%95%E0%A5%8C%E0%A4%AE%E0%A5%81%E0%A4%A6%E0%A5%80_%E0%A5%A7/%E0%A5%A9_%E0%A4%95%E0%A4%AC%E0%A5%80%E0%A4%B0_%E0%A4%B8%E0%A4%BE%E0%A4%B9%E0%A4%AC",
+  "attributionType": "public-domain",
+  "idea": "honest-earning",
+  "indian": true,
+  "en": {
+   "text": "What comes on its own is like milk, what is begged is like water, and what is wrung from others is like blood.",
+   "by": "Kabir"
+  }
+ },
+ {
+  "id": "q338",
+  "day": 338,
+  "category": "investing",
+  "author": null,
+  "sourceRef": "Eastern proverb, quoted in Samuel Smiles, Self-Help (1859), ch. IV",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/935/pg935.txt",
+  "attributionType": "proverb",
+  "idea": "patience-transforms",
+  "indian": false,
+  "en": {
+   "text": "Time and patience change the mulberry leaf to satin.",
+   "by": "Eastern proverb"
+  }
+ },
+ {
+  "id": "q339",
+  "day": 339,
+  "category": "work",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 482",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "act-in-season",
+  "indian": true,
+  "en": {
+   "text": "Acting in step with the right season is a rope that binds good fortune fast.",
+   "by": "Thiruvalluvar, Tirukkural 482"
+  }
+ },
+ {
+  "id": "q340",
+  "day": 340,
+  "category": "money",
+  "author": "Benjamin Franklin",
+  "sourceRef": "The Way to Wealth (1758)",
+  "sourceUrl": "https://en.wikisource.org/wiki/Way_to_wealth,_or,_Poor_Richard%27s_maxims_improved/Way_to_Wealth,_or,_Poor_Richard%27s_Maxims_Improved",
+  "attributionType": "public-domain",
+  "idea": "think-before-buying",
+  "indian": false,
+  "en": {
+   "text": "Buy what thou hast no need of, and ere long thou shalt sell thy necessaries.",
+   "by": "Benjamin Franklin"
+  }
+ },
+ {
+  "id": "q341",
+  "day": 341,
+  "category": "inspiration",
+  "author": "Rabindranath Tagore",
+  "sourceRef": "Stray Birds (1916), no. 6",
+  "sourceUrl": "https://en.wikisource.org/wiki/Stray_Birds",
+  "attributionType": "public-domain",
+  "idea": "dont-dwell-on-losses",
+  "indian": true,
+  "en": {
+   "text": "If you shed tears when you miss the sun, you also miss the stars.",
+   "by": "Rabindranath Tagore"
+  }
+ },
+ {
+  "id": "q342",
+  "day": 342,
+  "category": "money",
+  "author": "Samuel Smiles",
+  "sourceRef": "Thrift (1875), ch. II \"Habits of Thrift\"",
+  "sourceUrl": "https://gutenberg.pglaf.org/1/4/4/1/14418/14418-0.txt",
+  "attributionType": "public-domain",
+  "idea": "thrift-is-for-everyone",
+  "indian": false,
+  "en": {
+   "text": "Thrift does not require superior courage, nor superior intellect, nor any superhuman virtue.",
+   "by": "Samuel Smiles"
+  }
+ },
+ {
+  "id": "q343",
+  "day": 343,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "patience-is-repetition",
+  "indian": true,
+  "en": {
+   "text": "Patience is not doing nothing. It is doing the right small thing again and again.",
+   "by": null
+  }
+ },
+ {
+  "id": "q344",
+  "day": 344,
+  "category": "work",
+  "author": "Marcus Aurelius",
+  "sourceRef": "Meditations (Thoughts), Book V.9, tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/15877/pg15877.txt",
+  "attributionType": "public-domain",
+  "idea": "fail-and-return",
+  "indian": false,
+  "en": {
+   "text": "Be not disgusted, nor discouraged… but when thou hast failed, return back again.",
+   "by": "Marcus Aurelius"
+  }
+ },
+ {
+  "id": "q345",
+  "day": 345,
+  "category": "money",
+  "author": null,
+  "sourceRef": "P. Percival, Tamil Proverbs (archive.org scan dated 1877), under க (among nos. 1964-1969)",
+  "sourceUrl": "https://archive.org/details/tamilproverbswi01percgoog",
+  "attributionType": "proverb",
+  "idea": "contentment-without-debt",
+  "indian": true,
+  "en": {
+   "text": "Plain gruel without debt is enough, even if it fills only a quarter of the stomach.",
+   "by": "Tamil proverb"
+  }
+ },
+ {
+  "id": "q346",
+  "day": 346,
+  "category": "inspiration",
+  "author": "Swami Vivekananda",
+  "sourceRef": "The Complete Works of Swami Vivekananda, Vol. 6, Notes of Class Talks and Lectures, 'Lessons on Raja-Yoga'",
+  "sourceUrl": "https://en.wikisource.org/wiki/The_Complete_Works_of_Swami_Vivekananda/Volume_6/Notes_Of_Class_Talks_And_Lectures/Lessons_On_Raja-Yoga",
+  "attributionType": "public-domain",
+  "idea": "one-idea-patience",
+  "indian": true,
+  "en": {
+   "text": "Take up an idea, devote yourself to it, struggle on in patience, and the sun will rise for you.",
+   "by": "Swami Vivekananda"
+  }
+ },
+ {
+  "id": "q347",
+  "day": 347,
+  "category": "investing",
+  "author": "Confucius",
+  "sourceRef": "Analects IX.18, tr. James Legge",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/4094/pg4094.txt",
+  "attributionType": "public-domain",
+  "idea": "one-basket-at-a-time",
+  "indian": false,
+  "en": {
+   "text": "Though but one basketful is thrown at a time, the advancing with it is my own going forward.",
+   "by": "Confucius"
+  }
+ },
+ {
+  "id": "q348",
+  "day": 348,
+  "category": "money",
+  "author": "Sarvajna",
+  "sourceRef": "Sarvajna, tripadi no. 1158 in 'ಸರ್ವಜ್ಞನ ವಚನಗಳು' (Kannada Wikisource numbering)",
+  "sourceUrl": "https://kn.wikisource.org/wiki/%E0%B2%B8%E0%B2%B0%E0%B3%8D%E0%B2%B5%E0%B2%9C%E0%B3%8D%E0%B2%9E%E0%B2%A8_%E0%B2%B5%E0%B2%9A%E0%B2%A8%E0%B2%97%E0%B2%B3%E0%B3%81",
+  "attributionType": "public-domain",
+  "idea": "trust-is-credit",
+  "indian": true,
+  "en": {
+   "text": "Credit lasts only while people trust you; once trust breaks, it is like a kiln-fired pot that has cracked.",
+   "by": "Sarvajna"
+  }
+ },
+ {
+  "id": "q349",
+  "day": 349,
+  "category": "work",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 1021",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "do-not-slacken",
+  "indian": true,
+  "en": {
+   "text": "There is no greater dignity than saying, 'I will not slacken in my work.'",
+   "by": "Thiruvalluvar, Tirukkural 1021"
+  }
+ },
+ {
+  "id": "q350",
+  "day": 350,
+  "category": "money",
+  "author": null,
+  "sourceRef": "E. P. Hood, The World of Proverb and Parable (1885), via en.wikiquote \"English proverbs\"",
+  "sourceUrl": "https://en.wikiquote.org/wiki/English_proverbs",
+  "attributionType": "proverb",
+  "idea": "mind-the-small-sums",
+  "indian": false,
+  "en": {
+   "text": "Take care of the pennies, and the pounds will take care of themselves.",
+   "by": "English proverb"
+  }
+ },
+ {
+  "id": "q351",
+  "day": 351,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "inflation-in-goals",
+  "indian": true,
+  "en": {
+   "text": "Count rising prices into every goal; tomorrow's school fee will not cost today's amount.",
+   "by": null
+  }
+ },
+ {
+  "id": "q352",
+  "day": 352,
+  "category": "money",
+  "author": "Publilius Syrus",
+  "sourceRef": "Sentences, no. 541 (The Moral Sayings of Publius Syrus, tr. D. Lyman, 1856)",
+  "sourceUrl": "https://archive.org/download/moralsayingspub00lymagoog/moralsayingspub00lymagoog_djvu.txt",
+  "attributionType": "public-domain",
+  "idea": "frugality-cures-want",
+  "indian": false,
+  "en": {
+   "text": "Frugality is a remedy for indigence.",
+   "by": "Publilius Syrus"
+  }
+ },
+ {
+  "id": "q353",
+  "day": 353,
+  "category": "work",
+  "author": "Sarvajna",
+  "sourceRef": "Sarvajna, tripadi no. 1110 in 'ಸರ್ವಜ್ಞನ ವಚನಗಳು' (Kannada Wikisource numbering)",
+  "sourceUrl": "https://kn.wikisource.org/wiki/%E0%B2%B8%E0%B2%B0%E0%B3%8D%E0%B2%B5%E0%B2%9C%E0%B3%8D%E0%B2%9E%E0%B2%A8_%E0%B2%B5%E0%B2%9A%E0%B2%A8%E0%B2%97%E0%B2%B3%E0%B3%81",
+  "attributionType": "public-domain",
+  "idea": "work-brings-wealth",
+  "indian": true,
+  "en": {
+   "text": "Wealth comes to the one who works; from the one who will not work, even what is in hand slips away.",
+   "by": "Sarvajna"
+  }
+ },
+ {
+  "id": "q354",
+  "day": 354,
+  "category": "inspiration",
+  "author": "Baddena",
+  "sourceRef": "Sumati Satakam 48",
+  "sourceUrl": "https://te.wikisource.org/wiki/%E0%B0%B8%E0%B1%81%E0%B0%AE%E0%B0%A4%E0%B1%80_%E0%B0%B6%E0%B0%A4%E0%B0%95%E0%B0%AE%E0%B1%81",
+  "attributionType": "public-domain",
+  "idea": "giving-adorns",
+  "indian": true,
+  "en": {
+   "text": "Giving is the true ornament of the hands.",
+   "by": "Baddena, Sumati Satakam 48"
+  }
+ },
+ {
+  "id": "q355",
+  "day": 355,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "review-cover-on-life-events",
+  "indian": true,
+  "en": {
+   "text": "Review your cover when life changes: a marriage, a child, a new home loan.",
+   "by": null
+  }
+ },
+ {
+  "id": "q356",
+  "day": 356,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "read-your-epf-passbook",
+  "indian": true,
+  "en": {
+   "text": "Your EPF passbook is a small letter to your future self. Read it once a year.",
+   "by": null
+  }
+ },
+ {
+  "id": "q357",
+  "day": 357,
+  "category": "money",
+  "author": "M. K. Gandhi",
+  "sourceRef": "An Autobiography: The Story of My Experiments with Truth, Part I, ch. 16 'Changes' (tr. Mahadev Desai, 1927)",
+  "sourceUrl": "https://en.wikisource.org/wiki/The_Story_of_My_Experiments_with_Truth/Volume_1/Part_1/Chapter_16",
+  "attributionType": "public-domain",
+  "idea": "track-spending",
+  "indian": true,
+  "en": {
+   "text": "I kept account of every farthing I spent, and my expenses were carefully calculated.",
+   "by": "M. K. Gandhi"
+  }
+ },
+ {
+  "id": "q358",
+  "day": 358,
+  "category": "work",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "runway-before-business",
+  "indian": true,
+  "en": {
+   "text": "Before leaving a job to start a business, save enough to live through a slow first year.",
+   "by": null
+  }
+ },
+ {
+  "id": "q359",
+  "day": 359,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "plan-the-post-work-years",
+  "indian": true,
+  "en": {
+   "text": "Plan for the years after work as carefully as you plan the years of work.",
+   "by": null
+  }
+ },
+ {
+  "id": "q360",
+  "day": 360,
+  "category": "money",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 480",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "give-within-means",
+  "indian": true,
+  "en": {
+   "text": "Generosity that does not weigh the limit of one's means soon brings that wealth to an end.",
+   "by": "Thiruvalluvar, Tirukkural 480"
+  }
+ },
+ {
+  "id": "q361",
+  "day": 361,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "due-date-reminder",
+  "indian": true,
+  "en": {
+   "text": "Set a reminder a few days before the card due date. Late fees are the easiest to avoid.",
+   "by": null
+  }
+ },
+ {
+  "id": "q362",
+  "day": 362,
+  "category": "inspiration",
+  "author": "M. K. Gandhi",
+  "sourceRef": "'The Doctrine of the Sword', Young India, 11 August 1920",
+  "sourceUrl": "https://en.wikiquote.org/wiki/Mahatma_Gandhi",
+  "attributionType": "public-domain",
+  "idea": "strength-is-will",
+  "indian": true,
+  "en": {
+   "text": "Strength does not come from physical capacity. It comes from an indomitable will.",
+   "by": "M. K. Gandhi"
+  }
+ },
+ {
+  "id": "q363",
+  "day": 363,
+  "category": "work",
+  "author": "Epictetus",
+  "sourceRef": "Discourses II.18 ('How we should struggle against appearances'), tr. George Long",
+  "sourceUrl": "https://gutenberg.pglaf.org/cache/epub/10661/pg10661.txt",
+  "attributionType": "public-domain",
+  "idea": "habits-grow-by-practice",
+  "indian": false,
+  "en": {
+   "text": "Every habit and faculty is maintained and increased by the corresponding actions.",
+   "by": "Epictetus"
+  }
+ },
+ {
+  "id": "q364",
+  "day": 364,
+  "category": "investing",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "years-not-days",
+  "indian": true,
+  "en": {
+   "text": "Hard months feel endless while you are in them. Look at the years, not the days.",
+   "by": null
+  }
+ },
+ {
+  "id": "q365",
+  "day": 365,
+  "category": "money",
+  "author": "Thiruvalluvar",
+  "sourceRef": "Tirukkural 437",
+  "sourceUrl": "https://www.projectmadurai.org/pm_etexts/utf8/pmuni0001.html",
+  "attributionType": "public-domain",
+  "idea": "wealth-is-for-use",
+  "indian": true,
+  "en": {
+   "text": "Wealth held back from what ought to be done with it wastes away and does not last.",
+   "by": "Thiruvalluvar, Tirukkural 437"
+  }
+ },
+ {
+  "id": "q366",
+  "day": 366,
+  "category": "money",
+  "author": null,
+  "sourceRef": null,
+  "sourceUrl": null,
+  "attributionType": "original",
+  "idea": "belated-revised-return-window",
+  "indian": true,
+  "calendar": "dec31",
+  "en": {
+   "text": "Year-end check: a return not yet filed can usually still be filed late until 31 December.",
+   "by": null
+  }
+ }
+]
