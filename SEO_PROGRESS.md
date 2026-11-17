@@ -159,3 +159,10 @@ pmfme, pmegp, daynrlm.
 
 ## Open issues / app bugs found
 (see APP_IDEAS.md; app fixes only where a published number is wrong)
+
+## Final checks (17 Nov 2026)
+- Lighthouse (mobile, local production build, one page at a time): 110 of 115 sitemap pages pass every gate (performance 100, accessibility / best practices / SEO 100, CLS 0.000, LCP ≤ 1.41 s).
+- Below the gate, not changed (shared legal source, “do not touch”): /privacy-policy (a11y 94, BP 96, CLS 0.067), /data-privacy (a11y 93, BP 96, CLS 0.067), /terms-of-service (a11y 89, BP 96), /about (a11y 93, BP 96), /data-safety (perf 86, a11y 66: unnamed buttons/select, no main landmark). Cause: the app's legal screens reused on the website (unsized images, contrast). Owner decision needed.
+- Preview (financial-calculator-fxqfypsbc…vercel.app): production check suite 48/48 (www checks run only on production); all 115 sitemap pages 200 + index + own canonical + valid JSON-LD + social card (110 cards, all served); llms.txt, IndexNow key, split sitemaps served; preview-check calculators live on phone and desktop, 0 errors.
+- Local audits on this commit: qa-calculators 137/0, qa-loan-engine 6/0, qa-expense-tracker 123/0, qa-export-safety 33/0, qa-feature-pages 340/0, qa-landing 113/0.
+- Waiting for the owner's go before merging to main.
