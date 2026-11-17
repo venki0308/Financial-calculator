@@ -129,7 +129,7 @@ async function main() {
         // ── 2. Links on "/" ─────────────────────────────────────────────────
         console.log('\n2. Every link on "/" (production)');
         const hrefs = [...new Set([...html.matchAll(/<a\b[^>]*\shref="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&')))];
-        const okPage = (p) => p === '/' || seo.STATIC_PAGES.includes(p.slice(1)) || seo.LEGAL_PAGES.includes(p.slice(1)) || seo.SHARED_PAGES.includes(p) || (seo.isSiteOnlyPage(p) && p !== '/404');
+        const okPage = (p) => p === '/' || seo.STATIC_PAGES.includes(p.slice(1)) || seo.FEATURE_PAGES.includes(p.slice(1)) || seo.LEGAL_PAGES.includes(p.slice(1)) || seo.SHARED_PAGES.includes(p) || (seo.isSiteOnlyPage(p) && p !== '/404');
         const bad = [];
         for (const h of hrefs) {
             if (h.startsWith('#')) { if (!html.includes(`id="${h.slice(1)}"`)) bad.push(`${h}: no such section`); continue; }
@@ -149,7 +149,8 @@ async function main() {
             if (r.status !== 308 || r.loc !== page || !/no-store/.test(r.cache)) redirBad.push(`${appPath}: ${r.status} ${r.loc} ${r.cache}`);
         }
         for (const [alias, target] of Object.entries(seo.APP_ALIASES)) {
-            const want = seo.APP_CANONICAL[target];
+            // An alias with its own page (step-up SIP, goal SIP) goes there; the rest follow their target.
+            const want = seo.APP_CANONICAL[alias] ?? seo.APP_CANONICAL[target];
             if (!want) continue;
             const r = await get(prod.base, alias);
             if (r.status !== 308 || r.loc !== want) redirBad.push(`alias ${alias}: ${r.status} ${r.loc}`);
@@ -161,7 +162,7 @@ async function main() {
             ...rt.ROUTE_TARGETS,
             '/app/': '/in-the-app', '/my-loans/abc': '/calculators/loans', '/business-tracker/b1': '/calculators/expense-goals',
             '/expenses/credit-cards': '/calculators/credit-cards', '/expenses/credit-cards/add': '/calculators/credit-cards', '/profile/edit': '/in-the-app',
-            '/scheme/c-ssy': '/schemes/c-ssy', '/scheme/c-mudra': '/schemes/c-mudra', '/scheme/c-apy': '/atal-pension', '/scheme/no-such-scheme': '/schemes',
+            '/scheme/c-ssy': '/sukanya-samriddhi', '/schemes/c-ssy': '/sukanya-samriddhi', '/scheme/c-mudra': '/schemes/c-mudra', '/scheme/c-apy': '/atal-pension', '/scheme/no-such-scheme': '/schemes',
             '/app.html': '/', [`/assets/${appJs}`]: '/',
         };
         for (const [p, want] of Object.entries(lockWant)) {
@@ -210,6 +211,19 @@ async function main() {
         const staticBad = [];
         for (const s of seo.STATIC_PAGES) { const r = await get(prod.base, '/' + s); if (r.status !== 200 || r.robots || !r.body.includes(`<link rel="canonical" href="https://fincalix.com/${s}"`)) staticBad.push(s); }
         check(`${seo.STATIC_PAGES.length} static pages: 200, indexable, own canonical`, staticBad.length === 0, staticBad.join(', '));
+        // Feature pages (src/landing/features): the answer, sources, FAQ JSON-LD, disclaimer and a per-page Play referrer are in the HTML.
+        const featBad = [];
+        for (const s of seo.FEATURE_PAGES) {
+            const r = await get(prod.base, '/' + s);
+            const t = text(r.body);
+            const miss = [
+                r.status !== 200 && `status ${r.status}`, !/^index/.test(metaRobots(r.body)) && 'noindex', !canonOk(r.body, '/' + s) && 'canonical',
+                !/"@type":"FAQPage"/.test(r.body) && 'FAQPage JSON-LD', !/class="answer"/.test(r.body) && 'answer', !t.includes('Last updated') && 'last updated',
+                !/class="disclaimer/.test(r.body) && 'disclaimer', !r.body.includes(encodeURIComponent(`utm_campaign=${s}&`)) && 'Play referrer', !/rel="noopener"/.test(r.body) && 'source links',
+            ].filter(Boolean);
+            if (miss.length) featBad.push(`${s}: ${miss.join(', ')}`);
+        }
+        check(`${seo.FEATURE_PAGES.length} feature pages: 200, indexable, own canonical, answer, sources, last updated, FAQ JSON-LD, disclaimer, Play referrer with the page's campaign`, featBad.length === 0, featBad.slice(0, 3).join(' | '));
         const legalBad = [];
         for (const p of seo.LEGAL_PAGES) {
             const r = await get(prod.base, '/' + p);
@@ -226,9 +240,9 @@ async function main() {
         check('manifest start_url reverted to "/"', JSON.parse((await get(prod.base, '/manifest.json')).body).start_url === '/');
         const locs = [...(await get(prod.base, '/sitemap.xml')).body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
         const indexedPaths = ['/calculators', ...catPaths, '/schemes', ...schemePages.filter((s) => s.index).map((s) => s.path)];
-        const wantLocs = ['https://fincalix.com/', ...seo.STATIC_PAGES.map((s) => `https://fincalix.com/${s}`), ...seo.LEGAL_PAGES.map((s) => `https://fincalix.com/${s}`), ...indexedPaths.map((p) => `https://fincalix.com${p}`)].sort();
+        const wantLocs = ['https://fincalix.com/', ...seo.STATIC_PAGES.map((s) => `https://fincalix.com/${s}`), ...seo.FEATURE_PAGES.map((s) => `https://fincalix.com/${s}`),...seo.LEGAL_PAGES.map((s) => `https://fincalix.com/${s}`), ...indexedPaths.map((p) => `https://fincalix.com${p}`)].sort();
         const lastmods = [...(await get(prod.base, '/sitemap.xml')).body.matchAll(/<loc>https:\/\/fincalix\.com\/schemes\/([^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)];
-        check(`sitemap = landing + ${seo.STATIC_PAGES.length} static + ${seo.LEGAL_PAGES.length} legal + ${indexedPaths.length} new indexable pages (no noindex page, apex only)`, JSON.stringify([...locs].sort()) === JSON.stringify(wantLocs), `${locs.length} URLs, want ${wantLocs.length}`);
+        check(`sitemap = landing + ${seo.STATIC_PAGES.length} static + ${seo.FEATURE_PAGES.length} feature + ${seo.LEGAL_PAGES.length} legal + ${indexedPaths.length} new indexable pages (no noindex page, apex only)`, JSON.stringify([...locs].sort()) === JSON.stringify(wantLocs), `${locs.length} URLs, want ${wantLocs.length}`);
         check('sitemap: each scheme page dated by its last-verified date', lastmods.length > 0 && lastmods.every(([, id, d]) => schemePages.find((s) => s.id === id)?.scheme.lastVerified === d));
         const w1 = await get(www.base, '/calculator/sip'), w2 = await get(www.base, '/config.json'), w3 = await get(www.base, '/export-my-data'), w4 = await get(www.base, '/');
         check('www: redirects to the apex (which then locks), config.json still served', w1.status === 308 && w1.loc === 'https://fincalix.com/calculator/sip' && w2.status === 200 && w4.status === 308 && w4.loc === 'https://fincalix.com/');

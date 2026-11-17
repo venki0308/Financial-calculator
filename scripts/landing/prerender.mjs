@@ -99,7 +99,9 @@ for (const m of existing.matchAll(/<url>\s*<loc>([^<]+)<\/loc>\s*(?:<lastmod>([^
 for (const p of site.pages.filter((x) => x.index)) {
     const loc = `https://fincalix.com${p.path}`;
     const id = p.path.startsWith('/schemes/') ? p.path.slice('/schemes/'.length) : null;
-    if (!urls.has(loc)) urls.set(loc, (id && ssr.schemeLastVerified(id)) || today);
+    // A feature page carries the date its content last changed (also when it replaced a hand-written guide).
+    if (p.lastmod) urls.set(loc, p.lastmod);
+    else if (!urls.has(loc)) urls.set(loc, (id && ssr.schemeLastVerified(id)) || today);
 }
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...urls].map(([loc, lastmod]) => `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`).join('\n')}\n</urlset>\n`;
 fs.writeFileSync(path.join(DIST, 'sitemap.xml'), sitemap);

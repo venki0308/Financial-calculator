@@ -110,6 +110,8 @@ export interface PageHeadInput {
     path: string;
     index: boolean;
     crumbs?: Array<{ name: string; path: string }>;
+    /** Extra JSON-LD objects for this page (e.g. FAQPage on a feature page). */
+    ld?: object[];
 }
 
 /** <head> for the generated pages: apex canonical, robots, social cards, breadcrumbs. */
@@ -140,5 +142,6 @@ export function pageHead(p: PageHeadInput): string {
         `<meta property="og:locale" content="en_IN">`,
         `<meta name="twitter:card" content="summary_large_image">`,
         ...(ld ? [`<script type="application/ld+json">${jsonForScript(ld)}</script>`] : []),
+        ...(p.ld ?? []).map((o) => `<script type="application/ld+json">${jsonForScript(o)}</script>`),
     ].join('\n    ');
 }

@@ -14,9 +14,9 @@ import iconUrl from './assets/fincalix-icon-96.webp';
 export interface FooterGroup { id: string; label: string; links: Array<{ href: string; label: string }> }
 
 /** The official Google Play badge (unaltered artwork), with an install referrer per placement. */
-export function PlayBadge({ placement, small }: { placement: Exclude<Placement, 'qr'>; small?: boolean }) {
+export function PlayBadge({ placement, small, campaign }: { placement: Exclude<Placement, 'qr'>; small?: boolean; campaign?: string }) {
     return (
-        <a className={`play${small ? ' play-sm' : ''}`} href={playUrl(placement)} data-play={placement} target="_blank" rel="noopener">
+        <a className={`play${small ? ' play-sm' : ''}`} href={playUrl(placement, campaign)} data-play={placement} target="_blank" rel="noopener">
             <img src={badgeUrl} width={646} height={250} alt="Get it on Google Play" />
         </a>
     );
@@ -27,10 +27,10 @@ export function PlayBadge({ placement, small }: { placement: Exclude<Placement, 
  * the head script, so nothing moves) the note says there is no iPhone app yet. `qrSvg`
  * adds a QR code to the Play listing, shown on desktop only.
  */
-export function PlayCta({ placement, note = 'Free on Google Play for Android', qrSvg }: { placement: 'hero' | 'final_cta' | 'mini_calc'; note?: string; qrSvg?: string }) {
+export function PlayCta({ placement, note = 'Free on Google Play for Android', qrSvg, campaign }: { placement: 'hero' | 'final_cta' | 'mini_calc'; note?: string; qrSvg?: string; campaign?: string }) {
     return (
         <div className="ctas">
-            <PlayBadge placement={placement} />
+            <PlayBadge placement={placement} campaign={campaign} />
             <span className="cta-note">
                 <span className="note-default">{note}</span>
                 <span className="note-ios">Android only for now — there’s no iPhone app yet.</span>
@@ -121,13 +121,13 @@ export function SiteFooter({ groups }: { groups: FooterGroup[] }) {
 }
 
 /** The final call-to-action band (the page's second and last gradient). */
-export function CtaBand({ title, children }: { title: ReactNode; children?: ReactNode }) {
+export function CtaBand({ title, children, campaign }: { title: ReactNode; children?: ReactNode; campaign?: string }) {
     return (
         <section className="band" aria-labelledby="band-h">
             <div className="wrap">
                 <h2 id="band-h" className="serif">{title}</h2>
                 {children ?? <p className="band-sub">Free on Google Play. No login, no ads.</p>}
-                <PlayCta placement="final_cta" />
+                <PlayCta placement="final_cta" campaign={campaign} />
             </div>
         </section>
     );

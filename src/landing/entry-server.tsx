@@ -21,6 +21,8 @@ import { buildCategoryPages, buildSchemePages, firstSentence } from './site-data
 import { schemes } from '../data/schemes';
 import { CalculatorsView, CategoryView, ExportView, InTheAppView, NotFoundView, SchemeView, SchemesView } from './SitePages';
 import iconUrl from './assets/fincalix-icon-96.webp';
+import { FEATURES, checkFeatures } from './features/registry';
+import { FeatureView, faqLd } from './features/ui';
 
 /** The home page. `qrSvg` (made by prerender.mjs) is the desktop-only QR code to Google Play. */
 export function render(qrSvg?: string) {
@@ -88,6 +90,7 @@ export interface SitePageOut {
     index: boolean;        // listed in the sitemap and indexable
     analyticsTitle: string;
     note?: string;
+    lastmod?: string;      // sitemap date when the page's content last changed (feature pages)
 }
 
 /** Category pages, /calculators, /schemes, /schemes/<id>, /in-the-app, 404, /export-my-data. */
@@ -126,6 +129,25 @@ export function renderSite(): { pages: SitePageOut[]; schemePages: Array<{ id: s
             description: firstSentence(sp.scheme.description).slice(0, 158),
             index: sp.index, crumbs: [home, { name: 'Government schemes', path: '/schemes' }, { name: sp.scheme.name, path: sp.path }],
         }, 'Website - Scheme', sp.reason);
+    }
+    // Feature pages: one app feature each (src/landing/features/).
+    checkFeatures();
+    for (const f of FEATURES) {
+        const cat = cats.find((c) => c.key === f.category);
+        if (!cat) throw new Error(`feature ${f.slug}: unknown category ${f.category}`);
+        const path = `/${f.slug}`;
+        out.push({
+            path,
+            html: renderToString(<FeatureView f={f} footer={footer} catLabel={cat.label} catPath={cat.path} />),
+            head: pageHead({
+                title: f.title, description: f.description, path, index: true,
+                crumbs: [home, calcCrumb, { name: cat.label, path: cat.path }, { name: f.crumb, path }],
+                ld: [faqLd(f)],
+            }),
+            index: true,
+            analyticsTitle: f.analyticsTitle,
+            lastmod: f.updated,
+        });
     }
     add(IN_THE_APP, <InTheAppView footer={footer} />, {
         title: 'This part of FinCalix is in the Android app', description: 'Profile, saved calculations, history, settings and notifications are in the free FinCalix Android app.', index: false,

@@ -12,7 +12,7 @@ import { allCalcs, appTools, CalcItem } from '../data/calculatorList';
 import { schemes } from '../data/schemes';
 import { compareSalaryTax, NEW_REGIME_REBATE_LIMIT, NEW_REGIME_STANDARD_DEDUCTION } from '../utils/incomeTax';
 import { formatINR } from '../utils/calculations';
-import { APP_CANONICAL } from './seoRoutes';
+import { APP_ALIASES, APP_CANONICAL } from './seoRoutes';
 import { SITE_CATEGORIES, siteCategory, SiteCategory } from './categories';
 import { FAQ_TEMPLATES, Faq, SCHEME_CARD_IDS } from './content';
 
@@ -112,15 +112,23 @@ export function buildData(): LandingData {
 
     // Footer: the static calculator pages, grouped like the tool grid, named after the app's own tool.
     const byPath = new Map(tools.map((t) => [t.path, t]));
-    const staticLinks = Object.entries(APP_CANONICAL).map(([appPath, staticPath]) => {
+    const seen = new Set<string>();
+    const staticLinks = Object.entries(APP_CANONICAL).flatMap(([appPath, staticPath]) => {
+        // One link per page (a merged scheme and its calculator share a page).
+        if (seen.has(staticPath)) return [];
         if (appPath.startsWith('/scheme/')) {
             const s = schemes.find((x) => x.id === appPath.slice('/scheme/'.length));
             if (!s) throw new Error(`landing: ${appPath} not in schemes.ts`);
-            return { cat: 'retire' as SiteCategory, href: staticPath, label: s.name };
+            seen.add(staticPath);
+            return [{ cat: 'retire' as SiteCategory, href: staticPath, label: s.name }];
         }
+        // App aliases with their own page (e.g. /calculator/step-up-sip) and app screens such as
+        // /notifications are not registry tools; their pages are linked from the feature pages.
+        if (APP_ALIASES[appPath] || (!byPath.has(appPath) && !appPath.startsWith('/calculator/'))) return [];
         const t = byPath.get(appPath);
         if (!t) throw new Error(`landing: ${appPath} is not in the calculator registry`);
-        return { cat: t.cat, href: staticPath, label: t.name };
+        seen.add(staticPath);
+        return [{ cat: t.cat, href: staticPath, label: t.name }];
     });
     const footer = SITE_CATEGORIES
         .map((c) => ({ id: c.id, label: c.label, links: staticLinks.filter((l) => l.cat === c.id).map(({ href, label }) => ({ href, label })) }))

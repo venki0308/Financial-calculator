@@ -16,4 +16,17 @@ document.querySelectorAll<HTMLElement>('[data-island="header"]').forEach((el) =>
 const exportRoot = document.querySelector<HTMLElement>('[data-export-root]');
 if (exportRoot) initExportPage(exportRoot);
 
+// Feature pages: the calculator is pre-rendered with its starting values; make it interactive
+// from one lazily loaded chunk, so reading the page needs no JavaScript.
+const calcRoots = document.querySelectorAll<HTMLElement>('[data-calc]');
+if (calcRoots.length) {
+    void import('./features/calcs/all').then(({ CALCS }) => {
+        calcRoots.forEach((el) => {
+            const C = CALCS[el.dataset.calc as keyof typeof CALCS];
+            if (!C) return;
+            hydrateRoot(el, <C {...JSON.parse(el.dataset.props || '{}')} />);
+        });
+    });
+}
+
 startSiteRuntime(document.body.dataset.title || 'Website');

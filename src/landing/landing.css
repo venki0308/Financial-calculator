@@ -426,3 +426,51 @@ div.tool .tool-guide { color: var(--muted); }
 .band .cta-note { color: #fff; font-weight: 700; }
 .band .cta-note .note-default { display: none; }
 .band .ctas { flex-direction: column; align-items: center; }
+
+/* ── Feature pages (src/landing/features/) ───────────────────────────────────── */
+.fhead .answer { margin-top: 18px; padding: 16px 20px; border-left: 4px solid var(--primary); background: var(--surface); border-radius: 0 14px 14px 0; font-size: 18px; color: var(--ink); display: grid; gap: 10px; max-width: 46em; }
+.fhead .updated { margin-top: 12px; font-size: 14px; color: var(--muted); }
+.fhead .updated a, .rules a.src, .fnote a { color: var(--primary); font-weight: 600; }
+.fcalc-wrap { margin: 8px 0 12px; }
+.fcalc .calc-in > .eyebrow { margin-bottom: 4px; }
+.fcalc-app { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--rule); display: grid; gap: 10px; justify-items: start; }
+.fcalc-app p { font-weight: 700; color: var(--ink); }
+.fcalc-app .play img { height: 48px; width: auto; }
+.ftoggle { border: 0; padding: 0; min-width: 0; }
+.ftoggle legend { font-size: 14.5px; font-weight: 600; color: var(--ink-2); margin-bottom: 10px; padding: 0; }
+.ftoggle .chip { min-height: 44px; }
+.fsec { margin-top: 44px; max-width: 52em; }
+.fsec > h2 { font-size: clamp(24px, 3.4vw, 30px); margin-bottom: 12px; }
+.fsec p + p, .fsec p + .ftable-fig, .fsec .ftable-fig + p { margin-top: 12px; }
+.fsec p, .fsec li { color: var(--ink-2); }
+.fsec h3 { font-size: 18px; margin: 4px 0 8px; color: var(--ink); }
+.ftable-fig { margin: 16px 0 0; }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--rule); border-radius: 14px; background: var(--surface); }
+.table-scroll:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.ftable { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: lining-nums tabular-nums; }
+.ftable caption { text-align: left; padding: 12px 14px 6px; font-weight: 700; color: var(--ink); }
+.ftable th, .ftable td { padding: 10px 14px; border-top: 1px solid var(--rule); text-align: right; white-space: nowrap; }
+.ftable thead th { font-size: 13px; letter-spacing: .04em; color: var(--muted); font-weight: 700; text-align: right; }
+.ftable th[scope='row'], .ftable thead th:first-child { text-align: left; color: var(--ink); font-weight: 600; }
+.fnote { margin-top: 8px; font-size: 14px; color: var(--muted); }
+.steps { padding-left: 22px; display: grid; gap: 10px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px 32px; }
+.cols ul { padding-left: 20px; display: grid; gap: 6px; }
+.scenarios { display: grid; gap: 14px; }
+.scenarios li { padding: 16px 18px; border: 1px solid var(--rule); border-radius: 14px; background: var(--surface); }
+.scenarios h3 { margin-top: 0; }
+.rules { margin-top: 44px; max-width: 52em; padding: 20px 22px; border: 1px solid var(--rule-strong); border-radius: 18px; background: var(--surface); }
+.rules h2 { font-size: 24px; margin-bottom: 10px; }
+.rules ul { padding-left: 20px; display: grid; gap: 10px; color: var(--ink-2); }
+.rules .checked { margin-top: 14px; font-size: 14px; color: var(--muted); }
+.related ul { display: grid; gap: 10px; }
+.related li { display: grid; gap: 2px; }
+.related a { font-weight: 700; color: var(--primary); }
+.related span { color: var(--muted); font-size: 14.5px; }
+.disclaimer { margin-top: 40px; max-width: 52em; font-size: 14px; color: var(--muted); display: grid; gap: 8px; }
+.fpage .faq details p { overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+    .fhead .answer { font-size: 16.5px; padding: 14px 16px; }
+    .ftable { font-size: 14px; }
+    .ftable th, .ftable td { padding: 9px 10px; }
+}

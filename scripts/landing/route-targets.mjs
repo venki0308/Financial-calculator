@@ -25,7 +25,7 @@ export async function buildRouteTargets() {
     const uncovered = [];
     for (const r of routes) {
         if (r === '*' || r === '/' || r.includes(':')) continue;
-        if (R.STATIC_PAGES.includes(r.slice(1)) || R.LEGAL_PAGES.includes(r.slice(1)) || R.SHARED_PAGES.includes(r)) continue;
+        if (R.STATIC_PAGES.includes(r.slice(1)) || R.FEATURE_PAGES.includes(r.slice(1)) || R.LEGAL_PAGES.includes(r.slice(1)) || R.SHARED_PAGES.includes(r)) continue;
         if (R.APP_CANONICAL[R.APP_ALIASES[r] ?? r]) continue;
         if (R.publicTarget(r, {}, [])) continue;   // covered by a pattern (/profile/*, /expenses/credit-cards/*)
         const target = R.APP_ALIASES[r] ?? r;
