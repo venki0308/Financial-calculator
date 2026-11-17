@@ -84,10 +84,16 @@ pmfme, pmegp, daynrlm.
 |---|---|---|
 | (filled as each is verified) | | |
 
+## Route table plan (apply when the pages are registered)
+- FEATURE_PAGES += every new slug. SHARED_PAGES += /two-wheeler-loan, /goal-planner, /business-tracker, /cibil-score (same address as the app route: public = page, dev cookie = app); isAppPath returns true for SHARED_PAGES first.
+- APP_CANONICAL += education-loan→/education-loan, form16-tax→/tax-refund, salary-hike, compound-interest, stp, prag→/portfolio-rebalancing, simple-interest, overdraft→/overdraft-interest, credit-card-payoff, /expenses/credit-cards(+/:id)→/credit-card-tracker, /my-loans(+/:id)→/loan-foreclosure, insurance→/term-insurance-cover, /insurance-compare→/health-insurance-claim-settlement-ratio, property→/property-appreciation, break-even, /financial-advisor→/financial-planning, /cibil-profile→/cibil-score, /scheme/c-scss→/scss, /scheme/c-nps→/nps. MERGED_PAGES += /schemes/c-scss→/scss, /schemes/c-nps→/nps.
+- ROUTE_OVERRIDES: drop education-loan, two-wheeler-loan, form16-tax, cibil-profile. Then: sync-vercel-headers, route-targets --check, qa-landing.
+- Verify before publishing the retirement category intro: which schemes keep the opening rate (TD, NSC, KVP, MIS, SCSS) vs move quarterly (PPF, SSY) — check against verified-facts-deposits.md.
+
 ## Site-wide (Phases 2–6)
 | Item | Status |
 |---|---|
-| Category pages + /calculators: rich intros, 1–2 line tool descriptions | todo |
+| Category pages + /calculators: rich intros, 1–2 line tool descriptions | done (intros + 54 tool descriptions; start links come from page cards) |
 | Route table: every app route → its dedicated page | todo |
 | Titles/descriptions unique; per-page OG images | in progress (uniqueness enforced at build; cards rendered at the end) |
 | JSON-LD: WebApplication, FAQPage, BreadcrumbList, GovernmentService, Organization (sameAs = Play), WebSite | todo |
