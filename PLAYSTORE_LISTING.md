@@ -15,9 +15,9 @@ Free Financial Calculator India: Income Tax FY 2026-27, EMI, SIP, FD, PPF & GST
 ## Full Description (4000 chars max)
 
 ```
-🇮🇳 India's Most Complete Financial Calculator — Built for Every Indian
+🇮🇳 Financial calculators for India — EMI, income tax, SIP, savings schemes and more
 
-Every salaried employee, business owner, and investor in India needs a reliable financial calculator. FinCalix gives you 25+ professionally built calculators — updated for Budget 2026-27 — all in one beautiful, fast app. No login required. No ads. 100% free.
+Every salaried employee, business owner, and investor in India needs a reliable financial calculator. FinCalix gives you 45+ calculators, trackers and planners — updated for Budget 2026 (FY 2026-27) — in one fast app. No login required. No ads. 100% free.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 INCOME TAX CALCULATOR (Budget 2026-27 Updated)
@@ -76,7 +76,7 @@ Every salaried employee, business owner, and investor in India needs a reliable 
 🔬 BONUS FEATURES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 • Scientific Calculator
-• AI Financial Advisor — get instant answers
+• Smart Planner — rule-based tips from your own numbers
 • Compare Calculators side-by-side
 • Budget Tracker & Goal Planner
 • Export results as PDF
@@ -84,10 +84,10 @@ Every salaried employee, business owner, and investor in India needs a reliable 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔒 YOUR PRIVACY IS PROTECTED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• All calculations happen 100% on your device
+• Calculations run on your phone
 • No login, no account
-• Your salary, tax inputs & financial figures NEVER leave your phone
-• Works offline: your financial data is never uploaded
+• Your financial data stays on your device
+• Works offline
 • No ads. Usage analytics are on by default and can be turned off anytime in Settings → Privacy
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -96,12 +96,12 @@ Every salaried employee, business owner, and investor in India needs a reliable 
 ✅ 100% Free — no hidden charges, no subscription, no premium tier
 ✅ Works Offline — calculate anywhere, anytime
 ✅ No Login Required — open and calculate instantly
-✅ Budget 2026-27 Updated — always current with latest tax rules
+✅ Updated for Budget 2026 — FY 2026-27 tax rules, checked against the Income-tax Act, 2025
 ✅ Export as PDF — share or save professional reports
 ✅ CA Disclaimer included — for responsible financial guidance
 ✅ Dark & Light Mode — easy on your eyes
 ✅ Multi-language — English, Hindi, Telugu, Tamil, Kannada, Malayalam
-✅ Built for India, by Indians 🇮🇳
+✅ Built in India by Sri Moksha Software Developers 🇮🇳
 
 Download FinCalix today and take control of your financial future. Whether you're planning your taxes, comparing investments, or tracking EMIs — FinCalix has you covered.
 
@@ -127,7 +127,7 @@ income tax calculator india 2026,EMI,SIP,FD,tax saving,ITR planning,old vs new r
 ✅ EMI, SIP, FD, PPF, NPS, EPF, SSY & more
 ✅ GST Calculator with invoice saving
 ✅ Export calculation reports as PDF
-✅ AI Financial Advisor
+✅ Smart Planner
 ✅ Dark Mode & Multi-language support (6 languages)
 ✅ Works offline — your financial data stays on your device
 ✅ No login required — completely free
@@ -157,6 +157,7 @@ Finance
 ## Contact Details (for Play Store listing)
 ```
 Email: support@fincalix.com
-Website: https://www.fincalix.com
-Privacy Policy URL: https://www.fincalix.com/privacy-policy
+Website: https://fincalix.com
+Privacy Policy URL: https://fincalix.com/privacy-policy
+Developer: Sri Moksha Software Developers, India
 ```

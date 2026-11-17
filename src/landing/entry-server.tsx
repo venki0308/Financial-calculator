@@ -198,7 +198,7 @@ export function renderSite(): { pages: SitePageOut[]; schemePages: Array<{ id: s
 
 // For prerender.mjs: the Play link for the QR code, the static page list, scheme dates.
 export { playUrl } from './play';
-export { STATIC_PAGES } from './seoRoutes';
+export { STATIC_PAGES, FEATURE_PAGES } from './seoRoutes';
 export { ogKey } from './head';
 export function schemeLastVerified(id: string): string | null {
     return schemes.find((s) => s.id === id)?.lastVerified ?? null;

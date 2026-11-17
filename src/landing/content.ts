@@ -151,38 +151,45 @@ export const FAQ_TEMPLATES: Faq[] = [
 // ── Copy for the generated pages (counts and names come from the registry / schemes.ts) ──
 
 /** Intro paragraph for each category page /calculators/<slug>. */
-export const CATEGORY_INTROS: Readonly<Record<string, { title: string; intro: string }>> = {
+export const CATEGORY_INTROS: Readonly<Record<string, { title: string; intro: string; more: string }>> = {
     loans: {
         title: 'Loan calculators',
-        intro: 'Plan a loan before you sign. These calculators work out the EMI, the total interest and the full repayment schedule for home, car, two-wheeler, personal, education and gold loans, and show what a part-payment or early closure saves. My Loans keeps every running loan in one place with its balance. All of them are in the free FinCalix Android app; tools marked “Guide” also have a page on this site with the formula and a worked example.',
+        intro: 'Plan a loan before you sign. These calculators work out the EMI, the total interest and the full repayment schedule for home, car, two-wheeler, personal, education and gold loans, and show what a part-payment or early closure saves. My Loans keeps every running loan in one place with its balance.',
+        more: 'Start with the EMI calculator if you are comparing offers; use the page for your loan type once you know what you are borrowing for, because each one covers what matters for that loan — tax on a home loan, the down payment on a car, the processing fee on a personal loan, the moratorium on an education loan. Every EMI uses the reducing-balance method that banks use; your lender’s statement is final.',
     },
     investments: {
         title: 'Investment calculators',
-        intro: 'See how your money can grow. Work out the future value of a monthly SIP or a one-time lumpsum, plan withdrawals with an SWP or transfers with an STP, compare returns with CAGR, and check what a fixed or recurring deposit pays at maturity. Results assume the rate you enter stays the same, so treat them as estimates: mutual fund returns go up and down with the market.',
+        intro: 'See how your money can grow. Work out the future value of a monthly SIP or a one-time lumpsum, plan withdrawals with an SWP or transfers with an STP, compare returns with CAGR, rebalance a portfolio, and check what a fixed or recurring deposit pays at maturity.',
+        more: 'Market returns are not guaranteed: every investment figure here uses the return you enter, so try a lower rate as well. Deposit calculators use the rate you choose for bank FDs and RDs; Government small-savings rates are on the retirement and savings page. Tax on gains is worked out on the capital gains page.',
     },
     tax: {
         title: 'Tax and salary calculators',
-        intro: 'Income tax for FY 2026-27 under both the New and the Old Regime, with the standard deduction, the Section 87A rebate and marginal relief worked in. Check how much of your HRA is tax-free, what your gratuity will be, the tax on capital gains, TCS on money sent abroad under LRS, GST on a bill and what a salary hike means for take-home pay. The figures are estimates, not tax advice.',
+        intro: 'Income tax for FY 2026-27 (tax year 2026-27) under both regimes, with the standard deduction, the rebate under section 156 and marginal relief worked in. Check how much of your HRA is tax-free, your gratuity, tax on capital gains, TCS on money sent abroad, GST on a bill, what a salary hike leaves in hand and whether you will get a refund.',
+        more: 'All tax pages follow the Income-tax Act, 2025, which replaced the 1961 Act from 1 April 2026; where a familiar section was renumbered (80C is now section 123, 87A is section 156) the pages give both. The figures are estimates for planning; your employer and the Income Tax Department compute the final tax.',
     },
     retire: {
         title: 'Retirement and government savings calculators',
-        intro: 'Plan long-term savings with government-backed schemes. Work out the maturity value of PPF, EPF, NPS, Sukanya Samriddhi, NSC and Kisan Vikas Patra, the monthly income from Post Office MIS, Post Office Time Deposit returns and the quarterly interest from the Senior Citizens Savings Scheme. The app uses the interest rates listed for each scheme; small savings rates are revised by the government every quarter.',
+        intro: 'Plan long-term savings with government-backed schemes. Work out the maturity value of PPF, EPF, NPS, Sukanya Samriddhi, NSC and Kisan Vikas Patra, the monthly income from Post Office MIS, Post Office Time Deposit returns, the quarterly interest from the Senior Citizens Savings Scheme and the Atal Pension Yojana pension.',
+        more: 'Small-savings rates are set by the Government every quarter and the pages use the rates notified for the current quarter, with the notification linked. A deposit keeps the rate it was opened at for some schemes (Time Deposit, NSC, KVP, MIS, SCSS) and moves with each quarter for others (PPF, Sukanya Samriddhi).',
     },
     cards: {
         title: 'Credit card calculators',
-        intro: 'Get on top of credit card debt. See your debt-free date and the interest you will pay under different payoff plans such as Avalanche and Snowball, work out the interest and GST on a card balance, compare card types for the way you spend, and learn what moves your CIBIL score. Everything you enter stays on your phone.',
+        intro: 'Get on top of credit card debt. See your debt-free date and the interest you will pay under the avalanche and snowball payoff plans, work out the interest and GST on an unpaid balance, keep due dates in view with the card manager, compare card types for the way you spend, and learn what moves your CIBIL score.',
+        more: 'Card interest runs from the date of each purchase once you pay less than the full bill, and 18% GST is added to it, so the minimum due is the most expensive way to repay. The CIBIL page explains score bands and reports; it is not a bureau score.',
     },
     goals: {
         title: 'Expense, goal and planning tools',
-        intro: 'Track spending and plan for what matters. Log daily expenses and see monthly and yearly reports, set budgets, plan goals like a home or your child’s education with the monthly saving each one needs, compare scenarios side by side, keep a simple daily ledger for a small business, and compare health and life insurance plans.',
+        intro: 'Track spending and plan for what matters. Log daily expenses and see monthly reports, set a budget with the 50/30/20 split, plan goals like your child’s education with the monthly saving each one needs, keep a simple daily ledger for a small business, work out the life cover your family needs and compare health insurance plans.',
+        more: 'Your financial data stays on your device in the Android app — no login. The planning pages show their method step by step, so you can check every figure; they are estimates, not advice.',
     },
     utilities: {
         title: 'Everyday utility calculators',
         intro: 'Handy tools that sit alongside the money calculators: your exact age in years, months and days, the full cost of a flat or plot with stamp duty and registration, the break-even point for a business, a scientific calculator and a world clock with time zones.',
+        more: 'The property and break-even tools have their own pages with worked examples; the age calculator, scientific calculator and world clock are in the Android app.',
     },
 };
 
-export const CALCULATORS_INTRO = 'Every calculator and tracker in the FinCalix app, grouped the way people look for them. Each one shows its result as you type, works without internet in the Android app and keeps your numbers on your phone. Open a category to see what each tool does; tools marked “Guide” also have a page on this site with the formula and a worked example.';
+export const CALCULATORS_INTRO = 'Every calculator and tracker in the FinCalix app, grouped the way people look for them. Each one shows its result as you type, works without internet in the Android app and keeps your numbers on your phone. Tools marked “Calculator and guide” also have a page on this site with a working calculator, the formula, worked examples and official sources.';
 
 export const SCHEMES_INTRO = 'FinCalix explains central government schemes in plain language: who can apply, what you get, the documents you need and how to apply, with a link to the official website. Every scheme shows the date its details were last checked against the official source. The same list is in the Android app, where you can bookmark schemes and filter them by category.';
 

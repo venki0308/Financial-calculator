@@ -10,6 +10,7 @@ import type { CategoryPage, SchemePage } from './site-data';
 import { firstSentence, longDate, schemeHref, schemesByCategory } from './site-data';
 import { CALCULATORS_INTRO, IMPORT_STEPS, PUBLISHER, SCHEMES_INTRO, SUPPORT_EMAIL } from './content';
 import { METHODS, PROCESS, UPDATES } from './trust-content';
+import { TOOL_BLURBS } from './tool-blurbs';
 import { EXPORT_PAGE, ORIGIN } from './seoRoutes';
 import { DataTable } from './features/ui';
 import type { ToolCard } from './data';
@@ -42,8 +43,8 @@ function ToolItem({ t, guide }: { t: ToolCard; guide: string | null }) {
     const inner = (
         <>
             <span className="tool-head"><span className="tool-name">{t.name}</span></span>
-            <span className="tool-desc">{t.desc}</span>
-            <span className="tool-guide">{guide ? 'Guide →' : 'In the app'}</span>
+            <span className="tool-desc">{TOOL_BLURBS[t.path] ?? t.desc}</span>
+            <span className="tool-guide">{guide ? 'Calculator and guide →' : 'In the app'}</span>
         </>
     );
     return <li>{guide ? <a className="tool tool-link" href={guide}>{inner}</a> : <div className="tool">{inner}</div>}</li>;
@@ -56,6 +57,7 @@ export function CategoryView({ page, all, footer }: { page: CategoryPage; all: C
                 <p className="eyebrow">{page.tools.length} tools in the FinCalix app</p>
                 <h1 className="serif">{page.title}</h1>
                 <p className="lead">{page.intro}</p>
+                <p>{page.more}</p>
             </header>
             <ul className="tools list-reset">
                 {page.tools.map((t) => <ToolItem key={t.path} t={t} guide={t.guide} />)}

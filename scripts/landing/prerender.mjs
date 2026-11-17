@@ -174,16 +174,18 @@ const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
 const bannerJs = manifest['src/landing/banner-entry.ts']?.file;
 if (!bannerJs) fail('banner entry missing from the build manifest');
 let injected = 0;
-for (const dir of ssr.STATIC_PAGES) {
+// Static guides and the feature pages that replaced them: old web-app users who arrive on /sip, /emi …
+// still get the one-time export banner.
+for (const dir of [...ssr.STATIC_PAGES, ...ssr.FEATURE_PAGES]) {
     const f = path.join(DIST, dir, 'index.html');
-    if (!fs.existsSync(f)) fail(`static page ${dir} missing`);
+    if (!fs.existsSync(f)) fail(`page ${dir} missing`);
     let s = fs.readFileSync(f, 'utf8');
     if (!s.includes(bannerJs)) {
         s = s.replace('</body>', `  <script type="module" src="/${bannerJs}"></script>\n</body>`);
         injected++;
     }
     // The guides have only a light design: a light browser bar (their --bg), whatever the device setting.
-    if (!s.includes('name="theme-color"')) s = s.replace(/(<meta name="viewport"[^>]*>)/, '$1\n  <meta name="theme-color" content="#F8FAF9" />');
+    if (ssr.STATIC_PAGES.includes(dir) && !s.includes('name="theme-color"')) s = s.replace(/(<meta name="viewport"[^>]*>)/, '$1\n  <meta name="theme-color" content="#F8FAF9" />');
     fs.writeFileSync(f, s);
 }
 console.log(`prerender: export banner added to ${injected} static pages`);

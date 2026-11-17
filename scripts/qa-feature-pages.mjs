@@ -232,6 +232,56 @@ console.log('\n5. Shared text between feature pages (8-word shingles of the page
     check(`no two of ${slugs.length} pages share more than 10% of their own text (highest ${(worst * 100).toFixed(1)}%: ${pair})`, worst <= LIMIT, over.slice(0, 8).join(' | '));
 }
 
+// ── 7. Structured data and internal links over every built page in the sitemaps ──
+console.log('\n7. Structured data and internal links (every page in the sitemaps)');
+{
+    const xml = ['pages', 'calculators', 'schemes'].map((n) => (fs.existsSync(`dist/sitemap-${n}.xml`) ? fs.readFileSync(`dist/sitemap-${n}.xml`, 'utf8') : '')).join('');
+    const paths = [...xml.matchAll(/<loc>https:\/\/fincalix\.com(\/[^<]*)<\/loc>/g)].map((m) => m[1]);
+    const fileOf = (p) => (p === '/' ? 'dist/index.html' : `dist${p.replace(/\/$/, '')}/index.html`);
+    const exists = (p) => { const clean = p.split(/[?#]/)[0]; return clean === '' || clean === '/' || fs.existsSync(fileOf(clean)) || fs.existsSync(`dist${clean}`); };
+    const ldBad = [], linkBad = [], inbound = Object.fromEntries(paths.map((p) => [p, new Set()]));
+    for (const p of paths) {
+        if (!fs.existsSync(fileOf(p))) { ldBad.push(`${p}: no file`); continue; }
+        const h = fs.readFileSync(fileOf(p), 'utf8');
+        for (const m of h.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
+            let o; try { o = JSON.parse(m[1]); } catch { ldBad.push(`${p}: JSON-LD does not parse`); continue; }
+            const items = o['@graph'] || [o];
+            for (const it of items) {
+                const t = it['@type'];
+                if (!t) ldBad.push(`${p}: JSON-LD without @type`);
+                if (t === 'FAQPage' && !(Array.isArray(it.mainEntity) && it.mainEntity.length && it.mainEntity.every((q) => q.name && q.acceptedAnswer?.text))) ldBad.push(`${p}: FAQPage incomplete`);
+                if (t === 'BreadcrumbList' && !(it.itemListElement || []).every((e, i) => e.position === i + 1 && /^https:\/\/fincalix\.com\//.test(e.item))) ldBad.push(`${p}: BreadcrumbList positions/urls`);
+                if (t === 'WebApplication' && !(it.name && it.url && it.offers)) ldBad.push(`${p}: WebApplication incomplete`);
+                if (t === 'GovernmentService' && !(it.name && it.provider?.name && it.url)) ldBad.push(`${p}: GovernmentService incomplete`);
+            }
+        }
+        // FAQPage questions = the visible <details> questions.
+        const faqLd = [...h.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => { try { return JSON.parse(m[1]); } catch { return null; } }).find((o) => o && o['@type'] === 'FAQPage');
+        if (faqLd && faqLd.mainEntity.length !== (h.match(/<details/g) || []).length) ldBad.push(`${p}: FAQPage ${faqLd.mainEntity.length} vs ${(h.match(/<details/g) || []).length} visible`);
+        // Links inside <main> (header/footer excluded).
+        const main = h.slice(Math.max(0, h.indexOf('<main')), h.indexOf('</main>') > 0 ? h.indexOf('</main>') : h.length);
+        for (const m of main.matchAll(/href="(\/[^"#?]*)/g)) {
+            const to = m[1].replace(/\/$/, '') || '/';
+            if (!exists(to)) linkBad.push(`${p} → ${to}`);
+            if (to !== p && inbound[to]) inbound[to].add(p);
+        }
+    }
+    // Calculator and scheme pages need 2 content links in; legal and hub pages may be linked from the
+    // site header/footer (that is where people look for them), so their whole-page links count.
+    const isContentPage = (p) => seo.FEATURE_PAGES.includes(p.slice(1)) || p.startsWith('/schemes/');
+    for (const p of paths.filter((x) => !isContentPage(x))) {
+        for (const q of paths) {
+            if (q === p || !fs.existsSync(fileOf(q))) continue;
+            if (new RegExp(`href="${p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/?"`).test(fs.readFileSync(fileOf(q), 'utf8'))) inbound[p].add(q);
+            if (inbound[p].size >= 2) break;
+        }
+    }
+    const orphans = paths.filter((p) => p !== '/' && inbound[p].size < 2).map((p) => `${p} (${inbound[p].size})`);
+    check(`JSON-LD on ${paths.length} pages parses and has the required fields; FAQPage matches the visible questions`, ldBad.length === 0, ldBad.slice(0, 6).join(' | '));
+    check('no broken internal link in page content', linkBad.length === 0, [...new Set(linkBad)].slice(0, 8).join(' | '));
+    check('every indexable page has at least 2 internal links in from other pages (content links, not header/footer)', orphans.length === 0, orphans.slice(0, 12).join(', '));
+}
+
 // ── 6. Page-group checks (scripts/qa-features/*.mjs): independent maths for each group's pages ──
 if (fs.existsSync('scripts/qa-features')) {
     for (const f of fs.readdirSync('scripts/qa-features').filter((x) => x.endsWith('.mjs')).sort()) {

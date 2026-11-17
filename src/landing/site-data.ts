@@ -31,6 +31,7 @@ export interface CategoryPage {
     label: string;
     title: string;
     intro: string;
+    more: string;
     tools: Array<ToolCard & { guide: string | null }>;
 }
 
@@ -83,7 +84,7 @@ export function buildCategoryPages(data: LandingData): CategoryPage[] {
         if (!copy) throw new Error(`site: no intro for category ${c.id}`);
         const tools = data.tools.filter((t) => t.cat === c.id).map((t) => ({ ...t, guide: APP_CANONICAL[t.path] ?? null }));
         if (!tools.length) throw new Error(`site: category ${c.id} has no tools`);
-        return { key: c.id, path: categoryPath(c.id as keyof typeof CATEGORY_SLUGS), label: c.label, title: copy.title, intro: copy.intro, tools };
+        return { key: c.id, path: categoryPath(c.id as keyof typeof CATEGORY_SLUGS), label: c.label, title: copy.title, intro: copy.intro, more: copy.more, tools };
     });
 }
 
