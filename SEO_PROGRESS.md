@@ -52,24 +52,24 @@ Status values: `todo` → `written` (file exists) → `built` (in build, tsc ok)
 | Deposits | /post-office-mis | yes | built — own audit passes; Lighthouse at the end | |
 | Deposits | /scss (+ merge /schemes/c-scss) | yes | built — own audit passes; Lighthouse at the end | |
 | Deposits | /atal-pension | yes | built — own audit passes; Lighthouse at the end | |
-| Tax | /hra | yes | todo | §8 metro list |
-| Tax | /capital-gains | yes | todo | |
-| Tax | /lrs-tcs | yes | todo | §8 TCS |
-| Tax | /gst | yes | todo | §8 slabs |
-| Tax | /salary-hike | — | todo | |
-| Tax | /tax-refund | — | todo | Form 16 / TDS feature, s.437 interest |
+| Tax | /hra | yes | built — own audit passes; Lighthouse at the end | §8 metro list |
+| Tax | /capital-gains | yes | built — own audit passes; Lighthouse at the end | |
+| Tax | /lrs-tcs | yes | built — own audit passes; Lighthouse at the end | §8 TCS |
+| Tax | /gst | yes | built — own audit passes; Lighthouse at the end | §8 slabs |
+| Tax | /salary-hike | — | built — own audit passes; Lighthouse at the end | |
+| Tax | /tax-refund | — | built — own audit passes; Lighthouse at the end | Form 16 / TDS feature, s.437 interest |
 | Retirement | /epf | yes | built — own audit passes; Lighthouse at the end | §8 EPF rate |
 | Retirement | /nps (+ merge /schemes/c-nps) | yes | built — own audit passes; Lighthouse at the end | §8 annuity/lump sum |
 | Retirement | /gratuity | yes | built — own audit passes; Lighthouse at the end | §8 Labour Codes |
 | Planning | /expense-tracker (+ 50/30/20 section) | yes | built — own audit passes; Lighthouse at the end | budget tracker merged here |
 | Planning | /business-tracker | — | built — own audit passes; Lighthouse at the end | |
 | Planning | /term-insurance-cover | — | built — own audit passes; Lighthouse at the end | |
-| Planning | /health-insurance-claim-settlement-ratio | — | revising (IRDAI Annual Report figures only, owner decision) | IRDAI annual report figures only |
+| Planning | /health-insurance-claim-settlement-ratio | — | built — IRDAI Annual Report 2024-25 figures only | IRDAI annual report figures only |
 | Planning | /property-appreciation | — | built — own audit passes; Lighthouse at the end | |
 | Planning | /break-even | — | built — own audit passes; Lighthouse at the end | |
 | Planning | /financial-planning | — | built — own audit passes; Lighthouse at the end | app's Smart Planner; ships only if it stands on app maths |
-| GEO | /how-we-calculate | — | todo | |
-| GEO | /updates | — | todo | |
+| GEO | /how-we-calculate | — | built | |
+| GEO | /updates | — | built | |
 
 No own page (Phase 0 decision 3): age, scientific, world clock, compare scenarios, CC compare.
 
@@ -98,7 +98,38 @@ pmfme, pmegp, daynrlm.
 | c-pmksy | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
 | c-digital-agri | built, indexable (Lighthouse at the end) | group 1, verified 2026-11-17 |
 | c-naps | noindex | NAPS-2 ended 31 Mar 2026; no official extension or PM-NAPS 3.0 found |
-| (filled as each is verified) | | |
+| c-pmkisan | built, indexable | group 2, verified 2026-11-17 |
+| c-kcc | built, indexable | group 2, verified 2026-11-17 |
+| c-pmddky | built, indexable | group 2, verified 2026-11-17 |
+| c-pmvbry | built, indexable | group 2, verified 2026-11-17 |
+| c-nps-vatsalya | built, indexable | group 2, verified 2026-11-17 |
+| c-pmay-u | built, indexable | group 2, verified 2026-11-17 |
+| c-abpmjay | built, indexable | group 2, verified 2026-11-17 |
+| c-pmrahat | built, indexable | group 2, verified 2026-11-17 |
+| c-pmuy | built, indexable | group 2, verified 2026-11-17 |
+| c-pmsgmby | built, indexable | group 2, verified 2026-11-17 |
+| c-pmjdy | built, indexable | group 2, verified 2026-11-17 |
+| c-mudra | built, indexable | group 2, verified 2026-11-17 |
+| c-udyam | built, indexable | group 2, verified 2026-11-17 |
+| c-cgtmse | built, indexable | group 2, verified 2026-11-17 |
+| c-mcgs-msme | built, indexable | group 2, verified 2026-11-17 |
+| c-mgnrega | built, indexable | group 3, verified 2026-11-17 |
+| c-pmvishwakarma | built, indexable | group 3, verified 2026-11-17 |
+| c-pmsvanidhi | built, indexable | group 3, verified 2026-11-17 |
+| c-nsap | built, indexable | group 3, verified 2026-11-17 |
+| c-nmms | built, indexable | group 3, verified 2026-11-17 |
+| c-vidyalakshmi | built, indexable | group 3, verified 2026-11-17 |
+| c-lakhpati | built, indexable | group 3, verified 2026-11-17 |
+| c-pmmvy | built, indexable | group 3, verified 2026-11-17 |
+| c-pmis | built, indexable | group 3, verified 2026-11-17 |
+| c-startup-india | built, indexable | group 3, verified 2026-11-17 |
+| c-gig | built, indexable | group 3, verified 2026-11-17 |
+| c-pmegp | built, indexable | group 3, verified 2026-11-17 |
+| c-daynrlm | built, indexable | group 3, verified 2026-11-17 |
+| c-pmkusum | noindex | scheme period ended 31 Mar 2026; no official notice of continuation found |
+| c-pmfme | noindex | officially extended only till Sep 2026; no later approval found |
+| c-pmdaksh | removed from website, 308 → /schemes/c-pmkvy | merged into PMKVY from 2024-25 (PIB 22 Oct 2026); app record unchanged (edit denied) |
+| c-scss, c-nps | merged | 308 → /scss, /nps |
 
 ## Route table plan (apply when the pages are registered)
 - FEATURE_PAGES += every new slug. SHARED_PAGES += /two-wheeler-loan, /goal-planner, /business-tracker, /cibil-score (same address as the app route: public = page, dev cookie = app); isAppPath returns true for SHARED_PAGES first.
@@ -110,20 +141,21 @@ pmfme, pmegp, daynrlm.
 | Item | Status |
 |---|---|
 | Category pages + /calculators: rich intros, 1–2 line tool descriptions | done (intros + 54 tool descriptions; start links come from page cards) |
-| Route table: every app route → its dedicated page | todo |
-| Titles/descriptions unique; per-page OG images | in progress (uniqueness enforced at build; cards rendered at the end) |
-| JSON-LD: WebApplication, FAQPage, BreadcrumbList, GovernmentService, Organization (sameAs = Play), WebSite | todo |
-| Internal links: no orphans, ≥ 2 links in per page, no broken links | todo |
+| Route table: every app route → its dedicated page | done — every app route with a page points to it; shared addresses for 4 |
+| Titles/descriptions unique; per-page OG images | done — enforced at build; 115 cards in public/og/p |
+| JSON-LD: WebApplication, FAQPage, BreadcrumbList, GovernmentService, Organization (sameAs = Play), WebSite | done — validated by qa-feature-pages §7 |
+| Internal links: no orphans, ≥ 2 links in per page, no broken links | done — qa-feature-pages §7 |
 | Split sitemaps with real lastmod | done |
 | robots.txt (search + AI search allowed; training-only bots listed for the owner's decision) | done (training-only bots listed, none blocked) |
 | llms.txt | done |
 | IndexNow (key file + submit script) | done (submit after production deploy) |
-| /how-we-calculate, /updates, entity facts consistent, PLAYSTORE_LISTING.md | in progress (pages built; PLAYSTORE_LISTING.md pending) |
+| /how-we-calculate, /updates, entity facts consistent, PLAYSTORE_LISTING.md | done — /about stays the shared legal text (not touched); publisher in JSON-LD + /how-we-calculate |
 | Phase 5: Search Console DNS TXT + steps, Bing import, OFFSITE_PLAN.md | done — SEO_SETUP_STEPS.md, OFFSITE_PLAN.md |
 | Phase 6: SEO_TRACKING.md | done (baseline to complete with first GSC/Play data) |
 
 ## Failed gates (ship noindex)
-(none yet)
+- Feature pages: none.
+- Scheme pages (no verified content): c-naps (NAPS-2 ended), c-pmfme (no extension after Sep 2026), c-pmkusum (ended 31 Mar 2026).
 
 ## Open issues / app bugs found
 (see APP_IDEAS.md; app fixes only where a published number is wrong)
