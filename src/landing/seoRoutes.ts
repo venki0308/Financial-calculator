@@ -78,6 +78,7 @@ export const APP_CANONICAL: Readonly<Record<string, string>> = {
     '/calculator/salary-hike': '/salary-hike',
     '/calculator/form16-tax': '/tax-refund',
     '/insurance-compare': '/health-insurance-claim-settlement-ratio',
+    '/scheme/c-pmdaksh': '/schemes/c-pmkvy',
 };
 
 /**
@@ -118,6 +119,8 @@ export const MERGED_PAGES: Readonly<Record<string, string>> = {
     '/schemes/c-ssy': '/sukanya-samriddhi',
     '/schemes/c-scss': '/scss',
     '/schemes/c-nps': '/nps',
+    // Ended: merged into PMKVY from 2024-25 (PIB, 22 Oct 2026); src/landing/schemes/ended.ts
+    '/schemes/c-pmdaksh': '/schemes/c-pmkvy',
 };
 
 /** The hand-written calculator pages (folder names under public/), not yet rebuilt as feature pages. */

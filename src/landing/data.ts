@@ -10,6 +10,7 @@
 import en from '../locales/en.json';
 import { allCalcs, appTools, CalcItem } from '../data/calculatorList';
 import { schemes } from '../data/schemes';
+import { listedOnWebsite } from './schemes/ended';
 import { compareSalaryTax, NEW_REGIME_REBATE_LIMIT, NEW_REGIME_STANDARD_DEDUCTION } from '../utils/incomeTax';
 import { formatINR } from '../utils/calculations';
 import { APP_ALIASES, APP_CANONICAL } from './seoRoutes';
@@ -81,7 +82,7 @@ export function buildData(): LandingData {
     const tools = [...allCalcs, ...appTools].map(toolCard);
     if (new Set(tools.map((t) => t.path)).size !== tools.length) throw new Error('landing: duplicate tool path in the registry');
 
-    const central = schemes.filter((s) => s.governmentLevel === 'central' && s.isActive !== false);
+    const central = schemes.filter(listedOnWebsite);
     const schemeCards = SCHEME_CARD_IDS.map((id) => {
         const s = schemes.find((x) => x.id === id);
         if (!s) throw new Error(`landing: scheme ${id} not in schemes.ts`);

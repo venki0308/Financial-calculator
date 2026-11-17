@@ -5,6 +5,7 @@
  */
 import { schemes } from '../data/schemes';
 import { SCHEME_CONTENT } from './schemes/generated';
+import { listedOnWebsite } from './schemes/ended';
 import type { SchemeContent } from './schemes/types';
 import type { Scheme } from '../data/schemes';
 import { SITE_CATEGORIES } from './categories';
@@ -90,7 +91,7 @@ export function buildCategoryPages(data: LandingData): CategoryPage[] {
 
 export function buildSchemePages(): SchemePage[] {
     return schemes
-        .filter((s) => s.governmentLevel === 'central' && s.isActive !== false)
+        .filter(listedOnWebsite)
         // /scheme/c-apy has its own guide page (/atal-pension); no second page for it.
         .filter((s) => !APP_CANONICAL[`/scheme/${s.id}`])
         .map((s) => {
@@ -100,8 +101,9 @@ export function buildSchemePages(): SchemePage[] {
             const recent = !!verifiedIso && verifiedIso >= SCHEME_VERIFIED_SINCE;
             const enough = words >= SCHEME_MIN_WORDS;
             const problems = content ? schemeContentProblems(content) : [];
-            const index = recent && enough && problems.length === 0;
-            const reason = problems.length ? `content: ${problems.join('; ')}` : !recent ? `not verified since ${SCHEME_VERIFIED_SINCE}` : !enough ? `only ${words} words of scheme text (minimum ${SCHEME_MIN_WORDS})` : 'indexed';
+            // Indexed only with verified website content; a scheme that could not be verified stays noindex.
+            const index = !!content && recent && enough && problems.length === 0;
+            const reason = !content ? 'no verified website content (official source not confirmed)' : problems.length ? `content: ${problems.join('; ')}` : !recent ? `not verified since ${SCHEME_VERIFIED_SINCE}` : !enough ? `only ${words} words of scheme text (minimum ${SCHEME_MIN_WORDS})` : 'indexed';
             return { id: s.id, path: `/schemes/${s.id}`, scheme: s, words, verified: longDate(verifiedIso), index, reason, guide: SCHEME_GUIDES[s.id] ?? null, content };
         });
 }
@@ -116,7 +118,7 @@ export const firstSentence = (s: string) => {
 };
 
 export function schemesByCategory(): Array<{ category: string; items: Scheme[] }> {
-    const central = schemes.filter((s) => s.governmentLevel === 'central' && s.isActive !== false);
+    const central = schemes.filter(listedOnWebsite);
     const cats = [...new Set(central.map((s) => s.category))];
     return cats.map((category) => ({ category, items: central.filter((s) => s.category === category) }));
 }
