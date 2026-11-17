@@ -97,6 +97,8 @@ export function SiteFooter({ groups }: { groups: FooterGroup[] }) {
                         <ul>
                             <li><a href="/calculators">All calculators</a></li>
                             <li><a href="/schemes">Government schemes</a></li>
+                            <li><a href="/how-we-calculate">How we calculate</a></li>
+                            <li><a href="/updates">Updates</a></li>
                             <li><a href="/export-my-data">Export my data</a></li>
                         </ul>
                     </nav>

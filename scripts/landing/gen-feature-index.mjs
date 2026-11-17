@@ -27,7 +27,12 @@ const pages = list('src/landing/features/pages', '.tsx').filter((p) => registere
 const calcs = list('src/landing/features/calcs/c', '.tsx').filter((c) => registered.has(c));
 const waiting = list('src/landing/features/pages', '.tsx').filter((p) => !registered.has(p));
 if (waiting.length) console.log(`gen-feature-index: not registered yet (skipped): ${waiting.join(', ')}`);
-const schemes = list('src/landing/schemes/content', '.ts');
+// A scheme content file counts once it is complete (default export with a verified date); a writer's
+// one-line stub is skipped instead of breaking the build.
+const schemes = list('src/landing/schemes/content', '.ts').filter((s) => {
+    const t = fs.readFileSync(rel('src/landing/schemes/content', `${s}.ts`), 'utf8');
+    return /export default/.test(t) && /verified:\s*'\d{4}-\d{2}-\d{2}'/.test(t);
+});
 
 const out = {
     'src/landing/features/generated.ts': HEAD +

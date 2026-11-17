@@ -142,7 +142,9 @@ export function SchemeView({ page, footer }: { page: SchemePage; footer: FooterG
     facts.push(['How to apply', s.applicationType]);
     if (s.launchYear) facts.push(['Launched', String(s.launchYear)]);
     facts.push(['Last verified', page.verified ?? 'Not recorded']);
-    if (page.content) return <SchemeViewV2 page={page} facts={facts} footer={footer} />;
+    // Verified content carries its own amounts table; the app's numeric facts were not re-verified, so
+    // a verified page shows only the non-numeric ones.
+    if (page.content) return <SchemeViewV2 page={page} facts={facts.filter(([k]) => ['Ministry', 'Category', 'How to apply', 'Launched', 'Last verified'].includes(k))} footer={footer} />;
     return (
         <Page footer={footer} crumbs={[{ href: '/', label: 'Home' }, { href: '/schemes', label: 'Government schemes' }, { label: s.name }]}>
             <header className="page-head">
@@ -196,7 +198,7 @@ function SchemeViewV2({ page, facts, footer }: { page: SchemePage; facts: Array<
                 <section className="prose-sec">
                     <h2 className="serif">How to check your status</h2>
                     <ol className="steps">{c.statusSteps.map((x) => <li key={x}>{x}</li>)}</ol>
-                    <p>FinCalix does not check status for you; the steps end on the official portal.</p>
+                    <p className="snote">FinCalix does not check status for you; the steps end on the official portal.</p>
                 </section>
             )}
             <section className="prose-sec">
