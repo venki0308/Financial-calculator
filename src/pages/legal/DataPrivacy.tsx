@@ -71,19 +71,19 @@ function Body({ lang, badge }: { lang: Lang; badge?: ReactNode }) {
 
             <Section icon="📱" color="#3B82F6" title={t.s.storage}>
                 <p style={{ marginBottom: '10px' }}>Your calculation history is saved in your device's local storage.</p>
-                <p style={{ marginBottom: '10px' }}>This data never leaves your phone or browser. We have no access to what you've calculated.</p>
+                <p style={{ marginBottom: '10px' }}>This data stays on your phone or browser unless you export a backup. We never see the numbers you enter or your results.</p>
                 <p>Clearing app data or uninstalling removes it completely.</p>
             </Section>
 
             <Section icon="💾" color="#14B8A6" title={t.s.backup}>
-                <p style={{ marginBottom: '10px' }}>Your data leaves your device <strong style={{ color: colors.text }}>ONLY</strong> via a user-initiated export / share — when you yourself create a backup file and choose where to send it.</p>
+                <p style={{ marginBottom: '10px' }}>Your expenses, calculations and other saved records leave your device <strong style={{ color: colors.text }}>ONLY</strong> via a user-initiated export / share — when you yourself create a backup file and choose where to send it.</p>
                 <p style={{ marginBottom: '10px' }}>The backup file contains, at a high level: expenses & budgets, Business Tracker entries, loans & credit cards, CIBIL profile inputs, saved calculations and app settings.</p>
                 <p>FinCalix never uploads the backup to any server. Importing a backup replaces the data currently on the device.</p>
             </Section>
 
             <Section icon="📊" color="#EC4899" title={t.s.analytics}>
                 <p style={{ marginBottom: '10px' }}>FinCalix sends usage statistics to an analytics service so we can see which calculators are useful.</p>
-                <p style={{ marginBottom: '10px' }}><strong style={{ color: colors.text }}>What is sent: which screens and calculators are opened, scheme views, language changes, completed calculations and exported reports (PDF, Excel, CSV), with a random app ID, device type, language, OS version and approximate country. On the website, taps on the Google Play buttons are also sent. On the website, taps on the Google Play buttons are also sent.</strong></p>
+                <p style={{ marginBottom: '10px' }}><strong style={{ color: colors.text }}>What is sent: which screens and calculators are opened, scheme views, language changes, completed calculations and exported reports (PDF, Excel, CSV), with a random app ID, device type, language, OS version and approximate country. On the website, taps on the Google Play buttons are also sent.</strong></p>
                 <p style={{ marginBottom: '10px' }}>This data is pseudonymous: it is tied to a random ID, not to your name or contact details.</p>
                 <p>Your financial inputs (salary, EMI amounts, etc.) are never part of analytics. Usage analytics are on by default; you can turn them off anytime in Settings → Privacy.</p>
             </Section>

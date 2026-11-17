@@ -26,6 +26,10 @@ Build 21 carried the same version name; build 22 adds the fixes below.
 - **Privacy texts corrected in all six languages:** disclaimer (now v4, so every user sees it again), privacy policy, Data & Privacy screen, landing page, static pages and the store listing draft. "Zero data collected", "no tracking" and "100% offline" are gone.
 - App texts say "an analytics service" and do not name the provider.
 - Play Console answers for the Data safety form: `PLAY_DATA_SAFETY.md`.
+- **One source for the legal pages (17 Nov 2026).** The app's Privacy Policy, Data & Privacy, Terms and About now show the website's text (`src/pages/legal/*`) in the app's own frame; the app gains a Data & Privacy (`/data-privacy`) screen. Body text is English with headings in hi/te/ta/kn, as on the website (Malayalam users see English). Absolute claims that were not literally true were corrected on both: "100% safe", "we collect no personal data at all", "we never had it", "absolutely zero access", "stores nothing on any server", "never leaves your device", "Optional" analytics. qa-landing 5c checks the app and website text match in every language.
+
+### Follow-up
+- Follow-up: translate legal body text into hi/te/ta/kn/ml from the shared source; native-speaker review.
 
 ### Data refreshed (verified 16 Nov 2026)
 - SBI home loans from 7.50%, SBI car loans 8.55–9.50%, SBI gold loan 9.30% bullet / 10.25% EMI.

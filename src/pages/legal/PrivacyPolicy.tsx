@@ -244,7 +244,7 @@ function Body({ lang }: { lang: Lang }) {
                         'Uninstall the app',
                         'Clear browser data (on web version)',
                     ]} />
-                    We have absolutely zero access to this data. It never leaves your device and is never synced to any server.
+                    We cannot see the data stored on your device. It is never synced to any server and leaves your device only in a backup file you export yourself. Usage analytics (see Analytics & Tracking) record which calculators you use and your language, never the numbers you enter.
                 </GoldBox>
             </Section>
 
@@ -288,7 +288,7 @@ function Body({ lang }: { lang: Lang }) {
                         'All numbers you enter (salary, EMI, tax inputs, SIP amounts, etc.) are processed entirely on your device',
                         'We never see, store, or transmit your financial figures',
                         'All calculations happen in your browser/app — not on any server',
-                        'There is no backend or API that receives your data',
+                        'There is no backend or API that receives your financial data',
                     ]} />
                 </GreenBox>
             </Section>
@@ -313,7 +313,7 @@ function Body({ lang }: { lang: Lang }) {
 
             {/* 7 */}
             <Section icon="🛡️" color="#6366F1" title={t.s.security}>
-                <p style={{ marginBottom: '10px' }}>Since FinCalix stores nothing on any server, there is no server-side data breach risk.</p>
+                <p style={{ marginBottom: '10px' }}>FinCalix has no servers of its own and never receives your financial data. Usage analytics are processed by a third-party analytics service provider, as described above.</p>
                 <Bullets items={[
                     'Your data security equals your device security',
                     'All web traffic uses HTTPS encryption',
@@ -325,8 +325,8 @@ function Body({ lang }: { lang: Lang }) {
             <Section icon="⚖️" color="#C9A84C" title={t.s.rights}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginTop: '4px' }}>
                     {[
-                        { title: t.s.access, text: 'All your data is visible directly in the app (Saved Calculations, History, Preferences).' },
-                        { title: t.s.delete, text: 'Clear app data from your device settings, or simply uninstall the app. All data is removed instantly.' },
+                        { title: t.s.access, text: 'All the data you enter is visible directly in the app (Saved Calculations, History, Preferences).' },
+                        { title: t.s.delete, text: 'Clear app data from your device settings, or simply uninstall the app. All data on your device is removed instantly.' },
                         { title: t.s.portability, text: 'Your financial data never reaches us, so there is nothing for us to delete. Turning off usage analytics deletes the analytics IDs from your device.' },
                     ].map(card => (
                         <Card key={card.title}>
@@ -399,7 +399,7 @@ function Body({ lang }: { lang: Lang }) {
                 }}>
                     <div style={{ color: '#8B5CF6', fontWeight: 600, marginBottom: '8px' }}>Your Rights as a Data Principal</div>
                     <Bullets items={[
-                        'Right to access — all your data is visible inside the app at any time',
+                        'Right to access — all the data you enter is visible inside the app at any time',
                         'Right to correction — edit any saved entry inside the app',
                         'Right to erasure — clear app data from device settings or uninstall the app',
                         'Right to grievance redressal — email support@fincalix.com',
